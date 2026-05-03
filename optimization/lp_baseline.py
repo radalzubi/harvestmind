@@ -1,0 +1,155 @@
+"""Deterministic LP baseline: minimize cost subject to demand and supply constraints.
+
+This is the benchmark (EV solution) against which stochastic models are measured.
+Formulation:
+  min  Σ_{i,j,t} c_ij * x_ijt + Σ spot_cost * s_jt + Σ waste_cost * w_jt
+  s.t. Σ_i x_ijt + s_jt - w_jt = d_jt        ∀ j,t   (demand balance)
+       x_ijt ≤ Y_ijt                           ∀ i,j,t (supply capacity)
+       x_ijt ≤ u_ij                            ∀ i,j,t (contract max)
+       x_ijt ≥ l_ij                            ∀ i,j,t (contract min)
+       x_ijt, s_jt, w_jt ≥ 0
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Optional
+
+import numpy as np
+import pandas as pd
+
+
+@dataclass
+class LPBaseline:
+    spot_cost_multiplier: float = 1.30  # contract price × multiplier for spot buys
+    waste_cost_per_kg: float = 0.50
+    solver: str = "highs"
+    time_limit_s: float = 120.0
+
+    def solve(
+        self,
+        demand: pd.DataFrame,          # [product_id, week_start, demand_kg]
+        supply: pd.DataFrame,          # [supplier_id, product_id, week_start, capacity_kg, price_per_kg]
+        contracts: pd.DataFrame | None = None,  # [supplier_id, product_id, min_vol_kg, max_vol_kg, contracted_price_per_kg]
+    ) -> dict:
+        """Solve deterministic LP. Returns dict with objective, variables, status."""
+        import pyomo.environ as pyo
+        from pyomo.opt import SolverFactory
+
+        demand = demand.copy()
+        supply = supply.copy()
+
+        products = list(demand["product_id"].unique())
+        weeks = sorted(demand["week_start"].unique())
+        suppliers = list(supply["supplier_id"].unique())
+
+        # Index helpers
+        d = {(r["product_id"], r["week_start"]): r["demand_kg"]
+             for _, r in demand.iterrows()}
+        cap = {(r["supplier_id"], r["product_id"], r["week_start"]): r["capacity_kg"]
+               for _, r in supply.iterrows()}
+        price = {(r["supplier_id"], r["product_id"], r["week_start"]): r["price_per_kg"]
+                 for _, r in supply.iterrows()}
+
+        contract_min: dict = {}
+        contract_max: dict = {}
+        contract_price: dict = {}
+        if contracts is not None:
+            for _, r in contracts.iterrows():
+                k = (r["supplier_id"], r["product_id"])
+                contract_min[k] = r.get("min_vol_kg", 0.0)
+                contract_max[k] = r.get("max_vol_kg", 1e9)
+                contract_price[k] = r.get("contracted_price_per_kg", price.get((r["supplier_id"], r["product_id"], weeks[0]), 2.0))
+
+        model = pyo.ConcreteModel()
+        model.I = pyo.Set(initialize=suppliers)
+        model.J = pyo.Set(initialize=products)
+        model.T = pyo.Set(initialize=weeks)
+        model.IJT = pyo.Set(
+            initialize=[(i,j,t) for (i,j,t) in cap],
+            dimen=3,
+        )
+
+        # Decision variables
+        model.x = pyo.Var(model.IJT, domain=pyo.NonNegativeReals)  # commit
+        model.s = pyo.Var(model.J, model.T, domain=pyo.NonNegativeReals)  # spot
+        model.w = pyo.Var(model.J, model.T, domain=pyo.NonNegativeReals)  # waste
+
+        # Objective
+        def obj_rule(m):
+            commit_cost = sum(
+                price.get((i,j,t), 2.0) * m.x[i,j,t]
+                for (i,j,t) in m.IJT
+            )
+            spot_cost = sum(
+                price.get((None, j, t), 2.0) * self.spot_cost_multiplier * m.s[j,t]
+                for j in m.J for t in m.T
+            )
+            waste_cost = sum(self.waste_cost_per_kg * m.w[j,t] for j in m.J for t in m.T)
+            return commit_cost + spot_cost + waste_cost
+
+        model.obj = pyo.Objective(rule=obj_rule, sense=pyo.minimize)
+
+        # Demand balance
+        def demand_balance(m, j, t):
+            supply_sum = sum(m.x[i2,j2,t2] for (i2,j2,t2) in m.IJT if j2 == j and t2 == t)
+            return supply_sum + m.s[j,t] - m.w[j,t] == d.get((j,t), 0.0)
+
+        model.demand_balance = pyo.Constraint(model.J, model.T, rule=demand_balance)
+
+        # Supply capacity
+        def supply_cap(m, i, j, t):
+            return m.x[i,j,t] <= cap.get((i,j,t), 0.0)
+
+        model.supply_cap = pyo.Constraint(model.IJT, rule=supply_cap)
+
+        solver = SolverFactory("appsi_highs" if self.solver == "highs" else self.solver)
+        results = solver.solve(model, tee=False)
+
+        status = str(results.solver.termination_condition)
+        obj_val = pyo.value(model.obj) if status in ("optimal","locallyOptimal") else None
+
+        # Extract solution
+        x_vals = {k: pyo.value(v) for k, v in model.x.items()}
+        s_vals = {(j,t): pyo.value(model.s[j,t]) for j in model.J for t in model.T}
+        w_vals = {(j,t): pyo.value(model.w[j,t]) for j in model.J for t in model.T}
+
+        return {
+            "status": status,
+            "objective": obj_val,
+            "x": x_vals,
+            "spot": s_vals,
+            "waste": w_vals,
+            "model": model,
+        }
+
+    def to_commitments_df(self, result: dict, supply: pd.DataFrame) -> pd.DataFrame:
+        """Convert solver result to commitment DataFrame."""
+        rows = []
+        price_map = {(r["supplier_id"],r["product_id"],r["week_start"]): r["price_per_kg"]
+                     for _, r in supply.iterrows()}
+        for (i,j,t), qty in result["x"].items():
+            if qty is None or qty < 1e-6:
+                continue
+            rows.append({
+                "supplier_id": i, "product_id": j, "week_start": t,
+                "committed_kg": round(qty, 2),
+                "contract_kg": round(qty, 2),
+                "spot_kg": 0.0,
+                "wasted_kg": 0.0,
+                "price_per_kg": price_map.get((i,j,t)),
+                "decision_stage": "first",
+            })
+        for (j,t), qty in result["spot"].items():
+            if qty is None or qty < 1e-6:
+                continue
+            rows.append({
+                "supplier_id": "SPOT", "product_id": j, "week_start": t,
+                "committed_kg": round(qty, 2),
+                "contract_kg": 0.0,
+                "spot_kg": round(qty, 2),
+                "wasted_kg": 0.0,
+                "price_per_kg": None,
+                "decision_stage": "recourse",
+            })
+        return pd.DataFrame(rows)

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HarvestMind ROI Report — {{ partner_name }}</title>
+  <style>
+    :root {
+      --green: #2d6a4f;
+      --light-green: #74c69d;
+      --amber: #e76f51;
+      --bg: #f8f9fa;
+      --text: #1b1b1b;
+    }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; color: var(--text); background: var(--bg); margin: 0; padding: 40px; }
+    .header { background: var(--green); color: white; padding: 32px 40px; border-radius: 8px; margin-bottom: 32px; }
+    .header h1 { margin: 0 0 8px; font-size: 28px; }
+    .header p { margin: 0; opacity: 0.85; font-size: 14px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+    .kpi-card { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .kpi-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #666; margin-bottom: 8px; }
+    .kpi-card .value { font-size: 32px; font-weight: 700; color: var(--green); }
+    .kpi-card .subtext { font-size: 12px; color: #888; margin-top: 4px; }
+    .kpi-card.highlight .value { color: var(--amber); }
+    .section { background: white; border-radius: 8px; padding: 28px; box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-bottom: 24px; }
+    .section h2 { margin: 0 0 20px; font-size: 18px; color: var(--green); border-bottom: 2px solid var(--light-green); padding-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { background: var(--green); color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+    td { padding: 10px 14px; border-bottom: 1px solid #eee; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: #f8fffe; }
+    .footer { text-align: center; color: #aaa; font-size: 12px; margin-top: 40px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: #d8f3dc; color: var(--green); }
+    .badge-amber { background: #fde8e4; color: var(--amber); }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>HarvestMind ROI Analysis</h1>
+  <p>{{ partner_name }} &nbsp;·&nbsp; Report generated {{ generated_date }} &nbsp;·&nbsp; Backtest period {{ backtest_start }} – {{ backtest_end }}</p>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card highlight">
+    <div class="label">Annual Benefit</div>
+    <div class="value">${{ "{:,.0f}".format(roi.total_annual_benefit_usd) }}</div>
+    <div class="subtext">vs. {{ roi.annual_subscription_usd | int | filesizeformat }} subscription</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">ROI Multiple</div>
+    <div class="value">{{ roi.roi_multiple }}×</div>
+    <div class="subtext">benefit / subscription cost</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Payback Period</div>
+    <div class="value">{{ roi.payback_months }} mo</div>
+    <div class="subtext">to recover subscription cost</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Service Level Lift</div>
+    <div class="value">+{{ roi.service_level_improvement_pts }}pts</div>
+    <div class="subtext">{{ roi.baseline_service_level_pct }}% → {{ roi.target_service_level_pct }}%</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Spot Buy Reduction</div>
+    <div class="value">{{ roi.spot_savings_pct }}%</div>
+    <div class="subtext">${{ "{:,.0f}".format(roi.annual_spot_savings_usd) }} annual savings</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Waste Reduced</div>
+    <div class="value">{{ "{:,.0f}".format(roi.waste_kg_reduction_annual) }} kg</div>
+    <div class="subtext">${{ "{:,.0f}".format(roi.annual_waste_value_savings_usd) }} annual value</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Benefit Breakdown</h2>
+  <table>
+    <thead>
+      <tr><th>Category</th><th>Annual Savings (USD)</th><th>Driver</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Spot Premium Savings</td>
+        <td>${{ "{:,.0f}".format(roi.annual_spot_savings_usd) }}</td>
+        <td>{{ roi.spot_savings_pct }}% fewer emergency spot buys</td>
+      </tr>
+      <tr>
+        <td>Waste Reduction</td>
+        <td>${{ "{:,.0f}".format(roi.annual_waste_value_savings_usd) }}</td>
+        <td>{{ "{:,.0f}".format(roi.waste_kg_reduction_annual) }} kg annual reduction</td>
+      </tr>
+      <tr>
+        <td>Lost Sale Recovery</td>
+        <td>${{ "{:,.0f}".format(roi.annual_lost_sale_recovery_usd) }}</td>
+        <td>+{{ roi.service_level_improvement_pts }}pt service level improvement</td>
+      </tr>
+      <tr style="font-weight:600">
+        <td>Total Annual Benefit</td>
+        <td>${{ "{:,.0f}".format(roi.total_annual_benefit_usd) }}</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Annual Subscription</td>
+        <td>(${{ "{:,.0f}".format(roi.annual_subscription_usd) }})</td>
+        <td>Tier {{ roi.subscription_tier }}, ${{ roi.monthly_subscription_usd | int }}/mo</td>
+      </tr>
+      <tr style="font-weight:700; color:#2d6a4f">
+        <td>Net Annual Benefit</td>
+        <td>${{ "{:,.0f}".format(roi.net_annual_benefit_usd) }}</td>
+        <td><span class="badge badge-green">{{ roi.roi_multiple }}× ROI</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Model Performance by Optimization Strategy</h2>
+  <table>
+    <thead>
+      <tr><th>Model</th><th>Avg Service Level</th><th>Avg Spot Kg/Origin</th><th>Avg Waste Kg/Origin</th><th>Avg Cost/Origin</th></tr>
+    </thead>
+    <tbody>
+      {% for row in model_comparison %}
+      <tr>
+        <td>{{ row.model }}</td>
+        <td>{{ "%.1f"|format(row.avg_service_level) }}%</td>
+        <td>{{ "%.0f"|format(row.avg_spot_kg) }}</td>
+        <td>{{ "%.0f"|format(row.avg_waste_kg) }}</td>
+        <td>${{ "{:,.0f}".format(row.avg_total_cost) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  <p>Generated by HarvestMind · Purdue University LIFT Lab · Confidential pilot report</p>
+  <p>Based on {{ n_backtest_origins }} rolling-origin backtest evaluations · Model: {{ target_model }}</p>
+</div>
+
+</body>
+</html>
