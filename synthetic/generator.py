@@ -17,9 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import os
-import uuid
 from datetime import date, timedelta
-from typing import Iterator
 
 import numpy as np
 import pandas as pd
@@ -29,8 +27,6 @@ from synthetic.archetypes import (
     PRODUCT_ARCHETYPES,
     SUPPLIER_PRODUCT_MAP,
     SUPPLIER_RELIABILITY,
-    BuyerArchetype,
-    ProductArchetype,
 )
 from synthetic.seasonality import enso_yield_adjustment, seasonal_index
 
@@ -122,9 +118,10 @@ class SyntheticGenerator:
 
     def _build_orders(self) -> tuple[pd.DataFrame, pd.DataFrame]:
         orders, lines = [], []
-        for week_idx, week in enumerate(self.weeks):
-            enso = self.enso[week_idx]
+        for week in self.weeks:
             iso_week = week.isocalendar()[1]
+            # NOTE: ENSO modulation could feed demand here too; today only
+            # yields are ENSO-adjusted (see _build_yield_obs / seasonality.py).
 
             for buyer_id, b in BUYER_ARCHETYPES.items():
                 # Determine if buyer orders this week

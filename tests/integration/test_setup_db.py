@@ -1,6 +1,5 @@
 """Integration test: schema setup and seed data load."""
 
-import pytest
 import duckdb
 
 from scripts.setup_db import setup_db

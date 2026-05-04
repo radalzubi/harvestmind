@@ -2,14 +2,46 @@
 
 from __future__ import annotations
 
-import os
 from datetime import date
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
 TEMPLATE_DIR = Path(__file__).parent / "templates"
+
+REQUIRED_ROI_KEYS = (
+    "total_annual_benefit_usd",
+    "annual_subscription_usd",
+    "roi_multiple",
+    "payback_months",
+    "annual_spot_savings_usd",
+    "annual_waste_value_savings_usd",
+    "annual_lost_sale_recovery_usd",
+    "net_annual_benefit_usd",
+    "service_level_improvement_pts",
+    "baseline_service_level_pct",
+    "target_service_level_pct",
+    "spot_savings_pct",
+    "waste_kg_reduction_annual",
+    "subscription_tier",
+    "monthly_subscription_usd",
+)
+
+
+class ROIReportError(ValueError):
+    """Raised when the ROI dict is incomplete or contains an error marker."""
+
+
+def _validate_roi(roi: dict) -> None:
+    if not isinstance(roi, dict):
+        raise ROIReportError(f"roi must be a dict, got {type(roi).__name__}")
+    if "error" in roi:
+        raise ROIReportError(f"ROI calculation reported an error: {roi['error']}")
+    missing = [k for k in REQUIRED_ROI_KEYS if k not in roi]
+    if missing:
+        raise ROIReportError(
+            "ROI dict is missing required keys: " + ", ".join(missing)
+        )
 
 
 def render_roi_report(
@@ -27,7 +59,16 @@ def render_roi_report(
     backtest_df : output of RollingOriginEngine.run()
     output_path : if provided, writes file to disk
     as_pdf      : if True, also writes PDF via weasyprint
+
+    Raises
+    ------
+    ROIReportError
+        If ``roi`` is not a complete success-shape dict from
+        :func:`backtesting.roi_calculator.compute_roi`. Callers should
+        either retry the backtest or branch on the error before rendering.
     """
+    _validate_roi(roi)
+
     from jinja2 import Environment, FileSystemLoader
 
     env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)))

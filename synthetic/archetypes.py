@@ -5,8 +5,6 @@ Values are calibrated to Indiana food hub order volumes (kg/week).
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
-import numpy as np
 
 
 @dataclass

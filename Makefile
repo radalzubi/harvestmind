@@ -7,16 +7,19 @@ setup:
 	@echo "── Installing dependencies ───────────────────────────────"
 	$(PIP) install -e ".[dev]"
 	@echo "── Setting up database ───────────────────────────────────"
-	$(PYTHON) scripts/setup_db.py
+	$(PYTHON) scripts/setup_db.py --seeds
 	@echo "── Generating synthetic demo data ────────────────────────"
-	$(PYTHON) synthetic/generate_pilot_dataset.py --customer synthetic_indiana_hub
+	$(PYTHON) synthetic/generate_pilot_dataset.py
 	@echo "── Setup complete. Run 'make demo' to verify. ────────────"
 
 test:
-	$(PYTHON) -m pytest tests/ -v --tb=short --cov=. --cov-report=term-missing
+	$(PYTHON) -m pytest tests/ -v --tb=short
+
+test-cov:
+	$(PYTHON) -m pytest tests/ --tb=short --cov=. --cov-report=term-missing
 
 backtest:
-	$(PYTHON) scripts/run_backtest.py --customer synthetic_indiana_hub --weeks 104
+	$(PYTHON) scripts/run_backtest.py --train-weeks 52 --horizon 4 --step 4 --scenarios 30
 
 serve:
 	uvicorn api.main:app --reload --port 8000 --log-level info
@@ -25,7 +28,7 @@ dashboard:
 	streamlit run dashboard/app.py --server.port 8501
 
 roi-report:
-	$(PYTHON) scripts/generate_roi_report.py --run-id latest
+	$(PYTHON) scripts/generate_roi_report.py
 
 demo:
 	$(PYTHON) scripts/demo_run.py

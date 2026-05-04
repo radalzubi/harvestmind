@@ -4,7 +4,6 @@ compute the actual recourse actions and total cost for backtest evaluation.
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 
 

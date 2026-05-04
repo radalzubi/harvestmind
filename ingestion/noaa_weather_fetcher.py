@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import os
 from datetime import date, timedelta
-from typing import Optional
 
 import pandas as pd
 

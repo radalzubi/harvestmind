@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -17,7 +16,6 @@ router = APIRouter(prefix="/planning", tags=["planning"])
 @router.post("/run", response_model=PlanningResponse)
 def run_planning(req: PlanningRequest, conn=Depends(get_conn)):
     """Run the optimization model for a given week and return commitments."""
-    import pandas as pd
     from optimization.lp_baseline import LPBaseline
     from optimization.gamma_robust_lp import GammaRobustLP
     from optimization.two_stage_sp import TwoStageStochasticLP
@@ -101,8 +99,6 @@ def run_planning(req: PlanningRequest, conn=Depends(get_conn)):
     total_waste = sum(
         float(v) for v in result.get("waste", {}).values() if v and float(v) > 0
     )
-
-    conn.close()
     return PlanningResponse(
         run_id=run_id,
         model_type=req.model_type,
@@ -143,5 +139,4 @@ def get_recommendations(status: str = "open", conn=Depends(get_conn)):
         "SELECT * FROM planning_recommendations WHERE status = ? ORDER BY priority, generated_at DESC",
         [status],
     ).df()
-    conn.close()
     return df.to_dict("records")

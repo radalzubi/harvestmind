@@ -110,8 +110,7 @@ def reconcile_mintrace_wls(
     except np.linalg.LinAlgError:
         P = np.linalg.lstsq(STS, S.T, rcond=None)[0]
 
-    # Reconciliation matrix: G = S @ P
-    G = S @ P  # shape (n_all, n_all)
+    # Reconciliation matrix is S @ P; we apply it directly per week below.
 
     for week in weeks:
         wdf = base_forecasts[base_forecasts["week_start"] == week].copy()

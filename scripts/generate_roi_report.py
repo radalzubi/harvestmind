@@ -40,10 +40,21 @@ def main() -> None:
     engine = RollingOriginEngine(cfg)
     print("Running backtest for ROI calculation…")
     results_df = engine.run(orders_df, deliveries_df)
+
+    if results_df.empty:
+        sys.exit("ERROR: backtest produced no results — check that the DB has enough data.")
+
     roi = compute_roi(results_df, annual_gmv_usd=args.gmv)
 
-    html = render_roi_report(roi, results_df, partner_name=args.partner,
-                              output_path=args.output, as_pdf=args.pdf)
+    from reports.roi_report_generator import ROIReportError  # noqa: E402  (import here to avoid extra cost when --help)
+    try:
+        render_roi_report(
+            roi, results_df, partner_name=args.partner,
+            output_path=args.output, as_pdf=args.pdf,
+        )
+    except ROIReportError as e:
+        sys.exit(f"ERROR: cannot render ROI report — {e}")
+
     print(f"Report written to: {args.output}")
     if args.pdf:
         print(f"PDF written to: {Path(args.output).with_suffix('.pdf')}")

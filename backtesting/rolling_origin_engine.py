@@ -18,12 +18,9 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 from typing import Optional
 
-import numpy as np
 import pandas as pd
 
-from backtesting.leakage_guard import LeakageGuard, assert_no_future_data
-from forecasting.demand.lgbm_global_model import LGBMDemandModel
-from forecasting.demand.intermittent_model import select_and_fit
+from backtesting.leakage_guard import LeakageGuard
 from forecasting.supply.yield_scenario_generator import YieldScenarioGenerator
 from optimization.lp_baseline import LPBaseline
 from optimization.gamma_robust_lp import GammaRobustLP

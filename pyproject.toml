@@ -1,12 +1,11 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "harvestmind"
 version = "0.1.0"
 description = "Stochastic supply planning for Midwest fresh produce distributors and food hubs"
-readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Proprietary" }
 authors = [{ name = "HarvestMind Team", email = "team@harvestmind.io" }]

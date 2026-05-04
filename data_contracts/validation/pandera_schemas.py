@@ -1,7 +1,7 @@
 """Pandera schemas for runtime validation of DataFrames at pipeline boundaries."""
 
 import pandera as pa
-from pandera import Column, DataFrameSchema, Check, Index
+from pandera import Column, DataFrameSchema, Check
 import pandas as pd
 
 # ---------------------------------------------------------------------------
@@ -129,13 +129,18 @@ BacktestRowSchema = DataFrameSchema(
 
 
 def validate(schema: DataFrameSchema, df: pd.DataFrame, context: str = "") -> pd.DataFrame:
-    """Validate df against schema; raises SchemaError with context label."""
+    """Validate df against schema; on failure, re-raise with the context label.
+
+    Earlier code computed a `prefix` string but never attached it to the
+    raised error, so callers lost the context. We now pre-pend it to the
+    exception message via `add_note`.
+    """
     try:
         return schema.validate(df, lazy=True)
     except pa.errors.SchemaErrors as e:
-        prefix = f"[{context}] " if context else ""
-        raise pa.errors.SchemaErrors(
-            schema=e.schema,
-            schema_errors=e.schema_errors,
-            data=e.data,
-        ) from e
+        if context:
+            try:
+                e.add_note(f"context: {context}")
+            except AttributeError:  # Python < 3.11 fallback
+                pass
+        raise

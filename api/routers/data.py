@@ -22,6 +22,7 @@ def _records(df: pd.DataFrame) -> list[dict]:
                 lambda v: list(v) if isinstance(v, (np.ndarray, list)) else v
             )
     rows = out.to_dict("records")
+
     # Final pass: replace any scalar NaN/NaT with None for JSON safety
     def _safe(v):
         if v is None:
@@ -44,18 +45,18 @@ def _records(df: pd.DataFrame) -> list[dict]:
 @router.get("/suppliers")
 def list_suppliers(conn=Depends(get_conn)):
     df = conn.execute("SELECT * FROM dim_suppliers ORDER BY supplier_name").df()
-    conn.close()
     return _records(df)
 
 
 @router.get("/products")
 def list_products(is_ftl: bool | None = None, conn=Depends(get_conn)):
-    q = "SELECT * FROM dim_products"
-    if is_ftl is not None:
-        q += f" WHERE is_ftl_item = {str(is_ftl).upper()}"
-    q += " ORDER BY crop_name"
-    df = conn.execute(q).df()
-    conn.close()
+    if is_ftl is None:
+        df = conn.execute("SELECT * FROM dim_products ORDER BY crop_name").df()
+    else:
+        df = conn.execute(
+            "SELECT * FROM dim_products WHERE is_ftl_item = ? ORDER BY crop_name",
+            [bool(is_ftl)],
+        ).df()
     return _records(df)
 
 
@@ -70,7 +71,6 @@ def recent_deliveries(weeks: int = Query(4, ge=1, le=52), conn=Depends(get_conn)
         "ORDER BY d.delivery_date DESC LIMIT 500",
         [weeks],
     ).df()
-    conn.close()
     return _records(df)
 
 
@@ -85,28 +85,36 @@ def weekly_demand(weeks: int = Query(13, ge=1, le=104), conn=Depends(get_conn)):
         "GROUP BY 1, 2 ORDER BY 1, 2",
         [weeks],
     ).df()
-    conn.close()
     return _records(df)
 
 
 @router.get("/fsma/lots")
 def list_lots(product_id: str | None = None, conn=Depends(get_conn)):
-    q = "SELECT l.*, p.crop_name FROM fact_lots l JOIN dim_products p ON l.product_id = p.product_id"
-    if product_id:
-        q += f" WHERE l.product_id = '{product_id}'"
-    q += " ORDER BY l.created_at DESC LIMIT 200"
-    df = conn.execute(q).df()
-    conn.close()
+    if product_id is None:
+        df = conn.execute(
+            "SELECT l.*, p.crop_name FROM fact_lots l "
+            "JOIN dim_products p ON l.product_id = p.product_id "
+            "ORDER BY l.created_at DESC LIMIT 200"
+        ).df()
+    else:
+        df = conn.execute(
+            "SELECT l.*, p.crop_name FROM fact_lots l "
+            "JOIN dim_products p ON l.product_id = p.product_id "
+            "WHERE l.product_id = ? "
+            "ORDER BY l.created_at DESC LIMIT 200",
+            [product_id],
+        ).df()
     return _records(df)
 
 
 @router.get("/fsma/report")
 def fsma_report(tlc: str | None = None, conn=Depends(get_conn)):
     """Return FDA-ready 24-hour spreadsheet data."""
-    q = 'SELECT * FROM v_fsma_204_report'
-    if tlc:
-        q += f" WHERE traceability_lot_code = '{tlc}'"
-    q += " LIMIT 1000"
-    df = conn.execute(q).df()
-    conn.close()
+    if tlc is None:
+        df = conn.execute("SELECT * FROM v_fsma_204_report LIMIT 1000").df()
+    else:
+        df = conn.execute(
+            "SELECT * FROM v_fsma_204_report WHERE traceability_lot_code = ? LIMIT 1000",
+            [tlc],
+        ).df()
     return _records(df)

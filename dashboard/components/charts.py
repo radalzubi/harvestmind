@@ -74,7 +74,6 @@ def spot_buy_waterfall(roi: dict) -> go.Figure:
         roi.get("net_annual_benefit_usd", 0),
     ]
     measure = ["relative", "relative", "relative", "relative", "total"]
-    colors = [BRAND_GREEN, BRAND_GREEN, BRAND_GREEN, BRAND_AMBER, "#457b9d"]
 
     fig = go.Figure(go.Waterfall(
         name="ROI", orientation="v",

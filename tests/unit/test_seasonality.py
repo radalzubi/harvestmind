@@ -1,6 +1,5 @@
 """Unit tests for seasonality curves."""
 
-import pytest
 import numpy as np
 
 from synthetic.seasonality import seasonal_index, enso_yield_adjustment

@@ -6,9 +6,7 @@ from common food hub systems (Local Line, QuickBooks exports, etc.).
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
@@ -68,15 +66,14 @@ def ingest_csv(
     if n == 0:
         return 0
 
+    if if_exists not in ("ignore", "replace"):
+        raise ValueError(f"if_exists must be 'ignore' or 'replace', got {if_exists!r}")
     if if_exists == "replace":
         conn.execute(f"DELETE FROM {table}")
 
-    try:
-        conn.execute(f"INSERT OR IGNORE INTO {table} SELECT * FROM df")
-    except Exception as e:
-        # Some DuckDB versions don't support INSERT OR IGNORE — use INSERT with ON CONFLICT
-        conn.execute(f"INSERT INTO {table} SELECT * FROM df")
-
+    # Let duckdb errors propagate — silently falling back to a different INSERT
+    # form would mask real schema/parser problems.
+    conn.execute(f"INSERT OR IGNORE INTO {table} SELECT * FROM df")
     return n
 
 

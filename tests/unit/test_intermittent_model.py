@@ -30,6 +30,30 @@ class TestCroston:
         assert fc.demand_rate > 0
         assert fc.demand_size > 0
 
+    def test_inter_arrival_recovered_for_periodic_demand(self):
+        """Regression: Croston smoothed inter-arrival p must converge to the true gap.
+
+        Earlier implementation smoothed `p` against the constant 1, which produced
+        forecasts ~70% too high (mean = 42 instead of 25 for inter-arrival 4).
+        """
+        # Demand 100 every 4th period
+        series = np.tile([0, 0, 0, 100], 5).astype(float)  # 20 periods, 5 demand events
+        fc = croston(series, alpha=0.15)
+        assert fc.demand_size == pytest.approx(100.0, abs=1e-6)
+        # 1/rate is the implied inter-arrival; should be ~4 (not ~2)
+        implied_p = 1.0 / fc.demand_rate
+        assert 3.5 <= implied_p <= 4.5, f"implied inter-arrival = {implied_p}, expected ~4"
+        # Forecast = z/p ≈ 100/4 = 25
+        assert 22 <= fc.mean <= 28, f"mean = {fc.mean}, expected ~25"
+
+    def test_lower_demand_rate_for_sparser_series(self):
+        """Sparser demand → lower demand rate. Earlier bug made all series converge to rate≈1."""
+        sparse = np.zeros(40); sparse[[5, 25]] = 50.0           # 2 events in 40 periods
+        dense = np.zeros(40); dense[[5, 10, 15, 20, 25, 30, 35]] = 50.0  # 7 events
+        rate_sparse = croston(sparse).demand_rate
+        rate_dense = croston(dense).demand_rate
+        assert rate_sparse < rate_dense
+
 
 class TestSBA:
     def test_sba_lower_than_croston(self):

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import sys
 import time
-from datetime import date, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -78,7 +78,6 @@ def main() -> None:
     # LightGBM global model
     try:
         from forecasting.demand.lgbm_global_model import LGBMDemandModel
-        from forecasting.demand.feature_engineering import build_features
 
         lgbm = LGBMDemandModel(n_estimators=100, seed=42)
         lgbm.fit(orders_df)

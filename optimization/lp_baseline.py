@@ -12,10 +12,9 @@ Formulation:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Optional
+import warnings
+from dataclasses import dataclass
 
-import numpy as np
 import pandas as pd
 
 
@@ -51,15 +50,17 @@ class LPBaseline:
         price = {(r["supplier_id"], r["product_id"], r["week_start"]): r["price_per_kg"]
                  for _, r in supply.iterrows()}
 
-        contract_min: dict = {}
-        contract_max: dict = {}
-        contract_price: dict = {}
-        if contracts is not None:
-            for _, r in contracts.iterrows():
-                k = (r["supplier_id"], r["product_id"])
-                contract_min[k] = r.get("min_vol_kg", 0.0)
-                contract_max[k] = r.get("max_vol_kg", 1e9)
-                contract_price[k] = r.get("contracted_price_per_kg", price.get((r["supplier_id"], r["product_id"], weeks[0]), 2.0))
+        # NOTE: the `contracts` argument is currently advisory — the LP does not
+        # yet enforce contract min/max volume bounds or contracted prices in the
+        # objective. Surface this clearly rather than silently dropping the data.
+        if contracts is not None and not contracts.empty:
+            warnings.warn(
+                "LPBaseline received a `contracts` DataFrame but does not yet enforce "
+                "contract min/max volume or contracted prices. Treat the result as a "
+                "best-effort baseline; pass contracts=None to silence this warning.",
+                UserWarning,
+                stacklevel=2,
+            )
 
         model = pyo.ConcreteModel()
         model.I = pyo.Set(initialize=suppliers)

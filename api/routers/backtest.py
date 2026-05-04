@@ -13,7 +13,6 @@ router = APIRouter(prefix="/backtest", tags=["backtest"])
 @router.post("/run", response_model=BacktestResponse)
 def run_backtest(req: BacktestRequest, conn=Depends(get_conn)):
     """Run rolling-origin backtest against historical data in the DB."""
-    import pandas as pd
     from backtesting.rolling_origin_engine import RollingOriginEngine, BacktestConfig
     from backtesting.roi_calculator import compute_roi
     from backtesting.procurement_metrics import cost_per_kg_by_model
@@ -27,9 +26,6 @@ def run_backtest(req: BacktestRequest, conn=Depends(get_conn)):
         "SELECT supplier_id, product_id, delivery_date, qty_received_kg, qty_rejected_kg "
         "FROM fact_deliveries"
     ).df()
-
-    conn.close()
-
     if orders_df.empty:
         raise HTTPException(status_code=422, detail="No order history in database")
 
@@ -66,7 +62,6 @@ def get_backtest_results(conn=Depends(get_conn)):
         df = conn.execute("SELECT * FROM planning_scenarios ORDER BY run_timestamp DESC LIMIT 500").df()
     except Exception:
         df = None
-    conn.close()
     if df is None or df.empty:
         return {"message": "No cached results. Run POST /backtest/run first."}
     return df.to_dict("records")

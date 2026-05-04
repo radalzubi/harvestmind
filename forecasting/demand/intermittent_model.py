@@ -44,14 +44,20 @@ def croston(series: np.ndarray, alpha: float = 0.15, horizon: int = 1) -> Interm
     non_zero = series[series > 0]
     if len(non_zero) == 0:
         return _zero_forecast("croston")
-    z = float(non_zero[0])
-    first_nz = int(np.argmax(series > 0))
-    p = float(first_nz + 1)
 
-    for t in range(1, n):
+    # Initialise at the first non-zero observation
+    first_nz = int(np.argmax(series > 0))
+    z = float(series[first_nz])
+    p = float(first_nz + 1)            # initial inter-arrival = position of first demand
+    q = 1                               # periods since the most recent non-zero
+
+    for t in range(first_nz + 1, n):
         if series[t] > 0:
             z = alpha * series[t] + (1 - alpha) * z
-            p = alpha * 1.0 + (1 - alpha) * p
+            p = alpha * q + (1 - alpha) * p   # smooth using the actual gap, not 1
+            q = 1
+        else:
+            q += 1
 
     forecast_mean = z / p if p > 0 else 0.0
     std = _bootstrap_std(series, "croston", alpha, horizon)
@@ -87,14 +93,19 @@ def sba(series: np.ndarray, alpha: float = 0.15, horizon: int = 1) -> Intermitte
     non_zero = series[series > 0]
     if len(non_zero) == 0:
         return _zero_forecast("sba")
-    z = float(non_zero[0])
-    first_nz = int(np.argmax(series > 0))
-    p = float(first_nz + 1)
 
-    for t in range(1, n):
+    first_nz = int(np.argmax(series > 0))
+    z = float(series[first_nz])
+    p = float(first_nz + 1)
+    q = 1
+
+    for t in range(first_nz + 1, n):
         if series[t] > 0:
             z = alpha * series[t] + (1 - alpha) * z
-            p = alpha * 1.0 + (1 - alpha) * p
+            p = alpha * q + (1 - alpha) * p
+            q = 1
+        else:
+            q += 1
 
     bias_correction = 1.0 - alpha / 2.0
     forecast_mean = bias_correction * z / p if p > 0 else 0.0
@@ -222,13 +233,17 @@ def _croston_point(series: np.ndarray, alpha: float) -> float:
     non_zero = series[series > 0]
     if len(non_zero) == 0:
         return 0.0  # no demand observed → forecast zero
-    z = float(non_zero[0])
     first_nz = int(np.argmax(series > 0))
+    z = float(series[first_nz])
     p = float(first_nz + 1)
-    for t in range(1, len(series)):
+    q = 1
+    for t in range(first_nz + 1, len(series)):
         if series[t] > 0:
             z = alpha * series[t] + (1 - alpha) * z
-            p = alpha * 1.0 + (1 - alpha) * p
+            p = alpha * q + (1 - alpha) * p
+            q = 1
+        else:
+            q += 1
     return max(0.0, z / p if p > 0 else 0.0)
 
 

@@ -7,9 +7,7 @@ Docs: https://mymarketnews.ams.usda.gov/mars/public
 from __future__ import annotations
 
 import os
-import time
 from datetime import date
-from typing import Optional
 
 import pandas as pd
 
