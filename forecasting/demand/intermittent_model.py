@@ -41,18 +41,17 @@ def croston(series: np.ndarray, alpha: float = 0.15, horizon: int = 1) -> Interm
     if n == 0:
         return _zero_forecast("croston")
 
-    # Initialize
     non_zero = series[series > 0]
-    z = float(non_zero[0]) if len(non_zero) > 0 else 1.0
-    # Find first inter-arrival interval
-    first_nz = np.argmax(series > 0)
-    p = float(first_nz + 1) if first_nz < n else float(n)
+    if len(non_zero) == 0:
+        return _zero_forecast("croston")
+    z = float(non_zero[0])
+    first_nz = int(np.argmax(series > 0))
+    p = float(first_nz + 1)
 
     for t in range(1, n):
         if series[t] > 0:
             z = alpha * series[t] + (1 - alpha) * z
-            p = alpha * 1.0 + (1 - alpha) * p  # inter-arrival = 1 at demand occurrence
-        # else: z and p unchanged
+            p = alpha * 1.0 + (1 - alpha) * p
 
     forecast_mean = z / p if p > 0 else 0.0
     std = _bootstrap_std(series, "croston", alpha, horizon)
@@ -86,9 +85,11 @@ def sba(series: np.ndarray, alpha: float = 0.15, horizon: int = 1) -> Intermitte
         return _zero_forecast("sba")
 
     non_zero = series[series > 0]
-    z = float(non_zero[0]) if len(non_zero) > 0 else 1.0
-    first_nz = np.argmax(series > 0)
-    p = float(first_nz + 1) if first_nz < n else float(n)
+    if len(non_zero) == 0:
+        return _zero_forecast("sba")
+    z = float(non_zero[0])
+    first_nz = int(np.argmax(series > 0))
+    p = float(first_nz + 1)
 
     for t in range(1, n):
         if series[t] > 0:
@@ -138,9 +139,11 @@ def tsb(
         return _zero_forecast("tsb")
 
     non_zero = series[series > 0]
-    z = float(non_zero[0]) if len(non_zero) > 0 else 1.0
+    if len(non_zero) == 0:
+        return _zero_forecast("tsb")
+    z = float(non_zero[0])
     n_nz = len(non_zero)
-    p = n_nz / n if n > 0 else 0.5  # initial demand probability
+    p = n_nz / n  # initial demand probability
 
     for t in range(1, n):
         if series[t] > 0:
@@ -217,9 +220,11 @@ def select_and_fit(
 def _croston_point(series: np.ndarray, alpha: float) -> float:
     """Croston point estimate without bootstrap (used inside bootstrap loop)."""
     non_zero = series[series > 0]
-    z = float(non_zero[0]) if len(non_zero) > 0 else 1.0
-    first_nz = np.argmax(series > 0)
-    p = float(first_nz + 1) if first_nz < len(series) else float(len(series))
+    if len(non_zero) == 0:
+        return 0.0  # no demand observed → forecast zero
+    z = float(non_zero[0])
+    first_nz = int(np.argmax(series > 0))
+    p = float(first_nz + 1)
     for t in range(1, len(series)):
         if series[t] > 0:
             z = alpha * series[t] + (1 - alpha) * z
@@ -233,9 +238,11 @@ def _sba_point(series: np.ndarray, alpha: float) -> float:
 
 def _tsb_point(series: np.ndarray, alpha: float, beta: float) -> float:
     non_zero = series[series > 0]
-    z = float(non_zero[0]) if len(non_zero) > 0 else 1.0
+    if len(non_zero) == 0:
+        return 0.0
+    z = float(non_zero[0])
     n = len(series)
-    p = len(non_zero) / n if n > 0 else 0.5
+    p = len(non_zero) / n
     for t in range(1, n):
         if series[t] > 0:
             p = beta * 1.0 + (1 - beta) * p

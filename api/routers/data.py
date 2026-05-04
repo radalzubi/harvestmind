@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import numpy as np
+import pandas as pd
 from fastapi import APIRouter, Depends, Query
 
 from api.dependencies import get_conn
@@ -9,11 +11,41 @@ from api.dependencies import get_conn
 router = APIRouter(prefix="/data", tags=["data"])
 
 
+def _records(df: pd.DataFrame) -> list[dict]:
+    """Convert DataFrame to JSON-serializable records, coercing arrays and replacing NaN with None."""
+    if df.empty:
+        return []
+    out = df.copy()
+    for col in out.columns:
+        if out[col].dtype == object:
+            out[col] = out[col].apply(
+                lambda v: list(v) if isinstance(v, (np.ndarray, list)) else v
+            )
+    rows = out.to_dict("records")
+    # Final pass: replace any scalar NaN/NaT with None for JSON safety
+    def _safe(v):
+        if v is None:
+            return None
+        if isinstance(v, float) and np.isnan(v):
+            return None
+        if isinstance(v, (list, dict, str, int, bool)):
+            return v
+        # pandas Timestamp/NaT and other scalars
+        try:
+            if pd.isna(v):
+                return None
+        except (TypeError, ValueError):
+            pass
+        return v
+
+    return [{k: _safe(v) for k, v in row.items()} for row in rows]
+
+
 @router.get("/suppliers")
 def list_suppliers(conn=Depends(get_conn)):
     df = conn.execute("SELECT * FROM dim_suppliers ORDER BY supplier_name").df()
     conn.close()
-    return df.to_dict("records")
+    return _records(df)
 
 
 @router.get("/products")
@@ -24,7 +56,7 @@ def list_products(is_ftl: bool | None = None, conn=Depends(get_conn)):
     q += " ORDER BY crop_name"
     df = conn.execute(q).df()
     conn.close()
-    return df.to_dict("records")
+    return _records(df)
 
 
 @router.get("/deliveries/recent")
@@ -39,7 +71,7 @@ def recent_deliveries(weeks: int = Query(4, ge=1, le=52), conn=Depends(get_conn)
         [weeks],
     ).df()
     conn.close()
-    return df.to_dict("records")
+    return _records(df)
 
 
 @router.get("/orders/weekly-demand")
@@ -54,7 +86,7 @@ def weekly_demand(weeks: int = Query(13, ge=1, le=104), conn=Depends(get_conn)):
         [weeks],
     ).df()
     conn.close()
-    return df.to_dict("records")
+    return _records(df)
 
 
 @router.get("/fsma/lots")
@@ -65,7 +97,7 @@ def list_lots(product_id: str | None = None, conn=Depends(get_conn)):
     q += " ORDER BY l.created_at DESC LIMIT 200"
     df = conn.execute(q).df()
     conn.close()
-    return df.to_dict("records")
+    return _records(df)
 
 
 @router.get("/fsma/report")
@@ -77,4 +109,4 @@ def fsma_report(tlc: str | None = None, conn=Depends(get_conn)):
     q += " LIMIT 1000"
     df = conn.execute(q).df()
     conn.close()
-    return df.to_dict("records")
+    return _records(df)

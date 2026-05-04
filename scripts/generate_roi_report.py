@@ -36,7 +36,7 @@ def main() -> None:
     conn.close()
 
     cfg = BacktestConfig(n_train_weeks=26, horizon_weeks=4, step_weeks=4,
-                         n_scenarios=20, run_stochastic=False)
+                         n_scenarios=20, run_stochastic=True)
     engine = RollingOriginEngine(cfg)
     print("Running backtest for ROI calculation…")
     results_df = engine.run(orders_df, deliveries_df)

@@ -15,8 +15,11 @@ from synthetic.generator import SyntheticGenerator
 
 def main() -> None:
     db_path = os.getenv("DUCKDB_PATH", "harvestmind.duckdb")
+    # Remove existing DB to start fresh
+    if os.path.exists(db_path):
+        os.remove(db_path)
     conn = duckdb.connect(db_path)
-    setup_db(conn)
+    setup_db(conn, load_seeds=True)
 
     gen = SyntheticGenerator(n_weeks=104)
     print("Generating synthetic pilot dataset (104 weeks)...")

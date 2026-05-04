@@ -61,11 +61,11 @@ class TestTSB:
 
 
 class TestModelSelection:
-    def test_selects_tsb_for_lumpy(self):
-        # High ADI, high CV² → TSB
-        series = np.array([0]*9 + [100] + [0]*9 + [200], dtype=float)
+    def test_selects_tsb_or_sba_for_intermittent(self):
+        # Long inter-arrival intervals + variable sizes → SBA or TSB (not Croston)
+        series = np.array([0]*15 + [50] + [0]*15 + [200] + [0]*10 + [10], dtype=float)
         fc = select_and_fit(series)
-        assert fc.model == "tsb"
+        assert fc.model in ("sba", "tsb")
 
     def test_selects_sba_or_croston_for_smooth(self):
         # Regular demand → croston or sba

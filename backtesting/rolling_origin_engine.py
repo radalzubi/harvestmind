@@ -174,7 +174,7 @@ class RollingOriginEngine:
             recourse = simulate_recourse(
                 commitments=self._result_to_commitments(det_result, train_supply),
                 realized_demand=realized_demand,
-                realized_supply=train_supply,
+                realized_supply=self._to_realized_supply(train_supply),
             )
             batch_results.append(BacktestResult(
                 origin_week=origin,
@@ -204,7 +204,7 @@ class RollingOriginEngine:
                 recourse = simulate_recourse(
                     commitments=self._result_to_commitments(rob_result, train_supply),
                     realized_demand=realized_demand,
-                    realized_supply=train_supply,
+                    realized_supply=self._to_realized_supply(train_supply),
                 )
                 batch_results.append(BacktestResult(
                     origin_week=origin,
@@ -241,7 +241,7 @@ class RollingOriginEngine:
                 recourse = simulate_recourse(
                     commitments=self._result_to_commitments(sp_result, train_supply, is_sp=True),
                     realized_demand=realized_demand,
-                    realized_supply=train_supply,
+                    realized_supply=self._to_realized_supply(train_supply),
                 )
                 batch_results.append(BacktestResult(
                     origin_week=origin,
@@ -286,17 +286,34 @@ class RollingOriginEngine:
         return pd.DataFrame(rows) if rows else agg.assign(week_start=date.today())
 
     @staticmethod
+    def _to_realized_supply(train_supply: pd.DataFrame) -> pd.DataFrame:
+        """Aggregate train_supply to (supplier, product, actual_available_kg) for recourse sim."""
+        if train_supply.empty:
+            return pd.DataFrame(columns=["supplier_id","product_id","actual_available_kg"])
+        return (
+            train_supply.groupby(["supplier_id", "product_id"])["capacity_kg"]
+            .sum()
+            .reset_index()
+            .rename(columns={"capacity_kg": "actual_available_kg"})
+        )
+
+    @staticmethod
     def _result_to_commitments(result: dict, supply: pd.DataFrame, is_sp: bool = False) -> pd.DataFrame:
-        """Convert solver result x-values to commitment DataFrame."""
+        """Convert solver result x-values to commitment DataFrame.
+
+        Handles both 2-tuple keys (supplier, product) from two-stage SP and
+        3-tuple keys (supplier, product, week) from LP/robust LP.
+        """
         rows = []
-        price_map = {(r["supplier_id"],r["product_id"]): r["price_per_kg"]
+        price_map = {(r["supplier_id"], r["product_id"]): r["price_per_kg"]
                      for _, r in supply.iterrows()}
-        for (i,j), qty in result.get("x", {}).items():
-            if qty is None or qty < 1e-4:
+        for key, qty in result.get("x", {}).items():
+            if qty is None or float(qty) < 1e-4:
                 continue
-            # SP keys may be (supplier, product); LP keys may be (supplier, product, week)
-            sup_id = i if isinstance(i, str) else i[0]
-            prod_id = j if isinstance(j, str) else j[1]
+            if isinstance(key, tuple) and len(key) >= 2:
+                sup_id, prod_id = key[0], key[1]
+            else:
+                continue
             rows.append({
                 "supplier_id": sup_id,
                 "product_id": prod_id,
