@@ -94,16 +94,51 @@ def render_roi_report(
     )
 
     if output_path is not None:
-        out = Path(output_path)
+        out = Path(output_path).resolve()
+        # Refuse to overwrite anything inside the package source tree (e.g.
+        # the report template itself). Outputs must go to a separate location.
+        repo_root = Path(__file__).resolve().parents[1]
+        forbidden_roots = (
+            repo_root / "reports" / "templates",
+            repo_root / "db" / "migrations",
+            repo_root / "db" / "seeds",
+            repo_root / "synthetic",
+            repo_root / "scripts",
+        )
+        for forbidden in forbidden_roots:
+            try:
+                out.relative_to(forbidden)
+            except ValueError:
+                continue
+            raise ROIReportError(
+                f"refusing to write report to a source path under {forbidden}"
+            )
+        # Validate extension — generator only emits .html (or .pdf when as_pdf).
+        if out.suffix.lower() not in (".html", ".htm"):
+            raise ROIReportError(
+                f"output_path must end in .html / .htm; got {out.suffix!r}"
+            )
+
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(html, encoding="utf-8")
 
         if as_pdf:
+            # weasyprint may be unavailable on systems without its native
+            # libs (cairo, pango, etc.). We narrow the catch so we don't
+            # swallow programming errors — only the import + render path
+            # is treated as best-effort.
             try:
                 from weasyprint import HTML
+            except ImportError as e:
+                raise ROIReportError(
+                    "PDF requested but weasyprint is not importable. "
+                    "Install system deps (cairo, pango) and retry."
+                ) from e
+            try:
                 pdf_path = out.with_suffix(".pdf")
                 HTML(string=html, base_url=str(TEMPLATE_DIR)).write_pdf(str(pdf_path))
-            except Exception as e:
-                print(f"PDF generation failed (weasyprint): {e}")
+            except OSError as e:
+                # OSError covers missing native libs; surface clearly.
+                raise ROIReportError(f"PDF rendering failed: {e}") from e
 
     return html

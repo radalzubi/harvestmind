@@ -77,6 +77,18 @@ def run_planning(req: PlanningRequest, conn=Depends(get_conn)):
 
     solve_time = round(time.time() - t0, 2)
 
+    # Refuse to surface non-optimal solver outputs as recommendations.
+    # `infeasible`, `unbounded`, `timeout`, etc. → 422, not silent success.
+    solver_status = result.get("status", "unknown")
+    if solver_status not in ("optimal", "locallyOptimal"):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Solver returned non-optimal status {solver_status!r}; "
+                "no commitments produced."
+            ),
+        )
+
     # Parse commitments
     commitments = []
     for k, qty in result.get("x", {}).items():
@@ -132,11 +144,26 @@ def _build_demand_scenarios(mean_demand, yield_scen_df, n_scenarios):
     return pd.DataFrame(rows)
 
 
+_REC_STATUS_VALUES = {"open", "actioned", "dismissed", "expired"}
+
+
 @router.get("/recommendations")
 def get_recommendations(status: str = "open", conn=Depends(get_conn)):
-    """Fetch open recommendations from the planning output table."""
+    """Fetch recommendations from the planning output table.
+
+    ``status`` must be one of: open, actioned, dismissed, expired.
+    """
+    if status not in _REC_STATUS_VALUES:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"status must be one of {sorted(_REC_STATUS_VALUES)}, "
+                f"got {status!r}"
+            ),
+        )
     df = conn.execute(
-        "SELECT * FROM planning_recommendations WHERE status = ? ORDER BY priority, generated_at DESC",
+        "SELECT * FROM planning_recommendations WHERE status = ? "
+        "ORDER BY priority, generated_at DESC",
         [status],
     ).df()
     return df.to_dict("records")

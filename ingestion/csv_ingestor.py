@@ -6,9 +6,37 @@ from common food hub systems (Local Line, QuickBooks exports, etc.).
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pandas as pd
+
+# Tables that ingest_csv is allowed to write to. Any other value is rejected
+# before the SQL is constructed — prevents identifier injection through the
+# `table` argument when called from automated pipelines.
+ALLOWED_TABLES: frozenset[str] = frozenset({
+    "fact_orders",
+    "fact_order_lines",
+    "fact_purchase_orders",
+    "fact_deliveries",
+    "fact_inventory_snapshot",
+    "fact_market_prices",
+    "fact_weather_obs",
+    "fact_yield_obs",
+    "fact_waste_events",
+    "fact_lots",
+    "fact_cte_events",
+    "dim_products",
+    "dim_suppliers",
+    "dim_buyers",
+    "dim_locations",
+    "dim_logistics_lanes",
+    "dim_contracts",
+})
+
+ALLOWED_EXTENSIONS: frozenset[str] = frozenset({".csv"})
+
+_IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
 COLUMN_MAPS: dict[str, dict[str, str]] = {
@@ -47,8 +75,48 @@ def ingest_csv(
     date_cols: list[str] | None = None,
     if_exists: str = "ignore",  # 'ignore' (INSERT OR IGNORE) or 'replace'
 ) -> int:
-    """Load a CSV file into a DuckDB table. Returns rows inserted."""
-    df = pd.read_csv(path)
+    """Load a CSV file into a DuckDB table. Returns rows inserted.
+
+    Security
+    --------
+    - ``table`` must be in :data:`ALLOWED_TABLES`. SQL identifiers cannot be
+      bound via DuckDB parameters, so we allowlist instead of interpolating
+      arbitrary user input.
+    - ``path`` must exist, be a regular file, and end in ``.csv``.
+    - ``if_exists`` must be ``"ignore"`` or ``"replace"``.
+    """
+    # ── validate `table` (used in raw SQL — must be safe) ───────────────
+    if table not in ALLOWED_TABLES:
+        raise ValueError(
+            f"table {table!r} is not in the ingestion allowlist. "
+            f"Allowed: {sorted(ALLOWED_TABLES)}"
+        )
+    # Defence in depth: even allowlisted entries must be plain identifiers.
+    if not _IDENT_RE.match(table):
+        raise ValueError(f"table {table!r} is not a valid SQL identifier")
+
+    # ── validate `path` ──────────────────────────────────────────────────
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"CSV file not found: {p}")
+    if not p.is_file():
+        raise ValueError(f"CSV path is not a regular file: {p}")
+    if p.suffix.lower() not in ALLOWED_EXTENSIONS:
+        raise ValueError(
+            f"unsupported file extension {p.suffix!r}; expected one of "
+            f"{sorted(ALLOWED_EXTENSIONS)}"
+        )
+
+    if if_exists not in ("ignore", "replace"):
+        raise ValueError(
+            f"if_exists must be 'ignore' or 'replace', got {if_exists!r}"
+        )
+
+    # ── read + transform ────────────────────────────────────────────────
+    try:
+        df = pd.read_csv(p)
+    except pd.errors.EmptyDataError:
+        return 0  # well-formed empty file → nothing to insert
 
     # Apply column mapping
     if column_map is None:
@@ -66,14 +134,12 @@ def ingest_csv(
     if n == 0:
         return 0
 
-    if if_exists not in ("ignore", "replace"):
-        raise ValueError(f"if_exists must be 'ignore' or 'replace', got {if_exists!r}")
     if if_exists == "replace":
-        conn.execute(f"DELETE FROM {table}")
+        conn.execute(f"DELETE FROM {table}")  # noqa: S608  table is allowlisted
 
     # Let duckdb errors propagate — silently falling back to a different INSERT
     # form would mask real schema/parser problems.
-    conn.execute(f"INSERT OR IGNORE INTO {table} SELECT * FROM df")
+    conn.execute(f"INSERT OR IGNORE INTO {table} SELECT * FROM df")  # noqa: S608
     return n
 
 

@@ -61,9 +61,28 @@ logs/
 # Reports (generated)
 reports/generated/
 *.pdf
+*.html
+!reports/templates/*.html
 
-# Large data files
+# Large / partner data files (never commit raw partner exports)
 data/raw/
 data/processed/
+data/partner/
 data/public/
 !data/public/.gitkeep
+*.feather
+
+# Credentials and key material
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+credentials.json
+service-account*.json
+client_secret*.json
+*.crt
+
+# OS / editor scratch
+*~
+Thumbs.db

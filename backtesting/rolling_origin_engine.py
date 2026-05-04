@@ -140,12 +140,20 @@ class RollingOriginEngine:
             orders_df["week_start"].dt.date.isin(realized_weeks)
         ]
 
-        # Aggregate demand for planning
+        # Aggregate demand for planning (PAST only — strictly ≤ origin)
         train_demand = (
             train_orders.groupby(["product_id","week_start"])["qty_ordered_kg"]
             .sum()
             .reset_index()
             .rename(columns={"qty_ordered_kg": "demand_kg"})
+        )
+
+        # Per-product *historical* mean — used as the SP's expected-demand
+        # base. Earlier code used realized future demand here, which leaked
+        # the recourse-period mean back into the planning input.
+        train_demand_mean = (
+            train_demand.groupby("product_id")["demand_kg"].mean()
+            .reset_index()
         )
 
         # Simple supply proxy from deliveries
@@ -158,6 +166,13 @@ class RollingOriginEngine:
             .reset_index()
             .rename(columns={"qty_ordered_kg": "demand_kg"})
         )
+
+        # Defensive guard against future leakage of training data (cheap to
+        # run; raises LeakageError if anything past the origin sneaks in).
+        from backtesting.leakage_guard import assert_no_future_data
+        assert_no_future_data(train_orders, "week_start", origin)
+        if not train_deliveries.empty:
+            assert_no_future_data(train_deliveries, "delivery_date", origin)
 
         batch_results = []
 
@@ -229,8 +244,10 @@ class RollingOriginEngine:
                     planning_week=origin + timedelta(weeks=1),
                     yield_history=yield_df,
                 )
-                # Convert yield scenarios to demand scenarios (simplified: use yield as supply proxy)
-                demand_scen = self._yield_to_demand_scenarios(scen_df, realized_demand)
+                # Convert yield scenarios to demand scenarios. Base is the
+                # *historical* per-product mean (PAST data only); using
+                # `realized_demand` here was a backtest lookahead bias.
+                demand_scen = self._yield_to_demand_scenarios(scen_df, train_demand_mean)
                 sp_result = TwoStageStochasticLP(
                     n_scenarios=self.cfg.n_scenarios,
                     solver=self.cfg.solver,

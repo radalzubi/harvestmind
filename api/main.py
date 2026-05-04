@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,11 +17,24 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+# CORS — allowlist driven by env var. Defaults to local development origins
+# only; production deployments must set CORS_ALLOWED_ORIGINS explicitly.
+# Set CORS_ALLOWED_ORIGINS="*" only for local pilots — never for shared
+# environments handling partner data.
+_cors_env = os.getenv(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost,http://localhost:3000,http://localhost:5173,"
+    "http://localhost:8000,http://localhost:8501,"
+    "http://127.0.0.1,http://127.0.0.1:8000,http://127.0.0.1:8501",
+)
+_cors_origins = [o.strip() for o in _cors_env.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Accept"],
 )
 
 app.include_router(planning.router)
