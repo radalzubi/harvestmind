@@ -50,7 +50,7 @@ if run_btn:
             from backtesting.procurement_metrics import cost_per_kg_by_model
 
             cfg = BacktestConfig(n_train_weeks=n_train, horizon_weeks=horizon,
-                                 step_weeks=horizon, n_scenarios=n_scen, run_stochastic=False)
+                                 step_weeks=horizon, n_scenarios=n_scen, run_stochastic=True)
             engine = RollingOriginEngine(cfg)
             results_df = engine.run(orders_df, deliveries_df)
 
@@ -68,18 +68,22 @@ if "roi" in st.session_state:
     roi = st.session_state["roi"]
     results_df = st.session_state["backtest_df"]
 
-    kpi_strip([
-        {"label": "Annual Benefit", "value": f"${roi['total_annual_benefit_usd']:,.0f}", "delta_positive": True},
-        {"label": "ROI Multiple", "value": f"{roi['roi_multiple']}×", "delta_positive": True},
-        {"label": "Payback", "value": f"{roi['payback_months']} mo", "delta_positive": True},
-        {"label": "Service Level Lift", "value": f"+{roi['service_level_improvement_pts']}pts", "delta_positive": True},
-        {"label": "Spot Savings", "value": f"{roi['spot_savings_pct']}%", "delta_positive": True},
-    ])
+    if "error" in roi:
+        st.warning(f"ROI calc unavailable: {roi['error']}. Showing raw backtest results below.")
+    else:
+        kpi_strip([
+            {"label": "Annual Benefit", "value": f"${roi['total_annual_benefit_usd']:,.0f}", "delta_positive": True},
+            {"label": "ROI Multiple", "value": f"{roi['roi_multiple']}×", "delta_positive": True},
+            {"label": "Payback", "value": f"{roi['payback_months']} mo", "delta_positive": True},
+            {"label": "Service Level Lift", "value": f"+{roi['service_level_improvement_pts']}pts", "delta_positive": True},
+            {"label": "Spot Savings", "value": f"{roi['spot_savings_pct']}%", "delta_positive": True},
+        ])
 
     st.divider()
     col1, col2 = st.columns(2)
     with col1:
-        st.plotly_chart(spot_buy_waterfall(roi), use_container_width=True)
+        if "error" not in roi:
+            st.plotly_chart(spot_buy_waterfall(roi), use_container_width=True)
     with col2:
         st.subheader("Model Comparison")
         from backtesting.procurement_metrics import cost_per_kg_by_model

@@ -19,7 +19,10 @@ def demand_forecast_chart(
 ) -> go.Figure:
     """Line chart: actual demand vs forecast with 80% CI band."""
     act = actual_df[actual_df["product_id"] == product_id].sort_values("week_start")
-    fct = forecast_df[forecast_df["product_id"] == product_id].sort_values("week_start")
+    if not forecast_df.empty and "product_id" in forecast_df.columns:
+        fct = forecast_df[forecast_df["product_id"] == product_id].sort_values("week_start")
+    else:
+        fct = pd.DataFrame(columns=["week_start", "forecast_kg", "lower_80", "upper_80"])
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(

@@ -107,7 +107,9 @@ def main() -> None:
         "planned_ha, total_kg_harvested FROM fact_yield_obs"
     ).df()
 
-    planning_week = date(2024, 9, 2)  # first Monday of Sep 2024
+    # Pick a planning week 8 weeks before end of data (to leave room for realized horizon)
+    last_week = orders_df["week_start"].max().date()
+    planning_week = last_week - timedelta(weeks=8)
     scen_gen = YieldScenarioGenerator(n_scenarios=50, horizon_weeks=4, seed=42)
     scen_df = scen_gen.generate(planning_week=planning_week, yield_history=yield_df)
 

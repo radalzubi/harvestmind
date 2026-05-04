@@ -66,7 +66,12 @@ class SyntheticGenerator:
         start_date: date | None = None,
         n_weeks: int = 104,
         seed: int = _RNG_SEED,
+        end_near_today: bool = True,
     ) -> None:
+        if start_date is None and end_near_today:
+            # Anchor end of dataset close to today so "last N days" queries hit data
+            today_monday = _iso_week_start(date.today())
+            start_date = today_monday - timedelta(weeks=n_weeks - 1)
         self.start = _iso_week_start(start_date or date(2023, 6, 5))
         self.n_weeks = n_weeks
         self.rng = np.random.default_rng(seed)
