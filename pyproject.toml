@@ -70,3 +70,9 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 log_cli = false
 log_cli_level = "INFO"
+# Disable the auto-loaded `fugue_test` pytest plugin: it ships with `fugue`
+# (a transitive dep of statsforecast) and crashes pytest_configure on
+# Python 3.14 because its own dependency `adagio` is missing on PyPI for 3.14.
+# We don't use fugue or its pytest fixtures, so the safest fix is to never
+# load the plugin.
+addopts = "-p no:fugue_test"
