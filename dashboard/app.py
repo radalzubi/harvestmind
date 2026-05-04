@@ -1,7 +1,11 @@
-"""HarvestMind Streamlit dashboard entry point.
+"""HarvestMind dashboard — entry page.
 
-Streamlit auto-discovers pages under dashboard/pages/. This file is the landing page.
+Streamlit auto-discovers everything under ``dashboard/pages/`` and lists
+the pages in the sidebar in lexical order. This file is just the landing
+page that runs when a user opens the app at the root URL.
 """
+
+from __future__ import annotations
 
 import sys
 from pathlib import Path
@@ -11,51 +15,77 @@ sys.path.insert(0, str(ROOT))
 
 import streamlit as st
 
-st.set_page_config(
-    page_title="HarvestMind",
-    page_icon="🌾",
-    layout="wide",
-    initial_sidebar_state="expanded",
+from dashboard.components.cards import insight, metric_card
+from dashboard.components.empty import db_unavailable
+from dashboard.lib import db, metrics, theme
+from dashboard.lib.formatters import fmt_count, fmt_date, fmt_percent
+
+theme.apply(page_title="Overview", page_icon="🌾")
+
+# ── sidebar ────────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown(
+        '<div style="padding:14px 6px 18px;">'
+        '<div style="font-size:1rem;font-weight:700;color:#0F172A;">HarvestMind</div>'
+        '<div style="font-size:0.78rem;color:#475569;margin-top:4px;">'
+        'Stochastic supply planning</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    st.divider()
+    st.caption("Indiana pilot · v0.1.0")
+
+# ── header ─────────────────────────────────────────────────────────────────
+theme.page_header(
+    eyebrow="HarvestMind",
+    title="Pre-production planning & allocation",
+    subtitle=(
+        "Reduce waste, cut emergency spot purchases, and lift fill-rate for fresh "
+        "produce hubs and regional distributors. Use the sidebar to navigate the "
+        "executive overview, planning recommendations, backtest evidence, exposure "
+        "analysis, supplier/buyer intelligence, and data quality."
+    ),
 )
 
-st.sidebar.title("HarvestMind")
-st.sidebar.caption("Stochastic Supply Planning")
-st.sidebar.divider()
-st.sidebar.caption("Purdue University LIFT Lab · v0.1.0")
+if not db.is_available():
+    db_unavailable()
+    st.stop()
 
-st.title("HarvestMind")
-st.caption("AI-driven supply planning for Midwest fresh produce distributors")
+conn = db.get_conn()
+ctx = metrics.header_context(conn)
 
-st.markdown("""
-### Navigation
+# ── three quick stats ──────────────────────────────────────────────────────
+c1, c2, c3 = st.columns(3, gap="medium")
+with c1:
+    metric_card(
+        label="Partner",
+        value=ctx.partner_name,
+        subtitle=f"Last data refreshed {fmt_date(ctx.last_data_date)}",
+    )
+with c2:
+    metric_card(
+        label="Records loaded",
+        value=fmt_count(ctx.rows_used),
+        subtitle="Rows of order history powering KPIs across the dashboard.",
+    )
+with c3:
+    score = metrics.data_quality_score(conn)
+    metric_card(
+        label="Data quality",
+        value=fmt_percent(score),
+        subtitle="See Data Quality page for per-dataset breakdown.",
+        status=("Strong" if score >= 0.9 else "Usable with caveats" if score >= 0.6 else "Weak"),
+    )
 
-Use the sidebar to access:
+st.write("")
 
-- **Control Tower** — live operational KPIs and waste/delivery overview
-- **Supply Planning** — run optimizer, view demand forecasts, recommended commitments
-- **Backtest & ROI** — rolling-origin backtest results and partner ROI analysis
-- **FSMA-204 Traceability** — lot lookup, FDA-ready 24-hour spreadsheet export
-
-### Quick Stats
-""")
-
-import os
-import duckdb
-
-db_path = os.getenv("DUCKDB_PATH", str(ROOT / "harvestmind.duckdb"))
-
-try:
-    conn = duckdb.connect(db_path, read_only=True)
-    n_orders = conn.execute("SELECT COUNT(*) FROM fact_orders").fetchone()[0]
-    n_deliveries = conn.execute("SELECT COUNT(*) FROM fact_deliveries").fetchone()[0]
-    n_lots = conn.execute("SELECT COUNT(*) FROM fact_lots").fetchone()[0]
-    n_suppliers = conn.execute("SELECT COUNT(*) FROM dim_suppliers").fetchone()[0]
-    conn.close()
-
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Orders", f"{n_orders:,}")
-    col2.metric("Deliveries", f"{n_deliveries:,}")
-    col3.metric("FSMA-204 Lots", f"{n_lots:,}")
-    col4.metric("Suppliers", str(n_suppliers))
-except Exception as e:
-    st.warning(f"Database not initialized. Run `python3 synthetic/generate_pilot_dataset.py` first. ({e})")
+# ── executive insight ─────────────────────────────────────────────────────
+insight(
+    "<b>How to use this dashboard:</b> start with the Executive Overview to see "
+    "the top-line opportunity, then use Planning Recommendations for the next "
+    "operational decision. Backtest Results explains how the savings are derived; "
+    "Waste &amp; Spot Exposure shows where losses are concentrated. The Supplier "
+    "and Buyer Intelligence page surfaces the partners driving planning risk. "
+    "Data Quality &amp; Assumptions is required reading before sharing any output "
+    "externally."
+)

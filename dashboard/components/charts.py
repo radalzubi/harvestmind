@@ -1,4 +1,8 @@
-"""Plotly chart helpers for the HarvestMind dashboard."""
+"""Plotly chart helpers for the HarvestMind dashboard.
+
+Every chart factory returns a fully-styled :class:`plotly.graph_objects.Figure`.
+Pages call ``st.plotly_chart(fig, use_container_width=True)``.
+"""
 
 from __future__ import annotations
 
@@ -6,131 +10,231 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
+from dashboard.lib.theme import (
+    ACCENT,
+    BAD,
+    GOOD,
+    INFO,
+    INK,
+    INK_FAINT,
+    INK_MUTED,
+    LINE,
+    PALETTE,
+    SURFACE,
+    WARN,
+    plotly_layout,
+)
 
-BRAND_GREEN = "#2d6a4f"
-BRAND_AMBER = "#e76f51"
-PALETTE = [BRAND_GREEN, BRAND_AMBER, "#74c69d", "#f4a261", "#457b9d", "#a8dadc"]
 
+# ---------------------------------------------------------------------------
+# Page-1 charts
+# ---------------------------------------------------------------------------
 
-def demand_forecast_chart(
-    actual_df: pd.DataFrame,
-    forecast_df: pd.DataFrame,
-    product_id: str,
+def baseline_vs_optimised_bar(
+    rows: list[dict],
+    *,
+    title: str = "Baseline vs optimised",
 ) -> go.Figure:
-    """Line chart: actual demand vs forecast with 80% CI band."""
-    act = actual_df[actual_df["product_id"] == product_id].sort_values("week_start")
-    if not forecast_df.empty and "product_id" in forecast_df.columns:
-        fct = forecast_df[forecast_df["product_id"] == product_id].sort_values("week_start")
-    else:
-        fct = pd.DataFrame(columns=["week_start", "forecast_kg", "lower_80", "upper_80"])
-
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=act["week_start"], y=act["qty_ordered_kg"],
-        name="Actual", line=dict(color=BRAND_GREEN, width=2),
-        mode="lines+markers",
-    ))
-    if not fct.empty and "forecast_kg" in fct.columns:
-        fig.add_trace(go.Scatter(
-            x=fct["week_start"], y=fct["forecast_kg"],
-            name="Forecast", line=dict(color=BRAND_AMBER, width=2, dash="dash"),
-        ))
-        if "upper_80" in fct.columns and "lower_80" in fct.columns:
-            fig.add_trace(go.Scatter(
-                x=pd.concat([fct["week_start"], fct["week_start"][::-1]]),
-                y=pd.concat([fct["upper_80"], fct["lower_80"][::-1]]),
-                fill="toself",
-                fillcolor="rgba(231,111,81,0.15)",
-                line=dict(color="rgba(255,255,255,0)"),
-                name="80% CI",
-                showlegend=True,
-            ))
-
-    fig.update_layout(
-        title=f"Demand Forecast — {product_id}",
-        xaxis_title="Week",
-        yaxis_title="kg",
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+    """Two-bar comparison. ``rows`` = ``[{label, baseline, optimised}, ...]``."""
+    df = pd.DataFrame(rows)
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                name="Baseline (actual)", x=df["label"], y=df["baseline"],
+                marker_color=INK_FAINT, hovertemplate="%{x}: %{y:$,.0f}<extra>Baseline</extra>",
+            ),
+            go.Bar(
+                name="Optimised", x=df["label"], y=df["optimised"],
+                marker_color=ACCENT, hovertemplate="%{x}: %{y:$,.0f}<extra>Optimised</extra>",
+            ),
+        ]
     )
+    fig.update_layout(**plotly_layout(height=300, title=title), barmode="group", bargap=0.35)
+    fig.update_yaxes(tickformat="$,.0f")
     return fig
 
 
-def spot_buy_waterfall(roi: dict) -> go.Figure:
-    """Waterfall chart: cost savings breakdown."""
-    categories = [
-        "Spot Premium Savings",
-        "Waste Reduction",
-        "Lost Sale Recovery",
-        "Subscription Cost",
-        "Net Benefit",
-    ]
-    values = [
-        roi.get("annual_spot_savings_usd", 0),
-        roi.get("annual_waste_value_savings_usd", 0),
-        roi.get("annual_lost_sale_recovery_usd", 0),
-        -roi.get("annual_subscription_usd", 0),
-        roi.get("net_annual_benefit_usd", 0),
-    ]
+def savings_waterfall(
+    *, spot_savings: float, waste_savings: float, fill_recovery: float,
+    subscription_cost: float,
+) -> go.Figure:
+    """Waterfall: spot + waste + fill recovery − subscription = net."""
     measure = ["relative", "relative", "relative", "relative", "total"]
+    x = [
+        "Spot premium savings", "Waste reduction",
+        "Lost-sale recovery", "Subscription cost", "Net annual benefit",
+    ]
+    y = [spot_savings, waste_savings, fill_recovery, -subscription_cost,
+         spot_savings + waste_savings + fill_recovery - subscription_cost]
 
-    fig = go.Figure(go.Waterfall(
-        name="ROI", orientation="v",
-        measure=measure,
-        x=categories,
-        y=values,
-        text=[f"${v:,.0f}" for v in values],
-        textposition="outside",
-        connector=dict(line=dict(color="#ccc")),
-        increasing=dict(marker=dict(color=BRAND_GREEN)),
-        decreasing=dict(marker=dict(color=BRAND_AMBER)),
-        totals=dict(marker=dict(color="#457b9d")),
+    fig = go.Figure(
+        go.Waterfall(
+            name="ROI", orientation="v",
+            measure=measure, x=x, y=y,
+            text=[f"${v:,.0f}" for v in y], textposition="outside",
+            connector={"line": {"color": LINE}},
+            increasing={"marker": {"color": GOOD}},
+            decreasing={"marker": {"color": BAD}},
+            totals={"marker": {"color": INFO}},
+            hovertemplate="%{x}: %{y:$,.0f}<extra></extra>",
+        )
+    )
+    fig.update_layout(**plotly_layout(height=320, title="Annual savings waterfall"))
+    fig.update_yaxes(tickformat="$,.0f")
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Page-3 charts (backtest)
+# ---------------------------------------------------------------------------
+
+def policy_comparison_bar(df: pd.DataFrame) -> go.Figure:
+    """``df`` columns: model, avg_total_cost, avg_spot_cost, avg_waste_kg."""
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        name="Spot cost", x=df["model"], y=df.get("avg_spot_cost", 0),
+        marker_color=BAD, hovertemplate="%{x}: %{y:$,.0f}<extra>Spot</extra>",
+    ))
+    fig.add_trace(go.Bar(
+        name="Other cost",
+        x=df["model"],
+        y=df.get("avg_total_cost", 0) - df.get("avg_spot_cost", 0),
+        marker_color=ACCENT,
+        hovertemplate="%{x}: %{y:$,.0f}<extra>Other</extra>",
     ))
     fig.update_layout(
-        title="Annual ROI Waterfall",
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        yaxis_title="USD",
-        showlegend=False,
+        **plotly_layout(height=320, title="Average cost per origin, by policy"),
+        barmode="stack",
     )
+    fig.update_yaxes(tickformat="$,.0f")
     return fig
 
 
-def gamma_frontier_chart(frontier_df: pd.DataFrame) -> go.Figure:
-    """Scatter: Γ robustness frontier (cost vs service level)."""
-    fig = px.scatter(
-        frontier_df,
-        x="avg_total_cost",
-        y="avg_service_level",
-        color="model",
-        text="model",
-        title="Model Comparison: Cost vs Service Level",
-        labels={"avg_total_cost": "Avg Cost / Origin ($)", "avg_service_level": "Avg Service Level (%)"},
-        color_discrete_sequence=PALETTE,
-    )
-    fig.update_traces(textposition="top center", marker_size=12)
-    fig.update_layout(plot_bgcolor="white", paper_bgcolor="white")
+def cost_lines_over_time(df: pd.DataFrame, *, x: str, lines: dict[str, str]) -> go.Figure:
+    """``lines = {column_name: legend_label}``. ``df`` must contain ``x`` + cols."""
+    fig = go.Figure()
+    palette = [BAD, ACCENT, INK_FAINT, WARN, INFO]
+    for i, (col, label) in enumerate(lines.items()):
+        if col not in df.columns:
+            continue
+        fig.add_trace(go.Scatter(
+            x=df[x], y=df[col], mode="lines+markers", name=label,
+            line=dict(color=palette[i % len(palette)], width=2),
+            hovertemplate="%{x|%b %d, %Y}: %{y:$,.0f}<extra>" + label + "</extra>",
+        ))
+    fig.update_layout(**plotly_layout(height=320, title="Cost over time"))
+    fig.update_yaxes(tickformat="$,.0f")
     return fig
 
 
-def weekly_waste_bar(waste_df: pd.DataFrame) -> go.Figure:
-    """Stacked bar: weekly waste by reason code."""
-    if waste_df.empty:
-        return go.Figure()
+# ---------------------------------------------------------------------------
+# Page-4 charts (waste / spot)
+# ---------------------------------------------------------------------------
+
+def horizontal_value_bar(df: pd.DataFrame, *, x: str, y: str,
+                         title: str, color: str = ACCENT) -> go.Figure:
+    df = df.head(15).iloc[::-1]
+    fig = go.Figure(
+        go.Bar(
+            x=df[x], y=df[y], orientation="h",
+            marker_color=color,
+            text=[f"${v:,.0f}" for v in df[x]] if "usd" in x else [f"{v:,.0f}" for v in df[x]],
+            textposition="outside",
+            hovertemplate="%{y}: %{x:,.0f}<extra></extra>",
+        )
+    )
+    fig.update_layout(**plotly_layout(height=max(280, 28 * len(df)), title=title))
+    if "usd" in x:
+        fig.update_xaxes(tickformat="$,.0f")
+    else:
+        fig.update_xaxes(tickformat=",.0f")
+    return fig
+
+
+def stacked_bar(df: pd.DataFrame, *, x: str, y: str, color: str,
+                title: str) -> go.Figure:
     fig = px.bar(
-        waste_df,
-        x="event_date",
-        y="qty_wasted_kg",
-        color="reason_code",
-        title="Weekly Waste by Reason Code",
-        labels={"qty_wasted_kg": "Waste (kg)", "event_date": "Week"},
-        color_discrete_sequence=PALETTE,
+        df, x=x, y=y, color=color, color_discrete_sequence=PALETTE,
+        title=title,
+    )
+    fig.update_layout(**plotly_layout(height=320, title=title), barmode="stack")
+    fig.update_yaxes(tickformat="$,.0f" if "usd" in y.lower() else ",.0f")
+    return fig
+
+
+def risk_heatmap(df: pd.DataFrame) -> go.Figure:
+    """Heatmap of risk by product × week.  ``df`` columns: product, week, risk."""
+    pv = df.pivot_table(index="product", columns="week", values="risk", aggfunc="mean")
+    if pv.empty:
+        return go.Figure()
+    pv = pv.fillna(0)
+    fig = go.Figure(
+        go.Heatmap(
+            z=pv.values, x=[c.strftime("%b %d") for c in pv.columns], y=pv.index,
+            colorscale=[[0, "#DCFCE7"], [0.4, "#FEF3C7"], [0.7, "#FFEDD5"], [1.0, "#FEE2E2"]],
+            zmin=0, zmax=1,
+            hovertemplate="%{y}<br>%{x}<br>Risk: %{z:.0%}<extra></extra>",
+            colorbar=dict(title="Risk", tickformat=".0%", thickness=10, len=0.5),
+        )
     )
     fig.update_layout(
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        barmode="stack",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        **plotly_layout(height=max(260, 32 * len(pv)), title="Product × week risk heatmap"),
     )
+    return fig
+
+
+def waste_vs_shortage_scatter(df: pd.DataFrame) -> go.Figure:
+    """Per-product scatter: waste $ on x, spot $ on y, bubble size by total losses."""
+    if df.empty:
+        return go.Figure()
+    df = df.fillna(0)
+    fig = go.Figure(
+        go.Scatter(
+            x=df["waste_usd"], y=df["spot_cost_usd"],
+            mode="markers+text",
+            marker=dict(
+                size=(df["waste_usd"] + df["spot_cost_usd"]).clip(50, 5000) ** 0.5,
+                color=ACCENT, opacity=0.7, line=dict(color=INK, width=0.5),
+            ),
+            text=df["product"], textposition="top center", textfont=dict(size=10, color=INK_MUTED),
+            hovertemplate=(
+                "%{text}<br>Waste $%{x:,.0f}<br>Spot $%{y:,.0f}<extra></extra>"
+            ),
+        )
+    )
+    fig.update_layout(**plotly_layout(height=380, title="Waste vs spot exposure tradeoff"))
+    fig.update_xaxes(tickformat="$,.0f", title_text="Waste cost ($)")
+    fig.update_yaxes(tickformat="$,.0f", title_text="Spot premium cost ($)")
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Page-5 charts (supplier / buyer trends)
+# ---------------------------------------------------------------------------
+
+def trend_lines(df: pd.DataFrame, *, x: str, y: str, color: str,
+                title: str, y_format: str = ",.0f") -> go.Figure:
+    fig = px.line(
+        df, x=x, y=y, color=color, color_discrete_sequence=PALETTE,
+        markers=True, title=title,
+    )
+    fig.update_layout(**plotly_layout(height=320, title=title))
+    fig.update_yaxes(tickformat=y_format)
+    return fig
+
+
+def concentration_donut(df: pd.DataFrame) -> go.Figure:
+    """Single donut for supplier concentration. We use this exactly once
+    because concentration is genuinely a share-of-whole question."""
+    if df.empty:
+        return go.Figure()
+    fig = go.Figure(
+        go.Pie(
+            labels=df["supplier"], values=df["committed_kg"], hole=0.55,
+            marker=dict(colors=PALETTE, line=dict(color=SURFACE, width=2)),
+            textinfo="label+percent",
+            hovertemplate="%{label}: %{value:,.0f} kg (%{percent})<extra></extra>",
+        )
+    )
+    fig.update_layout(**plotly_layout(height=340, title="Supplier concentration"))
     return fig
