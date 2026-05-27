@@ -48,11 +48,12 @@ export interface DiagnosticSummary {
       supplier_id: string;
       supplier_name: string;
       n_deliveries: number;
-      fill_rate: number;
+      fill_rate: number | null;  // null = no ordered-quantity data
       rejection_rate: number;
-      risk_level: "High" | "Medium" | "Low";
+      risk_level: "High" | "Medium" | "Low" | "Unknown";
     }>;
     n_risky: number;
+    n_unknown?: number;
   };
   buyer: {
     buyers: Array<{
@@ -102,12 +103,20 @@ export interface DiagnosticSummary {
     recommendation_text: string;
   }>;
   savings: {
-    addressable_loss_usd: number;
+    addressable_loss_usd: number;          // annualized
+    addressable_loss_usd_period?: number;  // raw period total
+    period_days?: number;
+    annualization_factor?: number;
+    reduction_pct_low?: number;
+    reduction_pct_high?: number;
     reduction_pct_assumed: number;
+    estimated_annual_savings_usd_low?: number;
+    estimated_annual_savings_usd_high?: number;
     estimated_annual_savings_usd: number;
     waste_loss_usd: number;
     shortage_loss_usd: number;
   };
+  period_days_detected?: number;
   top_risks: Array<{ category: string; item: string; loss_usd: number }>;
   total_waste_loss_usd: number;
   total_shortage_loss_usd: number;

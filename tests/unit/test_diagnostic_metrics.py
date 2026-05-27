@@ -379,25 +379,97 @@ def test_atp_empty_returns_no_products(empty_db):
     assert result["n_risky"] == 0
 
 
+def test_atp_subtracts_near_expiry_from_committable_quantity(stg_db):
+    """Regression guard: ATP must exclude near-expiry stock.
+
+    LOT-A (Tomatoes, 200kg, fresh, committed=50)  +
+    LOT-B (Tomatoes, 80kg, expires 2026-05-28 = near-expiry, committed=0) +
+    LOT-E (Tomatoes, 40kg, expires 2026-06-05 = fresh, committed=0)
+    Expected for Tomatoes:
+        on_hand   = 200 + 80 + 40 = 320
+        expired   = 0
+        near_exp  = 80
+        committed = 50
+        ATP       = 320 - 0 - 50 - 80 = 190   (NOT 270)
+    """
+    from dashboard.lib.diagnostic_metrics import atp_by_product
+
+    result = atp_by_product(stg_db, as_of_date=_TODAY)
+    tomatoes = next(p for p in result["products"] if p["product_name"] == "Tomatoes")
+    assert tomatoes["near_expiry_kg"] == pytest.approx(80.0)
+    assert tomatoes["committed_kg"] == pytest.approx(50.0)
+    # The key assertion: ATP excludes near-expiry
+    assert tomatoes["atp_kg"] == pytest.approx(190.0)
+
+
+def test_atp_lot_counted_in_only_one_bucket(stg_db):
+    """A single lot can be expired OR near-expiry, never both.
+
+    LOT-C (Strawberries, 30kg) expired 2026-05-22. It must contribute to
+    ``expired_kg`` and NOT to ``near_expiry_kg``.
+    """
+    from dashboard.lib.diagnostic_metrics import atp_by_product
+
+    result = atp_by_product(stg_db, as_of_date=_TODAY)
+    strawberry = next(p for p in result["products"] if "Straw" in str(p["product_name"]))
+    assert strawberry["expired_kg"] == pytest.approx(30.0)
+    assert strawberry["near_expiry_kg"] == pytest.approx(0.0)
+
+
 # ── Estimated Annual Savings ──────────────────────────────────────────────────
 
-def test_estimated_savings_uses_30_pct_reduction():
+def test_estimated_savings_annualizes_from_period():
+    """With period_days=90 the function should scale period loss to a full year."""
     from dashboard.lib.diagnostic_metrics import estimated_annual_savings
 
     waste = {"total_usd": 1000.0}
     shortage = {"total_usd": 2000.0}
-    result = estimated_annual_savings(waste, shortage)
+    result = estimated_annual_savings(waste, shortage, period_days=90)
 
-    assert result["addressable_loss_usd"] == pytest.approx(3000.0)
-    assert result["estimated_annual_savings_usd"] == pytest.approx(900.0)
+    # Raw period loss preserved
+    assert result["addressable_loss_usd_period"] == pytest.approx(3000.0)
+    # Annualized: 3000 × (365/90) = 12166.67
+    assert result["addressable_loss_usd"] == pytest.approx(12166.67, abs=0.01)
+    # Backwards-compat field still resolves to the high (30%) figure
+    assert result["estimated_annual_savings_usd"] == pytest.approx(12166.67 * 0.30, abs=0.01)
     assert result["reduction_pct_assumed"] == pytest.approx(0.30)
+
+
+def test_estimated_savings_returns_low_high_range():
+    """The output exposes a 15%–30% reduction band so the report can show a range."""
+    from dashboard.lib.diagnostic_metrics import estimated_annual_savings
+
+    waste = {"total_usd": 5000.0}
+    shortage = {"total_usd": 5000.0}
+    result = estimated_annual_savings(waste, shortage, period_days=365)  # already annual
+
+    assert result["reduction_pct_low"] == pytest.approx(0.15)
+    assert result["reduction_pct_high"] == pytest.approx(0.30)
+    assert result["estimated_annual_savings_usd_low"] == pytest.approx(1500.0)
+    assert result["estimated_annual_savings_usd_high"] == pytest.approx(3000.0)
+    assert result["estimated_annual_savings_usd_low"] < result["estimated_annual_savings_usd_high"]
+
+
+def test_estimated_savings_clamps_tiny_periods():
+    """A 1-day sample should not extrapolate by 365×; period clamps to >= 7 days."""
+    from dashboard.lib.diagnostic_metrics import estimated_annual_savings
+
+    waste = {"total_usd": 100.0}
+    shortage = {"total_usd": 0.0}
+    result = estimated_annual_savings(waste, shortage, period_days=1)
+
+    # Clamp pulls 1 → 7, so annualization factor is 365/7 ≈ 52.14, not 365
+    assert result["period_days"] == 7
+    assert result["annualization_factor"] == pytest.approx(365.0 / 7, abs=0.01)
 
 
 def test_estimated_savings_zero_inputs():
     from dashboard.lib.diagnostic_metrics import estimated_annual_savings
 
-    result = estimated_annual_savings({"total_usd": 0.0}, {"total_usd": 0.0})
+    result = estimated_annual_savings({"total_usd": 0.0}, {"total_usd": 0.0}, period_days=90)
     assert result["estimated_annual_savings_usd"] == 0.0
+    assert result["addressable_loss_usd"] == 0.0
+    assert result["estimated_annual_savings_usd_low"] == 0.0
 
 
 # ── Full Diagnostic Summary ───────────────────────────────────────────────────
@@ -441,3 +513,94 @@ def test_diagnostic_summary_row_counts_present(stg_db):
     assert "stg_supplier_deliveries" in counts
     assert counts["stg_supplier_deliveries"] == 4
     assert counts["stg_inventory_lots"] == 5
+
+
+# ── Period auto-detection ─────────────────────────────────────────────────────
+
+def test_diagnostic_summary_auto_detects_period_days(stg_db):
+    """When days=None, period is read from the actual date range in the data."""
+    from dashboard.lib.diagnostic_metrics import diagnostic_summary
+
+    result = diagnostic_summary(stg_db, days=None)
+    # Fixture spans 2026-05-01 to 2026-05-20 across deliveries/orders/waste
+    # That's 20 days inclusive
+    assert result["period_days_detected"] >= 18
+    assert result["period_days_detected"] <= 22
+    assert result["period_days"] == result["period_days_detected"]
+
+
+def test_diagnostic_summary_savings_uses_detected_period(stg_db):
+    """The savings module receives the auto-detected period_days, not 365."""
+    from dashboard.lib.diagnostic_metrics import diagnostic_summary
+
+    result = diagnostic_summary(stg_db, days=None)
+    savings = result["savings"]
+    assert savings["period_days"] == result["period_days"]
+    # Annualization factor should be > 1 since the sample is < 1 year
+    assert savings["annualization_factor"] > 1.0
+
+
+# ── Unvalued-row tracking ─────────────────────────────────────────────────────
+
+def test_waste_loss_tracks_unvalued_rows(stg_db):
+    """A4 has no estimated_value_lost and the fixture has no unit_cost data,
+    so it must show up as unvalued rather than silently contributing $0
+    via a magic-number fallback."""
+    from dashboard.lib.diagnostic_metrics import waste_loss_usd
+
+    result = waste_loss_usd(stg_db)
+    # A4 (Tomatoes, 8kg, no estimated_value_lost) → unvalued in this fixture
+    assert result["n_rows_unvalued"] >= 1
+    assert "n_rows_unvalued" in result
+
+
+def test_shortage_loss_falls_back_to_avg_product_price(empty_db):
+    """When a row has no sales_price but another order for the same product
+    does have one, the missing row's loss is valued at the product average."""
+    from dashboard.lib.diagnostic_metrics import shortage_loss_usd
+
+    # Seed: two orders for Tomatoes, one priced, one not
+    empty_db.executemany("""
+        INSERT INTO stg_buyer_orders
+            (order_id, buyer_name, product_name, delivery_date,
+             requested_quantity, fulfilled_quantity, sales_price)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, [
+        ("X1", "B1", "Tomatoes", "2026-05-10", 100, 60, 2.00),  # priced; miss=40
+        ("X2", "B2", "Tomatoes", "2026-05-11", 100, 50, None),  # unpriced; miss=50 → fallback to avg $2.00
+    ])
+    try:
+        result = shortage_loss_usd(empty_db)
+        # X1: 40 × 2.00 = 80; X2: 50 × 2.00 (fallback) = 100 → total 180
+        assert result["total_usd"] == pytest.approx(180.0, abs=0.01)
+        assert result["n_at_risk"] == 2
+        assert result["n_at_risk_unvalued"] == 0
+    finally:
+        empty_db.execute("DELETE FROM stg_buyer_orders")
+
+
+# ── Supplier Unknown tier ─────────────────────────────────────────────────────
+
+def test_supplier_with_no_orders_returns_unknown_tier(empty_db):
+    """A supplier with no ordered_quantity history should be 'Unknown',
+    not silently rated 100% fill rate."""
+    from dashboard.lib.diagnostic_metrics import supplier_reliability_scores
+
+    empty_db.executemany("""
+        INSERT INTO stg_supplier_deliveries
+            (delivery_id, supplier_id, supplier_name, product_name, delivery_date,
+             ordered_quantity, delivered_quantity, accepted_quantity)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, [
+        # Supplier with no ordered_quantity (NULL)
+        ("D-U1", "S-UNK", "Mystery Supplier", "Tomatoes", "2026-05-01", None, 100, 100),
+    ])
+    try:
+        result = supplier_reliability_scores(empty_db)
+        unknown = next(s for s in result["suppliers"] if s["supplier_id"] == "S-UNK")
+        assert unknown["fill_rate"] is None
+        assert unknown["risk_level"] == "Unknown"
+        # Unknown suppliers excluded from n_risky
+        assert result["n_unknown"] >= 1
+    finally:
+        empty_db.execute("DELETE FROM stg_supplier_deliveries")

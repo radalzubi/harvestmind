@@ -414,14 +414,36 @@
 <div class="section">
   <div class="section-title">11. Estimated Annual Savings Opportunity</div>
   <div class="savings-box">
-    <div class="big">{{ savings.estimated_annual_savings_usd | fmt_usd }}</div>
-    <div class="sub">
-      Estimated annual savings assuming
-      {{ "%.0f" | format((savings.reduction_pct_assumed or 0.30) * 100) }}% reduction
-      of addressable loss ({{ savings.addressable_loss_usd | fmt_usd }} total identified).
+    {% if savings.estimated_annual_savings_usd_low is defined and savings.estimated_annual_savings_usd_low != savings.estimated_annual_savings_usd_high %}
+      <div class="big">
+        {{ savings.estimated_annual_savings_usd_low | fmt_usd }}
+        <span style="opacity:0.6;font-weight:500;">&nbsp;–&nbsp;</span>
+        {{ savings.estimated_annual_savings_usd_high | fmt_usd }}
+      </div>
+      <div class="sub">
+        Estimated annual savings at
+        {{ "%.0f" | format((savings.reduction_pct_low or 0.15) * 100) }}%–{{ "%.0f" | format((savings.reduction_pct_high or 0.30) * 100) }}%
+        reduction of annualized addressable loss
+        ({{ savings.addressable_loss_usd | fmt_usd }}/yr identified).
+      </div>
+    {% else %}
+      <div class="big">{{ savings.estimated_annual_savings_usd | fmt_usd }}</div>
+      <div class="sub">
+        Estimated annual savings assuming
+        {{ "%.0f" | format((savings.reduction_pct_assumed or 0.30) * 100) }}% reduction
+        of annualized addressable loss
+        ({{ savings.addressable_loss_usd | fmt_usd }}/yr identified).
+      </div>
+    {% endif %}
+    <div style="margin-top:10px;color:var(--muted);font-size:11px;">
+      Period analyzed: {{ savings.period_days or period_days }} days
+      &middot; Period addressable loss:
+      {{ (savings.addressable_loss_usd_period or 0) | fmt_usd }}
+      &middot; Annualization factor: ×{{ "%.2f" | format(savings.annualization_factor or 1) }}
     </div>
-    <div style="margin-top:16px;color:var(--muted);font-size:11px;">
-      Based on USDA SR-77 research benchmarks: 15–30% cost reduction vs. naive planning.
+    <div style="margin-top:6px;color:var(--muted);font-size:11px;">
+      Range based on USDA Agricultural Research Service (SR-77) benchmarks: 15–30%
+      cost reduction for produce hubs adopting improved inventory and fulfillment practices.
     </div>
   </div>
 </div>
@@ -485,17 +507,22 @@
       <tr>
         <td><strong>Waste loss valuation</strong></td>
         <td>
-          Dollar loss is taken from the <code>estimated_value_lost</code> field in the waste log.
-          When that field is blank, HarvestMind uses the average unit cost from supplier deliveries.
-          If no cost data exists, loss is recorded as $0 — understating true waste value.
+          Dollar loss is taken from the <code>estimated_value_lost</code> field on each waste row.
+          When that field is blank, HarvestMind falls back to <code>quantity_lost</code>
+          &times; average <code>unit_cost</code> for that product (from supplier deliveries).
+          Rows that cannot be valued (no estimated value AND no product-level unit cost) are
+          counted in <code>n_rows_unvalued</code> and contribute $0 to the total — the total
+          will understate true waste in that case.
         </td>
       </tr>
       <tr>
         <td><strong>Shortage loss valuation</strong></td>
         <td>
-          Calculated as missed quantity × <code>sales_price</code> from the order record.
-          Orders with no sales price contribute $0 to shortage loss.
-          Substituted orders are counted as fulfilled, not missed.
+          Missed quantity is <code>requested − fulfilled − substituted</code>, clamped at 0.
+          Per row, loss = missed &times; <code>sales_price</code>; when the row's price is
+          blank, HarvestMind falls back to the average sales price for that product across
+          all orders. At-risk rows that cannot be priced are counted in
+          <code>n_at_risk_unvalued</code>.
         </td>
       </tr>
       <tr>
@@ -527,18 +554,42 @@
       <tr>
         <td><strong>Savings annualization</strong></td>
         <td>
-          Period losses are divided by {{ period_days }} days and multiplied by 365 to
-          estimate annual exposure. This assumes the analyzed period is representative of
-          the full year. Seasonal operations should interpret this conservatively.
+          Period losses are scaled to a year by multiplying by
+          365 / <code>period_days</code>. ``period_days`` is auto-detected from the
+          actual date range in the uploaded data (orders, deliveries, waste),
+          clamped to a minimum of 7 days to prevent absurd extrapolation from
+          tiny samples. This assumes the analyzed period is representative of
+          the full year — seasonal operations should interpret this conservatively.
         </td>
       </tr>
       <tr>
-        <td><strong>Savings reduction %</strong></td>
+        <td><strong>Savings reduction range</strong></td>
         <td>
-          The {{ "%.0f" | format((savings.reduction_pct_assumed or 0.30) * 100) }}% reduction assumption
-          is based on USDA Agricultural Research Service (SR-77) benchmarks for produce hubs
-          adopting improved inventory and fulfillment practices.
-          Actual savings depend on which recommendations are implemented.
+          Reported as a band: <strong>15%–30%</strong> reduction of annualized
+          addressable loss, sourced from USDA Agricultural Research Service (SR-77)
+          benchmarks for produce hubs adopting improved inventory and fulfillment
+          practices. The headline figure uses the high end (30%) for the
+          conservative-side savings estimate. Actual savings depend on which
+          recommendations are implemented.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Available-to-Promise (ATP)</strong></td>
+        <td>
+          ATP = <code>on_hand − expired − committed − near_expiry</code>.
+          Near-expiry stock (within 3 days of expiry) is excluded from ATP
+          because committing near-expiry product to a delivery 3+ days out
+          is a known cause of missed-order risk. Operators should source
+          replenishment, not promise near-expiry product.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Supplier reliability — Unknown tier</strong></td>
+        <td>
+          Suppliers with no ordered-quantity history in the data are returned
+          with <code>fill_rate = null</code> and risk tier <strong>"Unknown"</strong>.
+          They are excluded from the risky-supplier count because the absence
+          of data is not the same as good performance.
         </td>
       </tr>
       <tr>

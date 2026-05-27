@@ -135,28 +135,53 @@ export default function OverviewPage() {
 
           {/* Savings opportunity */}
           <Card>
-            <CardHead title="Savings Opportunity" sub="Estimated annual recoverable loss" />
+            <CardHead title="Savings Opportunity" sub="Annualized addressable loss + 15–30% reduction band" />
             <CardBody>
-              <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "4px 0" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "4px 0" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 12, color: "var(--muted)" }}>Waste loss ({data.period_days} days)</span>
+                  <span style={{ fontSize: 12, color: "var(--muted)" }}>Waste loss ({data.period_days}-day window)</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--danger)" }}>{fmtUSD(data.savings.waste_loss_usd)}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 12, color: "var(--muted)" }}>Shortage loss ({data.period_days} days)</span>
+                  <span style={{ fontSize: 12, color: "var(--muted)" }}>Shortage loss ({data.period_days}-day window)</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: "var(--danger)" }}>{fmtUSD(data.savings.shortage_loss_usd)}</span>
                 </div>
                 <div style={{ height: 1, background: "var(--border)" }} />
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 12, color: "var(--muted)" }}>Addressable total</span>
-                  <span style={{ fontSize: 13, fontWeight: 600 }}>{fmtUSD(data.savings.addressable_loss_usd)}</span>
-                </div>
+                {data.savings.addressable_loss_usd_period !== undefined && (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                      Period addressable total
+                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>
+                      {fmtUSD(data.savings.addressable_loss_usd_period)}
+                    </span>
+                  </div>
+                )}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                    Est. annual savings ({Math.round(data.savings.reduction_pct_assumed * 100)}% reduction assumed)
+                    Annualized (×{(data.savings.annualization_factor ?? 1).toFixed(2)})
                   </span>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: "var(--accent)" }}>
-                    {fmtUSD(data.savings.estimated_annual_savings_usd)}
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{fmtUSD(data.savings.addressable_loss_usd)}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 4 }}>
+                  <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                    Est. annual savings range
+                    <br />
+                    <span style={{ fontSize: 10 }}>
+                      ({Math.round((data.savings.reduction_pct_low ?? 0.15) * 100)}–{Math.round((data.savings.reduction_pct_high ?? 0.30) * 100)}% reduction)
+                    </span>
+                  </span>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: "var(--accent)", textAlign: "right" }}>
+                    {data.savings.estimated_annual_savings_usd_low !== undefined &&
+                     data.savings.estimated_annual_savings_usd_high !== undefined ? (
+                      <>
+                        {fmtUSD(data.savings.estimated_annual_savings_usd_low)}
+                        <span style={{ fontWeight: 400, color: "var(--muted)" }}> – </span>
+                        {fmtUSD(data.savings.estimated_annual_savings_usd_high)}
+                      </>
+                    ) : (
+                      fmtUSD(data.savings.estimated_annual_savings_usd)
+                    )}
                   </span>
                 </div>
               </div>

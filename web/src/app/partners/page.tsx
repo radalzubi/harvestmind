@@ -39,7 +39,7 @@ export default function PartnersPage() {
 
   const { supplier, buyer } = data;
 
-  const riskOrder = { High: 0, Medium: 1, Low: 2 };
+  const riskOrder: Record<string, number> = { High: 0, Medium: 1, Low: 2, Unknown: 4 };
   const sortedSuppliers = useMemo(
     () => [...supplier.suppliers].sort((a, b) => (riskOrder[a.risk_level] ?? 3) - (riskOrder[b.risk_level] ?? 3)),
     [supplier.suppliers],
@@ -49,8 +49,10 @@ export default function PartnersPage() {
     [buyer.buyers],
   );
 
-  const avgSupplierFill = supplier.suppliers.length > 0
-    ? supplier.suppliers.reduce((s, x) => s + x.fill_rate, 0) / supplier.suppliers.length
+  // Suppliers with known fill rates only — Unknown tier is excluded from averages
+  const ratedSuppliers = supplier.suppliers.filter((s) => s.fill_rate !== null);
+  const avgSupplierFill = ratedSuppliers.length > 0
+    ? ratedSuppliers.reduce((acc, x) => acc + (x.fill_rate as number), 0) / ratedSuppliers.length
     : 0;
   const avgSupplierRej = supplier.suppliers.length > 0
     ? supplier.suppliers.reduce((s, x) => s + x.rejection_rate, 0) / supplier.suppliers.length
@@ -122,22 +124,27 @@ export default function PartnersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedSuppliers.map((s) => (
-                      <tr key={s.supplier_id}>
-                        <td>{s.supplier_name || s.supplier_id || "—"}</td>
-                        <td className="r">{fmt(s.n_deliveries)}</td>
-                        <td className="r" style={{
-                          color: s.fill_rate < 0.80 ? "var(--danger)" : s.fill_rate < 0.90 ? "var(--warn)" : "var(--accent)",
-                          fontWeight: 600,
-                        }}>
-                          {fmtPct(s.fill_rate)}
-                        </td>
-                        <td className="r" style={{ color: s.rejection_rate > 0.1 ? "var(--danger)" : undefined }}>
-                          {fmtPct(s.rejection_rate)}
-                        </td>
-                        <td><RiskBadge level={s.risk_level} /></td>
-                      </tr>
-                    ))}
+                    {sortedSuppliers.map((s) => {
+                      const fr = s.fill_rate;
+                      const color = fr === null
+                        ? "var(--muted)"
+                        : fr < 0.80 ? "var(--danger)"
+                        : fr < 0.90 ? "var(--warn)"
+                        : "var(--accent)";
+                      return (
+                        <tr key={s.supplier_id}>
+                          <td>{s.supplier_name || s.supplier_id || "—"}</td>
+                          <td className="r">{fmt(s.n_deliveries)}</td>
+                          <td className="r" style={{ color, fontWeight: 600 }}>
+                            {fr === null ? "—" : fmtPct(fr)}
+                          </td>
+                          <td className="r" style={{ color: s.rejection_rate > 0.1 ? "var(--danger)" : undefined }}>
+                            {fmtPct(s.rejection_rate)}
+                          </td>
+                          <td><RiskBadge level={s.risk_level} /></td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
