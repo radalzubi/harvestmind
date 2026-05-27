@@ -53,8 +53,10 @@ def test_engine_runs_clean(populated_orders_deliveries):
     )
     results = RollingOriginEngine(cfg).run(orders_df, deliveries_df)
     assert not results.empty
-    # Every model status that we report must reach optimal/locallyOptimal.
-    assert results["solver_status"].isin({"optimal", "locallyOptimal"}).all()
+    # Solver-backed models must reach optimal/locallyOptimal; the naive
+    # last-year baseline is a heuristic and reports status="ok".
+    solver_models = results[results["model"] != "naive_lastyear"]
+    assert solver_models["solver_status"].isin({"optimal", "locallyOptimal"}).all()
 
 
 def test_assert_no_future_data_catches_synthetic_leak(populated_orders_deliveries):

@@ -1,0 +1,16 @@
+order_id,buyer_id,buyer_name,product_id,product_name,order_date,delivery_date,requested_quantity,fulfilled_quantity,substituted_quantity,sales_price,required_quality_grade
+ORD-001,B001,Fresh Market Co.,P001,Tomatoes,2026-05-02,2026-05-05,100,98,2,2.50,A
+ORD-002,B001,Fresh Market Co.,P002,Cucumbers,2026-05-02,2026-05-05,80,80,0,1.80,A
+ORD-003,B002,Northside Grocers,P001,Tomatoes,2026-05-03,2026-05-06,120,80,5,2.30,B
+ORD-004,B002,Northside Grocers,P003,Romaine Lettuce,2026-05-03,2026-05-06,90,55,0,3.20,B
+ORD-005,B001,Fresh Market Co.,P004,Strawberries,2026-05-05,2026-05-08,50,50,0,7.00,A
+ORD-006,B003,Harbor Side Cafe,P003,Romaine Lettuce,2026-05-06,2026-05-09,40,38,2,3.50,A
+ORD-007,B003,Harbor Side Cafe,P006,Mixed Greens,2026-05-10,2026-05-13,25,24,1,9.00,A
+ORD-008,B002,Northside Grocers,P001,Tomatoes,2026-05-10,2026-05-13,150,95,0,2.30,B
+ORD-009,B002,Northside Grocers,P004,Strawberries,2026-05-11,2026-05-14,70,42,5,6.80,B
+ORD-010,B001,Fresh Market Co.,P005,Bell Peppers,2026-05-12,2026-05-15,60,60,0,4.20,A
+ORD-011,B003,Harbor Side Cafe,P001,Tomatoes,2026-05-15,2026-05-18,80,78,2,2.80,A
+ORD-012,B002,Northside Grocers,P003,Romaine Lettuce,2026-05-15,2026-05-18,100,60,0,3.20,B
+ORD-013,B001,Fresh Market Co.,P006,Mixed Greens,2026-05-20,2026-05-23,30,30,0,9.50,A
+ORD-014,B002,Northside Grocers,P001,Tomatoes,2026-05-20,2026-05-23,180,110,5,2.30,B
+ORD-015,B003,Harbor Side Cafe,P005,Bell Peppers,2026-05-22,2026-05-25,35,35,0,4.50,A

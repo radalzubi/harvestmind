@@ -1,0 +1,14 @@
+lot_id,product_id,product_name,supplier_id,quantity_on_hand,unit,arrival_date,expiration_date,warehouse_location,quality_grade,committed_quantity
+LOT-001,P001,Tomatoes,S001,120,kg,2026-05-01,2026-06-01,A-12,A,50
+LOT-002,P002,Cucumbers,S001,80,kg,2026-05-01,2026-06-10,B-03,A,20
+LOT-003,P001,Tomatoes,S002,65,kg,2026-05-03,2026-05-28,A-12,B,0
+LOT-004,P003,Romaine Lettuce,S002,40,kg,2026-05-03,2026-05-29,C-01,B,10
+LOT-005,P004,Strawberries,S002,30,kg,2026-05-05,2026-05-22,D-02,C,0
+LOT-006,P005,Bell Peppers,S001,95,kg,2026-05-08,2026-06-15,A-08,A,30
+LOT-007,P006,Mixed Greens,S003,28,kg,2026-05-10,2026-05-30,E-01,A,5
+LOT-008,P004,Strawberries,S003,75,kg,2026-05-10,2026-06-02,D-05,A,20
+,P001,Tomatoes,,55,kg,2026-05-12,2026-06-05,A-15,B,0
+LOT-010,P002,Cucumbers,S001,60,kg,2026-05-15,2026-06-20,B-07,A,15
+LOT-011,P003,Romaine Lettuce,S002,35,kg,2026-05-15,2026-05-20,,B,0
+,P006,Mixed Greens,S003,22,kg,2026-05-20,2026-06-01,E-03,A,5
+LOT-012,P006,Mixed Greens,S003,18,kg,2026-05-20,2026-05-29,E-02,A,0

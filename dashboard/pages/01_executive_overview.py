@@ -14,16 +14,16 @@ sys.path.insert(0, str(ROOT))
 
 import streamlit as st
 
-from dashboard.components.cards import caveat, insight, metric_card, metric_grid, section
+from dashboard.components.cards import metric_grid, section
 from dashboard.components.charts import baseline_vs_optimised_bar, savings_waterfall
 from dashboard.components.empty import db_unavailable, empty_state
 from dashboard.lib import db, metrics, theme
 from dashboard.lib.formatters import (
-    fmt_currency, fmt_currency_range, fmt_date, fmt_date_range,
+    fmt_currency, fmt_currency_range, fmt_date_range,
     fmt_percent, fmt_percent_points,
 )
 
-theme.apply(page_title="Executive Overview")
+theme.apply(page_title="Performance")
 
 if not db.is_available():
     db_unavailable()
@@ -33,11 +33,10 @@ conn = db.get_conn()
 
 # ── Sidebar filters ───────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### Filters")
     partner_gmv = st.number_input(
-        "Partner annual GMV ($)",
+        "Annual GMV ($)",
         min_value=500_000, max_value=50_000_000, step=100_000, value=3_000_000,
-        help="Used to express savings as a % of revenue.",
+        help="Used to express savings as a share of revenue.",
     )
 
 ctx = metrics.header_context(conn)
@@ -45,44 +44,36 @@ kpis = metrics.executive_kpis(conn, partner_gmv_usd=float(partner_gmv))
 
 # ── Header ────────────────────────────────────────────────────────────────
 theme.page_header(
-    eyebrow="Page 1 of 7",
-    title="Executive Overview",
-    subtitle=(
-        f"<b>{ctx.partner_name}</b> · planning period "
-        f"{fmt_date_range(ctx.period_start, ctx.period_end)} · last refreshed "
-        f"{fmt_date(ctx.last_data_date)}"
-    ),
+    title="Performance",
+    subtitle=f"{fmt_date_range(ctx.period_start, ctx.period_end)} · {ctx.rows_used:,} orders",
 )
 
 # ── KPI strip ─────────────────────────────────────────────────────────────
 metric_grid(
     [
         {
-            "label": "Estimated annual savings",
+            "label": "Annual savings",
             "value": fmt_currency(kpis.estimated_annual_savings_usd, compact=True),
-            "delta": fmt_currency_range(kpis.confidence_low_usd, kpis.confidence_high_usd) + " confidence range",
-            "delta_direction": "up" if kpis.estimated_annual_savings_usd else "flat",
-            "subtitle": "Reduction in spot premium + waste, scaled to a 52-week year.",
+            "delta": fmt_currency_range(kpis.confidence_low_usd, kpis.confidence_high_usd),
+            "delta_direction": "flat",
         },
         {
             "label": "Spot premium savings",
             "value": fmt_currency(kpis.spot_premium_savings_usd, compact=True),
             "delta": (
-                f"{fmt_percent(kpis.spot_pct_of_volume)} of volume currently bought spot"
+                f"{fmt_percent(kpis.spot_pct_of_volume)} bought spot today"
                 if kpis.spot_pct_of_volume is not None else "—"
             ),
             "delta_direction": "up",
-            "subtitle": "Premium paid above contract price for emergency purchases.",
         },
         {
-            "label": "Waste cost reduction",
+            "label": "Waste reduction",
             "value": fmt_currency(kpis.waste_cost_reduction_usd, compact=True),
             "delta": (
                 f"{fmt_percent(kpis.waste_pct_of_received)} waste rate today"
                 if kpis.waste_pct_of_received is not None else "—"
             ),
             "delta_direction": "up",
-            "subtitle": "Avoidable spoilage from over-commitment and shelf-life.",
         },
     ],
     columns=3,
@@ -103,19 +94,16 @@ metric_grid(
             "delta_direction": (
                 "up" if (kpis.fill_rate_actual or 0) >= kpis.fill_rate_target else "down"
             ),
-            "subtitle": "kg-weighted: delivered ÷ ordered across all order lines.",
         },
         {
-            "label": "Gross margin uplift",
+            "label": "Margin uplift",
             "value": fmt_percent(kpis.gross_margin_uplift_pct),
-            "delta": "of partner annual GMV",
+            "delta": "of annual GMV",
             "delta_direction": "flat",
-            "subtitle": "Annual savings expressed as a share of revenue.",
         },
         {
-            "label": "Data quality score",
+            "label": "Data quality",
             "value": fmt_percent(kpis.data_quality_score),
-            "subtitle": "Average completeness across ingested datasets.",
             "status": (
                 "Strong" if kpis.data_quality_score >= 0.9 else
                 "Usable with caveats" if kpis.data_quality_score >= 0.6 else
@@ -126,31 +114,8 @@ metric_grid(
     columns=3,
 )
 
-# ── Insight ───────────────────────────────────────────────────────────────
-top = metrics.top_risk_drivers(conn, n=3)
-top_label = ", ".join(top["product"].head(3).fillna("—").tolist()) if not top.empty else "—"
-
-if kpis.estimated_annual_savings_usd:
-    msg = (
-        f"<b>The opportunity is real.</b> Across the loaded "
-        f"{ctx.rows_used:,} order rows, spot premium and avoidable waste together cost "
-        f"roughly <b>{fmt_currency(kpis.estimated_annual_savings_usd, compact=True)}</b> per year, "
-        f"with a <b>{fmt_currency_range(kpis.confidence_low_usd, kpis.confidence_high_usd)}</b> "
-        f"confidence range. The three SKUs driving most of the loss are "
-        f"<b>{top_label}</b> — see the Waste &amp; Spot Exposure page for line-item attribution."
-    )
-else:
-    msg = (
-        "Not enough data to estimate annual savings yet. Load more order and delivery "
-        "history, or run the optimiser at least once, to see a value estimate."
-    )
-insight(msg)
-
 # ── Baseline vs optimised + waterfall ─────────────────────────────────────
-section(
-    "Baseline vs optimised",
-    "Per-origin averages from the rolling-origin backtest. Optimised = two-stage stochastic plan.",
-)
+section("Cost breakdown")
 
 col1, col2 = st.columns(2, gap="medium")
 
@@ -181,15 +146,12 @@ with col2:
     else:
         empty_state("No data", "Savings waterfall will appear once the optimiser produces results.")
 
-# ── Top 5 risk drivers ────────────────────────────────────────────────────
-section(
-    "Top 5 risk drivers",
-    "Products driving the largest combined waste + spot premium loss.",
-)
+# ── Top risk drivers ──────────────────────────────────────────────────────
+section("Top loss drivers")
 
 drivers = metrics.top_risk_drivers(conn, n=5)
 if drivers.empty:
-    empty_state("No risk drivers", "Loss data is not yet present.")
+    empty_state("No data", "Loss data not yet available.")
 else:
     drivers_disp = drivers.copy()
     drivers_disp["loss_usd"] = drivers_disp["loss_usd"].apply(fmt_currency)
@@ -203,15 +165,3 @@ else:
         "waste_usd": "Waste cost",
     })[["Product", "SKU", "Total loss", "Spot premium", "Waste cost"]]
     st.dataframe(drivers_disp, use_container_width=True, hide_index=True)
-
-# ── Caveat / assumptions ──────────────────────────────────────────────────
-with st.expander("Assumptions and methodology", expanded=False):
-    caveat(
-        "<b>How these numbers are computed.</b> Spot premium savings = "
-        "<i>30%</i> recoverable share of the historical premium between spot "
-        "and contract prices. Waste reduction = <i>40%</i> of avoidable "
-        "spoilage in the planning window. Confidence range is ±25% reflecting "
-        "rolling-origin backtest variance. All numbers are scaled to a 52-week "
-        "year. None of these are guarantees — see the Backtest Results page "
-        "for evidence and the Data Quality page for completeness scores."
-    )

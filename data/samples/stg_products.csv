@@ -1,0 +1,7 @@
+product_id,product_name,category,unit,default_shelf_life_days,traceability_required
+P001,Tomatoes,Vegetables,kg,7,True
+P002,Cucumbers,Vegetables,kg,10,True
+P003,Romaine Lettuce,Leafy Greens,kg,5,True
+P004,Strawberries,Berries,kg,4,True
+P005,Bell Peppers,Vegetables,kg,14,False
+P006,Mixed Greens,Leafy Greens,kg,3,True

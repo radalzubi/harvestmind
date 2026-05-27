@@ -1,0 +1,228 @@
+{
+  "generated_at": "2026-05-04T19:32:25.355859Z",
+  "config": {
+    "n_origins": 10,
+    "n_train_weeks": 26,
+    "horizon_weeks": 4,
+    "step_weeks": 8,
+    "n_scenarios": 20,
+    "spot_capacity_factor": 0.3
+  },
+  "baseline_model": "naive_lastyear",
+  "optimised_model": "two_stage_sp",
+  "kpis": {
+    "annual_savings_usd": 14417.0,
+    "annual_spot_premium_savings_usd": -71767.0,
+    "annual_waste_reduction_usd": 972.0,
+    "fill_rate_baseline": 98.38,
+    "fill_rate_optimised": 67.42,
+    "fill_rate_lift_pts": -30.96,
+    "cost_per_kg_baseline": null,
+    "cost_per_kg_optimised": null,
+    "roi_multiple": 0.8,
+    "annual_subscription_usd": 18000,
+    "confidence_low_usd": 10130.0,
+    "confidence_high_usd": 18704.0,
+    "period_saved_usd": 11090.0,
+    "period_spot_saved_usd": -55206.0,
+    "period_waste_saved_usd": 747.0,
+    "spot_kg_avoided_period": -21233.0,
+    "waste_kg_avoided_period": 1495.0,
+    "lost_sale_kg_baseline": 1868.0,
+    "lost_sale_kg_optimised": 42054.0
+  },
+  "per_origin": [
+    {
+      "origin": "2024-11-04",
+      "baseline_total_cost": 24024.0,
+      "optimised_total_cost": 22883.0,
+      "saved": 1141.0,
+      "baseline_fill_pct": 100.0,
+      "optimised_fill_pct": 69.5,
+      "baseline_waste_kg": 215.0,
+      "optimised_waste_kg": 85.0,
+      "baseline_spot_kg": 1845.0,
+      "optimised_spot_kg": 3326.0,
+      "baseline_lost_kg": 0.0,
+      "optimised_lost_kg": 3410.0
+    },
+    {
+      "origin": "2024-12-30",
+      "baseline_total_cost": 19364.0,
+      "optimised_total_cost": 18858.0,
+      "saved": 506.0,
+      "baseline_fill_pct": 98.8,
+      "optimised_fill_pct": 74.0,
+      "baseline_waste_kg": 170.0,
+      "optimised_waste_kg": 5.0,
+      "baseline_spot_kg": 956.0,
+      "optimised_spot_kg": 2702.0,
+      "baseline_lost_kg": 109.0,
+      "optimised_lost_kg": 2391.0
+    },
+    {
+      "origin": "2025-02-24",
+      "baseline_total_cost": 22228.0,
+      "optimised_total_cost": 21333.0,
+      "saved": 895.0,
+      "baseline_fill_pct": 95.0,
+      "optimised_fill_pct": 71.1,
+      "baseline_waste_kg": 180.0,
+      "optimised_waste_kg": 164.0,
+      "baseline_spot_kg": 2430.0,
+      "optimised_spot_kg": 3050.0,
+      "baseline_lost_kg": 520.0,
+      "optimised_lost_kg": 2972.0
+    },
+    {
+      "origin": "2025-04-21",
+      "baseline_total_cost": 31401.0,
+      "optimised_total_cost": 29886.0,
+      "saved": 1516.0,
+      "baseline_fill_pct": 99.7,
+      "optimised_fill_pct": 59.5,
+      "baseline_waste_kg": 249.0,
+      "optimised_waste_kg": 0.0,
+      "baseline_spot_kg": 948.0,
+      "optimised_spot_kg": 4534.0,
+      "baseline_lost_kg": 39.0,
+      "optimised_lost_kg": 6130.0
+    },
+    {
+      "origin": "2025-06-16",
+      "baseline_total_cost": 37247.0,
+      "optimised_total_cost": 34729.0,
+      "saved": 2518.0,
+      "baseline_fill_pct": 98.1,
+      "optimised_fill_pct": 55.8,
+      "baseline_waste_kg": 320.0,
+      "optimised_waste_kg": 0.0,
+      "baseline_spot_kg": 1930.0,
+      "optimised_spot_kg": 5306.0,
+      "baseline_lost_kg": 340.0,
+      "optimised_lost_kg": 7829.0
+    },
+    {
+      "origin": "2025-08-11",
+      "baseline_total_cost": 30714.0,
+      "optimised_total_cost": 29373.0,
+      "saved": 1340.0,
+      "baseline_fill_pct": 99.8,
+      "optimised_fill_pct": 62.4,
+      "baseline_waste_kg": 135.0,
+      "optimised_waste_kg": 0.0,
+      "baseline_spot_kg": 1501.0,
+      "optimised_spot_kg": 4424.0,
+      "baseline_lost_kg": 29.0,
+      "optimised_lost_kg": 5542.0
+    },
+    {
+      "origin": "2025-10-06",
+      "baseline_total_cost": 26948.0,
+      "optimised_total_cost": 25915.0,
+      "saved": 1033.0,
+      "baseline_fill_pct": 98.3,
+      "optimised_fill_pct": 66.6,
+      "baseline_waste_kg": 0.0,
+      "optimised_waste_kg": 0.0,
+      "baseline_spot_kg": 2175.0,
+      "optimised_spot_kg": 3862.0,
+      "baseline_lost_kg": 215.0,
+      "optimised_lost_kg": 4305.0
+    },
+    {
+      "origin": "2025-12-01",
+      "baseline_total_cost": 19790.0,
+      "optimised_total_cost": 19234.0,
+      "saved": 555.0,
+      "baseline_fill_pct": 98.9,
+      "optimised_fill_pct": 76.7,
+      "baseline_waste_kg": 210.0,
+      "optimised_waste_kg": 0.0,
+      "baseline_spot_kg": 1111.0,
+      "optimised_spot_kg": 2783.0,
+      "baseline_lost_kg": 104.0,
+      "optimised_lost_kg": 2171.0
+    },
+    {
+      "origin": "2026-01-26",
+      "baseline_total_cost": 21632.0,
+      "optimised_total_cost": 21142.0,
+      "saved": 489.0,
+      "baseline_fill_pct": 95.7,
+      "optimised_fill_pct": 73.9,
+      "baseline_waste_kg": 10.0,
+      "optimised_waste_kg": 0.0,
+      "baseline_spot_kg": 1936.0,
+      "optimised_spot_kg": 3036.0,
+      "baseline_lost_kg": 450.0,
+      "optimised_lost_kg": 2698.0
+    },
+    {
+      "origin": "2026-03-23",
+      "baseline_total_cost": 27199.0,
+      "optimised_total_cost": 26103.0,
+      "saved": 1096.0,
+      "baseline_fill_pct": 99.5,
+      "optimised_fill_pct": 64.7,
+      "baseline_waste_kg": 260.0,
+      "optimised_waste_kg": 0.0,
+      "baseline_spot_kg": 868.0,
+      "optimised_spot_kg": 3909.0,
+      "baseline_lost_kg": 62.0,
+      "optimised_lost_kg": 4605.0
+    }
+  ],
+  "cost_trend": [
+    {
+      "label": "Nov 04",
+      "baseline": 24024.0,
+      "optimised": 22883.0
+    },
+    {
+      "label": "Dec 30",
+      "baseline": 19364.0,
+      "optimised": 18858.0
+    },
+    {
+      "label": "Feb 24",
+      "baseline": 22228.0,
+      "optimised": 21333.0
+    },
+    {
+      "label": "Apr 21",
+      "baseline": 31401.0,
+      "optimised": 29886.0
+    },
+    {
+      "label": "Jun 16",
+      "baseline": 37247.0,
+      "optimised": 34729.0
+    },
+    {
+      "label": "Aug 11",
+      "baseline": 30714.0,
+      "optimised": 29373.0
+    },
+    {
+      "label": "Oct 06",
+      "baseline": 26948.0,
+      "optimised": 25915.0
+    },
+    {
+      "label": "Dec 01",
+      "baseline": 19790.0,
+      "optimised": 19234.0
+    },
+    {
+      "label": "Jan 26",
+      "baseline": 21632.0,
+      "optimised": 21142.0
+    },
+    {
+      "label": "Mar 23",
+      "baseline": 27199.0,
+      "optimised": 26103.0
+    }
+  ]
+}

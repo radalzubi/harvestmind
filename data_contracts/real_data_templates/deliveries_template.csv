@@ -1,0 +1,5 @@
+delivery_id,supplier_id,product_id,delivery_date,qty_received_kg,qty_rejected_kg,rejection_reason,temp_on_arrival_c
+DEL-2025-001,SUP-FULL-HAND-FARM,PRD-001,2025-06-04,285.0,12.5,quality,4.2
+DEL-2025-002,SUP-PRAIRIE-WIND,PRD-002,2025-06-04,110.0,0.0,,3.8
+DEL-2025-003,SUP-MOSS-HOLLOW,PRD-003,2025-06-05,420.0,0.0,,5.1
+DEL-2025-004,SUP-FULL-HAND-FARM,PRD-004,2025-06-06,95.0,18.0,wilted,7.4

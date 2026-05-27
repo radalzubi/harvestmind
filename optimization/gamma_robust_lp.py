@@ -41,6 +41,8 @@ class GammaRobustLP:
     demand_uncertainty_pct: float = 0.20
     spot_cost_multiplier: float = 1.30
     waste_cost_per_kg: float = 0.50
+    lost_sale_per_kg_usd: float = 2.50
+    spot_capacity_factor: float | None = None
     solver: str = "highs"
     time_limit_s: float = 180.0
 
@@ -65,6 +67,8 @@ class GammaRobustLP:
         det_solver = LPBaseline(
             spot_cost_multiplier=self.spot_cost_multiplier,
             waste_cost_per_kg=self.waste_cost_per_kg,
+            lost_sale_per_kg_usd=self.lost_sale_per_kg_usd,
+            spot_capacity_factor=self.spot_capacity_factor,
             solver=self.solver,
             time_limit_s=self.time_limit_s,
         )

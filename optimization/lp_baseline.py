@@ -1,13 +1,18 @@
 """Deterministic LP baseline: minimize cost subject to demand and supply constraints.
 
 This is the benchmark (EV solution) against which stochastic models are measured.
-Formulation:
-  min  Σ_{i,j,t} c_ij * x_ijt + Σ spot_cost * s_jt + Σ waste_cost * w_jt
-  s.t. Σ_i x_ijt + s_jt - w_jt = d_jt        ∀ j,t   (demand balance)
-       x_ijt ≤ Y_ijt                           ∀ i,j,t (supply capacity)
-       x_ijt ≤ u_ij                            ∀ i,j,t (contract max)
-       x_ijt ≥ l_ij                            ∀ i,j,t (contract min)
-       x_ijt, s_jt, w_jt ≥ 0
+
+Formulation
+-----------
+    min  Σ commit_cost · x + Σ spot_cost · s + Σ waste_cost · w + Σ lost_sale_cost · u
+    s.t.
+      Σ_i x_ijt + s_jt - w_jt + u_jt = d_jt        ∀ j,t   (demand balance with unmet)
+      s_jt ≤ ρ · d_jt                                ∀ j,t   (spot ration if ρ < ∞)
+      x_ijt ≤ Y_ijt                                  ∀ i,j,t (supply capacity)
+      x, s, w, u ≥ 0
+
+The `u` (unmet demand) and spot-cap constraint together force the optimizer to
+internalize the cost of poor service: it can no longer over-rely on infinite spot.
 """
 
 from __future__ import annotations
@@ -22,6 +27,8 @@ import pandas as pd
 class LPBaseline:
     spot_cost_multiplier: float = 1.30  # contract price × multiplier for spot buys
     waste_cost_per_kg: float = 0.50
+    lost_sale_per_kg_usd: float = 2.50    # marginal cost of leaving demand unmet
+    spot_capacity_factor: float | None = None  # cap spot at ρ × demand; None = unlimited
     solver: str = "highs"
     time_limit_s: float = 120.0
 
@@ -72,11 +79,12 @@ class LPBaseline:
         )
 
         # Decision variables
-        model.x = pyo.Var(model.IJT, domain=pyo.NonNegativeReals)  # commit
-        model.s = pyo.Var(model.J, model.T, domain=pyo.NonNegativeReals)  # spot
-        model.w = pyo.Var(model.J, model.T, domain=pyo.NonNegativeReals)  # waste
+        model.x = pyo.Var(model.IJT, domain=pyo.NonNegativeReals)         # commit
+        model.s = pyo.Var(model.J, model.T, domain=pyo.NonNegativeReals)   # spot
+        model.w = pyo.Var(model.J, model.T, domain=pyo.NonNegativeReals)   # waste
+        model.u = pyo.Var(model.J, model.T, domain=pyo.NonNegativeReals)   # unmet (lost sale)
 
-        # Objective
+        # Objective: commit + spot + waste + unmet penalty
         def obj_rule(m):
             commit_cost = sum(
                 price.get((i,j,t), 2.0) * m.x[i,j,t]
@@ -87,14 +95,15 @@ class LPBaseline:
                 for j in m.J for t in m.T
             )
             waste_cost = sum(self.waste_cost_per_kg * m.w[j,t] for j in m.J for t in m.T)
-            return commit_cost + spot_cost + waste_cost
+            lost_sale_cost = sum(self.lost_sale_per_kg_usd * m.u[j,t] for j in m.J for t in m.T)
+            return commit_cost + spot_cost + waste_cost + lost_sale_cost
 
         model.obj = pyo.Objective(rule=obj_rule, sense=pyo.minimize)
 
-        # Demand balance
+        # Demand balance with unmet slack
         def demand_balance(m, j, t):
             supply_sum = sum(m.x[i2,j2,t2] for (i2,j2,t2) in m.IJT if j2 == j and t2 == t)
-            return supply_sum + m.s[j,t] - m.w[j,t] == d.get((j,t), 0.0)
+            return supply_sum + m.s[j,t] - m.w[j,t] + m.u[j,t] == d.get((j,t), 0.0)
 
         model.demand_balance = pyo.Constraint(model.J, model.T, rule=demand_balance)
 
@@ -103,6 +112,15 @@ class LPBaseline:
             return m.x[i,j,t] <= cap.get((i,j,t), 0.0)
 
         model.supply_cap = pyo.Constraint(model.IJT, rule=supply_cap)
+
+        # Spot capacity (when configured): s_jt ≤ ρ · d_jt
+        if self.spot_capacity_factor is not None:
+            ρ = float(self.spot_capacity_factor)
+
+            def spot_cap_rule(m, j, t):
+                return m.s[j,t] <= ρ * d.get((j,t), 0.0)
+
+            model.spot_cap = pyo.Constraint(model.J, model.T, rule=spot_cap_rule)
 
         solver = SolverFactory("appsi_highs" if self.solver == "highs" else self.solver)
         results = solver.solve(model, tee=False)
@@ -114,6 +132,7 @@ class LPBaseline:
         x_vals = {k: pyo.value(v) for k, v in model.x.items()}
         s_vals = {(j,t): pyo.value(model.s[j,t]) for j in model.J for t in model.T}
         w_vals = {(j,t): pyo.value(model.w[j,t]) for j in model.J for t in model.T}
+        u_vals = {(j,t): pyo.value(model.u[j,t]) for j in model.J for t in model.T}
 
         return {
             "status": status,
@@ -121,6 +140,7 @@ class LPBaseline:
             "x": x_vals,
             "spot": s_vals,
             "waste": w_vals,
+            "unmet": u_vals,
             "model": model,
         }
 

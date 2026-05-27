@@ -7,6 +7,7 @@ import pandas as pd
 from fastapi import APIRouter, Depends, Query
 
 from api.dependencies import get_conn
+from dashboard.lib.metrics import full_data_quality_report
 
 router = APIRouter(prefix="/data", tags=["data"])
 
@@ -105,6 +106,16 @@ def list_lots(product_id: str | None = None, conn=Depends(get_conn)):
             [product_id],
         ).df()
     return _records(df)
+
+
+@router.get("/quality")
+def data_quality(conn=Depends(get_conn)):
+    """Staging-table data quality report.
+
+    Returns score (0–100), per-table status, errors, and warnings.
+    This endpoint drives the Data Quality dashboard page.
+    """
+    return full_data_quality_report(conn)
 
 
 @router.get("/fsma/report")

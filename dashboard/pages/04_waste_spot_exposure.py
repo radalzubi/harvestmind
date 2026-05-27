@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT))
 import pandas as pd
 import streamlit as st
 
-from dashboard.components.cards import insight, section
+from dashboard.components.cards import section
 from dashboard.components.charts import (
     horizontal_value_bar, risk_heatmap, stacked_bar, waste_vs_shortage_scatter,
 )
@@ -21,7 +21,7 @@ from dashboard.components.empty import db_unavailable, empty_state
 from dashboard.lib import db, metrics, theme
 from dashboard.lib.formatters import fmt_currency
 
-theme.apply(page_title="Waste & Spot Exposure")
+theme.apply(page_title="Loss exposure")
 
 if not db.is_available():
     db_unavailable()
@@ -30,14 +30,9 @@ if not db.is_available():
 conn = db.get_conn()
 
 with st.sidebar:
-    st.markdown("### Filters")
     weeks = st.slider("Trailing window (weeks)", 4, 52, 12)
 
-theme.page_header(
-    eyebrow="Page 4 of 7",
-    title="Waste & Spot Exposure",
-    subtitle="Where the losses concentrate by product, reason, and time.",
-)
+theme.page_header(title="Loss exposure")
 
 # ── Pull data ─────────────────────────────────────────────────────────────
 waste_p = metrics.waste_by_product(conn)
@@ -54,30 +49,30 @@ total_spot = float(spot_p["spot_cost_usd"].sum())
 c1, c2, c3 = st.columns(3, gap="medium")
 with c1:
     st.markdown(
-        f'<div class="hm-card"><div class="hm-label">Total waste cost</div>'
+        f'<div class="hm-card"><div class="hm-label">Waste cost</div>'
         f'<div class="hm-value">{fmt_currency(total_waste, compact=True)}</div>'
-        f'<div class="hm-sub">Across {int(waste_p["events"].sum())} recorded waste events.</div></div>',
+        f'<div class="hm-sub">{int(waste_p["events"].sum())} events</div></div>',
         unsafe_allow_html=True,
     )
 with c2:
     st.markdown(
-        f'<div class="hm-card"><div class="hm-label">Total spot premium spend</div>'
+        f'<div class="hm-card"><div class="hm-label">Spot premium</div>'
         f'<div class="hm-value">{fmt_currency(total_spot, compact=True)}</div>'
-        f'<div class="hm-sub">Emergency purchases above contract price.</div></div>',
+        f'<div class="hm-sub">Above-contract emergency spend</div></div>',
         unsafe_allow_html=True,
     )
 with c3:
     st.markdown(
-        f'<div class="hm-card"><div class="hm-label">Combined loss exposure</div>'
+        f'<div class="hm-card"><div class="hm-label">Combined loss</div>'
         f'<div class="hm-value">{fmt_currency(total_waste + total_spot, compact=True)}</div>'
-        f'<div class="hm-sub">Sum across the loaded dataset; annualise on Page 1.</div></div>',
+        f'<div class="hm-sub">Across loaded period</div></div>',
         unsafe_allow_html=True,
     )
 
 st.write("")
 
 # ── Waste by product / reason ─────────────────────────────────────────────
-section("Waste cost", "Where spoilage is happening and why.")
+section("Waste")
 col1, col2 = st.columns(2, gap="medium")
 
 with col1:
@@ -98,8 +93,24 @@ with col2:
     if waste_r.empty:
         empty_state("No waste reasons", "Reason codes will populate here once waste events exist.")
     else:
-        # Aggregate to top reasons
+        # Aggregate to top reasons, mapping snake_case codes to readable labels
+        _reason_labels = {
+            "quality_rejection":  "Quality rejection",
+            "quality_reject":     "Quality rejection",
+            "shelf_life":         "Shelf life",
+            "cold_chain_failure": "Cold chain failure",
+            "cold_chain":         "Cold chain failure",
+            "demand_miss":        "Demand miss",
+            "over_commitment":    "Over-commitment",
+            "over_commit":        "Over-commitment",
+            "transit_damage":     "Transit damage",
+            "packaging":          "Packaging",
+            "other":              "Other",
+        }
         agg = waste_r.groupby("reason_code", as_index=False)["waste_usd"].sum()
+        agg["reason_code"] = agg["reason_code"].map(_reason_labels).fillna(
+            agg["reason_code"].str.replace("_", " ").str.capitalize()
+        )
         agg = agg.sort_values("waste_usd", ascending=False)
         st.plotly_chart(
             horizontal_value_bar(
@@ -111,7 +122,7 @@ with col2:
         )
 
 # ── Spot premium ──────────────────────────────────────────────────────────
-section("Spot premium exposure", "Spot purchases concentrated by product and over time.")
+section("Spot premium")
 col3, col4 = st.columns(2, gap="medium")
 
 with col3:
@@ -144,10 +155,7 @@ with col4:
         )
 
 # ── Tradeoff scatter ──────────────────────────────────────────────────────
-section(
-    "Waste vs spot tradeoff by product",
-    "Top-right = both losses are large; top-left = mostly spot; bottom-right = mostly waste.",
-)
+section("Waste vs spot tradeoff")
 trade = spot_p.merge(
     waste_p[["product_id", "waste_usd", "waste_kg"]], on="product_id", how="outer",
 ).fillna(0)
@@ -158,17 +166,14 @@ else:
     st.plotly_chart(waste_vs_shortage_scatter(trade), use_container_width=True)
 
 # ── Heatmap ───────────────────────────────────────────────────────────────
-section(
-    "Product × week risk heatmap",
-    "Combined risk score = 0.6 × spot share + 0.4 × waste rate, capped at 100%.",
-)
+section("Risk heatmap by week")
 if heat.empty:
     empty_state("Not enough weekly data", "Need at least a few weeks of POs and waste events.")
 else:
     st.plotly_chart(risk_heatmap(heat), use_container_width=True)
 
 # ── Loss attribution table ────────────────────────────────────────────────
-section("Loss attribution by product", "Likely root cause + recommended action.")
+section("Loss attribution")
 
 if attrib.empty:
     empty_state("No products with loss data", "")
@@ -191,12 +196,3 @@ else:
         use_container_width=True, hide_index=True,
     )
 
-# ── Insight ───────────────────────────────────────────────────────────────
-if not attrib.empty:
-    top_loss = attrib.iloc[0]
-    insight(
-        f"<b>The biggest exposure</b> is <b>{top_loss['product']}</b> with "
-        f"{fmt_currency(top_loss['spot_cost_usd'])} in spot premium and "
-        f"{fmt_currency(top_loss['waste_usd'])} in waste. "
-        f"Recommended action: <i>{top_loss['recommended_action'].lower()}</i>."
-    )

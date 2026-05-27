@@ -1,0 +1,5 @@
+waste_id,event_date,product_id,qty_wasted_kg,reason_code,estimated_value_usd,waste_stage
+WST-2025-001,2025-06-08,PRD-001,18.0,shelf_life,37.80,storage
+WST-2025-002,2025-06-09,PRD-003,42.0,quality_reject,82.00,intake
+WST-2025-003,2025-06-11,PRD-002,8.5,demand_miss,27.20,storage
+WST-2025-004,2025-06-12,PRD-004,12.0,cold_chain_failure,28.80,storage

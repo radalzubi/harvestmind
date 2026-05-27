@@ -1,0 +1,13 @@
+delivery_id,supplier_id,supplier_name,product_id,product_name,delivery_date,ordered_quantity,delivered_quantity,accepted_quantity,rejected_quantity,unit_cost,quality_grade,lot_id
+DEL-001,S001,Sunset Valley Farms,P001,Tomatoes,2026-05-01,500,490,480,10,1.20,A,LOT-001
+DEL-002,S001,Sunset Valley Farms,P002,Cucumbers,2026-05-01,200,195,190,5,0.80,A,LOT-002
+DEL-003,S002,Blue Ridge Produce,P001,Tomatoes,2026-05-03,400,280,275,5,1.15,B,LOT-003
+DEL-004,S002,Blue Ridge Produce,P003,Romaine Lettuce,2026-05-03,300,190,180,10,1.50,B,LOT-004
+DEL-005,S002,Blue Ridge Produce,P004,Strawberries,2026-05-05,150,95,90,5,3.20,C,LOT-005
+DEL-006,S001,Sunset Valley Farms,P005,Bell Peppers,2026-05-08,180,178,175,3,1.80,A,LOT-006
+DEL-007,S003,Clearwater Organics,P006,Mixed Greens,2026-05-10,100,98,95,3,4.50,A,LOT-007
+DEL-008,S003,Clearwater Organics,P004,Strawberries,2026-05-10,200,195,190,5,3.00,A,LOT-008
+DEL-009,S002,Blue Ridge Produce,P001,Tomatoes,2026-05-12,350,220,215,5,1.15,B,
+DEL-010,S001,Sunset Valley Farms,P002,Cucumbers,2026-05-15,250,248,245,3,0.85,A,LOT-010
+DEL-011,S002,Blue Ridge Produce,P003,Romaine Lettuce,2026-05-15,280,160,155,5,1.50,B,LOT-011
+DEL-012,S003,Clearwater Organics,P006,Mixed Greens,2026-05-20,80,79,78,1,4.80,A,LOT-012

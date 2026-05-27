@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>HarvestMind Pilot Summary — {{ partner_name }}</title>
+<style>
+  @page { size: letter; margin: 0.55in 0.6in 0.55in 0.6in; }
+  body {
+    font-family: -apple-system, system-ui, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: #0F172A;
+    margin: 0; padding: 0;
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+  h1, h2, h3 { margin: 0; color: #0F172A; letter-spacing: -0.01em; }
+  h1 { font-size: 22pt; }
+  h2 { font-size: 14pt; margin-top: 14px; }
+  h3 { font-size: 11pt; }
+  p { margin: 6px 0; }
+  .muted { color: #475569; }
+  .small { font-size: 9.5pt; }
+  .xsmall { font-size: 8.5pt; }
+  table { width: 100%; border-collapse: collapse; font-size: 10.5pt; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid #E2E8F0; text-align: left; }
+  th { background: #F8FAFC; font-weight: 600; color: #475569; font-size: 9.5pt; text-transform: uppercase; letter-spacing: 0.04em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.strong { font-weight: 600; color: #0F172A; }
+
+  .header-bar {
+    background: #0F766E;
+    color: #fff;
+    padding: 16px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 18px;
+  }
+  .header-bar .left { font-size: 11pt; font-weight: 600; letter-spacing: -0.01em; }
+  .header-bar .right { font-size: 10pt; opacity: 0.9; }
+
+  .partner-block {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+  }
+  .partner-block .label { font-size: 9pt; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; }
+  .partner-block .value { font-size: 13pt; font-weight: 600; color: #0F172A; }
+
+  .kpi-row {
+    display: flex; gap: 12px; margin-bottom: 18px;
+  }
+  .kpi-box {
+    flex: 1;
+    border: 2px solid #0F766E;
+    border-radius: 8px;
+    padding: 14px;
+    background: #fff;
+  }
+  .kpi-label { font-size: 9pt; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; }
+  .kpi-value { font-size: 22pt; font-weight: 700; color: #0F172A; line-height: 1.1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .kpi-band  { font-size: 8.5pt; color: #475569; margin-top: 6px; }
+
+  .section { margin: 18px 0; }
+  .breakdown-table th { background: transparent; }
+  .breakdown-table td.label { color: #475569; }
+  .breakdown-total td { border-top: 2px solid #0F172A; border-bottom: none; padding-top: 10px; font-weight: 700; }
+
+  .service-bar {
+    margin-top: 6px;
+  }
+  .service-bar .row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .service-bar .lbl { width: 80px; font-size: 9.5pt; color: #475569; }
+  .service-bar .bar-track {
+    flex: 1; height: 14px; background: #E2E8F0; border-radius: 7px; position: relative; overflow: hidden;
+  }
+  .service-bar .bar-fill {
+    height: 100%; border-radius: 7px;
+  }
+  .service-bar .bar-baseline { background: #94A3B8; }
+  .service-bar .bar-target   { background: #0F766E; }
+  .service-bar .pct { width: 60px; text-align: right; font-variant-numeric: tabular-nums; font-size: 10pt; }
+
+  .steps { padding-left: 22px; }
+  .steps li { margin-bottom: 6px; }
+
+  .methodology {
+    margin-top: 22px;
+    border-top: 1px solid #E2E8F0;
+    padding-top: 8px;
+    color: #64748B;
+    font-size: 8pt;
+    line-height: 1.5;
+  }
+
+  .footer {
+    margin-top: 18px;
+    text-align: center;
+    color: #94A3B8;
+    font-size: 8pt;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .page2 { page-break-before: always; }
+
+  .assumptions-box {
+    border: 1px solid #FDE68A;
+    background: #FEFCE8;
+    color: #854D0E;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 9.5pt;
+  }
+
+  .checklist { padding-left: 0; list-style: none; }
+  .checklist li { margin-bottom: 6px; }
+  .checklist li::before { content: "☐ "; color: #475569; }
+
+  .check-row td.ok { color: #15803D; }
+  .check-row td.warn { color: #B45309; }
+  .check-row td.bad { color: #B91C1C; }
+</style>
+</head>
+<body>
+
+<!-- ─── PAGE 1 ─────────────────────────────────────────────────────────── -->
+<div class="page1">
+
+  <div class="header-bar">
+    <div class="left">HarvestMind · Powered by Purdue University</div>
+    <div class="right">Pilot Analysis · {{ generated_date }}</div>
+  </div>
+
+  <div class="partner-block">
+    <div class="label">Prepared for</div>
+    <div class="value">{{ partner_name }}</div>
+    <div class="small muted" style="margin-top: 6px;">
+      Analysis period {{ backtest_start }} – {{ backtest_end }} · {{ n_backtest_origins }} planning periods evaluated
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-box">
+      <div class="kpi-label">Projected annual benefit</div>
+      <div class="kpi-value">${{ roi.total_annual_benefit_usd | currency }}</div>
+      <div class="kpi-band">Real-world range: {{ stress_band_dollar }}</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-label">ROI multiple</div>
+      <div class="kpi-value">{{ roi.roi_multiple }}×</div>
+      <div class="kpi-band">Real-world range: {{ stress_band_roi }}</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-label">Payback period</div>
+      <div class="kpi-value">{{ roi.payback_months }} mo</div>
+      <div class="kpi-band">Subscription ${{ roi.annual_subscription_usd | currency }}/yr</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Where the savings come from</h2>
+    <table class="breakdown-table">
+      <tbody>
+        <tr><td class="label">Spot premium savings</td>             <td class="num strong">${{ roi.annual_spot_savings_usd | currency }}</td></tr>
+        <tr><td class="label">Waste reduction</td>                  <td class="num strong">${{ roi.annual_waste_value_savings_usd | currency }}</td></tr>
+        <tr><td class="label">Fill-rate recovery</td>               <td class="num strong">${{ roi.annual_lost_sale_recovery_usd | currency }}</td></tr>
+        <tr class="breakdown-total"><td>Total annual benefit</td>   <td class="num">${{ roi.total_annual_benefit_usd | currency }}</td></tr>
+        <tr><td class="label">HarvestMind subscription</td>         <td class="num">(${{ roi.annual_subscription_usd | currency }})</td></tr>
+        <tr class="breakdown-total"><td>Net annual benefit</td>     <td class="num">${{ roi.net_annual_benefit_usd | currency }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Service level</h2>
+    <p class="small muted">
+      Today: {{ roi.baseline_service_level_pct }}% &nbsp;→&nbsp;
+      Optimized: {{ roi.target_service_level_pct }}% &nbsp;
+      ({{ '+' if roi.service_level_improvement_pts >= 0 else '' }}{{ roi.service_level_improvement_pts }} pts)
+    </p>
+    <div class="service-bar">
+      <div class="row">
+        <div class="lbl">Today</div>
+        <div class="bar-track"><div class="bar-fill bar-baseline" style="width: {{ roi.baseline_service_level_pct }}%;"></div></div>
+        <div class="pct">{{ roi.baseline_service_level_pct }}%</div>
+      </div>
+      <div class="row">
+        <div class="lbl">Optimized</div>
+        <div class="bar-track"><div class="bar-fill bar-target"   style="width: {{ roi.target_service_level_pct }}%;"></div></div>
+        <div class="pct">{{ roi.target_service_level_pct }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li>We analyse your order history and supplier delivery patterns.</li>
+      <li>We model uncertainty: weather, demand swings, supplier reliability.</li>
+      <li>We tell you exactly how much to commit each week to minimize waste and emergency spot purchases while keeping shelves full.</li>
+    </ol>
+  </div>
+
+  <div class="methodology">
+    Analysis based on {{ n_backtest_origins }} rolling-origin backtest periods using historical
+    order and delivery data. Projections use the two-stage stochastic planning method
+    (Mateo et al. 2016, <em>Computers &amp; OR</em>). Confidence range ±25% reflects backtest variance.
+    Actual results depend on future demand and supply conditions.
+  </div>
+
+  <div class="footer">HarvestMind · Purdue University · Confidential</div>
+</div>
+
+<!-- ─── PAGE 2 ─────────────────────────────────────────────────────────── -->
+<div class="page2">
+
+  <h2>How we tested this</h2>
+  <p class="small muted">
+    We replayed {{ n_backtest_origins }} historical {{ horizon_weeks }}-week planning periods using only the
+    information available at the time. For each period we compared what really happened
+    against four planning approaches: a naive "same week last year" plan, a
+    deterministic linear program, a robust LP, and the HarvestMind two-stage stochastic
+    plan. The numbers below are real outcomes from those replays — not hypothetical.
+  </p>
+
+  <h2 style="margin-top: 20px;">Policy comparison</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Approach</th>
+        <th class="num">Annual cost</th>
+        <th class="num">Fill rate</th>
+        <th class="num">Spot &amp; waste</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for row in model_comparison %}
+      <tr>
+        <td>{{ row.label }}{% if row.is_target %} <strong style="color:#0F766E;">✓</strong>{% endif %}</td>
+        <td class="num">${{ row.annual_cost | currency }}</td>
+        <td class="num">{{ row.fill_pct }}%</td>
+        <td class="num">{{ row.spot_kg }} kg / {{ row.waste_kg }} kg</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2 style="margin-top: 20px;">Data quality</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Dataset</th>
+        <th class="num">Records</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for d in data_quality %}
+      <tr>
+        <td>{{ d.dataset }}</td>
+        <td class="num">{{ "{:,}".format(d.rows) }}</td>
+        <td>{{ d.status }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="assumptions-box" style="margin-top: 18px;">
+    <strong>Assumptions:</strong>
+    Spot premium: 1.30× contract price &nbsp;·&nbsp;
+    Waste avoidable share: 40% &nbsp;·&nbsp;
+    Service-level target: 97% &nbsp;·&nbsp;
+    Confidence band: ±25%
+  </div>
+
+  <h2 style="margin-top: 20px;">Next steps</h2>
+  <ul class="checklist">
+    <li>Sign data-sharing agreement</li>
+    <li>Export 12 months of order + delivery records (CSV)</li>
+    <li>Live dashboard within 48 hours of data receipt</li>
+    <li>First weekly recommendation by end of Week 1</li>
+  </ul>
+
+  <div class="footer" style="margin-top: 24px;">Page 2 of 2 · HarvestMind · Confidential</div>
+</div>
+
+</body>
+</html>

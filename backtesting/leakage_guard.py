@@ -80,3 +80,30 @@ def assert_no_future_data(df: pd.DataFrame, date_col: str, cutoff: DateLike) -> 
             f"Future data detected past cutoff {cutoff_date}: "
             f"{sorted(bad.unique())[:5]}"
         )
+
+
+def assert_dates_in_window(
+    df: pd.DataFrame,
+    date_col: str,
+    window_start: DateLike,
+    window_end: DateLike,
+) -> None:
+    """Raise LeakageError if any row falls outside [window_start, window_end].
+
+    Symmetric counterpart to assert_no_future_data: catches both training-window
+    leakage (date < window_start) AND post-horizon leakage (date > window_end).
+    Use this on horizon-window slices like realized supply/demand to confirm
+    the recourse simulator only sees data from the evaluation period.
+    """
+    if df.empty or date_col not in df.columns:
+        return
+    start_d = _to_date(window_start)
+    end_d = _to_date(window_end)
+    dates = pd.to_datetime(df[date_col]).dt.date
+    pre = dates[dates < start_d]
+    post = dates[dates > end_d]
+    if len(pre) > 0 or len(post) > 0:
+        raise LeakageError(
+            f"Date leakage outside [{start_d}, {end_d}]: "
+            f"pre={sorted(pre.unique())[:3]} post={sorted(post.unique())[:3]}"
+        )

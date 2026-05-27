@@ -24,8 +24,39 @@ from backtesting.leakage_guard import LeakageGuard
 from forecasting.supply.yield_scenario_generator import YieldScenarioGenerator
 from optimization.lp_baseline import LPBaseline
 from optimization.gamma_robust_lp import GammaRobustLP
+from optimization.naive_lastyear_policy import (
+    NaivePolicyConfig,
+    naive_lastyear_commitments,
+)
 from optimization.two_stage_sp import TwoStageStochasticLP
 from optimization.recourse_simulator import simulate_recourse
+
+
+# ── BENCHMARK SOURCES ─────────────────────────────────────────────────
+# The defaults below are calibrated to published research, not aspirational
+# targets. Anchors:
+#
+#   Spot premium 1.30×  : USDA AMS market-news (spot/contract spread);
+#                          conservative vs. romaine 2018 disruption study
+#                          (Spalding et al. 2023, AJAE proxy: +141–209%
+#                          week-1 spot above contract).
+#   Gross margin 16–20% : USDA SR-77 Vol III (2016) wholesale-hub pro
+#                          forma — startup 14.5% → growth-stage 19.4%.
+#                          Wallace Center / MSU Food Hub Benchmarking
+#                          Study 2013: 14.49–16.09% sector mean,
+#                          high-teens for wholesale-stage hubs.
+#   Fill-rate SLA 95–98%: NC State Dining RFP (98%); Wisconsin primary
+#                          distributor contract (95%); Iowa school
+#                          consortium (98%). Pre-software observed
+#                          baseline inferred 89–94%.
+#   Lost-sale $/kg      : Derived = avg produce price ($18.60/kg leafy
+#                          greens, cucumbers, tomatoes blend) × gross
+#                          margin. Mid-range $3.50/kg.
+#   Avoidable waste 40% : Internal assumption — no public benchmark.
+#   Reactive procurement: 10–20% base, 25–35% stress (no direct food-hub
+#                          survey data; inferred from broader produce
+#                          industry reports).
+# ──────────────────────────────────────────────────────────────────────
 
 
 @dataclass
@@ -36,8 +67,29 @@ class BacktestConfig:
     n_scenarios: int = 50        # SAA scenarios per origin
     gammas: list[float] = field(default_factory=lambda: [0, 2, 4, 6])
     run_stochastic: bool = True
+    run_naive_baseline: bool = True       # include same-week-last-year naive policy
     solver: str = "highs"
     seed: int = 42
+
+    # Cost model (research-backed defaults — see BENCHMARK SOURCES above).
+    # These are surfaced on BacktestConfig for visibility / scenario sweeps;
+    # they're consumed both by the simulator (recourse stage) and the LP/SP
+    # optimizers (when the engine passes them through).
+    spot_cost_multiplier: float = 1.30   # spot vs. contract price
+    waste_cost_per_kg: float = 2.50      # ~16% margin × $15/kg avg
+
+    # Spot rationing — fraction of horizon-period demand that can be sourced
+    # spot. 0.30 = up to 30% of demand procurable via emergency POs; the rest
+    # becomes lost sale. Set to None for unlimited spot (back-compat for older
+    # tests / quick experiments).
+    spot_capacity_factor: float | None = 0.30
+    lost_sale_per_kg_usd: float = 3.50
+    # Knobs that simulate degraded historical-data quality on the naive baseline.
+    # A real food hub does not have a perfect last-year-same-week spreadsheet —
+    # so the optimizer's relative advantage grows as these knobs are dialed up.
+    naive_missing_rate: float = 0.0
+    naive_noise_cv: float = 0.0
+    naive_supplier_turnover_rate: float = 0.0
 
 
 @dataclass
@@ -55,6 +107,10 @@ class BacktestResult:
     total_cost_usd: Optional[float]
     solve_time_s: float
     solver_status: str
+    waste_cost_usd: Optional[float] = None
+    commit_cost_usd: Optional[float] = None
+    lost_sale_kg: Optional[float] = None
+    lost_sale_cost_usd: Optional[float] = None
     mase: Optional[float] = None
     coverage_80: Optional[float] = None
 
@@ -169,39 +225,104 @@ class RollingOriginEngine:
 
         # Defensive guard against future leakage of training data (cheap to
         # run; raises LeakageError if anything past the origin sneaks in).
-        from backtesting.leakage_guard import assert_no_future_data
+        from backtesting.leakage_guard import assert_dates_in_window, assert_no_future_data
         assert_no_future_data(train_orders, "week_start", origin)
         if not train_deliveries.empty:
             assert_no_future_data(train_deliveries, "delivery_date", origin)
 
+        # Symmetric guard: realized-window slice must not contain training data.
+        if realized_weeks and not deliveries_df.empty:
+            horizon_start = realized_weeks[0]
+            horizon_end = realized_weeks[-1] + timedelta(days=6)
+            deliv_dates = pd.to_datetime(deliveries_df["delivery_date"]).dt.date
+            horizon_slice = deliveries_df[
+                (deliv_dates >= horizon_start) & (deliv_dates <= horizon_end)
+            ]
+            assert_dates_in_window(horizon_slice, "delivery_date", horizon_start, horizon_end)
+
         batch_results = []
 
-        # --- Deterministic LP (baseline) ---
-        t0 = time.time()
-        try:
-            det_result = LPBaseline(solver=self.cfg.solver).solve(
-                demand=train_demand.assign(week_start=origin),
-                supply=train_supply,
-            )
-            recourse = simulate_recourse(
-                commitments=self._result_to_commitments(det_result, train_supply),
+        # Pre-compute the realized supply once and the spot-capacity dict once,
+        # so every model variant scores against the same recourse environment.
+        realized_supply = self._to_realized_supply(deliveries_df, realized_weeks)
+        spot_capacity = self._build_spot_capacity(realized_demand)
+
+        def _score(commitments_df, model_name, gamma=None, lam_cvar=None,
+                   objective=None, status="ok", solve_t0=None):
+            rec = simulate_recourse(
+                commitments=commitments_df,
                 realized_demand=realized_demand,
-                realized_supply=self._to_realized_supply(train_supply),
+                realized_supply=realized_supply,
+                spot_capacity=spot_capacity,
+                lost_sale_per_kg=self.cfg.lost_sale_per_kg_usd,
             )
             batch_results.append(BacktestResult(
                 origin_week=origin,
                 horizon_weeks=self.cfg.horizon_weeks,
-                model="deterministic",
-                gamma=None, lambda_cvar=None,
-                objective=det_result.get("objective"),
-                service_level_pct=recourse["service_level_pct"],
-                waste_kg=recourse["waste_kg"],
-                spot_kg=recourse["spot_kg"],
-                spot_cost_usd=recourse["spot_cost"],
-                total_cost_usd=recourse["total_cost"],
-                solve_time_s=round(time.time()-t0, 2),
-                solver_status=det_result.get("status","unknown"),
+                model=model_name,
+                gamma=gamma, lambda_cvar=lam_cvar,
+                objective=objective,
+                service_level_pct=rec["service_level_pct"],
+                waste_kg=rec["waste_kg"],
+                spot_kg=rec["spot_kg"],
+                spot_cost_usd=rec["spot_cost"],
+                total_cost_usd=rec["total_cost"],
+                waste_cost_usd=rec["waste_cost"],
+                commit_cost_usd=rec["commit_cost"],
+                lost_sale_kg=rec["lost_sale_kg"],
+                lost_sale_cost_usd=rec["lost_sale_cost"],
+                solve_time_s=round(time.time() - solve_t0, 2) if solve_t0 else 0.0,
+                solver_status=status,
             ))
+
+        # --- Naive same-week-last-year baseline ---
+        if self.cfg.run_naive_baseline:
+            t0 = time.time()
+            try:
+                naive_commit = naive_lastyear_commitments(
+                    deliveries_train=train_deliveries,
+                    decision_date=origin,
+                    horizon_weeks=realized_weeks,
+                    config=NaivePolicyConfig(
+                        missing_rate=self.cfg.naive_missing_rate,
+                        noise_cv=self.cfg.naive_noise_cv,
+                        supplier_turnover_rate=self.cfg.naive_supplier_turnover_rate,
+                        seed=self.cfg.seed,
+                    ),
+                )
+                _score(naive_commit, "naive_lastyear", solve_t0=t0)
+            except Exception as e:
+                print(f"    Naive baseline failed: {e}")
+
+        # Build LP demand input: per-product mean demand replicated across each
+        # horizon week. The previous engine collapsed all training rows to a
+        # single week_start, leaving the LP committing for ~1 week's demand
+        # while the recourse simulator scored against H weeks.
+        lp_demand = pd.concat([
+            train_demand_mean.assign(week_start=w)
+            for w in realized_weeks
+        ], ignore_index=True)
+        # rename for solver schema
+        lp_demand = lp_demand.rename(columns={"demand_kg": "demand_kg"})
+
+        # --- Deterministic LP ---
+        t0 = time.time()
+        try:
+            det_result = LPBaseline(
+                solver=self.cfg.solver,
+                lost_sale_per_kg_usd=self.cfg.lost_sale_per_kg_usd,
+                spot_capacity_factor=self.cfg.spot_capacity_factor,
+            ).solve(
+                demand=lp_demand,
+                supply=train_supply,
+            )
+            _score(
+                self._result_to_commitments(det_result, train_supply),
+                "deterministic",
+                objective=det_result.get("objective"),
+                status=det_result.get("status", "unknown"),
+                solve_t0=t0,
+            )
         except Exception as e:
             print(f"    Deterministic LP failed: {e}")
 
@@ -209,29 +330,21 @@ class RollingOriginEngine:
         for gamma in self.cfg.gammas:
             t0 = time.time()
             try:
-                rob_result = GammaRobustLP(gamma=gamma, solver=self.cfg.solver).solve(
-                    demand=train_demand.assign(week_start=origin),
+                rob_result = GammaRobustLP(
+                    gamma=gamma,
+                    solver=self.cfg.solver,
+                ).solve(
+                    demand=lp_demand,
                     supply=train_supply,
                 )
-                recourse = simulate_recourse(
-                    commitments=self._result_to_commitments(rob_result, train_supply),
-                    realized_demand=realized_demand,
-                    realized_supply=self._to_realized_supply(train_supply),
-                )
-                batch_results.append(BacktestResult(
-                    origin_week=origin,
-                    horizon_weeks=self.cfg.horizon_weeks,
-                    model="gamma_robust",
-                    gamma=gamma, lambda_cvar=None,
+                _score(
+                    self._result_to_commitments(rob_result, train_supply),
+                    "gamma_robust",
+                    gamma=gamma,
                     objective=rob_result.get("objective"),
-                    service_level_pct=recourse["service_level_pct"],
-                    waste_kg=recourse["waste_kg"],
-                    spot_kg=recourse["spot_kg"],
-                    spot_cost_usd=recourse["spot_cost"],
-                    total_cost_usd=recourse["total_cost"],
-                    solve_time_s=round(time.time()-t0, 2),
-                    solver_status=rob_result.get("status","unknown"),
-                ))
+                    status=rob_result.get("status", "unknown"),
+                    solve_t0=t0,
+                )
             except Exception as e:
                 print(f"    Γ={gamma} failed: {e}")
 
@@ -247,30 +360,26 @@ class RollingOriginEngine:
                 # Convert yield scenarios to demand scenarios. Base is the
                 # *historical* per-product mean (PAST data only); using
                 # `realized_demand` here was a backtest lookahead bias.
-                demand_scen = self._yield_to_demand_scenarios(scen_df, train_demand_mean)
+                # Scale the per-week mean to the full horizon so the SP
+                # commits enough supply for H weeks of demand.
+                horizon_period_mean = train_demand_mean.copy()
+                horizon_period_mean["demand_kg"] = (
+                    horizon_period_mean["demand_kg"] * self.cfg.horizon_weeks
+                )
+                demand_scen = self._yield_to_demand_scenarios(scen_df, horizon_period_mean)
                 sp_result = TwoStageStochasticLP(
                     n_scenarios=self.cfg.n_scenarios,
                     solver=self.cfg.solver,
+                    lost_sale_per_kg_usd=self.cfg.lost_sale_per_kg_usd,
+                    spot_capacity_factor=self.cfg.spot_capacity_factor,
                 ).solve(demand_scenarios=demand_scen, supply=train_supply)
-                recourse = simulate_recourse(
-                    commitments=self._result_to_commitments(sp_result, train_supply, is_sp=True),
-                    realized_demand=realized_demand,
-                    realized_supply=self._to_realized_supply(train_supply),
-                )
-                batch_results.append(BacktestResult(
-                    origin_week=origin,
-                    horizon_weeks=self.cfg.horizon_weeks,
-                    model="two_stage_sp",
-                    gamma=None, lambda_cvar=None,
+                _score(
+                    self._result_to_commitments(sp_result, train_supply, is_sp=True),
+                    "two_stage_sp",
                     objective=sp_result.get("objective"),
-                    service_level_pct=recourse["service_level_pct"],
-                    waste_kg=recourse["waste_kg"],
-                    spot_kg=recourse["spot_kg"],
-                    spot_cost_usd=recourse["spot_cost"],
-                    total_cost_usd=recourse["total_cost"],
-                    solve_time_s=round(time.time()-t0, 2),
-                    solver_status=sp_result.get("status","unknown"),
-                ))
+                    status=sp_result.get("status", "unknown"),
+                    solve_t0=t0,
+                )
             except Exception as e:
                 print(f"    Two-stage SP failed: {e}")
 
@@ -280,17 +389,45 @@ class RollingOriginEngine:
 
     @staticmethod
     def _build_supply_df(deliveries_df: pd.DataFrame, horizon_weeks: list[date]) -> pd.DataFrame:
-        """Build supply capacity DataFrame from recent delivery history."""
+        """Build supply capacity DataFrame from recent delivery history.
+
+        The capacity_kg column represents how much each supplier can deliver
+        per planning week. We compute it as the trailing 12-week TOTAL kg
+        divided by 12 — i.e. the average WEEKLY delivery volume, not the
+        average per-delivery quantity. (The previous implementation used
+        per-delivery mean, which is a 1.5–2× underestimate of weekly capacity
+        and made the LP supply-bound at unrealistically low levels.)
+        """
         if deliveries_df.empty:
             return pd.DataFrame(columns=["supplier_id","product_id","week_start","capacity_kg","price_per_kg"])
-        recent = deliveries_df.tail(52 * 5)  # last year of data
-        agg = (
-            recent.groupby(["supplier_id","product_id"])
-            .agg(capacity_kg=("qty_received_kg","mean"))
+
+        df = deliveries_df.copy()
+        df["delivery_date"] = pd.to_datetime(df["delivery_date"])
+        df["iso_week"] = df["delivery_date"].dt.to_period("W").dt.start_time
+
+        # Trailing 12 weeks of weekly aggregates
+        max_date = df["delivery_date"].max()
+        cutoff = max_date - pd.Timedelta(weeks=12)
+        recent = df[df["delivery_date"] >= cutoff]
+        if recent.empty:
+            recent = df
+
+        weekly = (
+            recent.groupby(["supplier_id", "product_id", "iso_week"])["qty_received_kg"]
+            .sum()
             .reset_index()
         )
-        agg["price_per_kg"] = 2.0  # will be overridden from price_df if available
-        # Expand to each horizon week
+        # Average weekly capacity per supplier × product
+        agg = (
+            weekly.groupby(["supplier_id", "product_id"])["qty_received_kg"]
+            .mean()
+            .reset_index()
+            .rename(columns={"qty_received_kg": "capacity_kg"})
+        )
+        # Add 30% planning headroom: max sustainable commit is above the mean.
+        agg["capacity_kg"] = agg["capacity_kg"] * 1.30
+        agg["price_per_kg"] = 2.0  # overridden from price_df if available
+
         rows = []
         for week in horizon_weeks:
             for _, row in agg.iterrows():
@@ -299,16 +436,67 @@ class RollingOriginEngine:
                 rows.append(r)
         return pd.DataFrame(rows) if rows else agg.assign(week_start=date.today())
 
+    def _build_spot_capacity(
+        self, realized_demand: pd.DataFrame
+    ) -> dict[str, float] | None:
+        """Build per-product spot procurement caps from cfg.spot_capacity_factor.
+
+        None → unlimited spot (back-compat).
+        factor f → each product can source at most f × demand_kg via spot;
+        anything beyond becomes a lost sale.
+        """
+        if self.cfg.spot_capacity_factor is None:
+            return None
+        if realized_demand.empty:
+            return {}
+        return {
+            row["product_id"]: float(row["demand_kg"]) * self.cfg.spot_capacity_factor
+            for _, row in realized_demand.iterrows()
+        }
+
     @staticmethod
-    def _to_realized_supply(train_supply: pd.DataFrame) -> pd.DataFrame:
-        """Aggregate train_supply to (supplier, product, actual_available_kg) for recourse sim."""
-        if train_supply.empty:
-            return pd.DataFrame(columns=["supplier_id","product_id","actual_available_kg"])
+    def _to_realized_supply(
+        deliveries_df: pd.DataFrame,
+        realized_weeks: list[date],
+    ) -> pd.DataFrame:
+        """Aggregate horizon-window deliveries into realized supply per supplier × product.
+
+        Reads ONLY the rows whose delivery_date falls inside the evaluation
+        horizon [realized_weeks[0], end-of-last-week]. This is what the
+        recourse simulator must score against — what physically arrived
+        during the period being evaluated, not training-window history.
+
+        Returns columns:
+          supplier_id, product_id, actual_available_kg
+
+        actual_available_kg = max(0, qty_received_kg - qty_rejected_kg).
+        Rejected goods are not usable supply.
+        """
+        out_cols = ["supplier_id", "product_id", "actual_available_kg"]
+        if deliveries_df.empty or not realized_weeks:
+            return pd.DataFrame(columns=out_cols)
+
+        horizon_start = pd.Timestamp(realized_weeks[0])
+        horizon_end = pd.Timestamp(realized_weeks[-1]) + pd.Timedelta(days=6)
+
+        deliv_dates = pd.to_datetime(deliveries_df["delivery_date"])
+        mask = (deliv_dates >= horizon_start) & (deliv_dates <= horizon_end)
+        horizon = deliveries_df.loc[mask].copy()
+        if horizon.empty:
+            return pd.DataFrame(columns=out_cols)
+
+        received = horizon["qty_received_kg"].fillna(0.0)
+        if "qty_rejected_kg" in horizon.columns:
+            rejected = horizon["qty_rejected_kg"].fillna(0.0)
+        else:
+            rejected = 0.0
+        horizon["qty_accepted_kg"] = (received - rejected).clip(lower=0.0)
+
         return (
-            train_supply.groupby(["supplier_id", "product_id"])["capacity_kg"]
+            horizon.groupby(["supplier_id", "product_id"])["qty_accepted_kg"]
             .sum()
             .reset_index()
-            .rename(columns={"capacity_kg": "actual_available_kg"})
+            .rename(columns={"qty_accepted_kg": "actual_available_kg"})
         )
 
     @staticmethod

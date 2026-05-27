@@ -26,6 +26,8 @@ import pandas as pd
 class TwoStageStochasticLP:
     spot_cost_multiplier: float = 1.30
     waste_cost_per_kg: float = 0.50
+    lost_sale_per_kg_usd: float = 2.50         # marginal cost of leaving demand unmet
+    spot_capacity_factor: float | None = None  # cap stage-2 spot at ρ × demand_jω; None = unlimited
     solver: str = "highs"
     time_limit_s: float = 300.0
     n_scenarios: int = 100
@@ -82,8 +84,9 @@ class TwoStageStochasticLP:
         model.x = pyo.Var(model.IJ, domain=pyo.NonNegativeReals)
 
         # Stage 2: recourse (per scenario)
-        model.s = pyo.Var(model.J, model.W, domain=pyo.NonNegativeReals)  # spot
-        model.w = pyo.Var(model.J, model.W, domain=pyo.NonNegativeReals)  # waste
+        model.s = pyo.Var(model.J, model.W, domain=pyo.NonNegativeReals)   # spot
+        model.w = pyo.Var(model.J, model.W, domain=pyo.NonNegativeReals)   # waste
+        model.u = pyo.Var(model.J, model.W, domain=pyo.NonNegativeReals)   # unmet
 
         def obj_rule(m):
             first_stage = sum(price.get((i,j), 2.0) * m.x[i,j] for (i,j) in m.IJ)
@@ -91,6 +94,7 @@ class TwoStageStochasticLP:
                 weights.get(omega, 1.0/len(scenarios)) * (
                     sum(avg_price[j] * self.spot_cost_multiplier * m.s[j,omega] for j in m.J)
                     + sum(self.waste_cost_per_kg * m.w[j,omega] for j in m.J)
+                    + sum(self.lost_sale_per_kg_usd * m.u[j,omega] for j in m.J)
                 )
                 for omega in m.W
             )
@@ -98,10 +102,10 @@ class TwoStageStochasticLP:
 
         model.obj = pyo.Objective(rule=obj_rule, sense=pyo.minimize)
 
-        # Demand balance per scenario
+        # Demand balance per scenario, with unmet slack
         def balance(m, j, omega):
             supply_sum = sum(m.x[ii,jj] for (ii,jj) in m.IJ if jj==j)
-            return supply_sum + m.s[j,omega] - m.w[j,omega] == d.get((omega,j), 0.0)
+            return supply_sum + m.s[j,omega] - m.w[j,omega] + m.u[j,omega] == d.get((omega,j), 0.0)
 
         model.balance = pyo.Constraint(model.J, model.W, rule=balance)
 
@@ -110,6 +114,15 @@ class TwoStageStochasticLP:
             return m.x[i,j] <= cap.get((i,j), 0.0)
 
         model.supply_cap = pyo.Constraint(model.IJ, rule=supply_cap)
+
+        # Stage-2 spot ration: s_jω ≤ ρ · d_jω
+        if self.spot_capacity_factor is not None:
+            ρ = float(self.spot_capacity_factor)
+
+            def spot_cap_rule(m, j, omega):
+                return m.s[j, omega] <= ρ * d.get((omega, j), 0.0)
+
+            model.spot_cap = pyo.Constraint(model.J, model.W, rule=spot_cap_rule)
 
         solver_factory = SolverFactory("appsi_highs" if self.solver == "highs" else self.solver)
         solver_factory.options["time_limit"] = self.time_limit_s
@@ -121,10 +134,12 @@ class TwoStageStochasticLP:
         x_vals = {k: pyo.value(v) for k, v in model.x.items()}
         s_vals = {(j,w): pyo.value(model.s[j,w]) for j in model.J for w in model.W}
         w_vals = {(j,w): pyo.value(model.w[j,w]) for j in model.J for w in model.W}
+        u_vals = {(j,w): pyo.value(model.u[j,w]) for j in model.J for w in model.W}
 
         # VSS and EVPI approximations
         total_spot = sum(v * weights.get(w, 0) for (j,w), v in s_vals.items() if v and v > 0)
         total_waste = sum(v * weights.get(w, 0) for (j,w), v in w_vals.items() if v and v > 0)
+        total_unmet = sum(v * weights.get(w, 0) for (j,w), v in u_vals.items() if v and v > 0)
 
         return {
             "status": status,
@@ -132,9 +147,11 @@ class TwoStageStochasticLP:
             "x": x_vals,
             "spot": s_vals,
             "waste": w_vals,
+            "unmet": u_vals,
             "model": model,
             "expected_spot_kg": total_spot,
             "expected_waste_kg": total_waste,
+            "expected_unmet_kg": total_unmet,
         }
 
     def compute_vss(

@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HarvestMind Diagnostic Report — {{ partner_name }}</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3e;
+    --text: #e8eaf0;
+    --muted: #7c8099;
+    --accent: #4ade80;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --info: #60a5fa;
+    --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font); font-size: 13px;
+    line-height: 1.6; padding: 40px 48px;
+  }
+  /* ── Header ── */
+  .report-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px; margin-bottom: 32px;
+  }
+  .report-header h1 {
+    font-size: 22px; font-weight: 600; color: var(--text);
+  }
+  .report-header .meta {
+    color: var(--muted); font-size: 12px; margin-top: 4px;
+  }
+  /* ── Section ── */
+  .section { margin-bottom: 36px; }
+  .section-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px; margin-bottom: 16px;
+  }
+  /* ── KPI Grid ── */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px;
+  }
+  .kpi-label { color: var(--muted); font-size: 11px; margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: var(--text); }
+  .kpi-value.danger { color: var(--danger); }
+  .kpi-value.warn { color: var(--warn); }
+  .kpi-value.good { color: var(--accent); }
+  /* ── Table ── */
+  table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface); border-radius: 8px; overflow: hidden;
+  }
+  th {
+    background: #1f2233; color: var(--muted);
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 10px 14px; text-align: left;
+  }
+  td {
+    padding: 9px 14px; border-top: 1px solid var(--border);
+    color: var(--text); font-size: 12px;
+  }
+  tr:hover td { background: #1f2233; }
+  /* ── Risk Badges ── */
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+  }
+  .risk-high { background: rgba(248,113,113,0.15); color: var(--danger); }
+  .risk-medium { background: rgba(251,191,36,0.15); color: var(--warn); }
+  .risk-low { background: rgba(74,222,128,0.15); color: var(--accent); }
+  /* ── Rec Card ── */
+  .rec-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 18px; margin-bottom: 10px;
+  }
+  .rec-card.high { border-left: 3px solid var(--danger); }
+  .rec-card.medium { border-left: 3px solid var(--warn); }
+  .rec-card.low { border-left: 3px solid var(--accent); }
+  .rec-product { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .rec-text { color: var(--muted); font-size: 12px; line-height: 1.5; }
+  .rec-meta {
+    display: flex; gap: 16px; margin-top: 8px;
+    font-size: 11px; color: var(--muted);
+  }
+  .rec-meta span strong { color: var(--text); }
+  /* ── Progress bar ── */
+  .progress-bar {
+    height: 6px; background: var(--border);
+    border-radius: 3px; overflow: hidden; margin-top: 4px;
+  }
+  .progress-fill { height: 100%; border-radius: 3px; }
+  /* ── Savings box ── */
+  .savings-box {
+    background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 10px; padding: 24px; text-align: center;
+  }
+  .savings-box .big { font-size: 36px; font-weight: 700; color: var(--accent); }
+  .savings-box .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  /* ── Footer ── */
+  .report-footer {
+    border-top: 1px solid var(--border); padding-top: 20px;
+    color: var(--muted); font-size: 11px; margin-top: 48px;
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 11px; background: rgba(255,255,255,0.07);
+    padding: 1px 5px; border-radius: 3px;
+  }
+  @media print {
+    body { background: white; color: #111; padding: 24px; font-size: 12px; }
+    :root {
+      --bg: white; --surface: #f8f9fa; --border: #dee2e6;
+      --text: #212529; --muted: #6c757d;
+    }
+    .kpi-value.danger { color: #dc3545; }
+    .kpi-value.warn { color: #fd7e14; }
+    .kpi-value.good { color: #198754; }
+    .risk-high { background: #fce8e8; color: #dc3545; }
+    .risk-medium { background: #fff3cd; color: #856404; }
+    .risk-low { background: #d1e7dd; color: #0f5132; }
+    .savings-box { background: #f0fdf4; border-color: #86efac; }
+    .savings-box .big { color: #15803d; }
+    code { background: #f1f3f5; }
+    .rec-card.high { border-left-color: #dc3545; }
+    .rec-card.medium { border-left-color: #fd7e14; }
+    .rec-card.low { border-left-color: #198754; }
+    .report-footer { color: #6c757d; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Report Header ── -->
+<div class="report-header">
+  <h1>HarvestMind Diagnostic Report — {{ partner_name }}</h1>
+  <div class="meta">
+    Generated {{ generated_date }} &nbsp;·&nbsp;
+    {{ period_days }}-day lookback window &nbsp;·&nbsp;
+    {% set total_rows = row_counts.values() | sum %}
+    {{ total_rows }} total records analyzed
+  </div>
+</div>
+
+<!-- ── 1. Executive Summary ── -->
+<div class="section">
+  <div class="section-title">1. Executive Summary</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Estimated Waste Loss</div>
+      <div class="kpi-value danger">{{ total_waste_loss_usd | fmt_usd }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Estimated Shortage Loss</div>
+      <div class="kpi-value danger">{{ total_shortage_loss_usd | fmt_usd }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Traceability Completeness</div>
+      <div class="kpi-value {% if traceability_completeness_pct >= 0.95 %}good{% elif traceability_completeness_pct >= 0.5 %}warn{% else %}danger{% endif %}">
+        {{ traceability_completeness_pct | fmt_pct }}
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Risky Suppliers</div>
+      <div class="kpi-value {% if n_risky_suppliers == 0 %}good{% elif n_risky_suppliers <= 2 %}warn{% else %}danger{% endif %}">
+        {{ n_risky_suppliers }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 2. Data Quality ── -->
+<div class="section">
+  <div class="section-title">2. Data Quality</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Table</th><th>Rows Loaded</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tname, count in row_counts.items() %}
+      <tr>
+        <td>{{ tname }}</td>
+        <td>{{ count }}</td>
+        <td>
+          <span class="badge {% if count > 0 %}risk-low{% else %}risk-high{% endif %}">
+            {% if count > 0 %}Loaded{% else %}Empty{% endif %}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ── 3. Waste Loss ── -->
+<div class="section">
+  <div class="section-title">3. Estimated Waste Loss — {{ total_waste_loss_usd | fmt_usd }}</div>
+  {% if waste.by_product %}
+  <table>
+    <thead>
+      <tr><th>Product</th><th>Qty Lost (kg)</th><th>Loss ($)</th></tr>
+    </thead>
+    <tbody>
+      {% for row in waste.by_product %}
+      <tr>
+        <td>{{ row.product_name or '—' }}</td>
+        <td>{{ "%.1f" | format(row.quantity_lost_kg or 0) }}</td>
+        <td>{{ row.loss_usd | fmt_usd }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);font-size:12px;">No waste data loaded.</p>
+  {% endif %}
+</div>
+
+<!-- ── 4. Shortage Loss ── -->
+<div class="section">
+  <div class="section-title">4. Estimated Shortage Loss — {{ total_shortage_loss_usd | fmt_usd }}</div>
+  {% if shortage.by_product %}
+  <table>
+    <thead>
+      <tr><th>Product</th><th>Missed (kg)</th><th>Loss ($)</th></tr>
+    </thead>
+    <tbody>
+      {% for row in shortage.by_product %}
+      <tr>
+        <td>{{ row.product_name or '—' }}</td>
+        <td>{{ "%.1f" | format(row.missed_kg or 0) }}</td>
+        <td>{{ row.loss_usd | fmt_usd }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);font-size:12px;">No order fulfillment data loaded.</p>
+  {% endif %}
+</div>
+
+<!-- ── 5. Supplier Reliability ── -->
+<div class="section">
+  <div class="section-title">5. Supplier Reliability</div>
+  {% if supplier.suppliers %}
+  <table>
+    <thead>
+      <tr>
+        <th>Supplier</th><th>Deliveries</th>
+        <th>Fill Rate</th><th>Rejection Rate</th><th>Risk</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in supplier.suppliers %}
+      <tr>
+        <td>{{ s.supplier_name or s.supplier_id or '—' }}</td>
+        <td>{{ s.n_deliveries }}</td>
+        <td>{{ s.fill_rate | fmt_pct }}</td>
+        <td>{{ s.rejection_rate | fmt_pct }}</td>
+        <td><span class="badge {{ s.risk_level | risk_class }}">{{ s.risk_level }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);font-size:12px;">No supplier delivery data loaded.</p>
+  {% endif %}
+</div>
+
+<!-- ── 6. Buyer Fulfillment Risk ── -->
+<div class="section">
+  <div class="section-title">6. Buyer Fulfillment Risk</div>
+  {% if buyer.buyers %}
+  <table>
+    <thead>
+      <tr>
+        <th>Buyer</th><th>Orders</th>
+        <th>Fulfillment</th><th>Missed Rate</th><th>Risk</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in buyer.buyers %}
+      <tr>
+        <td>{{ b.buyer_name or b.buyer_id or '—' }}</td>
+        <td>{{ b.n_orders }}</td>
+        <td>{{ b.fulfillment_rate | fmt_pct }}</td>
+        <td>{{ b.missed_rate | fmt_pct }}</td>
+        <td><span class="badge {{ b.risk_level | risk_class }}">{{ b.risk_level }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);font-size:12px;">No buyer order data loaded.</p>
+  {% endif %}
+</div>
+
+<!-- ── 7. Inventory Risk ── -->
+<div class="section">
+  <div class="section-title">7. Inventory Risk</div>
+  {% if atp.products %}
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th><th>On Hand (kg)</th><th>Committed (kg)</th>
+        <th>Near Expiry (kg)</th><th>ATP (kg)</th><th>Risk</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in atp.products %}
+      <tr>
+        <td>{{ p.product_name or '—' }}</td>
+        <td>{{ p.total_on_hand_kg }}</td>
+        <td>{{ p.committed_kg }}</td>
+        <td>{{ p.near_expiry_kg }}</td>
+        <td><strong>{{ p.atp_kg }}</strong></td>
+        <td><span class="badge {{ p.risk_level | risk_class }}">{{ p.risk_level }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);font-size:12px;">No inventory lot data loaded.</p>
+  {% endif %}
+</div>
+
+<!-- ── 8. Traceability Readiness ── -->
+<div class="section">
+  <div class="section-title">8. Traceability Readiness</div>
+  {% set t = traceability %}
+  <div style="display:flex;gap:24px;margin-bottom:16px;">
+    <div>
+      <div style="color:var(--muted);font-size:11px;">Complete Lots</div>
+      <div style="font-size:20px;font-weight:700;">{{ t.complete_lots or 0 }} / {{ t.total_lots or 0 }}</div>
+    </div>
+    <div>
+      <div style="color:var(--muted);font-size:11px;">Completeness</div>
+      <div style="font-size:20px;font-weight:700;color:{% if (t.completeness_pct or 0) >= 0.9 %}var(--accent){% elif (t.completeness_pct or 0) >= 0.5 %}var(--warn){% else %}var(--danger){% endif %};">
+        {{ t.completeness_pct | fmt_pct }}
+      </div>
+    </div>
+  </div>
+  {% if t.missing_breakdown %}
+  <table>
+    <thead><tr><th>Missing Field</th><th>Lots Affected</th></tr></thead>
+    <tbody>
+      {% for field, count in t.missing_breakdown.items() %}
+      <tr><td>{{ field }}</td><td>{{ count }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+<!-- ── 9. Available-to-Promise Recommendations ── -->
+<div class="section">
+  <div class="section-title">9. Available-to-Promise Recommendations</div>
+  {% if recommendations %}
+    {% for rec in recommendations %}
+    <div class="rec-card {{ rec.risk_level | lower }}">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="rec-product">{{ rec.product_name }}</div>
+        <span class="badge {{ rec.risk_level | risk_class }}">{{ rec.risk_level }}</span>
+      </div>
+      <div class="rec-text" style="margin-top:6px;">{{ rec.recommendation_text }}</div>
+      <div class="rec-meta">
+        <span>ATP: <strong>{{ rec.atp_kg }} kg</strong></span>
+        <span>Safe Commit: <strong>{{ rec.safe_commit_kg }} kg</strong></span>
+        <span>Holdback: <strong>{{ rec.holdback_kg }} kg</strong></span>
+        <span>Supplier Fill: <strong>{{ rec.supplier_fill_rate | fmt_pct }}</strong></span>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+  <p style="color:var(--muted);font-size:12px;">No inventory data available for recommendations.</p>
+  {% endif %}
+</div>
+
+<!-- ── 10. Top 5 Operational Risks ── -->
+<div class="section">
+  <div class="section-title">10. Top 5 Operational Risks</div>
+  {% if top_risks %}
+  <table>
+    <thead><tr><th>Category</th><th>Product / Item</th><th>Loss ($)</th></tr></thead>
+    <tbody>
+      {% for risk in top_risks %}
+      <tr>
+        <td>
+          <span class="badge {% if risk.category == 'Waste' %}risk-high{% else %}risk-medium{% endif %}">
+            {{ risk.category }}
+          </span>
+        </td>
+        <td>{{ risk.item }}</td>
+        <td>{{ risk.loss_usd | fmt_usd }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+<!-- ── 11. Estimated Annual Savings Opportunity ── -->
+<div class="section">
+  <div class="section-title">11. Estimated Annual Savings Opportunity</div>
+  <div class="savings-box">
+    <div class="big">{{ savings.estimated_annual_savings_usd | fmt_usd }}</div>
+    <div class="sub">
+      Estimated annual savings assuming
+      {{ "%.0f" | format((savings.reduction_pct_assumed or 0.30) * 100) }}% reduction
+      of addressable loss ({{ savings.addressable_loss_usd | fmt_usd }} total identified).
+    </div>
+    <div style="margin-top:16px;color:var(--muted);font-size:11px;">
+      Based on USDA SR-77 research benchmarks: 15–30% cost reduction vs. naive planning.
+    </div>
+  </div>
+</div>
+
+<!-- ── 12. Suggested Next Steps ── -->
+<div class="section">
+  <div class="section-title">12. Suggested Next Steps</div>
+  <table>
+    <thead><tr><th>#</th><th>Action</th><th>Priority</th></tr></thead>
+    <tbody>
+      {% if n_risky_suppliers > 0 %}
+      <tr>
+        <td>1</td>
+        <td>Review supplier contracts for the {{ n_risky_suppliers }} supplier(s) with fill rate below 80%. Require minimum fill-rate SLAs or build 15% supply buffer.</td>
+        <td><span class="badge risk-high">High</span></td>
+      </tr>
+      {% endif %}
+      {% if (traceability_completeness_pct or 0) < 0.9 %}
+      <tr>
+        <td>2</td>
+        <td>Complete missing traceability fields (lot ID, arrival date, supplier ID) to reach FSMA-204 readiness. Currently at {{ traceability_completeness_pct | fmt_pct }}.</td>
+        <td><span class="badge risk-high">High</span></td>
+      </tr>
+      {% endif %}
+      {% if total_waste_loss_usd > 0 %}
+      <tr>
+        <td>3</td>
+        <td>Implement FEFO (first-expired, first-out) picking for near-expiry lots to reduce the {{ total_waste_loss_usd | fmt_usd }} waste loss identified.</td>
+        <td><span class="badge risk-medium">Medium</span></td>
+      </tr>
+      {% endif %}
+      {% if n_risky_buyers > 0 %}
+      <tr>
+        <td>4</td>
+        <td>Review buyer fulfillment performance. {{ n_risky_buyers }} buyer(s) have fulfillment rate below 90%. Adjust commitment targets or buyer communication cadence.</td>
+        <td><span class="badge risk-medium">Medium</span></td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td>5</td>
+        <td>Deploy HarvestMind in live mode to generate weekly available-to-promise recommendations before commitment windows open.</td>
+        <td><span class="badge risk-low">Low</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ── 13. Assumptions & Limitations ── -->
+<div class="section">
+  <div class="section-title">13. Assumptions &amp; Limitations</div>
+  <p style="color:var(--muted);font-size:12px;margin-bottom:14px;">
+    This report is a <strong style="color:var(--text)">diagnostic estimate</strong>, not a financial audit.
+    All figures are derived from the CSV data uploaded to HarvestMind and should be verified
+    against accounting records before use in external reporting.
+  </p>
+  <table>
+    <thead>
+      <tr><th style="width:28%">Area</th><th>Assumption / Limitation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Waste loss valuation</strong></td>
+        <td>
+          Dollar loss is taken from the <code>estimated_value_lost</code> field in the waste log.
+          When that field is blank, HarvestMind uses the average unit cost from supplier deliveries.
+          If no cost data exists, loss is recorded as $0 — understating true waste value.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Shortage loss valuation</strong></td>
+        <td>
+          Calculated as missed quantity × <code>sales_price</code> from the order record.
+          Orders with no sales price contribute $0 to shortage loss.
+          Substituted orders are counted as fulfilled, not missed.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Lot expiry dates</strong></td>
+        <td>
+          Near-expiry and expired flags depend entirely on the
+          <code>expiration_date</code> column in the inventory lots file.
+          HarvestMind does not infer expiry from arrival date + default shelf life.
+          Missing expiry dates will cause lots to be treated as non-expiring.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Near-expiry threshold</strong></td>
+        <td>
+          Lots expiring within 3 calendar days are flagged near-expiry.
+          This threshold suits most fresh produce; operators with longer-shelf-life
+          products (e.g., roots, dried goods) may wish to adjust.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Traceability scope</strong></td>
+        <td>
+          Completeness is measured across 6 fields: lot ID, product ID, supplier ID,
+          arrival date, quantity on hand, and unit.
+          Full FSMA-204 compliance requires additional fields (harvest date, receiver info,
+          transformation records) that are outside the current data model.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Savings annualization</strong></td>
+        <td>
+          Period losses are divided by {{ period_days }} days and multiplied by 365 to
+          estimate annual exposure. This assumes the analyzed period is representative of
+          the full year. Seasonal operations should interpret this conservatively.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Savings reduction %</strong></td>
+        <td>
+          The {{ "%.0f" | format((savings.reduction_pct_assumed or 0.30) * 100) }}% reduction assumption
+          is based on USDA Agricultural Research Service (SR-77) benchmarks for produce hubs
+          adopting improved inventory and fulfillment practices.
+          Actual savings depend on which recommendations are implemented.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Data completeness</strong></td>
+        <td>
+          Results are only as reliable as the uploaded data.
+          A table with zero rows produces zero loss figures — not zero actual loss.
+          All 5 staging tables should be populated for a meaningful diagnostic.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ── Footer ── -->
+<div class="report-footer">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;">
+    <div>
+      HarvestMind &middot; Diagnostic Report &middot; Generated {{ generated_date }} &middot;
+      Confidential — prepared for <strong>{{ partner_name }}</strong>.
+    </div>
+    <div style="font-size:10px;opacity:0.7;">
+      This document contains estimates derived from operator-supplied data.
+      Not for use in financial statements without independent verification.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

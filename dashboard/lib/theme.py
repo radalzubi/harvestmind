@@ -80,14 +80,37 @@ html, body, [class*="css"], .stApp {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
 }
-.stApp > header { background: transparent; }
+
+/* Hide the Streamlit top toolbar — it clashes with the light theme */
+header[data-testid="stHeader"] {
+    display: none !important;
+}
+/* Reclaim the space the hidden header left */
+.stApp > .stMain { margin-top: 0 !important; }
 
 /* Constrain main column for readability */
 .block-container {
-    padding-top: 2.0rem !important;
+    padding-top: 1.5rem !important;
     padding-bottom: 4rem !important;
     max-width: 1240px;
 }
+
+/* Sidebar nav links — make unselected items readable */
+[data-testid="stSidebarNavLink"] {
+    color: var(--hm-ink-muted) !important;
+    border-radius: 6px !important;
+}
+[data-testid="stSidebarNavLink"]:hover {
+    background: var(--hm-surface-alt) !important;
+    color: var(--hm-ink) !important;
+}
+[data-testid="stSidebarNavLink"][aria-current="page"] {
+    background: var(--hm-surface-alt) !important;
+    color: var(--hm-ink) !important;
+    font-weight: 600 !important;
+}
+/* Nav link icon tint */
+[data-testid="stSidebarNavLink"] svg { opacity: 0.6; }
 
 /* Sidebar */
 section[data-testid="stSidebar"] {
@@ -107,42 +130,42 @@ section[data-testid="stSidebar"] .stMarkdown {
 /* Headings */
 h1, h2, h3, h4 {
     color: var(--hm-ink) !important;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
 }
-h1 { font-weight: 700 !important; font-size: 1.6rem !important; margin-bottom: 0.25rem !important; }
-h2 { font-weight: 600 !important; font-size: 1.15rem !important; margin: 1.25rem 0 0.5rem !important; }
-h3 { font-weight: 600 !important; font-size: 1.0rem !important; margin: 1rem 0 0.4rem !important; }
+h1 { font-weight: 600 !important; font-size: 1.4rem !important; margin-bottom: 0.25rem !important; }
+h2 { font-weight: 600 !important; font-size: 0.95rem !important; margin: 1.5rem 0 0.6rem !important; }
+h3 { font-weight: 600 !important; font-size: 0.88rem !important; margin: 1rem 0 0.4rem !important; }
 
 /* Page header subtitle */
 .hm-subtitle {
     color: var(--hm-ink-muted);
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    margin-bottom: 1.75rem;
 }
 
 /* Metric (KPI) card */
 .hm-card {
     background: var(--hm-surface);
     border: 1px solid var(--hm-line);
-    border-radius: 10px;
-    padding: 16px 18px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    border-radius: 8px;
+    padding: 18px 20px;
     height: 100%;
 }
 .hm-card .hm-label {
     color: var(--hm-ink-muted);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.4rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
 }
 .hm-card .hm-value {
     color: var(--hm-ink);
-    font-size: 1.8rem;
-    font-weight: 700;
+    font-size: 1.65rem;
+    font-weight: 600;
     line-height: 1.1;
     margin: 0.05rem 0;
+    letter-spacing: -0.02em;
 }
 .hm-card .hm-delta {
     font-size: 0.82rem;
@@ -247,9 +270,22 @@ h3 { font-weight: 600 !important; font-size: 1.0rem !important; margin: 1rem 0 0
 }
 
 /* Streamlit dataframe table polish */
-[data-testid="stDataFrame"] div[role="grid"] {
+[data-testid="stDataFrame"] {
     border: 1px solid var(--hm-line) !important;
     border-radius: 8px !important;
+    overflow: hidden !important;
+}
+[data-testid="stDataFrame"] div[role="grid"] {
+    border-radius: 8px !important;
+}
+/* Ensure table header row uses light surface */
+[data-testid="stDataFrame"] [role="columnheader"] {
+    background: var(--hm-surface-alt) !important;
+    color: var(--hm-ink-muted) !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
 }
 
 /* Tabs */
@@ -312,18 +348,33 @@ def apply(*, page_title: str, page_icon: str = "🌾") -> None:
         initial_sidebar_state="expanded",
     )
     st.markdown(_GLOBAL_CSS, unsafe_allow_html=True)
+    with st.sidebar:
+        st.markdown(
+            '<div style="padding:4px 4px 14px;display:flex;align-items:center;gap:8px;">'
+            '<div style="width:22px;height:22px;border-radius:6px;background:#0F766E;'
+            'display:flex;align-items:center;justify-content:center;color:white;'
+            'font-weight:700;font-size:0.75rem;letter-spacing:0.02em;">H</div>'
+            '<div style="font-size:0.95rem;font-weight:600;color:#0F172A;'
+            'letter-spacing:-0.01em;">HarvestMind</div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
 
 
-def page_header(title: str, subtitle: str, *, eyebrow: str | None = None) -> None:
-    """Render the consistent page title block."""
+def page_header(title: str, subtitle: str | None = None, *, eyebrow: str | None = None) -> None:
+    """Render the page title block. Eyebrow is intentionally rare — reserved for
+    cases where the section context isn't clear from the sidebar selection."""
     if eyebrow:
         st.markdown(
-            f'<div style="color:{INK_MUTED};font-size:0.75rem;letter-spacing:0.06em;'
-            f'text-transform:uppercase;margin-bottom:0.25rem;">{eyebrow}</div>',
+            f'<div style="color:{INK_FAINT};font-size:0.7rem;letter-spacing:0.08em;'
+            f'text-transform:uppercase;margin-bottom:0.3rem;font-weight:500;">{eyebrow}</div>',
             unsafe_allow_html=True,
         )
     st.markdown(f'<h1 style="margin-top:0;">{title}</h1>', unsafe_allow_html=True)
-    st.markdown(f'<div class="hm-subtitle">{subtitle}</div>', unsafe_allow_html=True)
+    if subtitle:
+        st.markdown(f'<div class="hm-subtitle">{subtitle}</div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div style="margin-bottom:1.5rem;"></div>', unsafe_allow_html=True)
 
 
 def plotly_layout(*, height: int = 320, title: str | None = None) -> dict:

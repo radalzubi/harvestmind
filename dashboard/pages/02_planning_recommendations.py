@@ -14,13 +14,13 @@ sys.path.insert(0, str(ROOT))
 import pandas as pd
 import streamlit as st
 
-from dashboard.components.badges import risk_badge, neutral_badge, info_badge
-from dashboard.components.cards import caveat, section
+from dashboard.components.badges import risk_badge, info_badge
+from dashboard.components.cards import section
 from dashboard.components.empty import db_unavailable, empty_state
 from dashboard.lib import db, metrics, theme
 from dashboard.lib.formatters import fmt_kg, fmt_percent
 
-theme.apply(page_title="Planning Recommendations")
+theme.apply(page_title="Recommendations")
 
 if not db.is_available():
     db_unavailable()
@@ -32,57 +32,28 @@ conn = db.get_conn()
 recs = metrics.recommendation_table(conn)
 
 with st.sidebar:
-    st.markdown("### Filters")
     if recs.empty:
-        st.caption("No data — filters disabled.")
         product_filter = None
         risk_filter = None
         text_filter = ""
     else:
         product_choices = ["All products"] + recs["product"].dropna().tolist()
-        product_filter = st.selectbox("Product / SKU", product_choices)
-        risk_choices = ["All risk levels", "Low", "Medium", "High", "Critical"]
+        product_filter = st.selectbox("Product", product_choices)
         risk_filter = st.selectbox(
             "Shortage risk",
-            risk_choices,
-            help="Filter by recommended shortage-risk classification.",
+            ["All risk levels", "Low", "Medium", "High", "Critical"],
         )
-        text_filter = st.text_input("Search explanations", "")
-    st.divider()
-    st.caption("Buyer / supplier filters become active when the optimiser writes "
-               "scenario-level recommendations to `planning_recommendations`.")
+        text_filter = st.text_input("Search", "")
 
 # ── Header ────────────────────────────────────────────────────────────────
-theme.page_header(
-    eyebrow="Page 2 of 7",
-    title="Planning Recommendations",
-    subtitle=(
-        "Per-SKU commitment guidance for the upcoming planning week. "
-        "Recommendations are written in operational language; click any row to "
-        "see the underlying reasoning."
-    ),
-)
+theme.page_header(title="Recommendations")
 
 if recs.empty:
     empty_state(
-        "No recommendations yet",
-        "Run the optimiser (`make backtest` or POST /planning/run) or load order "
-        "history covering at least 8 weeks. Recommendations will appear here once "
-        "the model has enough signal.",
+        "No recommendations available",
+        "Recommendations appear once at least 8 weeks of order history are loaded.",
     )
     st.stop()
-
-# Source banner: currently always actuals-derived heuristic
-if "source" in recs.columns and recs["source"].iloc[0] == "actuals-derived heuristic":
-    st.markdown(
-        '<div class="hm-caveat" style="margin-bottom:18px;">'
-        "<b>Source:</b> these recommendations are an actuals-derived heuristic "
-        "(8-week mean ± standard deviation) computed at page load. They are NOT "
-        "the output of the stochastic optimiser. Run a backtest or planning job "
-        "to populate <code>planning_recommendations</code> with the optimised plan."
-        '</div>',
-        unsafe_allow_html=True,
-    )
 
 # Apply filters
 filtered = recs.copy()
@@ -100,30 +71,26 @@ high_waste = (filtered["waste_risk"].isin(["High", "Critical"])).sum()
 spot_exposed = (filtered["spot_exposure"] > 0.15).sum()
 
 c1, c2, c3, c4 = st.columns(4, gap="medium")
-for col, (label, val, sub) in zip(
+for col, (label, val) in zip(
     [c1, c2, c3, c4],
     [
-        ("SKUs in plan", n_rows, "Rows after filters"),
-        ("High shortage risk", high_short, "Recommend extra reserve"),
-        ("High waste risk", high_waste, "Tighten commit; check shelf life"),
-        ("Spot-exposed", spot_exposed, "Spot share above 15%"),
+        ("SKUs in plan", n_rows),
+        ("Shortage risk", high_short),
+        ("Waste risk", high_waste),
+        ("Spot exposed", spot_exposed),
     ],
 ):
     with col:
         st.markdown(
             f'<div class="hm-card"><div class="hm-label">{label}</div>'
-            f'<div class="hm-value">{val}</div>'
-            f'<div class="hm-sub">{sub}</div></div>',
+            f'<div class="hm-value">{val}</div></div>',
             unsafe_allow_html=True,
         )
 
 st.write("")
 
 # ── Recommendation table ──────────────────────────────────────────────────
-section(
-    "Recommended commitments",
-    "Sorted by demand. Click a row to see the reasoning.",
-)
+section("Recommended commitments")
 
 if filtered.empty:
     empty_state("No rows match filters", "Adjust filters in the sidebar.")
@@ -153,13 +120,10 @@ else:
         },
     )
 
-    section(
-        "Why these recommendations?",
-        "Per-SKU explanation — expand a row for the operational rationale.",
-    )
+    section("Reasoning")
     for _, row in filtered.iterrows():
         with st.expander(
-            f"{row['product']} · commit {fmt_kg(row['recommended_commit_kg'])}",
+            f"{row['product']} · {fmt_kg(row['recommended_commit_kg'])}",
             expanded=False,
         ):
             badges_html = "".join([
@@ -168,9 +132,6 @@ else:
                 risk_badge(row['waste_risk']),
                 "&nbsp;",
                 (info_badge("Spot exposed") if row['spot_exposure'] > 0.15 else ""),
-                "&nbsp;",
-                (neutral_badge("Heuristic source")
-                 if row.get('source') == "actuals-derived heuristic" else ""),
             ])
             st.markdown(
                 f"<div style='margin-bottom:0.6rem;'>{badges_html}</div>"
@@ -181,29 +142,9 @@ else:
                 f"</div>",
                 unsafe_allow_html=True,
             )
-            override = st.text_input(
-                "Planner override (kg, optional)",
+            st.text_input(
+                "Override (kg)",
                 value="",
                 key=f"override_{row['product_id']}",
-                placeholder="Leave blank to accept the recommended quantity.",
+                placeholder="Accept recommended quantity by leaving blank",
             )
-            if override:
-                st.info(
-                    f"Override captured: {override} kg. "
-                    "(Override persistence requires a wired-up planning store; "
-                    "see TODO in `dashboard/pages/02_planning_recommendations.py`.)"
-                )
-
-# ── Caveat ────────────────────────────────────────────────────────────────
-with st.expander("How shortage / waste risk are scored", expanded=False):
-    caveat(
-        "<b>Risk classification</b> (heuristic source). "
-        "<b>Shortage risk</b>: <i>High</i> if historical spot-exposure on this "
-        "SKU exceeds 20% of volume; <i>Medium</i> at 10–20%; <i>Low</i> below 10%. "
-        "<b>Waste risk</b>: <i>High</i> if recent waste exceeds 200 kg, "
-        "<i>Medium</i> at 50–200 kg, <i>Low</i> below 50 kg. "
-        "These thresholds are tunable via the <code>ASSUMPTIONS</code> dict in "
-        "<code>dashboard/lib/metrics.py</code> and will be replaced by the "
-        "optimiser's per-scenario probability outputs when a planning run is "
-        "stored in <code>planning_recommendations</code>."
-    )

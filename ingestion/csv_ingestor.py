@@ -32,6 +32,12 @@ ALLOWED_TABLES: frozenset[str] = frozenset({
     "dim_locations",
     "dim_logistics_lanes",
     "dim_contracts",
+    # ── Diagnostic staging tables (migration 010) ──────────────────────────
+    "stg_products",
+    "stg_supplier_deliveries",
+    "stg_inventory_lots",
+    "stg_buyer_orders",
+    "stg_waste_adjustments",
 })
 
 ALLOWED_EXTENSIONS: frozenset[str] = frozenset({".csv"})
@@ -63,6 +69,84 @@ COLUMN_MAPS: dict[str, dict[str, str]] = {
         "Qty Received (kg)": "qty_received_kg",
         "Qty Rejected (kg)": "qty_rejected_kg",
         "Rejection Reason": "rejection_reason",
+    },
+    # ── Diagnostic staging table column maps (migration 010) ───────────────
+    # Column names in these maps are common human-readable aliases that
+    # operators may use; the values are the staging-table column names.
+    "stg_products": {
+        "Product ID": "product_id",
+        "Product Name": "product_name",
+        "Category": "category",
+        "Unit": "unit",
+        "Shelf Life (days)": "default_shelf_life_days",
+        "Default Shelf Life Days": "default_shelf_life_days",
+        "Traceability Required": "traceability_required",
+        "FTL Item": "traceability_required",
+    },
+    "stg_supplier_deliveries": {
+        "Delivery ID": "delivery_id",
+        "Supplier ID": "supplier_id",
+        "Supplier Name": "supplier_name",
+        "Product ID": "product_id",
+        "Product Name": "product_name",
+        "Delivery Date": "delivery_date",
+        "Ordered Quantity": "ordered_quantity",
+        "Delivered Quantity": "delivered_quantity",
+        "Accepted Quantity": "accepted_quantity",
+        "Rejected Quantity": "rejected_quantity",
+        "Unit Cost": "unit_cost",
+        "Quality Grade": "quality_grade",
+        "Lot ID": "lot_id",
+    },
+    "stg_inventory_lots": {
+        "Lot ID": "lot_id",
+        "Product ID": "product_id",
+        "Product Name": "product_name",
+        "Supplier ID": "supplier_id",
+        "Quantity On Hand": "quantity_on_hand",
+        "Qty On Hand": "quantity_on_hand",
+        "Unit": "unit",
+        "Arrival Date": "arrival_date",
+        "Expiration Date": "expiration_date",
+        "Expiry Date": "expiration_date",
+        "Warehouse Location": "warehouse_location",
+        "Location": "warehouse_location",
+        "Quality Grade": "quality_grade",
+        "Committed Quantity": "committed_quantity",
+        "Qty Committed": "committed_quantity",
+    },
+    "stg_buyer_orders": {
+        "Order ID": "order_id",
+        "Buyer ID": "buyer_id",
+        "Buyer Name": "buyer_name",
+        "Product ID": "product_id",
+        "Product Name": "product_name",
+        "Order Date": "order_date",
+        "Delivery Date": "delivery_date",
+        "Requested Quantity": "requested_quantity",
+        "Qty Requested": "requested_quantity",
+        "Fulfilled Quantity": "fulfilled_quantity",
+        "Qty Fulfilled": "fulfilled_quantity",
+        "Qty Delivered": "fulfilled_quantity",
+        "Substituted Quantity": "substituted_quantity",
+        "Sales Price": "sales_price",
+        "Price/kg": "sales_price",
+        "Required Quality Grade": "required_quality_grade",
+        "Grade": "required_quality_grade",
+    },
+    "stg_waste_adjustments": {
+        "Adjustment ID": "adjustment_id",
+        "Date": "date",
+        "Event Date": "date",
+        "Product ID": "product_id",
+        "Product Name": "product_name",
+        "Lot ID": "lot_id",
+        "Quantity Lost": "quantity_lost",
+        "Qty Lost": "quantity_lost",
+        "Reason": "reason",
+        "Reason Code": "reason",
+        "Estimated Value Lost": "estimated_value_lost",
+        "Value Lost ($)": "estimated_value_lost",
     },
 }
 
@@ -107,9 +191,9 @@ def ingest_csv(
             f"{sorted(ALLOWED_EXTENSIONS)}"
         )
 
-    if if_exists not in ("ignore", "replace"):
+    if if_exists not in ("ignore", "replace", "append"):
         raise ValueError(
-            f"if_exists must be 'ignore' or 'replace', got {if_exists!r}"
+            f"if_exists must be 'ignore', 'replace', or 'append', got {if_exists!r}"
         )
 
     # ── read + transform ────────────────────────────────────────────────
@@ -137,9 +221,17 @@ def ingest_csv(
     if if_exists == "replace":
         conn.execute(f"DELETE FROM {table}")  # noqa: S608  table is allowlisted
 
-    # Let duckdb errors propagate — silently falling back to a different INSERT
-    # form would mask real schema/parser problems.
-    conn.execute(f"INSERT OR IGNORE INTO {table} SELECT * FROM df")  # noqa: S608
+    if if_exists == "ignore":
+        # Position-based insert — requires UNIQUE/PK constraints on the table.
+        # SELECT * passes all DataFrame columns by position; DuckDB raises if
+        # column counts mismatch, which is the correct behaviour for normalized tables.
+        conn.execute(f"INSERT OR IGNORE INTO {table} SELECT * FROM df")  # noqa: S608
+    else:
+        # For "append" and "replace" (after DELETE): use explicit column names so
+        # that schema columns with DEFAULT values (e.g. imported_at) are not
+        # required in the CSV and receive their defaults automatically.
+        cols = ", ".join(f'"{c}"' for c in df.columns)
+        conn.execute(f'INSERT INTO {table} ({cols}) SELECT {cols} FROM df')  # noqa: S608
     return n
 
 

@@ -4,7 +4,12 @@ import pandas as pd
 import pytest
 from datetime import date
 
-from backtesting.leakage_guard import LeakageGuard, LeakageError, assert_no_future_data
+from backtesting.leakage_guard import (
+    LeakageGuard,
+    LeakageError,
+    assert_dates_in_window,
+    assert_no_future_data,
+)
 
 
 @pytest.fixture
@@ -53,3 +58,25 @@ def test_validate_no_leakage(sample_df):
     future_df = sample_df[sample_df["week_start"] > pd.Timestamp(cutoff)]
     with pytest.raises(LeakageError):
         guard.validate_no_leakage(future_df, "week_start")
+
+
+def test_assert_dates_in_window_passes(sample_df):
+    # Sample dates: Jan 1, 8, 15, 22, 29, ...
+    # Window Jan 8 → Jan 22 covers 3 rows
+    window_df = sample_df[
+        (sample_df["week_start"] >= pd.Timestamp("2024-01-08"))
+        & (sample_df["week_start"] <= pd.Timestamp("2024-01-22"))
+    ]
+    assert_dates_in_window(window_df, "week_start", date(2024, 1, 8), date(2024, 1, 22))
+
+
+def test_assert_dates_in_window_catches_leakage(sample_df):
+    # All 10 rows include both pre- and post- dates outside Jan 8–22.
+    with pytest.raises(LeakageError):
+        assert_dates_in_window(sample_df, "week_start", date(2024, 1, 8), date(2024, 1, 22))
+
+
+def test_assert_dates_in_window_empty_df_ok():
+    empty = pd.DataFrame({"week_start": pd.to_datetime([])})
+    # Should not raise
+    assert_dates_in_window(empty, "week_start", date(2024, 1, 1), date(2024, 12, 31))

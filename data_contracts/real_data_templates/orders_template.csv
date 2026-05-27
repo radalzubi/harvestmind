@@ -1,0 +1,5 @@
+order_id,buyer_id,order_date,week_start,status,notes
+ORD-2025-001,BUY-IU-HEALTH,2025-06-02,2025-06-02,confirmed,Standing weekly produce order
+ORD-2025-002,BUY-MARKET-WAGON,2025-06-02,2025-06-02,confirmed,
+ORD-2025-003,BUY-PURDUE-DINING,2025-06-09,2025-06-09,confirmed,Add lettuce per chef request
+ORD-2025-004,BUY-INDY-PUBLIC-SCHOOLS,2025-06-09,2025-06-09,confirmed,Summer feeding program

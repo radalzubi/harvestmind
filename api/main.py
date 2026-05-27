@@ -7,11 +7,11 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import planning, backtest, data, reports
+from api.routers import planning, backtest, data, fsma, reports, diagnostics, intake
 
 app = FastAPI(
     title="HarvestMind API",
-    description="Stochastic supply planning for Midwest fresh produce distributors",
+    description="Available-to-promise and traceability diagnostics for perishable produce operators",
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -40,7 +40,10 @@ app.add_middleware(
 app.include_router(planning.router)
 app.include_router(backtest.router)
 app.include_router(data.router)
+app.include_router(fsma.router)
 app.include_router(reports.router)
+app.include_router(diagnostics.router)
+app.include_router(intake.router)
 
 
 @app.get("/health")

@@ -1,0 +1,12 @@
+adjustment_id,date,product_id,product_name,lot_id,quantity_lost,reason,estimated_value_lost
+ADJ-001,2026-05-05,P004,Strawberries,LOT-005,30,Spoilage,210.00
+ADJ-002,2026-05-08,P003,Romaine Lettuce,LOT-004,15,Temperature abuse,52.50
+ADJ-003,2026-05-10,P001,Tomatoes,,20,Overripe,50.00
+ADJ-004,2026-05-12,P006,Mixed Greens,LOT-007,8,Wilting,72.00
+ADJ-005,2026-05-14,P004,Strawberries,LOT-005,12,Mold,84.00
+ADJ-006,2026-05-15,P003,Romaine Lettuce,,18,Overripe,63.00
+ADJ-007,2026-05-18,P001,Tomatoes,LOT-003,25,Spoilage,62.50
+ADJ-008,2026-05-20,P002,Cucumbers,LOT-002,10,Bruising,18.00
+ADJ-009,2026-05-22,P006,Mixed Greens,,6,Wilting,57.00
+ADJ-010,2026-05-24,P001,Tomatoes,,8,Overripe,
+ADJ-011,2026-05-25,P004,Strawberries,LOT-008,22,Spoilage,154.00

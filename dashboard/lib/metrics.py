@@ -42,7 +42,7 @@ class HeaderContext:
 
 
 def header_context(conn: duckdb.DuckDBPyConnection,
-                   partner_name: str = "Indiana Pilot Hub") -> HeaderContext:
+                   partner_name: str = "—") -> HeaderContext:
     period = conn.execute(
         "SELECT MIN(week_start), MAX(week_start), COUNT(*) FROM fact_orders"
     ).fetchone()
@@ -233,6 +233,173 @@ def data_quality_score(conn: duckdb.DuckDBPyConnection) -> float:
     if not rows:
         return 0.0
     return sum(r.completeness for r in rows) / len(rows)
+
+
+def full_data_quality_report(conn: duckdb.DuckDBPyConnection) -> dict:
+    """Diagnostic data quality report for the 5 staging tables.
+
+    Checks: row counts, missing required fields, duplicate IDs,
+    referential consistency, date plausibility, negative quantities.
+
+    Returns a dict with:
+      score              0–100 integer
+      tables             per-table detail
+      errors             blocking issues
+      warnings           non-blocking issues
+      total_rows         across all staging tables
+    """
+    import numpy as np
+
+    STAGING_REQUIRED: dict[str, list[str]] = {
+        "stg_products":            ["product_name"],
+        "stg_supplier_deliveries": ["product_name", "delivery_date"],
+        "stg_inventory_lots":      ["product_name", "quantity_on_hand"],
+        "stg_buyer_orders":        ["product_name", "requested_quantity"],
+        "stg_waste_adjustments":   ["product_name", "quantity_lost"],
+    }
+
+    errors: list[str] = []
+    warnings: list[str] = []
+    tables: dict[str, dict] = {}
+    score = 100
+    total_rows = 0
+
+    for table, required_cols in STAGING_REQUIRED.items():
+        try:
+            df = conn.execute(f"SELECT * FROM {table}").df()  # noqa: S608
+        except Exception:
+            errors.append(f"{table}: table not found (migration 010 not applied?)")
+            score -= 10
+            tables[table] = {"row_count": 0, "status": "missing", "issues": []}
+            continue
+
+        n = len(df)
+        total_rows += n
+        table_issues: list[str] = []
+
+        if n == 0:
+            warnings.append(f"{table}: no rows loaded")
+            score -= 2
+            tables[table] = {"row_count": 0, "status": "empty", "issues": ["empty"]}
+            continue
+
+        # Missing required columns
+        for col in required_cols:
+            if col not in df.columns:
+                errors.append(f"{table}.{col}: required column missing from upload")
+                score -= 5
+                table_issues.append(f"missing column: {col}")
+            elif df[col].isna().any():
+                null_pct = round(df[col].isna().mean() * 100, 1)
+                msg = f"{table}.{col}: {null_pct}% null"
+                if null_pct > 20:
+                    errors.append(msg)
+                    score -= 3
+                else:
+                    warnings.append(msg)
+                    score -= 1
+                table_issues.append(f"{null_pct}% null in {col}")
+
+        # Negative quantity checks
+        qty_cols = [
+            c for c in df.columns
+            if any(k in c for k in ("quantity", "qty", "value", "price", "cost"))
+            and df[c].dtype in (float, int, "float64", "int64")
+        ]
+        for qcol in qty_cols:
+            try:
+                neg_count = int(
+                    (pd.to_numeric(df[qcol], errors="coerce").fillna(0) < 0).sum()
+                )
+                if neg_count > 0:
+                    warnings.append(f"{table}.{qcol}: {neg_count} negative values")
+                    score -= 1
+                    table_issues.append(f"{neg_count} negative values in {qcol}")
+            except Exception:
+                pass
+
+        # Date plausibility
+        date_cols = [c for c in df.columns if "date" in c.lower()]
+        for dcol in date_cols:
+            try:
+                parsed = pd.to_datetime(df[dcol], errors="coerce")
+                bad = int(parsed.isna().sum()) - int(df[dcol].isna().sum())
+                if bad > 0:
+                    warnings.append(f"{table}.{dcol}: {bad} unparseable dates")
+                    score -= 1
+                    table_issues.append(f"{bad} unparseable dates in {dcol}")
+                # Future dates warn
+                future = int((parsed > pd.Timestamp.now()).sum())
+                if future > 0:
+                    warnings.append(
+                        f"{table}.{dcol}: {future} future dates (check data)"
+                    )
+                    table_issues.append(f"{future} future dates in {dcol}")
+            except Exception:
+                pass
+
+        # Expiry before arrival (inventory lots only)
+        if table == "stg_inventory_lots":
+            if "arrival_date" in df.columns and "expiration_date" in df.columns:
+                try:
+                    arr = pd.to_datetime(df["arrival_date"], errors="coerce")
+                    exp = pd.to_datetime(df["expiration_date"], errors="coerce")
+                    bad_exp = int(((exp < arr) & arr.notna() & exp.notna()).sum())
+                    if bad_exp > 0:
+                        errors.append(
+                            f"stg_inventory_lots: {bad_exp} lots where "
+                            f"expiration_date < arrival_date"
+                        )
+                        score -= 3
+                        table_issues.append(
+                            f"{bad_exp} lots with expiry before arrival"
+                        )
+                except Exception:
+                    pass
+
+        # Fulfilled > requested (buyer orders)
+        if table == "stg_buyer_orders":
+            if "fulfilled_quantity" in df.columns and "requested_quantity" in df.columns:
+                try:
+                    req = pd.to_numeric(df["requested_quantity"], errors="coerce")
+                    ful = pd.to_numeric(df["fulfilled_quantity"], errors="coerce")
+                    over = int(((ful > req) & req.notna() & ful.notna()).sum())
+                    if over > 0:
+                        warnings.append(
+                            f"stg_buyer_orders: {over} rows where "
+                            f"fulfilled_quantity > requested_quantity"
+                        )
+                        table_issues.append(
+                            f"{over} rows: fulfilled > requested"
+                        )
+                except Exception:
+                    pass
+
+        status = "ok" if not table_issues else (
+            "error" if any(
+                e.startswith(table) for e in errors
+            ) else "warning"
+        )
+        tables[table] = {
+            "row_count": n,
+            "status": status,
+            "issues": table_issues,
+        }
+
+    score = max(0, min(100, score))
+    return {
+        "score": score,
+        "score_label": (
+            "Excellent" if score >= 90 else
+            "Good" if score >= 75 else
+            "Fair" if score >= 50 else
+            "Poor"
+        ),
+        "tables": tables,
+        "errors": errors,
+        "warnings": warnings,
+        "total_rows": total_rows,
+    }
 
 
 # ---------------------------------------------------------------------------

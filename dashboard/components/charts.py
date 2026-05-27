@@ -140,10 +140,16 @@ def horizontal_value_bar(df: pd.DataFrame, *, x: str, y: str,
             marker_color=color,
             text=[f"${v:,.0f}" for v in df[x]] if "usd" in x else [f"{v:,.0f}" for v in df[x]],
             textposition="outside",
+            cliponaxis=False,
             hovertemplate="%{y}: %{x:,.0f}<extra></extra>",
         )
     )
-    fig.update_layout(**plotly_layout(height=max(280, 28 * len(df)), title=title))
+    layout = plotly_layout(height=max(280, 28 * len(df)), title=title)
+    layout["margin"]["r"] = 80  # room for outside text labels
+    fig.update_layout(**layout)
+    # Extend x-axis 25% past max so the rightmost label isn't clipped
+    max_val = df[x].max()
+    fig.update_xaxes(range=[0, max_val * 1.25])
     if "usd" in x:
         fig.update_xaxes(tickformat="$,.0f")
     else:

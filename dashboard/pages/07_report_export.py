@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT))
 import pandas as pd
 import streamlit as st
 
-from dashboard.components.cards import caveat, section
+from dashboard.components.cards import section
 from dashboard.components.empty import db_unavailable
 from dashboard.lib import db, metrics, theme
 from dashboard.lib.formatters import fmt_currency, fmt_currency_range, fmt_date_range, fmt_percent
@@ -30,36 +30,32 @@ if not db.is_available():
 
 conn = db.get_conn()
 
-theme.page_header(
-    eyebrow="Page 7 of 7",
-    title="Report Export",
-    subtitle="Generate the partner-facing memo from the current data.",
-)
+theme.page_header(title="Reports")
 
 # ── Sidebar config ────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### Export configuration")
-    partner_name = st.text_input("Partner / customer name", value="Indiana Pilot Hub")
-    annual_gmv = st.number_input("Partner annual GMV ($)",
+    partner_name = st.text_input("Partner name", value="")
+    annual_gmv = st.number_input("Annual GMV ($)",
                                  min_value=500_000, max_value=50_000_000,
                                  value=3_000_000, step=100_000)
     today = dt.date.today().isoformat()
     filename_base = st.text_input(
-        "Filename base",
-        value=f"harvestmind_roi_{partner_name.lower().replace(' ', '_')}_{today}",
+        "Filename",
+        value=f"roi_{(partner_name or 'partner').lower().replace(' ', '_')}_{today}",
     )
 
 # ── Compute ROI for preview ──────────────────────────────────────────────
-ctx = metrics.header_context(conn, partner_name=partner_name)
+_display_partner = partner_name or "Partner"
+ctx = metrics.header_context(conn, partner_name=_display_partner)
 kpis = metrics.executive_kpis(conn, partner_gmv_usd=float(annual_gmv))
 
-section("Executive summary preview", "Exactly what will appear on the partner memo cover.")
+section("Memo preview")
 
 _memo_html = (
     '<div class="hm-card" style="padding:24px 28px;">'
     '<div style="font-size:0.78rem;color:#475569;text-transform:uppercase;'
     'letter-spacing:0.06em;">Partner ROI Memo</div>'
-    f'<h2 style="margin:0.5rem 0 0.4rem;">{partner_name}</h2>'
+    f'<h2 style="margin:0.5rem 0 0.4rem;">{_display_partner}</h2>'
     '<div style="color:#475569;font-size:0.85rem;margin-bottom:1.2rem;">'
     f'Planning period {fmt_date_range(ctx.period_start, ctx.period_end)}. '
     f'Generated {today}.'
@@ -94,19 +90,19 @@ st.markdown(_memo_html, unsafe_allow_html=True)
 st.write("")
 
 # ── Export buttons ───────────────────────────────────────────────────────
-section("Export deliverables", "Each download generates a fresh document from the live data.")
+section("Export")
 
-c1, c2, c3, c4 = st.columns(4, gap="medium")
+c1, c2, c3 = st.columns(3, gap="medium")
 
 # 1. Executive summary CSV
 with c1:
     st.markdown('<div class="hm-card">'
-                '<div class="hm-label">Executive summary</div>'
-                '<div class="hm-sub" style="margin-top:6px;margin-bottom:14px;">'
-                'KPI values + assumptions, machine-readable.</div>',
+                '<div class="hm-label">Summary CSV</div>'
+                '<div class="hm-sub" style="margin-top:4px;margin-bottom:14px;">'
+                'Headline KPIs and assumptions.</div>',
                 unsafe_allow_html=True)
     summary_csv = pd.DataFrame([
-        ["Partner", partner_name],
+        ["Partner", _display_partner],
         ["Planning period start", ctx.period_start],
         ["Planning period end", ctx.period_end],
         ["Annual savings (low)", kpis.confidence_low_usd],
@@ -129,9 +125,9 @@ with c1:
 # 2. Backtest report HTML — wired through reports/roi_report_generator
 with c2:
     st.markdown('<div class="hm-card">'
-                '<div class="hm-label">Partner ROI HTML report</div>'
-                '<div class="hm-sub" style="margin-top:6px;margin-bottom:14px;">'
-                'Branded HTML; opens in a browser.</div>',
+                '<div class="hm-label">ROI memo (HTML)</div>'
+                '<div class="hm-sub" style="margin-top:4px;margin-bottom:14px;">'
+                'Branded one-pager, runs a fresh backtest.</div>',
                 unsafe_allow_html=True)
     if st.button("Generate HTML", key="gen_html", use_container_width=True):
         with st.spinner("Running backtest + rendering..."):
@@ -163,7 +159,7 @@ with c2:
                     st.error("Backtest produced no results — cannot render report.")
                 else:
                     roi = compute_roi(results_df, annual_gmv_usd=annual_gmv)
-                    html = render_roi_report(roi, results_df, partner_name=partner_name)
+                    html = render_roi_report(roi, results_df, partner_name=_display_partner)
                     st.session_state["report_html"] = html
                     st.session_state["report_filename"] = f"{filename_base}_report.html"
                     st.success("Report generated.")
@@ -184,9 +180,9 @@ with c2:
 # 3. KPI table CSV
 with c3:
     st.markdown('<div class="hm-card">'
-                '<div class="hm-label">KPI table</div>'
-                '<div class="hm-sub" style="margin-top:6px;margin-bottom:14px;">'
-                'Per-product loss + risk, current period.</div>',
+                '<div class="hm-label">Loss table (CSV)</div>'
+                '<div class="hm-sub" style="margin-top:4px;margin-bottom:14px;">'
+                'Per-product loss attribution.</div>',
                 unsafe_allow_html=True)
     kpi_df = metrics.loss_attribution(conn).copy()
     csv = kpi_df.to_csv(index=False).encode("utf-8")
@@ -198,39 +194,3 @@ with c3:
     )
     st.markdown('</div>', unsafe_allow_html=True)
 
-# 4. PDF — disabled state with TODO note
-with c4:
-    st.markdown(
-        '<div class="hm-card" style="background:#F8FAFC;">'
-        '<div class="hm-label">Partner memo PDF</div>'
-        '<div class="hm-sub" style="margin-top:6px;margin-bottom:14px;">'
-        'Branded one-pager (disabled in pilot build).</div>',
-        unsafe_allow_html=True,
-    )
-    st.button("Generate PDF", key="gen_pdf", disabled=True, use_container_width=True,
-             help="Requires weasyprint with native cairo / pango libs. Wired in "
-                  "scripts/generate_roi_report.py via --pdf flag for CLI use.")
-    st.markdown(
-        '<div class="hm-sub" style="font-size:0.75rem;color:#94A3B8;">'
-        'TODO: surface CLI invocation here once PDF rendering is reliable across '
-        'macOS / Linux deploy targets.</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# ── Caveats ──────────────────────────────────────────────────────────────
-section("Before sharing externally", "Required reading.")
-caveat(
-    "<b>Reminders for partner-facing reports:</b><ul>"
-    "<li>The HTML report is generated from the synthetic Indiana pilot dataset "
-    "by default. Point <code>DUCKDB_PATH</code> at a partner database to "
-    "produce a partner-specific memo.</li>"
-    "<li>All savings figures are conditional on the assumptions on Page 6. "
-    "Re-run the backtest if assumptions are adjusted.</li>"
-    "<li>Confidence ranges (±25%) reflect backtest variance, not full "
-    "operational risk. Partner judgement on supplier and buyer reliability "
-    "should accompany the report.</li>"
-    "<li>Do not present the perfect-hindsight upper bound (when added) as "
-    "achievable — it is a ceiling, not a target.</li>"
-    "</ul>"
-)

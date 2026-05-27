@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import HTMLResponse
 
 from api.dependencies import get_conn
@@ -53,5 +53,30 @@ def roi_report_html(
     try:
         html = render_roi_report(roi, results_df, partner_name=partner_name)
     except ROIReportError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+    return HTMLResponse(content=html)
+
+
+@router.get("/diagnostic", response_class=HTMLResponse)
+def diagnostic_report_html(
+    partner_name: str = Query(default="Operator"),
+    days: int = Query(default=365, ge=1, le=3650),
+    conn=Depends(get_conn),
+):
+    """Generate and return the diagnostic report as HTML.
+
+    Reads from the staging tables (stg_*). Load data via POST /intake/upload
+    before calling this endpoint.
+    """
+    from dashboard.lib.diagnostic_metrics import diagnostic_summary
+    from reports.diagnostic_report_generator import (
+        render_diagnostic_report,
+        DiagnosticReportError,
+    )
+
+    summary = diagnostic_summary(conn, partner_name=partner_name, days=days)
+    try:
+        html = render_diagnostic_report(summary, partner_name=partner_name)
+    except DiagnosticReportError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
     return HTMLResponse(content=html)
