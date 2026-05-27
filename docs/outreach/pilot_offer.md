@@ -20,20 +20,33 @@ direction the operator leans.
 
 ## Who this is for
 
-Perishable produce operators — food hubs, aggregators, distributors,
-wholesalers, and produce departments inside grocery DCs or foodservice
-distributors — with:
+**Perishable operators across five segments**, broadened after the
+public-source scan (Reddit + USDA + ag-feed sources) showed
+operational pain extending well beyond food hubs:
 
-- $1M–$50M in annual revenue (open range — first pilots are about
+1. **Produce aggregators / food hubs** — original ICP, $1M–$25M
+2. **Seafood / shellfish operators** — strong Reddit signal,
+   $500K–$10M
+3. **Small food / beverage wholesalers and distributors** —
+   actively searching for inventory + lot tracking, $2M–$30M
+4. **Fresh-cut processors** — highest perishability, $3M–$50M
+5. **Local food distributors serving institutions** —
+   traceability pressure from school/hospital buyers, $1M–$10M
+
+Common attributes across all five segments:
+
+- $500K–$50M in annual revenue (open range — first pilots are about
   learning which segment converts, not about defending an exact ICP)
-- Aggregation from 5+ farms or supplier accounts
+- Multiple suppliers, multiple buyers, or multiple SKUs
 - Sales to institutional buyers (schools, hospitals, universities,
-  foodservice, grocery)
-- Existing operational data in QuickBooks plus spreadsheets, or in a
-  lightweight tool, or in a full ERP — **all tech stacks welcome**
-- A specific operational pain — recurring waste, recurring missed orders,
-  a traceability conversation with a buyer, or a margin gap they can't
-  explain
+  foodservice, grocery), or to wholesale customers requiring lot
+  traceability
+- Existing operational data in QuickBooks plus spreadsheets, in a
+  lightweight tool (Local Line, BlueTrace, etc.), or in a full ERP
+  — **all tech stacks welcome**
+- A specific operational pain — recurring waste, recurring missed
+  orders, a traceability conversation with a buyer, double/triple
+  data entry across systems, or a margin gap they can't explain
 
 This is **not** for:
 

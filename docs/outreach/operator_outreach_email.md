@@ -1,10 +1,19 @@
 # Operator Outreach Emails
 
-Two short emails to produce operators (food hubs, aggregators, wholesalers,
+Two short emails to perishable food operators (food hubs, aggregators, wholesalers,
 ERP-equipped distributors — the diagnostic works for any of them).
 
 **Goal**: Get a 25-minute discovery call. Eventually: one real dataset and
 one paid diagnostic.
+
+**Segment scope**: produce aggregators / food hubs, seafood and
+shellfish operators, small food/bev wholesalers and distributors,
+fresh-cut processors, and local food distributors serving
+institutions. The diagnostic engine works for any of them.
+Customize the segment-specific reference in each email (e.g., for
+seafood mention "harvest tags + lot codes"; for produce mention
+"supplier deliveries + buyer commitments"; for fresh-cut mention
+"shelf-life + production scheduling").
 
 **Do not** lead with AI, optimization, market size, or Purdue research. Lead
 with the operational pain the GM already feels but hasn't quantified.
@@ -62,7 +71,7 @@ Thanks,
 
 Hi [First name],
 
-I'm building a diagnostic tool for produce operators and I'm reaching out
+I'm building a diagnostic tool for perishable food operators and I'm reaching out
 because [one specific reason — they're a Regional Food Business Center
 partner / they were a 2024 LFPP awardee / they're listed as supplying
 [buyer]]. That tells me your operation aggregates and ships perishables
