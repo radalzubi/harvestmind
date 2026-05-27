@@ -277,6 +277,13 @@ export function PageError({ error }: { error: string }) {
     error.toLowerCase().includes("failed") ||
     error.toLowerCase().includes("refused");
 
+  // Detect whether we're running on localhost (developer's machine) vs. a deployed
+  // host (e.g. Vercel). The helper text differs because the right fix is different.
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1");
+
   return (
     <div className="page">
       <div style={{
@@ -293,7 +300,9 @@ export function PageError({ error }: { error: string }) {
         </div>
         <div style={{ color: "var(--muted)", fontSize: 12 }}>
           {isNetwork
-            ? "Make sure the backend is running: cd harvestmind && uvicorn api.main:app --reload"
+            ? isLocalhost
+              ? "The local backend isn't running. Start it with: uvicorn api.main:app --reload"
+              : "This deployment is frontend-only — no backend is connected. Run HarvestMind locally to see live diagnostic data, or contact the team for a demo."
             : error}
         </div>
       </div>
