@@ -2,59 +2,59 @@
 
 Designed for a 5–7 minute spoken walkthrough plus 5 minutes of Q&A.
 Audience: Purdue advisors, DIAL Ventures, and prospect operators.
-Tone: operator-first, evidence-based, non-hype.
+Tone: operator-first, evidence-based, openly uncertain about business
+model until pilots validate it.
 
 ---
 
 ## Slide 1 — Problem
 
-**Title**: Regional produce operators commit before they know what arrives.
+**Title**: Produce operators commit before they know what arrives.
 
-**Main message**: Overcommitment, waste, missed orders, and weak traceability
-are quiet 5–15% margin losses for regional food hubs — and they have no system
-to quantify it.
+**Main message**: Overcommitment, waste, missed orders, and traceability
+gaps are quiet margin losses that operators rarely see in dollars.
 
 **Bullets**:
-- Hubs commit institutional orders before knowing what suppliers will deliver
-- 10–30% of orders are partially missed, substituted, or padded with buffer stock
-- Near-expiry inventory is moved by eye, not by data
-- FSMA-204 lot traceability is required for produce on the FTL, but most hubs cannot prove it
-- Operators run on QuickBooks + spreadsheets and rarely see loss in dollars
+- Hubs and produce distributors commit institutional orders before knowing what suppliers will deliver
+- A meaningful share of orders are partially missed, substituted, or padded with buffer stock
+- Near-expiry inventory is moved by intuition, not by data
+- FSMA-204 lot traceability is required for produce on the FTL but operationally hard to prove
+- Most operators run on QuickBooks plus spreadsheets, or on an ERP that does inventory but not produce-specific available-to-promise
 
-**Visual**: A single number — "5–15% of gross margin" — over a faded produce
-warehouse photo. Or: a stylized chart showing the gap between "committed" and
-"actually delivered" lines.
+**Visual**: A stylized diagram showing the gap between "committed" and
+"actually delivered" volume over a few weeks of operator data — without a
+specific dollar number attached.
 
 **Speaker notes**:
-"We are not solving food security. We are solving the unglamorous problem
-that regional aggregators don't know how much money they leak each month.
-Today they find out at year-end when QuickBooks shows lower margin than
-expected, with no path to attribute it."
+"We are not solving food security or building an AI platform. We are
+solving the unglamorous problem that regional produce operators leak
+margin in ways their accounting system doesn't surface. The size of that
+leak per operator is exactly what we want real data to tell us."
 
 ---
 
-## Slide 2 — Customer
+## Slide 2 — Customer (the open question)
 
-**Title**: Regional food hubs and produce aggregators, $1M–$25M revenue.
+**Title**: We see three possible buyer profiles. We don't know which one is right yet.
 
-**Main message**: A specific, addressable wedge — not "the food industry."
+**Main message**: The diagnostic engine works for any operator handling
+perishables. Who actually pays — and for which version of the product — is
+the open question.
 
 **Bullets**:
-- Serve schools, hospitals, universities, grocers, and foodservice
-- Aggregate from 5–60 farms, ship 50–500 SKUs
-- Use QuickBooks Desktop or Online plus Excel for ops
-- Have a buyer (Sysco, a large school district, a hospital network) asking for traceability records they cannot easily produce
-- Have USDA LFPP or Regional Food Business Center grant access for tools
+- **Spreadsheet-heavy food hubs** ($3M–$10M revenue, QuickBooks + Excel)
+- **Productized-consulting buyers** (any size, any tech stack, want analysis not software)
+- **ERP-equipped operators** (already on NetSuite, Famous, Produce Pro, Silo — have inventory but not produce-specific ATP)
 
-**Visual**: A simple 2×2 — vertical axis: revenue, horizontal axis: technical
-sophistication. Place HarvestMind's target in the lower-right quadrant
-($1M–$25M, low tech sophistication). Mark ERP vendors (NetSuite, Famous, Silver Fern)
-in the upper-left.
+**Visual**: A 2×3 grid: rows = each buyer profile; columns = "tech they
+have", "pain we'd solve", "what they'd pay for". Leave the last column with
+question marks, deliberately, to signal we don't claim to know.
 
 **Speaker notes**:
-"This is a real segment with real budgets but no specialized tooling. ERP
-vendors don't go down-market here, and generic BI tools don't understand
-shelf life or lot traceability."
+"We are not pretending the food hub niche alone is a venture-scale market —
+USDA's directory lists roughly 400 hubs nationally. The honest pitch is
+that the diagnostic engine generalizes across all three profiles, and the
+first three to five paid diagnostics are what tell us which path is real."
 
 ---
 
@@ -62,24 +62,25 @@ shelf life or lot traceability."
 
 **Title**: Upload your CSVs. Get a diagnostic in two minutes.
 
-**Main message**: Lowest-friction wedge — no ERP integration, no IT project,
-just CSV in / report out.
+**Main message**: Lowest-friction product surface — no ERP integration, no
+IT project, just CSV in / report out.
 
 **Bullets**:
-- 5 staging tables: products, supplier deliveries, inventory lots, buyer orders, waste
-- DuckDB store — single file, runs locally for the operator's data
+- Five CSV files: products, supplier deliveries, inventory lots, buyer orders, waste
+- DuckDB store — single file per operator, runs locally
 - Web dashboard for exploration + printable HTML report for the operator's GM/CFO
-- Diagnostic metrics: waste loss $, shortage loss $, supplier fill rate, buyer fulfillment rate, ATP by product, traceability completeness %
-- Sample dataset loader for demos — one click, real findings
+- Diagnostic metrics: waste loss $, shortage loss $, supplier fill rate, buyer fulfillment rate, ATP by product, FSMA-204 lot completeness
+- Sample dataset loader so demos work without setup
 
-**Visual**: A horizontal flow diagram — CSV files → HarvestMind diagnostic
-engine → dashboard + report. Show the 5 file names on the left and the
-report sections on the right.
+**Visual**: A horizontal flow diagram — CSV files → diagnostic engine →
+dashboard + report. Show the 5 file names on the left and the 13 report
+sections on the right.
 
 **Speaker notes**:
-"This is intentionally not an ERP. We do not own the operator's source of
-truth. We read their data, find the patterns, and write a report. The wedge
-is the diagnostic. Anything beyond that is earned over time."
+"This is intentionally not an ERP. We don't own the operator's source of
+truth. We read their data, find the patterns, and write a report. The
+wedge is the diagnostic. Anything beyond that is earned over time and
+shaped by what the operators tell us they want."
 
 ---
 
@@ -95,67 +96,69 @@ is the diagnostic. Anything beyond that is earned over time."
 - Inventory Risk page surfaces near-expiry lots and expired stock
 - Available-to-Promise page generates per-product commitment recommendations
 - Traceability page shows FSMA-204 completeness gaps and the specific incomplete lots
-- Export the diagnostic report — board-readable, printable
+- Export the 13-section diagnostic report
 
-**Visual**: A 6-panel screenshot grid of the actual app: Overview, Inventory
-Risk, ATP, Partners, Traceability, and the HTML report.
+**Visual**: A 6-panel screenshot grid of the actual app: Overview,
+Inventory Risk, ATP, Partners, Traceability, and the HTML report.
 
 **Speaker notes**:
-"The sample dataset is intentionally imperfect — one supplier with a 62% fill
-rate, two expired lots, two lots with missing lot IDs. That's not random;
-that's what real operator data looks like and it lets every panel show
-something useful."
+"The sample dataset is intentionally imperfect — one supplier with a 62%
+fill rate, near-expiry lots, two lots with missing lot IDs. That's not
+random; that's the shape of real operator data, and it lets every panel
+show something useful. The dollar numbers on this sample are too small
+to draw business conclusions from — that's exactly why we need real data
+next."
 
 ---
 
-## Slide 5 — Pilot Structure
+## Slide 5 — Pilot Structure (and Why It's Designed To Resolve the Open Question)
 
-**Title**: 30-day paid diagnostic. $3K–$7.5K. One real dataset.
+**Title**: 30-day paid diagnostic. $3K–$7.5K. Three pilots will tell us which business shape is real.
 
-**Main message**: Concrete, time-bounded, and priced low enough that an
-operator can buy it from a discretionary budget.
+**Main message**: The pilot is priced to be buyable from a GM's
+discretionary budget AND structured to surface which business model the
+market is pulling toward.
 
 **Bullets**:
 - 6–12 months of historical operator data, exported to CSV
 - Week 1: data intake, validation, and quality review with the operator
 - Weeks 2–3: diagnostic engine run, manual review, anomaly investigation
-- Week 4: written findings, board-format report, and a 60-minute readout
-- Deliverable: HTML/PDF report + executive summary + 3 prioritized actions
-- Pricing: $3K (single product line) — $7.5K (multi-category, multi-location)
-- Conversion path: live SaaS at $1.5K–$3K / month after pilot
+- Week 4: written findings, board-format report, 60-minute readout, 90-minute action-planning session
+- Pricing: $3K (single product line) – $7.5K (multi-category, multi-location); $10K–$15K for larger operators
+- **Closing question we ask each operator**: "Which would be most valuable — a one-time analysis, recurring quarterly diagnostics, or a live tool connected to your existing system?"
 
-**Visual**: A horizontal 4-week timeline with the deliverables marked under
-each week. Pricing in a clean box on the right.
+**Visual**: A horizontal 4-week timeline with deliverables marked under
+each week, and the three-path question framed as a decision point at the
+end of the engagement.
 
 **Speaker notes**:
-"This is not a free pilot. Free pilots produce no commitment. A $3K
-diagnostic is buyable from a GM's discretionary budget and signals real
-intent. If the diagnostic shows them $80K+ of addressable loss, the path to
-$24K/year SaaS is obvious."
+"This is not a free pilot. Free pilots produce no commitment. A paid
+diagnostic priced from a discretionary budget signals real intent. The
+closing question makes the pilot a business-model discovery mechanism —
+which is what we actually need it to be at this stage."
 
 ---
 
 ## Slide 6 — Ask
 
-**Title**: We need one real operator dataset.
+**Title**: We need three things.
 
-**Main message**: The MVP is built. The next bottleneck is data, not product.
+**Main message**: The MVP is built. The next bottleneck is data, then
+segmentation clarity, then business-model validation.
 
 **Bullets**:
-- Expert feedback on the diagnostic model and data requirements
-- A warm introduction to one regional food hub willing to share 6–12 months of data
-- Pressure testing on the pilot price and structure
-- Conversation, not commitment — no equity ask at this stage
-- (Mutual fit later → formal advisor role via Purdue COI/IP process)
+- **Pressure-test** the diagnostic model and the data requirements
+- **One warm introduction** to a produce operator willing to share 6–12 months of messy data for a structured diagnostic
+- **Help us decide**, after the first 3–5 paid diagnostics, whether this should become a SaaS, a productized diagnostic, or an ERP add-on
 
-**Visual**: A clean "three asks" list — Feedback / Intros / Pressure test —
-with our contact info underneath.
+**Visual**: A clean "three asks" list — Pressure-test / Intro / Help us
+decide — with contact info underneath.
 
 **Speaker notes**:
 "We are not here for an investment, equity, or marketing. We are here for
-honest feedback on the model and an introduction to one operator who has the
-operational pain and the data to validate or invalidate this product. That's
-it."
+honest feedback on the model, an introduction to one operator with
+operational pain and the data to validate or invalidate the diagnostic,
+and help interpreting what the first paid diagnostics tell us. That's it."
 
 ---
 
@@ -163,6 +166,12 @@ it."
 
 - Use only screenshots from the actual running MVP — no Figma mockups
 - Keep slide chrome minimal — title, body, no logos other than HarvestMind
+- **Do not include any unvalidated dollar figures** ("$X/yr addressable loss")
+  on the slides themselves — those go in the live conversation only, with
+  the proper caveats
 - Avoid the words "AI", "platform", "revolutionize"
-- Use dollar figures wherever possible — operators speak dollars
-- Bottom-right of each slide: small footer with "HarvestMind · Purdue student team · Diagnostic MVP"
+- Bottom-right footer: "HarvestMind · Purdue student team · Diagnostic MVP · Pre-customer-validation"
+
+The last footer phrase is deliberate: it tells the advisor you know where
+you actually are in the journey. That earns more credibility than a louder
+claim.

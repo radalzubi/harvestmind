@@ -13,11 +13,11 @@ the closing — those are the parts that get cut wrong under pressure.
 
 ## 0:00 — Opening (15 seconds)
 
-> "Most regional food hubs lose 5 to 15 percent of gross margin to waste,
-> missed orders, and last-minute substitutions — and they don't see those
-> numbers anywhere. HarvestMind is a diagnostic that takes the CSV exports a
-> hub already produces and turns them into a board-readable report on where
-> that margin is going. I'll show you in five minutes."
+> "Most regional produce operators leak margin to waste, missed orders, and
+> last-minute substitutions — and they don't see those numbers anywhere.
+> HarvestMind is a diagnostic that takes the CSV exports an operator already
+> produces and turns them into a board-readable report on where that margin
+> is going. I'll show you in five minutes."
 
 Pause. Share screen. Show the Upload page.
 
@@ -26,16 +26,18 @@ Pause. Share screen. Show the Upload page.
 ## 0:15 — The data shape (30 seconds)
 
 > "HarvestMind needs five files — products, supplier deliveries, inventory
-> lots, buyer orders, and a waste log. These are the same exports a hub
-> already pulls out of QuickBooks or its picking spreadsheet. No ERP
+> lots, buyer orders, and a waste log. These are the same exports an operator
+> already pulls out of QuickBooks, an ERP, or a picking spreadsheet. No
 > integration. No IT project. CSV in, diagnostic out."
 
 Point at the five status cards (all gray, zero rows).
 
 > "I'll load a sample dataset so you can see what the diagnostic looks like
-> against real-shaped data. The sample is intentionally messy — one
-> low-performing supplier, a couple of near-expiry lots, two lots missing
-> their lot ID."
+> against real-shaped data. Two important caveats up front: the sample is
+> intentionally messy — one low-performing supplier, near-expiry lots, two
+> lots missing their lot ID. And the dollar numbers in this sample are very
+> small because the dataset is very small. The point of the demo is to show
+> you the shape of the analysis, not to imply real-operator savings."
 
 ---
 
@@ -54,22 +56,24 @@ Navigate to the Overview page.
 ## 1:00 — Overview (45 seconds)
 
 > "Top of the page — total waste loss, total shortage loss, risky suppliers,
-> traceability completeness. The red banner at the top is the addressable
-> total — the dollar figure that summarizes 'this is how much money this
-> period leaked through these four categories.'"
+> traceability completeness. The red banner at the top is the period
+> addressable total — the dollar figure that summarizes 'this is how much
+> money this period leaked through these four categories' for whatever
+> period the data spans."
 
 Point at the banner.
 
 > "Top loss drivers on the left — the specific products and reasons driving
-> that loss. Savings opportunity on the right — annualized at a 30 percent
-> reduction assumption, which comes from USDA research benchmarks. That's
-> the conversation-starter figure."
+> that loss. Savings opportunity on the right — annualized and shown as a
+> range, 15 to 30 percent reduction of addressable loss, sourced from USDA
+> SR-77 research benchmarks. That's the conversation-starter figure, not a
+> guarantee."
 
 Click the **Data Quality** sidebar item briefly.
 
-> "We also score the data itself. If a hub uploads incomplete data, we tell
-> them what's missing before we run the diagnostic, so we don't generate
-> false confidence."
+> "We also score the data itself. If the data is incomplete, we tell the
+> operator what's missing before we run the diagnostic, so we don't generate
+> false confidence in numbers built on holes."
 
 ---
 
@@ -78,9 +82,9 @@ Click the **Data Quality** sidebar item briefly.
 Navigate to **Inventory Risk**.
 
 > "This is the on-hand picture. Total on-hand, near-expiry — anything within
-> three days of expiry — and expired stock that's still in the file.
-> Most operators are surprised by their own near-expiry number when they
-> see it as a percentage of total stock."
+> three days of expiry — and expired stock that's still in the file. Most
+> operators are surprised by their own near-expiry percentage when they see
+> it as a share of total stock."
 
 Point at the "Inventory by Product" table.
 
@@ -93,16 +97,16 @@ Point at the "Inventory by Product" table.
 
 Navigate to **Available-to-Promise**.
 
-> "This is what we call the action layer. Available-to-promise is on-hand
-> minus committed minus expired minus near-expiry. It's the number the
-> hub should actually use when a buyer calls and asks 'can you commit 500
-> kilos for Thursday?'"
+> "This is the action layer. Available-to-promise is on-hand minus
+> committed minus expired minus near-expiry. It's the number that should
+> be on the screen when a buyer calls and asks 'can you commit 500 kilos
+> for Thursday?' "
 
 Point at the **Commitment Recommendations** table.
 
 > "For risky products, we don't just show a number — we show a safe commit
-> figure and a holdback, with a one-line reason. This is what gets used in
-> the morning operations meeting."
+> figure and a holdback, with a one-line reason. This is the kind of output
+> that, if it's useful, would get used in a morning operations meeting."
 
 ---
 
@@ -111,14 +115,14 @@ Point at the **Commitment Recommendations** table.
 Navigate to **Partners**, **Suppliers** tab.
 
 > "Supplier reliability. Each supplier ranked by fill rate. This supplier —
-> 62 percent fill rate — is a high-risk relationship that's likely costing
-> the hub real money in substitutions and missed orders."
+> 62 percent fill rate — would be a high-risk relationship that's likely
+> costing the operator real money in substitutions and missed orders."
 
 Click the **Buyers** tab.
 
-> "Same view on the buyer side — who do we keep missing orders for?
-> Operators usually know this in their head, but they've never seen it as
-> a dollar number tied to a specific buyer."
+> "Same view on the buyer side — which buyers do we keep missing orders
+> for? Most operators carry this in their head but haven't tied it to a
+> dollar number."
 
 ---
 
@@ -126,15 +130,15 @@ Click the **Buyers** tab.
 
 Navigate to **Traceability**.
 
-> "FSMA-204 readiness — what percent of our lots have all six required
-> trace fields. This number matters because if the hub ships to a buyer
-> that's on the FDA Food Traceability List, this is the number the buyer
-> is going to ask for."
+> "FSMA-204 readiness — what percent of lots have all six required trace
+> fields. This number matters because if the operator ships to a buyer
+> on the FDA Food Traceability List, this is the number that buyer is
+> going to ask for."
 
 Point at the incomplete-lots table.
 
-> "And here are the specific lots that fail. Those two missing lot IDs
-> would be a problem in an audit, today."
+> "And here are the specific lots that fail. Those missing lot IDs would
+> be a problem in an audit, today."
 
 ---
 
@@ -142,10 +146,10 @@ Point at the incomplete-lots table.
 
 Navigate to **Reports**. Open the HTML report.
 
-> "Everything we just looked at gets compiled into a thirteen-section report.
-> Board-readable. Printable. Has an assumptions and limitations section so
-> the GM can defend the numbers. This is the deliverable for the diagnostic
-> pilot."
+> "Everything we just looked at gets compiled into a thirteen-section
+> report. Board-readable. Printable. Has an assumptions and limitations
+> section so the GM can defend the numbers. This is the deliverable for
+> a paid diagnostic engagement."
 
 Scroll past sections quickly. Stop at the Savings box and the Assumptions
 section.
@@ -157,49 +161,73 @@ section.
 Stop sharing.
 
 > "That's the demo. The question I have for you is — would this be useful
-> if it used your real data instead of our sample? If yes, we'd like to
-> talk about a 30-day paid diagnostic with your CSV exports."
+> if it used your real data instead of our sample? And if it would, which
+> of these would be most valuable: a one-time analysis, recurring
+> quarterly diagnostics, or a live tool connected to your existing
+> system?"
 
-Stop talking. Let them answer.
+Stop talking. Let them answer. The closing question is the entire point
+— it's how we find out which business model the market is pulling us
+toward.
 
 ---
 
-## Q&A — Anticipated questions and short answers
+## Q&A — Anticipated questions and honest answers
 
 **Q: How long to set this up with our data?**
-A: First diagnostic takes 30 days. Week 1 is data intake, week 2–3 is analysis,
-week 4 is the readout. After that, weekly refreshes are automated.
+A: First diagnostic takes 30 days. Week 1 is data intake, week 2–3 is
+analysis, week 4 is the readout.
 
 **Q: What does it cost?**
-A: The diagnostic pilot is $3,000 to $7,500 depending on product line count.
-Live SaaS afterward is $1,500–$3,000 per month. We'd give you a fixed quote
-after seeing your data shape.
+A: $3,000–$7,500 for the diagnostic depending on scope. For larger
+operators we'd quote $10K–$15K. Pricing for ongoing service depends on
+what the diagnostic reveals you actually need — that's the closing
+question.
+
+**Q: How much could you save us?**
+A: Honest answer — we don't know yet. We have a diagnostic engine that
+quantifies waste, shortage, and traceability gaps from your actual data.
+Industry research (USDA SR-77) suggests 15–30% of addressable loss is
+typically recoverable by operators who act on this kind of analysis.
+Whether the dollar figure in your specific case is large enough to justify
+ongoing investment is what the diagnostic itself would answer.
 
 **Q: Is our data going to a cloud somewhere?**
-A: No. The MVP today runs locally. For pilots we deploy a dedicated instance
-for your data with no shared multi-tenant storage.
+A: No. The MVP runs locally. For pilots we deploy a dedicated instance
+for your data, never shared.
 
-**Q: Can it talk to our QuickBooks?**
-A: Not today. The wedge is CSV-in. ERP integrations are a phase-two question
-once we know the diagnostic is valuable to you.
+**Q: Can it talk to our QuickBooks / ERP?**
+A: Not today. The wedge is CSV-in. Integration is a future question
+that depends on whether the diagnostic is valuable enough to you to
+make integration worth building.
 
 **Q: What about AI?**
-A: There's no LLM in the diagnostic. It's deterministic math on operator data
-so the report is auditable. We don't use the word AI deliberately.
+A: There's no LLM in the diagnostic. It's deterministic math on operator
+data so the report is auditable. We deliberately don't use the word "AI".
+
+**Q: Who else are you working with?**
+A: We are at the pre-customer stage. The MVP is built, but the first
+paid diagnostics are still ahead of us. That is exactly why we are
+having this conversation — to find an operator willing to be in that
+first cohort.
 
 **Q: What's the catch?**
-A: Two honest catches. One — you have to actually export the CSVs. That's
-real operator time. Two — we are a student team. We have a working product,
-not a sales organization. If you want hand-holding at scale, that's not us
-today.
+A: We are a Purdue student team. We have a working product, not a sales
+organization. The diagnostic engine works, but we have not yet validated
+which version of the product (one-time analysis, recurring service, or
+live tool) is what operators actually want. The first three paid
+diagnostics will tell us. We are honest about that.
 
 ---
 
 ## What to never say during the demo
 
-- "AI" or "machine learning" — we don't use either
+- "AI" or "machine learning"
 - "Optimization" without explanation — say "diagnostic" or "recommendation"
 - "Platform" — say "tool" or "diagnostic"
-- "Disrupt" — say "fits alongside QuickBooks"
-- "Just" as in "we just need your data" — never minimize the ask
-- A revenue or user number — we have none, do not invent any
+- "Disrupt" — say "fits alongside your existing system"
+- A revenue, customer, or savings claim grounded in anything other than
+  the sample dataset
+- "We've validated this with [N] operators" — we haven't
+- The phrase "we'll save you $X" — that's a sample-data sentence and
+  doesn't generalize
