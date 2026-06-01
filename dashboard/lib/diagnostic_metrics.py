@@ -884,6 +884,16 @@ def diagnostic_summary(
     savings = estimated_annual_savings(waste, shortage, period_days=effective_days)
     row_counts = _staging_row_counts(conn)
 
+    # Distribution + shelf-life aware commitment plan (the upgraded model).
+    # Kept alongside the deterministic `recommendations` so the two can be
+    # compared directly in the backtest. Guarded so a risk-layer issue can
+    # never take down the diagnostic summary.
+    try:
+        from risk.safe_commit import safe_commit_recommendations
+        commitment_plan = safe_commit_recommendations(conn, as_of_date=as_of_date)
+    except Exception:  # noqa: BLE001  defensive: never break the summary
+        commitment_plan = []
+
     # Top 5 operational risks (highest-loss items across waste + shortage)
     all_risks: list[dict[str, Any]] = []
     for item in waste["by_product"][:5]:
@@ -913,6 +923,7 @@ def diagnostic_summary(
         "traceability": traceability,
         "atp": atp,
         "recommendations": recs,
+        "commitment_plan": commitment_plan,
         "savings": savings,
         "top_risks": top_risks,
         # Convenience top-line scalars for Overview cards
