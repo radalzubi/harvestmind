@@ -32,6 +32,15 @@ class TwoStageStochasticLP:
     # Leave as None to reproduce the original flat-penalty behavior.
     waste_cost_by_product: dict | None = None
     unmet_cost_by_product: dict | None = None
+    # Phase 0.9 — newsvendor-correct objective. When True, the objective drops
+    # the procurement charge on committed-and-sold units (the double-count bug)
+    # and uses pure overage/underage recourse economics:
+    #   overage (committed-but-wasted) = waste_cost_by_product[j]  (unit cost − salvage)
+    #   underage (unmet demand)        = unmet_cost_by_product[j]  (lost margin)
+    #   spot covers underage at PREMIUM only: avg_price·(multiplier − 1)
+    #   committed-and-sold units carry NO penalty (the neutral, profitable case)
+    # Default False reproduces the original flat double-count path exactly.
+    newsvendor_objective: bool = False
     spot_capacity_factor: float | None = None  # cap stage-2 spot at ρ × demand_jω; None = unlimited
     solver: str = "highs"
     time_limit_s: float = 300.0
@@ -101,6 +110,19 @@ class TwoStageStochasticLP:
         _cu = lambda j: cu.get(j, self.lost_sale_per_kg_usd)
 
         def obj_rule(m):
+            if self.newsvendor_objective:
+                # Newsvendor recourse economics: no procurement charge on
+                # committed units (sold units are neutral); only overage,
+                # underage, and the spot PREMIUM are costs.
+                return sum(
+                    weights.get(omega, 1.0/len(scenarios)) * (
+                        sum(avg_price[j] * (self.spot_cost_multiplier - 1.0) * m.s[j,omega] for j in m.J)
+                        + sum(_cw(j) * m.w[j,omega] for j in m.J)   # overage = unit cost − salvage
+                        + sum(_cu(j) * m.u[j,omega] for j in m.J)   # underage = lost margin
+                    )
+                    for omega in m.W
+                )
+            # Original flat / double-count path (preserved behind the flag).
             first_stage = sum(price.get((i,j), 2.0) * m.x[i,j] for (i,j) in m.IJ)
             second_stage = sum(
                 weights.get(omega, 1.0/len(scenarios)) * (

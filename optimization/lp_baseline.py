@@ -31,6 +31,9 @@ class LPBaseline:
     # B6 honest per-product penalties (optional; None reproduces flat behavior).
     waste_cost_by_product: dict | None = None
     unmet_cost_by_product: dict | None = None
+    # Phase 0.9 newsvendor-correct objective (see TwoStageStochasticLP).
+    # Default False reproduces the original flat double-count path exactly.
+    newsvendor_objective: bool = False
     spot_capacity_factor: float | None = None  # cap spot at ρ × demand; None = unlimited
     solver: str = "highs"
     time_limit_s: float = 120.0
@@ -95,6 +98,17 @@ class LPBaseline:
         _cu = lambda j: cu.get(j, self.lost_sale_per_kg_usd)
 
         def obj_rule(m):
+            if self.newsvendor_objective:
+                # Newsvendor recourse economics: no procurement charge on
+                # committed-and-sold units; only overage, underage, spot premium.
+                spot_prem = sum(
+                    price.get((None, j, t), 2.0) * (self.spot_cost_multiplier - 1.0) * m.s[j,t]
+                    for j in m.J for t in m.T
+                )
+                overage = sum(_cw(j) * m.w[j,t] for j in m.J for t in m.T)
+                underage = sum(_cu(j) * m.u[j,t] for j in m.J for t in m.T)
+                return spot_prem + overage + underage
+            # Original flat / double-count path (preserved behind the flag).
             commit_cost = sum(
                 price.get((i,j,t), 2.0) * m.x[i,j,t]
                 for (i,j,t) in m.IJT
