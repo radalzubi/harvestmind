@@ -26,8 +26,11 @@ import pandas as pd
 @dataclass
 class LPBaseline:
     spot_cost_multiplier: float = 1.30  # contract price × multiplier for spot buys
-    waste_cost_per_kg: float = 0.50
-    lost_sale_per_kg_usd: float = 2.50    # marginal cost of leaving demand unmet
+    waste_cost_per_kg: float = 0.50            # flat fallback waste penalty $/kg
+    lost_sale_per_kg_usd: float = 2.50    # flat fallback unmet penalty $/kg
+    # B6 honest per-product penalties (optional; None reproduces flat behavior).
+    waste_cost_by_product: dict | None = None
+    unmet_cost_by_product: dict | None = None
     spot_capacity_factor: float | None = None  # cap spot at ρ × demand; None = unlimited
     solver: str = "highs"
     time_limit_s: float = 120.0
@@ -85,6 +88,12 @@ class LPBaseline:
         model.u = pyo.Var(model.J, model.T, domain=pyo.NonNegativeReals)   # unmet (lost sale)
 
         # Objective: commit + spot + waste + unmet penalty
+        # Per-product penalty lookups (B6); flat fallback when no map supplied.
+        cw = self.waste_cost_by_product or {}
+        cu = self.unmet_cost_by_product or {}
+        _cw = lambda j: cw.get(j, self.waste_cost_per_kg)
+        _cu = lambda j: cu.get(j, self.lost_sale_per_kg_usd)
+
         def obj_rule(m):
             commit_cost = sum(
                 price.get((i,j,t), 2.0) * m.x[i,j,t]
@@ -94,8 +103,8 @@ class LPBaseline:
                 price.get((None, j, t), 2.0) * self.spot_cost_multiplier * m.s[j,t]
                 for j in m.J for t in m.T
             )
-            waste_cost = sum(self.waste_cost_per_kg * m.w[j,t] for j in m.J for t in m.T)
-            lost_sale_cost = sum(self.lost_sale_per_kg_usd * m.u[j,t] for j in m.J for t in m.T)
+            waste_cost = sum(_cw(j) * m.w[j,t] for j in m.J for t in m.T)
+            lost_sale_cost = sum(_cu(j) * m.u[j,t] for j in m.J for t in m.T)
             return commit_cost + spot_cost + waste_cost + lost_sale_cost
 
         model.obj = pyo.Objective(rule=obj_rule, sense=pyo.minimize)

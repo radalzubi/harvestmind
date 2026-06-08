@@ -95,19 +95,24 @@ def naive_lastyear_commitments(
             ]
 
         if slice_.empty:
-            # Fallback: trailing N-week mean per supplier × product
+            # Fallback: trailing-window WEEKLY RUN-RATE per supplier × product.
+            # (Previously this used the mean *delivery size*, which on
+            # high-volume data with multiple deliveries/week over-commits
+            # badly — the run-rate is the fair "commit what we typically move
+            # in a week" baseline. Appended once per horizon week below, so the
+            # horizon total = weekly_rate × horizon_weeks.)
             fb_start = decision_date - timedelta(weeks=fallback_lookback_weeks)
             fb_slice = df[
                 (df["delivery_date"] >= fb_start) & (df["delivery_date"] <= decision_date)
             ]
             if fb_slice.empty:
                 continue
-            agg = (
+            weekly = (
                 fb_slice.groupby(["supplier_id", "product_id"])["accepted_kg"]
-                .mean()
-                .reset_index()
-                .rename(columns={"accepted_kg": "committed_kg"})
+                .sum()
+                / max(fallback_lookback_weeks, 1)
             )
+            agg = weekly.reset_index().rename(columns={"accepted_kg": "committed_kg"})
         else:
             agg = (
                 slice_.groupby(["supplier_id", "product_id"])["accepted_kg"]

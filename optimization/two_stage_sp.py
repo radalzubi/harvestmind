@@ -25,8 +25,13 @@ import pandas as pd
 @dataclass
 class TwoStageStochasticLP:
     spot_cost_multiplier: float = 1.30
-    waste_cost_per_kg: float = 0.50
-    lost_sale_per_kg_usd: float = 2.50         # marginal cost of leaving demand unmet
+    waste_cost_per_kg: float = 0.50            # flat fallback waste penalty $/kg
+    lost_sale_per_kg_usd: float = 2.50         # flat fallback unmet penalty $/kg
+    # B6 honest per-product penalties (optional). When provided, override the
+    # flat scalars per product: waste = unit cost, unmet = lost margin.
+    # Leave as None to reproduce the original flat-penalty behavior.
+    waste_cost_by_product: dict | None = None
+    unmet_cost_by_product: dict | None = None
     spot_capacity_factor: float | None = None  # cap stage-2 spot at ρ × demand_jω; None = unlimited
     solver: str = "highs"
     time_limit_s: float = 300.0
@@ -88,13 +93,20 @@ class TwoStageStochasticLP:
         model.w = pyo.Var(model.J, model.W, domain=pyo.NonNegativeReals)   # waste
         model.u = pyo.Var(model.J, model.W, domain=pyo.NonNegativeReals)   # unmet
 
+        # Per-product penalty lookups (B6). Fall back to the flat scalar when no
+        # per-product map is supplied — reproduces the original behavior exactly.
+        cw = self.waste_cost_by_product or {}
+        cu = self.unmet_cost_by_product or {}
+        _cw = lambda j: cw.get(j, self.waste_cost_per_kg)
+        _cu = lambda j: cu.get(j, self.lost_sale_per_kg_usd)
+
         def obj_rule(m):
             first_stage = sum(price.get((i,j), 2.0) * m.x[i,j] for (i,j) in m.IJ)
             second_stage = sum(
                 weights.get(omega, 1.0/len(scenarios)) * (
                     sum(avg_price[j] * self.spot_cost_multiplier * m.s[j,omega] for j in m.J)
-                    + sum(self.waste_cost_per_kg * m.w[j,omega] for j in m.J)
-                    + sum(self.lost_sale_per_kg_usd * m.u[j,omega] for j in m.J)
+                    + sum(_cw(j) * m.w[j,omega] for j in m.J)
+                    + sum(_cu(j) * m.u[j,omega] for j in m.J)
                 )
                 for omega in m.W
             )
