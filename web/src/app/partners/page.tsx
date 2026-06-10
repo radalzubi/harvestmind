@@ -20,6 +20,8 @@ import { getDiagnosticSummary, fmtPct, fmt, type DiagnosticSummary } from "@/lib
 
 type Tab = "suppliers" | "buyers";
 
+const riskOrder: Record<string, number> = { High: 0, Medium: 1, Low: 2, Unknown: 4 };
+
 export default function PartnersPage() {
   const [data, setData] = useState<DiagnosticSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,21 +35,22 @@ export default function PartnersPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Hooks must run on every render — keep them above the early returns and
+  // make them null-safe so hook order never changes (Rules of Hooks).
+  const sortedSuppliers = useMemo(
+    () => [...(data?.supplier.suppliers ?? [])].sort((a, b) => (riskOrder[a.risk_level] ?? 3) - (riskOrder[b.risk_level] ?? 3)),
+    [data],
+  );
+  const sortedBuyers = useMemo(
+    () => [...(data?.buyer.buyers ?? [])].sort((a, b) => (riskOrder[a.risk_level] ?? 3) - (riskOrder[b.risk_level] ?? 3)),
+    [data],
+  );
+
   if (loading) return <PageLoading message="Loading partner data…" />;
   if (error) return <PageError error={error} />;
   if (!data) return null;
 
   const { supplier, buyer } = data;
-
-  const riskOrder: Record<string, number> = { High: 0, Medium: 1, Low: 2, Unknown: 4 };
-  const sortedSuppliers = useMemo(
-    () => [...supplier.suppliers].sort((a, b) => (riskOrder[a.risk_level] ?? 3) - (riskOrder[b.risk_level] ?? 3)),
-    [supplier.suppliers],
-  );
-  const sortedBuyers = useMemo(
-    () => [...buyer.buyers].sort((a, b) => (riskOrder[a.risk_level] ?? 3) - (riskOrder[b.risk_level] ?? 3)),
-    [buyer.buyers],
-  );
 
   // Suppliers with known fill rates only — Unknown tier is excluded from averages
   const ratedSuppliers = supplier.suppliers.filter((s) => s.fill_rate !== null);
