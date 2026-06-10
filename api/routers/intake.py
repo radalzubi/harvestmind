@@ -547,6 +547,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn)):
     log_confirmation(session_id, accepted_rows, corrections)
 
     # Vault copy of the confirmed snapshot (operator-scoped sessions/)
+    pool_result = None
     if operator_id is not None:
         try:
             import json as _json
@@ -558,6 +559,13 @@ def confirm_extraction(body: dict, conn=Depends(get_conn)):
                              "corrections": corrections}, default=str))
         except Exception:  # noqa: BLE001  vault copy must not block the load
             pass
+        # Pool contribution — consent-gated, anonymized, never blocking
+        try:
+            from pool.pool_contributor import PoolContributor
+            pool_result = PoolContributor(registry).contribute_session(
+                operator_id).model_dump()
+        except Exception:  # noqa: BLE001
+            pool_result = None
 
     # Training corpus: every confirmed session is a labeled example —
     # operator corrections are the gold labels (Phase 4 accumulator).
@@ -583,4 +591,5 @@ def confirm_extraction(body: dict, conn=Depends(get_conn)):
         "total_inserted": sum(inserted.values()),
         "corrections_recorded": len(corrections),
         "sufficiency_warnings": session.get("sufficiency_warnings", []),
+        "pool_contribution": pool_result,
     }

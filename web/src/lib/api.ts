@@ -343,6 +343,20 @@ export interface ConfirmResponse {
   sufficiency_warnings: string[];
 }
 
+export interface PoolStatus {
+  pool: {
+    n_operators_contributing: number;
+    n_signals: number;
+    coverage_by_category: Record<string, number>;
+    signals_by_type: Record<string, number>;
+  };
+  operator?: {
+    operator_id: string;
+    pool_consent: boolean;
+    pool_contribution_count: number;
+  };
+}
+
 // ── API calls ──────────────────────────────────────────────────────────────
 
 export async function getDiagnosticSummary(
@@ -417,6 +431,16 @@ export async function confirmExtraction(payload: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+}
+
+
+export async function getPoolStatus(operatorId?: string): Promise<PoolStatus> {
+  const q = operatorId ? `?operator_id=${encodeURIComponent(operatorId)}` : "";
+  return apiFetch<PoolStatus>(`/pool/status${q}`);
+}
+
+export async function setPoolConsent(operatorId: string, consented: boolean): Promise<{ pool_consent: boolean; note: string }> {
+  return apiFetch(`/pool/consent?operator_id=${encodeURIComponent(operatorId)}&consented=${consented}`, { method: "POST" });
 }
 
 export async function getDataQuality(): Promise<DataQualityReport> {

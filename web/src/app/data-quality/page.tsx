@@ -15,11 +15,24 @@ import {
   Tbtn,
 } from "@/components/ui";
 import { getDataQuality, fmt, type DataQualityReport } from "@/lib/api";
+import { getPoolStatus, setPoolConsent, type PoolStatus } from "@/lib/api";
 
 export default function DataQualityPage() {
   const [data, setData] = useState<DataQualityReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [poolStatus, setPoolStatus] = useState<PoolStatus | null>(null);
+  const [showPoolInfo, setShowPoolInfo] = useState(false);
+  // multi-tenant entry point: ?operator_id=... enables the consent toggle
+  const operatorId = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("operator_id") ?? undefined
+    : undefined;
+
+  const togglePoolConsent = async () => {
+    if (!operatorId || !poolStatus?.operator) return;
+    await setPoolConsent(operatorId, !poolStatus.operator.pool_consent);
+    getPoolStatus(operatorId).then(setPoolStatus).catch(() => null);
+  };
 
   const load = () => {
     setLoading(true);
@@ -29,7 +42,11 @@ export default function DataQualityPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    getPoolStatus(operatorId).then(setPoolStatus).catch(() => setPoolStatus(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Initial load: show full-page states. During re-validate, keep data visible (button shows spinner).
   if (loading && !data) return <PageLoading message="Checking data quality…" />;
@@ -163,6 +180,52 @@ export default function DataQualityPage() {
                 </div>
               ))}
             </div>
+          </CardBody>
+        </Card>
+      )}
+
+      {/* Data pool indicator — anonymized, consent-gated */}
+      {poolStatus && (
+        <Card style={{ marginTop: 16 }}>
+          <CardHead
+            title="Data Pool"
+            sub="Anonymized cross-operator signals that make every forecast smarter — categories and ratios only, never names, volumes, or prices"
+          />
+          <CardBody>
+            <div style={{ display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap", fontSize: 12 }}>
+              <span>
+                <b>{poolStatus.pool.n_operators_contributing}</b> operators contributing ·{" "}
+                <b>{poolStatus.pool.n_signals}</b> signals
+              </span>
+              {poolStatus.operator && (
+                <>
+                  <span style={{ color: poolStatus.operator.pool_consent ? "var(--accent)" : "var(--muted)", fontWeight: 600 }}>
+                    {poolStatus.operator.pool_consent ? "Contributing" : "Not contributing"}
+                  </span>
+                  <Tbtn onClick={togglePoolConsent}>
+                    {poolStatus.operator.pool_consent ? "Stop contributing" : "Start contributing"}
+                  </Tbtn>
+                </>
+              )}
+              <button
+                onClick={() => setShowPoolInfo(!showPoolInfo)}
+                style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 12, cursor: "pointer", textDecoration: "underline", padding: 0 }}
+              >
+                Your data is anonymized — see what we use
+              </button>
+            </div>
+            {showPoolInfo && (
+              <div style={{ marginTop: 12, fontSize: 11, color: "var(--muted)", lineHeight: 1.6 }}>
+                The pool receives only category-level statistical signals: demand variability
+                (with volumes normalized so your size is invisible), supplier fill-rate
+                distributions (ratios, at least 10 deliveries behind every number), and waste
+                rates with bucketed reasons. It never receives company names, buyer or supplier
+                names, product names, prices, volumes, or anything below region level. If you
+                stop contributing, future contributions end immediately; signals already
+                pooled cannot be traced back to you and remain. Full explanation:
+                docs/POOL_PRIVACY.md.
+              </div>
+            )}
           </CardBody>
         </Card>
       )}

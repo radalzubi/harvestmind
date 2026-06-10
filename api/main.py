@@ -7,7 +7,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training
+from api.routers import planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool
 
 app = FastAPI(
     title="HarvestMind API",
@@ -46,6 +46,7 @@ app.include_router(diagnostics.router)
 app.include_router(intake.router)
 app.include_router(forecasts.router)
 app.include_router(training.router)
+app.include_router(pool.router)
 
 
 @app.get("/health")
