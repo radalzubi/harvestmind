@@ -24,6 +24,7 @@ flags it under schema_gaps instead of inventing a table.
 from __future__ import annotations
 
 import json
+import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -262,8 +263,19 @@ def read_source_file(path: str | Path) -> SourcePayload:
                 rows=rows, sample_rows=rows[:20], n_rows=len(rows),
                 raw_text="\n".join(text_parts),
             )
-        return SourcePayload(filename=p.name, kind="text",
-                             raw_text="\n".join(text_parts))
+        text = "\n".join(text_parts)
+        if not text.strip() and os.getenv("OCR_ENABLED", "false").lower() == "true":
+            # Optional OCR for image-only PDFs, behind a flag — pytesseract
+            # is an optional dependency, never required for the core path.
+            try:
+                import pytesseract  # noqa: F401  optional
+                from pdf2image import convert_from_path
+                pages = convert_from_path(str(p))
+                text = "\n".join(pytesseract.image_to_string(pg)
+                                 for pg in pages)
+            except Exception:  # noqa: BLE001
+                text = ""
+        return SourcePayload(filename=p.name, kind="text", raw_text=text)
 
     if ext in _TEXT_EXTS:
         return SourcePayload(filename=p.name, kind="text",
