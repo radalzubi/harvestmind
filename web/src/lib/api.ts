@@ -251,6 +251,38 @@ export interface BenchmarkResult {
   weeks_required?: number;
 }
 
+export interface RoiCards {
+  ceiling_card: {
+    status: string;
+    basis: string;
+    note: string;
+    annual_low_usd: number;
+    annual_high_usd: number;
+    addressable_loss_usd: number;
+  };
+  measured_card: {
+    status: string;
+    note?: string;
+    sp_vs_lp_edge_pct?: number | null;
+    wins?: number;
+    n_origins?: number;
+    paired_t?: number | null;
+    gate_passed?: boolean;
+    verdict?: string;
+    weeks_available?: number;
+    weeks_required?: number;
+  };
+  do_not_sum: string;
+}
+
+export interface ConfidenceIndex {
+  index: number | null;
+  label: string;
+  arithmetic?: string;
+  reason?: string;
+  components?: { demand_oos_wape: number; avg_supplier_spread: number };
+}
+
 // ── API calls ──────────────────────────────────────────────────────────────
 
 export async function getDiagnosticSummary(
@@ -286,6 +318,15 @@ export async function runBenchmark(
     `/backtest/benchmark?spot_cost_multiplier=${spotMult}&spot_capacity_factor=${spotCap}&folds=${folds}`,
     { method: "POST" }
   );
+}
+
+
+export async function getRoiCards(): Promise<RoiCards> {
+  return apiFetch<RoiCards>("/reports/roi-cards");
+}
+
+export async function getConfidence(): Promise<ConfidenceIndex> {
+  return apiFetch<ConfidenceIndex>("/reports/confidence");
 }
 
 export async function getDataQuality(): Promise<DataQualityReport> {

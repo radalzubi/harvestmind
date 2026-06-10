@@ -80,3 +80,70 @@ def diagnostic_report_html(
     except DiagnosticReportError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
     return HTMLResponse(content=html)
+
+
+@router.get("/roi-cards")
+def roi_cards(conn=Depends(get_conn)):
+    """Two-card ROI: the assumed opportunity ceiling and the measured
+    backtest result — SEPARATE cards, never summed, never interchanged.
+
+    Card 1 (ceiling) is an assumption-based benchmark applied to the
+    operator's measured losses. Card 2 (measured) exists only when the
+    rolling-origin benchmark has actually run on enough history; until
+    then it says "not yet measured" rather than borrowing the ceiling.
+    """
+    from dashboard.lib.diagnostic_metrics import (
+        _period_days_from_data, estimated_annual_savings,
+        shortage_loss_usd, waste_loss_usd,
+    )
+
+    period = _period_days_from_data(conn)
+    waste = waste_loss_usd(conn, days=period)
+    shortage = shortage_loss_usd(conn, days=period)
+    ceiling = estimated_annual_savings(waste, shortage, period_days=period)
+
+    from backtesting.benchmark_suite import run_benchmark
+    bench = run_benchmark(conn)
+    if bench.get("status") == "ok":
+        edge = bench["sp_vs_deterministic_lp"]
+        measured = {
+            "status": "measured",
+            "basis": "rolling-origin backtest on your own history",
+            "sp_vs_lp_edge_pct": edge["edge_pct"],
+            "wins": edge["wins"],
+            "n_origins": edge["n"],
+            "paired_t": edge["paired_t"],
+            "gate_passed": bench["gate_passed"],
+            "verdict": bench["verdict"],
+            "spot_assumption": bench["spot_economics"],
+        }
+    else:
+        measured = {
+            "status": "not_measured",
+            "note": "the measured card requires enough order history for "
+                    "a rolling-origin backtest; nothing is borrowed from "
+                    "the ceiling card in the meantime",
+            "weeks_available": bench.get("weeks_available"),
+            "weeks_required": bench.get("weeks_required"),
+        }
+
+    return {
+        "ceiling_card": {
+            "status": "assumed",
+            "basis": ceiling["basis"],
+            "note": ceiling["basis_note"],
+            "annual_low_usd": ceiling["estimated_annual_savings_usd_low"],
+            "annual_high_usd": ceiling["estimated_annual_savings_usd_high"],
+            "addressable_loss_usd": ceiling["addressable_loss_usd"],
+        },
+        "measured_card": measured,
+        "do_not_sum": "these two cards answer different questions and "
+                      "must never be added or averaged together",
+    }
+
+
+@router.get("/confidence")
+def confidence(conn=Depends(get_conn)):
+    """Recommendation confidence index (internal index, not a probability)."""
+    from risk.confidence import recommendation_confidence
+    return recommendation_confidence(conn)

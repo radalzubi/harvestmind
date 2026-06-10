@@ -224,6 +224,12 @@ class TwoStageStochasticLP:
 
             model.spot_cap = pyo.Constraint(model.J, model.W, rule=spot_cap_rule)
 
+        # Import duals so binding supply capacities yield shadow prices:
+        # the marginal objective value of one more kg of capacity at
+        # supplier i for product j — operator-readable "what one more kg
+        # from this supplier would be worth".
+        model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
+
         solver_factory = SolverFactory("appsi_highs" if self.solver == "highs" else self.solver)
         solver_factory.options["time_limit"] = self.time_limit_s
         results = solver_factory.solve(model, tee=False)
@@ -235,6 +241,17 @@ class TwoStageStochasticLP:
         s_vals = {(j,w): pyo.value(model.s[j,w]) for j in model.J for w in model.W}
         w_vals = {(j,w): pyo.value(model.w[j,w]) for j in model.J for w in model.W}
         u_vals = {(j,w): pyo.value(model.u[j,w]) for j in model.J for w in model.W}
+
+        # Shadow prices on supply capacity (sign-normalized: positive =
+        # one more kg of capacity would reduce expected cost by this much).
+        shadow_prices: dict = {}
+        try:
+            for (i, j) in model.IJ:
+                dual = model.dual.get(model.supply_cap[i, j])
+                if dual is not None and abs(dual) > 1e-9:
+                    shadow_prices[(i, j)] = round(abs(float(dual)), 4)
+        except Exception:  # noqa: BLE001  duals unavailable on some solvers
+            shadow_prices = {}
 
         # VSS and EVPI approximations
         total_spot = sum(v * weights.get(w, 0) for (j,w), v in s_vals.items() if v and v > 0)
@@ -252,6 +269,9 @@ class TwoStageStochasticLP:
             "expected_spot_kg": total_spot,
             "expected_waste_kg": total_waste,
             "expected_unmet_kg": total_unmet,
+            # marginal value ($/kg) of one more kg of capacity at (i, j);
+            # only binding capacities appear
+            "shadow_prices": shadow_prices,
         }
 
     def compute_vss(

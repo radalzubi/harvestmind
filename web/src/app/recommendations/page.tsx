@@ -15,10 +15,11 @@ import {
   RiskBadge,
   Tbtn,
 } from "@/components/ui";
-import { getDiagnosticSummary, fmt, type DiagnosticSummary } from "@/lib/api";
+import { getConfidence, getDiagnosticSummary, fmt, type ConfidenceIndex, type DiagnosticSummary } from "@/lib/api";
 
 export default function RecsPage() {
   const [data, setData] = useState<DiagnosticSummary | null>(null);
+  const [conf, setConf] = useState<ConfidenceIndex | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,6 +28,7 @@ export default function RecsPage() {
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+    getConfidence().then(setConf).catch(() => setConf(null));
   }, []);
 
   if (loading) return <PageLoading message="Computing recommendations from your data…" />;
@@ -61,9 +63,9 @@ export default function RecsPage() {
             />
             <KPI label="Medium Risk" value={fmt(nMedium)} />
             <KPI
-              label="Safe to Commit (total)"
-              value={`${fmt(recs.reduce((s, r) => s + (r.safe_commit_kg ?? 0), 0))} kg`}
-              sub="after holdbacks"
+              label="Confidence Index"
+              value={conf?.index != null ? `${conf.index}/100` : "—"}
+              sub={conf?.index != null ? "internal index — not a probability" : (conf?.reason ?? "needs more history")}
             />
           </KPIRow>
 

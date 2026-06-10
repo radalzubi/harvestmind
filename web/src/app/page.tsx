@@ -16,10 +16,11 @@ import {
   PageLoading,
   Tbtn,
 } from "@/components/ui";
-import { getDiagnosticSummary, fmtUSD, fmtPct, fmt, type DiagnosticSummary } from "@/lib/api";
+import { getDiagnosticSummary, getRoiCards, fmtUSD, fmtPct, fmt, type DiagnosticSummary, type RoiCards } from "@/lib/api";
 
 export default function OverviewPage() {
   const [data, setData] = useState<DiagnosticSummary | null>(null);
+  const [roi, setRoi] = useState<RoiCards | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +29,8 @@ export default function OverviewPage() {
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+    // measured card loads independently; its absence must never block the page
+    getRoiCards().then(setRoi).catch(() => setRoi(null));
   }, []);
 
   if (loading) return <PageLoading message="Loading diagnostic summary…" />;
@@ -188,6 +191,39 @@ export default function OverviewPage() {
             </CardBody>
           </Card>
         </div>
+      )}
+
+      {/* Measured backtest card — separate from the assumed ceiling, never summed */}
+      {hasData && roi && (
+        <Card style={{ marginTop: 16 }}>
+          <CardHead
+            title="Measured Backtest Result"
+            sub="From a rolling-origin backtest on your own history — a different question than the assumed ceiling above; the two are never combined"
+          />
+          <CardBody>
+            {roi.measured_card.status === "measured" ? (
+              <div style={{ display: "flex", gap: 32, alignItems: "baseline", flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: roi.measured_card.gate_passed ? "var(--accent)" : "var(--danger)" }}>
+                    {roi.measured_card.sp_vs_lp_edge_pct}%
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                    optimizer vs deterministic plan · wins {roi.measured_card.wins}/{roi.measured_card.n_origins} · t={roi.measured_card.paired_t}
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--muted)", maxWidth: 520 }}>
+                  {roi.measured_card.verdict}
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                Not yet measured — {roi.measured_card.note}
+                {roi.measured_card.weeks_available != null &&
+                  ` (${roi.measured_card.weeks_available}/${roi.measured_card.weeks_required} weeks of history available).`}
+              </div>
+            )}
+          </CardBody>
+        </Card>
       )}
 
       {/* Data loaded summary */}

@@ -325,6 +325,10 @@ def run_two_stage_two_sided(
             "total_commit_kg": round(sum(commit_by_product.values()), 1),
             "expected_unmet_kg": round(res["expected_unmet_kg"], 1),
             "expected_waste_kg": round(res["expected_waste_kg"], 1),
+            # marginal value ($/kg) of one more kg of capacity at each
+            # binding supplier × product — from the LP duals
+            "shadow_prices": {f"{i}|{j}": v for (i, j), v
+                              in res.get("shadow_prices", {}).items()},
         }
 
     if spot_economics is not None:
