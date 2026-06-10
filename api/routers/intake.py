@@ -197,20 +197,22 @@ async def upload_csv(
                 except Exception:
                     pass
 
-        # Check for negative quantities
-        qty_cols = [
-            c for c in mapped_df.columns
-            if any(k in c for k in ("quantity", "qty", "value", "price", "cost"))
-        ]
-        for qcol in qty_cols:
-            try:
-                neg = int((pd.to_numeric(mapped_df[qcol], errors="coerce") < 0).sum())
-                if neg > 0:
-                    warnings.append(
-                        f"Column '{qcol}': {neg} negative values found"
-                    )
-            except Exception:
-                pass
+        # Hard validation: negatives, reversed dates, unparseable required
+        # dates → reject the file with named violations; magnitude / unit
+        # issues → load but surface as warnings.
+        from ingestion.validators import validate_staging_df
+
+        validation = validate_staging_df(table, mapped_df)
+        warnings.extend(validation.warnings)
+        if not validation.ok:
+            errors.extend(validation.errors)
+            return {
+                "table": table,
+                "description": meta["description"],
+                "rows_inserted": 0,
+                "warnings": warnings,
+                "errors": errors,
+            }
 
         # Ingest
         rows_inserted = ingest_csv(

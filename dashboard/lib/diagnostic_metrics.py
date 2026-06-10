@@ -339,10 +339,18 @@ def supplier_reliability_scores(
     excluded from the ``n_risky`` count because we cannot judge
     a supplier whose data we don't have.
 
+    DISPLAY ONLY: these raw point estimates are for the suppliers panel.
+    Decision paths (holdbacks, safe-commit) use the shrunk hierarchical
+    estimates from risk/supplier_distribution.py, which account for
+    sample size and variance. A supplier averaging 62% over 2 deliveries
+    is not the same evidence as 62% over 40 — the raw rate hides that.
+
     Returns:
         suppliers      list of per-supplier dicts
         n_risky        count with fill_rate < High threshold (excludes Unknown)
         n_unknown      count of suppliers with no orderable history
+        basis          "raw_display_only" — marker that these numbers must
+                       not be used to size commitments
     """
     # NOTE: SUM(accepted_quantity) returns NULL only when *every* row's
     # accepted_quantity is NULL. We pick the right basis at the row level
@@ -361,7 +369,8 @@ def supplier_reliability_scores(
     """).df()
 
     if df.empty:
-        return {"suppliers": [], "n_risky": 0, "n_unknown": 0}
+        return {"suppliers": [], "n_risky": 0, "n_unknown": 0,
+                "basis": "raw_display_only"}
 
     def _accepted(row) -> float:
         """Prefer accepted, fall back to delivered when accepted has no data."""
@@ -429,6 +438,7 @@ def supplier_reliability_scores(
         "suppliers": suppliers,
         "n_risky": n_risky,
         "n_unknown": n_unknown,
+        "basis": "raw_display_only",
     }
 
 
@@ -574,85 +584,116 @@ def traceability_coverage(
 def atp_by_product(
     conn: duckdb.DuckDBPyConnection,
     as_of_date: date | None = None,
+    lead_time_days: float = 0.0,
 ) -> dict[str, Any]:
     """Compute available-to-promise per product from stg_inventory_lots.
 
-    Formula (matches the customer-facing field definitions):
-        usable_kg = on_hand - expired_kg
-        atp_kg    = max(usable_kg - committed_kg - near_expiry_kg, 0)
+    Uses the single perishability primitive (risk/shelf_life.py): each lot
+    gets a usability weight w in [0, 1] from its remaining shelf life, the
+    delivery lead time, and a per-category safety buffer.
 
-    Near-expiry inventory IS subtracted from ATP because committing
-    near-expiry stock to a delivery 3+ days out is a known cause of
-    missed-order risk. Operators should source replenishment, not
-    promise near-expiry product.
+        weighted_kg = Σ_lots qty × w(remaining; lead_time, buffer)
+        atp_kg      = max(weighted_kg - committed_kg, 0)
 
-    Each lot is classified into at most one of {expired, near_expiry,
-    healthy} based on its expiration_date relative to ``as_of_date`` —
-    a lot cannot count in both buckets.
+    This replaces the previous hard 3-day cliff (a lot 1 day inside the
+    buffer was treated as worthless; one just outside as fully safe). The
+    weight ramps linearly across the buffer instead, so near-expiry stock
+    is partially committable in proportion to how much margin it has.
+
+    Buckets per lot (mutually exclusive, identity holds):
+        expired      w = 0 because expiration ≤ as_of + lead_time
+        near_expiry  0 < w < 1 (inside the safety buffer)
+        healthy      w = 1
+        on_hand = expired + near_expiry + healthy quantities
 
     Returns:
-        products         list of per-product ATP dicts, sorted by ATP ascending
-        n_risky          products with near_expiry_pct > threshold OR atp <= 0
+        products   list of per-product ATP dicts, sorted by ATP ascending;
+                   includes shelf_life_discount_kg = (on_hand − expired) −
+                   weighted, the quantity discounted by the ramp.
+        n_risky    products with near_expiry_pct > threshold OR atp <= 0
     """
-    today = as_of_date or _today()
-    near_expiry_cutoff = (today + timedelta(days=_NEAR_EXPIRY_DAYS)).isoformat()
-    today_str = today.isoformat()
+    from risk.shelf_life import buffer_for_category, shelf_life_weight
 
-    # CASE order matters: expired check first, then near-expiry, so a lot
-    # is never counted in both buckets.
-    df = conn.execute(f"""
-        SELECT product_id,
-               product_name,
-               COALESCE(SUM(quantity_on_hand), 0)                        AS total_on_hand,
-               COALESCE(SUM(COALESCE(committed_quantity, 0)), 0)         AS total_committed,
-               COALESCE(SUM(
-                   CASE WHEN expiration_date IS NOT NULL
-                        AND  expiration_date < '{today_str}'
-                        THEN quantity_on_hand ELSE 0 END
-               ), 0)                                                      AS expired_qty,
-               COALESCE(SUM(
-                   CASE WHEN expiration_date IS NOT NULL
-                        AND  expiration_date >= '{today_str}'
-                        AND  expiration_date <= '{near_expiry_cutoff}'
-                        THEN quantity_on_hand ELSE 0 END
-               ), 0)                                                      AS near_expiry_qty
-        FROM stg_inventory_lots
-        GROUP BY product_id, product_name
-    """).df()
+    today = as_of_date or _today()
+
+    try:
+        df = conn.execute("""
+            SELECT l.product_id,
+                   l.product_name,
+                   l.quantity_on_hand,
+                   COALESCE(l.committed_quantity, 0) AS committed_quantity,
+                   l.expiration_date,
+                   p.category
+            FROM stg_inventory_lots l
+            LEFT JOIN stg_products p ON l.product_id = p.product_id
+            WHERE l.quantity_on_hand IS NOT NULL
+        """).df()
+    except duckdb.CatalogException:
+        # No product catalog loaded — fall back to default buffers.
+        df = conn.execute("""
+            SELECT product_id,
+                   product_name,
+                   quantity_on_hand,
+                   COALESCE(committed_quantity, 0) AS committed_quantity,
+                   expiration_date,
+                   NULL AS category
+            FROM stg_inventory_lots
+            WHERE quantity_on_hand IS NOT NULL
+        """).df()
 
     if df.empty:
         return {"products": [], "n_risky": 0}
 
+    agg: dict[tuple, dict[str, float]] = {}
+    for _, row in df.iterrows():
+        key = (row["product_id"], row["product_name"])
+        e = agg.setdefault(key, {
+            "on_hand": 0.0, "committed": 0.0, "expired": 0.0,
+            "near_expiry": 0.0, "weighted": 0.0,
+        })
+        qty = float(row["quantity_on_hand"])
+        e["on_hand"] += qty
+        e["committed"] += float(row["committed_quantity"])
+
+        exp = row["expiration_date"]
+        if pd.isna(exp):
+            # No expiration recorded: treated as fully usable (the data-
+            # quality scorecard flags missing expirations separately).
+            e["weighted"] += qty
+            continue
+        remaining = (pd.Timestamp(exp).date() - today).days
+        category = row["category"] if pd.notna(row.get("category")) else None
+        w = shelf_life_weight(remaining, lead_time_days,
+                              buffer_for_category(category))
+        e["weighted"] += qty * w
+        if w <= 0.0:
+            e["expired"] += qty
+        elif w < 1.0:
+            e["near_expiry"] += qty
+
     products = []
     n_risky = 0
+    for (pid, pname), e in agg.items():
+        on_hand = e["on_hand"]
+        usable = max(on_hand - e["expired"], 0.0)
+        atp = max(e["weighted"] - e["committed"], 0.0)
+        near_expiry_pct = (e["near_expiry"] / on_hand) if on_hand > 0 else 0.0
 
-    for _, row in df.iterrows():
-        on_hand = float(row["total_on_hand"])
-        committed = float(row["total_committed"])
-        expired = float(row["expired_qty"])
-        near_expiry = float(row["near_expiry_qty"])
-
-        usable = max(on_hand - expired, 0.0)
-        # ATP subtracts near_expiry too — this is the contractually safe
-        # quantity to promise for delivery beyond the near-expiry window.
-        atp = max(usable - committed - near_expiry, 0.0)
-        near_expiry_pct = (near_expiry / on_hand) if on_hand > 0 else 0.0
-
-        is_risky = (
-            atp <= 0
-            or near_expiry_pct > _HIGH_RISK_NEAR_EXPIRY
-        )
+        is_risky = atp <= 0 or near_expiry_pct > _HIGH_RISK_NEAR_EXPIRY
         if is_risky:
             n_risky += 1
 
         products.append({
-            "product_id": row["product_id"],
-            "product_name": row["product_name"],
+            "product_id": pid,
+            "product_name": pname,
             "total_on_hand_kg": round(on_hand, 1),
-            "committed_kg": round(committed, 1),
-            "expired_kg": round(expired, 1),
-            "near_expiry_kg": round(near_expiry, 1),
+            "committed_kg": round(e["committed"], 1),
+            "expired_kg": round(e["expired"], 1),
+            "near_expiry_kg": round(e["near_expiry"], 1),
             "usable_kg": round(usable, 1),
+            "weighted_usable_kg": round(e["weighted"], 1),
+            "shelf_life_discount_kg": round(usable - e["weighted"], 1),
+            "lead_time_days": float(lead_time_days),
             "atp_kg": round(atp, 1),
             "near_expiry_pct": round(near_expiry_pct, 4),
             "risk_level": "High" if is_risky else (
@@ -680,9 +721,24 @@ def recommendations_by_product(
     supplier_data = supplier_reliability_scores(conn)
     buyer_data = buyer_fulfillment_rates(conn)
 
-    # Build lookup: product_name → worst supplier fill rate
+    # Decision basis: shrunk hierarchical fill estimates (§4 raw rates are
+    # display-only). Fall back to the raw rate only when the hierarchical
+    # model has nothing for a supplier; skip suppliers we cannot judge.
+    shrunk_fill: dict[str, float] = {}
+    try:
+        from risk.supplier_distribution import supplier_fill_distributions
+        for sid, d in supplier_fill_distributions(conn).items():
+            if sid != "_prior" and d.get("posterior_mean") is not None:
+                shrunk_fill[sid] = float(d["posterior_mean"])
+    except Exception:  # noqa: BLE001  fall back to raw below
+        pass
+
+    # Build lookup: product_name → worst supplier fill estimate
     supplier_fill: dict[str, float] = {}
     for s in supplier_data["suppliers"]:
+        fill = shrunk_fill.get(s["supplier_id"], s["fill_rate"])
+        if fill is None:
+            continue  # no basis to judge this supplier
         # Join by product via stg_supplier_deliveries
         try:
             prod_rows = conn.execute("""
@@ -695,7 +751,7 @@ def recommendations_by_product(
         for (pname,) in prod_rows:
             if pname:
                 current = supplier_fill.get(pname, 1.0)
-                supplier_fill[pname] = min(current, float(s["fill_rate"]))
+                supplier_fill[pname] = min(current, float(fill))
 
     # Build lookup: product_name → worst buyer fulfillment rate
     buyer_fill: dict[str, float] = {}
@@ -797,15 +853,20 @@ def estimated_annual_savings(
     reduction_pct_low: float = 0.15,
     reduction_pct_high: float = 0.30,
 ) -> dict[str, Any]:
-    """Estimate addressable savings if HarvestMind prevented a fraction of losses.
+    """Estimate the addressable-savings CEILING if a fraction of losses were prevented.
+
+    THIS IS AN ASSUMED CEILING, NOT A MEASURED RESULT. The reduction range
+    (default 15%–30%) is an industry benchmark assumption (USDA SR-77 band
+    for produce hubs adopting improved inventory and fulfillment
+    practices), applied to the operator's measured losses. Nothing here is
+    a backtested or validated savings figure, and this number must never
+    be summed with or presented alongside measured results as if
+    equivalent.
 
     Takes the period loss (from the analyzed window), scales to a full
-    year using ``365 / period_days``, then applies a reduction range
-    (default 15%–30%) sourced from USDA SR-77 benchmarks for produce
-    hubs adopting improved inventory and fulfillment practices.
-
-    The output includes both raw period values and annualized values so
-    the operator can see exactly what the math did.
+    year using ``365 / period_days``, then applies the assumed reduction
+    range. The output includes both raw period values and annualized
+    values so the operator can see exactly what the math did.
 
     Returns:
         addressable_loss_usd_period      raw waste + shortage over the period
@@ -832,6 +893,15 @@ def estimated_annual_savings(
     savings_high = annual_loss * float(reduction_pct_high)
 
     return {
+        # Honest-labeling markers: this block is an assumed opportunity
+        # ceiling, not a measured or validated savings figure.
+        "basis": "assumed_ceiling",
+        "is_measured": False,
+        "basis_note": (
+            "Opportunity ceiling assuming a 15-30% loss-reduction benchmark "
+            "(USDA SR-77 band). Not a measured result; do not sum with "
+            "backtested figures."
+        ),
         "addressable_loss_usd_period": round(period_loss, 2),
         "addressable_loss_usd": round(annual_loss, 2),
         "period_days": pd_days,

@@ -379,18 +379,23 @@ def test_atp_empty_returns_no_products(empty_db):
     assert result["n_risky"] == 0
 
 
-def test_atp_subtracts_near_expiry_from_committable_quantity(stg_db):
-    """Regression guard: ATP must exclude near-expiry stock.
+def test_atp_discounts_near_expiry_with_continuous_weight(stg_db):
+    """Regression guard: ATP discounts near-expiry stock by the shelf-life ramp.
 
-    LOT-A (Tomatoes, 200kg, fresh, committed=50)  +
-    LOT-B (Tomatoes, 80kg, expires 2026-05-28 = near-expiry, committed=0) +
-    LOT-E (Tomatoes, 40kg, expires 2026-06-05 = fresh, committed=0)
+    The hard 3-day cliff is retired: a lot inside the safety buffer is
+    partially committable in proportion to its remaining margin
+    (risk/shelf_life.py, lead_time=0, default buffer=5 days since the
+    fixture seeds no product categories).
+
+    LOT-A (Tomatoes, 200kg, expires 2026-06-10, R=14 → w=1, committed=50) +
+    LOT-B (Tomatoes,  80kg, expires 2026-05-28, R=1  → w=1/5=0.2)         +
+    LOT-E (Tomatoes,  40kg, expires 2026-06-05, R=9  → w=1)
     Expected for Tomatoes:
-        on_hand   = 200 + 80 + 40 = 320
-        expired   = 0
-        near_exp  = 80
+        on_hand   = 320
+        weighted  = 200 + 80×0.2 + 40 = 256
         committed = 50
-        ATP       = 320 - 0 - 50 - 80 = 190   (NOT 270)
+        ATP       = 256 - 50 = 206   (cliff formula gave 190; raw gives 270)
+        discount  = usable - weighted = 320 - 256 = 64
     """
     from dashboard.lib.diagnostic_metrics import atp_by_product
 
@@ -398,8 +403,13 @@ def test_atp_subtracts_near_expiry_from_committable_quantity(stg_db):
     tomatoes = next(p for p in result["products"] if p["product_name"] == "Tomatoes")
     assert tomatoes["near_expiry_kg"] == pytest.approx(80.0)
     assert tomatoes["committed_kg"] == pytest.approx(50.0)
-    # The key assertion: ATP excludes near-expiry
-    assert tomatoes["atp_kg"] == pytest.approx(190.0)
+    assert tomatoes["weighted_usable_kg"] == pytest.approx(256.0)
+    assert tomatoes["shelf_life_discount_kg"] == pytest.approx(64.0)
+    # The key assertion: near-expiry stock is discounted, not zeroed
+    assert tomatoes["atp_kg"] == pytest.approx(206.0)
+    # Identities: weighted never exceeds usable; ATP never exceeds weighted
+    assert tomatoes["weighted_usable_kg"] <= tomatoes["usable_kg"]
+    assert tomatoes["atp_kg"] <= tomatoes["weighted_usable_kg"]
 
 
 def test_atp_lot_counted_in_only_one_bucket(stg_db):
@@ -604,3 +614,27 @@ def test_supplier_with_no_orders_returns_unknown_tier(empty_db):
         assert result["n_unknown"] >= 1
     finally:
         empty_db.execute("DELETE FROM stg_supplier_deliveries")
+
+
+# ── Honest-labeling guards (Phase 1) ─────────────────────────────────────────
+
+def test_savings_labeled_as_assumed_ceiling():
+    """§8: the savings block must self-identify as an assumed ceiling,
+    never a measured result, so downstream surfaces cannot mislabel it."""
+    from dashboard.lib.diagnostic_metrics import estimated_annual_savings
+
+    result = estimated_annual_savings(
+        {"total_usd": 1000.0}, {"total_usd": 500.0}, period_days=90
+    )
+    assert result["basis"] == "assumed_ceiling"
+    assert result["is_measured"] is False
+    assert "ceiling" in result["basis_note"].lower()
+
+
+def test_supplier_scores_labeled_display_only(stg_db):
+    """§4: raw fill rates carry the display-only marker; decision paths
+    must use the shrunk hierarchical estimates instead."""
+    from dashboard.lib.diagnostic_metrics import supplier_reliability_scores
+
+    result = supplier_reliability_scores(stg_db)
+    assert result["basis"] == "raw_display_only"

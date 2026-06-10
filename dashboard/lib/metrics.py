@@ -399,7 +399,21 @@ def full_data_quality_report(conn: duckdb.DuckDBPyConnection) -> dict:
         "errors": errors,
         "warnings": warnings,
         "total_rows": total_rows,
+        # Structured hard-validation results per table (same rules the
+        # intake endpoint enforces at upload time), so the scorecard and
+        # the upload path can never disagree about what counts as a
+        # violation.
+        "violations": _staging_violations(conn),
     }
+
+
+def _staging_violations(conn: duckdb.DuckDBPyConnection) -> dict:
+    """Hard-validation results for loaded staging tables (guarded)."""
+    try:
+        from ingestion.validators import validate_loaded_tables
+        return validate_loaded_tables(conn)
+    except Exception:  # noqa: BLE001  scorecard must never crash on this
+        return {}
 
 
 # ---------------------------------------------------------------------------

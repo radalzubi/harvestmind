@@ -67,7 +67,7 @@ export default function OverviewPage() {
         <InfoBanner kind="danger" title="⚠ Addressable loss detected:">
           {fmtUSD(totalLoss)} in waste + shortage losses identified across {data.period_days} days.
           {data.savings.estimated_annual_savings_usd > 0 &&
-            ` Estimated ${fmtUSD(data.savings.estimated_annual_savings_usd)}/yr recoverable with process improvements.`}
+            ` Opportunity ceiling (assumed 15–30% benchmark): up to ${fmtUSD(data.savings.estimated_annual_savings_usd)}/yr.`}
         </InfoBanner>
       )}
 
@@ -135,7 +135,7 @@ export default function OverviewPage() {
 
           {/* Savings opportunity */}
           <Card>
-            <CardHead title="Savings Opportunity" sub="Annualized addressable loss + 15–30% reduction band" />
+            <CardHead title="Opportunity Ceiling (Assumed)" sub="Annualized addressable loss × assumed 15–30% benchmark — not a measured result" />
             <CardBody>
               <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "4px 0" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -165,10 +165,10 @@ export default function OverviewPage() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 4 }}>
                   <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                    Est. annual savings range
+                    Opportunity ceiling
                     <br />
                     <span style={{ fontSize: 10 }}>
-                      ({Math.round((data.savings.reduction_pct_low ?? 0.15) * 100)}–{Math.round((data.savings.reduction_pct_high ?? 0.30) * 100)}% reduction)
+                      (assumed {Math.round((data.savings.reduction_pct_low ?? 0.15) * 100)}–{Math.round((data.savings.reduction_pct_high ?? 0.30) * 100)}% reduction benchmark)
                     </span>
                   </span>
                   <span style={{ fontSize: 16, fontWeight: 700, color: "var(--accent)", textAlign: "right" }}>

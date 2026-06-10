@@ -412,7 +412,7 @@
 
 <!-- ── 11. Estimated Annual Savings Opportunity ── -->
 <div class="section">
-  <div class="section-title">11. Estimated Annual Savings Opportunity</div>
+  <div class="section-title">11. Opportunity Ceiling (Assumed Benchmark)</div>
   <div class="savings-box">
     {% if savings.estimated_annual_savings_usd_low is defined and savings.estimated_annual_savings_usd_low != savings.estimated_annual_savings_usd_high %}
       <div class="big">
@@ -421,18 +421,20 @@
         {{ savings.estimated_annual_savings_usd_high | fmt_usd }}
       </div>
       <div class="sub">
-        Estimated annual savings at
+        Opportunity ceiling assuming a
         {{ "%.0f" | format((savings.reduction_pct_low or 0.15) * 100) }}%–{{ "%.0f" | format((savings.reduction_pct_high or 0.30) * 100) }}%
-        reduction of annualized addressable loss
+        loss-reduction benchmark applied to annualized addressable loss
         ({{ savings.addressable_loss_usd | fmt_usd }}/yr identified).
+        This is an assumption-based ceiling, not a measured result.
       </div>
     {% else %}
       <div class="big">{{ savings.estimated_annual_savings_usd | fmt_usd }}</div>
       <div class="sub">
-        Estimated annual savings assuming
-        {{ "%.0f" | format((savings.reduction_pct_assumed or 0.30) * 100) }}% reduction
-        of annualized addressable loss
+        Opportunity ceiling assuming a
+        {{ "%.0f" | format((savings.reduction_pct_assumed or 0.30) * 100) }}% loss-reduction
+        benchmark applied to annualized addressable loss
         ({{ savings.addressable_loss_usd | fmt_usd }}/yr identified).
+        This is an assumption-based ceiling, not a measured result.
       </div>
     {% endif %}
     <div style="margin-top:10px;color:var(--muted);font-size:11px;">
