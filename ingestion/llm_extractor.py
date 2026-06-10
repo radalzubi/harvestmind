@@ -478,3 +478,18 @@ def _extract_real(
         in_tok / 1e6 * INPUT_COST_PER_MTOK
         + out_tok / 1e6 * OUTPUT_COST_PER_MTOK, 6)
     return result, raw
+
+
+def bulk_acceptable_rows(result: "ExtractionResult") -> list[int]:
+    """Row indices eligible for one-click bulk accept: flagged rows whose
+    EVERY field clears the auto-accept confidence bar. The UI mirrors
+    this rule; anything below the bar must be actioned individually."""
+    out = []
+    for row in result.extracted_rows:
+        if row.rejected or not row.requires_confirmation:
+            continue
+        if row.field_metadata and all(
+                m.confidence >= AUTO_ACCEPT_CONFIDENCE
+                for m in row.field_metadata.values()):
+            out.append(row.row_index)
+    return out
