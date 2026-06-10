@@ -4,7 +4,8 @@ import { useState, useRef } from "react";
 import { Upload, CheckCircle, XCircle, AlertTriangle, Database } from "lucide-react";
 import { Card, CardBody, CardHead, PageHeader, Badge, Tbtn } from "@/components/ui";
 import { useToast } from "@/components/Toast";
-import { uploadCSV, clearStagingTable, getIntakeStatus, loadSampleData, type UploadResult, type IntakeStatus, type SampleLoadResult } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { uploadCSV, clearStagingTable, getIntakeStatus, loadSampleData, extractFiles, type UploadResult, type IntakeStatus, type SampleLoadResult } from "@/lib/api";
 import { useEffect } from "react";
 
 const STAGING_TABLES: Array<{ table: string; label: string; description: string; required: string[] }> = [
@@ -103,6 +104,31 @@ export default function UploadPage() {
   const [sampleResult, setSampleResult] = useState<SampleLoadResult | null>(null);
   const [sampleError, setSampleError] = useState<string | null>(null);
 
+  // ── Smart upload (LLM extraction layer) ──────────────────────────────
+  const router = useRouter();
+  const [smartBusy, setSmartBusy] = useState(false);
+  const [smartError, setSmartError] = useState<string | null>(null);
+  const smartRef = useRef<HTMLInputElement | null>(null);
+
+  const handleSmartUpload = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+    setSmartBusy(true);
+    setSmartError(null);
+    try {
+      const result = await extractFiles(Array.from(fileList));
+      if (result.status === "rejected") {
+        setSmartError(result.rejection_guidance ?? "Extraction confidence too low.");
+        return;
+      }
+      router.push(`/upload/confirm?session=${encodeURIComponent(result.session_id)}`);
+    } catch (e) {
+      setSmartError(e instanceof Error ? e.message : "Extraction failed");
+    } finally {
+      setSmartBusy(false);
+      if (smartRef.current) smartRef.current.value = "";
+    }
+  };
+
   const handleLoadSample = async () => {
     setSampleLoading(true);
     setSampleResult(null);
@@ -131,6 +157,41 @@ export default function UploadPage() {
         title="Data Upload"
         sub="Load operator CSV files into HarvestMind staging tables. All 5 tables required for a full diagnostic."
       />
+
+      {/* Smart upload — LLM extraction layer (additive; classic flow below unchanged) */}
+      <Card style={{ marginBottom: 20 }}>
+        <CardHead
+          title="Smart Upload — Any Format"
+          sub="Drop whatever you have: messy Excel, QuickBooks exports, PDF invoices, CSVs, message logs. We read it, map it, and show you everything for confirmation before anything loads."
+        />
+        <CardBody>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <input
+              ref={smartRef}
+              type="file"
+              multiple
+              accept=".csv,.xlsx,.xls,.pdf,.txt,.json"
+              style={{ display: "none" }}
+              onChange={(e) => handleSmartUpload(e.target.files)}
+            />
+            <Tbtn
+              variant="primary"
+              pending={smartBusy}
+              onClick={() => smartRef.current?.click()}
+            >
+              {smartBusy ? "Reading your data…" : "Choose files (any format)"}
+            </Tbtn>
+            <span style={{ fontSize: 11, color: "var(--muted)" }}>
+              Nothing loads until you confirm it. Every inferred value is marked and explained.
+            </span>
+          </div>
+          {smartError && (
+            <div style={{ marginTop: 10, fontSize: 12, color: "var(--danger)" }}>
+              ⚠ {smartError}
+            </div>
+          )}
+        </CardBody>
+      </Card>
 
       {/* Quick-start: one-click sample loader */}
       <Card style={{ marginBottom: 20 }}>

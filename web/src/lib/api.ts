@@ -283,6 +283,66 @@ export interface ConfidenceIndex {
   components?: { demand_oos_wape: number; avg_supplier_spread: number };
 }
 
+export interface ExtractionFieldMeta {
+  confidence: number;
+  inference_source: string;
+  requires_confirmation: boolean;
+  flag_reason?: string | null;
+}
+
+export interface ExtractionMapping {
+  source_column: string;
+  target_field: string;
+  confidence: number;
+  reasoning: string;
+  alternative_mapping?: string | null;
+}
+
+export interface ExtractionRow {
+  row_index: number;
+  table: string;
+  fields: Record<string, unknown>;
+  field_metadata: Record<string, ExtractionFieldMeta>;
+  flags: string[];
+  requires_confirmation: boolean;
+  rejected: boolean;
+  rejection_reason?: string | null;
+}
+
+export interface ExtractionResultPayload {
+  session_id: string;
+  source_files: string[];
+  column_mappings: ExtractionMapping[];
+  extracted_rows: ExtractionRow[];
+  unmapped_columns: string[];
+  schema_gaps: string[];
+  summary: {
+    total_rows: number;
+    auto_accepted: number;
+    flagged_for_review: number;
+    rejected: number;
+    tables_found: string[];
+    tables_missing: string[];
+    schema_coverage_pct: number;
+    overall_confidence: number;
+    estimated_api_cost_usd?: number | null;
+  };
+  requires_human_review: boolean;
+  mock_mode: boolean;
+  status: string;
+  rejection_guidance?: string | null;
+  sufficiency_warnings: string[];
+  fallback_used: boolean;
+}
+
+export interface ConfirmResponse {
+  session_id: string;
+  rows_inserted: Record<string, number>;
+  total_inserted: number;
+  corrections_recorded: number;
+  sufficiency_warnings: string[];
+}
+
 // ── API calls ──────────────────────────────────────────────────────────────
 
 export async function getDiagnosticSummary(
@@ -327,6 +387,36 @@ export async function getRoiCards(): Promise<RoiCards> {
 
 export async function getConfidence(): Promise<ConfidenceIndex> {
   return apiFetch<ConfidenceIndex>("/reports/confidence");
+}
+
+
+export async function extractFiles(files: File[]): Promise<ExtractionResultPayload> {
+  const form = new FormData();
+  files.forEach((f) => form.append("files", f));
+  const res = await fetch(`${BASE_URL}/intake/extract`, { method: "POST", body: form });
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`;
+    try { detail = (await res.json()).detail ?? detail; } catch {}
+    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+  }
+  return res.json() as Promise<ExtractionResultPayload>;
+}
+
+export async function getExtractionSession(id: string): Promise<ExtractionResultPayload> {
+  return apiFetch<ExtractionResultPayload>(`/intake/session/${encodeURIComponent(id)}`);
+}
+
+export async function confirmExtraction(payload: {
+  session_id: string;
+  rows: Array<{ row_index: number; table: string; fields: Record<string, unknown>; accepted: boolean }>;
+  corrections: Array<Record<string, unknown>>;
+  actioned_flag_indices: number[];
+}): Promise<ConfirmResponse> {
+  return apiFetch<ConfirmResponse>("/intake/confirm", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function getDataQuality(): Promise<DataQualityReport> {

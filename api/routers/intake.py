@@ -323,3 +323,135 @@ def intake_status(conn=Depends(get_conn)):
         "any_data_loaded": any_loaded,
         "all_tables_loaded": all_loaded,
     }
+
+
+# ── LLM extraction endpoints (smart upload) ───────────────────────────────────
+
+@router.post("/extract")
+async def extract_files(
+    files: list[UploadFile] = File(...),
+    conn=Depends(get_conn),
+):
+    """Smart upload: any-format files → ExtractionResult for confirmation.
+
+    Nothing is inserted here. The result (mock or real per USE_REAL_LLM)
+    goes to the confirmation UI; rows reach staging only via
+    POST /intake/confirm after operator review.
+    """
+    import tempfile
+    from pathlib import Path as _P
+
+    if not files:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="No files uploaded")
+
+    tmp_paths: list[_P] = []
+    try:
+        for f in files:
+            suffix = _P(f.filename or "upload.csv").suffix or ".csv"
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+                tmp.write(await f.read())
+                tmp_paths.append(_P(tmp.name))
+
+        from ingestion.llm_extractor import extract as llm_extract
+        try:
+            result = llm_extract(tmp_paths)
+        except ValueError as e:   # unsupported file type etc.
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(e))
+        payload = result.model_dump()
+        # original filenames, not temp names, for the UI
+        payload["source_files"] = [f.filename for f in files]
+        return payload
+    finally:
+        for p in tmp_paths:
+            p.unlink(missing_ok=True)
+
+
+@router.get("/session/{session_id}")
+def get_extraction_session(session_id: str):
+    """Fetch a logged extraction session for the confirmation UI."""
+    from ingestion.extraction_sessions import load_session
+
+    data = load_session(session_id)
+    if data is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"No session {session_id!r}")
+    return data
+
+
+@router.post("/confirm")
+def confirm_extraction(body: dict, conn=Depends(get_conn)):
+    """Operator-confirmed rows → Layer-1 validation → staging insert.
+
+    Body: {session_id, rows: [{row_index, table, fields, accepted}],
+           corrections: [...], actioned_flag_indices: [...]}
+
+    Enforcement: every row the extraction flagged requires_confirmation
+    must appear in actioned_flag_indices (accepted, edited, or excluded
+    by the operator) — unactioned flags block the confirm. Confirmed rows
+    still pass the existing hard validators; a validation error returns
+    422 and inserts nothing.
+    """
+    import pandas as pd
+
+    from ingestion.extraction_sessions import load_session, log_confirmation
+    from ingestion.validators import validate_staging_df
+
+    session_id = body.get("session_id")
+    rows = body.get("rows", [])
+    corrections = body.get("corrections", [])
+    actioned = set(body.get("actioned_flag_indices", []))
+
+    session = load_session(session_id) if session_id else None
+    if session is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"No session {session_id!r}")
+
+    flagged = {r["row_index"] for r in session.get("extracted_rows", [])
+               if r.get("requires_confirmation") and not r.get("rejected")}
+    unactioned = flagged - actioned
+    if unactioned:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"{len(unactioned)} flagged row(s) not actioned "
+                   f"(indices {sorted(unactioned)[:10]}). Every flag must "
+                   f"be accepted, edited, or excluded before confirming.")
+
+    accepted_rows = [r for r in rows if r.get("accepted", True)]
+    by_table: dict[str, list[dict]] = {}
+    for r in accepted_rows:
+        fields = {k: v for k, v in r.get("fields", {}).items()
+                  if not k.startswith("_")}
+        by_table.setdefault(r["table"], []).append(fields)
+
+    # Layer-1 hard validation per table — the LLM never bypasses it
+    errors: list[str] = []
+    frames: dict[str, pd.DataFrame] = {}
+    for table, recs in by_table.items():
+        df = pd.DataFrame(recs).dropna(axis=1, how="all")
+        v = validate_staging_df(table, df)
+        if not v.ok:
+            errors.extend(f"{table}: {e}" for e in v.errors)
+        frames[table] = df
+    if errors:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail={"validation_errors": errors})
+
+    from ingestion.column_mapper import insert_from_df
+    inserted: dict[str, int] = {}
+    for table, df in frames.items():
+        if df.empty:
+            continue
+        inserted[table] = insert_from_df(conn, table, df,
+                                         on_conflict="none")
+
+    log_confirmation(session_id, accepted_rows, corrections)
+    return {
+        "session_id": session_id,
+        "rows_inserted": inserted,
+        "total_inserted": sum(inserted.values()),
+        "corrections_recorded": len(corrections),
+        "sufficiency_warnings": session.get("sufficiency_warnings", []),
+    }
