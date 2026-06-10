@@ -199,16 +199,20 @@ class LGBMDemandModel:
         inst = cls(**meta["params"])
         inst._feature_cols = meta["feature_cols"]
         inst._calibration_residuals = np.array(meta["calibration_residuals"])
-        booster = lgb.Booster(model_file=str(d / "lgbm_model.txt"))
-        inst._model = lgb.LGBMRegressor()
-        inst._model._Booster = booster  # attach pre-loaded booster
+        # Use the raw Booster directly: its .predict works without the
+        # sklearn fit-state (attaching a Booster to an unfitted
+        # LGBMRegressor raises "Estimator not fitted" on predict).
+        inst._model = lgb.Booster(model_file=str(d / "lgbm_model.txt"))
         return inst
 
     @property
     def feature_importance(self) -> pd.DataFrame:
         if self._model is None:
             return pd.DataFrame()
+        imp = (self._model.feature_importances_
+               if hasattr(self._model, "feature_importances_")
+               else self._model.feature_importance())
         return pd.DataFrame({
             "feature": self._feature_cols,
-            "importance": self._model.feature_importances_,
+            "importance": imp,
         }).sort_values("importance", ascending=False).reset_index(drop=True)
