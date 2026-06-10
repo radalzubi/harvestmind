@@ -15,17 +15,17 @@ The product carries a clock, margins are thin, and the decision is irreversible 
 
 ---
 
-**INDEPENDENT VALIDATION**
-
-A former agriculture-sector consultant, now founder of a company building ecological and edible-landscape systems for the MENA region, reviewed the concept and confirmed there is a market: operators in the region make these commitments on judgment alone and have no tool built for the decision.
-
----
-
 **WHAT WE DO**
 
 The demand and inventory intelligence that has reached grocery retail's fresh departments has not reached the suppliers and distributors who feed them. That is where we sit. HarvestMind turns the messy CSVs an operator already exports into structured, organized operational data, then runs three things on top of it. A diagnostic that shows, in dollars, where margin is lost: waste, shortage, supplier fill and rejection, buyer fulfillment, and available to promise by product. A compliance layer that structures and checks the FSMA-204 lot-level traceability operators now have to produce anyway. And a decision layer that recommends how much to commit to each supplier and buyer and quantifies the overbuy and underbuy risk on each.
 
-We prove the decision layer by backtesting. We replay an operator's own history and measure what the recommendations would have saved, so the trust comes from their numbers rather than our claims. In simulation the model already shows a measurable cost advantage over commit-the-average planning. We have no live customers yet.
+We prove the decision layer by backtesting. We replay an operator's own history and measure what the recommendations would have saved, so the trust comes from their numbers rather than our claims. We have no live customers yet.
+
+---
+
+**INDEPENDENT VALIDATION**
+
+A former agriculture-sector consultant, now founder of a company building ecological and edible-landscape systems for the MENA region, reviewed the concept and confirmed there is a market: operators in the region make these commitments on judgment alone and have no tool built for the decision.
 
 ---
 

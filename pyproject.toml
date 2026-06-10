@@ -28,6 +28,8 @@ dependencies = [
     "streamlit>=1.33",
     "plotly>=5.20",
     "jinja2>=3.1",
+    "anthropic>=0.40",      # LLM extraction layer — only imported when USE_REAL_LLM=true
+    "pdfplumber>=0.11",     # PDF invoice/table extraction
     "weasyprint>=60",
     "tinycss2>=1.5",  # weasyprint needs ≥1.5; bleach[css] (nbconvert dep) pins <1.5
 

@@ -87,3 +87,7 @@ client_secret*.json
 *~
 Thumbs.db
 _archive_cleanup_review/
+
+# LLM extraction layer — audit log + training corpus are operator data, never committed
+training/audit_log/
+training/corpus/
