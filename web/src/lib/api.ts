@@ -158,6 +158,44 @@ export interface SampleLoadResult {
   errors: string[];
 }
 
+export interface DemandForecastProduct {
+  product_name: string;
+  model: string;
+  forecast_kg_per_week: number;
+  quantiles_kg: Record<string, number>;
+  n_holdout_residuals: number;
+  drivers: string[];
+}
+
+export interface DemandForecastResponse {
+  as_of: string;
+  horizon_weeks: number;
+  products: DemandForecastProduct[];
+  model_info: { status: string; [k: string]: unknown };
+}
+
+export interface ForecastEvalFold {
+  fold: number;
+  origin: string;
+  n_series: number;
+  wape_model: number;
+  wape_seasonal_naive: number;
+  bias_pct_model: number;
+}
+
+export interface ForecastEvaluation {
+  status: string;
+  folds?: ForecastEvalFold[];
+  wape_model?: number;
+  wape_seasonal_naive?: number;
+  oos_mase_ratio?: number | null;
+  bias_pct_model?: number | null;
+  gate_passed: boolean | null;
+  gate_rule?: string;
+  metrics_policy?: string;
+  weeks_available?: number;
+}
+
 // ── API calls ──────────────────────────────────────────────────────────────
 
 export async function getDiagnosticSummary(
@@ -167,6 +205,15 @@ export async function getDiagnosticSummary(
   return apiFetch<DiagnosticSummary>(
     `/diagnostics/summary?partner_name=${encodeURIComponent(partnerName)}&days=${days}`
   );
+}
+
+
+export async function getDemandForecast(weeks = 4): Promise<DemandForecastResponse> {
+  return apiFetch<DemandForecastResponse>(`/forecasts/demand?weeks=${weeks}`);
+}
+
+export async function getForecastEvaluation(): Promise<ForecastEvaluation> {
+  return apiFetch<ForecastEvaluation>("/forecasts/demand/evaluation");
 }
 
 export async function getDataQuality(): Promise<DataQualityReport> {

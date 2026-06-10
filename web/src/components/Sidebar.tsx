@@ -14,6 +14,7 @@ import {
   FileText,
   Settings,
   Search,
+  TrendingUp,
 } from "lucide-react";
 
 type NavItem = {
@@ -37,6 +38,10 @@ const NAV_DIAGNOSTICS: NavItem[] = [
   { href: "/atp", label: "Available-to-Promise", Icon: Activity },
   { href: "/traceability", label: "Traceability", Icon: ShieldCheck },
   { href: "/partners", label: "Partners", Icon: Users },
+];
+
+const NAV_PLANNING: NavItem[] = [
+  { href: "/forecasts", label: "Demand Forecast", Icon: TrendingUp },
 ];
 
 const NAV_EXPORT: NavItem[] = [
@@ -90,6 +95,10 @@ export function Sidebar() {
         <div className="rail-section">
           <div className="rail-section-label">Diagnostics</div>
           <Group items={NAV_DIAGNOSTICS} current={pathname} />
+        </div>
+        <div className="rail-section">
+          <div className="rail-section-label">Planning</div>
+          <Group items={NAV_PLANNING} current={pathname} />
         </div>
         <div className="rail-section">
           <div className="rail-section-label">Export</div>

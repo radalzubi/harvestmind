@@ -73,6 +73,56 @@ def demand_scenarios_from_orders(conn: duckdb.DuckDBPyConnection) -> pd.DataFram
                "week_start", "demand_kg"]]
 
 
+def demand_scenarios_from_forecast(
+    conn: duckdb.DuckDBPyConnection,
+    n_scenarios: int = 100,
+    horizon_weeks: int = 1,
+    seed: int = 42,
+) -> pd.DataFrame:
+    """Demand scenarios drawn from the demand forecaster's distribution.
+
+    Replaces equal-weight historical replay as the default scenario source:
+    instead of treating every past week as equally likely next week, each
+    scenario draws per-product demand from the forecast median plus a
+    bootstrap of the forecaster's held-out residuals (truncated at zero).
+    Falls back to historical replay when history is too short to forecast.
+
+    Columns match demand_scenarios_from_orders: scenario_index,
+    scenario_weight, product_id, week_start, demand_kg.
+    """
+    from forecasting.demand.demand_forecast_service import forecast_demand
+
+    fc = forecast_demand(conn, horizon_weeks=horizon_weeks)
+    if not fc.products:
+        return demand_scenarios_from_orders(conn)
+
+    rng = pd.Series(range(n_scenarios))  # deterministic index
+    import numpy as np
+    gen = np.random.default_rng(seed)
+
+    rows = []
+    for prod in fc.products:
+        med = float(prod["forecast_kg_per_week"])
+        qs = prod["quantiles_kg"]
+        # Reconstruct a residual spread from the quantiles (q10..q90); a
+        # degenerate spread (no holdout residuals) collapses to the median.
+        spread = np.array([qs["q10"], qs["q25"], qs["q50"], qs["q75"], qs["q90"]])
+        for s in rng:
+            draw = float(gen.choice(spread)) if np.ptp(spread) > 0 else med
+            # jitter between adjacent quantiles so 100 scenarios aren't 5 values
+            if np.ptp(spread) > 0:
+                draw = max(draw + gen.normal(0, max(spread.std(), 1e-9) * 0.25), 0.0)
+            rows.append({
+                "scenario_index": int(s),
+                "scenario_weight": 1.0 / n_scenarios,
+                "product_id": prod["product_name"],
+                "week_start": fc.as_of,
+                "demand_kg": round(draw, 2),
+            })
+    return pd.DataFrame(rows, columns=["scenario_index", "scenario_weight",
+                                       "product_id", "week_start", "demand_kg"])
+
+
 def supply_from_distributions(
     conn: duckdb.DuckDBPyConnection,
     quantile: float = 0.10,
@@ -118,14 +168,22 @@ def supply_from_distributions(
 def run_two_stage(
     conn: duckdb.DuckDBPyConnection,
     quantile: float = 0.10,
+    scenario_source: str = "forecast",
     **solver_kwargs: Any,
 ) -> dict[str, Any]:
     """Generate inputs and solve the two-stage SP on operator data.
 
+    ``scenario_source``: "forecast" (default — demand drawn from the
+    forecaster's distribution) or "replay" (equal-weight historical replay,
+    kept for comparison and as the fallback for short histories).
+
     Returns the optimizer result dict plus the generated inputs, or a
     status of "no_data" when there is nothing to solve.
     """
-    demand = demand_scenarios_from_orders(conn)
+    if scenario_source == "forecast":
+        demand = demand_scenarios_from_forecast(conn)
+    else:
+        demand = demand_scenarios_from_orders(conn)
     supply = supply_from_distributions(conn, quantile=quantile)
 
     if demand.empty or supply.empty:

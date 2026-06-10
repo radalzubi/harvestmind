@@ -63,9 +63,17 @@ class LGBMDemandModel:
         feature_df = feature_df.dropna(subset=[TARGET_COL])
 
         available = FEATURE_COLS + [c for c in OPTIONAL_FEATURE_COLS if c in feature_df.columns]
-        self._feature_cols = [c for c in available if c in feature_df.columns]
-
-        train_df = feature_df.dropna(subset=self._feature_cols)
+        # Keep only features with at least some data: on a ≤52-week history
+        # the 52-week lag is all-NaN, and requiring it non-null (the old
+        # dropna over every feature column) silently emptied the training
+        # set. LightGBM handles NaN feature values natively, so rows only
+        # need the shortest lag to be present.
+        self._feature_cols = [
+            c for c in available
+            if c in feature_df.columns and feature_df[c].notna().any()
+        ]
+        core = [c for c in ("lag_1w", "lag_2w") if c in self._feature_cols]
+        train_df = feature_df.dropna(subset=core) if core else feature_df
 
         if val_cutoff is not None:
             cutoff = pd.to_datetime(val_cutoff)
@@ -118,14 +126,34 @@ class LGBMDemandModel:
         weather_df: pd.DataFrame | None = None,
         price_df: pd.DataFrame | None = None,
     ) -> pd.DataFrame:
-        """Return DataFrame: product_id, buyer_id, week_start, forecast_kg, intervals, model."""
+        """Return DataFrame: product_id, buyer_id, week_start, forecast_kg, intervals, model.
+
+        Forecasts ONE week ahead (the week after the last observed week)
+        from features computed on real history. ``build_features`` only
+        grids observed weeks, so a placeholder future week is appended per
+        series before featurization (the old code filtered for
+        week_start > last_observed on a grid that never contained future
+        weeks, so it always returned empty). Deeper horizons should hold
+        the weekly rate flat or re-forecast recursively; this model does
+        not fabricate them.
+        """
         if self._model is None:
             raise RuntimeError("Model not fitted. Call .fit() first.")
 
-        feature_df = build_features(orders_df, weather_df, price_df)
-        feature_df = feature_df.dropna(subset=self._feature_cols)
+        df = orders_df.copy()
+        df["week_start"] = pd.to_datetime(df["week_start"])
+        last_observed = df["week_start"].max()
+        next_week = last_observed + pd.Timedelta(weeks=1)
+        # Placeholder rows extend the feature grid one week into the
+        # future; their lag/rolling features derive from real history.
+        pairs = df[["product_id", "buyer_id"]].drop_duplicates()
+        future = pairs.assign(week_start=next_week, qty_ordered_kg=0.0)
+        feature_df = build_features(
+            pd.concat([df, future], ignore_index=True), weather_df, price_df
+        )
+        feature_df = feature_df[feature_df["week_start"] == next_week]
 
-        X = feature_df[self._feature_cols].fillna(0)
+        X = feature_df[self._feature_cols]
         preds = np.maximum(0, self._model.predict(X))
 
         q80 = float(np.quantile(self._calibration_residuals, self.conformal_alpha)) if len(self._calibration_residuals) > 0 else 0.0
@@ -138,11 +166,7 @@ class LGBMDemandModel:
         out["lower_95"] = np.maximum(0, out["forecast_kg"] - q95).round(2)
         out["upper_95"] = (out["forecast_kg"] + q95).round(2)
         out["model"] = "lgbm_global"
-
-        last_observed = pd.to_datetime(orders_df["week_start"]).max()
-        horizon_rows = out[out["week_start"] > last_observed]
-        n_ids = len(out["product_id"].unique()) * len(out["buyer_id"].unique())
-        return horizon_rows.head(forecast_weeks * n_ids).reset_index(drop=True)
+        return out.reset_index(drop=True)
 
     # ------------------------------------------------------------------
     # Persistence (LightGBM native format — no pickle)
