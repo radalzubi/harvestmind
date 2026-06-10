@@ -65,3 +65,29 @@ def get_backtest_results(conn=Depends(get_conn)):
     if df is None or df.empty:
         return {"message": "No cached results. Run POST /backtest/run first."}
     return df.to_dict("records")
+
+
+@router.post("/benchmark")
+def run_benchmark_suite(
+    folds: int = 8,
+    train_weeks: int = 26,
+    spot_cost_multiplier: float = 1.30,
+    spot_capacity_factor: float = 0.30,
+    conn=Depends(get_conn),
+):
+    """Rolling-origin benchmark on staged history: two-sided SP vs
+    deterministic LP vs order-up-to vs naive, honest penalties, with the
+    gate verdict (including the unflattering one)."""
+    from backtesting.benchmark_suite import run_benchmark
+    return run_benchmark(
+        conn, n_folds=folds, train_weeks=train_weeks,
+        spot_cost_multiplier=spot_cost_multiplier,
+        spot_capacity_factor=spot_capacity_factor,
+    )
+
+
+@router.get("/saa-gap")
+def saa_gap(conn=Depends(get_conn)):
+    """SAA optimality-gap estimate for the two-sided SP."""
+    from backtesting.benchmark_suite import saa_optimality_gap
+    return saa_optimality_gap(conn)

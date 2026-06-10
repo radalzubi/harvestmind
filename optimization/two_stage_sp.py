@@ -42,6 +42,14 @@ class TwoStageStochasticLP:
     # Default False reproduces the original flat double-count path exactly.
     newsvendor_objective: bool = False
     spot_capacity_factor: float | None = None  # cap stage-2 spot at ρ × demand_jω; None = unlimited
+    # Operator-interpretable constraints (Phase 4). None = off.
+    # service_level_floor: per product, expected unmet ≤ (1−floor) × expected
+    # demand — "serve at least this fraction of demand in expectation".
+    service_level_floor: float | None = None
+    # diversification_cap: no supplier may carry more than this share of a
+    # product's total commitment (applied only where ≥2 suppliers offer the
+    # product and the cap is feasible, i.e. cap ≥ 1/n_suppliers).
+    diversification_cap: float | None = None
     solver: str = "highs"
     time_limit_s: float = 300.0
     n_scenarios: int = 100
@@ -51,8 +59,19 @@ class TwoStageStochasticLP:
         demand_scenarios: pd.DataFrame,   # [scenario_index, scenario_weight, product_id, week_start, demand_kg]
         supply: pd.DataFrame,             # [supplier_id, product_id, week_start, capacity_kg, price_per_kg]
         aggregate_weeks: bool = True,     # collapse multi-week demand to single planning period
+        yield_scenarios: dict | None = None,  # (scenario_index, supplier_id) -> fill in [0,1]
     ) -> dict:
-        """Solve two-stage SP extensive form. Returns result dict."""
+        """Solve two-stage SP extensive form. Returns result dict.
+
+        ``yield_scenarios`` makes the model genuinely TWO-SIDED: the
+        commitment x_ij is made before BOTH demand and supplier yield
+        resolve. Per scenario ω the delivered quantity is fill_ω(i)·x_ij
+        (proportional yield draw from the supplier's predictive Beta), so
+        the demand balance becomes Σ_i fill_ω(i)·x_ij + s − w + u = d_jω.
+        ``None`` keeps the one-sided model (fill ≡ 1), preserving all
+        existing behavior. The model remains a pure LP either way — the
+        fill draws enter as coefficients, not variables.
+        """
         import pyomo.environ as pyo
         from pyomo.opt import SolverFactory
 
@@ -136,9 +155,18 @@ class TwoStageStochasticLP:
 
         model.obj = pyo.Objective(rule=obj_rule, sense=pyo.minimize)
 
+        # Per-scenario supplier fill coefficients (two-sided uncertainty).
+        # fill defaults to 1.0 — the one-sided model — when no yield
+        # scenarios are supplied or a (scenario, supplier) pair is missing.
+        ys = yield_scenarios or {}
+
+        def _fill(omega, i) -> float:
+            return float(ys.get((omega, i), 1.0))
+
         # Demand balance per scenario, with unmet slack
         def balance(m, j, omega):
-            supply_sum = sum(m.x[ii,jj] for (ii,jj) in m.IJ if jj==j)
+            supply_sum = sum(_fill(omega, ii) * m.x[ii,jj]
+                             for (ii,jj) in m.IJ if jj==j)
             return supply_sum + m.s[j,omega] - m.w[j,omega] + m.u[j,omega] == d.get((omega,j), 0.0)
 
         model.balance = pyo.Constraint(model.J, model.W, rule=balance)
@@ -148,6 +176,44 @@ class TwoStageStochasticLP:
             return m.x[i,j] <= cap.get((i,j), 0.0)
 
         model.supply_cap = pyo.Constraint(model.IJ, rule=supply_cap)
+
+        # Service-level floor: expected unmet ≤ (1 − floor) × expected demand,
+        # per product. Operator-readable: "serve at least `floor` of demand
+        # in expectation."
+        if self.service_level_floor is not None:
+            floor = float(self.service_level_floor)
+
+            def service_rule(m, j):
+                exp_unmet = sum(weights.get(w_, 1.0/len(scenarios)) * m.u[j, w_]
+                                for w_ in m.W)
+                exp_demand = sum(weights.get(w_, 1.0/len(scenarios))
+                                 * d.get((w_, j), 0.0) for w_ in m.W)
+                return exp_unmet <= (1.0 - floor) * exp_demand
+
+            model.service_floor = pyo.Constraint(model.J, rule=service_rule)
+
+        # Supplier-diversification cap: x_ij ≤ cap_share × Σ_i' x_i'j.
+        # Applied only where the product has ≥2 suppliers AND the cap is
+        # feasible (cap ≥ 1/n) — otherwise it would force x to zero or be
+        # unsatisfiable, which is not what an operator means by it.
+        if self.diversification_cap is not None:
+            share = float(self.diversification_cap)
+            suppliers_by_product: dict = {}
+            for (i, j) in cap:
+                suppliers_by_product.setdefault(j, []).append(i)
+            constrained = [
+                (i, j) for j, sup_list in suppliers_by_product.items()
+                if len(sup_list) >= 2 and share >= 1.0 / len(sup_list) - 1e-9
+                for i in sup_list
+            ]
+            if constrained:
+                model.DIV = pyo.Set(initialize=constrained, dimen=2)
+
+                def diversify_rule(m, i, j):
+                    total = sum(m.x[ii, jj] for (ii, jj) in m.IJ if jj == j)
+                    return m.x[i, j] <= share * total
+
+                model.diversify = pyo.Constraint(model.DIV, rule=diversify_rule)
 
         # Stage-2 spot ration: s_jω ≤ ρ · d_jω
         if self.spot_capacity_factor is not None:

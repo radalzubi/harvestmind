@@ -222,6 +222,35 @@ export interface SupplyRiskResponse {
   covariates: { signals: Array<{ signal: string; admitted: boolean; reason?: string }>; policy: string };
 }
 
+export interface BenchmarkPolicyRow {
+  cost_per_origin: number;
+  service_pct: number | null;
+  waste_kg_per_origin: number;
+  n_folds: number;
+}
+
+export interface BenchmarkEdge {
+  edge_pct: number | null;
+  wins: number;
+  n: number;
+  paired_t: number | null;
+}
+
+export interface BenchmarkResult {
+  status: string;
+  policies?: Record<string, BenchmarkPolicyRow>;
+  sp_vs_deterministic_lp?: BenchmarkEdge;
+  sp_vs_naive?: BenchmarkEdge;
+  sp_vs_order_up_to?: BenchmarkEdge;
+  gate_passed: boolean | null;
+  verdict?: string;
+  spot_economics?: { spot_cost_multiplier: number; spot_capacity_factor: number; note: string };
+  scoring?: string;
+  data_basis?: string;
+  weeks_available?: number;
+  weeks_required?: number;
+}
+
 // ── API calls ──────────────────────────────────────────────────────────────
 
 export async function getDiagnosticSummary(
@@ -245,6 +274,18 @@ export async function getForecastEvaluation(): Promise<ForecastEvaluation> {
 
 export async function getSupplyRisk(): Promise<SupplyRiskResponse> {
   return apiFetch<SupplyRiskResponse>("/forecasts/supply");
+}
+
+
+export async function runBenchmark(
+  spotMult = 1.3,
+  spotCap = 0.3,
+  folds = 8
+): Promise<BenchmarkResult> {
+  return apiFetch<BenchmarkResult>(
+    `/backtest/benchmark?spot_cost_multiplier=${spotMult}&spot_capacity_factor=${spotCap}&folds=${folds}`,
+    { method: "POST" }
+  );
 }
 
 export async function getDataQuality(): Promise<DataQualityReport> {

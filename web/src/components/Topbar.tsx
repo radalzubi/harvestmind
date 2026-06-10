@@ -9,7 +9,7 @@ const TITLES: Record<string, string> = {
   "/": "Overview",
   "/performance": "Performance",
   "/recommendations": "Recommendations",
-  "/backtest": "Backtest",
+  "/backtest": "Benchmark",
   "/loss": "Loss exposure",
   "/partners": "Partners",
   "/forecasts": "Demand forecast",

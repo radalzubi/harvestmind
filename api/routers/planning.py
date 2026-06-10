@@ -167,3 +167,29 @@ def get_recommendations(status: str = "open", conn=Depends(get_conn)):
         [status],
     ).df()
     return df.to_dict("records")
+
+
+@router.post("/two-sided")
+def two_sided_plan(
+    service_level_floor: float | None = None,
+    diversification_cap: float | None = None,
+    spot_cost_multiplier: float | None = None,
+    spot_capacity_factor: float | None = None,
+    conn=Depends(get_conn),
+):
+    """Two-sided stochastic plan (demand AND supplier yield uncertain),
+    newsvendor objective, honest per-product penalties. When spot
+    economics are not supplied, returns a sensitivity band across a
+    plausible grid instead of silently assuming cheap spot."""
+    from risk.scenario_generation import run_two_stage_two_sided
+
+    spot = None
+    if spot_cost_multiplier is not None and spot_capacity_factor is not None:
+        spot = {"spot_cost_multiplier": spot_cost_multiplier,
+                "spot_capacity_factor": spot_capacity_factor}
+    return run_two_stage_two_sided(
+        conn,
+        spot_economics=spot,
+        service_level_floor=service_level_floor,
+        diversification_cap=diversification_cap,
+    )

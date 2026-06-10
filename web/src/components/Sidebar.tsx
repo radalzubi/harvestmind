@@ -16,6 +16,8 @@ import {
   Search,
   TrendingUp,
   Truck,
+  ListChecks,
+  FlaskConical,
 } from "lucide-react";
 
 type NavItem = {
@@ -44,6 +46,8 @@ const NAV_DIAGNOSTICS: NavItem[] = [
 const NAV_PLANNING: NavItem[] = [
   { href: "/forecasts", label: "Demand Forecast", Icon: TrendingUp },
   { href: "/supply-risk", label: "Supply Risk", Icon: Truck },
+  { href: "/recommendations", label: "Recommendations", Icon: ListChecks },
+  { href: "/backtest", label: "Benchmark", Icon: FlaskConical },
 ];
 
 const NAV_EXPORT: NavItem[] = [

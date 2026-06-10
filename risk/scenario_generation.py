@@ -165,6 +165,199 @@ def supply_from_distributions(
                                        "capacity_kg", "price_per_kg"])
 
 
+def yield_scenarios_from_distributions(
+    conn: duckdb.DuckDBPyConnection,
+    scenario_indices: list[int],
+    seed: int = 42,
+) -> dict:
+    """Per-scenario supplier fill draws from the predictive Betas.
+
+    Returns {(scenario_index, supplier_id): fill}. This is how supply
+    uncertainty enters the optimizer as a genuine stage-2 outcome — the
+    commitment is made before the fill resolves — replacing the older
+    one-number downside-discounted capacity.
+    """
+    import numpy as np
+    from scipy import stats as _st
+
+    dists = supplier_fill_distributions(conn, quantile=0.10)
+    gen = np.random.default_rng(seed)
+    out: dict = {}
+    for sid, d in dists.items():
+        if sid == "_prior":
+            continue
+        a, b = float(d["alpha"]), float(d["beta"])
+        draws = _st.beta.rvs(a, b, size=len(scenario_indices),
+                             random_state=gen)
+        for k, omega in enumerate(scenario_indices):
+            out[(int(omega), sid)] = float(min(max(draws[k], 0.0), 1.0))
+    return out
+
+
+def honest_penalties_from_staging(
+    conn: duckdb.DuckDBPyConnection,
+) -> tuple[dict, dict]:
+    """Per-product honest penalties from the operator's own data.
+
+    waste c_w,j = average unit cost (the cash burned on a wasted kg);
+    unmet c_u,j = average lost margin (sell − cost, floored at 0).
+    Products missing either side fall back to the optimizer's flat
+    defaults via dict-miss.
+    """
+    costs = conn.execute("""
+        SELECT product_name, AVG(NULLIF(unit_cost, 0)) AS c
+        FROM stg_supplier_deliveries
+        WHERE unit_cost IS NOT NULL AND unit_cost > 0
+        GROUP BY product_name
+    """).df()
+    prices = conn.execute("""
+        SELECT product_name, AVG(NULLIF(sales_price, 0)) AS p
+        FROM stg_buyer_orders
+        WHERE sales_price IS NOT NULL AND sales_price > 0
+        GROUP BY product_name
+    """).df()
+    cost_map = dict(zip(costs["product_name"], costs["c"].astype(float))) \
+        if not costs.empty else {}
+    price_map = dict(zip(prices["product_name"], prices["p"].astype(float))) \
+        if not prices.empty else {}
+    cw = {j: float(c) for j, c in cost_map.items()}
+    cu = {j: max(float(price_map[j]) - float(cost_map.get(j, price_map[j])), 0.0)
+          for j in price_map}
+    return cw, cu
+
+
+def supply_capacity_full(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
+    """Supply capacity per supplier × product at the FULL typical order.
+
+    Used with explicit yield scenarios: the uncertainty lives in the fill
+    draws, so pre-discounting capacity by the downside (the one-sided
+    approach) would double-count conservatism.
+    """
+    agg = conn.execute("""
+        SELECT supplier_id,
+               product_name,
+               AVG(ordered_quantity)        AS avg_ordered,
+               AVG(NULLIF(unit_cost, 0))     AS avg_cost
+        FROM stg_supplier_deliveries
+        WHERE ordered_quantity IS NOT NULL AND ordered_quantity > 0
+          AND product_name IS NOT NULL
+        GROUP BY supplier_id, product_name
+    """).df()
+    rows = []
+    for _, r in agg.iterrows():
+        rows.append({
+            "supplier_id": r["supplier_id"],
+            "product_id": r["product_name"],
+            "week_start": None,
+            "capacity_kg": round(float(r["avg_ordered"]), 4)
+            if pd.notna(r["avg_ordered"]) else 0.0,
+            "price_per_kg": round(float(r["avg_cost"]), 4)
+            if pd.notna(r["avg_cost"]) else 2.0,
+        })
+    return pd.DataFrame(rows, columns=["supplier_id", "product_id",
+                                       "week_start", "capacity_kg",
+                                       "price_per_kg"])
+
+
+# Plausible spot-economics grid used for the sensitivity band when the
+# operator has not told us their actual emergency-coverage economics.
+SPOT_SENSITIVITY_GRID: list[tuple[float, float]] = [
+    (1.30, 0.30), (1.30, 0.15), (1.60, 0.30), (1.60, 0.15), (2.00, 0.10),
+]
+
+
+def run_two_stage_two_sided(
+    conn: duckdb.DuckDBPyConnection,
+    n_scenarios: int = 100,
+    spot_economics: dict | None = None,
+    service_level_floor: float | None = None,
+    diversification_cap: float | None = None,
+    seed: int = 42,
+) -> dict[str, Any]:
+    """Two-sided stochastic plan: demand AND supplier yield uncertain.
+
+    - demand scenarios from the demand forecaster's distribution
+    - supplier fill drawn per scenario from the predictive Betas
+    - newsvendor-correct objective with honest per-product penalties
+      sourced from the operator's own costs and prices
+
+    ``spot_economics``: {"spot_cost_multiplier": float,
+    "spot_capacity_factor": float} as ELICITED from the operator. When
+    None, the plan is solved across SPOT_SENSITIVITY_GRID and returned
+    with spot_economics_elicited=False — the recommendation carries a
+    sensitivity band instead of silently assuming cheap spot. Measuring
+    real spot economics is the first job with a new operator.
+    """
+    demand = demand_scenarios_from_forecast(conn, n_scenarios=n_scenarios)
+    supply = supply_capacity_full(conn)
+    if demand.empty or supply.empty:
+        return {"status": "no_data"}
+
+    scen_ids = sorted(demand["scenario_index"].unique())
+    yields = yield_scenarios_from_distributions(conn, scen_ids, seed=seed)
+    cw, cu = honest_penalties_from_staging(conn)
+
+    from optimization.two_stage_sp import TwoStageStochasticLP
+
+    def _solve(mult: float, rho: float) -> dict:
+        sp = TwoStageStochasticLP(
+            newsvendor_objective=True,
+            waste_cost_by_product=cw,
+            unmet_cost_by_product=cu,
+            spot_cost_multiplier=mult,
+            spot_capacity_factor=rho,
+            service_level_floor=service_level_floor,
+            diversification_cap=diversification_cap,
+            n_scenarios=len(scen_ids),
+        )
+        res = sp.solve(demand, supply, yield_scenarios=yields)
+        commit_by_product: dict = {}
+        for (i, j), v in res["x"].items():
+            if v and v > 1e-9:
+                commit_by_product[j] = commit_by_product.get(j, 0.0) + float(v)
+        return {
+            "status": res["status"],
+            "objective": res["objective"],
+            "x": {f"{i}|{j}": round(float(v), 2)
+                  for (i, j), v in res["x"].items() if v and v > 1e-9},
+            "commit_by_product": {j: round(v, 1)
+                                  for j, v in commit_by_product.items()},
+            "total_commit_kg": round(sum(commit_by_product.values()), 1),
+            "expected_unmet_kg": round(res["expected_unmet_kg"], 1),
+            "expected_waste_kg": round(res["expected_waste_kg"], 1),
+        }
+
+    if spot_economics is not None:
+        mult = float(spot_economics["spot_cost_multiplier"])
+        rho = float(spot_economics["spot_capacity_factor"])
+        plan = _solve(mult, rho)
+        return {
+            "status": plan["status"],
+            "spot_economics_elicited": True,
+            "spot_cost_multiplier": mult,
+            "spot_capacity_factor": rho,
+            "plan": plan,
+            "model": "two_sided_newsvendor_sp",
+        }
+
+    band = []
+    for mult, rho in SPOT_SENSITIVITY_GRID:
+        plan = _solve(mult, rho)
+        band.append({"spot_cost_multiplier": mult,
+                     "spot_capacity_factor": rho, **plan})
+    return {
+        "status": "ok" if all(b["status"] == "optimal" for b in band)
+        else "partial",
+        "spot_economics_elicited": False,
+        "note": ("spot economics not elicited — plan shown across a "
+                 "plausible grid; the recommendation depends on your "
+                 "actual emergency-coverage cost, which we measure, not "
+                 "assume"),
+        "sensitivity_band": band,
+        "model": "two_sided_newsvendor_sp",
+    }
+
+
 def run_two_stage(
     conn: duckdb.DuckDBPyConnection,
     quantile: float = 0.10,
