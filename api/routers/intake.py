@@ -104,6 +104,7 @@ def _check_required_columns(
 async def upload_csv(
     table: str,
     file: UploadFile = File(...),
+    operator_id: str | None = None,
     conn=Depends(get_conn),
 ):
     """Upload a CSV file into a staging table.
@@ -131,6 +132,28 @@ async def upload_csv(
 
     warnings: list[str] = []
     errors: list[str] = []
+
+    # Operator-scoped path: copy the raw original into the vault FIRST
+    # (write-once ground truth), then process against the vault DB.
+    vault_dbm = None
+    upload_session_id = None
+    if operator_id is not None:
+        import uuid as _uuid
+        from infrastructure.db_manager import DBManager
+        from infrastructure.operator_registry import (
+            OperatorNotFoundError, OperatorRegistry,
+        )
+        from infrastructure.vault_storage import store_raw_upload
+        try:
+            registry = OperatorRegistry()
+            store_raw_upload(registry, operator_id,
+                             file.filename or "upload.csv", contents)
+            vault_dbm = DBManager(registry)
+            conn = vault_dbm.get_operator_connection(operator_id)
+        except (OperatorNotFoundError, FileNotFoundError):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Unknown operator {operator_id!r}")
+        upload_session_id = f"upl-{_uuid.uuid4().hex[:10]}"
 
     # Write to temp file (ingest_csv requires a path)
     with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tmp:
@@ -214,15 +237,36 @@ async def upload_csv(
                 "errors": errors,
             }
 
-        # Ingest
-        rows_inserted = ingest_csv(
-            path=tmp_path,
-            table=table,
-            conn=conn,
-            column_map=col_map,
-            date_cols=meta["date_cols"],
-            if_exists="append",  # staging tables have no PK; clear via /intake/clear
-        )
+        # Ingest. On the operator-scoped path every row is stamped with
+        # lineage and REJECTED if provenance is incomplete; the legacy
+        # single-operator path is unchanged.
+        if operator_id is not None:
+            from infrastructure.lineage import (
+                assert_lineage_present, stamp_lineage,
+            )
+            from ingestion.column_mapper import insert_from_df
+
+            ins_df = mapped_df.dropna(axis=1, how="all")
+            for dcol in meta["date_cols"]:
+                if dcol in ins_df.columns:
+                    ins_df[dcol] = pd.to_datetime(
+                        ins_df[dcol], errors="coerce").dt.date
+            ins_df = stamp_lineage(
+                ins_df, operator_id=operator_id,
+                upload_session_id=upload_session_id,
+                source_file=file.filename or "upload.csv")
+            assert_lineage_present(ins_df)
+            rows_inserted = insert_from_df(conn, table, ins_df,
+                                           on_conflict="none")
+        else:
+            rows_inserted = ingest_csv(
+                path=tmp_path,
+                table=table,
+                conn=conn,
+                column_map=col_map,
+                date_cols=meta["date_cols"],
+                if_exists="append",  # staging tables have no PK; clear via /intake/clear
+            )
 
         return {
             "table": table,
@@ -234,6 +278,8 @@ async def upload_csv(
 
     finally:
         tmp_path.unlink(missing_ok=True)
+        if vault_dbm is not None:
+            vault_dbm.close_all()
 
 
 @router.post("/load-sample-data", status_code=status.HTTP_200_OK)
@@ -330,6 +376,7 @@ def intake_status(conn=Depends(get_conn)):
 @router.post("/extract")
 async def extract_files(
     files: list[UploadFile] = File(...),
+    operator_id: str | None = None,
     conn=Depends(get_conn),
 ):
     """Smart upload: any-format files → ExtractionResult for confirmation.
@@ -345,12 +392,29 @@ async def extract_files(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="No files uploaded")
 
+    registry = None
+    if operator_id is not None:
+        from infrastructure.operator_registry import (
+            OperatorNotFoundError, OperatorRegistry,
+        )
+        try:
+            registry = OperatorRegistry()
+            registry.get_operator(operator_id)
+        except OperatorNotFoundError:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Unknown operator {operator_id!r}")
+
     tmp_paths: list[_P] = []
     try:
         for f in files:
+            content = await f.read()
+            if registry is not None:
+                from infrastructure.vault_storage import store_raw_upload
+                store_raw_upload(registry, operator_id,
+                                 f.filename or "upload.bin", content)
             suffix = _P(f.filename or "upload.csv").suffix or ".csv"
             with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-                tmp.write(await f.read())
+                tmp.write(content)
                 tmp_paths.append(_P(tmp.name))
 
         from ingestion.llm_extractor import extract as llm_extract
@@ -363,6 +427,7 @@ async def extract_files(
         payload = result.model_dump()
         # original filenames, not temp names, for the UI
         payload["source_files"] = [f.filename for f in files]
+        payload["operator_id"] = operator_id
         return payload
     finally:
         for p in tmp_paths:
@@ -440,14 +505,59 @@ def confirm_extraction(body: dict, conn=Depends(get_conn)):
                             detail={"validation_errors": errors})
 
     from ingestion.column_mapper import insert_from_df
+
+    operator_id = body.get("operator_id")
+    vault_dbm = None
+    if operator_id is not None:
+        from infrastructure.db_manager import DBManager
+        from infrastructure.lineage import (
+            assert_lineage_present, stamp_lineage,
+        )
+        from infrastructure.operator_registry import (
+            OperatorNotFoundError, OperatorRegistry,
+        )
+        try:
+            registry = OperatorRegistry()
+            vault_dbm = DBManager(registry)
+            conn = vault_dbm.get_operator_connection(operator_id)
+        except (OperatorNotFoundError, FileNotFoundError):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Unknown operator {operator_id!r}")
+        frames = {
+            t: stamp_lineage(df, operator_id=operator_id,
+                             upload_session_id=session_id,
+                             source_file=",".join(
+                                 session.get("source_files", [])) or "extract")
+            for t, df in frames.items()
+        }
+        for df in frames.values():
+            assert_lineage_present(df)
+
     inserted: dict[str, int] = {}
-    for table, df in frames.items():
-        if df.empty:
-            continue
-        inserted[table] = insert_from_df(conn, table, df,
-                                         on_conflict="none")
+    try:
+        for table, df in frames.items():
+            if df.empty:
+                continue
+            inserted[table] = insert_from_df(conn, table, df,
+                                             on_conflict="none")
+    finally:
+        if vault_dbm is not None:
+            vault_dbm.close_all()
 
     log_confirmation(session_id, accepted_rows, corrections)
+
+    # Vault copy of the confirmed snapshot (operator-scoped sessions/)
+    if operator_id is not None:
+        try:
+            import json as _json
+            from infrastructure.vault_storage import store_session_snapshot
+            store_session_snapshot(
+                registry, operator_id, session_id,
+                _json.dumps({"session_id": session_id,
+                             "rows": accepted_rows,
+                             "corrections": corrections}, default=str))
+        except Exception:  # noqa: BLE001  vault copy must not block the load
+            pass
 
     # Training corpus: every confirmed session is a labeled example —
     # operator corrections are the gold labels (Phase 4 accumulator).
