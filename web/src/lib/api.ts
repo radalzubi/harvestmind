@@ -196,6 +196,32 @@ export interface ForecastEvaluation {
   weeks_available?: number;
 }
 
+export interface SupplierRiskEntry {
+  supplier_id: string;
+  supplier_name: string;
+  n_deliveries: number;
+  observed_mean: number | null;
+  posterior_mean: number;
+  downside: number;
+  spread: number;
+  shrinkage: number;
+  risk_level: string;
+}
+
+export interface SupplyRiskResponse {
+  suppliers: SupplierRiskEntry[];
+  prior: { mean?: number; kappa?: number; n_suppliers?: number; downside_quantile?: number; [k: string]: unknown };
+  calibration: {
+    status: string;
+    gate_passed: boolean | null;
+    coverage_10_90?: number;
+    ks_statistic?: number;
+    n_held_out?: number;
+    gate_rule?: string;
+  };
+  covariates: { signals: Array<{ signal: string; admitted: boolean; reason?: string }>; policy: string };
+}
+
 // ── API calls ──────────────────────────────────────────────────────────────
 
 export async function getDiagnosticSummary(
@@ -214,6 +240,11 @@ export async function getDemandForecast(weeks = 4): Promise<DemandForecastRespon
 
 export async function getForecastEvaluation(): Promise<ForecastEvaluation> {
   return apiFetch<ForecastEvaluation>("/forecasts/demand/evaluation");
+}
+
+
+export async function getSupplyRisk(): Promise<SupplyRiskResponse> {
+  return apiFetch<SupplyRiskResponse>("/forecasts/supply");
 }
 
 export async function getDataQuality(): Promise<DataQualityReport> {

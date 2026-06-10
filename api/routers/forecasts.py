@@ -37,3 +37,26 @@ def demand_forecast_evaluation(
         evaluate_demand_forecaster,
     )
     return evaluate_demand_forecaster(conn, n_folds=folds)
+
+
+@router.get("/supply")
+def supply_risk(conn=Depends(get_conn)):
+    """Per-supplier predictive fill-rate distributions (Tier 1) with the
+    calibration verdict and Tier-2 covariate admission status."""
+    from risk.calibration import calibration_report
+    from risk.supplier_distribution import supplier_fill_distributions
+    from risk.yield_covariates import covariate_status
+
+    dists = supplier_fill_distributions(conn)  # service-linked quantile
+    prior = dists.pop("_prior", {})
+    suppliers = [
+        {"supplier_id": sid, **d}
+        for sid, d in sorted(dists.items(),
+                             key=lambda kv: kv[1]["downside"])
+    ]
+    return {
+        "suppliers": suppliers,
+        "prior": prior,
+        "calibration": calibration_report(conn),
+        "covariates": covariate_status(conn),
+    }

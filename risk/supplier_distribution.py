@@ -70,11 +70,11 @@ _VOLATILITY_SPREAD = 0.15
 # cannot be estimated: fewer than 2 suppliers, or degenerate spread.
 _FALLBACK_KAPPA = 4.0
 
-# A supplier needs at least this many deliveries before we trust its own
-# delivery-to-delivery variance. Below it, we borrow the typical
-# within-supplier variance from the population (you cannot estimate spread
-# from one or two points).
-_MIN_N_FOR_OWN_VARIANCE = 3
+# Default downside quantile when service-linked derivation is not possible
+# (no cost data in staging). The service-linked quantile (see
+# service_linked_quantile) ties this to the operator's actual economics
+# instead of a hand-set number.
+_FALLBACK_QUANTILE = 0.10
 
 # Small absolute floor on any predictive variance, to keep the Beta fit well
 # defined without making a steady supplier look uncertain. std ~ 0.02.
@@ -204,11 +204,16 @@ def supplier_distribution(
         m_s = min(max(float(supplier_mean), _EPS), 1 - _EPS)
         # Shrink the mean toward the population (James-Stein), weighting by data.
         mu = (pop.kappa * pop.mean + n * m_s) / (pop.kappa + n)
-        # Variance: trust the supplier's own delivery consistency once we have
-        # enough deliveries to estimate it; otherwise borrow the typical
-        # within-supplier variance from the population.
-        if n >= _MIN_N_FOR_OWN_VARIANCE and supplier_var is not None:
-            v_eff = max(float(supplier_var), _VAR_FLOOR)
+        # Variance: blend the supplier's own delivery variance with the
+        # population's typical within-supplier variance, weighted by how
+        # many deliveries back the own estimate. This is CONTINUOUS in n —
+        # the old rule trusted own variance fully at n=3 and not at all at
+        # n=2, so one delivery crossing the threshold could snap a
+        # supplier's risk profile. A supplier with no estimable own
+        # variance (n < 2) uses the population value outright.
+        if supplier_var is not None and n >= 2:
+            v_s = max(float(supplier_var), _VAR_FLOOR)
+            v_eff = (pop.kappa * pop.within_variance + n * v_s) / (pop.kappa + n)
         else:
             v_eff = pop.within_variance
 
@@ -222,6 +227,51 @@ def supplier_distribution(
     }
 
 
+def service_linked_quantile(
+    conn: duckdb.DuckDBPyConnection,
+    spot_cost_multiplier: float = 1.30,
+) -> float:
+    """Downside quantile tied to the operator's cost critical ratio.
+
+    The downside quantile is the planned probability of a supply shortfall.
+    Newsvendor logic sets it from the two costs of being wrong:
+
+        conservatism cost c_o  — assuming too LITTLE supply: the shortfall
+                                 is covered at the spot premium,
+                                 c_o ≈ avg unit cost × (multiplier − 1)
+        shortfall cost    c_u  — assuming too MUCH supply: the unmet order
+                                 loses the margin, c_u ≈ avg(sell − cost)
+
+        q* = c_o / (c_o + c_u)
+
+    Cheap spot coverage → planning to a low quantile is fine; expensive
+    shortfalls → plan deeper into the downside tail. Falls back to the
+    fixed default when staging has no cost/price data. This replaces the
+    hand-set 0.10 with a number derived from the operator's own economics.
+    """
+    try:
+        row = conn.execute("""
+            SELECT
+              (SELECT AVG(NULLIF(unit_cost, 0)) FROM stg_supplier_deliveries
+               WHERE unit_cost IS NOT NULL AND unit_cost > 0)   AS avg_cost,
+              (SELECT AVG(NULLIF(sales_price, 0)) FROM stg_buyer_orders
+               WHERE sales_price IS NOT NULL AND sales_price > 0) AS avg_price
+        """).fetchone()
+    except Exception:
+        return _FALLBACK_QUANTILE
+    if not row or row[0] is None or row[1] is None:
+        return _FALLBACK_QUANTILE
+    avg_cost, avg_price = float(row[0]), float(row[1])
+    margin = max(avg_price - avg_cost, 0.0)
+    premium = max(avg_cost * (spot_cost_multiplier - 1.0), 0.0)
+    if margin + premium <= 0:
+        return _FALLBACK_QUANTILE
+    q = premium / (premium + margin)
+    # Keep within a sane planning band: never plan to the median or to an
+    # untestable extreme tail.
+    return float(min(max(q, 0.02), 0.50))
+
+
 def _risk_level(mean: float, spread: float) -> str:
     if mean < _HIGH_RISK_FILL_RATE:
         return "High"
@@ -232,9 +282,13 @@ def _risk_level(mean: float, spread: float) -> str:
 
 def supplier_fill_distributions(
     conn: duckdb.DuckDBPyConnection,
-    quantile: float = 0.10,
+    quantile: float | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Per-supplier predictive fill-rate distributions under the hierarchical model.
+
+    ``quantile``: the downside quantile. ``None`` (default) derives it from
+    the operator's cost critical ratio (service_linked_quantile); pass an
+    explicit float to pin it (tests, sensitivity runs).
 
     Returns a dict keyed by supplier_id. Each entry carries:
         supplier_name    display name
@@ -251,6 +305,9 @@ def supplier_fill_distributions(
 
     Also attaches "_prior" with the population diagnostics.
     """
+    if quantile is None:
+        quantile = service_linked_quantile(conn)
+
     fills = _delivery_fill_rates(conn)
     pop = estimate_population(fills)
 
@@ -263,6 +320,7 @@ def supplier_fill_distributions(
             "n_deliveries": pop.n_deliveries,
             "n_suppliers": pop.n_suppliers,
             "method": pop.method,
+            "downside_quantile": round(float(quantile), 4),
         }
     }
 

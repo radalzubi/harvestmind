@@ -15,6 +15,7 @@ import {
   Settings,
   Search,
   TrendingUp,
+  Truck,
 } from "lucide-react";
 
 type NavItem = {
@@ -42,6 +43,7 @@ const NAV_DIAGNOSTICS: NavItem[] = [
 
 const NAV_PLANNING: NavItem[] = [
   { href: "/forecasts", label: "Demand Forecast", Icon: TrendingUp },
+  { href: "/supply-risk", label: "Supply Risk", Icon: Truck },
 ];
 
 const NAV_EXPORT: NavItem[] = [

@@ -86,9 +86,16 @@ def test_volatile_supplier_triggers_holdback(db):
 def test_reliable_fresh_product_is_low_risk(db):
     recs = {r["product_name"]: r for r in safe_commit_recommendations(db, as_of_date=_TODAY, lead_time_days=3)}
     tom = recs["Tomatoes"]
-    # Reliable supplier, fresh stock -> no holdback, low risk.
-    assert tom["holdback_kg"] == pytest.approx(0.0, abs=0.1)
+    let = recs["Lettuce"]
+    # Reliable supplier, fresh stock -> low risk. Under continuous variance
+    # shrinkage a 5-delivery supplier keeps a SMALL precautionary holdback
+    # (partial pooling: n=5 cannot fully rule out volatility) — the old
+    # zero-holdback expectation encoded the n>=3 variance cliff.
     assert tom["risk_level"] == "Low"
+    total = tom["safe_commit_kg"] + tom["holdback_kg"]
+    assert tom["holdback_kg"] <= 0.15 * total
+    # and far smaller than the volatile supplier's product
+    assert tom["holdback_kg"] < let["holdback_kg"]
 
 
 def test_high_risk_sorted_first(db):
