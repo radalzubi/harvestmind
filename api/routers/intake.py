@@ -448,6 +448,25 @@ def confirm_extraction(body: dict, conn=Depends(get_conn)):
                                          on_conflict="none")
 
     log_confirmation(session_id, accepted_rows, corrections)
+
+    # Training corpus: every confirmed session is a labeled example —
+    # operator corrections are the gold labels (Phase 4 accumulator).
+    try:
+        from training.data_accumulator import record_confirmed_session
+        record_confirmed_session(
+            session_id,
+            mock_mode=bool(session.get("mock_mode", True)),
+            prompt_version=session.get("prompt_version", "unknown"),
+            raw_input_sample=", ".join(session.get("source_files", [])),
+            llm_response={"column_mappings": session.get("column_mappings", []),
+                          "summary": session.get("summary", {})},
+            operator_corrections=corrections,
+            final_clean_output={t: len(rs) for t, rs in by_table.items()}
+            | {"rows": accepted_rows[:50]},
+        )
+    except Exception:  # noqa: BLE001  corpus write must never block the load
+        pass
+
     return {
         "session_id": session_id,
         "rows_inserted": inserted,
