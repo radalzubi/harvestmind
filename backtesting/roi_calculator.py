@@ -98,13 +98,27 @@ def compute_roi(
         return {"error": f"Missing model data: {baseline_model} or {target_model}"}
 
     # Spot premium savings
-    baseline_spot_pct = baseline["spot_kg"].mean() / (baseline["spot_kg"].mean() + baseline["waste_kg"].mean() + 1) * 100
-    target_spot_pct = target["spot_kg"].mean() / (target["spot_kg"].mean() + target["waste_kg"].mean() + 1) * 100
     spot_kg_reduction = max(0, baseline["spot_kg"].mean() - target["spot_kg"].mean())
-    spot_savings_pct = spot_kg_reduction / (baseline["spot_kg"].mean() + 1e-9) * 100
+    # Guard against a near-zero denominator producing an absurd percentage:
+    # below ~1 kg of baseline spot there is no meaningful reduction to report.
+    _baseline_spot = baseline["spot_kg"].mean()
+    spot_savings_pct = (
+        spot_kg_reduction / _baseline_spot * 100 if _baseline_spot >= 1.0 else 0.0
+    )
 
-    # Annualize: extrapolate per-origin metrics to full year
-    origins_per_year = n_weeks / backtest_df["horizon_weeks"].iloc[0] if "horizon_weeks" in backtest_df.columns else 13
+    # Annualize: extrapolate per-origin metrics to full year.
+    # horizon_weeks must be a positive number; a 0/NaN row would otherwise
+    # crash (ZeroDivisionError) or poison every annualized figure with NaN.
+    if "horizon_weeks" in backtest_df.columns:
+        _h = backtest_df["horizon_weeks"].iloc[0]
+        if pd.isna(_h) or _h <= 0:
+            raise ValueError(
+                f"Invalid horizon_weeks for ROI annualization: {_h!r}. "
+                "Each backtest row must record a positive horizon_weeks."
+            )
+        origins_per_year = n_weeks / _h
+    else:
+        origins_per_year = 13
 
     avg_baseline_spot_cost = baseline["spot_cost_usd"].mean() * origins_per_year
     avg_target_spot_cost = target["spot_cost_usd"].mean() * origins_per_year

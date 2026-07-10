@@ -103,14 +103,11 @@ def reconcile_mintrace_wls(
     S, all_names, bottom_names = build_summation_matrix(base_forecasts, product_meta)
     n_bottom = len(bottom_names)
 
-    # OLS projection: P = (S'S)^{-1} S'
-    STS = S.T @ S
-    try:
-        P = np.linalg.solve(STS, S.T)
-    except np.linalg.LinAlgError:
-        P = np.linalg.lstsq(STS, S.T, rcond=None)[0]
-
-    # Reconciliation matrix is S @ P; we apply it directly per week below.
+    # The base forecasts are bottom-level only (product|buyer), i.e. already
+    # coherent leaves. Reconciliation is therefore the summation lift S @ y_hat
+    # (a full projection S(S'S)^{-1}S' is only needed when base forecasts exist
+    # at MULTIPLE levels and disagree — not the case here, and the previous
+    # S @ P @ y_hat form was a shape mismatch since P is (n_bottom, n_all)).
 
     for week in weeks:
         wdf = base_forecasts[base_forecasts["week_start"] == week].copy()
@@ -123,8 +120,8 @@ def reconcile_mintrace_wls(
                 bottom_map[sn] = row["forecast_kg"]
 
         y_hat = np.array([bottom_map[n] for n in bottom_names])
-        # Coherent bottom-level forecasts
-        y_tilde = (S @ P @ y_hat)  # full hierarchy
+        # Lift coherent bottom forecasts to the full hierarchy.
+        y_tilde = S @ y_hat
         # Extract bottom rows
         offset_bottom = len(all_names) - n_bottom
         y_bottom = y_tilde[offset_bottom:]

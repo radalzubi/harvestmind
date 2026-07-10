@@ -20,11 +20,32 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from loguru import logger
 
-from api.dependencies import get_conn
+from api.dependencies import get_conn, rate_limiter, require_operator
 from ingestion.csv_ingestor import COLUMN_MAPS, ingest_csv
 
 router = APIRouter(prefix="/intake", tags=["intake"])
+
+# Upper bound on a single uploaded file. Operator CSV/PDF intake is well
+# under this; the cap prevents an unbounded body from being read fully into
+# memory (memory-exhaustion DoS). A fronting proxy should also enforce a
+# limit, but the app must not rely on one being present.
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
+MAX_EXTRACT_FILES = 20
+
+
+def _reject_if_too_large(contents: bytes, filename: str | None) -> None:
+    if len(contents) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=getattr(
+                status, "HTTP_413_CONTENT_TOO_LARGE",
+                status.HTTP_413_REQUEST_ENTITY_TOO_LARGE),
+            detail=(
+                f"File {filename or 'upload'!r} exceeds the "
+                f"{MAX_UPLOAD_BYTES // (1024 * 1024)} MB limit."
+            ),
+        )
 
 # ── Staging table allowlist ───────────────────────────────────────────────────
 
@@ -106,6 +127,7 @@ async def upload_csv(
     file: UploadFile = File(...),
     operator_id: str | None = None,
     conn=Depends(get_conn),
+    authed: str | None = Depends(require_operator),
 ):
     """Upload a CSV file into a staging table.
 
@@ -115,6 +137,7 @@ async def upload_csv(
         warnings       list of non-blocking issues
         errors         list of blocking issues (empty on success)
     """
+    operator_id = authed or operator_id   # token wins; query param is dev fallback
     meta = _validate_staging_table(table)
 
     if not file.filename or not file.filename.lower().endswith(".csv"):
@@ -129,6 +152,7 @@ async def upload_csv(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Uploaded file is empty",
         )
+    _reject_if_too_large(contents, file.filename)
 
     warnings: list[str] = []
     errors: list[str] = []
@@ -295,12 +319,12 @@ def load_sample_data(conn=Depends(get_conn)):
     """
     samples_dir = Path(__file__).resolve().parents[2] / "data" / "samples"
     if not samples_dir.is_dir():
+        # Do not echo the absolute server path back to the client (recon leak);
+        # log it server-side for operators/debugging instead.
+        logger.error("Sample data directory not found at {}", samples_dir)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=(
-                f"Sample data directory not found at {samples_dir}. "
-                "Ensure the repository includes data/samples/."
-            ),
+            detail="Sample data is not available on this server.",
         )
 
     rows_by_table: dict[str, int] = {}
@@ -373,11 +397,12 @@ def intake_status(conn=Depends(get_conn)):
 
 # ── LLM extraction endpoints (smart upload) ───────────────────────────────────
 
-@router.post("/extract")
+@router.post("/extract", dependencies=[Depends(rate_limiter)])
 async def extract_files(
     files: list[UploadFile] = File(...),
     operator_id: str | None = None,
     conn=Depends(get_conn),
+    authed: str | None = Depends(require_operator),
 ):
     """Smart upload: any-format files → ExtractionResult for confirmation.
 
@@ -388,9 +413,14 @@ async def extract_files(
     import tempfile
     from pathlib import Path as _P
 
+    operator_id = authed or operator_id   # token wins; query param is dev fallback
     if not files:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="No files uploaded")
+    if len(files) > MAX_EXTRACT_FILES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Too many files (max {MAX_EXTRACT_FILES} per request).")
 
     registry = None
     if operator_id is not None:
@@ -408,6 +438,7 @@ async def extract_files(
     try:
         for f in files:
             content = await f.read()
+            _reject_if_too_large(content, f.filename)
             if registry is not None:
                 from infrastructure.vault_storage import store_raw_upload
                 store_raw_upload(registry, operator_id,
@@ -447,7 +478,8 @@ def get_extraction_session(session_id: str):
 
 
 @router.post("/confirm")
-def confirm_extraction(body: dict, conn=Depends(get_conn)):
+def confirm_extraction(body: dict, conn=Depends(get_conn),
+                       authed: str | None = Depends(require_operator)):
     """Operator-confirmed rows → Layer-1 validation → staging insert.
 
     Body: {session_id, rows: [{row_index, table, fields, accepted}],
@@ -487,9 +519,22 @@ def confirm_extraction(body: dict, conn=Depends(get_conn)):
     accepted_rows = [r for r in rows if r.get("accepted", True)]
     by_table: dict[str, list[dict]] = {}
     for r in accepted_rows:
+        table = r.get("table")
+        # A confirmed row may only target one of the five staging tables.
+        # Without this the endpoint would insert into ANY table named in the
+        # request body (master/fact tables included), and a row missing the
+        # key would raise an unhandled KeyError → 500.
+        if table not in STAGING_TABLES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"Invalid or missing target table {table!r}. "
+                    f"Confirmed rows must target one of: {sorted(STAGING_TABLES)}."
+                ),
+            )
         fields = {k: v for k, v in r.get("fields", {}).items()
                   if not k.startswith("_")}
-        by_table.setdefault(r["table"], []).append(fields)
+        by_table.setdefault(table, []).append(fields)
 
     # Layer-1 hard validation per table — the LLM never bypasses it
     errors: list[str] = []
@@ -506,7 +551,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn)):
 
     from ingestion.column_mapper import insert_from_df
 
-    operator_id = body.get("operator_id")
+    operator_id = authed or body.get("operator_id")   # token wins; body is dev fallback
     vault_dbm = None
     if operator_id is not None:
         from infrastructure.db_manager import DBManager
@@ -535,11 +580,28 @@ def confirm_extraction(body: dict, conn=Depends(get_conn)):
 
     inserted: dict[str, int] = {}
     try:
-        for table, df in frames.items():
-            if df.empty:
-                continue
-            inserted[table] = insert_from_df(conn, table, df,
-                                             on_conflict="none")
+        # Atomic: a multi-table confirm either lands completely or not at all.
+        # Without the transaction, a failure on the second table would leave
+        # the first table's rows committed (DuckDB autocommits per statement),
+        # corrupting the vault and inviting duplicate re-confirms.
+        conn.execute("BEGIN TRANSACTION")
+        try:
+            for table, df in frames.items():
+                if df.empty:
+                    continue
+                inserted[table] = insert_from_df(conn, table, df,
+                                                 on_conflict="none")
+            conn.execute("COMMIT")
+        except HTTPException:
+            conn.execute("ROLLBACK")
+            raise
+        except Exception:  # noqa: BLE001 — surface a clean 422, log internally
+            conn.execute("ROLLBACK")
+            logger.exception("confirm insert failed for session %s", session_id)
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Could not insert confirmed rows; no data was written.",
+            )
     finally:
         if vault_dbm is not None:
             vault_dbm.close_all()

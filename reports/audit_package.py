@@ -264,9 +264,28 @@ _SECTION_BUILDERS = {
 
 # ── HTML summary ─────────────────────────────────────────────────────────────
 
+def _csv_safe_cell(value: object) -> object:
+    """Force-text any cell that a spreadsheet would treat as a formula."""
+    if isinstance(value, str) and value[:1] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + value
+    return value
+
+
+def _csv_safe_frame(df: pd.DataFrame) -> pd.DataFrame:
+    """Neutralize formula injection in object/text columns before CSV export."""
+    out = df.copy()
+    for col in out.columns:
+        if out[col].dtype == object:
+            out[col] = out[col].map(_csv_safe_cell)
+    return out
+
+
 def _summary_html(
     partner_name: str, audit: AuditType, section_dfs: dict[str, pd.DataFrame]
 ) -> str:
+    from html import escape as _esc
+
+    partner_name = _esc(str(partner_name))
     rows = []
     for name, df in section_dfs.items():
         rows.append(
@@ -380,7 +399,7 @@ def generate_audit_package(
             continue
         df = _SECTION_BUILDERS[name](conn)
         section_dfs[name] = df
-        df.to_csv(pkg_dir / f"{i:02d}_{name}.csv", index=False)
+        _csv_safe_frame(df).to_csv(pkg_dir / f"{i:02d}_{name}.csv", index=False)
 
     (pkg_dir / "audit_summary.html").write_text(
         _summary_html(partner_name, audit, section_dfs), encoding="utf-8"

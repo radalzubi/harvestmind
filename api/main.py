@@ -28,6 +28,13 @@ _cors_env = os.getenv(
     "http://127.0.0.1,http://127.0.0.1:8000,http://127.0.0.1:8501",
 )
 _cors_origins = [o.strip() for o in _cors_env.split(",") if o.strip()]
+# Never honor a wildcard origin for a partner-data API — drop "*" if present.
+# Production must set an explicit CORS_ALLOWED_ORIGINS allowlist.
+_cors_origins = [o for o in _cors_origins if o != "*"]
+if not _cors_origins:
+    # Enforced-auth (production) deployments must configure origins explicitly;
+    # fall back to the localhost allowlist only for dev.
+    _cors_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,6 +43,25 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "Accept"],
 )
+
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    """Baseline security response headers.
+
+    Behaviour-preserving (headers only). The report endpoints return
+    operator-branded HTML, so framing/MIME-sniff protection matters even
+    in a localhost pilot. HSTS is harmless over plain HTTP and takes
+    effect once the deployment is fronted by TLS.
+    """
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault(
+        "Strict-Transport-Security", "max-age=63072000; includeSubDomains"
+    )
+    return response
 
 app.include_router(planning.router)
 app.include_router(backtest.router)

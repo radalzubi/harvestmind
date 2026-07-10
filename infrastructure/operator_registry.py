@@ -12,6 +12,8 @@ ConsentManager is the only writer of both (single-writer invariant).
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 import secrets
 from datetime import datetime, timezone
@@ -19,6 +21,11 @@ from pathlib import Path
 from typing import Literal, Optional
 
 from pydantic import BaseModel
+
+
+def _hash_token(raw: str) -> str:
+    """SHA-256 of a raw API token. Only the hash is ever persisted."""
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA_ROOT = REPO_ROOT / "data"
@@ -41,6 +48,7 @@ class OperatorRecord(BaseModel):
     pool_consent: bool = False
     pool_consent_date: Optional[datetime] = None
     pool_contribution_count: int = 0
+    token_hash: Optional[str] = None       # sha256 of the operator's API token
 
 
 class OperatorRegistry:
@@ -135,6 +143,33 @@ class OperatorRegistry:
         ConsentManager(self).record_consent(
             operator_id, pool_consent, method="api_call")
         return self.get_operator(operator_id)
+
+    # ── API tokens (authentication) ──────────────────────────────────────
+
+    def issue_token(self, operator_id: str) -> str:
+        """Generate a fresh API token for an operator, store only its hash,
+        and return the raw token ONCE (it cannot be recovered later)."""
+        rec = self.get_operator(operator_id)
+        raw = secrets.token_urlsafe(32)
+        rec.token_hash = _hash_token(raw)
+        self._update_record(rec)
+        return raw
+
+    def operator_id_for_token(self, raw_token: str) -> str | None:
+        """Resolve a raw API token to its (active) operator_id, or None.
+
+        Constant-time hash comparison; suspended/deleted operators never
+        authenticate.
+        """
+        if not raw_token:
+            return None
+        candidate = _hash_token(raw_token)
+        for rec in self._load().values():
+            th = rec.get("token_hash")
+            if (th and rec.get("status") == "active"
+                    and hmac.compare_digest(th, candidate)):
+                return rec["operator_id"]
+        return None
 
     def record_upload(self, operator_id: str) -> None:
         rec = self.get_operator(operator_id)

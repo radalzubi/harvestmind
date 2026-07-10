@@ -27,6 +27,17 @@ from datetime import date, timedelta
 
 import pandas as pd
 
+# The only tables this validator knows how to vet. Anything else must be
+# rejected (fail-closed) rather than silently passing with zero rules — a
+# write to an unrecognized table is never legitimate on the intake path.
+KNOWN_STAGING_TABLES: frozenset[str] = frozenset({
+    "stg_products",
+    "stg_supplier_deliveries",
+    "stg_inventory_lots",
+    "stg_buyer_orders",
+    "stg_waste_adjustments",
+})
+
 # Columns subject to the non-negativity rule, per staging table.
 QUANTITY_COLUMNS: dict[str, list[str]] = {
     "stg_products": [],
@@ -126,6 +137,15 @@ def validate_staging_df(
     be rejected (do not insert).
     """
     result = StagingValidation(table=table, n_rows=len(df))
+    # Fail closed: an unrecognized table has no rules, which previously meant
+    # it passed validation vacuously. Reject it so callers cannot smuggle a
+    # write into a non-staging table through a validation no-op.
+    if table not in KNOWN_STAGING_TABLES:
+        result.errors.append(
+            f"Unknown staging table {table!r}. Valid tables: "
+            f"{sorted(KNOWN_STAGING_TABLES)}."
+        )
+        return result
     if df.empty:
         return result
     ref_today = today or date.today()
