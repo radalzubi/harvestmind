@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 import duckdb
-from fastapi import Header, HTTPException, Request
+from fastapi import Depends, Header, HTTPException, Request
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -95,26 +95,72 @@ def get_db_path() -> str:
     return os.getenv("DUCKDB_PATH", str(ROOT / "harvestmind.duckdb"))
 
 
-def get_conn():
-    """Yield a per-request DuckDB connection that is closed after the response.
+def _resolve_operator(operator_id: str | None, authed: str | None) -> str | None:
+    """Authenticated principal wins over a dev-only query param."""
+    return authed or operator_id
 
-    Generator-form dependency so FastAPI can run cleanup even if the route
-    raises. Prevents connection leaks under exceptions.
+
+def get_conn(
+    operator_id: str | None = None,
+    authed: str | None = Depends(require_operator),
+):
+    """Yield a per-request DuckDB connection, closed after the response.
+
+    Operator-aware: when an operator is resolved (from the API token, or the
+    dev-only ?operator_id= param) the connection is that operator's isolated
+    VAULT; otherwise it is the legacy root DB (dev). Test suites that override
+    this dependency are unaffected (the override replaces the whole callable).
     """
-    conn = duckdb.connect(get_db_path())
+    op = _resolve_operator(operator_id, authed)
+    if op is None:
+        conn = duckdb.connect(get_db_path())
+        try:
+            yield conn
+        finally:
+            conn.close()
+        return
+    from infrastructure.db_manager import DBManager
+    from infrastructure.operator_registry import (
+        OperatorNotFoundError, OperatorRegistry,
+    )
+    try:
+        dbm = DBManager(OperatorRegistry())
+        conn = dbm.get_operator_connection(op)
+    except (OperatorNotFoundError, FileNotFoundError):
+        raise HTTPException(status_code=404, detail=f"Unknown operator {op!r}")
     try:
         yield conn
     finally:
-        conn.close()
+        dbm.close_all()
 
 
-def get_readonly_conn():
-    """Yield a read-only connection for query-heavy endpoints."""
-    conn = duckdb.connect(get_db_path(), read_only=True)
+def get_readonly_conn(
+    operator_id: str | None = None,
+    authed: str | None = Depends(require_operator),
+):
+    """Read-only counterpart of get_conn. Operator-aware (vault when an
+    operator is resolved, else the root DB)."""
+    op = _resolve_operator(operator_id, authed)
+    if op is None:
+        conn = duckdb.connect(get_db_path(), read_only=True)
+        try:
+            yield conn
+        finally:
+            conn.close()
+        return
+    from infrastructure.db_manager import DBManager
+    from infrastructure.operator_registry import (
+        OperatorNotFoundError, OperatorRegistry,
+    )
+    try:
+        dbm = DBManager(OperatorRegistry())
+        conn = dbm.get_read_only_connection(op)
+    except (OperatorNotFoundError, FileNotFoundError):
+        raise HTTPException(status_code=404, detail=f"Unknown operator {op!r}")
     try:
         yield conn
     finally:
-        conn.close()
+        dbm.close_all()
 
 
 def get_request_conn(operator_id: str | None = None, root_conn=None):

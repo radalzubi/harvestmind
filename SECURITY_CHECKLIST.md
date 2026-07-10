@@ -32,7 +32,7 @@ _Date: 2026-06-18_
 | Risk | Severity | Owner action |
 |------|----------|--------------|
 | **No API authentication / authorization** | Critical (if exposed) | Add an auth layer before any non-localhost deployment. `operator_id` must come from an authenticated principal, never the query/body. |
-| Read endpoints use the shared root DB, not per-operator vaults | High (if exposed) | Wire reads through an authenticated operator → vault dependency. |
+| ~~Read endpoints use the shared root DB, not per-operator vaults~~ **ADDRESSED** | — | `get_conn`/`get_readonly_conn` are now operator-aware: they route to the authenticated operator's vault (token) and require auth in enforced mode. Dev/tests fall back to the root DB. |
 | No rate limiting on expensive endpoints | High (if exposed) | Add `slowapi` (snippet below) or enforce limits at a reverse proxy. |
 | Re-uploads not idempotent (duplicate doubling) | High (correctness) | Add content-hash dedupe on the upload session (see `BUG_FIX_REPORT.md` H5). |
 | No global exception handler | Low/Medium | Add a catch-all returning a generic body + correlation id. |

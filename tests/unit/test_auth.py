@@ -125,3 +125,25 @@ def test_consent_endpoint_enforced_uses_token_not_query(registry, monkeypatch):
     # an unauthenticated request is rejected outright in enforced mode
     r2 = client.post(f"/pool/consent?operator_id={a.operator_id}&consented=true")
     assert r2.status_code == 401
+
+
+def test_read_endpoints_gated_and_vault_routed_in_enforced_mode(registry, monkeypatch):
+    """Read endpoints (get_conn-backed) require a token in enforced mode and
+    route to the authenticated operator's vault, not the shared root DB."""
+    from fastapi.testclient import TestClient
+    import api.main as api_main
+
+    op = registry.create_operator("A")
+    tok = registry.issue_token(op.operator_id)
+    monkeypatch.setenv("HARVESTMIND_AUTH_REQUIRED", "true")
+    client = TestClient(api_main.app)
+
+    # no token → 401 (read endpoint is now auth-gated)
+    assert client.get("/data/products").status_code == 401
+    # invalid token → 401
+    assert client.get(
+        "/data/products", headers={"Authorization": "Bearer nope"}
+    ).status_code == 401
+    # valid token → 200, served from A's (empty, migrated) vault
+    r = client.get("/data/products", headers={"Authorization": f"Bearer {tok}"})
+    assert r.status_code == 200
