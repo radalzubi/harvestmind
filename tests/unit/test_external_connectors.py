@@ -19,7 +19,6 @@ from datetime import date
 from pathlib import Path
 
 import duckdb
-import pandas as pd
 import pytest
 
 import ingestion.noaa_weather_fetcher as noaa
@@ -134,7 +133,7 @@ def test_noaa_parses_pivoted_observations(monkeypatch):
     assert row["tavg_c"] == 20.0          # (30 + 10) / 2
     assert row["precip_mm"] == 4.0
     assert row["gdd_base10"] == 10.0      # max(0, 20 - 10)
-    assert row["heat_stress_flag"] is False or row["heat_stress_flag"] == False  # 30 !> 32
+    assert not row["heat_stress_flag"]  # 30 !> 32 (py bool or numpy bool)
     assert row["county_fips"] == "18057"
     assert row["source"] == "noaa_cdo"
     assert row["station_id"] == "GHCND:TEST"

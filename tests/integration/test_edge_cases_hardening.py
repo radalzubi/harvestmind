@@ -546,8 +546,6 @@ def test_guard_get_missing_date_column_raises():
 # pool_contributor.py — k-anonymity floor edges + anonymization
 # ══════════════════════════════════════════════════════════════════════════════
 
-import pool.pool_contributor as pc_mod  # noqa: E402
-from infrastructure.consent_manager import ConsentManager  # noqa: E402
 from infrastructure.db_manager import DBManager  # noqa: E402
 from infrastructure.operator_registry import OperatorRegistry  # noqa: E402
 from pool.pool_contributor import K_ANONYMITY_FLOOR, PoolContributor  # noqa: E402

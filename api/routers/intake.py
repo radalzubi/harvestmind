@@ -99,8 +99,6 @@ def _check_required_columns(
 
     Checks both raw column names and their mapped equivalents.
     """
-    # Build inverse map: schema_name → possible CSV names
-    mapped_targets = set(column_map.values())
     raw_lower = {c.lower().strip() for c in df_columns}
 
     missing = []

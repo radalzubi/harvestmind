@@ -24,15 +24,12 @@ Each audit_type maps to the specific requirements of that audit:
 
 from __future__ import annotations
 
-import csv
-import io
 import re
 import shutil
 import zipfile
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
-from typing import Iterable
 
 import duckdb
 import pandas as pd
