@@ -26,6 +26,7 @@ from datetime import date, timedelta
 import pandas as pd
 
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
 
 # County centroids for the current Indiana pilot footprint. Extend as
@@ -118,6 +119,94 @@ def fetch_history(
     df["drought_monitor_cat"] = None
     df["enso_oni_index"] = None
     return df
+
+
+def fetch_forecast(
+    latitude: float,
+    longitude: float,
+    county_fips: str | None = None,
+    forecast_days: int = 16,
+    timeout: int = 30,
+) -> pd.DataFrame:
+    """Fetch the daily weather FORECAST (up to 16 days, keyless).
+
+    Same row shape as fetch_history but source='open_meteo_forecast'.
+    Purpose: live safe-commit windows extend into the future, and the
+    decision path reads weather from the database only — forecast rows
+    must be pre-loaded by ingestion, exactly like observations. Re-runs
+    overwrite nothing (INSERT OR IGNORE keys on obs_id/date), and archive
+    rows later supersede forecasts only by their later fetch being a
+    distinct source row — keep obs_id distinct per source.
+    """
+    import requests
+
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum",
+        "forecast_days": min(max(forecast_days, 1), 16),
+        "timezone": "auto",
+    }
+    try:
+        resp = requests.get(FORECAST_URL, params=params, timeout=timeout)
+        resp.raise_for_status()
+        daily = resp.json().get("daily") or {}
+    except Exception:
+        return pd.DataFrame()
+
+    dates = daily.get("time") or []
+    if not dates:
+        return pd.DataFrame()
+
+    df = pd.DataFrame({
+        "obs_date": pd.to_datetime(dates).date,
+        "tmax_c": daily.get("temperature_2m_max"),
+        "tmin_c": daily.get("temperature_2m_min"),
+        "precip_mm": daily.get("precipitation_sum"),
+    })
+    df = df.dropna(subset=["tmax_c", "tmin_c"], how="all")
+    df["tavg_c"] = (df["tmax_c"] + df["tmin_c"]) / 2.0
+    df["heat_stress_flag"] = df["tmax_c"] > HEAT_STRESS_TMAX_C
+    df["gdd_base10"] = (df["tavg_c"] - GDD_BASE_C).clip(lower=0.0)
+
+    loc_key = county_fips or f"{latitude:.2f}_{longitude:.2f}"
+    df["obs_id"] = [f"OMF-{loc_key}-{d}" for d in df["obs_date"]]
+    df["location_id"] = None
+    df["county_fips"] = county_fips
+    df["station_id"] = None
+    df["source"] = "open_meteo_forecast"
+    df["drought_monitor_cat"] = None
+    df["enso_oni_index"] = None
+    return df
+
+
+def fetch_and_store_forecast(
+    conn,
+    county_fips: str = "18157",
+    latitude: float | None = None,
+    longitude: float | None = None,
+    forecast_days: int = 16,
+) -> int:
+    """Fetch the 16-day forecast for a county and insert into
+    fact_weather_obs (source='open_meteo_forecast')."""
+    if latitude is None or longitude is None:
+        centroid = COUNTY_CENTROIDS.get(county_fips)
+        if centroid is None:
+            return 0
+        latitude, longitude = centroid[0], centroid[1]
+
+    df = fetch_forecast(latitude, longitude, county_fips, forecast_days)
+    if df.empty:
+        return 0
+    cols = (
+        "obs_id, obs_date, location_id, county_fips, station_id, source, "
+        "tmax_c, tmin_c, tavg_c, precip_mm, heat_stress_flag, "
+        "drought_monitor_cat, enso_oni_index, gdd_base10"
+    )
+    conn.execute(
+        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"
+    )
+    return len(df)
 
 
 def fetch_and_store(

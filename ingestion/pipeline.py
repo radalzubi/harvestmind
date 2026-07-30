@@ -64,13 +64,22 @@ def run_ingestion_pipeline(
     try:
         from datetime import date, timedelta
 
-        from ingestion.open_meteo_fetcher import fetch_and_store as om_fetch
+        from ingestion.open_meteo_fetcher import (
+            fetch_and_store as om_fetch,
+            fetch_and_store_forecast as om_forecast,
+        )
         start = date.today() - timedelta(days=days_back)
         for fips in weather_counties:
             n = om_fetch(conn, county_fips=fips, start_date=start)
             counts["fact_weather_obs"] = counts.get("fact_weather_obs", 0) + n
             if verbose and n > 0:
                 print(f"  Open-Meteo weather ({fips}): {n} observations")
+            # 16-day forecast rows: live safe-commit windows read weather
+            # from the DB only, so the future must be pre-loaded too.
+            nf = om_forecast(conn, county_fips=fips)
+            counts["fact_weather_obs"] = counts.get("fact_weather_obs", 0) + nf
+            if verbose and nf > 0:
+                print(f"  Open-Meteo forecast ({fips}): {nf} days")
     except Exception as e:
         if verbose:
             print(f"  Open-Meteo weather skipped: {e}")
