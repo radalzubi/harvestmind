@@ -80,6 +80,24 @@ def stub_connectors(monkeypatch):
     monkeypatch.setitem(sys.modules, "ingestion.usda_ams_connector", usda_mod)
     monkeypatch.setitem(sys.modules, "ingestion.noaa_weather_fetcher", noaa_mod)
 
+    # The newer external connectors (Open-Meteo, Drought Monitor, ENSO ONI,
+    # NASS) are stubbed to zero-count no-ops here: these tests exercise
+    # pipeline orchestration of the USDA/NOAA pair, and no test may touch
+    # the network.
+    zero = _Stub("zero")
+    om_mod = types.ModuleType("ingestion.open_meteo_fetcher")
+    om_mod.fetch_and_store = zero
+    usdm_mod = types.ModuleType("ingestion.drought_monitor_fetcher")
+    usdm_mod.fetch_and_store = zero
+    oni_mod = types.ModuleType("ingestion.enso_oni_fetcher")
+    oni_mod.apply_to_weather = zero
+    nass_mod = types.ModuleType("ingestion.nass_quickstats_fetcher")
+    nass_mod.fetch_and_store = zero
+    monkeypatch.setitem(sys.modules, "ingestion.open_meteo_fetcher", om_mod)
+    monkeypatch.setitem(sys.modules, "ingestion.drought_monitor_fetcher", usdm_mod)
+    monkeypatch.setitem(sys.modules, "ingestion.enso_oni_fetcher", oni_mod)
+    monkeypatch.setitem(sys.modules, "ingestion.nass_quickstats_fetcher", nass_mod)
+
     return usda_stub, noaa_stub
 
 
