@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS fact_county_yields (
     commodity       VARCHAR NOT NULL,
     yield_value     DOUBLE NOT NULL,
     yield_unit      VARCHAR,                 -- e.g. 'TONS / ACRE'
+    util_practice   VARCHAR,                 -- 'FRESH MARKET','PROCESSING',...
     source          VARCHAR NOT NULL,        -- 'nass_quickstats'
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

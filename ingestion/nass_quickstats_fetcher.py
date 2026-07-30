@@ -54,7 +54,13 @@ def fetch_county_yields(
     state_alpha: str = "IN",
     year_ge: int = 2010,
 ) -> pd.DataFrame:
-    """Annual county-level yields for a commodity.
+    """Annual yields for a commodity, county level with state fallback.
+
+    County cells are privacy-suppressed for specialty crops with few
+    reporting farms (verified live: IN tomatoes have zero COUNTY rows
+    but 28 STATE rows). When the county query is empty we fall back to
+    state level; those rows carry county_fips=None and county_name
+    'STATE TOTAL' so the resolution is explicit downstream.
 
     Returns DataFrame [year, state_alpha, county_name, county_fips,
     commodity, yield_value, yield_unit].
@@ -66,22 +72,37 @@ def fetch_county_yields(
         "state_alpha": state_alpha,
         "year__GE": str(year_ge),
     })
+    state_level = not records
+    if state_level:
+        records = _get({
+            "commodity_desc": commodity,
+            "statisticcat_desc": "YIELD",
+            "agg_level_desc": "STATE",
+            "state_alpha": state_alpha,
+            "year__GE": str(year_ge),
+        })
     rows = []
     for r in records:
         try:
             value = float(str(r.get("Value", "")).replace(",", ""))
         except ValueError:
             continue  # suppressed cells: "(D)", "(Z)"
-        state_fips = str(r.get("state_fips_code", "")).zfill(2)
-        county_code = str(r.get("county_code", "")).zfill(3)
+        if state_level:
+            county_name, county_fips = "STATE TOTAL", None
+        else:
+            county_name = r.get("county_name")
+            county_fips = (str(r.get("state_fips_code", "")).zfill(2)
+                           + str(r.get("county_code", "")).zfill(3))
         rows.append({
             "year": int(r["year"]),
             "state_alpha": r.get("state_alpha"),
-            "county_name": r.get("county_name"),
-            "county_fips": state_fips + county_code,
+            "county_name": county_name,
+            "county_fips": county_fips,
             "commodity": r.get("commodity_desc"),
             "yield_value": value,
             "yield_unit": r.get("unit_desc"),
+            # disambiguates fresh vs processing rows at state level
+            "util_practice": r.get("util_practice_desc"),
         })
     return pd.DataFrame(rows)
 
@@ -132,14 +153,17 @@ def fetch_and_store(
         if df.empty:
             continue
         df = df.copy()
+        geo = df["county_fips"].fillna("ST-" + df["state_alpha"].fillna("XX"))
+        practice = (df["util_practice"].fillna("ALL")
+                    .str.replace(r"[ ,]+", "_", regex=True))
         df["yield_obs_id"] = (
-            df["county_fips"] + "-" + df["commodity"].str.replace(" ", "_")
-            + "-" + df["year"].astype(str)
+            geo + "-" + df["commodity"].str.replace(" ", "_")
+            + "-" + practice + "-" + df["year"].astype(str)
         )
         df["source"] = "nass_quickstats"
         cols = (
             "yield_obs_id, year, state_alpha, county_name, county_fips, "
-            "commodity, yield_value, yield_unit, source"
+            "commodity, yield_value, yield_unit, util_practice, source"
         )
         conn.execute(
             f"INSERT OR IGNORE INTO fact_county_yields ({cols}) "
