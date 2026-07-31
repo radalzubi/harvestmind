@@ -483,14 +483,23 @@ class TestCopulaScenarios:
             assert float(np.quantile(draws[key], 0.10)) == pytest.approx(
                 float(stats.beta.ppf(0.10, a, b)), abs=0.03)
 
-    def test_target_rank_correlation_is_induced(self):
+    def test_target_latent_correlation_is_induced(self):
+        """Tolerance deliberately tight.
+
+        This assertion previously used abs=0.08 against a Spearman target
+        passed straight in as the latent parameter — slack enough that the
+        missing rank-to-latent conversion still passed. It now checks the
+        LATENT parameter round-trips through the Gaussian identity, at a
+        tolerance that would catch that defect.
+        """
         params = {"A": (8.0, 2.0), "B": (8.0, 2.0)}
         gen = CopulaScenarioGenerator(copula="gaussian", seed=2)
-        for target in (0.0, 0.5, 0.85):
+        for latent in (0.0, 0.5, 0.85):
             d = gen.sample_beta_marginals(
-                params, 8000, correlation=equicorrelation_matrix(2, target))
-            got, _ = stats.spearmanr(d["A"], d["B"])
-            assert got == pytest.approx(target, abs=0.08)
+                params, 40000, correlation=equicorrelation_matrix(2, latent))
+            got_s, _ = stats.spearmanr(d["A"], d["B"])
+            expected_s = float(pearson_to_spearman(latent))
+            assert got_s == pytest.approx(expected_s, abs=0.02)
 
     def test_correlated_draws_do_not_average_away(self):
         """The whole reason this module exists.
@@ -721,7 +730,7 @@ class TestPolicyBranchesEndToEnd:
             conn, list(range(20)), policy=SupplyRiskPolicy(mode="independent"))
         assert diag["policy_mode"] == "independent"
         assert "UNDERSTATED" in diag["policy_description"]
-        assert diag["mean_pairwise_rank_correlation"] == 0.0
+        assert diag["mean_latent_correlation"] == 0.0
         assert len(draws) == 20 * 4
 
     def test_equicorrelated_policy_uses_supplied_rho(self):
@@ -731,8 +740,12 @@ class TestPolicyBranchesEndToEnd:
         _, diag = correlated_yield_scenarios(
             conn, list(range(20)),
             policy=SupplyRiskPolicy(mode="equicorrelated", rho=0.5, copula="t"))
-        assert diag["correlation_source"] == "operator_supplied_rho"
-        assert diag["mean_pairwise_rank_correlation"] == 0.5
+        # rho is a target KENDALL'S TAU; the latent parameter must be the
+        # converted value sin(pi*tau/2), not tau itself.
+        assert diag["correlation_source"] == "operator_supplied_tau"
+        assert diag["target_kendall_tau"] == 0.5
+        assert diag["mean_latent_correlation"] == pytest.approx(
+            float(np.sin(np.pi * 0.5 / 2)), abs=1e-4)
         assert diag["shrinkage_weight"] == 0.0
 
     def test_estimated_policy_shrinks_and_validates(self):
@@ -742,11 +755,17 @@ class TestPolicyBranchesEndToEnd:
         _, diag = correlated_yield_scenarios(
             conn, list(range(20)), policy=SupplyRiskPolicy(mode="estimated"))
         assert diag["correlation_source"] == "estimated_from_history_shrunk"
+        assert diag["rank_scale"] == "kendall_tau"
         assert 0.1 <= diag["shrinkage_weight"] <= 0.9
-        # Shrinkage must move the estimate toward zero.
-        assert abs(diag["mean_pairwise_rank_correlation"]) < abs(
-            diag["raw_mean_pairwise_rank_correlation"]) + 1e-9
+        # Shrinkage must move the rank estimate toward zero.
+        assert abs(diag["shrunk_mean_pairwise_tau"]) < abs(
+            diag["raw_mean_pairwise_tau"]) + 1e-9
         assert diag["correlation_validation"]["valid"] is True
+        # Genuine pairwise-overlap diagnostics must be present.
+        for k in ("n_pairs", "pairs_adequate", "pct_pairs_adequate",
+                  "min_pair_overlap", "median_pair_overlap",
+                  "max_pair_overlap", "n_joint_periods", "connected"):
+            assert k in diag
 
     def test_estimation_refused_when_history_too_short(self):
         """Below the threshold we must refuse, not guess."""
@@ -758,8 +777,8 @@ class TestPolicyBranchesEndToEnd:
             policy=SupplyRiskPolicy(mode="estimated",
                                     min_periods_for_estimation=12))
         assert diag["correlation_source"] == "refused_insufficient_history"
-        assert diag["mean_pairwise_rank_correlation"] == 0.0
-        assert "degraded to INDEPENDENT" in diag["note"]
+        assert diag["mean_latent_correlation"] == 0.0
+        assert "Degraded to INDEPENDENT" in diag["note"]
 
     def test_no_suppliers_is_reported_not_crashed(self):
         import duckdb
@@ -790,3 +809,177 @@ class TestPolicyBranchesEndToEnd:
         indep = agg_sd(SupplyRiskPolicy(mode="independent"))
         corr = agg_sd(SupplyRiskPolicy(mode="equicorrelated", rho=0.7, copula="t"))
         assert corr > indep
+
+
+class TestRankToLatentConversion:
+    """A rank matrix is NOT a latent correlation parameter.
+
+    The production path previously fed a Spearman matrix straight into the
+    Cholesky factor, silently targeting the wrong dependence. Existing
+    tolerances were loose enough (abs=0.08) that the bug still passed.
+    """
+
+    def test_kendall_identity_matches_closed_form(self):
+        from risk.correlated_scenarios import kendall_to_latent, latent_to_kendall
+
+        for tau in (-0.8, -0.25, 0.0, 0.3, 0.6, 0.9):
+            assert kendall_to_latent(tau) == pytest.approx(
+                np.sin(np.pi * tau / 2), rel=1e-12)
+            assert latent_to_kendall(kendall_to_latent(tau)) == pytest.approx(
+                tau, abs=1e-12)
+
+    def test_conversion_is_not_the_identity_where_it_matters(self):
+        """If it were, passing tau as latent would be harmless."""
+        from risk.correlated_scenarios import kendall_to_latent
+
+        assert abs(float(kendall_to_latent(0.5)) - 0.5) > 0.15
+        assert abs(float(kendall_to_latent(0.8)) - 0.8) > 0.10
+
+    @pytest.mark.parametrize("copula,df", [("gaussian", None), ("t", 6.0)])
+    def test_realized_kendall_tau_matches_target_tightly(self, copula, df):
+        """The end-to-end check the loose tolerance was hiding.
+
+        Converting the target through kendall_to_latent must reproduce the
+        requested rank dependence in the DRAWS, for BOTH copulas — the
+        Spearman identity is Gaussian-only, which is why tau is used.
+        """
+        from risk.correlated_scenarios import (
+            equicorrelation_matrix,
+            kendall_to_latent,
+        )
+
+        params = {"A": (8.0, 2.0), "B": (3.0, 6.0)}   # deliberately unequal
+        for target_tau in (0.2, 0.5, 0.75):
+            latent = float(kendall_to_latent(target_tau))
+            gen = CopulaScenarioGenerator(
+                copula=copula, df=(df or 5.0), seed=11)
+            d = gen.sample_beta_marginals(
+                params, 30000, correlation=equicorrelation_matrix(2, latent))
+            got, _ = stats.kendalltau(d["A"], d["B"])
+            assert got == pytest.approx(target_tau, abs=0.02), (
+                f"{copula}: target tau {target_tau}, realized {got:.4f}")
+
+    def test_passing_tau_unconverted_misses_the_target(self):
+        """Demonstrates the defect: the old path under-shoots dependence."""
+        from risk.correlated_scenarios import (
+            equicorrelation_matrix,
+            kendall_to_latent,
+        )
+
+        params = {"A": (8.0, 2.0), "B": (8.0, 2.0)}
+        target = 0.75
+        gen = CopulaScenarioGenerator(copula="gaussian", seed=12)
+
+        wrong = gen.sample_beta_marginals(
+            params, 20000, correlation=equicorrelation_matrix(2, target))
+        right = gen.sample_beta_marginals(
+            params, 20000,
+            correlation=equicorrelation_matrix(2, float(kendall_to_latent(target))))
+        tau_wrong, _ = stats.kendalltau(wrong["A"], wrong["B"])
+        tau_right, _ = stats.kendalltau(right["A"], right["B"])
+        assert abs(tau_right - target) < abs(tau_wrong - target)
+        assert tau_wrong < target - 0.1          # materially under-shoots
+
+
+class TestJointCoverage:
+    """'How much joint history' must mean pairwise OVERLAP."""
+
+    def test_disjoint_series_report_no_joint_history(self):
+        """The exact failure the old max() check missed: two suppliers with
+        30 observations each but not one shared week."""
+        from risk.correlated_scenarios import joint_coverage
+
+        n = 60
+        a = np.full(n, np.nan)
+        a[:30] = 1.0
+        b = np.full(n, np.nan)
+        b[30:] = 1.0
+        cov = joint_coverage({"A": a, "B": b}, min_overlap=4)
+        assert cov["max_pair_overlap"] == 0
+        assert cov["n_joint_periods"] == 0
+        assert cov["pairs_adequate"] == 0
+        assert cov["connected"] is False
+
+    def test_full_overlap_reports_connected(self):
+        from risk.correlated_scenarios import joint_coverage
+
+        obs = {k: np.ones(20) for k in ("A", "B", "C")}
+        cov = joint_coverage(obs, min_overlap=4)
+        assert cov["n_pairs"] == 3 and cov["pairs_adequate"] == 3
+        assert cov["pct_pairs_adequate"] == 100.0
+        assert cov["n_joint_periods"] == 20 and cov["connected"] is True
+
+    def test_disconnected_clusters_detected(self):
+        """Two overlapping pairs with no bridge cannot support one matrix."""
+        from risk.correlated_scenarios import joint_coverage
+
+        n = 40
+        a = np.full(n, np.nan)
+        a[:20] = 1.0
+        b = np.full(n, np.nan)
+        b[:20] = 1.0
+        c = np.full(n, np.nan)
+        c[20:] = 1.0
+        d = np.full(n, np.nan)
+        d[20:] = 1.0
+        cov = joint_coverage({"A": a, "B": b, "C": c, "D": d}, min_overlap=4)
+        assert cov["connected"] is False
+        assert cov["pairs_adequate"] == 2 and cov["n_pairs"] == 6
+
+
+class TestFailureHandling:
+    """An explicitly requested policy must not fail silently."""
+
+    def test_default_on_failure_is_raise(self):
+        assert SupplyRiskPolicy(mode="estimated").on_failure == "raise"
+
+    def test_rejects_unknown_on_failure(self):
+        with pytest.raises(ValueError, match="unknown on_failure"):
+            SupplyRiskPolicy(mode="estimated", on_failure="shrug")
+
+    def test_raises_when_policy_cannot_be_honoured(self):
+        """No suppliers -> no draws. With on_failure='raise' the caller must
+        be told, not handed independent scenarios that look normal."""
+        import duckdb
+
+        from risk.correlated_scenarios import CorrelatedScenarioError
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        root = __import__("pathlib").Path(__file__).resolve().parents[2]
+        c = duckdb.connect(":memory:")
+        for sql in sorted((root / "db" / "migrations").glob("*.sql")):
+            c.execute(sql.read_text())
+        pol = SupplyRiskPolicy(mode="estimated", on_failure="raise")
+        with pytest.raises(CorrelatedScenarioError, match="no draws"):
+            yield_scenarios_from_distributions(c, [0, 1], supply_risk_policy=pol)
+
+    def test_permitted_fallback_is_recorded_not_silent(self):
+        import duckdb
+
+        from risk.scenario_generation import (
+            last_scenario_diagnostics,
+            yield_scenarios_from_distributions,
+        )
+
+        root = __import__("pathlib").Path(__file__).resolve().parents[2]
+        c = duckdb.connect(":memory:")
+        for sql in sorted((root / "db" / "migrations").glob("*.sql")):
+            c.execute(sql.read_text())
+        pol = SupplyRiskPolicy(mode="estimated", on_failure="independent")
+        yield_scenarios_from_distributions(c, [0, 1], supply_risk_policy=pol)
+        diag = last_scenario_diagnostics()
+        assert diag.get("status") == "no_suppliers" or "correlation_source" in diag
+
+    def test_diagnostics_recorded_on_success(self):
+        from risk.scenario_generation import (
+            last_scenario_diagnostics,
+            yield_scenarios_from_distributions,
+        )
+
+        conn = TestPolicyBranchesEndToEnd._conn(n_weeks=30)
+        pol = SupplyRiskPolicy(mode="equicorrelated", rho=0.4, copula="t")
+        yield_scenarios_from_distributions(conn, list(range(10)),
+                                           supply_risk_policy=pol)
+        diag = last_scenario_diagnostics()
+        assert diag["correlation_source"] == "operator_supplied_tau"
+        assert diag["policy_mode"] == "equicorrelated"

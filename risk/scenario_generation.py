@@ -33,9 +33,32 @@ from __future__ import annotations
 from typing import Any
 
 import duckdb
+import numpy as np
 import pandas as pd
 
 from risk.supplier_distribution import supplier_fill_distributions
+
+# Diagnostics from the most recent scenario generation. Kept as module
+# state so a planning run can report WHICH dependence assumption produced
+# its scenarios without every caller having to thread a return value
+# through. Read with `last_scenario_diagnostics()`.
+_LAST_SCENARIO_DIAGNOSTICS: dict[str, Any] = {}
+
+
+def _record_scenario_diagnostics(diag: dict[str, Any]) -> None:
+    global _LAST_SCENARIO_DIAGNOSTICS
+    _LAST_SCENARIO_DIAGNOSTICS = dict(diag)
+
+
+def last_scenario_diagnostics() -> dict[str, Any]:
+    """Dependence assumption behind the most recent scenario draw.
+
+    Empty until a policy-driven generation has run. Surfacing this is what
+    makes a plan auditable: an operator can always recover whether their
+    scenarios were independent, equicorrelated, estimated, or a degraded
+    fallback after a failure.
+    """
+    return dict(_LAST_SCENARIO_DIAGNOSTICS)
 
 
 def demand_scenarios_from_orders(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
@@ -97,7 +120,6 @@ def demand_scenarios_from_forecast(
         return demand_scenarios_from_orders(conn)
 
     rng = pd.Series(range(n_scenarios))  # deterministic index
-    import numpy as np
     gen = np.random.default_rng(seed)
 
     rows = []
@@ -196,15 +218,40 @@ def yield_scenarios_from_distributions(
     """
     if supply_risk_policy is not None and getattr(
             supply_risk_policy, "enabled", False):
-        from risk.correlated_scenarios import correlated_yield_scenarios
+        from risk.correlated_scenarios import (
+            CorrelatedScenarioError,
+            correlated_yield_scenarios,
+        )
         try:
-            draws, _diag = correlated_yield_scenarios(
+            draws, diag = correlated_yield_scenarios(
                 conn, scenario_indices, policy=supply_risk_policy)
+        except (CorrelatedScenarioError, ValueError, np.linalg.LinAlgError) as exc:
+            # Only anticipated failures are caught, and only when the policy
+            # has explicitly permitted a fallback. A blanket `except
+            # Exception: pass` here would let an operator select a
+            # correlated policy, have it fail, and receive INDEPENDENT
+            # scenarios that look like a normal result — silently changing
+            # the dependence assumption behind a commitment recommendation.
+            if getattr(supply_risk_policy, "on_failure", "raise") == "raise":
+                raise
+            _record_scenario_diagnostics({
+                "correlation_source": "failed_degraded_to_independent",
+                "policy_mode": getattr(supply_risk_policy, "mode", None),
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "note": ("the requested correlated policy failed and the "
+                         "policy permitted fallback; scenarios are "
+                         "INDEPENDENT and aggregate risk is understated"),
+            })
+        else:
+            _record_scenario_diagnostics(diag)
             if draws:
                 return draws
-        except Exception:
-            pass
-    import numpy as np
+            if getattr(supply_risk_policy, "on_failure", "raise") == "raise":
+                raise CorrelatedScenarioError(
+                    "correlated policy produced no draws: "
+                    f"{diag.get('correlation_source')} — "
+                    f"{diag.get('note', 'no suppliers with fitted distributions')}")
     from scipy import stats as _st
 
     dists = supplier_fill_distributions(conn, quantile=0.10)

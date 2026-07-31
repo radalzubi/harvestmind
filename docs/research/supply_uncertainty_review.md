@@ -238,10 +238,22 @@ extended investigation to explain. Independence was doing the work.
 Implemented: Gaussian and **t** copulas preserving each supplier's
 calibrated Beta marginal exactly while inducing rank correlation.
 
-- Rank (Spearman) correlation is the target because it is invariant under
-  the monotone marginal transforms the construction applies; Pearson is
-  not. Identity used: `rho_pearson = 2·sin(π·rho_spearman/6)` [V, tested].
-- **t is the default.** Gaussian copulas have **zero tail dependence** for
+- Rank correlation is the target because it is invariant under the
+  monotone marginal transforms the construction applies; Pearson is not.
+  **Kendall's tau** is used rather than Spearman because the identity
+  `rho_latent = sin(π·tau/2)` holds for the whole elliptical family —
+  Gaussian and t at any degrees of freedom. The Spearman identity
+  `rho = 2·sin(π·rho_s/6)` is Gaussian-specific and is retained only for
+  that case.
+- **A rank matrix is NOT a latent correlation parameter.** An earlier
+  revision passed the estimated Spearman matrix straight into the Cholesky
+  factor, silently targeting weaker dependence than requested (the error
+  grows with |rho|; a 0.75 target realised ≈0.55). The conversion is now
+  applied once, on the production path, and pinned by tests that check the
+  realised Kendall's tau of the DRAWS to ±0.02 for both copulas.
+- **t is the default copula *conditional on explicitly enabling correlated
+  scenarios*** — correlated sampling itself defaults to OFF. Gaussian
+  copulas have **zero tail dependence** for
   any rho < 1 — extreme events become asymptotically independent, so
   simultaneous severe shortfalls are systematically under-represented.
   That is the precise scenario a perishable buyer must plan for.
@@ -283,9 +295,23 @@ Under `estimated`, in order:
    checked; a failure is repaired by projection to the nearest PSD
    correlation matrix and the repair is **recorded** in diagnostics
    (`regularized: true`, plus the pre-repair minimum eigenvalue).
-5. **Refuse when too thin.** Below `min_periods_for_estimation` (12) weeks
-   of joint history, estimation is refused outright and the policy degrades
-   to independent, recorded as `refused_insufficient_history`.
+5. **Refuse when too thin — measured on genuine PAIRWISE OVERLAP.** An
+   earlier revision counted the longest single supplier series, which is
+   not joint history at all: A observed Jan-Jun and B observed Jul-Dec
+   would report 30 periods while sharing no week. Estimation is now refused
+   when any of these fail, each with its own diagnostic code: fewer than 12
+   periods with two or more suppliers observed together
+   (`refused_insufficient_history`); under 60% of supplier PAIRS clearing
+   `min_overlap` (`refused_sparse_pairs`, since most of the matrix would be
+   defaults wearing the label "estimated"); or the adequately-overlapping
+   pairs forming disjoint clusters (`refused_disconnected`). Diagnostics
+   always report per-pair minimum, median and maximum overlap, the share of
+   adequate pairs, the count of jointly-observed periods, and connectivity.
+6. **Failures are never silent.** With `on_failure="raise"` (the default) an
+   explicitly requested correlated policy that cannot be honoured raises
+   rather than quietly returning independent scenarios; `on_failure=
+   "independent"` permits the fallback and records it. Either way the
+   assumption in force is retrievable via `last_scenario_diagnostics()`.
 
 Every branch is reported in the returned diagnostics, so a plan can always
 be traced back to the dependence assumption behind it.

@@ -61,10 +61,46 @@ class VSSResult:
     n_eval_scenarios: int
     bootstrap_values: list = field(default_factory=list)
 
+    # THREE outcomes, not two. The earlier version had only `significant =
+    # ci_low > 0` and described every other case as an interval that
+    # "includes zero" — which converted EVIDENCE OF HARM into "not
+    # significant". A wholly negative interval such as [-9.70, -0.92]
+    # excludes zero and says the stochastic policy performed WORSE
+    # out-of-sample; reporting that as inconclusive would hide the finding
+    # that matters most.
+
+    @property
+    def beneficial(self) -> bool:
+        """Interval wholly above zero: stochastic planning reduced cost."""
+        return self.ci_low > 0.0
+
+    @property
+    def harmful(self) -> bool:
+        """Interval wholly below zero: stochastic planning cost MORE."""
+        return self.ci_high < 0.0
+
+    @property
+    def inconclusive(self) -> bool:
+        """Interval straddles zero: no demonstrated difference."""
+        return self.ci_low <= 0.0 <= self.ci_high
+
+    @property
+    def verdict(self) -> str:
+        if self.beneficial:
+            return "beneficial"
+        if self.harmful:
+            return "harmful"
+        return "inconclusive"
+
     @property
     def significant(self) -> bool:
-        """Does the interval exclude zero?"""
-        return self.ci_low > 0.0
+        """Interval excludes zero in EITHER direction.
+
+        Deliberately not a synonym for `beneficial`: a wholly negative
+        interval is a significant result, and calling it insignificant was
+        the defect this replaces.
+        """
+        return self.beneficial or self.harmful
 
     def to_dict(self) -> dict:
         return {
@@ -78,6 +114,10 @@ class VSSResult:
             "n_bootstrap": self.n_bootstrap,
             "n_train_scenarios": self.n_train_scenarios,
             "n_eval_scenarios": self.n_eval_scenarios,
+            "verdict": self.verdict,
+            "beneficial": self.beneficial,
+            "harmful": self.harmful,
+            "inconclusive": self.inconclusive,
             "significant": self.significant,
             "definition": ("VSS = EEV - RP, both first stages FIXED and "
                            "evaluated on common out-of-sample scenarios"),
@@ -85,32 +125,105 @@ class VSSResult:
         }
 
     def interpretation(self) -> str:
-        if not self.significant:
+        ci = (f"{int(self.ci_level * 100)}% interval "
+              f"[{self.ci_low:,.2f}, {self.ci_high:,.2f}]")
+        if self.beneficial:
             return (
-                f"VSS = {self.vss:,.2f} with a {int(self.ci_level*100)}% "
-                f"interval of [{self.ci_low:,.2f}, {self.ci_high:,.2f}], "
-                "which includes zero. Stochastic optimization has NOT been "
-                "shown to beat the deterministic plan on this instance — "
-                "treat the point estimate as noise, not a finding."
+                f"VSS = {self.vss:,.2f} ({self.vss_pct_of_eev:.2f}% of EEV), "
+                f"{ci} wholly above zero. Planning against the distribution "
+                "IMPROVED cost on held-out scenarios."
+            )
+        if self.harmful:
+            return (
+                f"VSS = {self.vss:,.2f} ({self.vss_pct_of_eev:.2f}% of EEV), "
+                f"{ci} wholly BELOW zero. Stochastic planning performed WORSE "
+                "than the deterministic plan on held-out scenarios — the "
+                "stochastic solution is over-fitting its training scenarios. "
+                "This is evidence against using it on this instance, not an "
+                "inconclusive result."
             )
         return (
-            f"VSS = {self.vss:,.2f} ({self.vss_pct_of_eev:.2f}% of EEV), "
-            f"{int(self.ci_level*100)}% interval "
-            f"[{self.ci_low:,.2f}, {self.ci_high:,.2f}] excluding zero. "
-            "Planning against the distribution beats planning against the "
-            "mean on held-out scenarios."
+            f"VSS = {self.vss:,.2f}, {ci} contains zero. No difference "
+            "between stochastic and deterministic planning has been "
+            "demonstrated on held-out scenarios; treat the point estimate as "
+            "noise, not a finding."
         )
 
 
+class NonUniformWeightsUnsupported(ValueError):
+    """The scenario set carries unequal probabilities this path cannot honour."""
+
+
+def _scenario_weights(df: pd.DataFrame) -> dict:
+    """Original probability of each scenario index."""
+    uniq = df.drop_duplicates("scenario_index")
+    return {int(r["scenario_index"]): float(r["scenario_weight"])
+            for _, r in uniq.iterrows()}
+
+
+def _assert_uniform(df: pd.DataFrame, tol: float = 1e-9) -> None:
+    """Refuse silently-wrong answers on non-uniform scenario sets.
+
+    ``_reindex`` below renormalises a SUBSET's weights, which is correct
+    for equiprobable Monte Carlo draws. It is NOT correct once scenario
+    reduction has aggregated probabilities: sampling scenarios uniformly
+    from a set whose members carry unequal probability would evaluate the
+    wrong distribution, and both the mean-value problem and the reported
+    RP-vs-EEV comparison would be invalid.
+
+    Rather than quietly return a number computed against the wrong measure,
+    this refuses. Probability-aware resampling is the proper fix and is
+    noted as future work in the review document.
+    """
+    w = np.array(list(_scenario_weights(df).values()), dtype=float)
+    if w.size and float(w.max() - w.min()) > tol:
+        raise NonUniformWeightsUnsupported(
+            f"scenario weights are not uniform (min={w.min():.6g}, "
+            f"max={w.max():.6g}). Out-of-sample VSS currently assumes "
+            "equiprobable raw Monte Carlo scenarios; running it on a reduced "
+            "scenario set would evaluate the wrong distribution. Pass the "
+            "pre-reduction scenarios, or add probability-aware resampling.")
+
+
 def _reindex(df: pd.DataFrame, ids: np.ndarray) -> pd.DataFrame:
-    """Rebuild a scenario frame from a (possibly repeated) id list."""
+    """Rebuild a scenario frame from a (possibly repeated) id list.
+
+    Weights are the ORIGINAL scenario probabilities, renormalised over the
+    subset so they sum to 1 — not flattened to 1/n. With repeated ids from
+    a bootstrap draw, a scenario's total mass is its original weight times
+    its multiplicity, which is what makes the resample represent the same
+    distribution.
+    """
+    weights = _scenario_weights(df)
+    total = sum(weights.get(int(i), 0.0) for i in ids)
+    if total <= 0:
+        total = float(len(ids))
+        weights = {int(i): 1.0 for i in ids}
     frames = []
     for new_idx, old in enumerate(ids):
         block = df[df["scenario_index"] == old].copy()
         block["scenario_index"] = new_idx
-        block["scenario_weight"] = 1.0 / len(ids)
+        block["scenario_weight"] = weights.get(int(old), 0.0) / total
         frames.append(block)
     return pd.concat(frames, ignore_index=True)
+
+
+def _weighted_mean_demand(df: pd.DataFrame) -> pd.DataFrame:
+    """Probability-weighted expected demand per product.
+
+    The mean-value (EV) problem must use the EXPECTATION under the scenario
+    measure. A plain groupby mean silently assumes equiprobability, so with
+    unequal weights the EV decision — and therefore EEV and VSS — would be
+    computed against the wrong distribution.
+    """
+    w = df.drop_duplicates("scenario_index")[
+        ["scenario_index", "scenario_weight"]]
+    merged = df.merge(w, on="scenario_index", suffixes=("", "_w"))
+    merged["_wd"] = merged["demand_kg"] * merged["scenario_weight_w"]
+    out = (merged.groupby("product_id", as_index=False)
+           .agg(_num=("_wd", "sum"), _den=("scenario_weight_w", "sum")))
+    out["demand_kg"] = out["_num"] / out["_den"].replace(0, np.nan)
+    return out[["product_id", "demand_kg"]].fillna(0.0)
 
 
 def _subset_yields(yields: dict | None, ids: np.ndarray) -> dict | None:
@@ -141,6 +254,7 @@ def out_of_sample_vss(
     — never a fabricated number.
     """
     rng = np.random.default_rng(seed)
+    _assert_uniform(demand_scenarios)
     ids = np.array(sorted(demand_scenarios["scenario_index"].unique()))
     if ids.size < 4:
         return None
@@ -160,16 +274,24 @@ def out_of_sample_vss(
     if not x_rp:
         return None
 
-    mean_demand = (train_df.groupby("product_id", as_index=False)["demand_kg"]
-                   .mean().assign(scenario_index=0, scenario_weight=1.0))
+    mean_demand = _weighted_mean_demand(train_df).assign(
+        scenario_index=0, scenario_weight=1.0)
     if "week_start" in train_df.columns:
         mean_demand["week_start"] = train_df["week_start"].min()
+
     mean_y = None
     if train_y:
-        by_sup: dict = {}
-        for (_o, sid), v in train_y.items():
-            by_sup.setdefault(sid, []).append(float(v))
-        mean_y = {(0, sid): float(np.mean(v)) for sid, v in by_sup.items()}
+        # Expected fill must also be probability-weighted, for the same
+        # reason as demand: an unweighted mean assumes equiprobability.
+        w_by_scen = _scenario_weights(train_df)
+        num: dict = {}
+        den: dict = {}
+        for (omega, sid), v in train_y.items():
+            wt = w_by_scen.get(int(omega), 0.0)
+            num[sid] = num.get(sid, 0.0) + wt * float(v)
+            den[sid] = den.get(sid, 0.0) + wt
+        mean_y = {(0, sid): (num[sid] / den[sid]) for sid in num
+                  if den.get(sid, 0.0) > 0}
     ev = solver.solve(mean_demand, supply, yield_scenarios=mean_y)
     x_ev = ev.get("x")
     if not x_ev:
