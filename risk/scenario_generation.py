@@ -30,6 +30,7 @@ and is exactly the modeling question for the technical conversation.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any
 
 import duckdb
@@ -38,27 +39,60 @@ import pandas as pd
 
 from risk.supplier_distribution import supplier_fill_distributions
 
-# Diagnostics from the most recent scenario generation. Kept as module
-# state so a planning run can report WHICH dependence assumption produced
-# its scenarios without every caller having to thread a return value
-# through. Read with `last_scenario_diagnostics()`.
-_LAST_SCENARIO_DIAGNOSTICS: dict[str, Any] = {}
+@dataclass
+class ScenarioGenerationResult:
+    """Scenario draws together with the dependence assumption behind them.
 
-
-def _record_scenario_diagnostics(diag: dict[str, Any]) -> None:
-    global _LAST_SCENARIO_DIAGNOSTICS
-    _LAST_SCENARIO_DIAGNOSTICS = dict(diag)
-
-
-def last_scenario_diagnostics() -> dict[str, Any]:
-    """Dependence assumption behind the most recent scenario draw.
-
-    Empty until a policy-driven generation has run. Surfacing this is what
-    makes a plan auditable: an operator can always recover whether their
-    scenarios were independent, equicorrelated, estimated, or a degraded
-    fallback after a failure.
+    WHY THIS REPLACED A MODULE GLOBAL. Diagnostics were previously stashed
+    in process-global state and read back through a
+    ``last_scenario_diagnostics()`` accessor. That is not request-safe: two
+    concurrent planning calls race, and operator A can read operator B's
+    diagnostics — corrupting audit provenance and leaking B's policy
+    choice, supplier count and failure reason across a tenant boundary.
+    The provenance of a plan has to travel WITH that plan, so it is
+    returned rather than stored.
     """
-    return dict(_LAST_SCENARIO_DIAGNOSTICS)
+
+    draws: dict
+    diagnostics: dict[str, Any] = field(default_factory=dict)
+
+    def __bool__(self) -> bool:
+        return bool(self.draws)
+
+    def __len__(self) -> int:
+        return len(self.draws)
+
+
+def _emit(diag: dict[str, Any], sink: dict | None) -> None:
+    """Write diagnostics into a caller-owned dict, if one was supplied.
+
+    Per-call, never shared. Nothing is retained between invocations, so
+    concurrent callers cannot observe each other's provenance.
+    """
+    if sink is not None:
+        sink.clear()
+        sink.update(diag)
+
+
+def generate_yield_scenarios(
+    conn: duckdb.DuckDBPyConnection,
+    scenario_indices: list[int],
+    seed: int = 42,
+    supply_risk_policy=None,
+) -> ScenarioGenerationResult:
+    """Yield scenarios AND their dependence provenance, returned together.
+
+    The request-safe entry point. Prefer this over calling
+    ``yield_scenarios_from_distributions`` and reading diagnostics from
+    somewhere else — the whole point is that a plan carries the record of
+    which dependence assumption produced it.
+    """
+    diagnostics: dict[str, Any] = {}
+    draws = yield_scenarios_from_distributions(
+        conn, scenario_indices, seed=seed,
+        supply_risk_policy=supply_risk_policy,
+        diagnostics_out=diagnostics)
+    return ScenarioGenerationResult(draws=draws, diagnostics=diagnostics)
 
 
 def demand_scenarios_from_orders(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
@@ -192,12 +226,19 @@ def yield_scenarios_from_distributions(
     scenario_indices: list[int],
     seed: int = 42,
     supply_risk_policy=None,
+    diagnostics_out: dict | None = None,
 ) -> dict:
     """Per-scenario supplier fill draws from the predictive Betas.
 
     Returns {(scenario_index, supplier_id): fill}. This is how supply
     uncertainty enters the optimizer as a genuine stage-2 outcome — the
     commitment is made before the fill resolves.
+
+    Pass ``diagnostics_out`` (a dict you own) to receive the dependence
+    provenance for THIS call. It is an explicit per-call sink rather than
+    shared state, so concurrent planning requests cannot read each other's
+    diagnostics. ``generate_yield_scenarios`` wraps this and returns both
+    together if you would rather not manage the sink.
 
     Independent draws are the DEFAULT and the historical behaviour. They
     are known to understate aggregate risk when suppliers share a weather
@@ -234,17 +275,18 @@ def yield_scenarios_from_distributions(
             # the dependence assumption behind a commitment recommendation.
             if getattr(supply_risk_policy, "on_failure", "raise") == "raise":
                 raise
-            _record_scenario_diagnostics({
+            _emit({
                 "correlation_source": "failed_degraded_to_independent",
+                "fallback_applied": "independent",
                 "policy_mode": getattr(supply_risk_policy, "mode", None),
                 "error_type": type(exc).__name__,
                 "error": str(exc),
                 "note": ("the requested correlated policy failed and the "
                          "policy permitted fallback; scenarios are "
                          "INDEPENDENT and aggregate risk is understated"),
-            })
+            }, diagnostics_out)
         else:
-            _record_scenario_diagnostics(diag)
+            _emit(diag, diagnostics_out)
             if draws:
                 return draws
             if getattr(supply_risk_policy, "on_failure", "raise") == "raise":

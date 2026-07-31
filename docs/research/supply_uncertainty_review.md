@@ -273,7 +273,7 @@ support.
 | Policy mode | Correlation source | When to use |
 |---|---|---|
 | `independent` (default) | none; rho = 0 | Always, until joint history exists. Diagnostics state that aggregate risk is understated if suppliers share a region. |
-| `equicorrelated` | one operator-supplied rho | The operator knows their growers share a weather shed but history is too short to estimate |
+| `equicorrelated` | one operator-supplied Kendall's tau | The operator knows their growers share a weather shed but history is too short to estimate |
 | `estimated` | pairwise Spearman on shared weeks, then shrunk | Genuine joint history exists |
 
 Under `estimated`, in order:
@@ -307,11 +307,21 @@ Under `estimated`, in order:
    pairs forming disjoint clusters (`refused_disconnected`). Diagnostics
    always report per-pair minimum, median and maximum overlap, the share of
    adequate pairs, the count of jointly-observed periods, and connectivity.
-6. **Failures are never silent.** With `on_failure="raise"` (the default) an
-   explicitly requested correlated policy that cannot be honoured raises
-   rather than quietly returning independent scenarios; `on_failure=
-   "independent"` permits the fallback and records it. Either way the
-   assumption in force is retrievable via `last_scenario_diagnostics()`.
+6. **Failures are never silent — including evidence-based refusals.**
+   When the requested dependence model cannot be supported, the default
+   behaviour is to **raise**. Independent fallback occurs only when the
+   policy explicitly sets `on_failure="independent"`, and is then recorded
+   as `fallback_applied`. This applies to the ordinary refusal path
+   (insufficient history, sparse pairs, disconnected clusters) as well as
+   to exceptions — an earlier revision honoured the policy only for
+   exceptions, so the PRIMARY expected failure mode still degraded
+   silently.
+7. **Provenance is request-scoped.** Diagnostics are returned with the
+   draws (`generate_yield_scenarios` -> `ScenarioGenerationResult`, or the
+   `diagnostics_out` sink), never stored in module-global state. A process
+   global raced under concurrent planning calls, so operator A could read
+   operator B's policy, supplier count and failure reason — corrupting
+   audit provenance across a tenant boundary.
 
 Every branch is reported in the returned diagnostics, so a plan can always
 be traced back to the dependence assumption behind it.

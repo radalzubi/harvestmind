@@ -37,21 +37,37 @@ Gaussian copula
 t copula
     Same construction with a chi-square mixing variable, giving nonzero
     tail dependence controlled by the degrees of freedom nu. Lower nu means
-    stronger joint-tail clustering. This is the right default when the
-    hazard is regional weather.
+    stronger joint-tail clustering. It is the preferred copula WHEN
+    correlated scenarios are enabled at all — correlation itself defaults
+    to off, since neither the presence of joint-tail clustering nor the nu
+    controlling it can be estimated without joint history.
     Demarta, S. & McNeil, A.J. (2005), "The t Copula and Related Copulas,"
     *International Statistical Review* 73(1):111-129.
 
-RANK CORRELATION, NOT LINEAR
-----------------------------
-The target is Spearman rank correlation, because it is invariant under the
-monotone marginal transforms this construction applies — Pearson
-correlation is not, and would be distorted by the mapping to Beta
-marginals. The Gaussian-copula identity converts between them:
+RANK DEPENDENCE IS NOT THE LATENT PARAMETER
+-------------------------------------------
+Targets are expressed as KENDALL'S TAU, because tau is invariant under the
+monotone marginal transforms this construction applies (Pearson is not),
+and because the conversion to the latent correlation
 
-    rho_pearson = 2 * sin(pi * rho_spearman / 6)
+    rho_latent = sin(pi * tau / 2)
 
-implemented in ``spearman_to_pearson`` and checked in the tests.
+holds for the WHOLE elliptical family — Gaussian and t at any degrees of
+freedom. The Spearman identity rho = 2 sin(pi rho_s / 6) is Gaussian-only
+and is retained for that case alone.
+
+The conversion is not optional bookkeeping. An earlier revision passed the
+estimated rank matrix straight into the Cholesky factor, silently
+targeting weaker dependence than requested, with the error growing in
+|tau|. ``kendall_to_latent`` is applied exactly once, on the production
+path, and the realised tau of the draws is pinned in tests.
+
+FAILURE POLICY
+--------------
+When the requested dependence model cannot be supported by the available
+evidence, the DEFAULT is to raise. Independent fallback happens only when
+the policy explicitly sets ``on_failure="independent"``, and is then
+recorded as ``fallback_applied``.
 """
 
 from __future__ import annotations
@@ -401,10 +417,13 @@ class SupplyRiskPolicy:
     copula: str = "gaussian"
     df: float = 5.0
     # Target dependence on the KENDALL'S TAU scale, not a latent
-    # correlation. tau is used because rho_latent = sin(pi*tau/2) holds for
-    # the whole elliptical family (Gaussian and t at any df), so the same
-    # target means the same thing whichever copula is selected.
-    rho: float | None = None
+    # correlation. Named explicitly: calling a tau parameter "rho" invites
+    # exactly the scale error this module already made once, where a rank
+    # matrix was passed straight in as the latent parameter.
+    # tau is used because rho_latent = sin(pi*tau/2) holds for the whole
+    # elliptical family (Gaussian and t at any df), so the same target
+    # means the same thing whichever copula is selected.
+    kendall_tau: float | None = None
     min_overlap: int = 4
     min_periods_for_estimation: int = 12
     # Minimum share of supplier PAIRS that must clear min_overlap before a
@@ -423,9 +442,18 @@ class SupplyRiskPolicy:
             raise ValueError(f"unknown supply-risk mode {self.mode!r}")
         if self.copula not in ("gaussian", "t"):
             raise ValueError(f"unknown copula {self.copula!r}")
-        if self.mode == "equicorrelated" and self.rho is None:
-            raise ValueError("mode='equicorrelated' requires an explicit rho "
-                             "(target Kendall's tau)")
+        if self.mode == "equicorrelated" and self.kendall_tau is None:
+            raise ValueError("mode='equicorrelated' requires an explicit "
+                             "kendall_tau target")
+        if self.kendall_tau is not None and not -1.0 <= self.kendall_tau <= 1.0:
+            raise ValueError(
+                f"kendall_tau must lie in [-1, 1], got {self.kendall_tau}")
+        if self.copula == "t" and self.df <= 0:
+            raise ValueError(
+                f"t-copula degrees of freedom must be positive, got {self.df}")
+        if not 0.0 <= self.min_pct_pairs_adequate <= 100.0:
+            raise ValueError("min_pct_pairs_adequate must be a percentage "
+                             "in [0, 100]")
         if self.on_failure not in ("raise", "independent"):
             raise ValueError(f"unknown on_failure {self.on_failure!r}; use "
                              "'raise' or 'independent'")
@@ -439,8 +467,8 @@ class SupplyRiskPolicy:
             return ("independent supplier draws; aggregate supply risk is "
                     "UNDERSTATED if these suppliers share a weather region")
         if self.mode == "equicorrelated":
-            return (f"{self.copula} copula, operator-supplied rank "
-                    f"correlation {self.rho}")
+            return (f"{self.copula} copula, operator-supplied Kendall's tau "
+                    f"{self.kendall_tau}")
         return (f"{self.copula} copula, rank correlation estimated from "
                 f"delivery history and shrunk toward equicorrelation")
 
@@ -487,11 +515,15 @@ class CopulaScenarioGenerator:
         beta_params: dict[str, tuple[float, float]],
         n_draws: int,
         correlation: np.ndarray | None = None,
-        rho: float | None = None,
+        latent_rho: float | None = None,
     ) -> dict[str, np.ndarray]:
         """Correlated draws with each entity's exact Beta marginal.
 
-        Supply either a full ``correlation`` matrix or a single ``rho`` for
+        NOTE both ``correlation`` and ``latent_rho`` are on the LATENT
+        elliptical scale, not the rank scale. Convert a Kendall's tau
+        target with ``kendall_to_latent`` before passing it here.
+
+        Supply either a full ``correlation`` matrix or a single scalar for
         the equicorrelated case. Marginals are preserved exactly: the
         inverse-CDF step maps uniforms through each Beta unchanged.
         """
@@ -500,7 +532,8 @@ class CopulaScenarioGenerator:
         if n == 0:
             return {}
         if correlation is None:
-            correlation = equicorrelation_matrix(n, rho if rho is not None else 0.0)
+            correlation = equicorrelation_matrix(
+                n, latent_rho if latent_rho is not None else 0.0)
         u = self.sample_uniforms(n_draws, correlation)
         # Guard the inverse CDF against exact 0/1 from floating point.
         u = np.clip(u, 1e-12, 1.0 - 1e-12)
@@ -531,8 +564,10 @@ def _estimation_refusal(
         "n_joint_periods", "n_pairs", "pairs_adequate", "pct_pairs_adequate",
         "min_pair_overlap", "median_pair_overlap", "max_pair_overlap",
         "connected")})
-    degraded = (" Degraded to INDEPENDENT draws; aggregate supply risk is "
-                "understated if these suppliers share a region.")
+    degraded = (" The requested dependence model cannot be supported by the "
+                "available evidence; on_failure decides whether this raises "
+                "or falls back to independent draws (which would understate "
+                "aggregate supply risk if these suppliers share a region).")
 
     if len(obs) < n_ent:
         return {**base, "correlation_source": "refused_incomplete_coverage",
@@ -620,12 +655,12 @@ def correlated_yield_scenarios(
     correlation = None
 
     if pol.mode == "equicorrelated":
-        # pol.rho is a target KENDALL'S TAU; convert once to the latent
-        # parameter the copula actually consumes.
-        latent_rho = float(kendall_to_latent(float(pol.rho)))
+        # Convert the tau target once to the latent parameter the copula
+        # actually consumes.
+        latent_rho = float(kendall_to_latent(float(pol.kendall_tau)))
         correlation = equicorrelation_matrix(n_ent, latent_rho)
         diagnostics.update(correlation_source="operator_supplied_tau",
-                           target_kendall_tau=float(pol.rho),
+                           target_kendall_tau=float(pol.kendall_tau),
                            mean_latent_correlation=round(latent_rho, 4),
                            shrinkage_weight=0.0)
 
@@ -636,6 +671,21 @@ def correlated_yield_scenarios(
 
         if refusal is not None:
             diagnostics.update(refusal)
+            # Honour on_failure HERE. Falling through to the generic
+            # `correlation is None` branch below would build an identity
+            # matrix, produce independent draws, and return them
+            # successfully — so an operator who asked for estimated
+            # dependence and set on_failure="raise" would silently receive
+            # independent scenarios. Insufficient evidence is the PRIMARY
+            # expected failure mode, not an edge case, so it must respect
+            # the policy exactly as an exception does.
+            if pol.on_failure == "raise":
+                raise CorrelatedScenarioError(
+                    f"requested estimated dependence could not be honoured: "
+                    f"{refusal['correlation_source']} — "
+                    f"{refusal.get('note', '')}".strip())
+            diagnostics["fallback_applied"] = "independent"
+            correlation = equicorrelation_matrix(n_ent, 0.0)
         else:
             raw_tau, keys, diag = estimate_rank_correlation(
                 obs, min_overlap=pol.min_overlap, method="kendall")

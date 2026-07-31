@@ -477,7 +477,7 @@ class TestCopulaScenarios:
         """The point of a copula: change dependence, not the marginals."""
         params = {"A": (8.0, 2.0), "B": (5.0, 5.0), "C": (2.0, 8.0)}
         gen = CopulaScenarioGenerator(copula="gaussian", seed=1)
-        draws = gen.sample_beta_marginals(params, 20000, rho=0.6)
+        draws = gen.sample_beta_marginals(params, 20000, latent_rho=0.6)
         for key, (a, b) in params.items():
             assert draws[key].mean() == pytest.approx(a / (a + b), abs=0.02)
             assert float(np.quantile(draws[key], 0.10)) == pytest.approx(
@@ -510,8 +510,8 @@ class TestCopulaScenarios:
         """
         params = {f"S{i}": (8.0, 2.0) for i in range(10)}
         gen = CopulaScenarioGenerator(copula="gaussian", seed=3)
-        indep = gen.sample_beta_marginals(params, 5000, rho=0.0)
-        corr = gen.sample_beta_marginals(params, 5000, rho=0.6)
+        indep = gen.sample_beta_marginals(params, 5000, latent_rho=0.0)
+        corr = gen.sample_beta_marginals(params, 5000, latent_rho=0.6)
         sd_i = np.mean(np.vstack(list(indep.values())), axis=0).std()
         sd_c = np.mean(np.vstack(list(corr.values())), axis=0).std()
         assert sd_c > 2.0 * sd_i
@@ -536,15 +536,15 @@ class TestCopulaScenarios:
 
     def test_draws_are_deterministic_under_seed(self):
         params = {"A": (8.0, 2.0), "B": (5.0, 5.0)}
-        a = CopulaScenarioGenerator(seed=99).sample_beta_marginals(params, 500, rho=0.4)
-        b = CopulaScenarioGenerator(seed=99).sample_beta_marginals(params, 500, rho=0.4)
+        a = CopulaScenarioGenerator(seed=99).sample_beta_marginals(params, 500, latent_rho=0.4)
+        b = CopulaScenarioGenerator(seed=99).sample_beta_marginals(params, 500, latent_rho=0.4)
         for k in params:
             assert np.allclose(a[k], b[k])
 
     def test_draws_are_valid_fractions(self):
         params = {f"S{i}": (2.0, 5.0) for i in range(4)}
         d = CopulaScenarioGenerator(copula="t", df=3, seed=5).sample_beta_marginals(
-            params, 3000, rho=0.5)
+            params, 3000, latent_rho=0.5)
         for v in d.values():
             assert np.all((v >= 0.0) & (v <= 1.0)) and np.all(np.isfinite(v))
 
@@ -622,7 +622,7 @@ class TestSupplyRiskPolicy:
         assert "UNDERSTATED" in DEFAULT_SUPPLY_RISK_POLICY.describe()
 
     def test_equicorrelated_requires_explicit_rho(self):
-        with pytest.raises(ValueError, match="requires an explicit rho"):
+        with pytest.raises(ValueError, match="requires an explicit"):
             SupplyRiskPolicy(mode="equicorrelated")
 
     def test_rejects_unknown_mode_and_copula(self):
@@ -632,7 +632,7 @@ class TestSupplyRiskPolicy:
             SupplyRiskPolicy(mode="estimated", copula="clayton")
 
     def test_enabled_policies_describe_themselves(self):
-        p = SupplyRiskPolicy(mode="equicorrelated", rho=0.4, copula="t")
+        p = SupplyRiskPolicy(mode="equicorrelated", kendall_tau=0.4, copula="t")
         assert p.enabled and "t copula" in p.describe()
         q = SupplyRiskPolicy(mode="estimated", copula="gaussian")
         assert q.enabled and "estimated" in q.describe()
@@ -739,7 +739,7 @@ class TestPolicyBranchesEndToEnd:
         conn = self._conn()
         _, diag = correlated_yield_scenarios(
             conn, list(range(20)),
-            policy=SupplyRiskPolicy(mode="equicorrelated", rho=0.5, copula="t"))
+            policy=SupplyRiskPolicy(mode="equicorrelated", kendall_tau=0.5, copula="t"))
         # rho is a target KENDALL'S TAU; the latent parameter must be the
         # converted value sin(pi*tau/2), not tau itself.
         assert diag["correlation_source"] == "operator_supplied_tau"
@@ -767,18 +767,35 @@ class TestPolicyBranchesEndToEnd:
                   "max_pair_overlap", "n_joint_periods", "connected"):
             assert k in diag
 
-    def test_estimation_refused_when_history_too_short(self):
-        """Below the threshold we must refuse, not guess."""
+    def test_estimation_refusal_raises_by_default(self):
+        """Below the threshold we must refuse, not guess — and by default
+        that refusal RAISES rather than quietly degrading."""
+        from risk.correlated_scenarios import (
+            CorrelatedScenarioError,
+            correlated_yield_scenarios,
+        )
+
+        conn = self._conn(n_weeks=5)
+        with pytest.raises(CorrelatedScenarioError,
+                           match="refused_insufficient_history"):
+            correlated_yield_scenarios(
+                conn, list(range(10)),
+                policy=SupplyRiskPolicy(mode="estimated",
+                                        min_periods_for_estimation=12))
+
+    def test_estimation_refusal_falls_back_only_when_permitted(self):
         from risk.correlated_scenarios import correlated_yield_scenarios
 
         conn = self._conn(n_weeks=5)
-        _, diag = correlated_yield_scenarios(
+        draws, diag = correlated_yield_scenarios(
             conn, list(range(10)),
             policy=SupplyRiskPolicy(mode="estimated",
-                                    min_periods_for_estimation=12))
+                                    min_periods_for_estimation=12,
+                                    on_failure="independent"))
+        assert draws
         assert diag["correlation_source"] == "refused_insufficient_history"
+        assert diag["fallback_applied"] == "independent"
         assert diag["mean_latent_correlation"] == 0.0
-        assert "Degraded to INDEPENDENT" in diag["note"]
 
     def test_no_suppliers_is_reported_not_crashed(self):
         import duckdb
@@ -807,7 +824,7 @@ class TestPolicyBranchesEndToEnd:
             return float(np.std([np.mean(v) for v in by_scen.values()]))
 
         indep = agg_sd(SupplyRiskPolicy(mode="independent"))
-        corr = agg_sd(SupplyRiskPolicy(mode="equicorrelated", rho=0.7, copula="t"))
+        corr = agg_sd(SupplyRiskPolicy(mode="equicorrelated", kendall_tau=0.7, copula="t"))
         assert corr > indep
 
 
@@ -953,33 +970,102 @@ class TestFailureHandling:
         with pytest.raises(CorrelatedScenarioError, match="no draws"):
             yield_scenarios_from_distributions(c, [0, 1], supply_risk_policy=pol)
 
-    def test_permitted_fallback_is_recorded_not_silent(self):
-        import duckdb
+    def test_insufficient_history_raises_by_default_end_to_end(self):
+        """Through the production entry point, not just the internals."""
+        from risk.correlated_scenarios import CorrelatedScenarioError
+        from risk.scenario_generation import yield_scenarios_from_distributions
 
-        from risk.scenario_generation import (
-            last_scenario_diagnostics,
-            yield_scenarios_from_distributions,
-        )
+        conn = TestPolicyBranchesEndToEnd._conn(n_weeks=4)
+        pol = SupplyRiskPolicy(mode="estimated", min_periods_for_estimation=12,
+                               on_failure="raise")
+        with pytest.raises(CorrelatedScenarioError):
+            yield_scenarios_from_distributions(conn, [0, 1, 2],
+                                               supply_risk_policy=pol)
 
-        root = __import__("pathlib").Path(__file__).resolve().parents[2]
-        c = duckdb.connect(":memory:")
-        for sql in sorted((root / "db" / "migrations").glob("*.sql")):
-            c.execute(sql.read_text())
-        pol = SupplyRiskPolicy(mode="estimated", on_failure="independent")
-        yield_scenarios_from_distributions(c, [0, 1], supply_risk_policy=pol)
-        diag = last_scenario_diagnostics()
-        assert diag.get("status") == "no_suppliers" or "correlation_source" in diag
+    def test_insufficient_history_falls_back_only_when_permitted(self):
+        from risk.scenario_generation import yield_scenarios_from_distributions
 
-    def test_diagnostics_recorded_on_success(self):
-        from risk.scenario_generation import (
-            last_scenario_diagnostics,
-            yield_scenarios_from_distributions,
-        )
+        conn = TestPolicyBranchesEndToEnd._conn(n_weeks=4)
+        pol = SupplyRiskPolicy(mode="estimated", min_periods_for_estimation=12,
+                               on_failure="independent")
+        diagnostics: dict = {}
+        draws = yield_scenarios_from_distributions(
+            conn, [0, 1, 2], supply_risk_policy=pol,
+            diagnostics_out=diagnostics)
+        assert draws
+        assert diagnostics["correlation_source"] == "refused_insufficient_history"
+        assert diagnostics["fallback_applied"] == "independent"
+
+    def test_generate_returns_draws_and_provenance_together(self):
+        from risk.scenario_generation import generate_yield_scenarios
 
         conn = TestPolicyBranchesEndToEnd._conn(n_weeks=30)
-        pol = SupplyRiskPolicy(mode="equicorrelated", rho=0.4, copula="t")
-        yield_scenarios_from_distributions(conn, list(range(10)),
-                                           supply_risk_policy=pol)
-        diag = last_scenario_diagnostics()
-        assert diag["correlation_source"] == "operator_supplied_tau"
-        assert diag["policy_mode"] == "equicorrelated"
+        pol = SupplyRiskPolicy(mode="equicorrelated", kendall_tau=0.4, copula="t")
+        res = generate_yield_scenarios(conn, list(range(10)),
+                                       supply_risk_policy=pol)
+        assert res.draws and len(res) == len(res.draws)
+        assert res.diagnostics["correlation_source"] == "operator_supplied_tau"
+        assert res.diagnostics["policy_mode"] == "equicorrelated"
+
+    def test_diagnostics_are_request_scoped_not_shared(self):
+        """Regression: diagnostics used to live in module-global state, so
+        two concurrent planning calls raced and operator A could read
+        operator B's provenance — corrupting audit trails and leaking
+        another tenant's policy and failure reason."""
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        conn = TestPolicyBranchesEndToEnd._conn(n_weeks=30)
+        a: dict = {}
+        b: dict = {}
+        yield_scenarios_from_distributions(
+            conn, [0, 1], diagnostics_out=a,
+            supply_risk_policy=SupplyRiskPolicy(
+                mode="equicorrelated", kendall_tau=0.2, copula="gaussian"))
+        yield_scenarios_from_distributions(
+            conn, [0, 1], diagnostics_out=b,
+            supply_risk_policy=SupplyRiskPolicy(
+                mode="equicorrelated", kendall_tau=0.8, copula="t"))
+        # The FIRST call's record must survive the second call untouched.
+        assert a["target_kendall_tau"] == 0.2
+        assert b["target_kendall_tau"] == 0.8
+        assert a["copula"] == "gaussian" and b["copula"] == "t"
+        assert a is not b
+
+    def test_concurrent_calls_do_not_cross_contaminate(self):
+        """The same property under real threads."""
+        import threading
+
+        from risk.scenario_generation import generate_yield_scenarios
+
+        conn_a = TestPolicyBranchesEndToEnd._conn(n_weeks=30, seed=1)
+        conn_b = TestPolicyBranchesEndToEnd._conn(n_weeks=30, seed=2)
+        results: dict = {}
+        barrier = threading.Barrier(2)
+
+        def run(name, conn, tau, copula):
+            pol = SupplyRiskPolicy(mode="equicorrelated", kendall_tau=tau,
+                                   copula=copula)
+            barrier.wait()
+            for _ in range(6):       # interleave repeatedly
+                results[name] = generate_yield_scenarios(
+                    conn, list(range(6)), supply_risk_policy=pol)
+
+        t1 = threading.Thread(target=run, args=("A", conn_a, 0.15, "gaussian"))
+        t2 = threading.Thread(target=run, args=("B", conn_b, 0.85, "t"))
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
+
+        assert results["A"].diagnostics["target_kendall_tau"] == 0.15
+        assert results["B"].diagnostics["target_kendall_tau"] == 0.85
+        assert results["A"].diagnostics["copula"] == "gaussian"
+        assert results["B"].diagnostics["copula"] == "t"
+
+    def test_policy_validates_its_parameters(self):
+        with pytest.raises(ValueError, match=r"kendall_tau must lie in"):
+            SupplyRiskPolicy(mode="equicorrelated", kendall_tau=1.4)
+        with pytest.raises(ValueError, match="degrees of freedom must be"):
+            SupplyRiskPolicy(mode="estimated", copula="t", df=0.0)
+        with pytest.raises(ValueError, match="percentage"):
+            SupplyRiskPolicy(mode="estimated", min_pct_pairs_adequate=150.0)
