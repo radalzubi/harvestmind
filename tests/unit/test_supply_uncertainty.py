@@ -644,6 +644,24 @@ class TestSupplyRiskPolicy:
         assert mat[0, 1] == 0.0
         assert diag["pairs_defaulted"] == 1
 
+    def test_leakage_guard_fails_closed_on_missing_column(self):
+        """Regression: assert_dates_in_window returned early when the date
+        column was absent, so a renamed column turned the guard into a
+        no-op that REPORTED SUCCESS — the worst failure mode for a leakage
+        check, because the caller believes it ran."""
+        import pandas as pd
+
+        from backtesting.leakage_guard import LeakageError, assert_dates_in_window
+
+        df = pd.DataFrame({"delivery_week": ["2024-01-08"], "qty": [1.0]})
+        with pytest.raises(LeakageError, match="not present"):
+            assert_dates_in_window(df, "week_start", date(2024, 1, 1),
+                                   date(2024, 1, 31))
+        # An empty frame is still fine: no rows to leak differs from being
+        # unable to look.
+        assert_dates_in_window(pd.DataFrame({"week_start": []}), "week_start",
+                               date(2024, 1, 1), date(2024, 1, 31))
+
     def test_estimates_correlation_when_history_supports_it(self):
         rng = np.random.default_rng(15)
         common = rng.normal(0, 1, 40)
@@ -652,3 +670,123 @@ class TestSupplyRiskPolicy:
         mat, _, diag = estimate_rank_correlation(obs, min_overlap=4)
         assert mat[0, 1] > 0.7
         assert diag["pairs_estimated"] == 1
+
+
+# ── Policy branches on a real (in-memory) database ──────────────────────
+
+class TestPolicyBranchesEndToEnd:
+    """Exercise correlated_yield_scenarios' decision paths against DuckDB.
+
+    Every branch must report WHICH dependence assumption it used, because a
+    plan is only auditable if the assumption behind it is recoverable.
+    """
+
+    @staticmethod
+    def _conn(n_weeks: int = 30, n_suppliers: int = 4, seed: int = 0):
+        import duckdb
+
+        root = __import__("pathlib").Path(__file__).resolve().parents[2]
+        c = duckdb.connect(":memory:")
+        for sql in sorted((root / "db" / "migrations").glob("*.sql")):
+            c.execute(sql.read_text())
+        import pandas as pd
+
+        rng = np.random.default_rng(seed)
+        common = rng.normal(0, 1, n_weeks)
+        # Genuinely distinct calendar weeks — packing days into a month
+        # collapses them under DATE_TRUNC('week') and the estimator would
+        # (correctly) refuse for lack of joint periods.
+        weeks = pd.date_range("2024-01-01", periods=n_weeks, freq="7D")
+        rows = []
+        for s in range(n_suppliers):
+            for w in range(n_weeks):
+                fill = float(np.clip(0.88 + 0.05 * common[w]
+                                     + 0.02 * rng.normal(), 0.2, 1.0))
+                ordered = 500.0
+                rows.append((f"D-{s}-{w}", f"S{s}", f"S{s}", "P1", "Tomato",
+                             weeks[w].date().isoformat(),
+                             ordered, ordered * fill, ordered * fill))
+        c.executemany(
+            "INSERT INTO stg_supplier_deliveries (delivery_id, supplier_id,"
+            " supplier_name, product_id, product_name, delivery_date,"
+            " ordered_quantity, delivered_quantity, accepted_quantity)"
+            " VALUES (?,?,?,?,?,?,?,?,?)", rows)
+        return c
+
+    def test_independent_policy_reports_understatement(self):
+        from risk.correlated_scenarios import correlated_yield_scenarios
+
+        conn = self._conn()
+        draws, diag = correlated_yield_scenarios(
+            conn, list(range(20)), policy=SupplyRiskPolicy(mode="independent"))
+        assert diag["policy_mode"] == "independent"
+        assert "UNDERSTATED" in diag["policy_description"]
+        assert diag["mean_pairwise_rank_correlation"] == 0.0
+        assert len(draws) == 20 * 4
+
+    def test_equicorrelated_policy_uses_supplied_rho(self):
+        from risk.correlated_scenarios import correlated_yield_scenarios
+
+        conn = self._conn()
+        _, diag = correlated_yield_scenarios(
+            conn, list(range(20)),
+            policy=SupplyRiskPolicy(mode="equicorrelated", rho=0.5, copula="t"))
+        assert diag["correlation_source"] == "operator_supplied_rho"
+        assert diag["mean_pairwise_rank_correlation"] == 0.5
+        assert diag["shrinkage_weight"] == 0.0
+
+    def test_estimated_policy_shrinks_and_validates(self):
+        from risk.correlated_scenarios import correlated_yield_scenarios
+
+        conn = self._conn(n_weeks=30)
+        _, diag = correlated_yield_scenarios(
+            conn, list(range(20)), policy=SupplyRiskPolicy(mode="estimated"))
+        assert diag["correlation_source"] == "estimated_from_history_shrunk"
+        assert 0.1 <= diag["shrinkage_weight"] <= 0.9
+        # Shrinkage must move the estimate toward zero.
+        assert abs(diag["mean_pairwise_rank_correlation"]) < abs(
+            diag["raw_mean_pairwise_rank_correlation"]) + 1e-9
+        assert diag["correlation_validation"]["valid"] is True
+
+    def test_estimation_refused_when_history_too_short(self):
+        """Below the threshold we must refuse, not guess."""
+        from risk.correlated_scenarios import correlated_yield_scenarios
+
+        conn = self._conn(n_weeks=5)
+        _, diag = correlated_yield_scenarios(
+            conn, list(range(10)),
+            policy=SupplyRiskPolicy(mode="estimated",
+                                    min_periods_for_estimation=12))
+        assert diag["correlation_source"] == "refused_insufficient_history"
+        assert diag["mean_pairwise_rank_correlation"] == 0.0
+        assert "degraded to INDEPENDENT" in diag["note"]
+
+    def test_no_suppliers_is_reported_not_crashed(self):
+        import duckdb
+
+        from risk.correlated_scenarios import correlated_yield_scenarios
+
+        root = __import__("pathlib").Path(__file__).resolve().parents[2]
+        c = duckdb.connect(":memory:")
+        for sql in sorted((root / "db" / "migrations").glob("*.sql")):
+            c.execute(sql.read_text())
+        draws, diag = correlated_yield_scenarios(c, [0, 1])
+        assert draws == {} and diag["status"] == "no_suppliers"
+
+    def test_correlated_draws_raise_aggregate_spread(self):
+        """The substantive claim, measured through the real entry point."""
+        from risk.correlated_scenarios import correlated_yield_scenarios
+
+        conn = self._conn(n_weeks=30)
+        ids = list(range(400))
+
+        def agg_sd(policy):
+            d, _ = correlated_yield_scenarios(conn, ids, policy=policy)
+            by_scen: dict = {}
+            for (omega, _sid), v in d.items():
+                by_scen.setdefault(omega, []).append(v)
+            return float(np.std([np.mean(v) for v in by_scen.values()]))
+
+        indep = agg_sd(SupplyRiskPolicy(mode="independent"))
+        corr = agg_sd(SupplyRiskPolicy(mode="equicorrelated", rho=0.7, copula="t"))
+        assert corr > indep
