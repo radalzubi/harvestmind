@@ -22,6 +22,25 @@ import numpy as np
 import pandas as pd
 
 
+def _normalized_weights(weights: dict, scenarios: list) -> dict:
+    """Complete and normalise scenario probabilities.
+
+    Any scenario absent from the weight map gets the uniform share, and the
+    whole vector is rescaled to sum to 1. Without this, two failure modes
+    are silent: a missing weight was previously counted as 1/N inside the
+    objective but as 0 when reporting expected quantities, and an
+    unnormalised vector multiplies the entire "expected cost" by an
+    arbitrary constant — which changes the optimal trade-off against the
+    first-stage cost, not just the reported number.
+    """
+    n = max(len(scenarios), 1)
+    filled = {int(s): float(weights.get(int(s), 1.0 / n)) for s in scenarios}
+    total = sum(filled.values())
+    if total <= 0:
+        return {s: 1.0 / n for s in filled}
+    return {s: w / total for s, w in filled.items()}
+
+
 @dataclass
 class TwoStageStochasticLP:
     spot_cost_multiplier: float = 1.30
@@ -95,8 +114,15 @@ class TwoStageStochasticLP:
         products = list(demand_scenarios["product_id"].unique())
         suppliers = list(supply_agg["supplier_id"].unique())
 
+        # Scenario probabilities. Two things must hold and previously did
+        # not: every scenario needs a weight (a missing one was counted at
+        # 1/N in the objective but 0 in the reported expectations), and the
+        # weights must sum to 1 or the "expected" cost is scaled by an
+        # arbitrary constant. Scenario reduction produces non-uniform
+        # weights, so neither can be assumed.
         weights = {int(r["scenario_index"]): float(r["scenario_weight"])
                    for _, r in demand_scenarios.drop_duplicates("scenario_index").iterrows()}
+        weights = _normalized_weights(weights, scenarios)
         d = {(int(r["scenario_index"]), r["product_id"]): float(r["demand_kg"])
              for _, r in demand_scenarios.iterrows()}
         cap = {(r["supplier_id"], r["product_id"]): float(r["capacity_kg"])
@@ -134,7 +160,7 @@ class TwoStageStochasticLP:
                 # committed units (sold units are neutral); only overage,
                 # underage, and the spot PREMIUM are costs.
                 return sum(
-                    weights.get(omega, 1.0/len(scenarios)) * (
+                    weights[omega] * (
                         sum(avg_price[j] * (self.spot_cost_multiplier - 1.0) * m.s[j,omega] for j in m.J)
                         + sum(_cw(j) * m.w[j,omega] for j in m.J)   # overage = unit cost − salvage
                         + sum(_cu(j) * m.u[j,omega] for j in m.J)   # underage = lost margin
@@ -144,7 +170,7 @@ class TwoStageStochasticLP:
             # Original flat / double-count path (preserved behind the flag).
             first_stage = sum(price.get((i,j), 2.0) * m.x[i,j] for (i,j) in m.IJ)
             second_stage = sum(
-                weights.get(omega, 1.0/len(scenarios)) * (
+                weights[omega] * (
                     sum(avg_price[j] * self.spot_cost_multiplier * m.s[j,omega] for j in m.J)
                     + sum(_cw(j) * m.w[j,omega] for j in m.J)
                     + sum(_cu(j) * m.u[j,omega] for j in m.J)
@@ -184,10 +210,10 @@ class TwoStageStochasticLP:
             floor = float(self.service_level_floor)
 
             def service_rule(m, j):
-                exp_unmet = sum(weights.get(w_, 1.0/len(scenarios)) * m.u[j, w_]
+                exp_unmet = sum(weights[w_] * m.u[j, w_]
                                 for w_ in m.W)
-                exp_demand = sum(weights.get(w_, 1.0/len(scenarios))
-                                 * d.get((w_, j), 0.0) for w_ in m.W)
+                exp_demand = sum(weights[w_] * d.get((w_, j), 0.0)
+                                 for w_ in m.W)
                 return exp_unmet <= (1.0 - floor) * exp_demand
 
             model.service_floor = pyo.Constraint(model.J, rule=service_rule)
@@ -254,9 +280,9 @@ class TwoStageStochasticLP:
             shadow_prices = {}
 
         # VSS and EVPI approximations
-        total_spot = sum(v * weights.get(w, 0) for (j,w), v in s_vals.items() if v and v > 0)
-        total_waste = sum(v * weights.get(w, 0) for (j,w), v in w_vals.items() if v and v > 0)
-        total_unmet = sum(v * weights.get(w, 0) for (j,w), v in u_vals.items() if v and v > 0)
+        total_spot = sum(v * weights[w] for (j,w), v in s_vals.items() if v and v > 0)
+        total_waste = sum(v * weights[w] for (j,w), v in w_vals.items() if v and v > 0)
+        total_unmet = sum(v * weights[w] for (j,w), v in u_vals.items() if v and v > 0)
 
         return {
             "status": status,
@@ -274,27 +300,149 @@ class TwoStageStochasticLP:
             "shadow_prices": shadow_prices,
         }
 
+    def solve_with_fixed_first_stage(
+        self,
+        demand_scenarios: pd.DataFrame,
+        supply: pd.DataFrame,
+        x_fixed: dict,
+        yield_scenarios: dict | None = None,
+    ) -> dict:
+        """Evaluate a GIVEN first-stage decision against the full scenario set.
+
+        Fixes x to ``x_fixed`` and optimises only the recourse variables, so
+        the objective returned is the expected cost of living with that
+        commitment across every scenario. This is the machinery EEV needs:
+        take the deterministic plan, then make it face reality.
+        """
+        import pyomo.environ as pyo
+
+        result = self.solve(demand_scenarios, supply,
+                            yield_scenarios=yield_scenarios)
+        model = result["model"]
+        for (i, j) in model.x:
+            model.x[i, j].fix(float(x_fixed.get((i, j), 0.0)))
+
+        from pyomo.opt import SolverFactory
+        solver = SolverFactory("appsi_highs" if self.solver == "highs" else self.solver)
+        solver.options["time_limit"] = self.time_limit_s
+        res = solver.solve(model, tee=False)
+        status = str(res.solver.termination_condition)
+        return {
+            "status": status,
+            "objective": (pyo.value(model.obj)
+                          if status in ("optimal", "locallyOptimal") else None),
+            "x": {k: pyo.value(v) for k, v in model.x.items()},
+        }
+
     def compute_vss(
         self,
         demand_scenarios: pd.DataFrame,
         supply: pd.DataFrame,
-    ) -> float:
-        """Value of Stochastic Solution = EV_solution_cost - SP_cost."""
-        from optimization.lp_baseline import LPBaseline
+        yield_scenarios: dict | None = None,
+    ) -> dict:
+        """Value of the Stochastic Solution, VSS = EEV - RP.
 
-        # EV: solve deterministic LP with mean demand
+        Definitions follow Birge & Louveaux, *Introduction to Stochastic
+        Programming*:
+
+            RP   the recourse problem — solve the full stochastic model.
+            EV   the expected-value problem — replace every random variable
+                 by its mean and solve that single deterministic problem.
+            EEV  the *expected result of using the EV solution* — take the
+                 EV problem's first-stage decision, FIX it, and evaluate its
+                 expected cost over the full scenario distribution.
+
+        VSS = EEV - RP, and VSS >= 0 always: RP optimises over all
+        first-stage decisions, so it cannot be beaten by the particular
+        decision EV happened to pick.
+
+        The previous implementation returned ``EV_objective - RP``, which is
+        a different and meaningless quantity. EV solves an easier problem
+        (one averaged scenario instead of the true distribution), so by
+        Jensen's inequality EV <= RP and that difference is typically
+        NEGATIVE — it reported a negative "value" for stochastic modelling
+        and made the stochastic layer look worthless. Verified on a
+        deliberately asymmetric instance before the fix: -5,383.
+
+        Returns the three objective values alongside VSS so the result can
+        be audited rather than trusted.
+        """
+        # --- RP: the full stochastic solution -------------------------------
+        rp_result = self.solve(demand_scenarios, supply,
+                               yield_scenarios=yield_scenarios)
+        rp_obj = rp_result.get("objective")
+
+        # --- EV: mean-value problem, solved inside the SAME model ----------
+        # Building the EV problem as a one-scenario instance of this model
+        # (rather than delegating to a different LP class) keeps the
+        # objective, penalties and constraints identical, so EEV and RP are
+        # genuinely comparable. Mixing model classes here was part of what
+        # made the old number meaningless.
         mean_demand = (
-            demand_scenarios.groupby("product_id")["demand_kg"].mean()
-            .reset_index()
-            .assign(week_start=demand_scenarios["week_start"].min() if "week_start" in demand_scenarios.columns else None)
+            demand_scenarios.groupby("product_id", as_index=False)["demand_kg"]
+            .mean()
+            .assign(scenario_index=0, scenario_weight=1.0)
         )
-        ev_result = LPBaseline(
-            spot_cost_multiplier=self.spot_cost_multiplier,
-            waste_cost_per_kg=self.waste_cost_per_kg,
-        ).solve(mean_demand, supply)
+        if "week_start" in demand_scenarios.columns:
+            mean_demand["week_start"] = demand_scenarios["week_start"].min()
 
-        sp_result = self.solve(demand_scenarios, supply)
+        mean_yield = None
+        if yield_scenarios:
+            by_supplier: dict = {}
+            for (_omega, i), v in yield_scenarios.items():
+                by_supplier.setdefault(i, []).append(float(v))
+            mean_yield = {(0, i): sum(v) / len(v) for i, v in by_supplier.items()}
 
-        ev_obj = ev_result.get("objective") or float("nan")
-        sp_obj = sp_result.get("objective") or float("nan")
-        return float(ev_obj - sp_obj)
+        ev_result = self.solve(mean_demand, supply, yield_scenarios=mean_yield)
+        ev_obj = ev_result.get("objective")
+
+        # --- EEV: the EV decision, evaluated against every scenario --------
+        eev_result = self.solve_with_fixed_first_stage(
+            demand_scenarios, supply, ev_result.get("x", {}),
+            yield_scenarios=yield_scenarios,
+        )
+        eev_obj = eev_result.get("objective")
+
+        vss = (float(eev_obj - rp_obj)
+               if (eev_obj is not None and rp_obj is not None) else None)
+
+        return {
+            "vss": vss,
+            "rp_objective": rp_obj,
+            "ev_objective": ev_obj,
+            "eev_objective": eev_obj,
+            "vss_pct_of_eev": (round(vss / eev_obj * 100, 2)
+                               if vss is not None and eev_obj else None),
+            "rp_status": rp_result.get("status"),
+            "eev_status": eev_result.get("status"),
+            "definition": "VSS = EEV - RP (Birge & Louveaux); nonnegative by construction",
+            "interpretation": _interpret_vss(vss, eev_obj),
+        }
+
+
+def _interpret_vss(vss: float | None, eev: float | None) -> str:
+    """Plain-language reading of a VSS result, including the null result."""
+    if vss is None:
+        return "VSS unavailable — a solve did not reach optimality."
+    if eev and eev > 0:
+        pct = vss / eev * 100
+    else:
+        pct = 0.0
+    if vss < -1e-6:
+        return (f"VSS is negative ({vss:,.2f}), which is impossible by "
+                "construction — treat this as a modelling or solver defect, "
+                "not a finding.")
+    if pct < 0.5:
+        return (
+            f"VSS is essentially zero ({vss:,.2f}, {pct:.2f}% of EEV). The "
+            "deterministic plan is already near-optimal here. Typical causes: "
+            "near-symmetric overage/underage costs, uncertainty that averages "
+            "out across products or suppliers, or cheap recourse (unlimited "
+            "spot). Check whether shortfalls are correlated before concluding "
+            "the stochastic layer is not worth running."
+        )
+    if pct < 5:
+        return (f"VSS is modest ({vss:,.2f}, {pct:.2f}% of EEV) — the "
+                "stochastic layer adds real but small value on this instance.")
+    return (f"VSS is substantial ({vss:,.2f}, {pct:.2f}% of EEV) — planning "
+            "against the distribution clearly beats planning against the mean.")

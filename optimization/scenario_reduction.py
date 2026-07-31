@@ -1,7 +1,30 @@
-"""Scenario reduction via Heitsch-Römisch (2003) fast forward selection.
+"""Scenario reduction by backward reduction with probability redistribution.
 
-Reduces N SAA scenarios to K representative scenarios while preserving
-the Wasserstein distance of the original distribution.
+Reduces N SAA scenarios to K representatives, repeatedly deleting the
+scenario whose removal costs least in probability-metric terms and
+transferring its probability mass to its nearest surviving neighbour.
+
+Reference
+---------
+Dupačová, J., Gröwe-Kuska, N. & Römisch, W. (2003). "Scenario reduction in
+stochastic programming: an approach using probability metrics."
+*Mathematical Programming* 95(3):493-511. doi:10.1007/s10107-002-0331-0
+
+The metric that justifies this construction is a Fortet-Mourier-type
+probability metric, chosen because stochastic-programming stability results
+are proven with respect to that class — "Wasserstein" is a loose descriptor
+here, exact only for order-1 moment matching.
+
+Naming note: this module previously described itself as "fast forward
+selection". The implemented algorithm is BACKWARD REDUCTION, which is a
+different heuristic from the same literature; fast forward selection is a
+later Heitsch & Römisch refinement. The implementation was correct — only
+the label was wrong.
+
+Downstream consequence worth knowing: reduction deliberately produces
+NON-UNIFORM scenario weights. Any consumer that averages with a uniform
+1/N after this point is computing the wrong estimator (this was a real
+defect in the CVaR module).
 """
 
 from __future__ import annotations

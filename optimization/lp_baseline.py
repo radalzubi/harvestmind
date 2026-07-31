@@ -63,6 +63,20 @@ class LPBaseline:
         price = {(r["supplier_id"], r["product_id"], r["week_start"]): r["price_per_kg"]
                  for _, r in supply.iterrows()}
 
+        # Reference price per product, used to price SPOT purchases.
+        # Previously the spot terms looked up price[(None, j, t)] — a key that
+        # can never exist, since the dict is keyed by real supplier ids. Every
+        # spot purchase therefore silently priced at the 2.0 fallback. With
+        # real contract prices above 2.0 that made spot look cheaper than any
+        # contract, so the LP committed nothing and bought everything on spot.
+        _by_product: dict[str, list[float]] = {}
+        for (_i, j, _t), p in price.items():
+            _by_product.setdefault(j, []).append(float(p))
+        avg_price = {j: (sum(v) / len(v)) for j, v in _by_product.items()}
+
+        def _spot_price(j) -> float:
+            return avg_price.get(j, 2.0)
+
         # NOTE: the `contracts` argument is currently advisory — the LP does not
         # yet enforce contract min/max volume bounds or contracted prices in the
         # objective. Surface this clearly rather than silently dropping the data.
@@ -102,7 +116,7 @@ class LPBaseline:
                 # Newsvendor recourse economics: no procurement charge on
                 # committed-and-sold units; only overage, underage, spot premium.
                 spot_prem = sum(
-                    price.get((None, j, t), 2.0) * (self.spot_cost_multiplier - 1.0) * m.s[j,t]
+                    _spot_price(j) * (self.spot_cost_multiplier - 1.0) * m.s[j,t]
                     for j in m.J for t in m.T
                 )
                 overage = sum(_cw(j) * m.w[j,t] for j in m.J for t in m.T)
@@ -114,7 +128,7 @@ class LPBaseline:
                 for (i,j,t) in m.IJT
             )
             spot_cost = sum(
-                price.get((None, j, t), 2.0) * self.spot_cost_multiplier * m.s[j,t]
+                _spot_price(j) * self.spot_cost_multiplier * m.s[j,t]
                 for j in m.J for t in m.T
             )
             waste_cost = sum(_cw(j) * m.w[j,t] for j in m.J for t in m.T)
