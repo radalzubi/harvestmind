@@ -169,36 +169,14 @@ def yield_scenarios_from_distributions(
     conn: duckdb.DuckDBPyConnection,
     scenario_indices: list[int],
     seed: int = 42,
-    correlated: bool = True,
-    rho: float | None = None,
-    copula: str = "t",
 ) -> dict:
     """Per-scenario supplier fill draws from the predictive Betas.
 
     Returns {(scenario_index, supplier_id): fill}. This is how supply
     uncertainty enters the optimizer as a genuine stage-2 outcome — the
-    commitment is made before the fill resolves.
-
-    ``correlated=True`` (default) couples the draws with a copula so that
-    suppliers sharing a weather region fail together, while preserving each
-    supplier's calibrated Beta marginal exactly. Independent draws — the
-    old behaviour, still available with ``correlated=False`` — average out
-    across suppliers and make aggregate supply look far tighter than it is;
-    that artefact is what drove the value of the stochastic solution to
-    zero in earlier testing. See risk/correlated_scenarios.py.
+    commitment is made before the fill resolves — replacing the older
+    one-number downside-discounted capacity.
     """
-    if correlated:
-        from risk.correlated_scenarios import correlated_yield_scenarios
-        try:
-            draws, _diag = correlated_yield_scenarios(
-                conn, scenario_indices, rho=rho, copula=copula, seed=seed)
-            if draws:
-                return draws
-        except Exception:
-            # Never let a dependence-modelling failure take down planning;
-            # fall through to the independent sampler, which is a valid if
-            # optimistic model rather than no answer at all.
-            pass
     import numpy as np
     from scipy import stats as _st
 
