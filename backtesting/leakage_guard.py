@@ -103,8 +103,21 @@ def assert_dates_in_window(
     leakage (date < window_start) AND post-horizon leakage (date > window_end).
     Use this on horizon-window slices like realized supply/demand to confirm
     the recourse simulator only sees data from the evaluation period.
+
+    FAILS CLOSED on a missing date column. This previously returned early
+    when ``date_col`` was absent, so a renamed or differently-spelled column
+    turned the guard into a no-op that reported success — the single worst
+    failure mode for a leakage check, because the caller believes it ran.
+    An empty frame is still accepted: there are genuinely no rows to leak,
+    which is different from being unable to look.
     """
-    if df.empty or date_col not in df.columns:
+    if date_col not in df.columns:
+        raise LeakageError(
+            f"assert_dates_in_window: date column {date_col!r} not present "
+            f"(columns={list(df.columns)}); cannot verify the window "
+            f"[{window_start}, {window_end}]. Refusing to pass silently."
+        )
+    if df.empty:
         return
     start_d = _to_date(window_start)
     end_d = _to_date(window_end)
