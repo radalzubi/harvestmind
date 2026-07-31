@@ -1,0 +1,558 @@
+"""Tests for the probabilistic supply-forecast layer.
+
+Where possible these assert STATISTICAL PROPERTIES on controlled synthetic
+data — conformal coverage actually reaching its nominal level, shrinkage
+actually pulling sparse groups toward the population, copulas actually
+preserving marginals — rather than pinning outputs to magic numbers.
+"""
+
+from __future__ import annotations
+
+from datetime import date, datetime, timedelta, timezone
+
+import numpy as np
+import pytest
+from scipy import stats
+
+from forecasting.yield_uncertainty import (
+    ClimatologyModel,
+    ConformalCalibrator,
+    DataTier,
+    ForecastValidationError,
+    GradientBoostedQuantileModel,
+    MondrianConformalCalibrator,
+    PooledEmpiricalModel,
+    ProbabilisticForecast,
+    QuantityKind,
+    classify_data_tier,
+    conformal_quantile,
+    conformity_scores,
+    crps_sample,
+    empirical_coverage,
+    evaluate_forecasts,
+    min_calibration_size,
+    pinball_loss,
+    pit_uniformity,
+    rearrange,
+    shrinkage_weight,
+    split_time_aware,
+    weighted_interval_score,
+)
+from risk.correlated_scenarios import (
+    CopulaScenarioGenerator,
+    equicorrelation_matrix,
+    estimate_rank_correlation,
+    nearest_positive_definite,
+    pearson_to_spearman,
+    spearman_to_pearson,
+)
+
+NOW = datetime(2025, 6, 1, tzinfo=timezone.utc)
+T0, T1 = date(2025, 6, 10), date(2025, 6, 16)
+
+
+def _forecast(**over) -> ProbabilisticForecast:
+    kw = dict(
+        forecast_id="F1", issued_at=NOW, information_cutoff=NOW,
+        target_start=T0, target_end=T1,
+        entity_key={"supplier_id": "S1"},
+        quantity_kind=QuantityKind.AVAILABLE_SUPPLY, unit="kg",
+        quantiles={0.05: 50.0, 0.10: 60.0, 0.25: 80.0, 0.50: 100.0,
+                   0.75: 120.0, 0.90: 140.0, 0.95: 150.0},
+    )
+    kw.update(over)
+    return ProbabilisticForecast(**kw)
+
+
+# ── Contract ────────────────────────────────────────────────────────────
+
+class TestForecastContract:
+    def test_valid_forecast_passes(self):
+        _forecast().validate()
+
+    def test_rejects_quantile_crossing(self):
+        fc = _forecast(quantiles={0.10: 140.0, 0.50: 100.0, 0.90: 60.0})
+        with pytest.raises(ForecastValidationError, match="crossing"):
+            fc.validate()
+
+    def test_rejects_negative_quantity(self):
+        with pytest.raises(ForecastValidationError, match="negative"):
+            _forecast(quantiles={0.10: -1.0, 0.50: 10.0, 0.90: 20.0}).validate()
+
+    def test_rejects_nan_and_inf(self):
+        for bad in (float("nan"), float("inf")):
+            with pytest.raises(ForecastValidationError, match="finite"):
+                _forecast(quantiles={0.10: 1.0, 0.50: bad, 0.90: 3.0}).validate()
+
+    def test_rejects_cutoff_after_issue(self):
+        """The core leakage invariant at contract level."""
+        with pytest.raises(ForecastValidationError, match="after"):
+            _forecast(information_cutoff=NOW + timedelta(days=1)).validate()
+
+    def test_rejects_training_cutoff_after_information_cutoff(self):
+        with pytest.raises(ForecastValidationError, match="training_cutoff"):
+            _forecast(training_cutoff=date(2025, 12, 31)).validate()
+
+    def test_rejects_inverted_target_window(self):
+        with pytest.raises(ForecastValidationError, match="precedes"):
+            _forecast(target_start=T1, target_end=T0).validate()
+
+    def test_uncalibrated_forecast_is_labelled(self):
+        fc = _forecast()
+        fc.validate()
+        assert any("uncalibrated" in w for w in fc.warnings)
+
+    def test_horizon_and_interval_helpers(self):
+        fc = _forecast()
+        assert fc.horizon_days == (T0 - NOW.date()).days
+        lo, hi = fc.interval(0.80)
+        assert (lo, hi) == (60.0, 140.0)
+        assert fc.median == 100.0
+        assert fc.relative_width == pytest.approx(0.8)
+
+    def test_serialization_is_deterministic_and_json_safe(self):
+        import json
+        d1 = _forecast().to_dict()
+        d2 = _forecast().to_dict()
+        assert json.dumps(d1) == json.dumps(d2)
+        assert list(d1) == sorted(d1)
+        assert d1["quantiles"]["q50"] == 100.0
+
+    def test_rearrange_fixes_crossing_and_preserves_values(self):
+        out = rearrange({0.1: 140.0, 0.5: 100.0, 0.9: 60.0})
+        assert list(out.values()) == [60.0, 100.0, 140.0]
+        assert sorted(out.values()) == sorted([140.0, 100.0, 60.0])
+
+    def test_rejects_negative_samples(self):
+        with pytest.raises(ForecastValidationError, match="negative"):
+            _forecast(samples=[1.0, -2.0]).validate()
+
+
+# ── Data tiers and pooling ──────────────────────────────────────────────
+
+class TestDataTiers:
+    def test_seasons_drive_the_tier(self):
+        assert classify_data_tier(1000, n_seasons=0) == DataTier.NONE
+        assert classify_data_tier(1000, n_seasons=1) == DataTier.SINGLE_SEASON
+        assert classify_data_tier(1000, n_seasons=3) == DataTier.SPARSE
+        assert classify_data_tier(1000, n_seasons=5) == DataTier.ADEQUATE
+        assert classify_data_tier(1000, n_seasons=10) == DataTier.RICH
+
+    def test_row_count_alone_never_claims_more_than_sparse(self):
+        """200 rows from one season say nothing about year-to-year variation."""
+        assert classify_data_tier(200, n_seasons=None) == DataTier.SPARSE
+
+    def test_shrinkage_weight_bounds(self):
+        assert shrinkage_weight(0, 1.0, 1.0) == 0.0
+        assert 0 < shrinkage_weight(3, 1.0, 1.0) < 1
+        assert shrinkage_weight(1000, 1.0, 1.0) > 0.99
+
+    def test_zero_between_variance_gives_no_weight_to_group(self):
+        assert shrinkage_weight(10, 1.0, 0.0) == 0.0
+
+
+class TestPooledEmpiricalModel:
+    @staticmethod
+    def _groups():
+        rng = np.random.default_rng(0)
+        g = {f"S{i}": rng.normal(0.85 + 0.02 * i, 0.08, size=40)
+             for i in range(6)}
+        g["SPARSE"] = np.array([0.90, 0.905, 0.895])   # 3 near-identical obs
+        return g
+
+    def test_sparse_group_is_not_given_a_narrow_interval(self):
+        """The trap this model exists to avoid.
+
+        SPARSE has three observations spanning under 1%. A naive empirical
+        quantile would hand back a ~1%-wide interval and the optimizer
+        would commit against it. Pooling must keep it comparably wide to
+        the data-rich groups.
+        """
+        m = PooledEmpiricalModel().fit(self._groups())
+        sparse = m.predict("SPARSE", {"k": "SPARSE"}, T0, T1)
+        rich = m.predict("S0", {"k": "S0"}, T0, T1)
+        naive_width = 0.905 - 0.895
+        sparse_width = sparse.quantiles[0.95] - sparse.quantiles[0.05]
+        assert sparse_width > 10 * naive_width
+        assert sparse_width >= rich.quantiles[0.95] - rich.quantiles[0.05]
+
+    def test_variance_is_pooled_not_just_the_mean(self):
+        """Regression: shrinking only the mean left a real hole.
+
+        A 3-observation group whose points happened to land within 1% got a
+        near-zero sample variance, so the classical weight
+        n/(n + within/between) read that as high precision and gave the
+        group 0.99 weight on its own data — reproducing the exact falsely
+        narrow interval the pooling exists to prevent. The variance
+        estimate must itself be pooled on its degrees of freedom.
+        """
+        from forecasting.yield_uncertainty.baseline import pooled_within_variance
+
+        tight = np.array([0.90, 0.905, 0.895])     # sample var ~2.5e-5
+        pop_var = 0.0064                            # population var (sd 0.08)
+        pooled = pooled_within_variance(tight, pop_var)
+        assert pooled > 10 * float(np.var(tight, ddof=1))
+        assert pooled < pop_var          # but still moves toward the group
+        # A data-rich group keeps its own variance.
+        rich = np.random.default_rng(0).normal(0.9, 0.01, 200)
+        assert pooled_within_variance(rich, pop_var) < 0.1 * pop_var
+
+    def test_unseen_group_falls_back_to_population(self):
+        m = PooledEmpiricalModel().fit(self._groups())
+        fc = m.predict("NEVER_SEEN", {"k": "x"}, T0, T1)
+        assert fc.data_tier == DataTier.NONE
+        assert fc.n_observations == 0
+        assert "no history" in (fc.fallback_reason or "")
+        fc.validate()
+
+    def test_rich_group_keeps_its_own_mean(self):
+        rng = np.random.default_rng(1)
+        groups = {f"S{i}": rng.normal(0.80, 0.05, 60) for i in range(5)}
+        groups["HIGH"] = rng.normal(0.95, 0.02, 200)
+        m = PooledEmpiricalModel().fit(groups)
+        fc = m.predict("HIGH", {"k": "HIGH"}, T0, T1)
+        # Heavy data -> shrinkage is mild, median stays near its own mean.
+        assert fc.median > 0.90
+
+    def test_scale_converts_fraction_to_quantity(self):
+        m = PooledEmpiricalModel().fit(self._groups())
+        frac = m.predict("S0", {"k": "S0"}, T0, T1)
+        qty = m.predict("S0", {"k": "S0"}, T0, T1, scale=1000.0)
+        assert qty.median == pytest.approx(frac.median * 1000.0)
+
+    def test_all_outputs_validate(self):
+        m = PooledEmpiricalModel().fit(self._groups())
+        for k in list(self._groups()) + ["UNSEEN"]:
+            m.predict(k, {"k": k}, T0, T1).validate()
+
+
+class TestClimatology:
+    def test_falls_back_when_period_too_thin(self):
+        rng = np.random.default_rng(2)
+        vals = rng.normal(100, 20, 200)
+        periods = rng.integers(1, 53, 200)
+        clim = ClimatologyModel().fit(vals, periods)
+        q = clim.quantiles_for(999)          # a period never observed
+        assert q[0.50] == pytest.approx(float(np.quantile(vals, 0.50)), rel=0.1)
+
+
+# ── Conformal calibration ───────────────────────────────────────────────
+
+class TestConformal:
+    def test_conformity_score_sign(self):
+        # inside the interval -> negative; outside -> positive
+        s = conformity_scores(np.array([5.0, 15.0]), np.array([0.0, 0.0]),
+                              np.array([10.0, 10.0]))
+        assert s[0] < 0 and s[1] > 0
+
+    def test_finite_sample_correction_needs_enough_points(self):
+        """alpha=0.1 needs n>=9; below that we must refuse, not under-cover."""
+        assert min_calibration_size(0.10) == 9
+        assert not np.isfinite(conformal_quantile(np.arange(5.0), 0.10))
+        assert np.isfinite(conformal_quantile(np.arange(50.0), 0.10))
+
+    def test_calibration_achieves_nominal_coverage(self):
+        """The property the whole method exists for.
+
+        Start from a deliberately over-confident interval (far too narrow),
+        calibrate, and check coverage climbs to the nominal 90%.
+        """
+        rng = np.random.default_rng(3)
+        y_cal = rng.normal(100, 20, 500)
+        lo_cal, hi_cal = np.full(500, 98.0), np.full(500, 102.0)  # ~8% coverage
+        cal = ConformalCalibrator(alpha=0.10).fit(y_cal, lo_cal, hi_cal)
+        assert cal.fitted
+
+        y_test = rng.normal(100, 20, 2000)
+        lo, hi = cal.apply(np.full(2000, 98.0), np.full(2000, 102.0))
+        cov = empirical_coverage(y_test, lo, hi)
+        assert 0.86 < cov < 0.94, f"coverage {cov} not near nominal 0.90"
+
+    def test_correction_can_tighten_an_overwide_interval(self):
+        """A negative correction is correct behaviour, not a bug."""
+        rng = np.random.default_rng(4)
+        y = rng.normal(100, 5, 400)
+        cal = ConformalCalibrator(alpha=0.10).fit(
+            y, np.full(400, 0.0), np.full(400, 200.0))
+        assert cal.correction < 0
+
+    def test_lower_bound_floored_at_zero(self):
+        cal = ConformalCalibrator(alpha=0.10)
+        cal.fitted, cal.correction = True, 50.0
+        lo, _ = cal.apply(np.array([10.0]), np.array([20.0]))
+        assert lo[0] == 0.0
+
+    def test_insufficient_data_is_flagged_not_faked(self):
+        cal = ConformalCalibrator(alpha=0.10).fit(
+            np.arange(4.0), np.zeros(4), np.ones(4))
+        assert cal.insufficient_data and not cal.fitted
+        # apply() is then a no-op rather than a wrong correction
+        lo, hi = cal.apply(np.array([1.0]), np.array([2.0]))
+        assert (lo[0], hi[0]) == (1.0, 2.0)
+
+    def test_mondrian_gives_per_group_corrections(self):
+        """Marginal coverage can hide a badly under-covered group."""
+        rng = np.random.default_rng(5)
+        n = 400
+        groups = np.array(["tight"] * n + ["wide"] * n)
+        y = np.concatenate([rng.normal(100, 2, n), rng.normal(100, 30, n)])
+        lo = np.full(2 * n, 98.0)
+        hi = np.full(2 * n, 102.0)
+        cal = MondrianConformalCalibrator(alpha=0.10).fit(y, lo, hi, groups)
+        assert cal.correction_for("wide") > cal.correction_for("tight")
+
+    def test_small_group_falls_back_to_pooled(self):
+        rng = np.random.default_rng(6)
+        groups = np.array(["big"] * 100 + ["tiny"] * 3)
+        y = rng.normal(10, 2, 103)
+        cal = MondrianConformalCalibrator(alpha=0.10).fit(
+            y, np.full(103, 9.0), np.full(103, 11.0), groups)
+        assert "tiny" in cal.fallback_groups
+        assert np.isfinite(cal.correction_for("tiny"))
+
+    def test_time_aware_split_is_chronological(self):
+        """A random split would leak the future into calibration."""
+        train, cal = split_time_aware(100, 0.3)
+        assert train.max() < cal.min()
+        assert cal.size == 30
+
+
+# ── Quantile model ──────────────────────────────────────────────────────
+
+class TestQuantileModel:
+    @staticmethod
+    def _data(n=400, seed=7):
+        rng = np.random.default_rng(seed)
+        x = np.linspace(0, 10, n).reshape(-1, 1)
+        # Heteroscedastic: spread grows with x, so intervals must widen.
+        y = 50 + 5 * x[:, 0] + rng.normal(0, 1 + x[:, 0], n)
+        return x, np.maximum(y, 0.0)
+
+    def test_requires_time_sorted_input(self):
+        """Guard against silently calibrating on a random subset."""
+        x, y = self._data()
+        with pytest.raises(ValueError, match="sorted oldest-first"):
+            GradientBoostedQuantileModel(force_linear=True).fit(
+                x, y, sorted_by_time=False)
+
+    def test_quantiles_are_monotone(self):
+        x, y = self._data()
+        m = GradientBoostedQuantileModel(force_linear=True).fit(x, y)
+        preds, _ = m.predict_quantiles(x)
+        levels = sorted(preds)
+        stacked = np.vstack([preds[lv] for lv in levels])
+        assert np.all(np.diff(stacked, axis=0) >= -1e-9)
+
+    def test_predictions_are_nonnegative(self):
+        x, y = self._data()
+        m = GradientBoostedQuantileModel(force_linear=True).fit(x, y)
+        preds, _ = m.predict_quantiles(x)
+        assert all((p >= 0).all() for p in preds.values())
+
+    def test_intervals_widen_with_heteroscedastic_noise(self):
+        x, y = self._data(n=600)
+        m = GradientBoostedQuantileModel(force_linear=True).fit(x, y)
+        preds, _ = m.predict_quantiles(x)
+        width = preds[0.95] - preds[0.05]
+        assert width[-50:].mean() > width[:50].mean()
+
+    def test_predict_one_returns_valid_contract(self):
+        x, y = self._data()
+        m = GradientBoostedQuantileModel(force_linear=True).fit(
+            x, y, training_cutoff=date(2025, 5, 1))
+        fc = m.predict_one(
+            x[-1], {"supplier_id": "S1"}, T0, T1,
+            information_cutoff=NOW, n_observations=len(y), n_seasons=5)
+        fc.validate()
+        assert fc.data_tier == DataTier.ADEQUATE
+        assert fc.model_family == "lgbm_quantile_cqr"
+        assert fc.calibrated is True
+
+    def test_tiny_dataset_reports_uncalibrated_rather_than_lying(self):
+        x, y = self._data(n=8)
+        m = GradientBoostedQuantileModel(force_linear=True).fit(x, y)
+        fc = m.predict_one(x[-1], {"s": 1}, T0, T1, information_cutoff=NOW,
+                           n_observations=8, n_seasons=1)
+        assert fc.calibrated is False
+        assert fc.data_tier == DataTier.SINGLE_SEASON
+        assert any("uncalibrated" in w for w in fc.warnings)
+
+
+# ── Scoring rules ───────────────────────────────────────────────────────
+
+class TestScoringRules:
+    def test_pinball_is_minimised_at_the_true_quantile(self):
+        """A proper score: optimised by reporting the truth."""
+        rng = np.random.default_rng(8)
+        y = rng.normal(0, 1, 20000)
+        for lv in (0.1, 0.5, 0.9):
+            truth = float(np.quantile(y, lv))
+            best = pinball_loss(y, np.full(y.size, truth), lv)
+            for off in (-0.5, -0.2, 0.2, 0.5):
+                assert pinball_loss(y, np.full(y.size, truth + off), lv) >= best
+
+    def test_pinball_asymmetry_matches_level(self):
+        y = np.array([10.0])
+        # At tau=0.9 under-predicting must hurt more than over-predicting.
+        assert pinball_loss(y, np.array([8.0]), 0.9) > pinball_loss(
+            y, np.array([12.0]), 0.9)
+
+    def test_crps_zero_for_a_perfect_point_forecast(self):
+        assert crps_sample(5.0, np.array([5.0] * 100)) == pytest.approx(0.0)
+
+    def test_crps_rewards_the_better_ensemble(self):
+        rng = np.random.default_rng(9)
+        good = rng.normal(10, 1, 2000)
+        bad = rng.normal(14, 1, 2000)
+        assert crps_sample(10.0, good) < crps_sample(10.0, bad)
+
+    def test_fair_crps_is_less_biased_by_ensemble_size(self):
+        """The naive 2M^2 form flatters small ensembles."""
+        rng = np.random.default_rng(10)
+        big = crps_sample(0.0, rng.normal(0, 1, 5000), fair=True)
+        small_fair = np.mean([crps_sample(0.0, rng.normal(0, 1, 12), fair=True)
+                              for _ in range(400)])
+        small_naive = np.mean([crps_sample(0.0, rng.normal(0, 1, 12), fair=False)
+                               for _ in range(400)])
+        assert abs(small_fair - big) < abs(small_naive - big)
+
+    def test_wis_prefers_calibrated_over_overconfident(self):
+        rng = np.random.default_rng(11)
+        y = rng.normal(100, 10, 1000)
+        good = {0.05: np.full(1000, 100 - 1.645 * 10),
+                0.25: np.full(1000, 100 - 0.674 * 10),
+                0.50: np.full(1000, 100.0),
+                0.75: np.full(1000, 100 + 0.674 * 10),
+                0.95: np.full(1000, 100 + 1.645 * 10)}
+        narrow = {lv: np.full(1000, 100.0) + (v - 100.0) * 0.15
+                  for lv, v in good.items()}
+        assert weighted_interval_score(y, good) < weighted_interval_score(y, narrow)
+
+    def test_coverage_and_tail_reported(self):
+        rng = np.random.default_rng(12)
+        y = rng.normal(0, 1, 4000)
+        preds = {lv: np.full(4000, float(stats.norm.ppf(lv)))
+                 for lv in (0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95)}
+        out = evaluate_forecasts(y, preds)
+        assert out["coverage"]["90%"] == pytest.approx(0.90, abs=0.03)
+        assert out["lower_tail_coverage_p05"] == pytest.approx(0.05, abs=0.02)
+
+    def test_pit_diagnoses_overconfidence(self):
+        """A U-shaped PIT means intervals are too narrow."""
+        rng = np.random.default_rng(13)
+        y = rng.normal(0, 1, 600)
+        samples = rng.normal(0, 0.2, size=(600, 200))   # far too sharp
+        out = pit_uniformity(
+            np.array([float((samples[i] <= y[i]).mean()) for i in range(600)]))
+        assert "too narrow" in out["shape"]
+
+    def test_pit_recognises_good_calibration(self):
+        rng = np.random.default_rng(14)
+        y = rng.normal(0, 1, 800)
+        samples = rng.normal(0, 1, size=(800, 300))
+        out = pit_uniformity(
+            np.array([float((samples[i] <= y[i]).mean()) for i in range(800)]))
+        assert "well calibrated" in out["shape"]
+
+
+# ── Copula scenario generation ──────────────────────────────────────────
+
+class TestCopulaScenarios:
+    def test_spearman_pearson_identity_round_trips(self):
+        """rho_p = 2 sin(pi rho_s / 6), the Gaussian-copula identity."""
+        for rs in (-0.8, -0.3, 0.0, 0.25, 0.6, 0.9):
+            assert pearson_to_spearman(spearman_to_pearson(rs)) == pytest.approx(
+                rs, abs=1e-9)
+
+    def test_identity_matches_closed_form(self):
+        assert spearman_to_pearson(0.5) == pytest.approx(
+            2 * np.sin(np.pi * 0.5 / 6), rel=1e-12)
+
+    def test_marginals_preserved_exactly(self):
+        """The point of a copula: change dependence, not the marginals."""
+        params = {"A": (8.0, 2.0), "B": (5.0, 5.0), "C": (2.0, 8.0)}
+        gen = CopulaScenarioGenerator(copula="gaussian", seed=1)
+        draws = gen.sample_beta_marginals(params, 20000, rho=0.6)
+        for key, (a, b) in params.items():
+            assert draws[key].mean() == pytest.approx(a / (a + b), abs=0.02)
+            assert float(np.quantile(draws[key], 0.10)) == pytest.approx(
+                float(stats.beta.ppf(0.10, a, b)), abs=0.03)
+
+    def test_target_rank_correlation_is_induced(self):
+        params = {"A": (8.0, 2.0), "B": (8.0, 2.0)}
+        gen = CopulaScenarioGenerator(copula="gaussian", seed=2)
+        for target in (0.0, 0.5, 0.85):
+            d = gen.sample_beta_marginals(
+                params, 8000, correlation=equicorrelation_matrix(2, target))
+            got, _ = stats.spearmanr(d["A"], d["B"])
+            assert got == pytest.approx(target, abs=0.08)
+
+    def test_correlated_draws_do_not_average_away(self):
+        """The whole reason this module exists.
+
+        Independent supplier shortfalls cancel across a portfolio, making
+        aggregate supply look tight. Correlated ones stack. The aggregate
+        standard deviation must therefore be materially larger.
+        """
+        params = {f"S{i}": (8.0, 2.0) for i in range(10)}
+        gen = CopulaScenarioGenerator(copula="gaussian", seed=3)
+        indep = gen.sample_beta_marginals(params, 5000, rho=0.0)
+        corr = gen.sample_beta_marginals(params, 5000, rho=0.6)
+        sd_i = np.mean(np.vstack(list(indep.values())), axis=0).std()
+        sd_c = np.mean(np.vstack(list(corr.values())), axis=0).std()
+        assert sd_c > 2.0 * sd_i
+
+    def test_t_copula_has_more_joint_tail_mass_than_gaussian(self):
+        """Gaussian copulas have ZERO tail dependence; t copulas do not.
+
+        Joint severe shortfalls are exactly the scenario a perishable buyer
+        must plan for, so this difference is the reason t is the default.
+        """
+        params = {"A": (8.0, 2.0), "B": (8.0, 2.0)}
+        corr = equicorrelation_matrix(2, 0.6)
+        g = CopulaScenarioGenerator(copula="gaussian", seed=4).sample_beta_marginals(
+            params, 40000, correlation=corr)
+        t = CopulaScenarioGenerator(copula="t", df=3.0, seed=4).sample_beta_marginals(
+            params, 40000, correlation=corr)
+        qg = np.quantile(g["A"], 0.05), np.quantile(g["B"], 0.05)
+        qt = np.quantile(t["A"], 0.05), np.quantile(t["B"], 0.05)
+        joint_g = float(((g["A"] <= qg[0]) & (g["B"] <= qg[1])).mean())
+        joint_t = float(((t["A"] <= qt[0]) & (t["B"] <= qt[1])).mean())
+        assert joint_t > joint_g
+
+    def test_draws_are_deterministic_under_seed(self):
+        params = {"A": (8.0, 2.0), "B": (5.0, 5.0)}
+        a = CopulaScenarioGenerator(seed=99).sample_beta_marginals(params, 500, rho=0.4)
+        b = CopulaScenarioGenerator(seed=99).sample_beta_marginals(params, 500, rho=0.4)
+        for k in params:
+            assert np.allclose(a[k], b[k])
+
+    def test_draws_are_valid_fractions(self):
+        params = {f"S{i}": (2.0, 5.0) for i in range(4)}
+        d = CopulaScenarioGenerator(copula="t", df=3, seed=5).sample_beta_marginals(
+            params, 3000, rho=0.5)
+        for v in d.values():
+            assert np.all((v >= 0.0) & (v <= 1.0)) and np.all(np.isfinite(v))
+
+    def test_indefinite_matrix_is_repaired(self):
+        bad = np.array([[1.0, 0.99, -0.99], [0.99, 1.0, 0.99], [-0.99, 0.99, 1.0]])
+        fixed = nearest_positive_definite(bad)
+        assert np.all(np.linalg.eigvalsh(fixed) > 0)
+        np.linalg.cholesky(fixed)          # must not raise
+        assert np.allclose(np.diag(fixed), 1.0)
+
+    def test_thin_overlap_defaults_rather_than_inventing_correlation(self):
+        obs = {"A": np.array([0.9, 0.8, np.nan, np.nan]),
+               "B": np.array([np.nan, np.nan, 0.7, 0.6])}
+        mat, keys, diag = estimate_rank_correlation(obs, min_overlap=4)
+        assert mat[0, 1] == 0.0
+        assert diag["pairs_defaulted"] == 1
+
+    def test_estimates_correlation_when_history_supports_it(self):
+        rng = np.random.default_rng(15)
+        common = rng.normal(0, 1, 40)
+        obs = {"A": 0.9 + 0.05 * common + 0.01 * rng.normal(0, 1, 40),
+               "B": 0.9 + 0.05 * common + 0.01 * rng.normal(0, 1, 40)}
+        mat, _, diag = estimate_rank_correlation(obs, min_overlap=4)
+        assert mat[0, 1] > 0.7
+        assert diag["pairs_estimated"] == 1

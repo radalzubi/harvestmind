@@ -73,12 +73,51 @@ def build_summation_matrix(
     return S, all_names, bottom_names
 
 
+def coherent_category_totals(
+    base_forecasts: pd.DataFrame,
+    product_meta: pd.DataFrame,
+) -> pd.DataFrame:
+    """Category-level totals that are coherent with the product forecasts.
+
+    THE HONEST STATUS OF THIS MODULE. ``reconcile_mintrace_wls`` below was
+    never wired into the production path, and an audit found the reason is
+    mathematical rather than an oversight: the demand service produces
+    forecasts at the BOTTOM level only (product x buyer). A set of
+    bottom-level forecasts is already coherent by construction, so MinT
+    reconciliation reduces to the summation lift and returns the input
+    unchanged. Reconciliation only does work when forecasts exist at
+    SEVERAL levels and disagree with each other.
+
+    So rather than wire a no-op or delete tested code, this function
+    exposes the part that is genuinely useful today: aggregating product
+    forecasts up to category totals that sum correctly. If the service
+    later forecasts categories directly — where a category-level model can
+    beat the sum of noisy product models — MinT becomes live and
+    ``reconcile_mintrace_wls`` is the implementation to use.
+
+    Returns [crop_category, week_start, forecast_kg].
+    """
+    if base_forecasts.empty:
+        return pd.DataFrame(columns=["crop_category", "week_start", "forecast_kg"])
+    meta = product_meta.rename(columns={"category": "crop_category"})
+    merged = base_forecasts.merge(
+        meta[["product_id", "crop_category"]], on="product_id", how="left")
+    merged["crop_category"] = merged["crop_category"].fillna("uncategorized")
+    return (merged.groupby(["crop_category", "week_start"], as_index=False)
+            ["forecast_kg"].sum())
+
+
 def reconcile_mintrace_wls(
     base_forecasts: pd.DataFrame,
     product_meta: pd.DataFrame,
     residuals: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """MinTrace WLS reconciliation.
+
+    NOT WIRED INTO PRODUCTION, deliberately — see
+    ``coherent_category_totals`` above for why: with bottom-level-only base
+    forecasts this is an identity operation. Kept and tested for the point
+    at which multi-level forecasts exist.
 
     Parameters
     ----------
