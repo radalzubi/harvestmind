@@ -1,6 +1,29 @@
-# Probabilistic Supply Forecasting: Review and Decision Record
+# Commercial Supply Uncertainty: Review and Decision Record
 
-Research basis for `forecasting/yield_uncertainty/` and
+## Scope — read this first
+
+**This implements COMMERCIAL SUPPLY uncertainty, not biological crop
+yield.** The distinction is not pedantic:
+
+| Layer | Status |
+|---|---|
+| Biological yield (kg/ha in the field) | **NOT implemented — research-only** |
+| Harvestable fraction | Not separately modelled |
+| Commercial packout / grade share | Not separately modelled |
+| **Supplier delivery / commercially available supply** | **Implemented** |
+
+What is deployed is a probabilistic model of *how much product a supplier
+actually delivers against an order*, calibrated on delivery records. The
+biological crop-yield mandate is **not complete**, for one deliberate
+modelling reason (double counting, §1) and one data reason: no operator
+currently supplies field, acreage or cultivar data.
+
+Any claim that HarvestMind "forecasts crop yield" would be false. It
+forecasts commercial supply — which is the quantity the optimizer needs.
+
+---
+
+Research basis for `forecasting/supply_uncertainty/` and
 `risk/correlated_scenarios.py`. Claims graded **[V]** verified against the
 primary source, **[P]** partial (abstract or reliable secondary only),
 **[U]** unverified — recorded so it is not mistaken for evidence.
@@ -224,7 +247,52 @@ calibrated Beta marginal exactly while inducing rank correlation.
   That is the precise scenario a perishable buyer must plan for.
   Demarta & McNeil (2005), *Int. Statistical Review* 73(1):111-129 [V].
 
-**Measured effect** (6 suppliers, Beta(8,2) marginals, t-copula df=4):
+#### How correlation is estimated, pooled, and defaulted
+
+Correlated sampling is **off by default** (`SupplyRiskPolicy.mode =
+"independent"`). It changes the recommended commitment, so which
+dependence model is in force is an operator-visible decision, not a
+constant chosen in a module. Two parameters are genuinely unestimated
+today — whether suppliers exhibit joint-tail clustering at all, and the
+t-copula `df` that controls how much — so making the t copula an
+unconditional default would be asserting an empirical claim we cannot
+support.
+
+| Policy mode | Correlation source | When to use |
+|---|---|---|
+| `independent` (default) | none; rho = 0 | Always, until joint history exists. Diagnostics state that aggregate risk is understated if suppliers share a region. |
+| `equicorrelated` | one operator-supplied rho | The operator knows their growers share a weather shed but history is too short to estimate |
+| `estimated` | pairwise Spearman on shared weeks, then shrunk | Genuine joint history exists |
+
+Under `estimated`, in order:
+
+1. **Estimate.** Pairwise Spearman rank correlation of weekly fill rates
+   on weeks both suppliers delivered. Rank, not Pearson, because it is
+   invariant under the monotone marginal transforms the copula applies.
+2. **Default thin pairs.** Any pair with fewer than `min_overlap` (4)
+   shared weeks is set to **0** rather than reporting a correlation
+   computed from two points.
+3. **Pool by shrinkage.** k suppliers imply k(k−1)/2 correlations all
+   estimated from the same n weeks, so the raw matrix is over-fitted. It is
+   shrunk toward equicorrelation with weight
+   `w = clip(params/(params + n_periods), 0.1, 0.9)`. With 6 suppliers
+   (15 pairs) over 10 weeks, w = 0.6 — most of the estimate is discarded,
+   correctly, because fifteen correlations cannot be learned from ten
+   observations. **Both bounds are judgement and are labelled as such.**
+4. **Validate and regularise.** Symmetry, unit diagonal, range and PSD are
+   checked; a failure is repaired by projection to the nearest PSD
+   correlation matrix and the repair is **recorded** in diagnostics
+   (`regularized: true`, plus the pre-repair minimum eigenvalue).
+5. **Refuse when too thin.** Below `min_periods_for_estimation` (12) weeks
+   of joint history, estimation is refused outright and the policy degrades
+   to independent, recorded as `refused_insufficient_history`.
+
+Every branch is reported in the returned diagnostics, so a plan can always
+be traced back to the dependence assumption behind it.
+
+**Measured effect** (6 suppliers, Beta(8,2) marginals, t-copula df=4) —
+this is a SYNTHETIC illustration of mechanism, not a validated operator
+result:
 
 | rank correlation | aggregate supply SD | VSS |
 |---|---|---|
@@ -253,7 +321,7 @@ of stochastic optimization by 56%.
 | Deep probabilistic | 1000s of series | Very poor | Learned | Poor | High | **Rejected for current data** |
 | EVT / GPD tails | 50+ extremes | Unstable | Native | n/a | Low | **Rejected** — too few seasons |
 | Gaussian copula | Joint history | Fallback to equicorrelation | **Zero tail dep.** | n/a | Trivial | **Implemented, not default** |
-| **t copula** | Joint history | Fallback to equicorrelation | **Nonzero tail dep.** | n/a | Trivial | **Production default** |
+| **t copula** | Joint history | Fallback to equicorrelation | **Nonzero tail dep.** | n/a | Trivial | **Opt-in via policy — NOT a default** |
 
 ---
 
@@ -288,8 +356,19 @@ every model, including the baseline.
 4. **Correlation is estimated from short histories.** Pairs with fewer than
    4 overlapping weeks fall back to a default rather than reporting a
    correlation computed from two points.
-5. **The t-copula degrees-of-freedom parameter (default 5) is a judgement,
-   not an estimate.** It controls how strongly joint tails cluster and
-   should be fitted once real multi-supplier history exists.
+5. **The t-copula degrees-of-freedom parameter (5) is a judgement, not an
+   estimate.** It controls how strongly joint tails cluster and should be
+   fitted once real multi-supplier history exists. This is why correlated
+   sampling is opt-in rather than default.
+6. **VSS must be read from the out-of-sample bootstrap interval**
+   (`optimization/vss_evaluation.py`), not the in-sample point estimate.
+   At ~100 scenarios, sampling noise alone is worth roughly 7% of the
+   objective (measured via `optimization/saa_bounds.py`), so a VSS smaller
+   than that band is indistinguishable from noise. Where the interval
+   contains zero, the honest conclusion is that stochastic optimization has
+   not been shown to help on that instance.
+7. **The correlation effect table above is synthetic.** It demonstrates
+   that the mechanism works; it is not evidence about any real operator's
+   suppliers.
 6. **Specialty-crop thresholds remain thin** in the literature generally —
    see `docs/research/weather_agriculture_math.md` §3.

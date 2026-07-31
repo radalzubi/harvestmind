@@ -17,18 +17,18 @@ never needs to know which tier produced a number — but the tier, the
 confidence and any fallback reason travel with the forecast so the
 operator can.
 
-See docs/research/crop_yield_uncertainty_review.md for the method review
+See docs/research/crop_supply_uncertainty_review.md for the method review
 and the decision record behind this design.
 """
 
-from forecasting.yield_uncertainty.baseline import (
+from forecasting.supply_uncertainty.baseline import (
     ClimatologyModel,
     PooledEmpiricalModel,
     PooledPopulation,
     classify_data_tier,
     shrinkage_weight,
 )
-from forecasting.yield_uncertainty.conformal import (
+from forecasting.supply_uncertainty.conformal import (
     ConformalCalibrator,
     MondrianConformalCalibrator,
     conformal_quantile,
@@ -37,7 +37,7 @@ from forecasting.yield_uncertainty.conformal import (
     min_calibration_size,
     split_time_aware,
 )
-from forecasting.yield_uncertainty.contract import (
+from forecasting.supply_uncertainty.contract import (
     QUANTILE_LEVELS,
     Confidence,
     DataTier,
@@ -47,7 +47,7 @@ from forecasting.yield_uncertainty.contract import (
     confidence_for_tier,
     rearrange,
 )
-from forecasting.yield_uncertainty.evaluation import (
+from forecasting.supply_uncertainty.evaluation import (
     coverage_by_level,
     crps_ensemble,
     crps_sample,
@@ -61,7 +61,7 @@ from forecasting.yield_uncertainty.evaluation import (
     tail_coverage,
     weighted_interval_score,
 )
-from forecasting.yield_uncertainty.quantile_model import (
+from forecasting.supply_uncertainty.quantile_model import (
     GradientBoostedQuantileModel,
 )
 

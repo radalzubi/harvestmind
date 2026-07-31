@@ -73,26 +73,130 @@ def pearson_to_spearman(rho_pearson: float | np.ndarray) -> float | np.ndarray:
     return (6.0 / np.pi) * np.arcsin(r / 2.0)
 
 
-def nearest_positive_definite(matrix: np.ndarray, eps: float = 1e-8) -> np.ndarray:
-    """Project a correlation matrix to the nearest PSD one.
+class CorrelationValidationError(ValueError):
+    """A correlation matrix failed a structural check."""
+
+
+def validate_correlation_matrix(
+    matrix: np.ndarray, tol: float = 1e-8,
+) -> dict:
+    """Structural checks on a correlation matrix. Reports, does not repair.
+
+    Checks, in the order a failure would bite:
+      * square and finite
+      * unit diagonal
+      * symmetric
+      * entries within [-1, 1]
+      * positive semidefinite (minimum eigenvalue >= -tol)
+
+    Returned as a diagnostic dict rather than raising, so a caller can log
+    exactly which property failed and how badly before deciding whether to
+    regularise or refuse. ``nearest_positive_semidefinite`` performs the
+    repair; keeping the two separate means a repair is always a recorded
+    decision rather than something that happened invisibly.
+    """
+    m = np.asarray(matrix, dtype=float)
+    out: dict = {"n": None, "square": False, "finite": False,
+                 "unit_diagonal": False, "symmetric": False,
+                 "in_range": False, "positive_semidefinite": False,
+                 "min_eigenvalue": None, "max_asymmetry": None, "valid": False}
+    if m.ndim != 2 or m.shape[0] != m.shape[1] or m.shape[0] == 0:
+        return out
+    out["square"] = True
+    out["n"] = int(m.shape[0])
+    if not np.all(np.isfinite(m)):
+        return out
+    out["finite"] = True
+    out["unit_diagonal"] = bool(np.allclose(np.diag(m), 1.0, atol=1e-8))
+    asym = float(np.max(np.abs(m - m.T))) if m.size else 0.0
+    out["max_asymmetry"] = asym
+    out["symmetric"] = bool(asym <= tol)
+    out["in_range"] = bool(np.all(m >= -1.0 - tol) and np.all(m <= 1.0 + tol))
+    sym = (m + m.T) / 2.0
+    min_eig = float(np.min(np.linalg.eigvalsh(sym)))
+    out["min_eigenvalue"] = min_eig
+    out["positive_semidefinite"] = bool(min_eig >= -tol)
+    out["valid"] = bool(out["unit_diagonal"] and out["symmetric"]
+                        and out["in_range"] and out["positive_semidefinite"])
+    return out
+
+
+def shrink_correlation(
+    matrix: np.ndarray, target_rho: float = 0.0, weight: float = 0.0,
+) -> np.ndarray:
+    """Linear (Ledoit-Wolf style) shrinkage toward a structured target.
+
+    Regularisation for the sparse case. A correlation matrix estimated from
+    short, unequal, partly-overlapping supplier histories is noisy and
+    frequently indefinite; shrinking it toward an equicorrelated target
+    stabilises it before any repair is needed:
+
+        R_shrunk = (1 - w) * R_hat + w * R_target
+
+    ``weight`` should rise as the evidence thins — see
+    ``recommended_shrinkage`` for the rule we apply, which is a documented
+    heuristic rather than an estimated optimal intensity.
+    """
+    m = np.asarray(matrix, dtype=float)
+    w = float(np.clip(weight, 0.0, 1.0))
+    if w <= 0.0:
+        return m
+    target = equicorrelation_matrix(m.shape[0], target_rho)
+    out = (1.0 - w) * m + w * target
+    np.fill_diagonal(out, 1.0)
+    return out
+
+
+def recommended_shrinkage(n_periods: int, n_entities: int) -> float:
+    """Shrinkage intensity implied by how thin the joint history is.
+
+    A correlation matrix over k entities has k(k-1)/2 free parameters, all
+    estimated from the SAME n periods. The ratio of parameters to periods
+    is the honest measure of how over-fitted the estimate is:
+
+        w = clip( params / (params + n_periods), 0.1, 0.9 )
+
+    With 6 suppliers (15 pairs) and 10 shared weeks the weight is 0.6 —
+    the estimate is mostly discarded, which is correct: fifteen
+    correlations cannot be learned from ten observations. The floor of 0.1
+    keeps a little regularisation even with long histories; the ceiling of
+    0.9 stops the estimate being ignored entirely. Both bounds are
+    judgement, and are stated as such.
+    """
+    if n_entities < 2 or n_periods <= 0:
+        return 1.0
+    params = n_entities * (n_entities - 1) / 2.0
+    return float(np.clip(params / (params + n_periods), 0.1, 0.9))
+
+
+def nearest_positive_semidefinite(matrix: np.ndarray, eps: float = 1e-8) -> np.ndarray:
+    """Project a correlation matrix to the nearest PSD correlation matrix.
 
     An estimated correlation matrix from short, unequal histories is often
     slightly indefinite, and Cholesky then fails. Clipping the eigenvalues
     at a small positive floor and renormalising the diagonal is the
     standard repair; it changes the matrix by the minimum needed to make
-    sampling possible.
+    sampling possible. Symmetry is imposed first, since ``eigvalsh``
+    assumes it and would otherwise silently use one triangle.
     """
     m = np.asarray(matrix, dtype=float)
     m = (m + m.T) / 2.0
     vals, vecs = np.linalg.eigh(m)
     if np.all(vals > eps):
+        np.fill_diagonal(m, 1.0)
         return m
     vals = np.clip(vals, eps, None)
     out = vecs @ np.diag(vals) @ vecs.T
     d = np.sqrt(np.clip(np.diag(out), eps, None))
     out = out / np.outer(d, d)
+    out = (out + out.T) / 2.0
     np.fill_diagonal(out, 1.0)
     return out
+
+
+# Backwards-compatible alias: the previous name promised definiteness the
+# eigenvalue floor does not strictly deliver at the boundary.
+nearest_positive_definite = nearest_positive_semidefinite
 
 
 def equicorrelation_matrix(n: int, rho: float) -> np.ndarray:
@@ -141,6 +245,75 @@ def estimate_rank_correlation(
                 diagnostics["pairs_defaulted"] += 1
             mat[i, j] = mat[j, i] = rho
     return mat, keys, diagnostics
+
+
+@dataclass(frozen=True)
+class SupplyRiskPolicy:
+    """Explicit, recorded choice of how supplier dependence is modelled.
+
+    WHY THIS IS A POLICY AND NOT A DEFAULT
+    --------------------------------------
+    Correlated sampling changes the recommended commitment, so which
+    dependence model is in force must be an operator-visible decision with
+    a name and a rationale, not a constant chosen by whoever wrote the
+    module. Two of the parameters below are genuinely unestimated at
+    present:
+
+      * ``copula`` — the t copula's advantage over Gaussian is that it has
+        nonzero tail dependence. Whether an operator's suppliers actually
+        exhibit joint-tail clustering is an empirical question that needs
+        joint history to answer.
+      * ``df`` — the t degrees of freedom control HOW MUCH tail clustering.
+        The value 5 is a convention borrowed from financial risk practice,
+        not something fitted to agricultural supply data.
+
+    Because both are judgements, ``INDEPENDENT`` is the default policy.
+    That is the conservative choice in the sense that matters here: it is
+    the behaviour the system has always had, so enabling dependence is a
+    deliberate act with a documented reason rather than a silent change to
+    every operator's recommendation.
+
+    ``mode``:
+      "independent"    each supplier drawn from its own Beta (legacy)
+      "equicorrelated" one operator-supplied rho, no estimation
+      "estimated"      rank correlation from the operator's own history,
+                       shrunk toward equicorrelation by evidence weight
+    """
+
+    mode: str = "independent"
+    copula: str = "gaussian"
+    df: float = 5.0
+    rho: float | None = None
+    min_overlap: int = 4
+    min_periods_for_estimation: int = 12
+    seed: int = 42
+
+    def __post_init__(self):
+        if self.mode not in ("independent", "equicorrelated", "estimated"):
+            raise ValueError(f"unknown supply-risk mode {self.mode!r}")
+        if self.copula not in ("gaussian", "t"):
+            raise ValueError(f"unknown copula {self.copula!r}")
+        if self.mode == "equicorrelated" and self.rho is None:
+            raise ValueError("mode='equicorrelated' requires an explicit rho")
+
+    @property
+    def enabled(self) -> bool:
+        return self.mode != "independent"
+
+    def describe(self) -> str:
+        if not self.enabled:
+            return ("independent supplier draws; aggregate supply risk is "
+                    "UNDERSTATED if these suppliers share a weather region")
+        if self.mode == "equicorrelated":
+            return (f"{self.copula} copula, operator-supplied rank "
+                    f"correlation {self.rho}")
+        return (f"{self.copula} copula, rank correlation estimated from "
+                f"delivery history and shrunk toward equicorrelation")
+
+
+# The policy in force when a caller does not supply one. Independent by
+# design — see SupplyRiskPolicy for why this is not the t copula.
+DEFAULT_SUPPLY_RISK_POLICY = SupplyRiskPolicy()
 
 
 @dataclass
@@ -207,64 +380,116 @@ class CopulaScenarioGenerator:
 def correlated_yield_scenarios(
     conn,
     scenario_indices: list[int],
-    rho: float | None = None,
-    copula: str = "t",
-    df: float = 5.0,
-    seed: int = 42,
-    min_overlap: int = 4,
+    policy: SupplyRiskPolicy | None = None,
 ) -> tuple[dict, dict]:
-    """Drop-in correlated replacement for the independent yield sampler.
+    """Supplier fill draws under an explicit supply-risk policy.
 
     Returns ``({(scenario_index, supplier_id): fill}, diagnostics)`` — the
     same mapping shape ``TwoStageStochasticLP`` already consumes, so this
     substitutes without touching the optimizer.
 
-    When ``rho`` is None the rank correlation is ESTIMATED from the
-    operator's own delivery history: suppliers' weekly fill rates aligned
-    on common weeks. Falls back to independence only when there is
-    genuinely no overlapping history, and says so in the diagnostics rather
-    than silently assuming it.
+    HOW CORRELATION IS OBTAINED, in the order attempted:
+
+    1. ``mode="independent"`` (the default) — no correlation at all. The
+       diagnostics say so explicitly, including that aggregate risk is
+       understated when suppliers share a weather region.
+    2. ``mode="equicorrelated"`` — a single operator-supplied rank
+       correlation. No estimation, no pretence of one.
+    3. ``mode="estimated"`` — pairwise Spearman correlation of weekly fill
+       rates on shared weeks, then:
+         a. pairs with fewer than ``min_overlap`` shared weeks are set to 0
+            rather than reporting a correlation computed from two points;
+         b. the whole matrix is SHRUNK toward equicorrelation with weight
+            ``recommended_shrinkage(n_periods, n_entities)``, because k
+            suppliers imply k(k-1)/2 correlations all estimated from the
+            same n weeks;
+         c. the result is validated (symmetry, unit diagonal, range, PSD)
+            and projected to the nearest PSD matrix if needed;
+         d. if fewer than ``min_periods_for_estimation`` weeks of joint
+            history exist, estimation is REFUSED and the policy degrades to
+            independent, recorded as such.
+
+    Every one of those branches is reported in the returned diagnostics, so
+    a plan can always be traced back to the dependence assumption behind it.
     """
     from risk.supplier_distribution import supplier_fill_distributions
 
+    pol = policy or DEFAULT_SUPPLY_RISK_POLICY
     dists = supplier_fill_distributions(conn, quantile=0.10)
     beta_params = {sid: (float(d["alpha"]), float(d["beta"]))
                    for sid, d in dists.items() if sid != "_prior"}
-    diagnostics: dict = {"n_suppliers": len(beta_params), "copula": copula,
-                         "df": df, "seed": seed}
+
+    diagnostics: dict = {
+        "n_suppliers": len(beta_params),
+        "policy_mode": pol.mode,
+        "policy_description": pol.describe(),
+        "copula": pol.copula if pol.enabled else None,
+        "df": pol.df if (pol.enabled and pol.copula == "t") else None,
+        "seed": pol.seed,
+    }
     if not beta_params:
         return {}, {**diagnostics, "status": "no_suppliers"}
 
+    keys_sorted = sorted(beta_params)
+    n_ent = len(keys_sorted)
     correlation = None
-    if rho is None:
-        obs = _weekly_fill_matrix(conn, sorted(beta_params))
-        if obs:
-            correlation, keys, diag = estimate_rank_correlation(
-                obs, min_overlap=min_overlap)
-            # Reorder to the sorted key order used by the sampler.
-            order = [keys.index(k) for k in sorted(beta_params) if k in keys]
-            if len(order) == len(beta_params):
-                correlation = correlation[np.ix_(order, order)]
-                off = correlation[~np.eye(len(order), dtype=bool)]
+
+    if pol.mode == "equicorrelated":
+        correlation = equicorrelation_matrix(n_ent, float(pol.rho))
+        diagnostics.update(correlation_source="operator_supplied_rho",
+                           mean_pairwise_rank_correlation=float(pol.rho),
+                           shrinkage_weight=0.0)
+
+    elif pol.mode == "estimated":
+        obs = _weekly_fill_matrix(conn, keys_sorted)
+        n_periods = int(max((np.isfinite(v).sum() for v in obs.values()),
+                            default=0))
+        if not obs or n_periods < pol.min_periods_for_estimation:
+            diagnostics.update(
+                correlation_source="refused_insufficient_history",
+                n_joint_periods=n_periods,
+                min_periods_required=pol.min_periods_for_estimation,
+                mean_pairwise_rank_correlation=0.0,
+                note=("too little joint history to estimate correlation; "
+                      "degraded to INDEPENDENT draws. Aggregate supply risk "
+                      "is understated if these suppliers share a region."))
+        else:
+            raw, keys, diag = estimate_rank_correlation(
+                obs, min_overlap=pol.min_overlap)
+            order = [keys.index(k) for k in keys_sorted if k in keys]
+            if len(order) == n_ent:
+                raw = raw[np.ix_(order, order)]
+                w = recommended_shrinkage(n_periods, n_ent)
+                shrunk = shrink_correlation(raw, target_rho=0.0, weight=w)
+                check = validate_correlation_matrix(shrunk)
+                if not check["valid"]:
+                    shrunk = nearest_positive_semidefinite(shrunk)
+                    diagnostics["regularized"] = True
+                    diagnostics["pre_repair_min_eigenvalue"] = check["min_eigenvalue"]
+                correlation = shrunk
+                off = correlation[~np.eye(n_ent, dtype=bool)]
                 diagnostics.update(
-                    correlation_source="estimated_from_history",
+                    correlation_source="estimated_from_history_shrunk",
+                    n_joint_periods=n_periods,
+                    shrinkage_weight=round(w, 4),
+                    raw_mean_pairwise_rank_correlation=round(
+                        float(np.mean(raw[~np.eye(n_ent, dtype=bool)])), 4),
                     mean_pairwise_rank_correlation=round(float(np.mean(off)), 4),
+                    correlation_validation=validate_correlation_matrix(correlation),
                     **diag)
             else:
-                correlation = None
-        if correlation is None:
-            diagnostics["correlation_source"] = (
-                "none available — falling back to INDEPENDENT draws; "
-                "aggregate supply risk will be understated if these "
-                "suppliers share a weather region")
-            diagnostics["mean_pairwise_rank_correlation"] = 0.0
-    else:
-        diagnostics.update(correlation_source="operator_supplied_rho",
-                           mean_pairwise_rank_correlation=float(rho))
+                diagnostics.update(
+                    correlation_source="refused_incomplete_coverage",
+                    mean_pairwise_rank_correlation=0.0)
 
-    gen = CopulaScenarioGenerator(copula=copula, df=df, seed=seed)
+    if correlation is None:
+        diagnostics.setdefault("correlation_source", "independent_by_policy")
+        diagnostics.setdefault("mean_pairwise_rank_correlation", 0.0)
+        correlation = equicorrelation_matrix(n_ent, 0.0)
+
+    gen = CopulaScenarioGenerator(copula=pol.copula, df=pol.df, seed=pol.seed)
     draws = gen.sample_beta_marginals(
-        beta_params, len(scenario_indices), correlation=correlation, rho=rho)
+        beta_params, len(scenario_indices), correlation=correlation)
 
     out: dict = {}
     for sid, vals in draws.items():

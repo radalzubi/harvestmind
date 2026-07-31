@@ -47,7 +47,7 @@ from datetime import date, datetime, timezone
 
 import numpy as np
 
-from forecasting.yield_uncertainty.contract import (
+from forecasting.supply_uncertainty.contract import (
     QUANTILE_LEVELS,
     DataTier,
     ProbabilisticForecast,

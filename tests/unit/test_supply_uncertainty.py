@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from forecasting.yield_uncertainty import (
+from forecasting.supply_uncertainty import (
     ClimatologyModel,
     ConformalCalibrator,
     DataTier,
@@ -39,12 +39,17 @@ from forecasting.yield_uncertainty import (
     weighted_interval_score,
 )
 from risk.correlated_scenarios import (
+    DEFAULT_SUPPLY_RISK_POLICY,
     CopulaScenarioGenerator,
+    SupplyRiskPolicy,
     equicorrelation_matrix,
     estimate_rank_correlation,
-    nearest_positive_definite,
+    nearest_positive_semidefinite,
     pearson_to_spearman,
+    recommended_shrinkage,
+    shrink_correlation,
     spearman_to_pearson,
+    validate_correlation_matrix,
 )
 
 NOW = datetime(2025, 6, 1, tzinfo=timezone.utc)
@@ -186,7 +191,7 @@ class TestPooledEmpiricalModel:
         narrow interval the pooling exists to prevent. The variance
         estimate must itself be pooled on its degrees of freedom.
         """
-        from forecasting.yield_uncertainty.baseline import pooled_within_variance
+        from forecasting.supply_uncertainty.baseline import pooled_within_variance
 
         tight = np.array([0.90, 0.905, 0.895])     # sample var ~2.5e-5
         pop_var = 0.0064                            # population var (sd 0.08)
@@ -536,10 +541,101 @@ class TestCopulaScenarios:
 
     def test_indefinite_matrix_is_repaired(self):
         bad = np.array([[1.0, 0.99, -0.99], [0.99, 1.0, 0.99], [-0.99, 0.99, 1.0]])
-        fixed = nearest_positive_definite(bad)
+        fixed = nearest_positive_semidefinite(bad)
         assert np.all(np.linalg.eigvalsh(fixed) > 0)
         np.linalg.cholesky(fixed)          # must not raise
         assert np.allclose(np.diag(fixed), 1.0)
+
+
+class TestCorrelationValidation:
+    """Every correlation matrix must be checked before it is used."""
+
+    def test_valid_matrix_passes_all_checks(self):
+        v = validate_correlation_matrix(equicorrelation_matrix(4, 0.4))
+        assert v["valid"] and v["symmetric"] and v["unit_diagonal"]
+        assert v["in_range"] and v["positive_semidefinite"]
+        assert v["min_eigenvalue"] > 0
+
+    def test_detects_asymmetry(self):
+        m = np.array([[1.0, 0.5], [0.2, 1.0]])
+        v = validate_correlation_matrix(m)
+        assert not v["symmetric"] and not v["valid"]
+        assert v["max_asymmetry"] == pytest.approx(0.3)
+
+    def test_detects_non_unit_diagonal(self):
+        m = np.array([[0.9, 0.1], [0.1, 1.0]])
+        assert not validate_correlation_matrix(m)["unit_diagonal"]
+
+    def test_detects_indefiniteness(self):
+        bad = np.array([[1.0, 0.99, -0.99], [0.99, 1.0, 0.99], [-0.99, 0.99, 1.0]])
+        v = validate_correlation_matrix(bad)
+        assert not v["positive_semidefinite"] and v["min_eigenvalue"] < 0
+        assert validate_correlation_matrix(
+            nearest_positive_semidefinite(bad))["valid"]
+
+    def test_detects_out_of_range_and_nonfinite(self):
+        assert not validate_correlation_matrix(
+            np.array([[1.0, 1.5], [1.5, 1.0]]))["in_range"]
+        assert not validate_correlation_matrix(
+            np.array([[1.0, np.nan], [np.nan, 1.0]]))["finite"]
+
+    def test_rejects_non_square(self):
+        assert not validate_correlation_matrix(np.zeros((2, 3)))["square"]
+
+    def test_shrinkage_moves_toward_target_and_stays_valid(self):
+        rng = np.random.default_rng(0)
+        noisy = np.clip(rng.uniform(-0.9, 0.9, (5, 5)), -1, 1)
+        noisy = (noisy + noisy.T) / 2
+        np.fill_diagonal(noisy, 1.0)
+        shrunk = shrink_correlation(noisy, target_rho=0.0, weight=0.8)
+        off_before = np.abs(noisy[~np.eye(5, dtype=bool)]).mean()
+        off_after = np.abs(shrunk[~np.eye(5, dtype=bool)]).mean()
+        assert off_after < off_before
+        assert np.allclose(np.diag(shrunk), 1.0)
+
+    def test_shrinkage_weight_rises_as_history_thins(self):
+        """k suppliers imply k(k-1)/2 correlations from the same n weeks."""
+        thin = recommended_shrinkage(n_periods=5, n_entities=8)
+        thick = recommended_shrinkage(n_periods=200, n_entities=8)
+        assert thin > thick
+        assert 0.1 <= thick <= thin <= 0.9
+        # 6 suppliers (15 pairs) over 10 weeks -> mostly discard the estimate
+        assert recommended_shrinkage(10, 6) == pytest.approx(15 / 25, abs=1e-9)
+
+
+class TestSupplyRiskPolicy:
+    """Correlated sampling must be an explicit, recorded decision."""
+
+    def test_default_policy_is_independent(self):
+        """A judgement-based copula must not be the silent default."""
+        assert DEFAULT_SUPPLY_RISK_POLICY.mode == "independent"
+        assert DEFAULT_SUPPLY_RISK_POLICY.enabled is False
+        assert "UNDERSTATED" in DEFAULT_SUPPLY_RISK_POLICY.describe()
+
+    def test_equicorrelated_requires_explicit_rho(self):
+        with pytest.raises(ValueError, match="requires an explicit rho"):
+            SupplyRiskPolicy(mode="equicorrelated")
+
+    def test_rejects_unknown_mode_and_copula(self):
+        with pytest.raises(ValueError, match="unknown supply-risk mode"):
+            SupplyRiskPolicy(mode="magic")
+        with pytest.raises(ValueError, match="unknown copula"):
+            SupplyRiskPolicy(mode="estimated", copula="clayton")
+
+    def test_enabled_policies_describe_themselves(self):
+        p = SupplyRiskPolicy(mode="equicorrelated", rho=0.4, copula="t")
+        assert p.enabled and "t copula" in p.describe()
+        q = SupplyRiskPolicy(mode="estimated", copula="gaussian")
+        assert q.enabled and "estimated" in q.describe()
+
+    def test_scenario_generation_ignores_policy_when_none(self):
+        """Without a policy the sampler must not import the copula path."""
+        import inspect
+
+        from risk.scenario_generation import yield_scenarios_from_distributions
+        src = inspect.getsource(yield_scenarios_from_distributions)
+        assert "supply_risk_policy is not None" in src
+        assert "correlated=True" not in src
 
     def test_thin_overlap_defaults_rather_than_inventing_correlation(self):
         obs = {"A": np.array([0.9, 0.8, np.nan, np.nan]),

@@ -241,6 +241,60 @@ class TestScenarioWeights:
 
 # ── CVaR properties ─────────────────────────────────────────────────────────
 
+class TestOutOfSampleVSS:
+    """VSS measured on common held-out scenarios, with a bootstrap CI.
+
+    ``compute_vss`` is in-sample: both decisions are optimised against the
+    same scenarios they are scored on, which flatters the richer model. And
+    a single point estimate hides sampling noise that, at our scenario
+    counts, is worth several percent of the objective.
+    """
+
+    @requires_solver
+    def test_reports_a_bootstrap_interval(self):
+        from optimization.vss_evaluation import out_of_sample_vss
+
+        res = out_of_sample_vss(
+            _newsvendor(9.0, 1.0), _normal_scenarios(n=60), _ample_supply(),
+            n_bootstrap=40, seed=1)
+        assert res is not None
+        assert res.ci_low <= res.vss <= res.ci_high
+        d = res.to_dict()
+        for k in ("vss_out_of_sample", "ci_low", "ci_high", "significant",
+                  "n_eval_scenarios", "definition", "interpretation"):
+            assert k in d
+        assert "common out-of-sample" in d["definition"]
+
+    @requires_solver
+    def test_train_and_eval_sets_are_disjoint(self):
+        from optimization.vss_evaluation import out_of_sample_vss
+
+        res = out_of_sample_vss(
+            _newsvendor(6.0, 2.0), _normal_scenarios(n=60), _ample_supply(),
+            n_bootstrap=20, train_fraction=0.5, seed=2)
+        assert res.n_train_scenarios + res.n_eval_scenarios == 60
+
+    @requires_solver
+    def test_symmetric_costs_interval_admits_zero(self):
+        """The honest null result the point estimate would have hidden."""
+        from optimization.vss_evaluation import out_of_sample_vss
+
+        res = out_of_sample_vss(
+            _newsvendor(3.0, 3.0), _normal_scenarios(n=60), _ample_supply(),
+            n_bootstrap=60, seed=3)
+        assert res is not None
+        assert res.ci_low <= 0.0 <= res.ci_high or not res.significant
+        assert "NOT been shown" in res.interpretation() or res.significant
+
+    @requires_solver
+    def test_refuses_when_too_few_scenarios(self):
+        from optimization.vss_evaluation import out_of_sample_vss
+
+        assert out_of_sample_vss(
+            _newsvendor(6.0, 2.0), _normal_scenarios(n=3), _ample_supply(),
+            n_bootstrap=5) is None
+
+
 class TestSAABounds:
     """Kleywegt, Shapiro & Homem-de-Mello (2002) §2.3, §3.2-3.3.
 

@@ -169,9 +169,7 @@ def yield_scenarios_from_distributions(
     conn: duckdb.DuckDBPyConnection,
     scenario_indices: list[int],
     seed: int = 42,
-    correlated: bool = True,
-    rho: float | None = None,
-    copula: str = "t",
+    supply_risk_policy=None,
 ) -> dict:
     """Per-scenario supplier fill draws from the predictive Betas.
 
@@ -179,25 +177,32 @@ def yield_scenarios_from_distributions(
     uncertainty enters the optimizer as a genuine stage-2 outcome — the
     commitment is made before the fill resolves.
 
-    ``correlated=True`` (default) couples the draws with a copula so that
-    suppliers sharing a weather region fail together, while preserving each
-    supplier's calibrated Beta marginal exactly. Independent draws — the
-    old behaviour, still available with ``correlated=False`` — average out
-    across suppliers and make aggregate supply look far tighter than it is;
-    that artefact is what drove the value of the stochastic solution to
-    zero in earlier testing. See risk/correlated_scenarios.py.
+    Independent draws are the DEFAULT and the historical behaviour. They
+    are known to understate aggregate risk when suppliers share a weather
+    region — that artefact is what drove the value of the stochastic
+    solution to zero in earlier testing — but the correction requires
+    choosing a dependence model, and that choice is an operator-visible
+    policy rather than a constant. Pass a
+    ``risk.correlated_scenarios.SupplyRiskPolicy`` to enable it:
+
+        from risk.correlated_scenarios import SupplyRiskPolicy
+        pol = SupplyRiskPolicy(mode="estimated", copula="t", df=5)
+        yield_scenarios_from_distributions(conn, ids, supply_risk_policy=pol)
+
+    A dependence-modelling failure degrades to independent draws rather
+    than failing the plan, since an optimistic model beats no answer — but
+    only because the caller has already been told, via the policy, which
+    assumption is in force.
     """
-    if correlated:
+    if supply_risk_policy is not None and getattr(
+            supply_risk_policy, "enabled", False):
         from risk.correlated_scenarios import correlated_yield_scenarios
         try:
             draws, _diag = correlated_yield_scenarios(
-                conn, scenario_indices, rho=rho, copula=copula, seed=seed)
+                conn, scenario_indices, policy=supply_risk_policy)
             if draws:
                 return draws
         except Exception:
-            # Never let a dependence-modelling failure take down planning;
-            # fall through to the independent sampler, which is a valid if
-            # optimistic model rather than no answer at all.
             pass
     import numpy as np
     from scipy import stats as _st
