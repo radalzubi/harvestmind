@@ -33,6 +33,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from agronomy.forecast_skill import attenuate_effect, unresolved_weather_variance
 from risk.calibration import GATE_COVERAGE_BAND
 from risk.supplier_distribution import (
     estimate_population,
@@ -193,15 +194,23 @@ def weather_shift_for_window(
     conn: duckdb.DuckDBPyConnection,
     window_start,
     window_end,
+    lead_days: float | None = None,
 ) -> dict[str, Any]:
     """Should the admitted heat-stress shift apply to this decision window?
 
-    Active only when BOTH hold: the signal passed admission on this
-    operator's own history, AND at least one day in [window_start,
-    window_end] is heat-flagged in fact_weather_obs (observed history for
-    backtests; pre-loaded forecast rows for live decisions). The decision
-    path never touches the network — forecast weather must be ingested
-    beforehand, same as observations.
+    Active only when ALL of: the signal passed admission on this operator's
+    own history, at least one day in [window_start, window_end] is
+    heat-flagged in fact_weather_obs (observed history for backtests;
+    pre-loaded forecast rows for live decisions), AND the forecast at that
+    lead time still carries usable skill. The decision path never touches
+    the network — forecast weather must be ingested beforehand, same as
+    observations.
+
+    The measured effect is attenuated by forecast skill rho(lead): a
+    historically-measured delta applies in full only when the weather is
+    known. See agronomy/forecast_skill.py for the decay model and its
+    published anchors (Zhang et al. 2019; Buizza & Leutbecher 2015).
+    lead_days defaults to 0 for observed weather and 1 for forecast rows.
     """
     verdict = admit_weather_signal(conn)
     if not verdict.get("admitted"):
@@ -212,13 +221,14 @@ def weather_shift_for_window(
     row = conn.execute(
         """
         SELECT COUNT(*) AS n,
-               MAX(CASE WHEN heat_stress_flag THEN 1 ELSE 0 END) AS flagged
+               MAX(CASE WHEN heat_stress_flag THEN 1 ELSE 0 END) AS flagged,
+               MAX(CASE WHEN source LIKE '%forecast%' THEN 1 ELSE 0 END) AS is_fc
         FROM fact_weather_obs
         WHERE obs_date BETWEEN ? AND ?
         """,
         [window_start, window_end],
     ).fetchone()
-    n_days, flagged = int(row[0]), bool(row[1])
+    n_days, flagged, from_forecast = int(row[0]), bool(row[1]), bool(row[2])
     if n_days == 0:
         return {"active": False, "delta": 0.0,
                 "reason": "no weather rows for the decision window "
@@ -227,9 +237,31 @@ def weather_shift_for_window(
         return {"active": False, "delta": 0.0,
                 "reason": "decision window not heat-flagged"}
 
+    # Attenuate to what the forecast can actually support. The effect was
+    # measured against OBSERVED weather; applying it in full to a forecast
+    # window would assert a confidence the atmosphere does not permit.
+    # Lead 0 (replaying observed history, e.g. a backtest) leaves it intact.
+    lead_days = float(lead_days) if lead_days is not None else (
+        0.0 if not from_forecast else 1.0)
+    skill = attenuate_effect(
+        float(verdict["measured_effect_delta_fill"]), lead_days)
+
+    if not skill["informative"]:
+        return {"active": False, "delta": 0.0,
+                "reason": skill["reason"],
+                "forecast_skill_rho": skill["forecast_skill_rho"],
+                "n_window_days": n_days}
+
     return {"active": True,
-            "delta": float(verdict["measured_effect_delta_fill"]),
-            "reason": "admitted signal + heat-flagged window",
+            "delta": float(skill["delta_applied"]),
+            "delta_measured": float(skill["delta_measured"]),
+            "forecast_skill_rho": skill["forecast_skill_rho"],
+            "lead_days": lead_days,
+            "weather_source": "forecast" if from_forecast else "observed",
+            "unresolved_variance": unresolved_weather_variance(
+                float(verdict["measured_effect_delta_fill"]), lead_days),
+            "reason": ("admitted signal + heat-flagged window; "
+                       + skill["reason"]),
             "n_window_days": n_days}
 
 

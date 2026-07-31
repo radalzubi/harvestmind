@@ -124,8 +124,11 @@ def safe_commit_recommendations(
             apply_shift_to_distributions,
             weather_shift_for_window,
         )
+        # The delivery window sits lead_time_days ahead, so that IS the
+        # forecast lead the weather effect must be attenuated to.
         weather = weather_shift_for_window(
-            conn, today, today + timedelta(days=lead_time_days))
+            conn, today, today + timedelta(days=lead_time_days),
+            lead_days=lead_time_days)
         if weather["active"]:
             dists = apply_shift_to_distributions(
                 dists, weather["delta"], quantile)
@@ -162,9 +165,15 @@ def safe_commit_recommendations(
 
         flags: list[str] = []
         if weather["active"] and sig:
+            rho = weather.get("forecast_skill_rho")
+            measured = weather.get("delta_measured", weather["delta"])
+            detail = (f" (measured {measured:+.1%}, forecast skill "
+                      f"{rho:.2f} at {weather.get('lead_days', 0):.0f}-day lead)"
+                      if rho is not None and rho < 0.999 else
+                      " (measured on your history)")
             flags.append(
                 f"heat-stress window: supplier fills shifted "
-                f"{weather['delta']:+.1%} (measured on your history)")
+                f"{weather['delta']:+.1%}{detail}")
         if s_downside < _HIGH_RISK:
             flags.append(f"supplier downside fill {s_downside:.0%}")
         if s_spread >= 0.15:
