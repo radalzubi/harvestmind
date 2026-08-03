@@ -8,7 +8,6 @@ nothing under the data/pool/checkpoint paths can ever be committed.
 
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 
@@ -140,18 +139,45 @@ def test_gitignore_covers_all_sensitive_paths():
         ".env",
     ]
     r = subprocess.run(["git", "check-ignore", *paths],
-                       capture_output=True, text=True, cwd=REPO)
+                       capture_output=True, text=True, cwd=REPO,
+                       check=False)
     ignored = set(r.stdout.splitlines())
     missing = [p for p in paths if p not in ignored]
     assert not missing, f"NOT gitignored: {missing}"
 
 
 def test_no_sensitive_files_tracked():
-    """Nothing under the sensitive roots is in the git index."""
+    """Nothing under the sensitive DATA roots is in the git index.
+
+    The roots are data directories, not source packages. This previously
+    listed bare "pool", which conflated the pool DATA with the pool CODE:
+    pool/pool_contributor.py and pool/pool_reader.py are ordinary source,
+    imported by training, the intake router and several tests, and must be
+    tracked. Ignoring them made the repository unclonable — a fresh
+    checkout raised ModuleNotFoundError — while this test enforced that
+    breakage. The sensitive subdirectories are named explicitly instead.
+    """
     r = subprocess.run(["git", "ls-files",
-                        "data/operators", "data/registry", "pool",
+                        "data/operators", "data/registry",
+                        "pool/contributions", "pool/signals",
                         "training/audit_log", "training/corpus",
                         "training/forecaster_checkpoints",
                         "training/extraction_checkpoints"],
-                       capture_output=True, text=True, cwd=REPO)
+                       capture_output=True, text=True, cwd=REPO,
+                       check=False)
     assert r.stdout.strip() == "", f"tracked sensitive files:\n{r.stdout}"
+
+
+def test_pool_source_package_is_tracked():
+    """The counterpart guard: pool CODE must be in the index.
+
+    Without this, narrowing the ignore could silently regress and the
+    package would drop out of the repository again.
+    """
+    r = subprocess.run(["git", "ls-files", "pool"],
+                       capture_output=True, text=True, cwd=REPO,
+                       check=False)
+    tracked = set(r.stdout.split())
+    for required in ("pool/__init__.py", "pool/pool_contributor.py",
+                     "pool/pool_reader.py"):
+        assert required in tracked, f"{required} is not tracked"
