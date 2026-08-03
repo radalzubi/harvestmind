@@ -96,7 +96,13 @@ training/corpus/
 # data and derived signals, never committed (data/samples stays tracked)
 data/operators/
 data/registry/
-pool/
+# Pool DATA only. `pool/` here previously ignored the whole package, which
+# silently excluded pool_contributor.py and pool_reader.py — 455 lines of
+# source imported by training, the intake API router and seven test
+# modules. Everything passed locally because the files were on disk and
+# failed on any fresh checkout.
+pool/contributions/
+pool/signals/
 training/forecaster_checkpoints/
 training/extraction_checkpoints/
 training/retraining_log.jsonl
