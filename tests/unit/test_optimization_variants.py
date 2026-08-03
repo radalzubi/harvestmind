@@ -120,7 +120,8 @@ def test_cvar_solve_return_shape(cvar_scenarios):
     """Solve returns the documented objective/return-shape contract."""
     dem, supply = cvar_scenarios
     res = CVaRStochasticLP(lambda_weight=0.5).solve(dem, supply)
-    for key in ("status", "objective", "x", "spot", "waste", "eta", "cvar_95", "lambda", "alpha"):
+    for key in ("status", "objective", "x", "spot", "waste", "unmet",
+                "eta_var", "cvar", "expected_cost", "lambda", "alpha"):
         assert key in res
     assert res["status"] in OPTIMAL
     assert res["objective"] is not None
@@ -134,23 +135,45 @@ def test_cvar_solve_return_shape(cvar_scenarios):
 def test_cvar_lambda1_objective_equals_expected_cost(cvar_scenarios):
     """At λ=1 the objective is the pure risk-neutral expected cost.
 
-    With cap=150 kg, the risk-neutral plan commits exactly the low-demand level
+    With cap=150 kg the risk-neutral plan commits the low-demand level
     (100 kg). Expected cost = first-stage commit (100·$2=200) plus expected
-    recourse: scenario 0 wastes nothing/spots nothing (cost 0), scenario 1 must
-    spot the 100 kg gap at avg_price·multiplier = 2·1.3 = 2.6/kg → 260; weighted
-    0.5·0 + 0.5·260 = 130. Total 200 + 130 = 330.
+    recourse. In scenario 0 demand is met exactly (cost 0). In scenario 1
+    there is a 100 kg gap, and the model now has TWO ways to handle it:
+    buy spot at avg_price·multiplier = 2·1.3 = $2.60/kg, or accept the lost
+    sale at the default $2.50/kg. It correctly takes the cheaper option, so
+    the gap costs 100·2.50 = 250; weighted 0.5·0 + 0.5·250 = 125.
+    Total 200 + 125 = 325.
+
+    This test previously asserted 330, which assumed the gap HAD to be
+    covered by spot — an artefact of the model lacking an unmet variable
+    entirely. Preferring a $2.50 lost sale over a $2.60 spot buy is the
+    correct economic call and matches the main two-stage model.
     """
     dem, supply = cvar_scenarios
     rn = CVaRStochasticLP(lambda_weight=1.0).solve(dem, supply)
     assert rn["status"] in OPTIMAL
-    assert rn["objective"] == pytest.approx(330.0, abs=1e-4)
+    assert rn["objective"] == pytest.approx(325.0, abs=1e-4)
+    assert rn["expected_cost"] == pytest.approx(325.0, abs=1e-4)
     # Risk-neutral commits the low scenario (100 kg), not the worst case.
     assert sum(rn["x"].values()) == pytest.approx(100.0, abs=1e-4)
 
 
 @requires_solver
+def test_cvar_prefers_cheaper_of_spot_and_lost_sale(cvar_scenarios):
+    """The unmet variable must actually be usable, not decorative."""
+    dem, supply = cvar_scenarios
+    # Lost sale dearer than spot ($9 vs $2.60) -> cover the gap with spot.
+    dear = CVaRStochasticLP(lambda_weight=1.0, lost_sale_per_kg_usd=9.0).solve(dem, supply)
+    assert sum(v for v in dear["spot"].values() if v) > 1e-6
+    assert sum(v for v in dear["unmet"].values() if v) == pytest.approx(0.0, abs=1e-6)
+    # Lost sale cheaper than spot -> take the lost sale.
+    cheap = CVaRStochasticLP(lambda_weight=1.0, lost_sale_per_kg_usd=0.10).solve(dem, supply)
+    assert sum(v for v in cheap["unmet"].values() if v) > 1e-6
+
+
+@requires_solver
 def test_cvar_risk_averse_reduces_recourse_tail(cvar_scenarios):
-    """λ=0 (pure CVaR) drives the recourse-cost tail (cvar_95) no higher than λ=1.
+    """λ=0 (pure CVaR) drives the cost tail no higher than λ=1.
 
     Minimizing the tail directly cannot produce a larger tail than the
     risk-neutral solution that ignores it.
@@ -159,7 +182,7 @@ def test_cvar_risk_averse_reduces_recourse_tail(cvar_scenarios):
     rn = CVaRStochasticLP(lambda_weight=1.0, alpha=0.95).solve(dem, supply)
     ra = CVaRStochasticLP(lambda_weight=0.0, alpha=0.95).solve(dem, supply)
     assert rn["status"] in OPTIMAL and ra["status"] in OPTIMAL
-    assert ra["cvar_95"] <= rn["cvar_95"] + 1e-6
+    assert ra["cvar"] <= rn["cvar"] + 1e-6
 
 
 @requires_solver
@@ -191,7 +214,8 @@ def test_cvar_single_scenario_degenerate(cvar_scenarios):
     # first-stage commit cost 120·$2 = 240·0.5(λ) + 0·... ; with no spot/waste the
     # recourse-cost tail (cvar_95) is zero.
     assert sum(res["x"].values()) == pytest.approx(120.0, abs=1e-4)
-    assert res["cvar_95"] == pytest.approx(0.0, abs=1e-6)
+    # With one scenario there is no tail: CVaR equals the expected cost.
+    assert res["cvar"] == pytest.approx(res["expected_cost"], abs=1e-6)
 
 
 @requires_solver
@@ -214,7 +238,8 @@ def test_cvar_lambda_sweep_frontier_shape(cvar_scenarios):
     """lambda_sweep returns one row per λ with the documented columns."""
     dem, supply = cvar_scenarios
     frontier = CVaRStochasticLP.lambda_sweep([0.0, 0.5, 1.0], dem, supply)
-    assert list(frontier.columns) == ["lambda", "objective", "status", "cvar_95"]
+    assert list(frontier.columns) == [
+        "lambda", "objective", "status", "expected_cost", "cvar", "var"]
     assert len(frontier) == 3
     assert frontier["lambda"].tolist() == [0.0, 0.5, 1.0]
     assert frontier["status"].isin(OPTIMAL).all()
@@ -295,8 +320,13 @@ def test_gamma_sweep_monotone_more_conservative(lp_demand):
     objs = frontier["objective"].tolist()
     for prev, curr in zip(objs, objs[1:]):
         assert curr >= prev - 1e-6, f"non-monotone objective: {objs}"
-    # gamma_factor saturates at 1.0 once Γ ≥ n_constraints (=10 here).
-    assert frontier.loc[frontier["gamma"] == 12, "gamma_factor"].iloc[0] == 1.0
+    # Protection saturates once Γ ≥ n (=10 here): every product is fully
+    # protected, which is the Soyster (1973) fully-conservative extreme.
+    assert frontier.loc[frontier["gamma"] == 12, "n_fully_protected"].iloc[0] == 10
+    # And the violation-probability bound tightens as the budget grows.
+    bounds = frontier["violation_probability_bound"].tolist()
+    for prev, curr in zip(bounds, bounds[1:]):
+        assert curr <= prev + 1e-12
 
 
 @requires_solver

@@ -95,17 +95,44 @@ def safe_commit_recommendations(
     lead_time_days: float = 3.0,
     quantile: float = 0.10,
     buffers: dict[str, float] | None = None,
+    weather_aware: bool = True,
 ) -> list[dict[str, Any]]:
     """Distribution and shelf-life aware commitment recommendations per product.
 
     Returns one record per product, sorted High risk first, with the same core
     fields as the deterministic recommendations plus the new signals
     (shelf-life discount, supplier downside vs mean, volatility spread).
+
+    When ``weather_aware`` (default), the Tier-2 heat-stress covariate is
+    applied IF it passed admission on this operator's history AND the
+    delivery window is heat-flagged in loaded weather data: every
+    supplier's fill distribution shifts by the measured delta before the
+    downside feeds the holdback. Inactive (with a stated reason) in every
+    other case — the recommendation then matches the weather-blind one
+    exactly.
     """
     today = as_of_date or date.today()
 
     weighted = weighted_available_by_product(conn, today, lead_time_days, buffers)
     dists = supplier_fill_distributions(conn, quantile=quantile)
+
+    weather = {"active": False, "reason": "weather_aware disabled"}
+    if weather_aware:
+        from datetime import timedelta
+
+        from risk.yield_covariates import (
+            apply_shift_to_distributions,
+            weather_shift_for_window,
+        )
+        # The delivery window sits lead_time_days ahead, so that IS the
+        # forecast lead the weather effect must be attenuated to.
+        weather = weather_shift_for_window(
+            conn, today, today + timedelta(days=lead_time_days),
+            lead_days=lead_time_days)
+        if weather["active"]:
+            dists = apply_shift_to_distributions(
+                dists, weather["delta"], quantile)
+
     supplier_sig = _product_supplier_signal(conn, dists)
     committed = _committed_by_product(conn)
     buyer_fill = _buyer_fulfillment_by_product(conn)
@@ -137,6 +164,16 @@ def safe_commit_recommendations(
         holdback_kg = round(net_available - safe_commit, 1)
 
         flags: list[str] = []
+        if weather["active"] and sig:
+            rho = weather.get("forecast_skill_rho")
+            measured = weather.get("delta_measured", weather["delta"])
+            detail = (f" (measured {measured:+.1%}, forecast skill "
+                      f"{rho:.2f} at {weather.get('lead_days', 0):.0f}-day lead)"
+                      if rho is not None and rho < 0.999 else
+                      " (measured on your history)")
+            flags.append(
+                f"heat-stress window: supplier fills shifted "
+                f"{weather['delta']:+.1%}{detail}")
         if s_downside < _HIGH_RISK:
             flags.append(f"supplier downside fill {s_downside:.0%}")
         if s_spread >= 0.15:

@@ -33,9 +33,9 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from agronomy.forecast_skill import attenuate_effect, unresolved_weather_variance
 from risk.calibration import GATE_COVERAGE_BAND
 from risk.supplier_distribution import (
-    _delivery_fill_rates,
     estimate_population,
     supplier_distribution,
 )
@@ -180,3 +180,117 @@ def covariate_status(conn: duckdb.DuckDBPyConnection) -> dict[str, Any]:
                   "calibration improvement, never by default",
         "coverage_band": list(GATE_COVERAGE_BAND),
     }
+
+
+# ── Applying an admitted signal to live decisions ────────────────────────────
+#
+# Admission alone changes nothing. These two functions are the bridge from
+# "the signal is admitted" to "the numbers the optimizer sees move":
+# weather_shift_for_window decides WHETHER the shift applies to a specific
+# decision window, apply_shift_to_distributions applies it to the supplier
+# Beta distributions that safe-commit and scenario sampling consume.
+
+def weather_shift_for_window(
+    conn: duckdb.DuckDBPyConnection,
+    window_start,
+    window_end,
+    lead_days: float | None = None,
+) -> dict[str, Any]:
+    """Should the admitted heat-stress shift apply to this decision window?
+
+    Active only when ALL of: the signal passed admission on this operator's
+    own history, at least one day in [window_start, window_end] is
+    heat-flagged in fact_weather_obs (observed history for backtests;
+    pre-loaded forecast rows for live decisions), AND the forecast at that
+    lead time still carries usable skill. The decision path never touches
+    the network — forecast weather must be ingested beforehand, same as
+    observations.
+
+    The measured effect is attenuated by forecast skill rho(lead): a
+    historically-measured delta applies in full only when the weather is
+    known. See agronomy/forecast_skill.py for the decay model and its
+    published anchors (Zhang et al. 2019; Buizza & Leutbecher 2015).
+    lead_days defaults to 0 for observed weather and 1 for forecast rows.
+    """
+    verdict = admit_weather_signal(conn)
+    if not verdict.get("admitted"):
+        return {"active": False, "delta": 0.0,
+                "reason": f"signal not admitted "
+                          f"({verdict.get('reason', 'failed admission test')})"}
+
+    row = conn.execute(
+        """
+        SELECT COUNT(*) AS n,
+               MAX(CASE WHEN heat_stress_flag THEN 1 ELSE 0 END) AS flagged,
+               MAX(CASE WHEN source LIKE '%forecast%' THEN 1 ELSE 0 END) AS is_fc
+        FROM fact_weather_obs
+        WHERE obs_date BETWEEN ? AND ?
+        """,
+        [window_start, window_end],
+    ).fetchone()
+    n_days, flagged, from_forecast = int(row[0]), bool(row[1]), bool(row[2])
+    if n_days == 0:
+        return {"active": False, "delta": 0.0,
+                "reason": "no weather rows for the decision window "
+                          "(load observations or forecast first)"}
+    if not flagged:
+        return {"active": False, "delta": 0.0,
+                "reason": "decision window not heat-flagged"}
+
+    # Attenuate to what the forecast can actually support. The effect was
+    # measured against OBSERVED weather; applying it in full to a forecast
+    # window would assert a confidence the atmosphere does not permit.
+    # Lead 0 (replaying observed history, e.g. a backtest) leaves it intact.
+    lead_days = float(lead_days) if lead_days is not None else (
+        0.0 if not from_forecast else 1.0)
+    skill = attenuate_effect(
+        float(verdict["measured_effect_delta_fill"]), lead_days)
+
+    if not skill["informative"]:
+        return {"active": False, "delta": 0.0,
+                "reason": skill["reason"],
+                "forecast_skill_rho": skill["forecast_skill_rho"],
+                "n_window_days": n_days}
+
+    return {"active": True,
+            "delta": float(skill["delta_applied"]),
+            "delta_measured": float(skill["delta_measured"]),
+            "forecast_skill_rho": skill["forecast_skill_rho"],
+            "lead_days": lead_days,
+            "weather_source": "forecast" if from_forecast else "observed",
+            "unresolved_variance": unresolved_weather_variance(
+                float(verdict["measured_effect_delta_fill"]), lead_days),
+            "reason": ("admitted signal + heat-flagged window; "
+                       + skill["reason"]),
+            "n_window_days": n_days}
+
+
+def apply_shift_to_distributions(
+    dists: dict[str, dict[str, Any]],
+    delta: float,
+    quantile: float = 0.10,
+) -> dict[str, dict[str, Any]]:
+    """Shift each supplier's fill distribution by the measured delta.
+
+    The Beta is re-fit at the shifted mean with the variance preserved,
+    and the downside quantile recomputed from the new curve — the same
+    construction the admission test scored, so what was validated is what
+    ships. Returns new dicts; inputs are not mutated.
+    """
+    from risk.supplier_distribution import _beta_from_mean_var
+
+    out: dict[str, dict[str, Any]] = {}
+    for sid, d in dists.items():
+        nd = dict(d)
+        a, b = d.get("alpha"), d.get("beta")
+        mean = d.get("posterior_mean")
+        if a and b and mean is not None:
+            var = a * b / ((a + b) ** 2 * (a + b + 1))
+            mu = float(np.clip(mean + delta, 1e-6, 1 - 1e-6))
+            a2, b2 = _beta_from_mean_var(mu, var)
+            nd["posterior_mean"] = mu
+            nd["alpha"], nd["beta"] = a2, b2
+            nd["downside"] = float(stats.beta.ppf(quantile, a2, b2))
+            nd["weather_shift"] = round(delta, 4)
+        out[sid] = nd
+    return out

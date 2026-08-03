@@ -151,10 +151,26 @@ class DemandForecast:
         }
 
 
-def _fit_lgbm(weekly: pd.DataFrame):
+def _weather_frame(conn) -> pd.DataFrame | None:
+    """Weekly weather features from fact_weather_obs, or None.
+
+    Weather is an OPTIONAL feature set: when no observations are loaded
+    the forecaster runs exactly as before. The frame covers all loaded
+    counties aggregated; per-county weighting becomes worth building once
+    an operator's supplier locations are known.
+    """
+    try:
+        from ingestion.weather_features import weekly_weather_frame
+        df = weekly_weather_frame(conn)
+        return df if not df.empty else None
+    except Exception:
+        return None
+
+
+def _fit_lgbm(weekly: pd.DataFrame, weather_df: pd.DataFrame | None = None):
     from forecasting.demand.lgbm_global_model import LGBMDemandModel
     model = LGBMDemandModel(n_estimators=300)
-    model.fit(weekly)
+    model.fit(weekly, weather_df=weather_df)
     return model
 
 
@@ -162,6 +178,7 @@ def _product_point_forecasts(
     weekly: pd.DataFrame,
     horizon_weeks: int,
     routes: dict[str, str],
+    weather_df: pd.DataFrame | None = None,
 ) -> tuple[dict[str, float], dict[str, str], Any]:
     """Weekly point forecast per product and the model used per product.
 
@@ -169,6 +186,12 @@ def _product_point_forecasts(
     across deeper horizons (stated, not hidden). Returns
     (point, model_used, lgbm_model); any LGBM failure is recorded in
     model_used as a named fallback, never swallowed silently.
+
+    When ``weather_df`` is provided its columns join the feature grid
+    (build_features), so the trees can split on temperature, heat stress,
+    precipitation, and ENSO where they carry signal. The target week's
+    weather row acts as the weather forecast for that week — a stated
+    assumption, reasonable one week out.
     """
     point: dict[str, float] = {}
     model_used: dict[str, str] = {}
@@ -179,8 +202,9 @@ def _product_point_forecasts(
     if dense_products:
         dense = weekly[weekly["product_id"].isin(dense_products)]
         try:
-            lgbm_model = _fit_lgbm(dense)
-            preds = lgbm_model.predict(dense, forecast_weeks=horizon_weeks)
+            lgbm_model = _fit_lgbm(dense, weather_df)
+            preds = lgbm_model.predict(dense, forecast_weeks=horizon_weeks,
+                                       weather_df=weather_df)
             if not preds.empty:
                 per_prod = (preds.groupby(["product_id", "week_start"])["forecast_kg"]
                             .sum().groupby(level=0).mean())
@@ -268,6 +292,7 @@ def forecast_demand(
                                           "min_weeks_required": 8})
 
     routes = classify_products(weekly)
+    weather_df = _weather_frame(conn)
 
     # Held-out residuals for the distribution: forecast the last 4 observed
     # weeks from the history before them, residual = actual − forecast.
@@ -277,14 +302,15 @@ def forecast_demand(
     holdout = weekly[weekly["week_start"] >= cut]
     resid: dict[str, list[float]] = {}
     if not train.empty and train["week_start"].nunique() >= 8:
-        h_point, _, _ = _product_point_forecasts(train, 4, classify_products(train))
+        h_point, _, _ = _product_point_forecasts(train, 4, classify_products(train),
+                                                 weather_df)
         actual = holdout.groupby(["product_id", "week_start"])["qty_ordered_kg"].sum()
         for (p, w), a in actual.items():
             if p in h_point:
                 resid.setdefault(p, []).append(float(a) - h_point[p])
 
     point, model_used, lgbm_model = _product_point_forecasts(
-        weekly, horizon_weeks, routes)
+        weekly, horizon_weeks, routes, weather_df)
 
     products = []
     for p in sorted(point):
@@ -313,6 +339,9 @@ def forecast_demand(
                 for m in sorted({v.split(" ")[0] for v in model_used.values()})
             },
             "uncertainty": "conformal residuals from a 4-week holdout",
+            "weather_features_used": weather_df is not None,
+            "weather_weeks_available": (int(len(weather_df))
+                                        if weather_df is not None else 0),
         },
     )
 
@@ -343,6 +372,7 @@ def evaluate_demand_forecaster(
                 if not weekly.empty else 0,
                 "gate_passed": None}
 
+    weather_df = _weather_frame(conn)
     weeks_sorted = sorted(weekly["week_start"].unique())
     fold_rows = []
     model_abs_err = naive_abs_err = actual_total = 0.0
@@ -359,8 +389,18 @@ def evaluate_demand_forecaster(
         if train.empty or test.empty:
             continue
 
+        # Leakage guard: the fold's model may see weather only up to the
+        # end of its target window (the target week's weather stands in
+        # for a 1-week-ahead weather forecast — a stated assumption).
+        fold_weather = None
+        if weather_df is not None:
+            fold_weather = weather_df[
+                weather_df["week_start"] <= max(target_weeks)]
+            if fold_weather.empty:
+                fold_weather = None
+
         point, _, _ = _product_point_forecasts(
-            train, horizon_weeks, classify_products(train))
+            train, horizon_weeks, classify_products(train), fold_weather)
         snaive = seasonal_naive_forecast(train, list(target_weeks))
 
         actual = test.groupby(["product_id", "week_start"])["qty_ordered_kg"].sum()
@@ -409,4 +449,5 @@ def evaluate_demand_forecaster(
                      "forecaster for this data",
         "metrics_policy": "WAPE / OOS-MASE-ratio / bias only; MAPE is never "
                           "used (undefined on intermittent demand)",
+        "weather_features_used": weather_df is not None,
     }

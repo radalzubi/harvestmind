@@ -41,6 +41,9 @@ def fetch_weather(
 
     headers = {"token": token}
     params = {
+        # datasetid is REQUIRED by the CDO API — omitting it returns 400
+        # and the graceful except used to swallow that into "0 rows".
+        "datasetid": "GHCND",
         "stationid": station_id,
         "datatypeid": "TMAX,TMIN,PRCP",
         "startdate": start.isoformat(),
