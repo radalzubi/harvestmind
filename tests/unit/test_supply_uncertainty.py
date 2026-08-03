@@ -1336,3 +1336,93 @@ class TestFallbackProvenanceSurvives:
         assert diagnostics["fallback_attempted"] == "independent"
         assert diagnostics["fallback_applied"] is None
         assert diagnostics["fallback_generated_draws"] is False
+
+
+class TestFallbackSeedAndErrorDiscipline:
+    """Reproducibility and failure integrity on the fallback path."""
+
+    @staticmethod
+    def _seeded_conn():
+        return TestPolicyBranchesEndToEnd._conn(n_weeks=20, n_suppliers=3)
+
+    @staticmethod
+    def _raise(exc):
+        def _boom(*_a, **_k):
+            raise exc
+        return _boom
+
+    def test_policy_seed_governs_the_fallback_draws(self, monkeypatch):
+        """Regression: the fallback reverted to the function argument.
+
+        The documented rule is that an enabled policy owns the dependence
+        model AND its reproducibility, so its seed must govern every draw
+        made under it — including the independent fallback taken after that
+        policy fails. The fallback previously used the function's `seed`,
+        contradicting the docstring and making a failed correlated run
+        irreproducible from the policy alone.
+        """
+        import risk.correlated_scenarios as cs
+        from risk.correlated_scenarios import CorrelatedScenarioError
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        conn = self._seeded_conn()
+        monkeypatch.setattr(cs, "correlated_yield_scenarios",
+                            self._raise(CorrelatedScenarioError("forced")))
+        diagnostics: dict = {}
+        fallback = yield_scenarios_from_distributions(
+            conn, [0, 1], seed=999,
+            supply_risk_policy=SupplyRiskPolicy(
+                mode="estimated", seed=123, on_failure="independent"),
+            diagnostics_out=diagnostics)
+
+        assert diagnostics["seed"] == 123, "policy seed must be reported"
+
+        # And it must actually GOVERN the draws, not merely be reported:
+        # the fallback must equal a plain independent run at seed 123.
+        monkeypatch.undo()
+        reference = yield_scenarios_from_distributions(conn, [0, 1], seed=123)
+        assert fallback == reference
+        # ...and differ from the function-argument seed.
+        other = yield_scenarios_from_distributions(conn, [0, 1], seed=999)
+        assert fallback != other
+
+    def test_function_seed_governs_the_plain_independent_path(self):
+        from risk.scenario_generation import generate_yield_scenarios
+
+        res = generate_yield_scenarios(self._seeded_conn(), [0, 1], seed=77)
+        assert res.diagnostics["seed"] == 77
+
+    def test_generic_value_error_is_not_swallowed(self, monkeypatch):
+        """A ValueError can mean malformed data, a bad array shape, invalid
+        Beta parameters or a plain programming defect. Converting any of
+        those into apparently valid independent scenarios is the same class
+        of mistake as a blanket `except Exception`."""
+        import risk.correlated_scenarios as cs
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        monkeypatch.setattr(cs, "correlated_yield_scenarios",
+                            self._raise(ValueError("internal defect")))
+        with pytest.raises(ValueError, match="internal defect"):
+            yield_scenarios_from_distributions(
+                self._seeded_conn(), [0, 1],
+                supply_risk_policy=SupplyRiskPolicy(
+                    mode="estimated", on_failure="independent"))
+
+    def test_anticipated_failures_are_still_tolerated(self, monkeypatch):
+        """The narrowing must not break the legitimate fallback path."""
+        import numpy as np
+
+        import risk.correlated_scenarios as cs
+        from risk.correlated_scenarios import CorrelatedScenarioError
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        for exc, name in ((CorrelatedScenarioError("x"), "CorrelatedScenarioError"),
+                          (np.linalg.LinAlgError("x"), "LinAlgError")):
+            monkeypatch.setattr(cs, "correlated_yield_scenarios", self._raise(exc))
+            diagnostics: dict = {}
+            draws = yield_scenarios_from_distributions(
+                self._seeded_conn(), [0, 1],
+                supply_risk_policy=SupplyRiskPolicy(
+                    mode="estimated", on_failure="independent"),
+                diagnostics_out=diagnostics)
+            assert draws and diagnostics["error_type"] == name

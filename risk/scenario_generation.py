@@ -260,10 +260,14 @@ def yield_scenarios_from_distributions(
     e.g. a missing table) are NOT governed by ``on_failure`` and always
     propagate: a broken migration is not a modelling judgement.
 
-    SEED PRECEDENCE. When a policy is supplied AND enabled, the policy's
-    ``seed`` is authoritative, because the policy is the object that
-    describes the whole dependence model and its reproducibility. The
-    ``seed`` argument applies to the independent path. The seed actually
+    SEED PRECEDENCE. One effective seed is resolved once:
+
+        effective_seed = policy.seed if policy.enabled else seed
+
+    An enabled policy owns the dependence model and its reproducibility, so
+    its seed governs every draw made under that policy — INCLUDING the
+    independent fallback taken after the policy fails. The ``seed``
+    argument governs only the plain independent path. The seed actually
     used is always reported in diagnostics as ``seed``.
     """
     from risk.correlated_scenarios import (
@@ -272,6 +276,12 @@ def yield_scenarios_from_distributions(
     )
 
     policy = supply_risk_policy or DEFAULT_SUPPLY_RISK_POLICY
+    # Resolve the seed ONCE so sampling and reporting cannot disagree. An
+    # enabled policy owns the dependence model and its reproducibility, so
+    # its seed governs — including on the independent fallback taken after
+    # that policy fails. Previously the fallback silently reverted to the
+    # function argument, contradicting the documented precedence.
+    effective_seed = policy.seed if getattr(policy, "enabled", False) else seed
     # Provenance of a fallback, held until the independent draws exist.
     # Emitting it here and then falling through would have it OVERWRITTEN by
     # the independent sampler's own _emit at the end of this function, so a
@@ -292,13 +302,22 @@ def yield_scenarios_from_distributions(
             # Infrastructure fault: never governed by on_failure, never
             # degraded into an independent-scenario "result".
             raise
-        except (CorrelatedScenarioError, ValueError, np.linalg.LinAlgError) as exc:
+        except (CorrelatedScenarioError, np.linalg.LinAlgError) as exc:
             # Only anticipated failures are caught, and only when the policy
             # has explicitly permitted a fallback. A blanket `except
             # Exception: pass` here would let an operator select a
             # correlated policy, have it fail, and receive INDEPENDENT
             # scenarios that look like a normal result — silently changing
             # the dependence assumption behind a commitment recommendation.
+            #
+            # Generic ValueError is deliberately NOT caught. It can mean
+            # malformed data, a bad array shape, invalid Beta parameters or
+            # a plain programming defect, and converting any of those into
+            # apparently valid independent scenarios is the same class of
+            # mistake as the blanket catch. Policy arguments are already
+            # validated at construction, so a model-level ValueError worth
+            # tolerating should be wrapped as CorrelatedScenarioError near
+            # its source instead.
             if getattr(supply_risk_policy, "on_failure", "raise") == "raise":
                 raise
             fallback_diagnostics = {
@@ -331,7 +350,7 @@ def yield_scenarios_from_distributions(
     from scipy import stats as _st
 
     dists = supplier_fill_distributions(conn, quantile=0.10)
-    gen = np.random.default_rng(seed)
+    gen = np.random.default_rng(effective_seed)
     out: dict = {}
     n_suppliers = 0
     for sid, d in dists.items():
@@ -352,7 +371,7 @@ def yield_scenarios_from_distributions(
         # A fallback happened: keep WHY, and complete it with the facts only
         # known after sampling.
         fallback_diagnostics.update(
-            seed=seed, n_suppliers=n_suppliers, copula=None, df=None,
+            seed=effective_seed, n_suppliers=n_suppliers, copula=None, df=None,
             mean_latent_correlation=0.0,
             fallback_generated_draws=bool(out),
         )
@@ -372,7 +391,7 @@ def yield_scenarios_from_distributions(
             "copula": None,
             "df": None,
             "mean_latent_correlation": 0.0,
-            "seed": seed,
+            "seed": effective_seed,
             "n_suppliers": n_suppliers,
             "policy_description": getattr(
                 policy, "describe", lambda: "independent supplier draws")(),
