@@ -1,0 +1,149 @@
+name: CI
+
+# Attaches test and lint results to the commit itself. Until now these ran
+# only in a developer's terminal, so a reviewer could read a claim like
+# "1025 passed" in a PR description with no way to verify it against the
+# code being reviewed.
+#
+# Security note: ref names reach `run:` blocks only through `env:` with
+# quoted expansion, never by `${{ }}` interpolation into the shell. Git ref
+# names are attacker-controllable on a fork PR, and direct interpolation is
+# the standard GitHub Actions script-injection vector.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # A newer push to the same ref makes the in-flight run obsolete.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: pytest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          # -e picks up the project's own dependency set; the [dev] extra
+          # carries pytest, coverage and ruff.
+          pip install -e ".[dev]"
+
+      - name: Run tests with coverage
+        # No network, no API keys, no paid services: every external
+        # connector is mocked in the suite, and the solver is bundled.
+        env:
+          PYTHONHASHSEED: "0"
+        run: python -m pytest tests/ -q --cov=. --cov-report=term --cov-report=xml
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          if-no-files-found: warn
+
+  lint:
+    name: ruff
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install ruff
+        run: python -m pip install --upgrade pip ruff
+
+      - name: Lint the files this pull request changes
+        # The repository carries pre-existing lint debt on files this work
+        # does not touch, so a repo-wide gate would fail for reasons
+        # unrelated to the change under review. On a PR we lint exactly the
+        # Python files that PR modifies — the standard new work is actually
+        # held to.
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=50 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          CHANGED=$(git diff --name-only --diff-filter=ACMR \
+            "origin/${BASE_REF}...HEAD" -- '*.py')
+          if [ -z "$CHANGED" ]; then
+            echo "No Python files changed."
+            exit 0
+          fi
+          echo "$CHANGED"
+          # shellcheck disable=SC2086
+          ruff check $CHANGED
+
+      - name: Report repo-wide lint debt (non-blocking)
+        # Visibility without a gate: the count should trend down, and this
+        # makes it observable instead of invisible.
+        if: always()
+        continue-on-error: true
+        run: ruff check . --statistics || true
+
+  frontend:
+    name: next build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect frontend changes
+        # A Next build is slow and most PRs here are backend-only, so skip
+        # it unless something under web/ actually changed.
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags --depth=50 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          if git diff --name-only "origin/${BASE_REF}...HEAD" | grep -q '^web/'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.changes.outputs.run == 'true'
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install and build
+        if: steps.changes.outputs.run == 'true'
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
