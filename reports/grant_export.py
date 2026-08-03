@@ -135,6 +135,19 @@ def generate_grant_metrics(
     return metrics
 
 
+def _csv_safe(value: object) -> str:
+    """Neutralize spreadsheet formula injection.
+
+    A cell beginning with = + - @ (or a leading tab/CR) is interpreted as a
+    formula by Excel/Sheets. Operator-supplied names/reasons flow into these
+    exports, so prefix any such cell with an apostrophe to force text.
+    """
+    s = "" if value is None else str(value)
+    if s[:1] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + s
+    return s
+
+
 def generate_grant_csv(
     conn: duckdb.DuckDBPyConnection,
     output_path: str | Path,
@@ -151,5 +164,6 @@ def generate_grant_csv(
         w = csv.writer(f)
         w.writerow(["metric", "value", "unit", "source"])
         for m in metrics:
-            w.writerow([m.name, m.value, m.unit, m.source])
+            w.writerow([_csv_safe(m.name), _csv_safe(m.value),
+                        _csv_safe(m.unit), _csv_safe(m.source)])
     return out

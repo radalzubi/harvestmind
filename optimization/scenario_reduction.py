@@ -95,8 +95,11 @@ def reduce_scenarios(
     result["scenario_weight"] = result["scenario_index"].map(
         {idx_remap[k]: v for k, v in new_weights.items()}
     )
-    # Normalize weights
-    total_w = result["scenario_weight"].sum()
+    # Normalize over UNIQUE scenarios, not rows. With group_cols a single
+    # scenario spans one row per group member, so summing the row-expanded
+    # weights overcounts by the rows-per-scenario factor and leaves the
+    # per-scenario weights summing to <1. Use the unique scenario weights.
+    total_w = float(sum(new_weights.values()))
     if total_w > 0:
         result["scenario_weight"] = result["scenario_weight"] / total_w
 

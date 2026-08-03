@@ -101,5 +101,16 @@ def fetch_and_store(conn, days_back: int = 30) -> int:
     )
     if df.empty:
         return 0
-    conn.execute("INSERT OR IGNORE INTO fact_weather_obs SELECT * FROM df")
+    # Enumerate columns explicitly: fact_weather_obs has a 15th column
+    # (created_at, defaulted) that the parsed frame does not, so a positional
+    # ``SELECT *`` fails the binder and persists nothing. (The USDA connectors
+    # already enumerate for the same reason.)
+    cols = (
+        "obs_id, obs_date, location_id, county_fips, station_id, source, "
+        "tmax_c, tmin_c, tavg_c, precip_mm, heat_stress_flag, "
+        "drought_monitor_cat, enso_oni_index, gdd_base10"
+    )
+    conn.execute(
+        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"
+    )
     return len(df)

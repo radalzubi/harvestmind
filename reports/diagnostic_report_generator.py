@@ -62,9 +62,16 @@ def render_diagnostic_report(
     -------
     HTML string.
     """
-    from jinja2 import Environment, FileSystemLoader
+    from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-    env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)))
+    # autoescape ON: operator-supplied strings (product/supplier/buyer names,
+    # waste reasons, partner_name) are interpolated into served HTML and must
+    # be escaped to prevent reflected/stored XSS. Numeric fmt_* filters are
+    # unaffected.
+    env = Environment(
+        loader=FileSystemLoader(str(TEMPLATE_DIR)),
+        autoescape=select_autoescape(["html", "htm", "xml"]),
+    )
     env.filters["fmt_usd"] = _fmt_usd
     env.filters["fmt_pct"] = _fmt_pct
     env.filters["risk_class"] = _risk_class

@@ -69,9 +69,14 @@ def render_roi_report(
     """
     _validate_roi(roi)
 
-    from jinja2 import Environment, FileSystemLoader
+    from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-    env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)))
+    # autoescape ON — see diagnostic_report_generator: operator-derived strings
+    # reach served HTML and must be escaped against XSS.
+    env = Environment(
+        loader=FileSystemLoader(str(TEMPLATE_DIR)),
+        autoescape=select_autoescape(["html", "htm", "xml"]),
+    )
     tmpl = env.get_template("roi_report.html")
 
     from backtesting.procurement_metrics import cost_per_kg_by_model

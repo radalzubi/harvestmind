@@ -5,12 +5,13 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import HTMLResponse
 
-from api.dependencies import get_conn
+from api.dependencies import get_conn, rate_limiter
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
-@router.get("/roi", response_class=HTMLResponse)
+@router.get("/roi", response_class=HTMLResponse,
+            dependencies=[Depends(rate_limiter)])
 def roi_report_html(
     partner_name: str = "Hoosier Harvest Market",
     annual_gmv: float = 3_000_000.0,

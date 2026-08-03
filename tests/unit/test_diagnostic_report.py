@@ -223,6 +223,26 @@ def test_render_includes_partner_name(full_summary, tmp_path):
     assert "Acme Food Hub" in html
 
 
+def test_render_escapes_html_in_operator_strings(full_summary):
+    """Security regression: operator-controlled strings (partner name, and
+    product names from uploaded data) must be HTML-escaped in the served
+    report, not rendered as live markup (XSS)."""
+    import copy
+
+    from reports.diagnostic_report_generator import render_diagnostic_report
+
+    payload = copy.deepcopy(full_summary)
+    payload["waste"]["by_product"][0]["product_name"] = "<img src=x onerror=alert(1)>"
+
+    html = render_diagnostic_report(
+        payload, "<script>alert('xss')</script>", as_pdf=False
+    )
+    # Raw script/markup must NOT appear; the escaped form must.
+    assert "<script>alert('xss')</script>" not in html
+    assert "<img src=x onerror=alert(1)>" not in html
+    assert "&lt;script&gt;" in html
+
+
 def test_render_includes_section_headers(full_summary, tmp_path):
     from reports.diagnostic_report_generator import render_diagnostic_report
 

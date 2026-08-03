@@ -36,7 +36,7 @@ export default function ReportsPage() {
         title="Reports"
         sub="Generate and export your FSMA-204 diagnostic report"
         actions={
-          <a href={REPORT_URL} target="_blank" rel="noreferrer">
+          <a href={REPORT_URL} target="_blank" rel="noopener noreferrer">
             <Tbtn
               variant="primary"
               icon={<ExternalLink size={13} strokeWidth={1.6} />}
@@ -79,12 +79,12 @@ export default function ReportsPage() {
                 Rendered live from your uploaded data — no static snapshots.
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <a href={REPORT_URL} target="_blank" rel="noreferrer">
+                <a href={REPORT_URL} target="_blank" rel="noopener noreferrer">
                   <Tbtn variant="primary" icon={<ExternalLink size={12} />}>
                     View in browser
                   </Tbtn>
                 </a>
-                <a href={`${REPORT_URL}?format=pdf`} target="_blank" rel="noreferrer">
+                <a href={`${REPORT_URL}?format=pdf`} target="_blank" rel="noopener noreferrer">
                   <Tbtn>
                     Download PDF
                   </Tbtn>

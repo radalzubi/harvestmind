@@ -55,9 +55,18 @@ class LeakageGuard:
         return self._df[mask].copy()
 
     def validate_no_leakage(self, result_df: pd.DataFrame, date_col: str) -> None:
-        """Raise LeakageError if result_df contains any dates past the cutoff."""
+        """Raise LeakageError if result_df contains any dates past the cutoff.
+
+        Fails CLOSED: a missing date column is treated as a caller error, not a
+        pass. Silently returning would disable the guard exactly when it should
+        catch a differently-named/renamed date column carrying leaked dates.
+        """
         if date_col not in result_df.columns:
-            return
+            raise LeakageError(
+                f"validate_no_leakage: date column {date_col!r} not in result "
+                f"(columns={list(result_df.columns)}); cannot verify cutoff "
+                f"{self._cutoff}."
+            )
         future_mask = pd.to_datetime(result_df[date_col]).dt.date > self._cutoff
         if future_mask.any():
             bad_dates = result_df.loc[future_mask, date_col].unique()[:3]
