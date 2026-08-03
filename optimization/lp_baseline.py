@@ -108,8 +108,11 @@ class LPBaseline:
         # Per-product penalty lookups (B6); flat fallback when no map supplied.
         cw = self.waste_cost_by_product or {}
         cu = self.unmet_cost_by_product or {}
-        _cw = lambda j: cw.get(j, self.waste_cost_per_kg)
-        _cu = lambda j: cu.get(j, self.lost_sale_per_kg_usd)
+        def _cw(j):
+            return cw.get(j, self.waste_cost_per_kg)
+
+        def _cu(j):
+            return cu.get(j, self.lost_sale_per_kg_usd)
 
         def obj_rule(m):
             if self.newsvendor_objective:
