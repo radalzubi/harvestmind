@@ -74,7 +74,12 @@ jobs:
           cache: pip
 
       - name: Install ruff
-        run: python -m pip install --upgrade pip ruff
+        # From the project's own [dev] extra, which pins an exact version.
+        # Installing bare `ruff` here let CI drift ahead of every
+        # developer's local copy and fail on rules they could not see.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
 
       - name: Lint the files this pull request changes
         # The repository carries pre-existing lint debt on files this work

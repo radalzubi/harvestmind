@@ -8,7 +8,6 @@ nothing under the data/pool/checkpoint paths can ever be committed.
 
 from __future__ import annotations
 
-import json
 import subprocess
 from pathlib import Path
 
@@ -140,7 +139,8 @@ def test_gitignore_covers_all_sensitive_paths():
         ".env",
     ]
     r = subprocess.run(["git", "check-ignore", *paths],
-                       capture_output=True, text=True, cwd=REPO)
+                       capture_output=True, text=True, cwd=REPO,
+                       check=False)
     ignored = set(r.stdout.splitlines())
     missing = [p for p in paths if p not in ignored]
     assert not missing, f"NOT gitignored: {missing}"
@@ -163,7 +163,8 @@ def test_no_sensitive_files_tracked():
                         "training/audit_log", "training/corpus",
                         "training/forecaster_checkpoints",
                         "training/extraction_checkpoints"],
-                       capture_output=True, text=True, cwd=REPO)
+                       capture_output=True, text=True, cwd=REPO,
+                       check=False)
     assert r.stdout.strip() == "", f"tracked sensitive files:\n{r.stdout}"
 
 
@@ -174,7 +175,8 @@ def test_pool_source_package_is_tracked():
     package would drop out of the repository again.
     """
     r = subprocess.run(["git", "ls-files", "pool"],
-                       capture_output=True, text=True, cwd=REPO)
+                       capture_output=True, text=True, cwd=REPO,
+                       check=False)
     tracked = set(r.stdout.split())
     for required in ("pool/__init__.py", "pool/pool_contributor.py",
                      "pool/pool_reader.py"):
