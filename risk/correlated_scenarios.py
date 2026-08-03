@@ -74,6 +74,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import duckdb
 import numpy as np
 from scipy import stats
 
@@ -594,7 +595,21 @@ def _estimation_refusal(
 
 
 class CorrelatedScenarioError(RuntimeError):
-    """An explicitly requested correlation policy could not be honoured."""
+    """An explicitly requested correlation policy could not be honoured.
+
+    Signals INSUFFICIENT STATISTICAL EVIDENCE — the condition ``on_failure``
+    is meant to govern.
+    """
+
+
+class ScenarioDataError(RuntimeError):
+    """Required scenario input data is structurally unavailable.
+
+    An infrastructure or migration fault, deliberately distinct from
+    CorrelatedScenarioError and deliberately NOT governed by ``on_failure``:
+    a missing table is not a modelling judgement and must not be silently
+    absorbed into an independent-scenario fallback.
+    """
 
 
 def correlated_yield_scenarios(
@@ -738,7 +753,23 @@ def correlated_yield_scenarios(
 
 
 def _weekly_fill_matrix(conn, supplier_ids: list[str]) -> dict[str, np.ndarray]:
-    """Per-supplier weekly fill-rate series aligned on a common week grid."""
+    """Per-supplier weekly fill-rate series aligned on a common week grid.
+
+    NO BLANKET EXCEPTION HANDLING. This previously wrapped the query in
+    ``except Exception: return {}``, which turned schema errors, closed
+    connections, migration defects and type errors alike into "there is no
+    delivery history". The consequences were both bad and opposite: with
+    ``on_failure="independent"`` an infrastructure fault silently produced
+    independent scenarios, and with ``on_failure="raise"`` it surfaced as a
+    misleading *modelling* refusal ("refused_no_history") that hid the
+    database root cause.
+
+    ``on_failure`` governs INSUFFICIENT STATISTICAL EVIDENCE. It must not
+    govern broken infrastructure, so database and programming failures
+    propagate. The one case worth naming is a genuinely absent table, which
+    raises ``ScenarioDataError`` — deliberately NOT caught by the
+    independent-fallback block.
+    """
     try:
         df = conn.execute("""
             SELECT supplier_id,
@@ -749,8 +780,11 @@ def _weekly_fill_matrix(conn, supplier_ids: list[str]) -> dict[str, np.ndarray]:
             WHERE ordered_quantity > 0 AND delivery_date IS NOT NULL
             GROUP BY 1, 2
         """).df()
-    except Exception:
-        return {}
+    except duckdb.CatalogException as exc:
+        raise ScenarioDataError(
+            "required table stg_supplier_deliveries is unavailable; this is "
+            "an infrastructure or migration fault, not an absence of "
+            "delivery history") from exc
     if df.empty:
         return {}
     weeks = sorted(df["wk"].unique())

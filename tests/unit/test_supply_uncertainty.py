@@ -1069,3 +1069,142 @@ class TestFailureHandling:
             SupplyRiskPolicy(mode="estimated", copula="t", df=0.0)
         with pytest.raises(ValueError, match="percentage"):
             SupplyRiskPolicy(mode="estimated", min_pct_pairs_adequate=150.0)
+
+
+class TestIndependentPathProvenance:
+    """The DEFAULT path must be audited too.
+
+    Regression: _emit was only called inside the enabled-correlated branch,
+    so `generate_yield_scenarios(conn, ids)` and an explicit independent
+    policy both returned draws with EMPTY diagnostics — leaving the most
+    common production route with no record of its dependence assumption,
+    which is exactly what the contract promises never to happen.
+    """
+
+    def test_no_policy_still_reports_provenance(self):
+        from risk.scenario_generation import generate_yield_scenarios
+
+        conn = TestPolicyBranchesEndToEnd._conn(n_weeks=6, n_suppliers=3)
+        res = generate_yield_scenarios(conn, [0, 1])
+        assert res.draws
+        d = res.diagnostics
+        assert d, "default path must not return empty diagnostics"
+        assert d["correlation_source"] == "independent_by_policy"
+        assert d["policy_mode"] == "independent"
+        assert d["fallback_applied"] is None
+        assert d["copula"] is None
+        assert d["mean_latent_correlation"] == 0.0
+        assert d["n_suppliers"] == 3
+        assert "understated" in d["note"]
+
+    def test_explicit_independent_policy_reports_provenance(self):
+        from risk.scenario_generation import generate_yield_scenarios
+
+        conn = TestPolicyBranchesEndToEnd._conn(n_weeks=6, n_suppliers=3)
+        res = generate_yield_scenarios(
+            conn, [0, 1], supply_risk_policy=SupplyRiskPolicy(mode="independent"))
+        assert res.diagnostics["correlation_source"] == "independent_by_policy"
+        assert res.diagnostics["n_suppliers"] == 3
+
+    def test_no_suppliers_still_reports_provenance(self):
+        import duckdb
+
+        from risk.scenario_generation import generate_yield_scenarios
+
+        root = __import__("pathlib").Path(__file__).resolve().parents[2]
+        c = duckdb.connect(":memory:")
+        for sql in sorted((root / "db" / "migrations").glob("*.sql")):
+            c.execute(sql.read_text())
+        res = generate_yield_scenarios(c, [0, 1])
+        assert res.draws == {}
+        assert res.diagnostics["correlation_source"] == "independent_by_policy"
+        assert res.diagnostics["n_suppliers"] == 0
+
+    def test_seed_is_reported_on_the_independent_path(self):
+        from risk.scenario_generation import generate_yield_scenarios
+
+        conn = TestPolicyBranchesEndToEnd._conn(n_weeks=6)
+        assert generate_yield_scenarios(
+            conn, [0, 1], seed=7).diagnostics["seed"] == 7
+
+    def test_policy_seed_is_authoritative_when_correlation_enabled(self):
+        """Documented precedence: the policy owns the dependence model, so
+        its seed governs once correlation is on."""
+        from risk.scenario_generation import generate_yield_scenarios
+
+        conn = TestPolicyBranchesEndToEnd._conn(n_weeks=30)
+        pol = SupplyRiskPolicy(mode="equicorrelated", kendall_tau=0.4, seed=123)
+        res = generate_yield_scenarios(conn, [0, 1], seed=999,
+                                       supply_risk_policy=pol)
+        assert res.diagnostics["seed"] == 123      # policy wins, not 999
+
+
+class TestInfrastructureFaultsPropagate:
+    """on_failure governs insufficient EVIDENCE, never broken infrastructure.
+
+    Regression: _weekly_fill_matrix wrapped its query in
+    `except Exception: return {}`, so schema errors, closed connections and
+    migration defects were all reported as "no delivery history". With
+    on_failure="independent" that silently produced independent scenarios;
+    with on_failure="raise" it surfaced as a misleading MODELLING refusal
+    that hid the database root cause.
+    """
+
+    @staticmethod
+    def _conn_without_tables():
+        import duckdb
+        return duckdb.connect(":memory:")
+
+    def test_missing_table_raises_scenario_data_error(self):
+        from risk.correlated_scenarios import ScenarioDataError, _weekly_fill_matrix
+
+        with pytest.raises(ScenarioDataError, match="unavailable"):
+            _weekly_fill_matrix(self._conn_without_tables(), ["S0"])
+
+    def test_scenario_data_error_is_distinct_from_modelling_refusal(self):
+        from risk.correlated_scenarios import (
+            CorrelatedScenarioError,
+            ScenarioDataError,
+        )
+
+        assert not issubclass(ScenarioDataError, CorrelatedScenarioError)
+        assert not issubclass(CorrelatedScenarioError, ScenarioDataError)
+
+    def test_infrastructure_fault_is_not_absorbed_by_permitted_fallback(self):
+        """Even on_failure="independent" must not swallow a schema fault."""
+        import duckdb
+
+        from risk.correlated_scenarios import ScenarioDataError
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        root = __import__("pathlib").Path(__file__).resolve().parents[2]
+        c = duckdb.connect(":memory:")
+        for sql in sorted((root / "db" / "migrations").glob("*.sql")):
+            c.execute(sql.read_text())
+        # Seed suppliers so distributions exist, then remove the table the
+        # correlation estimator needs — an infrastructure fault, not thin data.
+        import pandas as pd
+        wk = pd.date_range("2024-01-01", periods=20, freq="7D")
+        rows = [(f"D{a}{w}", f"S{a}", f"S{a}", "P1", "Tom",
+                 wk[w].date().isoformat(), 500.0, 450.0, 450.0)
+                for a in range(3) for w in range(20)]
+        c.executemany(
+            "INSERT INTO stg_supplier_deliveries (delivery_id, supplier_id,"
+            " supplier_name, product_id, product_name, delivery_date,"
+            " ordered_quantity, delivered_quantity, accepted_quantity)"
+            " VALUES (?,?,?,?,?,?,?,?,?)", rows)
+        # Snapshot the fitted distributions, then remove the table the
+        # correlation estimator reads — an infrastructure fault, not thin data.
+        from risk.supplier_distribution import supplier_fill_distributions
+        assert supplier_fill_distributions(c, quantile=0.10)
+        c.execute("DROP TABLE stg_supplier_deliveries")
+
+        pol = SupplyRiskPolicy(mode="estimated", on_failure="independent")
+        with pytest.raises((ScenarioDataError, duckdb.CatalogException)) as exc:
+            yield_scenarios_from_distributions(c, [0, 1],
+                                               supply_risk_policy=pol)
+        # The essential property: an infrastructure fault surfaces AS one,
+        # and is never converted into a modelling refusal or into a
+        # successful-looking independent result.
+        from risk.correlated_scenarios import CorrelatedScenarioError
+        assert not isinstance(exc.value, CorrelatedScenarioError)

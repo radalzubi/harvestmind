@@ -252,11 +252,26 @@ def yield_scenarios_from_distributions(
         pol = SupplyRiskPolicy(mode="estimated", copula="t", df=5)
         yield_scenarios_from_distributions(conn, ids, supply_risk_policy=pol)
 
-    A dependence-modelling failure degrades to independent draws rather
-    than failing the plan, since an optimistic model beats no answer — but
-    only because the caller has already been told, via the policy, which
-    assumption is in force.
+    FAILURE BEHAVIOUR. When a requested dependence model cannot be
+    supported — whether by exception or by insufficient statistical
+    evidence — the DEFAULT is to raise. Independent fallback happens only
+    when the policy sets ``on_failure="independent"``, and is then recorded
+    as ``fallback_applied``. Infrastructure faults (``ScenarioDataError``,
+    e.g. a missing table) are NOT governed by ``on_failure`` and always
+    propagate: a broken migration is not a modelling judgement.
+
+    SEED PRECEDENCE. When a policy is supplied AND enabled, the policy's
+    ``seed`` is authoritative, because the policy is the object that
+    describes the whole dependence model and its reproducibility. The
+    ``seed`` argument applies to the independent path. The seed actually
+    used is always reported in diagnostics as ``seed``.
     """
+    from risk.correlated_scenarios import (
+        DEFAULT_SUPPLY_RISK_POLICY,
+        ScenarioDataError,
+    )
+
+    policy = supply_risk_policy or DEFAULT_SUPPLY_RISK_POLICY
     if supply_risk_policy is not None and getattr(
             supply_risk_policy, "enabled", False):
         from risk.correlated_scenarios import (
@@ -266,6 +281,10 @@ def yield_scenarios_from_distributions(
         try:
             draws, diag = correlated_yield_scenarios(
                 conn, scenario_indices, policy=supply_risk_policy)
+        except ScenarioDataError:
+            # Infrastructure fault: never governed by on_failure, never
+            # degraded into an independent-scenario "result".
+            raise
         except (CorrelatedScenarioError, ValueError, np.linalg.LinAlgError) as exc:
             # Only anticipated failures are caught, and only when the policy
             # has explicitly permitted a fallback. A blanket `except
@@ -299,14 +318,35 @@ def yield_scenarios_from_distributions(
     dists = supplier_fill_distributions(conn, quantile=0.10)
     gen = np.random.default_rng(seed)
     out: dict = {}
+    n_suppliers = 0
     for sid, d in dists.items():
         if sid == "_prior":
             continue
+        n_suppliers += 1
         a, b = float(d["alpha"]), float(d["beta"])
         draws = _st.beta.rvs(a, b, size=len(scenario_indices),
                              random_state=gen)
         for k, omega in enumerate(scenario_indices):
             out[(int(omega), sid)] = float(min(max(draws[k], 0.0), 1.0))
+
+    # Provenance for the INDEPENDENT path too. This branch was previously
+    # silent, so the most common production route — the default — produced
+    # plans with no record of the dependence assumption behind them, which
+    # is exactly what the contract promises never to do.
+    _emit({
+        "policy_mode": getattr(policy, "mode", "independent"),
+        "correlation_source": "independent_by_policy",
+        "fallback_applied": None,
+        "copula": None,
+        "df": None,
+        "mean_latent_correlation": 0.0,
+        "seed": seed,
+        "n_suppliers": n_suppliers,
+        "policy_description": getattr(
+            policy, "describe", lambda: "independent supplier draws")(),
+        "note": ("supplier fills sampled INDEPENDENTLY; aggregate risk may "
+                 "be understated when suppliers share regional hazards"),
+    }, diagnostics_out)
     return out
 
 

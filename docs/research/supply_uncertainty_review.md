@@ -272,7 +272,7 @@ support.
 
 | Policy mode | Correlation source | When to use |
 |---|---|---|
-| `independent` (default) | none; rho = 0 | Always, until joint history exists. Diagnostics state that aggregate risk is understated if suppliers share a region. |
+| `independent` (default) | none; rho = 0 | Always, until joint history exists. Provenance IS emitted on this path too (`correlation_source: independent_by_policy`, supplier count, seed) and states that aggregate risk is understated if suppliers share a region. |
 | `equicorrelated` | one operator-supplied Kendall's tau | The operator knows their growers share a weather shed but history is too short to estimate |
 | `estimated` | pairwise Spearman on shared weeks, then shrunk | Genuine joint history exists |
 
@@ -316,12 +316,27 @@ Under `estimated`, in order:
    to exceptions — an earlier revision honoured the policy only for
    exceptions, so the PRIMARY expected failure mode still degraded
    silently.
-7. **Provenance is request-scoped.** Diagnostics are returned with the
-   draws (`generate_yield_scenarios` -> `ScenarioGenerationResult`, or the
-   `diagnostics_out` sink), never stored in module-global state. A process
-   global raced under concurrent planning calls, so operator A could read
-   operator B's policy, supplier count and failure reason — corrupting
-   audit provenance across a tenant boundary.
+7. **Provenance is request-scoped, and emitted on EVERY path.**
+   Diagnostics are returned with the draws (`generate_yield_scenarios` ->
+   `ScenarioGenerationResult`, or the `diagnostics_out` sink), never stored
+   in module-global state. A process global raced under concurrent planning
+   calls, so operator A could read operator B's policy, supplier count and
+   failure reason — corrupting audit provenance across a tenant boundary.
+   The independent path emits provenance too; an earlier revision emitted
+   only inside the correlated branch, leaving the most common production
+   route — the default — entirely unaudited.
+8. **Infrastructure faults are not modelling outcomes.** `on_failure`
+   governs INSUFFICIENT STATISTICAL EVIDENCE only. A missing table or other
+   database fault raises `ScenarioDataError` and propagates regardless of
+   the policy. An earlier revision wrapped the query in
+   `except Exception: return {}`, so a migration defect was reported as
+   "no delivery history" — silently producing independent scenarios under
+   `on_failure="independent"`, and a misleading *modelling* refusal that
+   hid the root cause under `on_failure="raise"`.
+9. **Seed precedence.** When correlation is enabled the policy's `seed` is
+   authoritative, because the policy describes the whole dependence model
+   and its reproducibility; the function argument governs the independent
+   path. The seed actually used is always reported in diagnostics.
 
 Every branch is reported in the returned diagnostics, so a plan can always
 be traced back to the dependence assumption behind it.
