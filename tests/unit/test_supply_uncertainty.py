@@ -1208,3 +1208,131 @@ class TestInfrastructureFaultsPropagate:
         # successful-looking independent result.
         from risk.correlated_scenarios import CorrelatedScenarioError
         assert not isinstance(exc.value, CorrelatedScenarioError)
+
+
+class TestFallbackProvenanceSurvives:
+    """A permitted fallback must keep the REASON it happened.
+
+    Regression: the exception path emitted its diagnostics and then fell
+    through to the independent sampler, whose own _emit at the end of the
+    function OVERWROTE them with correlation_source="independent_by_policy"
+    and fallback_applied=None. So a fallback after a correlation-model
+    failure returned successful-looking draws with the reason erased —
+    breaking the audit contract in the one case that most needs it.
+    """
+
+    @staticmethod
+    def _seeded_conn():
+        return TestPolicyBranchesEndToEnd._conn(n_weeks=20, n_suppliers=3)
+
+    def test_exception_fallback_preserves_reason(self, monkeypatch):
+        import risk.correlated_scenarios as cs
+        from risk.correlated_scenarios import CorrelatedScenarioError
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        def boom(*_a, **_k):
+            raise CorrelatedScenarioError("forced failure")
+
+        monkeypatch.setattr(cs, "correlated_yield_scenarios", boom)
+        diagnostics: dict = {}
+        draws = yield_scenarios_from_distributions(
+            self._seeded_conn(), [0, 1],
+            supply_risk_policy=SupplyRiskPolicy(mode="estimated",
+                                                on_failure="independent"),
+            diagnostics_out=diagnostics)
+
+        assert draws, "fallback must still produce usable scenarios"
+        assert diagnostics["correlation_source"] == "failed_degraded_to_independent"
+        assert diagnostics["fallback_applied"] == "independent"
+        assert diagnostics["error_type"] == "CorrelatedScenarioError"
+        assert "forced failure" in diagnostics["error"]
+        # Facts only known after sampling are filled in, not lost.
+        assert diagnostics["n_suppliers"] == 3
+        assert diagnostics["seed"] == 42
+        assert diagnostics["fallback_generated_draws"] is True
+
+    def test_exception_fallback_still_raises_when_not_permitted(self, monkeypatch):
+        import risk.correlated_scenarios as cs
+        from risk.correlated_scenarios import CorrelatedScenarioError
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        def boom(*_a, **_k):
+            raise CorrelatedScenarioError("forced failure")
+
+        monkeypatch.setattr(cs, "correlated_yield_scenarios", boom)
+        with pytest.raises(CorrelatedScenarioError):
+            yield_scenarios_from_distributions(
+                self._seeded_conn(), [0, 1],
+                supply_risk_policy=SupplyRiskPolicy(mode="estimated",
+                                                    on_failure="raise"))
+
+    def test_linalg_failure_also_preserved(self, monkeypatch):
+        """Any anticipated failure type, not just CorrelatedScenarioError."""
+        import numpy as np
+
+        import risk.correlated_scenarios as cs
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        def boom(*_a, **_k):
+            raise np.linalg.LinAlgError("cholesky failed")
+
+        monkeypatch.setattr(cs, "correlated_yield_scenarios", boom)
+        diagnostics: dict = {}
+        yield_scenarios_from_distributions(
+            self._seeded_conn(), [0, 1],
+            supply_risk_policy=SupplyRiskPolicy(mode="estimated",
+                                                on_failure="independent"),
+            diagnostics_out=diagnostics)
+        assert diagnostics["error_type"] == "LinAlgError"
+        assert diagnostics["fallback_applied"] == "independent"
+
+    def test_empty_correlated_result_preserves_original_reason(self, monkeypatch):
+        """The other fallthrough: correlated path returns no draws."""
+        import risk.correlated_scenarios as cs
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        monkeypatch.setattr(
+            cs, "correlated_yield_scenarios",
+            lambda *_a, **_k: ({}, {"correlation_source": "refused_sparse_pairs",
+                                    "note": "too few adequate pairs"}))
+        diagnostics: dict = {}
+        draws = yield_scenarios_from_distributions(
+            self._seeded_conn(), [0, 1],
+            supply_risk_policy=SupplyRiskPolicy(mode="estimated",
+                                                on_failure="independent"),
+            diagnostics_out=diagnostics)
+        assert draws
+        assert diagnostics["correlation_source"] == "empty_degraded_to_independent"
+        assert diagnostics["original_correlation_source"] == "refused_sparse_pairs"
+        assert diagnostics["fallback_applied"] == "independent"
+
+    def test_fallback_attempted_but_no_draws_is_distinguished(self, monkeypatch):
+        """Attempted != applied. With no suppliers there are no independent
+        scenarios either, so claiming a fallback was 'applied' would imply
+        scenarios that do not exist."""
+        import duckdb
+
+        import risk.correlated_scenarios as cs
+        from risk.correlated_scenarios import CorrelatedScenarioError
+        from risk.scenario_generation import yield_scenarios_from_distributions
+
+        def boom(*_a, **_k):
+            raise CorrelatedScenarioError("forced failure")
+
+        monkeypatch.setattr(cs, "correlated_yield_scenarios", boom)
+        root = __import__("pathlib").Path(__file__).resolve().parents[2]
+        empty = duckdb.connect(":memory:")
+        for sql in sorted((root / "db" / "migrations").glob("*.sql")):
+            empty.execute(sql.read_text())
+
+        diagnostics: dict = {}
+        draws = yield_scenarios_from_distributions(
+            empty, [0, 1],
+            supply_risk_policy=SupplyRiskPolicy(mode="estimated",
+                                                on_failure="independent"),
+            diagnostics_out=diagnostics)
+        assert draws == {}
+        assert diagnostics["status"] == "no_suppliers"
+        assert diagnostics["fallback_attempted"] == "independent"
+        assert diagnostics["fallback_applied"] is None
+        assert diagnostics["fallback_generated_draws"] is False

@@ -272,6 +272,13 @@ def yield_scenarios_from_distributions(
     )
 
     policy = supply_risk_policy or DEFAULT_SUPPLY_RISK_POLICY
+    # Provenance of a fallback, held until the independent draws exist.
+    # Emitting it here and then falling through would have it OVERWRITTEN by
+    # the independent sampler's own _emit at the end of this function, so a
+    # permitted fallback returned successful-looking draws with the REASON
+    # ERASED — the audit contract broken in the one case that most needs it.
+    fallback_diagnostics: dict[str, Any] | None = None
+
     if supply_risk_policy is not None and getattr(
             supply_risk_policy, "enabled", False):
         from risk.correlated_scenarios import (
@@ -294,25 +301,33 @@ def yield_scenarios_from_distributions(
             # the dependence assumption behind a commitment recommendation.
             if getattr(supply_risk_policy, "on_failure", "raise") == "raise":
                 raise
-            _emit({
+            fallback_diagnostics = {
+                "policy_mode": getattr(supply_risk_policy, "mode", None),
                 "correlation_source": "failed_degraded_to_independent",
                 "fallback_applied": "independent",
-                "policy_mode": getattr(supply_risk_policy, "mode", None),
                 "error_type": type(exc).__name__,
                 "error": str(exc),
                 "note": ("the requested correlated policy failed and the "
                          "policy permitted fallback; scenarios are "
                          "INDEPENDENT and aggregate risk is understated"),
-            }, diagnostics_out)
+            }
         else:
-            _emit(diag, diagnostics_out)
             if draws:
+                _emit(diag, diagnostics_out)
                 return draws
             if getattr(supply_risk_policy, "on_failure", "raise") == "raise":
                 raise CorrelatedScenarioError(
                     "correlated policy produced no draws: "
                     f"{diag.get('correlation_source')} — "
                     f"{diag.get('note', 'no suppliers with fitted distributions')}")
+            # Permitted fallback after an empty correlated result. Carry the
+            # original reason forward rather than letting it be replaced.
+            fallback_diagnostics = {
+                **diag,
+                "correlation_source": "empty_degraded_to_independent",
+                "fallback_applied": "independent",
+                "original_correlation_source": diag.get("correlation_source"),
+            }
     from scipy import stats as _st
 
     dists = supplier_fill_distributions(conn, quantile=0.10)
@@ -333,20 +348,41 @@ def yield_scenarios_from_distributions(
     # silent, so the most common production route — the default — produced
     # plans with no record of the dependence assumption behind them, which
     # is exactly what the contract promises never to do.
-    _emit({
-        "policy_mode": getattr(policy, "mode", "independent"),
-        "correlation_source": "independent_by_policy",
-        "fallback_applied": None,
-        "copula": None,
-        "df": None,
-        "mean_latent_correlation": 0.0,
-        "seed": seed,
-        "n_suppliers": n_suppliers,
-        "policy_description": getattr(
-            policy, "describe", lambda: "independent supplier draws")(),
-        "note": ("supplier fills sampled INDEPENDENTLY; aggregate risk may "
-                 "be understated when suppliers share regional hazards"),
-    }, diagnostics_out)
+    if fallback_diagnostics is not None:
+        # A fallback happened: keep WHY, and complete it with the facts only
+        # known after sampling.
+        fallback_diagnostics.update(
+            seed=seed, n_suppliers=n_suppliers, copula=None, df=None,
+            mean_latent_correlation=0.0,
+            fallback_generated_draws=bool(out),
+        )
+        if not out:
+            # Nothing was produced, so no fallback was actually applied —
+            # distinguish "attempted" from "applied" rather than implying
+            # independent scenarios exist when they do not.
+            fallback_diagnostics["status"] = "no_suppliers"
+            fallback_diagnostics["fallback_attempted"] = "independent"
+            fallback_diagnostics["fallback_applied"] = None
+        _emit(fallback_diagnostics, diagnostics_out)
+    else:
+        default_diagnostics = {
+            "policy_mode": getattr(policy, "mode", "independent"),
+            "correlation_source": "independent_by_policy",
+            "fallback_applied": None,
+            "copula": None,
+            "df": None,
+            "mean_latent_correlation": 0.0,
+            "seed": seed,
+            "n_suppliers": n_suppliers,
+            "policy_description": getattr(
+                policy, "describe", lambda: "independent supplier draws")(),
+            "note": ("supplier fills sampled INDEPENDENTLY; aggregate risk "
+                     "may be understated when suppliers share regional "
+                     "hazards"),
+        }
+        if not out:
+            default_diagnostics["status"] = "no_suppliers"
+        _emit(default_diagnostics, diagnostics_out)
     return out
 
 

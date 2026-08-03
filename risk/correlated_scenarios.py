@@ -628,24 +628,38 @@ def correlated_yield_scenarios(
     1. ``mode="independent"`` (the default) — no correlation at all. The
        diagnostics say so explicitly, including that aggregate risk is
        understated when suppliers share a weather region.
-    2. ``mode="equicorrelated"`` — a single operator-supplied rank
-       correlation. No estimation, no pretence of one.
-    3. ``mode="estimated"`` — pairwise Spearman correlation of weekly fill
-       rates on shared weeks, then:
+    2. ``mode="equicorrelated"`` — a single operator-supplied KENDALL'S TAU
+       target, converted once to the latent scale. No estimation, no
+       pretence of one.
+    3. ``mode="estimated"`` — pairwise KENDALL'S TAU of weekly fill rates on
+       shared weeks (not Spearman: the identity rho = sin(pi*tau/2) holds
+       for the whole elliptical family, so the same target means the same
+       thing for Gaussian and t alike), then:
          a. pairs with fewer than ``min_overlap`` shared weeks are set to 0
-            rather than reporting a correlation computed from two points;
-         b. the whole matrix is SHRUNK toward equicorrelation with weight
-            ``recommended_shrinkage(n_periods, n_entities)``, because k
-            suppliers imply k(k-1)/2 correlations all estimated from the
+            rather than reporting a dependence computed from two points;
+         b. the tau matrix is SHRUNK toward independence with weight
+            ``recommended_shrinkage(n_joint_periods, n_entities)``, because
+            k suppliers imply k(k-1)/2 parameters all estimated from the
             same n weeks;
-         c. the result is validated (symmetry, unit diagonal, range, PSD)
-            and projected to the nearest PSD matrix if needed;
-         d. if fewer than ``min_periods_for_estimation`` weeks of joint
-            history exist, estimation is REFUSED and the policy degrades to
-            independent, recorded as such.
+         c. the shrunk tau is CONVERTED to the latent elliptical
+            correlation via ``kendall_to_latent`` — a rank matrix is not a
+            latent parameter and must never reach the Cholesky factor
+            unconverted;
+         d. the latent matrix is validated (symmetry, unit diagonal, range,
+            PSD) and projected to the nearest PSD matrix if needed, with
+            the repair recorded;
+         e. estimation is REFUSED when the joint evidence cannot support a
+            full matrix — too few jointly-observed periods, too few
+            adequately-overlapping PAIRS, or a disconnected overlap graph.
 
-    Every one of those branches is reported in the returned diagnostics, so
-    a plan can always be traced back to the dependence assumption behind it.
+    FAILURE BEHAVIOUR. A refusal RAISES ``CorrelatedScenarioError`` by
+    default. Independent fallback happens only when the policy sets
+    ``on_failure="independent"``, and is then recorded as
+    ``fallback_applied``. Infrastructure faults (``ScenarioDataError``) are
+    not governed by ``on_failure`` and always propagate.
+
+    Every branch is reported in the returned diagnostics, so a plan can
+    always be traced back to the dependence assumption behind it.
     """
     from risk.supplier_distribution import supplier_fill_distributions
 
