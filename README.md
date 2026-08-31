@@ -1,26 +1,81 @@
 # HarvestMind
 
-**Perishable produce diagnostic platform** for food hubs, aggregators, and distributors.
-Upload your operational CSVs, get a board-ready report showing waste loss, shortage risk,
-available-to-promise by product, and FSMA-204 traceability gaps — in under two minutes.
+**Stochastic supply planning for perishable food operators** — distributors,
+aggregators, and food hubs. Upload the operational CSVs you already have and
+get a dollar-quantified diagnostic, calibrated probabilistic forecasts, and a
+recommendation for how much to commit to each supplier and buyer *before*
+supply is confirmed.
+
+> Status: the engine is built and gate-tested, but every result so far comes
+> from a calibrated synthetic operator. No real operator's records have touched
+> any layer. See `docs/PILOT_READINESS.md`.
 
 ---
 
 ## What It Does
 
-| Problem | HarvestMind Diagnosis |
+### 1. Diagnostic — where margin is leaking, in dollars
+
+| Problem | What you get |
 |---|---|
 | "We're throwing away product but don't know how much" | Waste loss in dollars by product and reason |
 | "Buyers complain we can't fill orders" | Shortage loss + buyer fulfillment rate ranking |
 | "Our supplier keeps shorting us" | Fill rate + rejection rate per supplier, risk-flagged |
 | "Regulators want lot traceability" | FSMA-204 completeness % + list of incomplete lots |
-| "How much are we losing each year?" | Annualized savings estimate with 30% reduction assumption |
+| "How much are we losing each year?" | Annualized savings estimate (15–30% band, labelled as an assumption) |
+
+Deterministic arithmetic on your own records. Auditable, not learned.
+
+### 2. Probabilistic forecasts — uncertainty with a guarantee
+
+Demand from gradient-boosted quantile regression with Croston routing for
+intermittent SKUs. Supplier delivery reliability from an empirical-Bayes
+Beta-Binomial that pools thin-history suppliers toward the population in both
+mean and variance. Intervals corrected by **conformalized quantile
+regression**, giving distribution-free finite-sample coverage — and refusing
+to report an interval when calibration data is too thin to support one.
+
+### 3. Optimizer — what to commit before supply is certain
+
+A **two-stage stochastic program** solved by sample average approximation:
+commitments are first-stage, spot purchases / waste / unmet demand are
+second-stage recourse, with a newsvendor objective so the solution tracks the
+critical fractile. Supplier dependence is modelled with Gaussian and t
+copulas, because suppliers sharing a weather region fail together — treating
+them as independent drove the value of the stochastic solution to
+approximately zero.
+
+Validated by replaying an operator's own history, and by out-of-sample
+**value of the stochastic solution** with bootstrap intervals, reported as
+beneficial / harmful / inconclusive rather than assumed positive.
+
+**The full mathematical specification is in [`docs/MATH_SPEC.md`](docs/MATH_SPEC.md)** —
+every computation, with formula and source file. Agents should start at
+[`AGENTS.md`](AGENTS.md).
 
 ---
 
 ## Architecture
 
 ```
+Modeling core
+forecasting/supply_uncertainty/
+  quantile_model.py   gradient-boosted quantile regression, Croston routing
+  conformal.py        conformalized quantile regression, Mondrian variant
+  baseline.py         empirical-Bayes pooling, data tiers
+  evaluation.py       pinball, WIS, CRPS, PIT
+risk/
+  correlated_scenarios.py   copulas, Kendall tau, shrinkage, PSD repair
+  supplier_distribution.py  Beta-Binomial supplier fill model
+  scenario_generation.py    joint scenario draws + provenance
+optimization/
+  two_stage_sp.py     two-stage stochastic program (Pyomo + HiGHS)
+  vss_evaluation.py   out-of-sample value of the stochastic solution
+  lp_baseline.py      deterministic LP benchmark
+agronomy/             weather-to-yield: heat exposure, shelf-life kinetics
+backtesting/          leakage guard, policy replay
+
+Product surface
 web/            Next.js 15 App Router (TypeScript)
 api/            FastAPI + Uvicorn
   routers/
