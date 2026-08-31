@@ -30,12 +30,69 @@ and is exactly the modeling question for the technical conversation.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any
 
 import duckdb
+import numpy as np
 import pandas as pd
 
 from risk.supplier_distribution import supplier_fill_distributions
+
+@dataclass
+class ScenarioGenerationResult:
+    """Scenario draws together with the dependence assumption behind them.
+
+    WHY THIS REPLACED A MODULE GLOBAL. Diagnostics were previously stashed
+    in process-global state and read back through a
+    ``last_scenario_diagnostics()`` accessor. That is not request-safe: two
+    concurrent planning calls race, and operator A can read operator B's
+    diagnostics — corrupting audit provenance and leaking B's policy
+    choice, supplier count and failure reason across a tenant boundary.
+    The provenance of a plan has to travel WITH that plan, so it is
+    returned rather than stored.
+    """
+
+    draws: dict
+    diagnostics: dict[str, Any] = field(default_factory=dict)
+
+    def __bool__(self) -> bool:
+        return bool(self.draws)
+
+    def __len__(self) -> int:
+        return len(self.draws)
+
+
+def _emit(diag: dict[str, Any], sink: dict | None) -> None:
+    """Write diagnostics into a caller-owned dict, if one was supplied.
+
+    Per-call, never shared. Nothing is retained between invocations, so
+    concurrent callers cannot observe each other's provenance.
+    """
+    if sink is not None:
+        sink.clear()
+        sink.update(diag)
+
+
+def generate_yield_scenarios(
+    conn: duckdb.DuckDBPyConnection,
+    scenario_indices: list[int],
+    seed: int = 42,
+    supply_risk_policy=None,
+) -> ScenarioGenerationResult:
+    """Yield scenarios AND their dependence provenance, returned together.
+
+    The request-safe entry point. Prefer this over calling
+    ``yield_scenarios_from_distributions`` and reading diagnostics from
+    somewhere else — the whole point is that a plan carries the record of
+    which dependence assumption produced it.
+    """
+    diagnostics: dict[str, Any] = {}
+    draws = yield_scenarios_from_distributions(
+        conn, scenario_indices, seed=seed,
+        supply_risk_policy=supply_risk_policy,
+        diagnostics_out=diagnostics)
+    return ScenarioGenerationResult(draws=draws, diagnostics=diagnostics)
 
 
 def demand_scenarios_from_orders(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
@@ -97,7 +154,6 @@ def demand_scenarios_from_forecast(
         return demand_scenarios_from_orders(conn)
 
     rng = pd.Series(range(n_scenarios))  # deterministic index
-    import numpy as np
     gen = np.random.default_rng(seed)
 
     rows = []
@@ -169,28 +225,183 @@ def yield_scenarios_from_distributions(
     conn: duckdb.DuckDBPyConnection,
     scenario_indices: list[int],
     seed: int = 42,
+    supply_risk_policy=None,
+    diagnostics_out: dict | None = None,
 ) -> dict:
     """Per-scenario supplier fill draws from the predictive Betas.
 
     Returns {(scenario_index, supplier_id): fill}. This is how supply
     uncertainty enters the optimizer as a genuine stage-2 outcome — the
-    commitment is made before the fill resolves — replacing the older
-    one-number downside-discounted capacity.
+    commitment is made before the fill resolves.
+
+    Pass ``diagnostics_out`` (a dict you own) to receive the dependence
+    provenance for THIS call. It is an explicit per-call sink rather than
+    shared state, so concurrent planning requests cannot read each other's
+    diagnostics. ``generate_yield_scenarios`` wraps this and returns both
+    together if you would rather not manage the sink.
+
+    Independent draws are the DEFAULT and the historical behaviour. They
+    are known to understate aggregate risk when suppliers share a weather
+    region — that artefact is what drove the value of the stochastic
+    solution to zero in earlier testing — but the correction requires
+    choosing a dependence model, and that choice is an operator-visible
+    policy rather than a constant. Pass a
+    ``risk.correlated_scenarios.SupplyRiskPolicy`` to enable it:
+
+        from risk.correlated_scenarios import SupplyRiskPolicy
+        pol = SupplyRiskPolicy(mode="estimated", copula="t", df=5)
+        yield_scenarios_from_distributions(conn, ids, supply_risk_policy=pol)
+
+    FAILURE BEHAVIOUR. When a requested dependence model cannot be
+    supported — whether by exception or by insufficient statistical
+    evidence — the DEFAULT is to raise. Independent fallback happens only
+    when the policy sets ``on_failure="independent"``, and is then recorded
+    as ``fallback_applied``. Infrastructure faults (``ScenarioDataError``,
+    e.g. a missing table) are NOT governed by ``on_failure`` and always
+    propagate: a broken migration is not a modelling judgement.
+
+    SEED PRECEDENCE. One effective seed is resolved once:
+
+        effective_seed = policy.seed if policy.enabled else seed
+
+    An enabled policy owns the dependence model and its reproducibility, so
+    its seed governs every draw made under that policy — INCLUDING the
+    independent fallback taken after the policy fails. The ``seed``
+    argument governs only the plain independent path. The seed actually
+    used is always reported in diagnostics as ``seed``.
     """
-    import numpy as np
+    from risk.correlated_scenarios import (
+        DEFAULT_SUPPLY_RISK_POLICY,
+        ScenarioDataError,
+    )
+
+    policy = supply_risk_policy or DEFAULT_SUPPLY_RISK_POLICY
+    # Resolve the seed ONCE so sampling and reporting cannot disagree. An
+    # enabled policy owns the dependence model and its reproducibility, so
+    # its seed governs — including on the independent fallback taken after
+    # that policy fails. Previously the fallback silently reverted to the
+    # function argument, contradicting the documented precedence.
+    effective_seed = policy.seed if getattr(policy, "enabled", False) else seed
+    # Provenance of a fallback, held until the independent draws exist.
+    # Emitting it here and then falling through would have it OVERWRITTEN by
+    # the independent sampler's own _emit at the end of this function, so a
+    # permitted fallback returned successful-looking draws with the REASON
+    # ERASED — the audit contract broken in the one case that most needs it.
+    fallback_diagnostics: dict[str, Any] | None = None
+
+    if supply_risk_policy is not None and getattr(
+            supply_risk_policy, "enabled", False):
+        from risk.correlated_scenarios import (
+            CorrelatedScenarioError,
+            correlated_yield_scenarios,
+        )
+        try:
+            draws, diag = correlated_yield_scenarios(
+                conn, scenario_indices, policy=supply_risk_policy)
+        except ScenarioDataError:
+            # Infrastructure fault: never governed by on_failure, never
+            # degraded into an independent-scenario "result".
+            raise
+        except (CorrelatedScenarioError, np.linalg.LinAlgError) as exc:
+            # Only anticipated failures are caught, and only when the policy
+            # has explicitly permitted a fallback. A blanket `except
+            # Exception: pass` here would let an operator select a
+            # correlated policy, have it fail, and receive INDEPENDENT
+            # scenarios that look like a normal result — silently changing
+            # the dependence assumption behind a commitment recommendation.
+            #
+            # Generic ValueError is deliberately NOT caught. It can mean
+            # malformed data, a bad array shape, invalid Beta parameters or
+            # a plain programming defect, and converting any of those into
+            # apparently valid independent scenarios is the same class of
+            # mistake as the blanket catch. Policy arguments are already
+            # validated at construction, so a model-level ValueError worth
+            # tolerating should be wrapped as CorrelatedScenarioError near
+            # its source instead.
+            if getattr(supply_risk_policy, "on_failure", "raise") == "raise":
+                raise
+            fallback_diagnostics = {
+                "policy_mode": getattr(supply_risk_policy, "mode", None),
+                "correlation_source": "failed_degraded_to_independent",
+                "fallback_applied": "independent",
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "note": ("the requested correlated policy failed and the "
+                         "policy permitted fallback; scenarios are "
+                         "INDEPENDENT and aggregate risk is understated"),
+            }
+        else:
+            if draws:
+                _emit(diag, diagnostics_out)
+                return draws
+            if getattr(supply_risk_policy, "on_failure", "raise") == "raise":
+                raise CorrelatedScenarioError(
+                    "correlated policy produced no draws: "
+                    f"{diag.get('correlation_source')} — "
+                    f"{diag.get('note', 'no suppliers with fitted distributions')}")
+            # Permitted fallback after an empty correlated result. Carry the
+            # original reason forward rather than letting it be replaced.
+            fallback_diagnostics = {
+                **diag,
+                "correlation_source": "empty_degraded_to_independent",
+                "fallback_applied": "independent",
+                "original_correlation_source": diag.get("correlation_source"),
+            }
     from scipy import stats as _st
 
     dists = supplier_fill_distributions(conn, quantile=0.10)
-    gen = np.random.default_rng(seed)
+    gen = np.random.default_rng(effective_seed)
     out: dict = {}
+    n_suppliers = 0
     for sid, d in dists.items():
         if sid == "_prior":
             continue
+        n_suppliers += 1
         a, b = float(d["alpha"]), float(d["beta"])
         draws = _st.beta.rvs(a, b, size=len(scenario_indices),
                              random_state=gen)
         for k, omega in enumerate(scenario_indices):
             out[(int(omega), sid)] = float(min(max(draws[k], 0.0), 1.0))
+
+    # Provenance for the INDEPENDENT path too. This branch was previously
+    # silent, so the most common production route — the default — produced
+    # plans with no record of the dependence assumption behind them, which
+    # is exactly what the contract promises never to do.
+    if fallback_diagnostics is not None:
+        # A fallback happened: keep WHY, and complete it with the facts only
+        # known after sampling.
+        fallback_diagnostics.update(
+            seed=effective_seed, n_suppliers=n_suppliers, copula=None, df=None,
+            mean_latent_correlation=0.0,
+            fallback_generated_draws=bool(out),
+        )
+        if not out:
+            # Nothing was produced, so no fallback was actually applied —
+            # distinguish "attempted" from "applied" rather than implying
+            # independent scenarios exist when they do not.
+            fallback_diagnostics["status"] = "no_suppliers"
+            fallback_diagnostics["fallback_attempted"] = "independent"
+            fallback_diagnostics["fallback_applied"] = None
+        _emit(fallback_diagnostics, diagnostics_out)
+    else:
+        default_diagnostics = {
+            "policy_mode": getattr(policy, "mode", "independent"),
+            "correlation_source": "independent_by_policy",
+            "fallback_applied": None,
+            "copula": None,
+            "df": None,
+            "mean_latent_correlation": 0.0,
+            "seed": effective_seed,
+            "n_suppliers": n_suppliers,
+            "policy_description": getattr(
+                policy, "describe", lambda: "independent supplier draws")(),
+            "note": ("supplier fills sampled INDEPENDENTLY; aggregate risk "
+                     "may be understated when suppliers share regional "
+                     "hazards"),
+        }
+        if not out:
+            default_diagnostics["status"] = "no_suppliers"
+        _emit(default_diagnostics, diagnostics_out)
     return out
 
 

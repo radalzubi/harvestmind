@@ -241,6 +241,157 @@ class TestScenarioWeights:
 
 # ── CVaR properties ─────────────────────────────────────────────────────────
 
+class TestOutOfSampleVSS:
+    """VSS measured on common held-out scenarios, with a bootstrap CI.
+
+    ``compute_vss`` is in-sample: both decisions are optimised against the
+    same scenarios they are scored on, which flatters the richer model. And
+    a single point estimate hides sampling noise that, at our scenario
+    counts, is worth several percent of the objective.
+    """
+
+    @requires_solver
+    def test_reports_a_bootstrap_interval(self):
+        from optimization.vss_evaluation import out_of_sample_vss
+
+        res = out_of_sample_vss(
+            _newsvendor(9.0, 1.0), _normal_scenarios(n=60), _ample_supply(),
+            n_bootstrap=40, seed=1)
+        assert res is not None
+        # A percentile bootstrap interval is ordered, but does NOT
+        # mathematically guarantee it contains the point estimate — asserting
+        # that was brittle. Check the properties that do hold.
+        assert res.ci_low <= res.ci_high
+        d = res.to_dict()
+        for k in ("vss_out_of_sample", "ci_low", "ci_high", "verdict",
+                  "beneficial", "harmful", "inconclusive", "significant",
+                  "n_eval_scenarios", "definition", "interpretation"):
+            assert k in d
+        assert "common out-of-sample" in d["definition"]
+
+    def test_three_states_are_mutually_exclusive_and_exhaustive(self):
+        """Regression: a wholly NEGATIVE interval is evidence of harm.
+
+        The earlier classification had only `significant = ci_low > 0` and
+        described everything else as "includes zero" — so [-9.70, -0.92],
+        which excludes zero entirely and shows the stochastic policy losing
+        out-of-sample, was reported as merely not significant. That turned
+        evidence of harm into a null result.
+        """
+        from optimization.vss_evaluation import VSSResult
+
+        def mk(lo, hi, vss):
+            return VSSResult(vss=vss, vss_pct_of_eev=0.0, rp_cost_oos=100.0,
+                             eev_cost_oos=100.0, ci_low=lo, ci_high=hi,
+                             ci_level=0.9, n_bootstrap=100,
+                             n_train_scenarios=30, n_eval_scenarios=30)
+
+        good = mk(140.0, 314.0, 230.0)
+        bad = mk(-9.70, -0.92, -5.52)
+        null = mk(-50.0, 80.0, 12.0)
+
+        assert good.verdict == "beneficial" and good.beneficial
+        assert bad.verdict == "harmful" and bad.harmful
+        assert null.verdict == "inconclusive" and null.inconclusive
+
+        for r in (good, bad, null):
+            flags = [r.beneficial, r.harmful, r.inconclusive]
+            assert sum(flags) == 1, "states must be mutually exclusive"
+
+        # A wholly negative interval is SIGNIFICANT, and must say so.
+        assert bad.significant is True
+        assert "WORSE" in bad.interpretation()
+        assert "includes zero" not in bad.interpretation()
+        assert "contains zero" in null.interpretation()
+        assert "IMPROVED" in good.interpretation()
+
+    @requires_solver
+    def test_rejects_non_uniform_scenario_weights(self):
+        """Reduced scenario sets carry unequal probabilities this path
+        cannot honour; refusing beats returning a number computed against
+        the wrong measure."""
+        from optimization.vss_evaluation import (
+            NonUniformWeightsUnsupported,
+            out_of_sample_vss,
+        )
+
+        scen = _normal_scenarios(n=40)
+        scen.loc[scen["scenario_index"] < 10, "scenario_weight"] = 0.05
+        with pytest.raises(NonUniformWeightsUnsupported, match="not uniform"):
+            out_of_sample_vss(_newsvendor(6.0, 2.0), scen, _ample_supply(),
+                              n_bootstrap=5)
+
+    def test_weighted_mean_demand_respects_probabilities(self):
+        """A plain groupby mean silently assumes equiprobability."""
+        from optimization.vss_evaluation import _weighted_mean_demand
+
+        df = pd.DataFrame([
+            {"scenario_index": 0, "scenario_weight": 0.9,
+             "product_id": "P1", "demand_kg": 100.0},
+            {"scenario_index": 1, "scenario_weight": 0.1,
+             "product_id": "P1", "demand_kg": 200.0},
+        ])
+        out = _weighted_mean_demand(df)
+        assert float(out.loc[0, "demand_kg"]) == pytest.approx(110.0)
+        # The unweighted mean would have been 150.
+        assert float(out.loc[0, "demand_kg"]) != pytest.approx(150.0)
+
+    def test_reindex_preserves_relative_probabilities(self):
+        from optimization.vss_evaluation import _reindex
+
+        df = pd.DataFrame([
+            {"scenario_index": 0, "scenario_weight": 0.6,
+             "product_id": "P1", "demand_kg": 1.0},
+            {"scenario_index": 1, "scenario_weight": 0.2,
+             "product_id": "P1", "demand_kg": 2.0},
+        ])
+        out = _reindex(df, np.array([0, 1]))
+        w = out.drop_duplicates("scenario_index")["scenario_weight"].to_numpy()
+        assert w.sum() == pytest.approx(1.0)
+        assert w[0] / w[1] == pytest.approx(3.0)      # 0.6 : 0.2 preserved
+
+    @requires_solver
+    def test_train_and_eval_sets_are_disjoint(self):
+        from optimization.vss_evaluation import out_of_sample_vss
+
+        res = out_of_sample_vss(
+            _newsvendor(6.0, 2.0), _normal_scenarios(n=60), _ample_supply(),
+            n_bootstrap=20, train_fraction=0.5, seed=2)
+        assert res.n_train_scenarios + res.n_eval_scenarios == 60
+
+    @requires_solver
+    def test_symmetric_costs_do_not_show_a_benefit(self):
+        """At symmetric costs the deterministic plan is already optimal, so
+        the honest out-of-sample verdict must not be 'beneficial'."""
+        from optimization.vss_evaluation import out_of_sample_vss
+
+        res = out_of_sample_vss(
+            _newsvendor(3.0, 3.0), _normal_scenarios(n=60), _ample_supply(),
+            n_bootstrap=60, seed=3)
+        assert res is not None
+        assert res.verdict in ("inconclusive", "harmful")
+        assert not res.beneficial
+        assert res.verdict == "harmful" or "contains zero" in res.interpretation()
+
+    @requires_solver
+    def test_asymmetric_costs_show_a_benefit(self):
+        from optimization.vss_evaluation import out_of_sample_vss
+
+        res = out_of_sample_vss(
+            _newsvendor(9.0, 1.0), _normal_scenarios(n=80), _ample_supply(),
+            n_bootstrap=80, seed=4)
+        assert res is not None and res.verdict == "beneficial"
+        assert "IMPROVED" in res.interpretation()
+
+    @requires_solver
+    def test_refuses_when_too_few_scenarios(self):
+        from optimization.vss_evaluation import out_of_sample_vss
+
+        assert out_of_sample_vss(
+            _newsvendor(6.0, 2.0), _normal_scenarios(n=3), _ample_supply(),
+            n_bootstrap=5) is None
+
+
 class TestSAABounds:
     """Kleywegt, Shapiro & Homem-de-Mello (2002) §2.3, §3.2-3.3.
 
