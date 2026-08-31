@@ -374,3 +374,160 @@ scored on `t+1` outcomes, with lookahead protection).
 4. **Cost coefficients (§13)** — `m`, `c_w`, `c_u` drive the optimizer's
    answer; how should they be elicited from a real operator rather than set as
    defaults?
+
+---
+## 17. Probabilistic demand forecast  ★
+*One line: quantile forecasts with distribution-free calibrated coverage.*
+— `forecasting/supply_uncertainty/quantile_model.py`, `conformal.py`
+
+**Base model.** Gradient-boosted quantile regression (LightGBM) fitted
+globally across SKUs at several levels, with **Croston's method** routing
+intermittent series where boosting on mostly-zero data degrades. Predicted
+quantiles are not guaranteed monotone, so crossing is repaired by **monotone
+rearrangement** (Chernozhukov, Fernandez-Val & Galichon 2010): sort the
+predicted quantile vector. Sorting is a projection that weakly improves any
+proper loss, so it never hurts.
+
+**Calibration (Conformalized Quantile Regression, Romano, Patterson &
+Candes 2019).** Given a calibration set held out CHRONOLOGICALLY, define the
+conformity score of observation `i` against its predicted interval:
+```
+E_i = max( q_lo(x_i) - y_i ,  y_i - q_hi(x_i) )
+```
+`E_i > 0` when `y_i` falls outside, `E_i < 0` when strictly inside (so a
+negative correction TIGHTENS). The calibrated interval is
+```
+k  = ceil( (n + 1)(1 - alpha) )
+Q  = k-th order statistic of {E_1..E_n}     (+inf if k > n)
+C(x) = [ q_lo(x) - Q ,  q_hi(x) + Q ]
+```
+Under exchangeability this gives **finite-sample marginal coverage**
+`P(y in C(x)) >= 1 - alpha`, with no assumption on the model or the
+data-generating process.
+
+**Refusal.** Coverage `1 - alpha` is unattainable when `k > n`, i.e. when
+```
+n < ceil(1 / alpha) - 1        (min_calibration_size)
+```
+The calibrator then returns `+inf` rather than a finite interval. Reporting
+a narrow interval it cannot justify would be the worse failure.
+
+**Mondrian variant.** Group-conditional calibration computes a separate `Q`
+per group (e.g. product family), giving coverage WITHIN groups rather than
+only on average across them — marginal coverage can hide a group that is
+badly under-covered.
+
+---
+
+## 18. Supplier dependence: copulas  ★ (why VSS was ~0 without it)
+*One line: suppliers sharing a weather region fail together, and pricing that
+dependence is what makes stochastic modelling worth doing.*
+— `risk/correlated_scenarios.py`
+
+**Motivation.** §9 gives each supplier a marginal fill-rate distribution.
+Marginals do not determine a joint distribution. Sampling suppliers
+INDEPENDENTLY understated aggregate supply variance so severely that the
+value of the stochastic solution (§20) fell to approximately zero: the model
+concluded uncertainty was not worth modelling. Aggregate supply SD roughly
+DOUBLED once dependence was included.
+
+**Sklar's theorem.** Any joint `F` decomposes as
+`F(y_1..y_d) = C(F_1(y_1), .., F_d(y_d))` for a copula `C`. So dependence can
+be fitted separately from the marginals, and the Beta marginals of §9 are
+preserved exactly by the probability integral transform.
+
+**Rank correlation to latent parameter.** Estimate **Kendall's tau** on
+overlapping delivery history, then map to the latent elliptical correlation:
+```
+rho = sin( pi * tau / 2 )          exact for the WHOLE elliptical family
+                                   (Gaussian and t at any df)
+tau = (2 / pi) * arcsin(rho)       inverse
+```
+Kendall is used rather than Spearman deliberately. The Spearman identity
+`rho = 2 sin(pi * rho_s / 6)` is **Gaussian-only**; it is implemented and
+documented as such, but is not on the production path. Passing a rank
+correlation directly in as a latent parameter is a scale error this module
+made once and now guards against.
+
+**Regularization.** Short, unequal, partly-overlapping histories give noisy
+and frequently indefinite matrices. Applied in order, each recorded in
+diagnostics:
+1. Ledoit-Wolf style shrinkage toward an equicorrelated target, weight
+   `w = clip(params / (params + n_periods), 0.1, 0.9)`
+2. `validate_correlation_matrix` — square, finite, unit diagonal, symmetric,
+   entries in [-1, 1], min eigenvalue >= -tol. It REPORTS, never repairs.
+3. `nearest_positive_semidefinite` — eigenvalue clipping, then rescale to
+   unit diagonal. Repair is always a recorded decision, never silent.
+4. Cholesky factorization for sampling.
+
+**Choice of copula.** Gaussian and Student-t are both offered. A Gaussian
+copula has **zero tail dependence** (Demarta & McNeil 2005): it assumes
+suppliers never fail together in the extreme, which is the exact scenario the
+model exists to price. `t` with low `df` is the tail-aware option. `df` is a
+JUDGEMENT parameter (default 5.0), not estimated.
+
+**Fail-closed sufficiency gate.** `_estimation_refusal` refuses to call a
+matrix "estimated" unless genuine PAIRWISE overlap supports it: enough joint
+periods, enough share of pairs clearing `min_overlap`, and a connected
+overlap graph. Two suppliers with 30 observations each but no shared weeks
+carry no information about their dependence. On refusal the default is to
+RAISE; independent fallback happens only when the policy sets
+`on_failure="independent"`, and is then recorded as `fallback_applied`.
+Infrastructure faults (`ScenarioDataError`) are never governed by
+`on_failure`.
+
+---
+
+## 19. Forecast scoring (proper scoring rules)
+*One line: score distributions honestly, so a confident wrong model cannot win.*
+— `forecasting/supply_uncertainty/evaluation.py`
+
+```
+pinball_tau(y, q) = tau * (y - q)      if y >= q
+                  = (1 - tau) * (q - y) otherwise
+
+WIS  = 1/(K + 1/2) * [ 1/2 |y - median| + sum_k (alpha_k / 2) * IS_k ]
+                                          (Bracher et al. 2021)
+
+CRPS (fair, ensemble of size M):
+     = (1/M) sum_i |x_i - y|  -  (1 / (2 M (M - 1))) sum_i sum_j |x_i - x_j|
+```
+The `2M(M-1)` normalization is the **unbiased** form: the naive `2M^2`
+denominator is biased in ensemble size and rewards larger ensembles
+artificially. PIT values `F(y)` are uniform under perfect calibration; a
+U-shaped histogram means intervals are too narrow, a dome means too wide.
+
+---
+
+## 20. Value of the Stochastic Solution (out of sample)  ★
+*One line: prove the stochastic layer earned its complexity, or report that
+it did not.* — `optimization/vss_evaluation.py`
+
+```
+VSS = EEV - RP          (Birge & Louveaux, Ch. 4)
+      WS <= RP <= EEV   in expectation, so VSS >= 0 IN SAMPLE
+```
+`RP` is the recourse-problem cost; `EEV` fixes the first stage at the
+mean-value solution and evaluates it under the true scenario distribution.
+
+**Out-of-sample protocol.** Scenarios are split. RP and the mean-value
+problem are trained on TRAIN ONLY, then both first stages are evaluated on
+the SAME held-out scenarios via `solve_with_fixed_first_stage`. Bootstrap
+over the evaluation set gives a confidence interval, and the verdict is one
+of three MUTUALLY EXCLUSIVE states:
+```
+beneficial    ci_low  > 0
+harmful       ci_high < 0
+inconclusive  ci_low <= 0 <= ci_high
+```
+`VSS >= 0` is an IN-SAMPLE property. Out of sample it can be genuinely
+negative, and it has been observed negative at symmetric costs. A two-state
+classification would hide that, so it is not used. Non-uniform scenario
+weights are REFUSED (`NonUniformWeightsUnsupported`) rather than silently
+averaged over the wrong measure.
+
+**Standing honest finding.** Against a deterministic LP the advantage is
+contingent on spot economics: about +11% when emergency coverage is cheap and
+capped at 30% of demand, about -4% when expensive and capped at 15%. Against
+naive and order-up-to policies it wins everywhere tested. This is surfaced in
+the product, not buried.
