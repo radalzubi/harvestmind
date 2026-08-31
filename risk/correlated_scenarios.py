@@ -449,12 +449,35 @@ class SupplyRiskPolicy:
         if self.kendall_tau is not None and not -1.0 <= self.kendall_tau <= 1.0:
             raise ValueError(
                 f"kendall_tau must lie in [-1, 1], got {self.kendall_tau}")
-        if self.copula == "t" and self.df <= 0:
+        if self.copula == "t" and not (np.isfinite(self.df) and self.df > 0):
+            # `self.df <= 0` alone is False for NaN and for +inf, so both
+            # slipped through and produced all-NaN uniforms downstream with
+            # no exception raised: scipy's chi-squared draw and t CDF
+            # propagate the non-finite value silently, np.clip does not
+            # remove NaN, and the corrupt fill rates reach the optimizer
+            # looking like a normal result. Validate finiteness explicitly.
             raise ValueError(
-                f"t-copula degrees of freedom must be positive, got {self.df}")
+                "t-copula degrees of freedom must be a positive finite "
+                f"number, got {self.df}")
         if not 0.0 <= self.min_pct_pairs_adequate <= 100.0:
             raise ValueError("min_pct_pairs_adequate must be a percentage "
                              "in [0, 100]")
+        # These two thresholds ARE the statistical-sufficiency gate that
+        # `_estimation_refusal` enforces. A negative value silently disables
+        # it: every pair clears a negative overlap requirement, so
+        # pct_pairs_adequate reaches 100 and a matrix fitted on essentially
+        # no joint history is returned labelled "estimated_from_history".
+        # That is the exact failure the refusal path exists to prevent, so
+        # the gate has to validate its own thresholds.
+        if self.min_overlap < 1:
+            raise ValueError(
+                "min_overlap must be at least 1 period; a smaller value "
+                f"disables the pairwise-overlap gate, got {self.min_overlap}")
+        if self.min_periods_for_estimation < 1:
+            raise ValueError(
+                "min_periods_for_estimation must be at least 1 period; a "
+                "smaller value disables the joint-history gate, got "
+                f"{self.min_periods_for_estimation}")
         if self.on_failure not in ("raise", "independent"):
             raise ValueError(f"unknown on_failure {self.on_failure!r}; use "
                              "'raise' or 'independent'")
