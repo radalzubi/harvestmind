@@ -26,14 +26,15 @@ supply is confirmed.
 
 Deterministic arithmetic on your own records. Auditable, not learned.
 
-### 2. Probabilistic forecasts — uncertainty with a guarantee
+### 2. Probabilistic forecasts — uncertainty with calibration gates
 
 Demand from gradient-boosted quantile regression with Croston routing for
 intermittent SKUs. Supplier delivery reliability from an empirical-Bayes
 Beta-Binomial that pools thin-history suppliers toward the population in both
-mean and variance. Intervals corrected by **conformalized quantile
-regression**, giving distribution-free finite-sample coverage — and refusing
-to report an interval when calibration data is too thin to support one.
+mean and variance. Intervals are corrected by **conformalized quantile
+regression** and withheld when calibration data is too thin. Coverage is
+measured out-of-sample; it is not a guarantee for every product or future
+regime.
 
 ### 3. Optimizer — what to commit before supply is certain
 
@@ -45,9 +46,10 @@ copulas, because suppliers sharing a weather region fail together — treating
 them as independent drove the value of the stochastic solution to
 approximately zero.
 
-Validated by replaying an operator's own history, and by out-of-sample
+Designed to be evaluated by replaying an operator's own history, and by out-of-sample
 **value of the stochastic solution** with bootstrap intervals, reported as
 beneficial / harmful / inconclusive rather than assumed positive.
+To date, repository results use synthetic histories only.
 
 **The full mathematical specification is in [`docs/MATH_SPEC.md`](docs/MATH_SPEC.md)** —
 every computation, with formula and source file. Agents should start at
@@ -76,7 +78,7 @@ agronomy/             weather-to-yield: heat exposure, shelf-life kinetics
 backtesting/          leakage guard, policy replay
 
 Product surface
-web/            Next.js 15 App Router (TypeScript)
+web/            Next.js 16 App Router (TypeScript)
 api/            FastAPI + Uvicorn
   routers/
     intake.py   CSV upload + one-click sample data loader
@@ -110,7 +112,7 @@ tests/
 ### Prerequisites
 
 - Python 3.11+
-- Node.js 18+
+- Node.js 20.9+
 - pip, npm (or pnpm)
 
 ### Backend
@@ -119,8 +121,11 @@ tests/
 # From repository root
 pip install -e ".[dev]"
 
-# Apply database migrations
-python3 scripts/apply_migrations.py   # or: duckdb harvestmind.duckdb < db/migrations/010_diagnostic_staging.sql
+# Optional legacy Streamlit dashboard, live Anthropic extraction, or PDF export:
+# pip install -e ".[dev,dashboard,llm,pdf]"
+
+# Apply all migrations and reference seeds
+python3 scripts/setup_db.py --seeds
 
 # Start API server
 uvicorn api.main:app --reload
@@ -143,6 +148,9 @@ npm run dev
 |---|---|---|
 | `DUCKDB_PATH` | `harvestmind.duckdb` | Path to DuckDB file |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend URL for Next.js |
+| `HARVESTMIND_AUTH_REQUIRED` | `false` | Require a valid operator bearer token on operator-scoped API requests |
+| `HARVESTMIND_ADMIN_KEY` | unset | Enables admin-only token issuance and training controls |
+| `HARVESTMIND_RATE_LIMIT_PER_MIN` | `0` | Per-process rate cap for heavy endpoints; set for networked pilots |
 
 ---
 
@@ -223,8 +231,12 @@ Actual savings depend on which recommendations are implemented.
 2. **Lot expiry requires `expiration_date`** in the lots file. Missing dates are treated as non-expiring.
 3. **Annualization assumes the analysis period is representative** of the full year. Seasonal operators should interpret conservatively.
 4. **Traceability scope** covers 6 fields. Full FSMA-204 compliance requires additional records (harvest date, receiver info, transformation events).
-5. **Single-tenant by design** — one DuckDB file per operator. No multi-tenant data isolation yet.
-6. **No authentication** on the current API. Deploy behind a VPN or reverse proxy before sharing externally.
+5. **Vault isolation is file-based** — each authenticated operator resolves to
+   a separate DuckDB vault. This is pilot isolation, not a horizontally scaled
+   tenancy architecture.
+6. **Authentication is optional in local development.** Every networked pilot
+   must set `HARVESTMIND_AUTH_REQUIRED=true`, configure an admin key and CORS
+   allowlist, and place the API behind TLS.
 
 ---
 
@@ -258,8 +270,8 @@ npm run build        # production build
 
 To move from demo to live pilot with an operator, you'll need:
 
-- [ ] **Authentication** — API key or session auth before exposing to external users
-- [ ] **Multi-tenant isolation** — separate DuckDB paths per partner, or schema-per-tenant
+- [x] **Pilot authentication** — hashed per-operator API tokens; browser token is session-only
+- [x] **Pilot data isolation** — one migrated DuckDB vault and file tree per operator
 - [ ] **Scheduled refresh** — cron job or webhook to reload CSVs from operator's export location
 - [ ] **Data contract alignment** — map the operator's actual column names in `csv_ingestor.py`
 - [ ] **Pilot success criteria sign-off** — see `docs/customer_intake/pilot_success_criteria.md`
@@ -276,5 +288,5 @@ To move from demo to live pilot with an operator, you'll need:
 | Frontend build (next build) | ✅ Passing |
 | Local demo runnable | ✅ One-click sample load |
 | Diagnostic HTML report | ✅ Board-readable, printable |
-| Authentication | ❌ Not yet implemented |
-| Production deployment | ❌ Not yet configured |
+| Pilot authentication + operator vault isolation | ✅ Implemented; deployment configuration required |
+| Controlled single-host pilot deployment | ✅ Containerized; TLS/backup/restore remain operator responsibilities |

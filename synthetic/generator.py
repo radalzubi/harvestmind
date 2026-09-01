@@ -183,8 +183,9 @@ class SyntheticGenerator:
 
         # Derive week_start from delivery_date (delivery is order week + 2 days → back to Monday)
         tmp = lines_df.copy()
-        tmp["week_start"] = pd.to_datetime(tmp["delivery_date"]).apply(
-            lambda d: d - pd.Timedelta(days=d.weekday() + 2)
+        delivery_dates = pd.to_datetime(tmp["delivery_date"])
+        tmp["week_start"] = delivery_dates - pd.to_timedelta(
+            delivery_dates.dt.weekday + 2, unit="D"
         )
 
         # Aggregate demand by week × product

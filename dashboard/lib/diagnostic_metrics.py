@@ -410,7 +410,8 @@ def supplier_reliability_scores(
     df["risk_level"] = df["fill_rate"].apply(_risk)
 
     # Sort: knowns first (lowest fill rate first), then Unknowns
-    df["_sort_fill"] = df["fill_rate"].fillna(2.0)  # push Unknowns to bottom
+    # Numeric coercion avoids pandas' deprecated silent object downcast.
+    df["_sort_fill"] = pd.to_numeric(df["fill_rate"], errors="coerce").fillna(2.0)
     df = df.sort_values("_sort_fill").drop(columns=["_sort_fill", "total_accepted_raw"])
 
     suppliers = df.to_dict("records")
@@ -719,7 +720,6 @@ def recommendations_by_product(
     today = as_of_date or _today()
     atp_data = atp_by_product(conn, as_of_date=today)
     supplier_data = supplier_reliability_scores(conn)
-    buyer_data = buyer_fulfillment_rates(conn)
 
     # Decision basis: shrunk hierarchical fill estimates (§4 raw rates are
     # display-only). Fall back to the raw rate only when the hierarchical

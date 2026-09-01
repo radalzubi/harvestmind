@@ -16,6 +16,7 @@ const TITLES: Record<string, string> = {
   "/supply-risk": "Supply risk",
   "/data-quality": "Data quality",
   "/reports": "Reports",
+  "/access": "Pilot access",
 };
 
 const PERIODS = ["Last 4 weeks", "Last 12 weeks", "Last 26 weeks", "Last 52 weeks", "YTD"];

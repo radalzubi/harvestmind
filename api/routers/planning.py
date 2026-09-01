@@ -5,22 +5,36 @@ from __future__ import annotations
 import time
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
-from api.dependencies import get_conn
+from api.dependencies import get_conn, rate_limiter
 from api.models.schemas import PlanningRequest, PlanningResponse, CommitmentResponse
 
 router = APIRouter(prefix="/planning", tags=["planning"])
 
 
-@router.post("/run", response_model=PlanningResponse)
+@router.post("/run", response_model=PlanningResponse, deprecated=True)
 def run_planning(req: PlanningRequest, conn=Depends(get_conn)):
-    """Run the optimization model for a given week and return commitments."""
+    """Run a legacy fact-table deterministic or gamma-robust plan.
+
+    Stochastic planning is deliberately unavailable here. The production
+    candidate is the staging-first ``/planning/two-sided`` path, which fits
+    demand and supplier-yield uncertainty from the same operator history and
+    applies honest product economics. Maintaining two stochastic paths made it
+    possible to surface materially different commitments for the same data.
+    """
     from optimization.lp_baseline import LPBaseline
     from optimization.gamma_robust_lp import GammaRobustLP
-    from optimization.two_stage_sp import TwoStageStochasticLP
-    from optimization.cvar_extension import CVaRStochasticLP
-    from forecasting.supply.yield_scenario_generator import YieldScenarioGenerator
+
+    if req.model_type not in {"deterministic", "gamma_robust"}:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"model_type {req.model_type!r} is not available on the legacy "
+                "/planning/run route. Use POST /planning/two-sided for the "
+                "canonical stochastic, staging-first plan."
+            ),
+        )
 
     run_id = str(uuid.uuid4())[:8]
     t0 = time.time()
@@ -58,20 +72,6 @@ def run_planning(req: PlanningRequest, conn=Depends(get_conn)):
         result = LPBaseline().solve(mean_demand, supply_agg)
     elif req.model_type == "gamma_robust":
         result = GammaRobustLP(gamma=req.gamma).solve(mean_demand, supply_agg)
-    elif req.model_type == "two_stage_sp":
-        from datetime import timedelta
-        scen_gen = YieldScenarioGenerator(n_scenarios=req.n_scenarios)
-        scen_df = scen_gen.generate(req.week_start + timedelta(weeks=1))
-        # Simple demand scenarios: perturb mean by yield factor
-        from optimization.two_stage_sp import TwoStageStochasticLP
-        demand_scen = _build_demand_scenarios(mean_demand, scen_df, req.n_scenarios)
-        result = TwoStageStochasticLP(n_scenarios=req.n_scenarios).solve(demand_scen, supply_agg)
-    elif req.model_type == "cvar":
-        from datetime import timedelta
-        scen_gen = YieldScenarioGenerator(n_scenarios=req.n_scenarios)
-        scen_df = scen_gen.generate(req.week_start + timedelta(weeks=1))
-        demand_scen = _build_demand_scenarios(mean_demand, scen_df, req.n_scenarios)
-        result = CVaRStochasticLP(lambda_weight=req.lambda_cvar, alpha=req.alpha_cvar).solve(demand_scen, supply_agg)
     else:
         raise HTTPException(status_code=400, detail=f"Unknown model_type: {req.model_type}")
 
@@ -124,26 +124,6 @@ def run_planning(req: PlanningRequest, conn=Depends(get_conn)):
         recommendations=[],
     )
 
-
-def _build_demand_scenarios(mean_demand, yield_scen_df, n_scenarios):
-    import pandas as pd
-    import numpy as np
-    rows = []
-    for scen_idx in range(n_scenarios):
-        scen = yield_scen_df[yield_scen_df["scenario_index"] == scen_idx]
-        weight = 1.0 / n_scenarios
-        for _, row in mean_demand.iterrows():
-            noise = float(np.random.default_rng(scen_idx).normal(1.0, 0.15))
-            rows.append({
-                "scenario_index": scen_idx,
-                "scenario_weight": weight,
-                "product_id": row["product_id"],
-                "week_start": None,
-                "demand_kg": max(0.0, row["demand_kg"] * noise),
-            })
-    return pd.DataFrame(rows)
-
-
 _REC_STATUS_VALUES = {"open", "actioned", "dismissed", "expired"}
 
 
@@ -169,27 +149,66 @@ def get_recommendations(status: str = "open", conn=Depends(get_conn)):
     return df.to_dict("records")
 
 
-@router.post("/two-sided")
+@router.post("/two-sided", dependencies=[Depends(rate_limiter)])
 def two_sided_plan(
-    service_level_floor: float | None = None,
-    diversification_cap: float | None = None,
-    spot_cost_multiplier: float | None = None,
-    spot_capacity_factor: float | None = None,
+    service_level_floor: float | None = Query(default=None, ge=0.0, le=1.0),
+    diversification_cap: float | None = Query(default=None, gt=0.0, le=1.0),
+    spot_cost_multiplier: float | None = Query(default=None, ge=1.0, le=5.0),
+    spot_capacity_factor: float | None = Query(default=None, ge=0.0, le=1.0),
+    enforce_backtest_gate: bool = True,
     conn=Depends(get_conn),
 ):
     """Two-sided stochastic plan (demand AND supplier yield uncertain),
     newsvendor objective, honest per-product penalties. When spot
     economics are not supplied, returns a sensitivity band across a
     plausible grid instead of silently assuming cheap spot."""
+    from backtesting.benchmark_suite import run_benchmark
     from risk.scenario_generation import run_two_stage_two_sided
+
+    # A complex policy is not allowed to graduate into commitments merely
+    # because the solver found an optimum. It must first beat the deterministic
+    # and run-rate baselines on held-out operator history. Diagnostic users can
+    # still inspect an un-gated plan explicitly, but the default pilot path is
+    # fail-closed.
+    benchmark = run_benchmark(
+        conn,
+        spot_cost_multiplier=(
+            spot_cost_multiplier if spot_cost_multiplier is not None else 1.30
+        ),
+        spot_capacity_factor=(
+            spot_capacity_factor if spot_capacity_factor is not None else 0.30
+        ),
+    )
+    if enforce_backtest_gate and benchmark.get("gate_passed") is not True:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": (
+                    "Stochastic commitments are blocked until the rolling-origin "
+                    "benchmark beats both the deterministic LP and run-rate baseline."
+                ),
+                "benchmark_status": benchmark.get("status"),
+                "gate_passed": benchmark.get("gate_passed"),
+                "weeks_available": benchmark.get("weeks_available"),
+                "weeks_required": benchmark.get("weeks_required"),
+                "verdict": benchmark.get("verdict"),
+                "inspection_override": "set enforce_backtest_gate=false for diagnostic inspection only",
+            },
+        )
 
     spot = None
     if spot_cost_multiplier is not None and spot_capacity_factor is not None:
         spot = {"spot_cost_multiplier": spot_cost_multiplier,
                 "spot_capacity_factor": spot_capacity_factor}
-    return run_two_stage_two_sided(
+    result = run_two_stage_two_sided(
         conn,
         spot_economics=spot,
         service_level_floor=service_level_floor,
         diversification_cap=diversification_cap,
     )
+    result["backtest_gate"] = {
+        "enforced": enforce_backtest_gate,
+        "passed": benchmark.get("gate_passed"),
+        "verdict": benchmark.get("verdict"),
+    }
+    return result

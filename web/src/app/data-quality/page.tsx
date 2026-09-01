@@ -23,14 +23,15 @@ export default function DataQualityPage() {
   const [error, setError] = useState<string | null>(null);
   const [poolStatus, setPoolStatus] = useState<PoolStatus | null>(null);
   const [showPoolInfo, setShowPoolInfo] = useState(false);
-  // multi-tenant entry point: ?operator_id=... enables the consent toggle
+  // Authenticated pilots resolve the operator from the bearer token. The query
+  // parameter remains only as a local-development fallback.
   const operatorId = typeof window !== "undefined"
     ? new URLSearchParams(window.location.search).get("operator_id") ?? undefined
     : undefined;
 
   const togglePoolConsent = async () => {
-    if (!operatorId || !poolStatus?.operator) return;
-    await setPoolConsent(operatorId, !poolStatus.operator.pool_consent);
+    if (!poolStatus?.operator) return;
+    await setPoolConsent(!poolStatus.operator.pool_consent, operatorId);
     getPoolStatus(operatorId).then(setPoolStatus).catch(() => null);
   };
 

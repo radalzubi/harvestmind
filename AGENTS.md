@@ -80,7 +80,7 @@ Modeling core (the differentiated work)
 
 Product surface
   api/                  FastAPI (routers: intake, diagnostics, reports, data)
-  web/                  Next.js 15 App Router (TypeScript)
+  web/                  Next.js 16 App Router (TypeScript)
   dashboard/            Streamlit + diagnostic metric implementations
   ingestion/            CSV -> DuckDB, allowlisted tables
   db/migrations/        SQL migrations, apply in order
@@ -145,5 +145,5 @@ regression even if tests still pass.
   debt report
 - **next build** — only when `web/` changes
 
-All three must be green before merge. Current baseline: **1026 tests passing,
+All three must be green before merge. Current baseline: **1035 tests passing,
 81% coverage.**

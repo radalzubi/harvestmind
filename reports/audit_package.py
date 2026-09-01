@@ -28,7 +28,7 @@ import re
 import shutil
 import zipfile
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import duckdb
@@ -311,7 +311,7 @@ def _summary_html(
 <div class="header">
   <h1>HarvestMind Audit Evidence Package</h1>
   <div class="sub">{partner_name} · {audit.label}</div>
-  <div class="sub">Generated {datetime.utcnow().date().isoformat()}</div>
+  <div class="sub">Generated {datetime.now(timezone.utc).date().isoformat()}</div>
 </div>
 
 <h2>Bundle contents</h2>

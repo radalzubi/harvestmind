@@ -150,10 +150,9 @@ def test_seasonal_naive_uses_year_ago_when_available():
         "product_id": "P", "buyer_id": "B", "week_start": weeks,
         "qty_ordered_kg": np.arange(60, dtype=float) + 1,
     })
-    target = weeks[55] + pd.Timedelta(weeks=0)  # inside history? use future:
-    target = weeks[-1] + pd.Timedelta(weeks=1)
+    target = weeks[-1] + pd.DateOffset(weeks=1)
     snaive = seasonal_naive_forecast(df, [target])
-    year_ago = target - pd.Timedelta(weeks=52)
+    year_ago = target - pd.DateOffset(weeks=52)
     expected = float(df[df["week_start"] == year_ago]["qty_ordered_kg"].sum())
     assert snaive[("P", target)] == pytest.approx(expected)
 
@@ -164,7 +163,7 @@ def test_seasonal_naive_falls_back_to_runrate():
         "product_id": "P", "buyer_id": "B", "week_start": weeks,
         "qty_ordered_kg": [100.0] * 8,
     })
-    target = weeks[-1] + pd.Timedelta(weeks=1)
+    target = weeks[-1] + pd.DateOffset(weeks=1)
     snaive = seasonal_naive_forecast(df, [target])
     assert snaive[("P", target)] == pytest.approx(100.0)  # 4wk sum / 4
 

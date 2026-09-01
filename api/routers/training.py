@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-router = APIRouter(prefix="/training", tags=["training"])
+from api.routers.admin import require_admin
+
+router = APIRouter(
+    prefix="/training",
+    tags=["training"],
+    dependencies=[Depends(require_admin)],
+)
 
 
 @router.get("/corpus/stats")

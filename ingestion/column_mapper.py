@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import difflib
 import hashlib
-from datetime import timedelta
 from typing import Iterable
 
 import pandas as pd
@@ -386,8 +385,8 @@ def infer_missing_columns(
         )
         if date_source and len(df) > 0:
             ds = pd.to_datetime(df[date_source], errors="coerce")
-            offsets = ds.dt.weekday.apply(
-                lambda w: pd.Timedelta(days=int(w)) if pd.notna(w) else pd.Timedelta(0)
+            offsets = pd.to_timedelta(
+                ds.dt.weekday.fillna(0).astype(int), unit="D"
             )
             df["week_start"] = (ds - offsets).dt.date
             inferences.append(f"Inferred week_start from {date_source}")

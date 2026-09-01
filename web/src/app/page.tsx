@@ -16,9 +16,11 @@ import {
   PageLoading,
   Tbtn,
 } from "@/components/ui";
-import { getDiagnosticSummary, getRoiCards, fmtUSD, fmtPct, fmt, type DiagnosticSummary, type RoiCards } from "@/lib/api";
+import { getDiagnosticSummary, getRoiCards, openDiagnosticReport, fmtUSD, fmtPct, fmt, type DiagnosticSummary, type RoiCards } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 
 export default function OverviewPage() {
+  const toast = useToast();
   const [data, setData] = useState<DiagnosticSummary | null>(null);
   const [roi, setRoi] = useState<RoiCards | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,15 +48,13 @@ export default function OverviewPage() {
         title="Overview"
         sub={`Diagnostic as of ${new Date(data.as_of).toLocaleDateString()} · ${data.period_days}-day window · ${data.partner_name}`}
         actions={
-          <a
-            href={`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/reports/diagnostic`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Tbtn
+            variant="primary"
+            icon={<ExternalLink size={13} strokeWidth={1.6} />}
+            onClick={() => openDiagnosticReport().catch((reason) => toast.push(`Could not open report: ${String(reason)}`))}
           >
-            <Tbtn variant="primary" icon={<ExternalLink size={13} strokeWidth={1.6} />}>
-              View Report
-            </Tbtn>
-          </a>
+            View Report
+          </Tbtn>
         }
       />
 

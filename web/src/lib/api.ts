@@ -7,11 +7,39 @@
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
 
-async function apiFetch<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+const TOKEN_KEY = "harvestmind.operator-token";
+
+export function getApiToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.sessionStorage.getItem(TOKEN_KEY);
+}
+
+export function setApiToken(token: string): void {
+  if (typeof window === "undefined") return;
+  const cleaned = token.trim();
+  if (cleaned) window.sessionStorage.setItem(TOKEN_KEY, cleaned);
+  else window.sessionStorage.removeItem(TOKEN_KEY);
+  window.dispatchEvent(new Event("harvestmind-auth-change"));
+}
+
+export function clearApiToken(): void {
+  setApiToken("");
+}
+
+export function authHeaders(): Record<string, string> {
+  const token = getApiToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function apiFetch<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`;
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
     ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+      ...(init?.headers ?? {}),
+    },
   });
   if (!res.ok) {
     let detail = `HTTP ${res.status}`;
@@ -407,7 +435,11 @@ export async function getConfidence(): Promise<ConfidenceIndex> {
 export async function extractFiles(files: File[]): Promise<ExtractionResultPayload> {
   const form = new FormData();
   files.forEach((f) => form.append("files", f));
-  const res = await fetch(`${BASE_URL}/intake/extract`, { method: "POST", body: form });
+  const res = await fetch(`${BASE_URL}/intake/extract`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: form,
+  });
   if (!res.ok) {
     let detail = `HTTP ${res.status}`;
     try { detail = (await res.json()).detail ?? detail; } catch {}
@@ -439,8 +471,9 @@ export async function getPoolStatus(operatorId?: string): Promise<PoolStatus> {
   return apiFetch<PoolStatus>(`/pool/status${q}`);
 }
 
-export async function setPoolConsent(operatorId: string, consented: boolean): Promise<{ pool_consent: boolean; note: string }> {
-  return apiFetch(`/pool/consent?operator_id=${encodeURIComponent(operatorId)}&consented=${consented}`, { method: "POST" });
+export async function setPoolConsent(consented: boolean, operatorId?: string): Promise<{ pool_consent: boolean; note: string }> {
+  const operator = operatorId ? `&operator_id=${encodeURIComponent(operatorId)}` : "";
+  return apiFetch(`/pool/consent?consented=${consented}${operator}`, { method: "POST" });
 }
 
 export async function getDataQuality(): Promise<DataQualityReport> {
@@ -458,7 +491,11 @@ export async function uploadCSV(
   const form = new FormData();
   form.append("file", file);
   const url = `${BASE_URL}/intake/upload/${table}`;
-  const res = await fetch(url, { method: "POST", body: form });
+  const res = await fetch(url, {
+    method: "POST",
+    headers: authHeaders(),
+    body: form,
+  });
   if (!res.ok) {
     let detail = `HTTP ${res.status}`;
     try {
@@ -476,6 +513,22 @@ export async function clearStagingTable(table: string): Promise<void> {
 
 export async function loadSampleData(): Promise<SampleLoadResult> {
   return apiFetch<SampleLoadResult>("/intake/load-sample-data", { method: "POST" });
+}
+
+export async function openDiagnosticReport(
+  partnerName = "Operator",
+  days = 365,
+): Promise<void> {
+  const path = `/reports/diagnostic?partner_name=${encodeURIComponent(partnerName)}&days=${days}`;
+  const res = await fetch(`${BASE_URL}${path}`, { headers: authHeaders() });
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`;
+    try { detail = (await res.json()).detail ?? detail; } catch {}
+    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+  }
+  const blobUrl = URL.createObjectURL(await res.blob());
+  window.open(blobUrl, "_blank", "noopener,noreferrer");
+  window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
 }
 
 export function fmt(n: number | null | undefined, digits = 0): string {

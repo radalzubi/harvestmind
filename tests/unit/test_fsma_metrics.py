@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import csv
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from io import StringIO
 from pathlib import Path
 
@@ -134,7 +134,9 @@ def _seed_lot_with_cte(conn, lot_id, tlc, product_id, supplier_id, when):
 
 
 def test_generate_fda_report_csv_valid(conn):
-    _seed_lot_with_cte(conn, "L1", "TLC-X", "PRD-FTL-1", "SUP-A", datetime.utcnow())
+    _seed_lot_with_cte(
+        conn, "L1", "TLC-X", "PRD-FTL-1", "SUP-A", datetime.now(timezone.utc)
+    )
     csv_str = generate_fda_report_csv(conn)
     assert csv_str.strip(), "CSV should not be empty"
     parsed = list(csv.reader(StringIO(csv_str)))
@@ -147,7 +149,7 @@ def test_generate_fda_report_csv_valid(conn):
 
 def test_fsma_lot_chain_three_hops(conn):
     # Build a 3-step chain: TLC-A → TLC-B → TLC-C (each refs the prior)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     _seed_lot_with_cte(conn, "L-A", "TLC-A", "PRD-FTL-1", "SUP-A", now - timedelta(hours=2))
     _seed_lot_with_cte(conn, "L-B", "TLC-B", "PRD-FTL-1", "SUP-A", now - timedelta(hours=1))
     _seed_lot_with_cte(conn, "L-C", "TLC-C", "PRD-FTL-1", "SUP-A", now)

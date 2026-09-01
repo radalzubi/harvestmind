@@ -12,11 +12,11 @@ import {
   PageHeader,
   Tbtn,
 } from "@/components/ui";
-import { getDiagnosticSummary, fmtUSD, fmtPct, fmt, type DiagnosticSummary } from "@/lib/api";
-
-const REPORT_URL = `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/reports/diagnostic`;
+import { getDiagnosticSummary, openDiagnosticReport, fmtUSD, fmtPct, type DiagnosticSummary } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 
 export default function ReportsPage() {
+  const toast = useToast();
   const [data, setData] = useState<DiagnosticSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +29,8 @@ export default function ReportsPage() {
   }, []);
 
   const hasData = data && Object.values(data.row_counts).some((v) => v > 0);
+  const openReport = () => openDiagnosticReport()
+    .catch((reason) => toast.push(`Could not open report: ${String(reason)}`));
 
   return (
     <div className="page">
@@ -36,14 +38,9 @@ export default function ReportsPage() {
         title="Reports"
         sub="Generate and export your FSMA-204 diagnostic report"
         actions={
-          <a href={REPORT_URL} target="_blank" rel="noopener noreferrer">
-            <Tbtn
-              variant="primary"
-              icon={<ExternalLink size={13} strokeWidth={1.6} />}
-            >
-              Open Diagnostic Report
-            </Tbtn>
-          </a>
+          <Tbtn variant="primary" icon={<ExternalLink size={13} strokeWidth={1.6} />} onClick={openReport}>
+            Open Diagnostic Report
+          </Tbtn>
         }
       />
 
@@ -79,16 +76,9 @@ export default function ReportsPage() {
                 Rendered live from your uploaded data — no static snapshots.
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <a href={REPORT_URL} target="_blank" rel="noopener noreferrer">
-                  <Tbtn variant="primary" icon={<ExternalLink size={12} />}>
-                    View in browser
-                  </Tbtn>
-                </a>
-                <a href={`${REPORT_URL}?format=pdf`} target="_blank" rel="noopener noreferrer">
-                  <Tbtn>
-                    Download PDF
-                  </Tbtn>
-                </a>
+                <Tbtn variant="primary" icon={<ExternalLink size={12} />} onClick={openReport}>
+                  View in browser
+                </Tbtn>
               </div>
             </div>
           </div>

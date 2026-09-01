@@ -119,7 +119,9 @@ export function Sidebar() {
             <div className="rail-user-name">Operator</div>
             <div className="rail-user-org">HarvestMind</div>
           </div>
-          <Settings size={14} color="var(--ink-400)" strokeWidth={1.6} />
+          <Link href="/access" aria-label="Pilot access settings">
+            <Settings size={14} color="var(--ink-400)" strokeWidth={1.6} />
+          </Link>
         </div>
       </div>
     </aside>

@@ -81,12 +81,13 @@ def seasonal_naive_forecast(
     hist = history.groupby(["product_id", "week_start"])["qty_ordered_kg"].sum()
     out: dict[tuple, float] = {}
     products = history["product_id"].unique()
-    last_week = history["week_start"].max()
-    trailing = history[history["week_start"] > last_week - pd.Timedelta(weeks=4)]
+    last_week = pd.Timestamp(history["week_start"].max())
+    trailing = history[history["week_start"] > last_week - pd.DateOffset(weeks=4)]
     runrate = (trailing.groupby("product_id")["qty_ordered_kg"].sum() / 4.0)
     for p in products:
-        for w in target_weeks:
-            year_ago = w - pd.Timedelta(weeks=52)
+        for raw_week in target_weeks:
+            w = pd.Timestamp(raw_week)
+            year_ago = w - pd.DateOffset(weeks=52)
             val = hist.get((p, year_ago))
             if val is None or pd.isna(val):
                 val = float(runrate.get(p, 0.0))
