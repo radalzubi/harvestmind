@@ -65,6 +65,47 @@ That opening does three things:
 
 ---
 
+## Q0 — THE LOAD-BEARING QUESTION. Ask it on every call.
+
+**"Have you ever told a customer you can only commit to less than they
+asked for, because you weren't sure your supplier would actually deliver?
+Or do you promise it and then figure it out?"**
+
+*Why we ask*: This is the single question that decides whether the product
+has a decision to optimize. Our engine recommends how much to commit
+BEFORE supply resolves. If operators never reduce a commitment — if they
+always promise and scramble — then commitment is not a choice variable,
+there is no interior optimum, and the optimizer has nothing to do no
+matter how good the math is.
+
+It also explains something the competitive research could not: no vendor
+sells stochastic customer-commitment optimization, even though Lokad,
+GAINS and ToolsGroup could all build it and already serve these
+customers. Absence may be a demand signal rather than a capability gap.
+This question tells us which.
+
+*Listen for*:
+- **"We always promise and sort it out later"** → the decision does not
+  exist. Ask what happens when they cannot deliver, and who absorbs it.
+  If the answer is "we buy on the market and eat the cost", the value is
+  in RECOURSE COST, not in the commitment.
+- **"Yes, we hold back on some customers"** → the decision exists. Ask
+  immediately: how do you decide how much to hold back? If the answer is
+  a gut number or a flat percentage, that is exactly the gap.
+- **"We only commit what we have in the building"** → they have already
+  solved it by refusing to pre-commit. Ask what that costs them in lost
+  orders.
+
+*Follow-up regardless of answer*: **"When a supplier comes up short, what
+do you actually do that day?"** Their recourse options and cost are the
+other half of the economics, and our own testing shows the model is worth
+most when recourse is expensive or unavailable.
+
+*What answer kills the bet*: "We never have supply problems, our growers
+always deliver what they promise."
+
+---
+
 ## The 15 questions
 
 ### Context (Q1–Q3)
