@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import statistics
 import sys
 from pathlib import Path
 
@@ -77,10 +78,10 @@ def run_matrix(seeds: list[int], weeks: int = 80, folds: int = 12) -> dict:
             "completed_runs": len(completed),
             "gate_passes": len(passed),
             "gate_pass_rate_pct": round(100 * len(passed) / len(completed), 1) if completed else None,
-            "median_sp_vs_lp_edge_pct": round(sorted(lp_edges)[len(lp_edges) // 2], 2) if lp_edges else None,
+            "median_sp_vs_lp_edge_pct": round(statistics.median(lp_edges), 2) if lp_edges else None,
             "min_sp_vs_lp_edge_pct": round(min(lp_edges), 2) if lp_edges else None,
             "max_sp_vs_lp_edge_pct": round(max(lp_edges), 2) if lp_edges else None,
-            "median_sp_vs_naive_edge_pct": round(sorted(naive_edges)[len(naive_edges) // 2], 2) if naive_edges else None,
+            "median_sp_vs_naive_edge_pct": round(statistics.median(naive_edges), 2) if naive_edges else None,
         },
         "runs": rows,
     }

@@ -9,7 +9,11 @@ clean incremental recourse economics (no procurement double-count):
 
 Policies:
     two_sided_sp      newsvendor SP, demand replay scenarios × per-scenario
-                      supplier yield draws (fit on the training window only)
+                      supplier yield draws (fit on the training window
+                      only). Yields are drawn INDEPENDENTLY per supplier
+                      here: this harness exercises marginal yield
+                      uncertainty, not the correlated-shortfall model in
+                      risk/correlated_scenarios.py
     deterministic_lp  newsvendor LP on mean training demand
     order_up_to       S = trailing μ + z·σ (z from the service quantile) —
                       the heuristic operators actually use
@@ -82,18 +86,150 @@ def _economics(conn) -> dict[str, dict[str, float]]:
 
 # ── Clean recourse scoring (shared by every policy) ──────────────────────────
 
+POOL_SUPPLIER = "__pool__"
+
+
 def score_commitment(
     committed: float, demand: float,
     cost: float, margin: float,
     spot_mult: float, spot_cap: float,
 ) -> tuple[float, float, float]:
-    """(incremental cost, served kg, waste kg) for one product-week."""
+    """(incremental cost, served kg, waste kg) for one product-week.
+
+    ``committed`` here is DELIVERED quantity, not ordered quantity. Callers
+    must apply supplier fill rates before this point; ``settle`` does.
+    """
     over = max(committed - demand, 0.0)
     under = max(demand - committed, 0.0)
     spot = min(under, spot_cap * demand)
     unmet = under - spot
     c = over * cost + spot * cost * (spot_mult - 1.0) + unmet * margin
     return c, min(committed, demand) + spot, over
+
+
+def supplier_volume_shares(tdel: pd.DataFrame) -> dict[str, dict[str, float]]:
+    """{product: {supplier: share}} from TRAINING-window delivered volume.
+
+    The allocation rule for policies that do not choose suppliers
+    themselves. Order-up-to and run-rate emit a product quantity only, so
+    to settle them against supplier fill rates we must decide who would
+    have supplied it. Splitting by each supplier's historical share of that
+    product is the neutral choice, and it is applied identically to every
+    supplier-blind policy so none is advantaged.
+
+    This is a modelling assumption, not an observation. It is stated here
+    rather than buried because it materially affects those policies'
+    scores.
+    """
+    out: dict[str, dict[str, float]] = {}
+    if tdel.empty:
+        return out
+    vol = (tdel.groupby(["product_id", "supplier_id"])["accepted"]
+           .sum().reset_index())
+    for j, g in vol.groupby("product_id"):
+        total = float(g["accepted"].sum())
+        if total <= 0:
+            continue
+        out[str(j)] = {str(r.supplier_id): float(r.accepted) / total
+                       for r in g.itertuples() if float(r.accepted) > 0}
+    return out
+
+
+def allocate_to_suppliers(
+    product_totals: dict[str, float],
+    shares: dict[str, dict[str, float]],
+) -> dict[tuple[str, str], float]:
+    """Split product-level commitments across suppliers pro rata.
+
+    Conservation is guaranteed: the allocated quantities for a product sum
+    to the product total. A product with no training-window supplier
+    history is allocated to POOL_SUPPLIER rather than dropped, so no
+    quantity silently disappears from a policy's commitment.
+    """
+    alloc: dict[tuple[str, str], float] = {}
+    for j, qty in product_totals.items():
+        q = float(qty)
+        if q <= 0:
+            continue
+        sh = shares.get(str(j))
+        if not sh:
+            alloc[(POOL_SUPPLIER, str(j))] = alloc.get(
+                (POOL_SUPPLIER, str(j)), 0.0) + q
+            continue
+        tot = sum(sh.values())
+        for i, w in sh.items():
+            alloc[(i, str(j))] = alloc.get((i, str(j)), 0.0) + q * (w / tot)
+    return alloc
+
+
+def realized_fills(
+    deliveries: pd.DataFrame, week, fallback: dict[str, float],
+    pool_fallback: float,
+) -> dict[str, float]:
+    """Supplier fill rates ACTUALLY observed in the held-out week.
+
+    This is realized outcome, not lookahead: it settles a decision already
+    made, and is never visible to any policy at decision time. Suppliers
+    with no delivery that week fall back to their TRAINING-window mean, so
+    the fallback itself carries no held-out information.
+    """
+    fills = dict(fallback)
+    fills[POOL_SUPPLIER] = pool_fallback
+    if deliveries.empty:
+        return fills
+    wk = deliveries[deliveries["week_start"] == week]
+    wk = wk[wk["ordered"].fillna(0) > 0]
+    if wk.empty:
+        return fills
+    g = wk.groupby("supplier_id").agg(
+        ordered=("ordered", "sum"), accepted=("accepted", "sum"))
+    for sid, r in g.iterrows():
+        o = float(r["ordered"])
+        if o > 0:
+            fills[str(sid)] = float(np.clip(float(r["accepted"]) / o, 0.0, 1.0))
+    return fills
+
+
+def settle(
+    alloc: dict[tuple[str, str], float],
+    realized: dict[str, float],
+    fills: dict[str, float],
+    econ: dict[str, dict[str, float]],
+    spot_mult: float, spot_cap: float,
+    default_fill: float = 1.0,
+) -> tuple[float, float, float, float]:
+    """The single settlement path for every policy.
+
+    Applies supplier fill rates to that policy's own supplier allocation,
+    then scores the DELIVERED quantity through identical recourse
+    economics. Returns (cost, served, waste, delivered).
+
+    Every policy routes through here, so the only thing that differs
+    between policies is the allocation they chose.
+    """
+    delivered: dict[str, float] = {}
+    for (i, j), kg in alloc.items():
+        f = fills.get(str(i), default_fill)
+        delivered[str(j)] = delivered.get(str(j), 0.0) + float(kg) * float(f)
+
+    # Iterate the UNION of demanded and delivered products. Iterating only
+    # realized demand let a commitment to a product with zero demand that
+    # week escape scoring entirely: the stock arrived, sold nothing, and
+    # was charged no waste. Harmless where every product sells every week,
+    # but silently forgiving on intermittent real data, which is exactly
+    # where a planner most needs to be held to account.
+    tot_cost = served = waste = deliv_tot = 0.0
+    for j in set(realized) | set(delivered):
+        e = econ.get(j, {"cost": 2.0, "margin": 0.5})
+        d_real = float(realized.get(j, 0.0))
+        dj = delivered.get(str(j), 0.0)
+        cst, sv, ov = score_commitment(
+            dj, d_real, e["cost"], e["margin"], spot_mult, spot_cap)
+        tot_cost += cst
+        served += sv
+        waste += ov
+        deliv_tot += dj
+    return tot_cost, served, waste, deliv_tot
 
 
 # ── The benchmark ────────────────────────────────────────────────────────────
@@ -106,8 +242,15 @@ def run_benchmark(
     spot_capacity_factor: float = 0.30,
     n_yield_draws_seed: int = 42,
     service_level: float = 0.90,
+    force_unit_fills: bool = False,
 ) -> dict[str, Any]:
-    """Rolling-origin benchmark of all policies on staged history."""
+    """Rolling-origin benchmark of all policies on staged history.
+
+    ``force_unit_fills`` pins every supplier fill to 1.0. It exists for the
+    regression test that proves the fill-replay refactor changed only what
+    it was meant to: with delivery perfect, settlement must reproduce the
+    old commitment-equals-delivery scoring exactly.
+    """
     demand = _weekly_demand(conn)
     deliveries = _deliveries(conn)
     econ = _economics(conn)
@@ -190,10 +333,10 @@ def run_benchmark(
             spot_capacity_factor=spot_capacity_factor,
             n_scenarios=len(train_wk),
         ).solve(scen, cap, yield_scenarios=yields)
-        c: dict[str, float] = {}
+        c: dict[tuple[str, str], float] = {}
         for (i, j), v in sp_res["x"].items():
             if v:
-                c[j] = c.get(j, 0.0) + float(v)
+                c[(str(i), str(j))] = c.get((str(i), str(j)), 0.0) + float(v)
         commits["two_sided_sp"] = c
 
         meandem = (train.groupby("product_id")["demand_kg"].mean()
@@ -211,31 +354,44 @@ def run_benchmark(
         c = {}
         for (i, j, t), v in lp_res["x"].items():
             if v:
-                c[j] = c.get(j, 0.0) + float(v)
+                c[(str(i), str(j))] = c.get((str(i), str(j)), 0.0) + float(v)
         commits["deterministic_lp"] = c
 
-        commits["order_up_to"] = order_up_to_commitments(
-            train, service_level=service_level)
+        # Supplier-blind policies emit product quantities only. Split them
+        # across suppliers by training-window volume share, identically for
+        # both, so neither is advantaged by the settlement change.
+        shares = supplier_volume_shares(tdel)
+        commits["order_up_to"] = allocate_to_suppliers(
+            order_up_to_commitments(train, service_level=service_level),
+            shares)
         runrate = (train[train["week_start"].isin(train_wk[-4:])]
                    .groupby("product_id")["demand_kg"].sum() / 4.0).to_dict()
-        commits["naive_runrate"] = runrate
+        commits["naive_runrate"] = allocate_to_suppliers(runrate, shares)
 
+        # Held-out fills settle the decision; the fallback is training-only
+        # so no held-out information can leak into a missing supplier.
+        train_fill = (tdel.groupby("supplier_id")["fill_rate"].mean()
+                      .to_dict() if not tdel.empty else {})
+        train_fill = {str(k): float(v) for k, v in train_fill.items()}
+        pool_fill = (float(np.mean(list(train_fill.values())))
+                     if train_fill else 1.0)
+        fills = (
+            {s_: 1.0 for s_ in list(train_fill) + [POOL_SUPPLIER]}
+            if force_unit_fills else
+            realized_fills(deliveries, origin, train_fill, pool_fill)
+        )
+
+        dem_tot = float(sum(float(v) for v in realized.values()))
         for pol in policies:
-            tot_cost = served = dem_tot = waste = 0.0
-            for j, d_real in realized.items():
-                e = econ.get(j, {"cost": 2.0, "margin": 0.5})
-                cst, sv, ov = score_commitment(
-                    commits[pol].get(j, 0.0), float(d_real),
-                    e["cost"], e["margin"],
-                    spot_cost_multiplier, spot_capacity_factor)
-                tot_cost += cst
-                served += sv
-                dem_tot += float(d_real)
-                waste += ov
+            tot_cost, served, waste, delivered = settle(
+                commits[pol], realized, fills, econ,
+                spot_cost_multiplier, spot_capacity_factor)
             per_fold[pol].append({
                 "origin": str(pd.Timestamp(origin).date()),
                 "cost": tot_cost, "served": served,
                 "demand": dem_tot, "waste": waste,
+                "committed": float(sum(commits[pol].values())),
+                "delivered": delivered,
             })
 
     if not per_fold["two_sided_sp"]:
@@ -278,7 +434,13 @@ def run_benchmark(
     vs_sS = _edge(ss_c)
     beats_lp = (vs_lp["edge_pct"] or 0) > 0
     beats_naive = (vs_naive["edge_pct"] or 0) > 0
-    gate = bool(beats_lp and beats_naive)
+    # A run scored with force_unit_fills can never open the gate. That mode
+    # exists only to prove the settlement refactor is behaviour-preserving;
+    # it assumes every supplier delivers in full, which is the exact
+    # assumption that made the previous benchmark unable to express the
+    # value of hedging yield. Passing on synthetic perfect delivery is not
+    # evidence of anything.
+    gate = bool(beats_lp and beats_naive and not force_unit_fills)
 
     return {
         "status": "ok",
@@ -302,9 +464,20 @@ def run_benchmark(
             "note": "the SP edge is sensitive to these; sweep before "
                     "believing one number",
         },
-        "scoring": "product-level clean incremental recourse (overage at "
-                   "cost, spot at premium, unmet at margin); identical for "
-                   "every policy",
+        "scoring": (
+            "supplier-level fill replay then product-level clean "
+            "incremental recourse (overage at cost, spot at premium, unmet "
+            "at margin); every policy settles through one function. "
+            "Supplier-blind policies are allocated pro rata by "
+            "training-window volume share, a stated modelling assumption."
+            + (" FORCED UNIT FILLS: diagnostic mode, gate forced closed."
+               if force_unit_fills else "")
+        ),
+        "settlement": {
+            "fills_replayed": not force_unit_fills,
+            "missing_fill_fallback": "supplier training-window mean",
+            "supplier_blind_allocation": "pro rata by training volume share",
+        },
         "data_basis": "operator staging history; synthetic if the staged "
                       "data is synthetic",
     }
@@ -347,7 +520,6 @@ def saa_optimality_gap(
 
     batch_objs: list[float] = []
     candidate_x: dict | None = None
-    products: list[str] = []
 
     for b in range(n_batches):
         scen = demand_scenarios_from_forecast(
@@ -368,7 +540,6 @@ def saa_optimality_gap(
         batch_objs.append(float(res["objective"]))
         if candidate_x is None:
             candidate_x = {k: float(v or 0.0) for k, v in res["x"].items()}
-            products = sorted(scen["product_id"].unique())
 
     lb = float(np.mean(batch_objs))
     lb_se = float(np.std(batch_objs, ddof=1) / np.sqrt(n_batches)) \
