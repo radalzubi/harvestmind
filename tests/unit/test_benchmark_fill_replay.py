@@ -178,6 +178,37 @@ def test_settlement_is_deterministic():
     assert np.allclose(a, b)
 
 
+class TestZeroDemandProducts:
+    """Committed stock for a product that sold nothing must still be waste.
+
+    Settlement previously iterated only products with positive realized
+    demand, so a commitment to a zero-demand product escaped scoring
+    entirely: it arrived, sold nothing, and cost the policy nothing. That
+    is invisible where every product sells every week, and silently
+    forgiving on intermittent real data.
+    """
+
+    def test_zero_demand_commitment_is_charged_as_waste(self):
+        cost, served, waste, delivered = settle(
+            {("S1", "tomato"): 100.0, ("S1", "lettuce"): 500.0},
+            {"tomato": 100.0},          # lettuce had NO demand this week
+            {"S1": 1.0}, ECON, 1.30, 0.30)
+        assert waste == pytest.approx(500.0)
+        assert cost == pytest.approx(500.0 * ECON["lettuce"]["cost"])
+        assert served == pytest.approx(100.0)
+        assert delivered == pytest.approx(600.0)
+
+    def test_zero_demand_waste_scales_with_fill(self):
+        """Only what actually ARRIVED can be wasted."""
+        _, _, waste, _ = settle(
+            {("S1", "lettuce"): 500.0}, {"tomato": 0.0},
+            {"S1": 0.4}, ECON, 1.30, 0.30)
+        assert waste == pytest.approx(200.0)
+
+    def test_no_commitment_and_no_demand_costs_nothing(self):
+        assert settle({}, {}, {}, ECON, 1.30, 0.30) == (0.0, 0.0, 0.0, 0.0)
+
+
 class TestGateSafety:
     """force_unit_fills is a diagnostic mode and must never open the gate."""
 
