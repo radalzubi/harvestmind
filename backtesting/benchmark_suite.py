@@ -293,6 +293,7 @@ def run_benchmark(
     supply_risk_policy: Any | None = None,
     underage_overage_ratio: float | None = None,
     capacity_headroom: float = 1.0,
+    capacity_basis: str = "mean_ordered",
 ) -> dict[str, Any]:
     """Rolling-origin benchmark of all policies on staged history.
 
@@ -422,8 +423,14 @@ def run_benchmark(
         # stochastic from deterministic planning at all.
         # `capacity_headroom` scales the ceiling; 1.0 reproduces the old
         # behaviour exactly.
+        _cap_agg = {"mean_ordered": "mean", "max_ordered": "max",
+                    "p90_ordered": (lambda x: float(np.quantile(x, 0.90)))}
+        if capacity_basis not in _cap_agg:
+            raise ValueError(
+                f"unknown capacity_basis {capacity_basis!r}; use one of "
+                f"{sorted(_cap_agg)}")
         cap = (tdel.groupby(["supplier_id", "product_id"])
-               .agg(capacity_kg=("ordered", "mean"),
+               .agg(capacity_kg=("ordered", _cap_agg[capacity_basis]),
                     price_per_kg=("unit_cost", "mean")).reset_index())
         cap["capacity_kg"] = cap["capacity_kg"] * float(capacity_headroom)
         cap["week_start"] = None
