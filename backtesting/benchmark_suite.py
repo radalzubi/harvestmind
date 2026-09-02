@@ -106,6 +106,59 @@ def score_commitment(
     return c, min(committed, demand) + spot, over
 
 
+def atp_commitments(
+    mean_demand: dict[str, float],
+    shares: dict[str, dict[str, float]],
+    supplier_fill: dict[str, float],
+    fill_quantile: dict[str, float] | None = None,
+    capacity: dict[tuple[str, str], float] | None = None,
+) -> dict[tuple[str, str], float]:
+    """Order-to-forecast, grossed up for expected supplier shortfall.
+
+    The incumbent-style rule this product must beat. A competent planner
+    does not order exactly the demand they forecast: they know a supplier
+    filling 90% means ordering 1/0.90 of what they need. This encodes that
+    reasoning WITHOUT any distributional optimization.
+
+    ``fill_quantile`` switches it from mean-based (deterministic ATP) to a
+    conservative haircut (safety-buffer ATP). Beating deterministic ATP is
+    a weak result; beating the buffered version is the real test, because
+    a haircut rule is what a good buyer already does in their head.
+    """
+    alloc: dict[tuple[str, str], float] = {}
+    basis = fill_quantile if fill_quantile is not None else supplier_fill
+    cap = capacity or {}
+    for j, need in mean_demand.items():
+        q = float(need)
+        if q <= 0:
+            continue
+        sh = shares.get(str(j))
+        if not sh:
+            f = max(_safe_mean(basis.values()), 0.05)
+            want = q / f
+            lim = cap.get((POOL_SUPPLIER, str(j)))
+            alloc[(POOL_SUPPLIER, str(j))] = min(want, lim) if lim else want
+            continue
+        tot = sum(sh.values())
+        for i, w in sh.items():
+            f = max(float(basis.get(str(i), _safe_mean(basis.values()) or 1.0)), 0.05)
+            want = (q * w / tot) / f
+            # Cap at what the supplier can actually supply. Without this the
+            # heuristic orders volume no supplier could provide and is then
+            # credited with delivering it, which is the same class of defect
+            # as scoring committed quantity as delivered quantity.
+            lim = cap.get((str(i), str(j)))
+            if lim is not None:
+                want = min(want, float(lim))
+            alloc[(str(i), str(j))] = alloc.get((str(i), str(j)), 0.0) + want
+    return alloc
+
+
+def _safe_mean(vals) -> float:
+    v = [float(x) for x in vals if x is not None]
+    return float(np.mean(v)) if v else 1.0
+
+
 def supplier_volume_shares(tdel: pd.DataFrame) -> dict[str, dict[str, float]]:
     """{product: {supplier: share}} from TRAINING-window delivered volume.
 
@@ -250,6 +303,8 @@ def run_benchmark(
     force_unit_fills: bool = False,
     supply_risk_policy: Any | None = None,
     underage_overage_ratio: float | None = None,
+    capacity_headroom: float = 1.0,
+    capacity_basis: str = "mean_ordered",
 ) -> dict[str, Any]:
     """Rolling-origin benchmark of all policies on staged history.
 
@@ -284,7 +339,9 @@ def run_benchmark(
 
     weeks = sorted(demand["week_start"].unique())
     policies = ("two_sided_sp", "deterministic_lp", "order_up_to",
-                "naive_runrate", "forecast_routed")
+                "naive_runrate", "forecast_routed",
+                "deterministic_atp", "safety_buffer_atp",
+                "mean_value_sp")
     per_fold: dict[str, list[dict]] = {p: [] for p in policies}
     rng = np.random.default_rng(n_yield_draws_seed)
     route_counts = {"croston": 0, "lgbm": 0}
@@ -368,10 +425,25 @@ def run_benchmark(
                 for omega in range(len(train_wk)):
                     yields[(omega, sid)] = float(np.clip(draws[omega], 0, 1))
 
-        # supply capacity from the training window (full typical order)
+        # Supply capacity from the training window.
+        #
+        # NOTE: the mean of what was ORDERED is not what a supplier could
+        # SUPPLY. Using it as a hard ceiling makes capacity bind for every
+        # fill-aware policy, which collapses them onto identical
+        # commitments and leaves the benchmark unable to distinguish
+        # stochastic from deterministic planning at all.
+        # `capacity_headroom` scales the ceiling; 1.0 reproduces the old
+        # behaviour exactly.
+        _cap_agg = {"mean_ordered": "mean", "max_ordered": "max",
+                    "p90_ordered": (lambda x: float(np.quantile(x, 0.90)))}
+        if capacity_basis not in _cap_agg:
+            raise ValueError(
+                f"unknown capacity_basis {capacity_basis!r}; use one of "
+                f"{sorted(_cap_agg)}")
         cap = (tdel.groupby(["supplier_id", "product_id"])
-               .agg(capacity_kg=("ordered", "mean"),
+               .agg(capacity_kg=("ordered", _cap_agg[capacity_basis]),
                     price_per_kg=("unit_cost", "mean")).reset_index())
+        cap["capacity_kg"] = cap["capacity_kg"] * float(capacity_headroom)
         cap["week_start"] = None
         cap["price_per_kg"] = cap["price_per_kg"].fillna(2.0)
         if cap.empty:
@@ -423,6 +495,55 @@ def run_benchmark(
         runrate = (train[train["week_start"].isin(train_wk[-4:])]
                    .groupby("product_id")["demand_kg"].sum() / 4.0).to_dict()
         commits["naive_runrate"] = allocate_to_suppliers(runrate, shares)
+
+        # Incumbent-style ATP ladder. Each adds exactly one thing over the
+        # last, so a win can be attributed: LP adds cost optimization, ATP
+        # adds fill awareness, buffered ATP adds conservatism, the SP adds
+        # the full distribution. Beating buffered ATP is the real test.
+        mean_dem = (train.groupby("product_id")["demand_kg"].mean().to_dict())
+        if not tdel.empty:
+            fill_mean = {str(k): float(v) for k, v in
+                         tdel.groupby("supplier_id")["fill_rate"].mean().items()}
+            fill_low = {str(k): float(v) for k, v in
+                        tdel.groupby("supplier_id")["fill_rate"]
+                        .quantile(0.10).items()}
+        else:
+            fill_mean, fill_low = {}, {}
+        cap_lookup = {(str(r.supplier_id), str(r.product_id)):
+                      float(r.capacity_kg) for r in cap.itertuples()}
+        commits["deterministic_atp"] = atp_commitments(
+            mean_dem, shares, fill_mean, capacity=cap_lookup)
+        commits["safety_buffer_atp"] = atp_commitments(
+            mean_dem, shares, fill_mean, fill_quantile=fill_low,
+            capacity=cap_lookup)
+
+        # THE baseline that matters: a fill-aware DETERMINISTIC optimizer,
+        # identical to the SP in every respect except that it sees a point
+        # estimate of supplier fill instead of a distribution. Same solver,
+        # same capacity constraints, same recourse economics, same training
+        # information, same settlement path.
+        #
+        # This is the mean-value problem of the SP, so SP-versus-this is a
+        # true value of the stochastic solution rather than a comparison
+        # against a differently-specified model. If the SP cannot beat it,
+        # the distribution is not what creates the value.
+        mv_scen = pd.DataFrame([
+            {"scenario_index": 0, "scenario_weight": 1.0, "product_id": j,
+             "week_start": origin, "demand_kg": float(d)}
+            for j, d in mean_dem.items()])
+        mv_yields = {(0, str(sid)): float(f) for sid, f in fill_mean.items()}
+        mv_res = TwoStageStochasticLP(
+            newsvendor_objective=True, waste_cost_by_product=cw,
+            unmet_cost_by_product=cu,
+            spot_cost_multiplier=spot_cost_multiplier,
+            spot_capacity_factor=spot_capacity_factor,
+            n_scenarios=1,
+        ).solve(mv_scen, cap, yield_scenarios=mv_yields)
+        c = {}
+        for (i, j), v in (mv_res.get("x") or {}).items():
+            if v:
+                c[(str(i), str(j))] = c.get((str(i), str(j)), 0.0) + float(v)
+        commits["mean_value_sp"] = c
 
         # Exercise the production demand router in intermittent cells. This
         # baseline uses Croston-family forecasts for sparse products and a
@@ -508,6 +629,9 @@ def run_benchmark(
             if len(diff) >= 2 else None,
         }
 
+    atp_c = np.array([r["cost"] for r in per_fold["deterministic_atp"]])
+    buf_c = np.array([r["cost"] for r in per_fold["safety_buffer_atp"]])
+    mv_c = np.array([r["cost"] for r in per_fold["mean_value_sp"]])
     vs_lp = _edge(lp_c)
     vs_naive = _edge(nv_c)
     vs_sS = _edge(ss_c)
@@ -534,6 +658,9 @@ def run_benchmark(
         "status": "ok",
         "policies": table,
         "sp_vs_deterministic_lp": vs_lp,
+        "sp_vs_mean_value_sp": _edge(mv_c),
+        "sp_vs_deterministic_atp": _edge(atp_c),
+        "sp_vs_safety_buffer_atp": _edge(buf_c),
         "sp_vs_naive": vs_naive,
         "sp_vs_order_up_to": vs_sS,
         "sp_vs_forecast_routed": vs_routed,

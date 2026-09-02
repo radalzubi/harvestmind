@@ -97,6 +97,11 @@ smarter weekly commitment policy would have saved. We run it on your own
 history, so the proof comes from your numbers, not our claims."
 
 **The qualifying questions (listen for pain, take notes):**
+0. **THE ONE THAT MATTERS.** "Have you ever told a customer you can only
+   commit to less than they asked for, because you weren't sure your
+   supplier would deliver? Or do you promise it and figure it out?"
+   If they always promise and scramble, our engine has no decision to
+   optimize. Ask it early and write the answer down verbatim.
 1. "When you commit to a buyer before your growers confirm, how do you
    decide how much to promise?"
 2. "What happened the last time a supplier shorted you on a committed load?"
