@@ -242,12 +242,9 @@ def test_pool_status_no_operator(full_client):
     assert "operator" not in body  # no operator_id supplied
 
 
-def test_training_corpus_stats(full_client):
+def test_training_corpus_stats_is_hidden_without_admin_key(full_client):
     r = full_client.get("/training/corpus/stats")
-    assert r.status_code == 200
-    body = r.json()
-    assert "stats" in body
-    assert "quality" in body
+    assert r.status_code == 404
 
 
 # ── Query-param validation (Query(ge=, le=) → 422) ────────────────────────────
@@ -422,6 +419,17 @@ def test_planning_run_out_of_range_gamma_422(full_client):
     assert r.status_code == 422
 
 
+@pytest.mark.parametrize("model_type", ["two_stage_sp", "cvar", "robust_cvar"])
+def test_legacy_planning_rejects_stochastic_paths(full_client, model_type):
+    """There is one stochastic decision path: staging-first /two-sided."""
+    r = full_client.post(
+        "/planning/run",
+        json={"week_start": "2026-05-04", "model_type": model_type},
+    )
+    assert r.status_code == 422
+    assert "/planning/two-sided" in r.json()["detail"]
+
+
 def test_planning_run_empty_db_no_demand_422(full_client):
     """Valid request but no demand data → 422 (not 500)."""
     r = full_client.post(
@@ -430,6 +438,19 @@ def test_planning_run_empty_db_no_demand_422(full_client):
     )
     assert r.status_code == 422
     assert "No demand data" in r.json()["detail"]
+
+
+def test_two_sided_plan_is_blocked_without_backtest_history(full_client):
+    r = full_client.post("/planning/two-sided")
+    assert r.status_code == 422
+    detail = r.json()["detail"]
+    assert detail["gate_passed"] is None
+    assert "blocked" in detail["message"]
+
+
+def test_two_sided_plan_validates_spot_inputs(full_client):
+    r = full_client.post("/planning/two-sided?spot_cost_multiplier=0.5")
+    assert r.status_code == 422
 
 
 def test_backtest_run_invalid_field_422(full_client):

@@ -142,8 +142,8 @@ class LGBMDemandModel:
 
         df = orders_df.copy()
         df["week_start"] = pd.to_datetime(df["week_start"])
-        last_observed = df["week_start"].max()
-        next_week = last_observed + pd.Timedelta(weeks=1)
+        last_observed = pd.Timestamp(df["week_start"].max())
+        next_week = last_observed + pd.DateOffset(weeks=1)
         # Placeholder rows extend the feature grid one week into the
         # future; their lag/rolling features derive from real history.
         pairs = df[["product_id", "buyer_id"]].drop_duplicates()

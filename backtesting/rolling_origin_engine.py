@@ -406,8 +406,8 @@ class RollingOriginEngine:
         df["iso_week"] = df["delivery_date"].dt.to_period("W").dt.start_time
 
         # Trailing 12 weeks of weekly aggregates
-        max_date = df["delivery_date"].max()
-        cutoff = max_date - pd.Timedelta(weeks=12)
+        max_date = pd.Timestamp(df["delivery_date"].max())
+        cutoff = max_date - pd.DateOffset(weeks=12)
         recent = df[df["delivery_date"] >= cutoff]
         if recent.empty:
             recent = df
@@ -477,7 +477,7 @@ class RollingOriginEngine:
             return pd.DataFrame(columns=out_cols)
 
         horizon_start = pd.Timestamp(realized_weeks[0])
-        horizon_end = pd.Timestamp(realized_weeks[-1]) + pd.Timedelta(days=6)
+        horizon_end = pd.Timestamp(realized_weeks[-1]) + pd.DateOffset(days=6)
 
         deliv_dates = pd.to_datetime(deliveries_df["delivery_date"])
         mask = (deliv_dates >= horizon_start) & (deliv_dates <= horizon_end)

@@ -11,7 +11,14 @@ from pydantic import BaseModel, Field, field_validator
 class PlanningRequest(BaseModel):
     week_start: date = Field(..., description="ISO week Monday for the planning horizon")
     horizon_weeks: int = Field(default=4, ge=1, le=26)
-    model_type: str = Field(default="gamma_robust", description="deterministic|gamma_robust|two_stage_sp|cvar")
+    model_type: str = Field(
+        default="gamma_robust",
+        description=(
+            "deterministic|gamma_robust on the legacy route; stochastic "
+            "values are accepted only to return a migration error pointing "
+            "to /planning/two-sided"
+        ),
+    )
     gamma: float = Field(default=4.0, ge=0, le=20)
     lambda_cvar: float = Field(default=0.5, ge=0, le=1)
     alpha_cvar: float = Field(default=0.95, ge=0.5, le=0.999)

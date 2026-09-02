@@ -29,17 +29,19 @@ In scope (we treat these as real risks):
 
 Out of scope for this version (intentionally — pilot software):
 
-- multi-tenant authentication and authorization. The API has no auth layer
-  today and **must only be exposed on a localhost or VPN-only interface**.
-- rate limiting / DoS protection. Solver calls are CPU-bound; if you expose
-  the API to untrusted networks, add a reverse proxy with rate limits.
+- enterprise identity federation, fine-grained roles, and horizontally scaled
+  tenancy. Pilot access uses hashed per-operator bearer tokens and one DuckDB
+  vault per operator.
+- distributed rate limiting. The in-process limiter protects a single API
+  process; networked deployments still need ingress limits.
 - supply-chain attacks against the build environment.
 
 ## Assumptions and operating constraints
 
-1. **Local-only deployment.** The default CORS allowlist is localhost-only
-   (`api/main.py`). Production deployments must set `CORS_ALLOWED_ORIGINS`
-   explicitly to a known list.
+1. **Fail-closed networked deployment.** The default CORS allowlist is
+   localhost-only (`api/main.py`). A pilot must set
+   `HARVESTMIND_AUTH_REQUIRED=true`, `HARVESTMIND_ADMIN_KEY`, a positive rate
+   limit, and `CORS_ALLOWED_ORIGINS` explicitly.
 2. **No partner data in the repo.** `data/raw/`, `data/processed/`,
    `outputs/`, generated `*.duckdb`, `*.parquet`, and `*.pdf` files are
    gitignored. Synthetic data is generated deterministically by
@@ -77,7 +79,9 @@ targets.
 Before the first partner pilot:
 
 - [ ] `CORS_ALLOWED_ORIGINS` set explicitly (no `"*"`)
-- [ ] API bound to localhost / private network only — there is no auth
+- [ ] `HARVESTMIND_AUTH_REQUIRED=true`; verify an unauthenticated request is 401
+- [ ] Unique operator token issued and transferred out-of-band; admin key not shared
+- [ ] API behind TLS and ingress rate limits
 - [ ] `APP_ENV=production` and `LOG_LEVEL=WARNING`
 - [ ] `.env` populated; verify with `python3 -c "import os; print(os.getenv('NOAA_CDO_TOKEN','MISSING'))"`
 - [ ] DuckDB file owned by the service user, mode `600`
@@ -93,5 +97,5 @@ Before the first partner pilot:
 benefit, ROI multiple, payback, model-comparison averages. Per-supplier
 or per-buyer rows are not rendered into the partner ROI HTML. If you
 extend the template, keep raw line items out of the partner-facing
-summary; cell-level data should stay in the dashboard / API behind your
-own auth layer.
+summary; cell-level data must stay behind HarvestMind operator authentication
+and the deployment's network controls.

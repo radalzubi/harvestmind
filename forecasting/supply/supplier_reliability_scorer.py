@@ -42,8 +42,8 @@ def score_suppliers(
     deliveries_df["delivery_date"] = pd.to_datetime(deliveries_df["delivery_date"])
     po_df["week_start"] = pd.to_datetime(po_df["week_start"])
 
-    cutoff = deliveries_df["delivery_date"].max()
-    window_start = cutoff - pd.Timedelta(weeks=n_weeks)
+    cutoff = pd.Timestamp(deliveries_df["delivery_date"].max())
+    window_start = cutoff - pd.DateOffset(weeks=int(n_weeks))
     del_window = deliveries_df[deliveries_df["delivery_date"] >= window_start].copy()
 
     if del_window.empty:
@@ -62,14 +62,16 @@ def score_suppliers(
             "total_rejected": (g["qty_rejected_kg"] * g["weight"]).sum(),
             "total_weight": g["weight"].sum(),
             "n_deliveries": len(g),
-        })
+        }),
+        include_groups=False,
     )
     del_agg = del_agg.join(po_window, how="left")
-    del_agg["total_committed"] = del_agg["total_committed"].fillna(del_agg["total_received"])
+    del_agg["total_committed"] = pd.to_numeric(
+        del_agg["total_committed"], errors="coerce"
+    ).fillna(del_agg["total_received"])
 
     scores = []
     for sup_id, row in del_agg.iterrows():
-        w = row["total_weight"] if row["total_weight"] > 0 else 1.0
         fill = min(1.0, row["total_received"] / row["total_committed"]) if row["total_committed"] > 0 else 0.0
         rejection = 1.0 - (row["total_rejected"] / row["total_received"]) if row["total_received"] > 0 else 0.0
         # Quality score: proxy via rejection rate + temp compliance (if available)

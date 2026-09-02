@@ -94,6 +94,6 @@ uvicorn api.main:app --reload          # http://localhost:8000
 cd web && npm install && npm run dev   # http://localhost:3000
 
 # Tests
-python3 -m pytest                      # 333 passing
+python3 -m pytest                      # 1,035 passing after pilot-readiness hardening
 cd web && npx tsc --noEmit             # 0 errors
 ```

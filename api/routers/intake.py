@@ -38,9 +38,7 @@ MAX_EXTRACT_FILES = 20
 def _reject_if_too_large(contents: bytes, filename: str | None) -> None:
     if len(contents) > MAX_UPLOAD_BYTES:
         raise HTTPException(
-            status_code=getattr(
-                status, "HTTP_413_CONTENT_TOO_LARGE",
-                status.HTTP_413_REQUEST_ENTITY_TOO_LARGE),
+            status_code=413,
             detail=(
                 f"File {filename or 'upload'!r} exceeds the "
                 f"{MAX_UPLOAD_BYTES // (1024 * 1024)} MB limit."
@@ -190,7 +188,7 @@ async def upload_csv(
             preview = pd.read_csv(tmp_path, nrows=0)
         except Exception as e:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail=f"Could not parse CSV: {e}",
             )
 
@@ -451,7 +449,7 @@ async def extract_files(
             result = llm_extract(tmp_paths)
         except ValueError as e:   # unsupported file type etc.
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail=str(e))
         payload = result.model_dump()
         # original filenames, not temp names, for the UI
@@ -544,7 +542,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
             errors.extend(f"{table}: {e}" for e in v.errors)
         frames[table] = df
     if errors:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        raise HTTPException(status_code=422,
                             detail={"validation_errors": errors})
 
     from ingestion.column_mapper import insert_from_df
@@ -597,7 +595,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
             conn.execute("ROLLBACK")
             logger.exception("confirm insert failed for session %s", session_id)
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail="Could not insert confirmed rows; no data was written.",
             )
     finally:

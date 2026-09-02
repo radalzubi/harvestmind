@@ -6,7 +6,7 @@ into the FastAPI dependencies via dependency_overrides.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import duckdb
@@ -134,7 +134,7 @@ def test_record_cte_valid(client):
     r = c.post("/fsma/cte/record", json={
         "lot_id": lot_id,
         "cte_type": "receiving",
-        "event_timestamp": datetime.utcnow().isoformat(),
+        "event_timestamp": datetime.now(timezone.utc).isoformat(),
         "location_description": "Hub Dock 1",
         "business_name": "Test Hub",
         "quantity_kg": 30.0,
@@ -159,7 +159,7 @@ def test_record_cte_invalid_type_422(client):
     r = c.post("/fsma/cte/record", json={
         "lot_id": lot_id,
         "cte_type": "smuggling",  # not in valid enum
-        "event_timestamp": datetime.utcnow().isoformat(),
+        "event_timestamp": datetime.now(timezone.utc).isoformat(),
         "location_description": "Hub Dock 1",
         "business_name": "Test Hub",
     })
@@ -171,7 +171,7 @@ def test_record_cte_unknown_lot_404(client):
     r = c.post("/fsma/cte/record", json={
         "lot_id": "LOT-DOESNT-EXIST",
         "cte_type": "receiving",
-        "event_timestamp": datetime.utcnow().isoformat(),
+        "event_timestamp": datetime.now(timezone.utc).isoformat(),
         "location_description": "Hub Dock 1",
         "business_name": "Test Hub",
     })

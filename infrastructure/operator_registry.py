@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import os
 import secrets
 from datetime import datetime, timezone
 from pathlib import Path
@@ -28,7 +29,7 @@ def _hash_token(raw: str) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DATA_ROOT = REPO_ROOT / "data"
+DEFAULT_DATA_ROOT = Path(os.getenv("HARVESTMIND_DATA_ROOT", REPO_ROOT / "data"))
 
 
 class OperatorNotFoundError(KeyError):
