@@ -24,9 +24,8 @@ out-of-sample under honest penalties — and this module reports the
 unflattering verdict in plain words when it does not.
 
 Honest limitations, stated not hidden:
-- scoring is product-level against realized demand; realized supplier
-  fills are not replayed into the score (all policies are scored the same
-  way, so the comparison is fair, but absolute costs are approximate)
+- supplier-blind policies are allocated pro rata by training-window volume;
+  that construction is applied identically but remains an assumption
 - every result on synthetic data is synthetic; "validated" requires a
   real operator's history
 - the SP-vs-LP edge is sensitive to spot economics; run the spot grid
@@ -219,7 +218,13 @@ def settle(
     # but silently forgiving on intermittent real data, which is exactly
     # where a planner most needs to be held to account.
     tot_cost = served = waste = deliv_tot = 0.0
-    for j in set(realized) | set(delivered):
+    # Include products with commitments but zero realized demand. Iterating
+    # only ``realized`` made overage disappear whenever a product-week was
+    # explicitly zero, so a commitment to a product that sold nothing
+    # arrived, sold nothing, and was charged no waste. Both branches found
+    # this independently; sorted() keeps fold ordering deterministic.
+    products = set(map(str, realized)) | set(delivered)
+    for j in sorted(products):
         e = econ.get(j, {"cost": 2.0, "margin": 0.5})
         d_real = float(realized.get(j, 0.0))
         dj = delivered.get(str(j), 0.0)
@@ -243,6 +248,8 @@ def run_benchmark(
     n_yield_draws_seed: int = 42,
     service_level: float = 0.90,
     force_unit_fills: bool = False,
+    supply_risk_policy: Any | None = None,
+    underage_overage_ratio: float | None = None,
 ) -> dict[str, Any]:
     """Rolling-origin benchmark of all policies on staged history.
 
@@ -254,6 +261,13 @@ def run_benchmark(
     demand = _weekly_demand(conn)
     deliveries = _deliveries(conn)
     econ = _economics(conn)
+    if underage_overage_ratio is not None:
+        if underage_overage_ratio <= 0:
+            raise ValueError("underage_overage_ratio must be positive")
+        econ = {
+            j: {**e, "margin": float(e["cost"]) * underage_overage_ratio}
+            for j, e in econ.items()
+        }
     if demand.empty or demand["week_start"].nunique() < train_weeks + n_folds:
         return {"status": "insufficient_history",
                 "weeks_available": int(demand["week_start"].nunique())
@@ -270,9 +284,14 @@ def run_benchmark(
 
     weeks = sorted(demand["week_start"].unique())
     policies = ("two_sided_sp", "deterministic_lp", "order_up_to",
-                "naive_runrate")
+                "naive_runrate", "forecast_routed")
     per_fold: dict[str, list[dict]] = {p: [] for p in policies}
     rng = np.random.default_rng(n_yield_draws_seed)
+    route_counts = {"croston": 0, "lgbm": 0}
+    correlation_diagnostics: dict[str, Any] = {
+        "policy_mode": "independent",
+        "correlation_source": "independent_by_policy",
+    }
 
     for k in range(n_folds):
         origin_idx = len(weeks) - n_folds + k
@@ -301,16 +320,53 @@ def run_benchmark(
                              / tdel["ordered"].astype(float)).clip(0, 1)
         pop = estimate_population(tdel[["supplier_id", "fill_rate"]]
                                   .assign(supplier_name=""))
-        yields: dict = {}
+        beta_params: dict[str, tuple[float, float]] = {}
         for sid, g in tdel.groupby("supplier_id"):
             n = len(g)
             m_s = float(g["fill_rate"].mean())
             v_s = float(g["fill_rate"].var(ddof=0)) if n >= 2 else None
             dd = supplier_distribution(n, m_s, v_s, pop, 0.10)
-            draws = _st.beta.rvs(dd["alpha"], dd["beta"],
-                                 size=len(train_wk), random_state=rng)
-            for omega in range(len(train_wk)):
-                yields[(omega, sid)] = float(np.clip(draws[omega], 0, 1))
+            beta_params[str(sid)] = (float(dd["alpha"]), float(dd["beta"]))
+
+        yields: dict = {}
+        if supply_risk_policy is not None and supply_risk_policy.enabled:
+            from risk.correlated_scenarios import (
+                CopulaScenarioGenerator, equicorrelation_matrix,
+                kendall_to_latent,
+            )
+            if supply_risk_policy.mode != "equicorrelated":
+                raise ValueError(
+                    "rolling benchmark supports an explicit "
+                    "equicorrelated policy; estimated mode would read "
+                    "outside the fold's training window")
+            latent = float(kendall_to_latent(
+                float(supply_risk_policy.kendall_tau)))
+            generator = CopulaScenarioGenerator(
+                copula=supply_risk_policy.copula,
+                df=supply_risk_policy.df,
+                seed=supply_risk_policy.seed + k,
+            )
+            sampled = generator.sample_beta_marginals(
+                beta_params, len(train_wk),
+                correlation=equicorrelation_matrix(len(beta_params), latent),
+            )
+            for sid, draws in sampled.items():
+                for omega, value in enumerate(draws):
+                    yields[(omega, sid)] = float(value)
+            correlation_diagnostics = {
+                "policy_mode": supply_risk_policy.mode,
+                "correlation_source": "operator_supplied_tau",
+                "copula": supply_risk_policy.copula,
+                "target_kendall_tau": float(supply_risk_policy.kendall_tau),
+                "mean_latent_correlation": round(latent, 4),
+                "training_window_only": True,
+            }
+        else:
+            for sid, (alpha, beta) in beta_params.items():
+                draws = _st.beta.rvs(alpha, beta, size=len(train_wk),
+                                     random_state=rng)
+                for omega in range(len(train_wk)):
+                    yields[(omega, sid)] = float(np.clip(draws[omega], 0, 1))
 
         # supply capacity from the training window (full typical order)
         cap = (tdel.groupby(["supplier_id", "product_id"])
@@ -368,6 +424,28 @@ def run_benchmark(
                    .groupby("product_id")["demand_kg"].sum() / 4.0).to_dict()
         commits["naive_runrate"] = allocate_to_suppliers(runrate, shares)
 
+        # Exercise the production demand router in intermittent cells. This
+        # baseline uses Croston-family forecasts for sparse products and a
+        # trailing run-rate for dense ones; it is diagnostic and does not
+        # change the commercial gate definition.
+        from forecasting.demand.demand_forecast_service import classify_products
+        from forecasting.demand.intermittent_model import select_and_fit
+        routing_frame = train.rename(columns={"demand_kg": "qty_ordered_kg"})
+        routes = classify_products(routing_frame)
+        routed_totals: dict[str, float] = {}
+        for product_id, route in routes.items():
+            product_train = train[train["product_id"] == product_id]
+            series = (product_train.set_index("week_start")["demand_kg"]
+                      .reindex(train_wk, fill_value=0.0).to_numpy(float))
+            if route == "croston":
+                routed_totals[str(product_id)] = float(
+                    max(select_and_fit(series, horizon=1).mean, 0.0))
+            else:
+                routed_totals[str(product_id)] = float(series[-4:].sum() / 4.0)
+            route_counts[route] += 1
+        commits["forecast_routed"] = allocate_to_suppliers(
+            routed_totals, shares)
+
         # Held-out fills settle the decision; the fallback is training-only
         # so no held-out information can leak into a missing supplier.
         train_fill = (tdel.groupby("supplier_id")["fill_rate"].mean()
@@ -414,6 +492,7 @@ def run_benchmark(
     lp_c = np.array([r["cost"] for r in per_fold["deterministic_lp"]])
     nv_c = np.array([r["cost"] for r in per_fold["naive_runrate"]])
     ss_c = np.array([r["cost"] for r in per_fold["order_up_to"]])
+    fr_c = np.array([r["cost"] for r in per_fold["forecast_routed"]])
 
     def _edge(base: np.ndarray) -> dict:
         diff = base - sp_c
@@ -432,15 +511,24 @@ def run_benchmark(
     vs_lp = _edge(lp_c)
     vs_naive = _edge(nv_c)
     vs_sS = _edge(ss_c)
+    vs_routed = _edge(fr_c)
     beats_lp = (vs_lp["edge_pct"] or 0) > 0
     beats_naive = (vs_naive["edge_pct"] or 0) > 0
+    sp_service_pct = table["two_sided_sp"]["service_pct"]
+    service_floor_met = bool(
+        sp_service_pct is not None
+        and float(sp_service_pct) >= float(service_level) * 100.0
+    )
     # A run scored with force_unit_fills can never open the gate. That mode
     # exists only to prove the settlement refactor is behaviour-preserving;
     # it assumes every supplier delivers in full, which is the exact
     # assumption that made the previous benchmark unable to express the
     # value of hedging yield. Passing on synthetic perfect delivery is not
     # evidence of anything.
-    gate = bool(beats_lp and beats_naive and not force_unit_fills)
+    gate = bool(
+        beats_lp and beats_naive and service_floor_met
+        and not force_unit_fills
+    )
 
     return {
         "status": "ok",
@@ -448,13 +536,21 @@ def run_benchmark(
         "sp_vs_deterministic_lp": vs_lp,
         "sp_vs_naive": vs_naive,
         "sp_vs_order_up_to": vs_sS,
+        "sp_vs_forecast_routed": vs_routed,
         "gate_passed": gate,
+        "service_floor": {
+            "required_pct": round(float(service_level) * 100.0, 1),
+            "sp_service_pct": sp_service_pct,
+            "met": service_floor_met,
+        },
         "verdict": (
             "stochastic SP beats both the deterministic LP and the naive "
-            "baseline out-of-sample under honest penalties"
+            "baseline out-of-sample under honest penalties while meeting "
+            "the configured service floor"
             if gate else
             "HONEST VERDICT: the stochastic SP does NOT beat the simple "
-            "baselines on this data — the deterministic LP (or the "
+            "baselines while meeting the configured service floor on this "
+            "data — the deterministic LP (or the "
             "order-up-to heuristic) is the honest planning recommendation "
             "here; do not ship the stochastic layer as if it added value"
         ),
@@ -478,6 +574,9 @@ def run_benchmark(
             "missing_fill_fallback": "supplier training-window mean",
             "supplier_blind_allocation": "pro rata by training volume share",
         },
+        "demand_routing": route_counts,
+        "supply_risk": correlation_diagnostics,
+        "underage_overage_ratio": underage_overage_ratio,
         "data_basis": "operator staging history; synthetic if the staged "
                       "data is synthetic",
     }
