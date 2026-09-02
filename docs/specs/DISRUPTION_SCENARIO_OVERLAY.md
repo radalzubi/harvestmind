@@ -4,6 +4,21 @@ _2026-09-01. For testing with Middle East commercial distributors while the
 Strait of Hormuz is closed. Built so it needs no training data, because we
 have none._
 
+## CORRECTION: first data is Jordan, not GCC
+
+Jordan is not a GCC state and its exposure differs materially. Jordan
+imports through **Aqaba on the Red Sea**, not through Hormuz; its wheat and
+barley arrive from Romania and Montenegro via Suez. Hormuz reaches Jordan
+indirectly, and largely as an OPPORTUNITY: Iraq has diverted imports from
+Basra to Aqaba and trucks them ~760 km east. Aqaba transit volumes rose
+**155.1% in H1 2026**, with 573,680 TEU over seven months.
+
+That surge is itself the risk most likely to bite a Jordanian food
+importer, and it is not a conflict shock: berths, yard space and trucking
+capacity are consumed by someone else's freight, so local deliveries slip.
+The presets below are rebuilt around that, and there is deliberately no
+`hormuz_closure` preset, with a test asserting its absence.
+
 ## The situation this addresses
 
 As of 30 July 2026 the Strait of Hormuz is effectively closed to routine
@@ -99,12 +114,13 @@ than the current single-period model. Weeks of work, not days.
 
 ## Suggested presets, every number an assumption
 
-| preset | fill x | variance x | recourse cost x | recourse cap | landed cost x |
-|---|---:|---:|---:|---:|---:|
-| `baseline` | 1.00 | 1.0 | 1.30 | 0.30 | 1.00 |
-| `red_sea_rerouting` | 0.85 | 1.5 | 1.80 | 0.15 | 1.15 |
-| `hormuz_closure` | 0.60 | 2.5 | 3.50 | 0.05 | 1.40 |
-| `regional_conflict_severe` | 0.40 | 3.0 | 5.00 | 0.02 | 1.60 |
+| preset | fill x | variance x | recourse cost x | recourse cap | landed cost x | routes |
+|---|---:|---:|---:|---:|---:|---|
+| `baseline` | 1.00 | 1.0 | 1.30 | 0.30 | 1.00 | all |
+| `red_sea_houthi` | 0.85 | 1.8 | 1.80 | 0.15 | 1.15 | red_sea, suez |
+| `aqaba_congestion` | 0.80 | 2.0 | 1.60 | 0.20 | 1.10 | red_sea, suez, aqaba |
+| `land_border_disruption` | 0.65 | 2.5 | 2.20 | 0.10 | 1.25 | syria_land, iraq_land |
+| `regional_escalation` | 0.45 | 3.0 | 3.50 | 0.05 | 1.55 | all |
 
 Anchors: Red Sea at 49% of pre-crisis capacity; Hormuz closed to routine
 commercial traffic since 30 July 2026; reported cost increases around 20%;
