@@ -4,8 +4,9 @@ from __future__ import annotations
 import pytest
 
 from risk.disruption_scenarios import (
-    AQABA_CONGESTION, BASELINE, PRESETS, RED_SEA_HOUTHI,
-    DisruptionScenario, benchmark_overrides, get_scenario,
+    ALL_LAND_DISRUPTION, AQABA_CONGESTION, BASELINE, PRESETS, RED_SEA_HOUTHI,
+    ROUTES, SAUDI_LAND_DISRUPTION, DisruptionScenario, benchmark_overrides,
+    get_scenario,
 )
 
 
@@ -80,9 +81,30 @@ class TestJordanCalibration:
         assert AQABA_CONGESTION.fill_multiplier < 1.0
         assert "transit" in AQABA_CONGESTION.source.lower()
 
+    def test_saudi_road_freight_is_modelled(self):
+        """A large share of Jordan's imports arrive by truck from or
+        through Saudi Arabia, including goods landed at Saudi ports and
+        driven north. Omitting it understates land exposure badly."""
+        assert "saudi_land" in ROUTES
+        assert SAUDI_LAND_DISRUPTION.applies_to("saudi_land") is True
+        assert SAUDI_LAND_DISRUPTION.applies_to("aqaba") is False
+
+    def test_land_scenarios_leave_sea_arrivals_alone(self):
+        """Routes are SUBSTITUTES. An operator who can shift to Aqaba when
+        the land crossings close is far less exposed, and the model must
+        be able to express that."""
+        for s in (SAUDI_LAND_DISRUPTION, ALL_LAND_DISRUPTION):
+            assert s.applies_to("aqaba") is False
+            assert s.adjusted_fill(0.9, "aqaba") == pytest.approx(0.9)
+
+    def test_every_route_is_named(self):
+        for r in ("aqaba", "saudi_land", "syria_land", "iraq_land",
+                  "air", "local"):
+            assert r in ROUTES
+
     def test_severity_ordering_is_monotone(self):
         order = ["baseline", "red_sea_houthi", "aqaba_congestion",
-                 "land_border_disruption", "regional_escalation"]
+                 "northern_land_disruption", "regional_escalation"]
         worst = [PRESETS[n].fill_multiplier for n in order]
         assert worst == sorted(worst, reverse=True)
         cost = [PRESETS[n].recourse_cost_multiplier for n in order]

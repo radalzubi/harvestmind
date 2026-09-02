@@ -3,6 +3,27 @@
 Entry point for coding agents (Codex, Claude Code, etc.) working in this
 repository. Read this before making changes.
 
+## TWO PROJECTS, ONE ENGINE
+
+This repository serves **two separate projects** that share the
+mathematical core and nothing else. Read `docs/projects/README.md` before
+working on either, and do not mix their materials or their claims.
+
+**Project A — Agriculture (US).** Midwest perishable operators. The
+uncertainty is weather-driven yield, correlated across growers sharing a
+region. All outreach in `docs/outreach/` is Project A only.
+
+**Project B — Commercial distribution (Jordan first).** The uncertainty is
+route and transit disruption: Aqaba by sea, road freight from and through
+Saudi Arabia, overland via Syria and Iraq. Those routes are SUBSTITUTES, so
+a scenario hitting one must leave the others alone. Project B needs the
+route tagging, the disruption scenarios and the multi-period model that
+Project A does not.
+
+Weather correlation and route correlation are different covariance
+structures. Do not conflate them, and do not quote one project's validation
+results in the other's materials.
+
 ## What this is
 
 A stochastic supply-planning engine for midstream perishable food operators
