@@ -1,5 +1,32 @@
 # Full Synthetic Simulation Sweep
 
+> ## ⚠️ CORRECTION 2026-09-01: THE NUMBERS BELOW ARE CONFOUNDED
+>
+> Every result in this report was measured with `n_folds=8` on an 80-week
+> operator, which places **all eight evaluation folds inside the seasonal
+> demand peak** while the 52-week training window averages across the
+> trough. Evaluation demand exceeds training demand in every fold, rising
+> 1.03x to 1.19x and averaging **1.108x**. Every policy is therefore fitted
+> to a lower-demand world than it is scored in, and the benchmark rewards
+> whichever policy over-orders most.
+>
+> This matters most for the headline fill-rate curve. A fill-aware rule
+> divides by fill (1/0.85 = 1.18x), which almost exactly cancels the 1.108x
+> seasonal shortfall. Those policies were not planning better; they were
+> accidentally compensating for a demand bias with a supply-side correction.
+>
+> Re-running with evaluation spanning a full seasonal cycle (160 weeks,
+> `n_folds=52`) reverses the conclusion. The SP goes from losing 12-17% to
+> a fill-aware deterministic optimizer to BEATING it by 3.0-5.9%.
+>
+> Do not quote the fill-rate decay curve, the 26/30 gate count, or the
+> segment recommendation from this document. See
+> `BASELINE_LADDER_DIAGNOSTIC.md`. The sweep needs re-running with
+> `n_folds=52` and `capacity_basis="max_ordered"` before any number here
+> is usable.
+
+
+
 > Synthetic mechanism test only — not operator validation, a realized-savings claim, or a market forecast.
 
 ## Headline: fill-rate decay at fixed 1.30x / 30% spot
