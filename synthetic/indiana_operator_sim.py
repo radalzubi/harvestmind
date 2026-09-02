@@ -31,6 +31,18 @@ class IndianaSimulationConfig:
     end_date: date = date(2026, 8, 24)
     annual_revenue_usd: float = 6_000_000.0
     target_waste_rate: float = 0.065
+    mean_supplier_fill_rate: float | None = None
+    supplier_kendall_tau: float = 0.0
+    demand_zero_rate: float = 0.0
+
+    def __post_init__(self) -> None:
+        if (self.mean_supplier_fill_rate is not None
+                and not 0.0 < self.mean_supplier_fill_rate <= 1.0):
+            raise ValueError("mean_supplier_fill_rate must be in (0, 1]")
+        if not 0.0 <= self.supplier_kendall_tau <= 1.0:
+            raise ValueError("supplier_kendall_tau must be in [0, 1]")
+        if not 0.0 <= self.demand_zero_rate < 1.0:
+            raise ValueError("demand_zero_rate must be in [0, 1)")
 
 
 @dataclass(frozen=True)
@@ -114,6 +126,40 @@ def build_indiana_dataset(
         mean_fill = rng.uniform(0.91, 0.985) if idx < 12 else rng.uniform(0.94, 0.992)
         suppliers.append((f"IN-S{idx + 1:03d}", f"Modeled Supplier {idx + 1:02d}", region, mean_fill))
 
+    controlled_fills: dict[tuple[date, str], float] = {}
+    if config.mean_supplier_fill_rate is not None:
+        from risk.correlated_scenarios import (
+            CopulaScenarioGenerator, equicorrelation_matrix,
+            kendall_to_latent,
+        )
+
+        target = float(config.mean_supplier_fill_rate)
+        # A high concentration keeps the 0.99 cell genuinely close to
+        # perfect supply while retaining increasing absolute variability at
+        # lower reliability. Copula coupling changes dependence only.
+        concentration = 160.0
+        params = {
+            sid: (max(target * concentration, 0.1),
+                  max((1.0 - target) * concentration, 0.1))
+            for sid, *_ in suppliers
+        }
+        latent = float(kendall_to_latent(config.supplier_kendall_tau))
+        draws = CopulaScenarioGenerator(
+            copula="gaussian", seed=config.seed + 77_000,
+        ).sample_beta_marginals(
+            params, len(weeks),
+            correlation=equicorrelation_matrix(len(suppliers), latent),
+        )
+        # Finite draws do not land on the requested mean exactly. A common
+        # additive calibration preserves cross-supplier rank dependence and
+        # makes the named Grid-A factor auditable.
+        raw = np.concatenate(list(draws.values()))
+        shift = target - float(raw.mean())
+        for sid, values in draws.items():
+            for week, value in zip(weeks, values, strict=True):
+                controlled_fills[(week, sid)] = float(
+                    np.clip(float(value) + shift, 0.0, 1.0))
+
     product_suppliers: dict[str, list[int]] = {}
     for product in PRODUCTS:
         local = list(rng.choice(12, size=2, replace=False))
@@ -124,11 +170,34 @@ def build_indiana_dataset(
     order_rows: list[tuple] = []
     order_id = 0
     demand_by_week_product: dict[tuple[date, str], float] = {}
+    # Concentrate zeros in a subset of products so the overall zero rate is
+    # controlled while the production 60%-zero Croston routing threshold is
+    # actually crossed in the 20% and 50% cells.
+    intermittent_count = min(
+        len(PRODUCTS), int(round(config.demand_zero_rate * len(PRODUCTS) / 0.70)))
+    residual_zero = (
+        max(0.0, (config.demand_zero_rate * len(PRODUCTS)
+                  - intermittent_count * 0.70)
+            / max(len(PRODUCTS) - intermittent_count, 1))
+    )
+    zero_product_names = {p.name for p in PRODUCTS[:intermittent_count]}
+    zero_product_weeks = 0
     for week in weeks:
         holiday = 1.18 if week.month in {11, 12} else 1.08 if week.month == 7 else 1.0
         for product in PRODUCTS:
             seasonal = 1.0 + 0.16 * np.sin(2 * np.pi * (week.timetuple().tm_yday - 110) / 365)
             weekly_total = product.weekly_kg * seasonal * holiday * rng.lognormal(0, 0.10)
+            zero_probability = (0.70 if product.name in zero_product_names
+                                else residual_zero)
+            # Preserve the legacy generator's random stream when every new
+            # control is disabled. Controlled sweep cells deliberately draw
+            # even at a zero target so the same seed remains paired across
+            # intermittency levels.
+            controlled_cell = config.mean_supplier_fill_rate is not None
+            if ((controlled_cell or zero_probability > 0)
+                    and rng.random() < zero_probability):
+                weekly_total = 0.0
+                zero_product_weeks += 1
             demand_by_week_product[(week, product.name)] = weekly_total
             buyer_weights = rng.dirichlet(np.full(len(BUYERS), 2.2))
             for buyer_index, (buyer_id, buyer_name, buyer_type, priority) in enumerate(BUYERS):
@@ -180,10 +249,19 @@ def build_indiana_dataset(
                 local_factor = _season_factor(product, week.month) if region != "national" else 1.0
                 share = 0.38 if region != "national" else 0.24
                 ordered = need * share * rng.uniform(0.88, 1.12)
-                fill = np.clip(base_fill * week_shocks[week][region] * local_factor + rng.normal(0, 0.025), 0.35, 1.0)
-                delivered = ordered * fill
                 reject_rate = np.clip(rng.beta(1.4, 42) + (0.025 if week.month in {7, 8} else 0), 0, 0.18)
-                accepted = delivered * (1 - reject_rate)
+                if config.mean_supplier_fill_rate is None:
+                    fill = np.clip(
+                        base_fill * week_shocks[week][region] * local_factor
+                        + rng.normal(0, 0.025), 0.35, 1.0)
+                    delivered = ordered * fill
+                    accepted = delivered * (1 - reject_rate)
+                else:
+                    # The controlled quantity is ACCEPTED / ORDERED, exactly
+                    # what benchmark settlement and yield fitting consume.
+                    accepted_fill = controlled_fills[(week, supplier_id)]
+                    accepted = ordered * accepted_fill
+                    delivered = min(ordered, accepted / max(1 - reject_rate, 1e-9))
                 unit_cost = product.cost_per_kg * (1.12 if region == "national" else 0.96) * rng.uniform(0.94, 1.09)
                 accepted_value += accepted * unit_cost
                 delivery_id += 1
@@ -250,6 +328,10 @@ def build_indiana_dataset(
     actual_revenue = conn.execute(
         "SELECT SUM(fulfilled_quantity * sales_price) FROM stg_buyer_orders"
     ).fetchone()[0]
+    observed_fill = conn.execute(
+        "SELECT SUM(accepted_quantity) / NULLIF(SUM(ordered_quantity), 0) "
+        "FROM stg_supplier_deliveries WHERE ordered_quantity > 0"
+    ).fetchone()[0]
     return {
         "seed": config.seed,
         "weeks": config.weeks,
@@ -260,5 +342,12 @@ def build_indiana_dataset(
         "delivery_lines": len(delivery_rows),
         "annualized_revenue_usd": round(float(actual_revenue) * annualizer, 2),
         "target_waste_rate": config.target_waste_rate,
+        "target_mean_supplier_fill_rate": config.mean_supplier_fill_rate,
+        "observed_weighted_supplier_fill_rate": (
+            round(float(observed_fill), 4) if observed_fill is not None else None),
+        "supplier_kendall_tau": config.supplier_kendall_tau,
+        "target_demand_zero_rate": config.demand_zero_rate,
+        "observed_demand_zero_rate": round(
+            zero_product_weeks / (len(weeks) * len(PRODUCTS)), 4),
         "data_basis": "synthetic Indiana-market scenario; no operator records",
     }
