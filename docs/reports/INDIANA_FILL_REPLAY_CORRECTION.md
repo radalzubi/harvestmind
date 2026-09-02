@@ -75,6 +75,27 @@ direction is the economically sensible one: hedging supply risk pays when
 the recourse channel is expensive or rationed, and does not pay when it is
 cheap and abundant.
 
+## Follow-up corrections (independent review)
+
+Three issues found on independent review of PR #9, all fixed here:
+
+1. **Zero-demand products escaped settlement.** `settle` iterated only
+   products with positive realized demand, so a commitment to a product
+   that sold nothing that week arrived, sold nothing, and was charged no
+   waste. It does not move this grid, because the Indiana generator gives
+   every product positive demand every week, but it would silently forgive
+   overcommitment on intermittent real data. Settlement now iterates the
+   union of demanded and delivered products.
+2. **Even-sized median reported the upper middle value**, giving +13.53%
+   where the conventional median is +13.46%. A reporting bug in
+   `run_matrix`, not a model result. Now uses `statistics.median`.
+3. **Language on correlation was wrong.** This harness draws each
+   supplier's yields INDEPENDENTLY. It exercises marginal supplier-yield
+   uncertainty; it does not exercise the correlated-shortfall model in
+   `risk/correlated_scenarios.py`. Any claim that the Indiana result
+   demonstrates value from modelling correlated supplier failure is
+   unsupported by this benchmark.
+
 ## Standing limitations
 
 - Synthetic data. Nothing here is validation on a real operator.
@@ -82,5 +103,7 @@ cheap and abundant.
   assumption, not an observation, and it affects their scores.
 - 25/30, not 30/30. The gate requires beating both the LP and the naive
   baseline, and one spot regime defeats it consistently.
+- Supplier yields are drawn independently here. The correlated-scenario
+  layer is NOT under test in this benchmark.
 - Absolute costs rose for every policy, as expected once free perfect
   delivery is no longer assumed.

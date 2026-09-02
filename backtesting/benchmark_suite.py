@@ -9,7 +9,11 @@ clean incremental recourse economics (no procurement double-count):
 
 Policies:
     two_sided_sp      newsvendor SP, demand replay scenarios × per-scenario
-                      supplier yield draws (fit on the training window only)
+                      supplier yield draws (fit on the training window
+                      only). Yields are drawn INDEPENDENTLY per supplier
+                      here: this harness exercises marginal yield
+                      uncertainty, not the correlated-shortfall model in
+                      risk/correlated_scenarios.py
     deterministic_lp  newsvendor LP on mean training demand
     order_up_to       S = trailing μ + z·σ (z from the service quantile) —
                       the heuristic operators actually use
@@ -260,18 +264,25 @@ def settle(
         f = fills.get(str(i), default_fill)
         delivered[str(j)] = delivered.get(str(j), 0.0) + float(kg) * float(f)
 
+    # Iterate the UNION of demanded and delivered products. Iterating only
+    # realized demand let a commitment to a product with zero demand that
+    # week escape scoring entirely: the stock arrived, sold nothing, and
+    # was charged no waste. Harmless where every product sells every week,
+    # but silently forgiving on intermittent real data, which is exactly
+    # where a planner most needs to be held to account.
     tot_cost = served = waste = deliv_tot = 0.0
     # Include products with commitments but zero realized demand. Iterating
     # only ``realized`` made overage disappear whenever a product-week was
-    # explicitly zero (the intermittency sweep is the first benchmark to
-    # exercise that path).
+    # explicitly zero, so a commitment to a product that sold nothing
+    # arrived, sold nothing, and was charged no waste. Both branches found
+    # this independently; sorted() keeps fold ordering deterministic.
     products = set(map(str, realized)) | set(delivered)
     for j in sorted(products):
-        d_real = float(realized.get(j, 0.0))
         e = econ.get(j, {"cost": 2.0, "margin": 0.5})
+        d_real = float(realized.get(j, 0.0))
         dj = delivered.get(str(j), 0.0)
         cst, sv, ov = score_commitment(
-            dj, float(d_real), e["cost"], e["margin"], spot_mult, spot_cap)
+            dj, d_real, e["cost"], e["margin"], spot_mult, spot_cap)
         tot_cost += cst
         served += sv
         waste += ov
