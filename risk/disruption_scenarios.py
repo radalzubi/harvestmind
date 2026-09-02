@@ -142,11 +142,29 @@ AQABA_CONGESTION = DisruptionScenario(
         "months, +3% year on year; Iraq trucking ~760 km from Aqaba"),
 )
 
-LAND_BORDER_DISRUPTION = DisruptionScenario(
-    name="land_border_disruption",
+SAUDI_LAND_DISRUPTION = DisruptionScenario(
+    name="saudi_land_disruption",
     description=(
-        "Overland routes through Syria or Iraq interrupted. Affects "
-        "suppliers trucking in, leaves sea arrivals alone."),
+        "Road freight from or through Saudi Arabia interrupted: border "
+        "closure, crossing congestion, trucking capacity or fuel. A large "
+        "share of Jordan's imports arrive by truck this way, including "
+        "goods landed at Saudi ports and driven north, so this is not a "
+        "minor channel."),
+    fill_multiplier=0.60,
+    fill_variance_inflation=2.5,
+    recourse_cost_multiplier=2.00,
+    recourse_capacity_factor=0.12,
+    landed_cost_multiplier=1.30,
+    affected_routes=("saudi_land",),
+    source="operator-reported: substantial Jordanian import volume moves "
+           "by road from and through Saudi Arabia",
+)
+
+NORTHERN_LAND_DISRUPTION = DisruptionScenario(
+    name="northern_land_disruption",
+    description=(
+        "Overland routes through Syria or Iraq interrupted. Historically "
+        "the most politically volatile of Jordan's land channels."),
     fill_multiplier=0.65,
     fill_variance_inflation=2.5,
     recourse_cost_multiplier=2.20,
@@ -154,6 +172,22 @@ LAND_BORDER_DISRUPTION = DisruptionScenario(
     landed_cost_multiplier=1.25,
     affected_routes=("syria_land", "iraq_land"),
     source="Iraq expanding overland links through Syria and Turkiye",
+)
+
+ALL_LAND_DISRUPTION = DisruptionScenario(
+    name="all_land_disruption",
+    description=(
+        "Every land crossing degraded at once. Sea arrivals at Aqaba are "
+        "untouched, so this is the scenario where route SUBSTITUTION "
+        "matters most: an operator who can shift volume to Aqaba is far "
+        "less exposed than one who cannot."),
+    fill_multiplier=0.50,
+    fill_variance_inflation=2.8,
+    recourse_cost_multiplier=2.60,
+    recourse_capacity_factor=0.08,
+    landed_cost_multiplier=1.35,
+    affected_routes=("saudi_land", "syria_land", "iraq_land"),
+    source="composite of the individual land-route scenarios",
 )
 
 REGIONAL_ESCALATION = DisruptionScenario(
@@ -175,9 +209,27 @@ REGIONAL_ESCALATION = DisruptionScenario(
 PRESETS: dict[str, DisruptionScenario] = {
     s.name: s for s in (
         BASELINE, RED_SEA_HOUTHI, AQABA_CONGESTION,
-        LAND_BORDER_DISRUPTION, REGIONAL_ESCALATION,
+        SAUDI_LAND_DISRUPTION, NORTHERN_LAND_DISRUPTION,
+        ALL_LAND_DISRUPTION, REGIONAL_ESCALATION,
     )
 }
+
+# Jordan's import channels, for tagging suppliers. Naming them explicitly
+# matters because they are SUBSTITUTES, not independent risks: goods landed
+# at a Saudi port and trucked north are an alternative to Aqaba, and an
+# operator who can switch between them is far less exposed than one who
+# cannot. A scenario that hits one channel should leave the others alone,
+# which is what `affected_routes` is for.
+ROUTES: tuple[str, ...] = (
+    "aqaba",        # sea, Red Sea, Jordan's own port
+    "red_sea",      # transits reaching Aqaba
+    "suez",         # European and Black Sea origin via Suez
+    "saudi_land",   # road freight from or through Saudi Arabia
+    "syria_land",   # road freight via Syria
+    "iraq_land",    # road freight via Iraq
+    "air",          # air freight, the recourse of last resort
+    "local",        # domestic Jordanian production, unexposed
+)
 
 
 def get_scenario(name: str) -> DisruptionScenario:
