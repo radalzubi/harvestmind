@@ -71,9 +71,15 @@ def _fold(data, origin_idx: int, train_weeks: int, n_scen: int, rng):
             yields_[(w, sid)] = float(r["fill_rate"])
     scen = pd.DataFrame(scen_rows)
 
+    # Capacity with headroom over peak observed demand, shared across
+    # suppliers. An arbitrary ceiling made the Project A benchmark
+    # degenerate by binding for every policy, so this is set high enough
+    # that capacity is not the thing being measured.
+    peak = tr_m.groupby("product_id")["demand_kg"].max().to_dict()
     cap = pd.DataFrame([
         {"supplier_id": sid, "product_id": j,
-         "capacity_kg": float(mean_dem[j]) * 1.6 / max(len(sup_ids), 1) * 4,
+         "capacity_kg": float(peak.get(j, mean_dem[j])) * 2.5
+         / max(len(sup_ids), 1),
          "price_per_kg": 2.0}
         for sid in sup_ids for j in prods])
 
@@ -104,8 +110,19 @@ def _fold(data, origin_idx: int, train_weeks: int, n_scen: int, rng):
     # Score every schedule on the SAME held-out weeks with realized data.
     ev_d = dl[dl["week_start"].isin(eval_wk)]
     ev_m = dm[dm["week_start"].isin(eval_wk)]
-    real_lead = ev_d.groupby("supplier_id")["lead_time_weeks"].mean().to_dict()
-    real_fill = ev_d.groupby("supplier_id")["fill_rate"].mean().to_dict()
+    # Per-WEEK realized lead and fill. Collapsing these to a per-supplier
+    # mean flattened exactly the timing variation the model exists to
+    # exploit, which understated every policy that reasons about timing.
+    real_lead: dict[tuple[str, int], float] = {}
+    real_fill: dict[tuple[str, int], float] = {}
+    for _, r in ev_d.iterrows():
+        t = eval_wk.index(r["week_start"])
+        real_lead[(r["supplier_id"], t)] = float(r["lead_time_weeks"])
+        real_fill[(r["supplier_id"], t)] = float(r["fill_rate"])
+    sup_lead_fallback = ev_d.groupby("supplier_id")["lead_time_weeks"].mean().to_dict()
+    sup_fill_fallback = ev_d.groupby("supplier_id")["fill_rate"].mean().to_dict()
+    # Was this fold disrupted? Reported so the split can be analysed.
+    disrupted_share = float(ev_d["route_disrupted"].mean()) if len(ev_d) else 0.0
     real_dem = {(r["product_id"], eval_wk.index(r["week_start"])): r["demand_kg"]
                 for _, r in ev_m.iterrows()}
 
@@ -117,11 +134,13 @@ def _fold(data, origin_idx: int, train_weeks: int, n_scen: int, rng):
         for (i, j, t), q in res["x"].items():
             if q <= 0:
                 continue
-            lag = int(round(real_lead.get(i, 1.0)))
+            # Use the lead and fill realized in the week the order was
+            # PLACED, not an average over the whole window.
+            lag = int(round(real_lead.get((i, t), sup_lead_fallback.get(i, 1.0))))
+            f = real_fill.get((i, t), sup_fill_fallback.get(i, 0.9))
             at = t + lag
             if at < HORIZON:
-                arrivals[(j, at)] = arrivals.get((j, at), 0.0) + \
-                    q * real_fill.get(i, 0.9)
+                arrivals[(j, at)] = arrivals.get((j, at), 0.0) + q * f
         cost = inv = 0.0
         carry: dict[str, float] = {}
         for t in range(HORIZON):
@@ -139,6 +158,7 @@ def _fold(data, origin_idx: int, train_weeks: int, n_scen: int, rng):
                 carry[j] = left - decayed
                 inv += left
         out[tag] = cost
+    out["_disrupted_share"] = disrupted_share
     return out
 
 
@@ -152,6 +172,7 @@ def main() -> int:
     a = p.parse_args()
 
     all_edges: dict[str, list[float]] = {"mean_lead": [], "buffer_lead": []}
+    split: dict[str, list[float]] = {"disrupted": [], "calm": []}
     for seed in [int(s) for s in a.seeds.split(",")]:
         data = build_jordan_dataset(JordanSimulationConfig(
             seed=seed, weeks=a.weeks))
@@ -168,6 +189,14 @@ def main() -> int:
             for base in ("mean_lead", "buffer_lead"):
                 if r[base] > 0:
                     all_edges[base].append((r[base] - mp) / r[base] * 100)
+            # The decisive split: the model should earn its keep when a
+            # route is actually disrupted and roughly tie when it is not.
+            # If it does not separate here, it is not modelling what we
+            # think it is modelling.
+            if r["mean_lead"] > 0:
+                e = (r["mean_lead"] - mp) / r["mean_lead"] * 100
+                bucket = "disrupted" if r["_disrupted_share"] > 0.15 else "calm"
+                split[bucket].append(e)
 
     print("\nPROJECT B — commercial (Jordan), route-driven episodic disruption")
     print(f"  folds scored: {len(all_edges['mean_lead'])}\n")
@@ -180,6 +209,20 @@ def main() -> int:
         wins = sum(1 for x in e if x > 0)
         print(f"  {lab:38} median {st.median(e):+7.2f}%   "
               f"wins {wins}/{len(e)}   range {min(e):+.1f} to {max(e):+.1f}")
+    print("\n  THE DECISIVE SPLIT (vs deterministic, by fold condition):")
+    for bucket in ("disrupted", "calm"):
+        e = split[bucket]
+        if not e:
+            print(f"    {bucket:10} no folds")
+            continue
+        wins = sum(1 for x in e if x > 0)
+        print(f"    {bucket:10} n={len(e):<3} median {st.median(e):+7.2f}%   "
+              f"wins {wins}/{len(e)}")
+    if split["disrupted"] and split["calm"]:
+        gap = st.median(split["disrupted"]) - st.median(split["calm"])
+        print(f"    separation: {gap:+.2f} points. Positive means the model "
+              f"earns its keep\n    when routes are disrupted, which is the "
+              f"only reason to run it.")
     print("\n  Synthetic data. Every parameter is an assumption.\n")
     return 0
 
