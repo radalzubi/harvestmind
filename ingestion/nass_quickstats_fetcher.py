@@ -87,6 +87,8 @@ def fetch_county_yields(
             value = float(str(r.get("Value", "")).replace(",", ""))
         except ValueError:
             continue  # suppressed cells: "(D)", "(Z)"
+        county_fips: str | None
+        county_name: str | None
         if state_level:
             county_name, county_fips = "STATE TOTAL", None
         else:

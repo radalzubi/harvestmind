@@ -642,3 +642,37 @@ demand bind, negative in an easy regime where insurance is never used.
 The selected mode runs both on a fold built **inside the training window**
 (the last $h$ training periods as truth) and deploys the winner. Nothing at
 or after the origin is used.
+
+## 26. Service floors, transfers, promotions (P1/P2 pass)
+
+**Service floor (unit fill, expectation).** For products $j$ with a floor
+$\beta_j$: $\sum_{\omega,t} p_\omega u_{jt\omega} \le (1-\beta_j)\sum_{\omega,t} p_\omega d_{jt\omega}$.
+Same semantics as §13. A floor capacity cannot meet is reported
+`infeasible` (`test_unattainable_floor_is_reported_infeasible`). The
+counterfactual harness sets it from the domain policy's `ServiceTarget`
+when the metric is `unit_fill` and the scope is global. Line fill and
+order fill are **measured** in settlement and cannot be enforced by a
+product-level LP; that is a stated limit, not a gap to close by
+approximation.
+
+**Transfers.** A location is a product key (`SKU@LOC`). For an arc
+$a=(j_{\text{from}}, j_{\text{to}}, c_a, L_a)$ a recourse variable
+$z_{at\omega}\ge 0$ enters the balance of $j_{\text{from}}$ at $t$ and of
+$j_{\text{to}}$ at $t+L_a$, costs $c_a$ per unit, and is bounded by the
+source's opening stock in the period
+($\sum_{a:\,\text{from}=j} z_{at\omega} \le I_{j,t-1,\omega}$). Conservation
+across locations is asserted in `test_conservation_across_locations`.
+
+**Promotions.** A planned uplift $m_{jt}$ known at the origin multiplies
+scenario demand and the deterministic twin's expectation alike, and the
+heuristics' per-period mean. It is an input, not a surprise
+(`test_planned_promotion_raises_orders_for_optimizer_and_heuristic`).
+
+**Horizon rule.** In closed-loop evaluation the horizon is at least
+$2\max_i L_i + R$ (two lead times plus a review cycle), so today's order
+can see its own consequence.
+
+**Money.** Solver arithmetic is float. Every cost that leaves the engine
+passes through `domain/money.py::Money`, a Decimal quantised to the
+currency's minor unit; a breakdown's total is the sum of its quantised
+parts exactly (`money_breakdown`), and cross-currency addition is refused.

@@ -1,0 +1,37 @@
+{
+ "run_id": "run-a549cc1c806e",
+ "timestamp": "2026-09-03T19:25:06.722530+00:00",
+ "operator_id": "op_b15900ae",
+ "user_id": null,
+ "domain": "fmcg",
+ "model_version": "multi_period_sp/2.0-discrete",
+ "solver_version": "highs unknown",
+ "config": {
+  "mode": "selected",
+  "horizon_weeks": 12,
+  "train_weeks": 40,
+  "service_level": 0.97,
+  "holding_rate_per_week": 0.004618937644341801,
+  "scenarios": 10,
+  "currency": "USD"
+ },
+ "input_hashes": {
+  "train_demand": "23ab51069db35d31bfa2a0c55feb6e320920d18e67fbbe9ac1ef67865acc06f6",
+  "train_fill": "33fa48e17e4785e5ac603ed2371094e05d5f4a94d0c9f92e9b046d935cffb700",
+  "opening": "b27a3f42e0e07400da2b3004f7dbc82ea06c6ed734b47fb1eda8c9c00dbedbbc"
+ },
+ "seed": 0,
+ "scenario_config": {
+  "n_scen": 10,
+  "seasonal": true,
+  "promotions": 0
+ },
+ "status": "heuristic",
+ "usable": true,
+ "objective": null,
+ "objective_breakdown": {},
+ "gap": null,
+ "runtime_s": null,
+ "warnings": [],
+ "python": "3.14.3"
+}

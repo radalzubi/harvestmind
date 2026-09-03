@@ -1,13 +1,18 @@
 """HarvestMind FastAPI application."""
-
 from __future__ import annotations
+
+import logging as _logging
+import uuid as _uuid
+
+from fastapi import Request as _Request
+from fastapi.responses import JSONResponse as _JSONResponse
 
 import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin
+from api.routers import fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin
 
 app = FastAPI(
     title="HarvestMind API",
@@ -69,12 +74,6 @@ async def security_headers(request, call_next):
 # message carrying only the id, so an operator can quote it to support and a
 # stack trace never reaches a browser. Validation and HTTP errors keep their
 # curated `detail`.
-import logging as _logging
-import uuid as _uuid
-
-from fastapi import Request as _Request
-from fastapi.responses import JSONResponse as _JSONResponse
-
 _log = _logging.getLogger("harvestmind.api")
 
 
@@ -93,7 +92,14 @@ async def _request_id_middleware(request: _Request, call_next):
     return response
 
 
+@app.on_event("startup")
+async def _refuse_permissive_public_bind() -> None:
+    from api.dependencies import assert_safe_to_serve
+    assert_safe_to_serve()
+
+
 app.include_router(planning.router)
+app.include_router(fmcg.router)
 app.include_router(backtest.router)
 app.include_router(data.router)
 app.include_router(fsma.router)

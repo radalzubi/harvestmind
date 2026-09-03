@@ -25,6 +25,7 @@ the only code that knows them apart:
 | over-buying costs | spoilage | capital |
 | ordering | continuous | whole lots, MOQ (MILP) |
 
+FMCG operators upload their exports to `stg_fmcg_*` and call `POST /fmcg/plan` (Next.js `/fmcg`, Streamlit page 09).
 The recommended FMCG mode is **SELECTED**: order-up-to, the deterministic
 and the stochastic optimizer are backtested on the operator's own trailing
 history and the winner is run, because the stochastic model earns its keep

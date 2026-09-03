@@ -11,16 +11,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-import pandas as pd
-import streamlit as st
+import pandas as pd  # noqa: E402  streamlit page config precedes imports
+import streamlit as st  # noqa: E402  streamlit page config precedes imports
 
-from dashboard.components.cards import section
-from dashboard.components.charts import (
+from dashboard.components.cards import section  # noqa: E402  streamlit page config precedes imports
+from dashboard.components.charts import (  # noqa: E402  streamlit page config precedes imports
     cost_lines_over_time, policy_comparison_bar,
 )
-from dashboard.components.empty import db_unavailable, empty_state
-from dashboard.lib import db, theme
-from dashboard.lib.formatters import fmt_currency
+from dashboard.components.empty import db_unavailable, empty_state  # noqa: E402  streamlit page config precedes imports
+from dashboard.lib import db, theme  # noqa: E402  streamlit page config precedes imports
+from dashboard.lib.formatters import fmt_currency  # noqa: E402  streamlit page config precedes imports
 
 theme.apply(page_title="Backtest")
 
@@ -118,7 +118,7 @@ if roi_dict and "error" not in roi_dict:
 
 # Policy comparison bar
 section("Cost by policy")
-from backtesting.procurement_metrics import cost_per_kg_by_model
+from backtesting.procurement_metrics import cost_per_kg_by_model  # noqa: E402  streamlit page config precedes imports
 summary = cost_per_kg_by_model(results_df)
 st.plotly_chart(policy_comparison_bar(summary), use_container_width=True)
 

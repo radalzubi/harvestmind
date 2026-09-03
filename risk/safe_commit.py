@@ -21,7 +21,7 @@ backtest can run old policy against new and report the dollar difference.
 from __future__ import annotations
 
 from datetime import date
-from typing import Any
+from typing import cast, Any
 
 import duckdb
 
@@ -131,7 +131,7 @@ def safe_commit_recommendations(
             lead_days=lead_time_days)
         if weather["active"]:
             dists = apply_shift_to_distributions(
-                dists, weather["delta"], quantile)
+                dists, cast(float, weather["delta"]), quantile)
 
     supplier_sig = _product_supplier_signal(conn, dists)
     committed = _committed_by_product(conn)
@@ -169,7 +169,7 @@ def safe_commit_recommendations(
             measured = weather.get("delta_measured", weather["delta"])
             detail = (f" (measured {measured:+.1%}, forecast skill "
                       f"{rho:.2f} at {weather.get('lead_days', 0):.0f}-day lead)"
-                      if rho is not None and rho < 0.999 else
+                      if rho is not None and cast(float, rho) < 0.999 else
                       " (measured on your history)")
             flags.append(
                 f"heat-stress window: supplier fills shifted "

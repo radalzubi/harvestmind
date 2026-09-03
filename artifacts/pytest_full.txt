@@ -1,46 +1,69 @@
 ........................................................................ [  5%]
 ........................................................................ [ 11%]
 ........................................................................ [ 17%]
-.............................................s.......................... [ 23%]
+................................................s....................... [ 22%]
 ........................................................................ [ 28%]
 ........................................................................ [ 34%]
-........................................................................ [ 40%]
-........................................................................ [ 46%]
-........................................................................ [ 52%]
+........................................................................ [ 39%]
+........................................................................ [ 45%]
+........................................................................ [ 51%]
 ........................................................................ [ 57%]
-........................................................................ [ 63%]
-........................................................................ [ 69%]
-........................................................................ [ 75%]
-........................................................................ [ 81%]
-........................................................................ [ 86%]
-........................................................................ [ 92%]
-........................................................................ [ 98%]
-..................                                                       [100%]
+........................................................................ [ 62%]
+........................................................................ [ 68%]
+........................................................................ [ 74%]
+........................................................................ [ 79%]
+........................................................................ [ 85%]
+........................................................................ [ 91%]
+........................................................................ [ 96%]
+.......................................                                  [100%]
+=============================== warnings summary ===============================
+api/main.py:95
+tests/integration/test_api_security.py::test_cors_default_is_localhost_only
+  /Users/radalzubi/Desktop/harvestmind/api/main.py:95: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event("startup")
+
+../../../../Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/fastapi/applications.py:4598
+tests/integration/test_api_security.py::test_cors_default_is_localhost_only
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/fastapi/applications.py:4598: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)  # ty: ignore[deprecated]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ================================ tests coverage ================================
 _______________ coverage: platform darwin, python 3.14.3-final-0 _______________
 
 Name                                              Stmts   Miss  Cover
 ---------------------------------------------------------------------
 api/__init__.py                                       0      0   100%
-api/dependencies.py                                 104     41    61%
-api/main.py                                          74      6    92%
+api/dependencies.py                                 109     41    62%
+api/main.py                                          79      6    92%
 api/models/__init__.py                                0      0   100%
-api/models/schemas.py                                59      0   100%
+api/models/schemas.py                                64      0   100%
 api/routers/__init__.py                               0      0   100%
 api/routers/admin.py                                 24      0   100%
 api/routers/backtest.py                              39     13    67%
 api/routers/data.py                                  62      2    97%
 api/routers/diagnostics.py                           29      0   100%
+api/routers/fmcg.py                                 132     16    88%
 api/routers/forecasts.py                             21     11    48%
-api/routers/fsma.py                                 100      7    93%
-api/routers/intake.py                               301     39    87%
-api/routers/planning.py                              61     28    54%
+api/routers/fsma.py                                  99      7    93%
+api/routers/intake.py                               304     37    88%
+api/routers/planning.py                              89     56    37%
 api/routers/pool.py                                  31      2    94%
 api/routers/reports.py                               53     30    43%
 api/routers/training.py                              27     14    48%
 backtesting/__init__.py                               0      0   100%
 backtesting/benchmark_suite.py                      320     19    94%
-backtesting/counterfactual.py                       338    146    57%
+backtesting/counterfactual.py                       357    145    59%
 backtesting/leakage_guard.py                         50      2    96%
 backtesting/policy_comparison.py                     49      0   100%
 backtesting/procurement_metrics.py                   18     11    39%
@@ -50,7 +73,8 @@ backtesting/service_metrics.py                       35     35     0%
 backtesting/waste_metrics.py                         21     21     0%
 domain/__init__.py                                    4      0   100%
 domain/economics.py                                  63      4    94%
-domain/model.py                                      66      7    89%
+domain/model.py                                      66      6    91%
+domain/money.py                                      61     10    84%
 domain/uom.py                                        97     12    88%
 ingestion/__init__.py                                 0      0   100%
 ingestion/column_mapper.py                          135     18    87%
@@ -65,30 +89,30 @@ ingestion/llm_unstructured.py                        50      0   100%
 ingestion/nass_quickstats_fetcher.py                 57     57     0%
 ingestion/noaa_weather_fetcher.py                    42      0   100%
 ingestion/open_meteo_fetcher.py                      98     26    73%
-ingestion/pipeline.py                                74     28    62%
+ingestion/pipeline.py                                78     29    63%
 ingestion/usda_ams_connector.py                     127     13    90%
 ingestion/usda_food_hub_directory.py                 51      1    98%
 ingestion/validators.py                              96      2    98%
 ingestion/weather_features.py                        10      0   100%
 optimization/__init__.py                              0      0   100%
-optimization/audit_trail.py                          70     18    74%
+optimization/audit_trail.py                          70     17    76%
 optimization/cvar_extension.py                       99      6    94%
 optimization/explain.py                              52      0   100%
 optimization/gamma_robust_lp.py                      58      2    97%
 optimization/lp_baseline.py                          94     12    87%
-optimization/multi_period_sp.py                     145      6    96%
+optimization/multi_period_sp.py                     186      6    97%
 optimization/naive_lastyear_policy.py                54      8    85%
 optimization/order_up_to_policy.py                   15      0   100%
 optimization/recourse_simulator.py                   50      0   100%
 optimization/saa_bounds.py                           86      6    93%
 optimization/scenario_reduction.py                   49      1    98%
 optimization/solve_status.py                         82     14    83%
-optimization/two_stage_sp.py                        161     11    93%
+optimization/two_stage_sp.py                        160     11    93%
 optimization/vss_evaluation.py                      140     21    85%
 risk/__init__.py                                      0      0   100%
 risk/calibration.py                                  38      1    97%
 risk/confidence.py                                   16      0   100%
-risk/correlated_scenarios.py                        282     17    94%
+risk/correlated_scenarios.py                        283     17    94%
 risk/disruption_scenarios.py                         50      1    98%
 risk/safe_commit.py                                  93      6    94%
 risk/scenario_generation.py                         166     31    81%
@@ -109,6 +133,6 @@ synthetic/indiana_operator_sim.py                   166      3    98%
 synthetic/realistic_operator_sim.py                 204    204     0%
 synthetic/seasonality.py                             17      0   100%
 ---------------------------------------------------------------------
-TOTAL                                              6963   1344    81%
+TOTAL                                              7265   1394    81%
 Coverage JSON written to file artifacts/coverage.json
-1241 passed, 1 skipped in 56.99s
+1262 passed, 1 skipped, 4 warnings in 64.56s (0:01:04)

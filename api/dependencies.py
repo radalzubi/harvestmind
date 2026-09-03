@@ -37,6 +37,26 @@ def auth_required() -> bool:
     return os.getenv("HARVESTMIND_AUTH_REQUIRED", "false").lower() == "true"
 
 
+_LOOPBACK = ("127.0.0.1", "localhost", "::1", "")
+
+
+def assert_safe_to_serve() -> None:
+    """Refuse to start a permissive server on a non-loopback interface.
+
+    The bind host is not visible from inside the app, so the launcher
+    declares it in HARVESTMIND_BIND_HOST (the Dockerfile and compose file
+    do). A dev-mode process bound to 0.0.0.0 is the configuration that
+    would let any network caller pick any operator's vault; it is refused
+    at startup rather than logged.
+    """
+    host = os.getenv("HARVESTMIND_BIND_HOST", "").strip()
+    if host and host not in _LOOPBACK and not auth_required():
+        raise RuntimeError(
+            f"refusing to serve: HARVESTMIND_ENV={deployment_env()!r} is permissive "
+            f"but HARVESTMIND_BIND_HOST={host!r} is not loopback. Set "
+            "HARVESTMIND_ENV=pilot|staging|prod (or HARVESTMIND_AUTH_REQUIRED=true).")
+
+
 def auth_posture() -> dict:
     """What /health reports so an operator can see the posture, not guess it."""
     return {"env": deployment_env(), "auth_enforced": auth_required(),

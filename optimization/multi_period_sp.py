@@ -71,6 +71,16 @@ class MultiPeriodStochasticLP:
     # spec turns the model from an LP into a MILP, still solved by HiGHS.
     pack_specs: dict | None = None
     mip_rel_gap: float = 0.005
+    # Service floors: product_id -> minimum expected unit fill in [0, 1].
+    # Enforced in expectation across scenarios and periods, the same
+    # semantics as the single-period model. A floor the capacity cannot
+    # meet makes the model infeasible, which run_solver reports as such.
+    service_floor_by_product: dict | None = None
+    # Transfers between locations. A "location" is expressed by the caller
+    # as a distinct product key (e.g. "SKU-1@WH-A"); an arc
+    # (from_key, to_key, cost_per_unit, lead_periods) lets stock move
+    # between them as a RECOURSE decision, per scenario and period.
+    transfer_arcs: list | None = None
     solver: str = "highs"
     time_limit_s: float = 300.0
 
@@ -159,6 +169,13 @@ class MultiPeriodStochasticLP:
                         dimen=2)
         m.n_lots = pyo.Var(m.IJD, m.T, domain=pyo.NonNegativeIntegers)
         m.y_order = pyo.Var(m.IJD, m.T, domain=pyo.Binary)
+        arcs = [(str(a), str(b), float(c), int(L)) for (a, b, c, L) in (self.transfer_arcs or [])
+                if str(a) in products and str(b) in products and str(a) != str(b)]
+        for (a, b, c, L) in arcs:
+            if c < 0 or L < 0:
+                raise ValueError(f"transfer arc {a}->{b} needs cost >= 0 and lead >= 0")
+        m.A = pyo.Set(initialize=list(range(len(arcs))))
+        m.z = pyo.Var(m.A, m.T, m.W, domain=pyo.NonNegativeReals)
         # Stage 2, per scenario and period.
         m.inv = pyo.Var(m.J, m.T, m.W, domain=pyo.NonNegativeReals)
         m.s = pyo.Var(m.J, m.T, m.W, domain=pyo.NonNegativeReals)
@@ -174,6 +191,7 @@ class MultiPeriodStochasticLP:
                     + _cu(j) * mm.u[j, t, w]
                     + _ch(j) * mm.inv[j, t, w]
                     for j in mm.J for t in mm.T)
+                + sum(arcs[a][2] * mm.z[a, t, w] for a in mm.A for t in mm.T)
                 for w in mm.W)
 
         m.obj = pyo.Objective(rule=obj, sense=pyo.minimize)
@@ -189,11 +207,31 @@ class MultiPeriodStochasticLP:
                     out += _fill(w, i) * mm.x[i, j, placed]
             return out
 
+        def transfers_net(mm, j, t, w):
+            out = 0.0
+            for a, (src, dst, _c, L) in enumerate(arcs):
+                if src == j:
+                    out -= mm.z[a, t, w]
+                if dst == j and 0 <= t - L < T:
+                    out += mm.z[a, t - L, w]
+            return out
+
         def balance(mm, j, t, w):
             prev = mm.inv[j, t - 1, w] if t > 0 else float(inv0.get(j, 0.0))
             served = d.get((w, j, t), 0.0) - mm.u[j, t, w]
             return (mm.inv[j, t, w] == prev + arrivals(mm, j, t, w)
-                    + mm.s[j, t, w] - served - mm.wst[j, t, w])
+                    + mm.s[j, t, w] + transfers_net(mm, j, t, w)
+                    - served - mm.wst[j, t, w])
+
+        def transfer_from_stock(mm, j, t, w):
+            """A location can only ship what it opened the period with."""
+            outs = [mm.z[a, t, w] for a, (src, _d, _c, _L) in enumerate(arcs) if src == j]
+            if not outs:
+                return pyo.Constraint.Skip
+            prev = mm.inv[j, t - 1, w] if t > 0 else float(inv0.get(j, 0.0))
+            return sum(outs) <= prev
+
+        m.transfer_from_stock = pyo.Constraint(m.J, m.T, m.W, rule=transfer_from_stock)
 
         m.balance = pyo.Constraint(m.J, m.T, m.W, rule=balance)
 
@@ -242,6 +280,32 @@ class MultiPeriodStochasticLP:
             return mm.x[i, j, t] <= cap.get((i, j), 0.0)
 
         m.cap = pyo.Constraint(m.IJ, m.T, rule=cap_rule)
+
+        floors = {str(j): float(f) for j, f in (self.service_floor_by_product or {}).items()
+                  if str(j) in products}
+        for j, f in floors.items():
+            if not 0.0 <= f <= 1.0:
+                raise ValueError(f"service floor for {j} must be in [0, 1], got {f}")
+        if floors:
+            m.JF = pyo.Set(initialize=sorted(floors))
+            # The floor applies to the CONTROLLABLE window: periods an order
+            # placed at t=0 can reach. Demand inside the lead-time dead zone
+            # is decided by opening stock and pipeline alone, and a floor
+            # over it would make every long-lead problem infeasible.
+            first_reach = {}
+            for j in floors:
+                leads_j = [min(_lead(w, i) for w in scenarios) for (i, jj) in cap if jj == j]
+                first_reach[j] = min(leads_j) if leads_j else 0
+
+            def service_floor(mm, j):
+                t0 = first_reach[j]
+                exp_unmet = sum(weights[w] * mm.u[j, t, w] for w in mm.W for t in mm.T if t >= t0)
+                exp_dem = sum(weights[w] * d.get((w, j, t), 0.0) for w in mm.W for t in mm.T if t >= t0)
+                if exp_dem <= 0:
+                    return pyo.Constraint.Skip
+                return exp_unmet <= (1.0 - floors[j]) * exp_dem
+
+            m.service_floor = pyo.Constraint(m.JF, rule=service_floor)
 
         icp = self.inventory_capacity_by_product or {}
         if icp:
@@ -299,6 +363,11 @@ class MultiPeriodStochasticLP:
             "runtime_s": outcome.runtime_s,
             "warnings": list(outcome.warnings),
             "discrete_products": sorted(specs),
+            "transfers": ({(arcs[a][0], arcs[a][1], t, w): float(pyo.value(m.z[a, t, w]) or 0.0)
+                           for a in m.A for t in range(T) for w in scenarios
+                           if pyo.value(m.z[a, t, w]) and pyo.value(m.z[a, t, w]) > 1e-9}
+                          if ok else {}),
+            "service_floors": floors,
             "x": schedule,
             "ordered_by_period": by_period,
             "n_periods": T,

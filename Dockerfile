@@ -16,5 +16,8 @@ RUN useradd --create-home --uid 10001 harvestmind \
     && chown -R harvestmind:harvestmind /var/lib/harvestmind /app
 USER harvestmind
 
+# The image binds all interfaces; the app refuses to start permissive.
+ENV HARVESTMIND_BIND_HOST=0.0.0.0 \
+    HARVESTMIND_ENV=pilot
 EXPOSE 8000
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]

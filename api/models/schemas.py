@@ -41,10 +41,17 @@ class CommitmentResponse(BaseModel):
     spot_kg: float
     price_per_kg: Optional[float]
     decision_stage: str
+    # Unit-neutral aliases. The engine works in the product's base unit and
+    # the domain names it; ``_kg`` fields are kept for compatibility.
+    quantity: Optional[float] = None
+    unit: str = "kg"
+    explanation: Optional[list[str]] = None
 
 
 class PlanningResponse(BaseModel):
     run_id: str
+    audit_record: Optional[dict] = None
+    unit: str = "kg"
     model_type: str
     week_start: date
     objective: Optional[float]

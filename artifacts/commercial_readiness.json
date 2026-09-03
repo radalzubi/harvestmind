@@ -1,21 +1,21 @@
 {
  "status": "YES_WITH_CONDITIONS",
- "git_commit": "3c03787b82c47b69fc69e2e4a108936cb12ecf4a",
+ "git_commit": "26026ace5280e5e417214d8a2c1a031825d20e79",
  "tests": {
-  "passed": 1241,
+  "passed": 1262,
   "failed": 0,
   "skipped": 1,
   "xfailed": 0
  },
  "coverage": {
-  "total_pct": 80.7,
+  "total_pct": 80.8,
   "by_package_pct": {
-   "api": 80.4,
-   "backtesting": 77.6,
-   "domain": 90.0,
-   "ingestion": 83.8,
-   "optimization": 90.9,
-   "risk": 92.8,
+   "api": 79.8,
+   "backtesting": 78.0,
+   "domain": 89.0,
+   "ingestion": 83.7,
+   "optimization": 91.3,
+   "risk": 92.9,
    "synthetic": 56.0
   }
  },
@@ -231,31 +231,19 @@
   },
   {
    "priority": "P1",
-   "item": "HTTP API, Next.js and Streamlit surfaces are produce-shaped (kg, shelf life); FMCG runs at the library layer"
-  },
-  {
-   "priority": "P1",
-   "item": "isolation is one DuckDB per operator; a shared-database SaaS deployment would need tenant columns and row-level scoping"
-  },
-  {
-   "priority": "P1",
-   "item": "Docker image not built on this host (no daemon); verify in CI or on a host with Docker"
-  },
-  {
-   "priority": "P1",
-   "item": "mypy reports errors on the decision core; gate is non-blocking until zero"
+   "item": "Docker image is built and smoke-tested in CI only; not verified on this host (no daemon)"
   },
   {
    "priority": "P2",
-   "item": "money is float; acceptable for planning estimates, not for ledger reconciliation"
+   "item": "line fill and order fill are measured in settlement but cannot be enforced by a product-level LP; unit fill floors are enforced"
   },
   {
    "priority": "P2",
-   "item": "single warehouse; no transfers or multi-echelon"
+   "item": "the produce schema and legacy API keep *_kg column names; responses carry unit-neutral quantity/unit fields, the database rename is deferred"
   },
   {
    "priority": "P2",
-   "item": "OTIF and line/order fill are measured in settlement but not enforced as constraints"
+   "item": "isolation is one DuckDB per operator by design; a shared-database deployment is not offered"
   }
  ]
 }

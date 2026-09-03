@@ -26,8 +26,8 @@ nothing lower imports anything higher.
 | `risk/`, `forecasting/` | scenario generation, supplier fill distributions, disruption presets, demand forecasts and scoring | no |
 | `backtesting/` | leakage-guarded rolling origins, settlement, policy ladder, closed-loop evaluator | no — settlement reads the policy for decay, cost terms, pack rounding |
 | `synthetic/` | agriculture generator; `fmcg/` calibrated distributor archetypes | one generator per domain |
-| `ingestion/` | CSV/LLM intake, column mapping, validation, quarantine reports | schemas are produce-shaped today |
-| `api/` | routers, auth, vault routing, error boundary, request ids | produce-shaped today |
+| `ingestion/` | CSV/LLM intake, column mapping, validation, quarantine reports | produce staging (kg) and FMCG staging (eaches, migration 013) |
+| `api/` | routers, auth, vault routing, error boundary, request ids; `routers/fmcg.py` plans from `stg_fmcg_*` in eaches | produce routers plus an FMCG surface |
 
 ## Where the domains actually differ
 

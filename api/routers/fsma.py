@@ -11,7 +11,6 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-import duckdb
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, Field, field_validator
 

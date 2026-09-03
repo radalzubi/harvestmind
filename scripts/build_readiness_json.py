@@ -100,14 +100,16 @@ def main() -> int:
     # Structural items that no test can close; recorded, not scored away.
     blockers += [
         {"priority": "P0", "item": "no end-to-end validation on a real operator's order and receipt records; all FMCG results are SYNTHETIC CALIBRATED"},
-        {"priority": "P1", "item": "HTTP API, Next.js and Streamlit surfaces are produce-shaped (kg, shelf life); FMCG runs at the library layer"},
-        {"priority": "P1", "item": "isolation is one DuckDB per operator; a shared-database SaaS deployment would need tenant columns and row-level scoping"},
-        {"priority": "P1", "item": "Docker image not built on this host (no daemon); verify in CI or on a host with Docker"},
-        {"priority": "P1", "item": "mypy reports errors on the decision core; gate is non-blocking until zero"},
-        {"priority": "P2", "item": "money is float; acceptable for planning estimates, not for ledger reconciliation"},
-        {"priority": "P2", "item": "single warehouse; no transfers or multi-echelon"},
-        {"priority": "P2", "item": "OTIF and line/order fill are measured in settlement but not enforced as constraints"},
+        {"priority": "P1", "item": "Docker image is built and smoke-tested in CI only; not verified on this host (no daemon)"},
+        {"priority": "P2", "item": "line fill and order fill are measured in settlement but cannot be enforced by a product-level LP; unit fill floors are enforced"},
+        {"priority": "P2", "item": "the produce schema and legacy API keep *_kg column names; responses carry unit-neutral quantity/unit fields, the database rename is deferred"},
+        {"priority": "P2", "item": "isolation is one DuckDB per operator by design; a shared-database deployment is not offered"},
     ]
+    mypy_p = ART / "mypy.txt"
+    if mypy_p.exists():
+        n_mypy = sum(1 for line in mypy_p.read_text().splitlines() if " error: " in line)
+        if n_mypy:
+            blockers.append({"priority": "P1", "item": f"mypy reports {n_mypy} errors on the decision core"})
     fmcg_validated = bool(rolling and all(v.get("solver_failures", 1) == 0 for v in rolling["archetypes"].values()))
     status = "NO" if any(b["priority"] == "P0" and "failing" in b["item"] or "bandit" in b["item"] for b in blockers) \
         else "YES_WITH_CONDITIONS"

@@ -432,7 +432,7 @@ def honest_penalties_from_staging(
     price_map = dict(zip(prices["product_name"], prices["p"].astype(float))) \
         if not prices.empty else {}
     cw = {j: float(c) for j, c in cost_map.items()}
-    cu = {j: max(float(price_map[j]) - float(cost_map.get(j, price_map[j])), 0.0)
+    cu = {j: max(float(price_map[j]) - float(cost_map.get(j) or price_map[j]), 0.0)
           for j in price_map}
     return cw, cu
 

@@ -31,6 +31,8 @@ import pandas as pd
 # rejected (fail-closed) rather than silently passing with zero rules — a
 # write to an unrecognized table is never legitimate on the intake path.
 KNOWN_STAGING_TABLES: frozenset[str] = frozenset({
+    "stg_fmcg_skus", "stg_fmcg_orders", "stg_fmcg_purchase_orders",
+    "stg_fmcg_receipts", "stg_fmcg_inventory", "stg_fmcg_promotions",
     "stg_products",
     "stg_supplier_deliveries",
     "stg_inventory_lots",
@@ -40,6 +42,8 @@ KNOWN_STAGING_TABLES: frozenset[str] = frozenset({
 
 # Columns subject to the non-negativity rule, per staging table.
 _REQUIRED_QUANTITY_COLUMNS: dict[str, list[str]] = {
+    "stg_fmcg_orders": ["qty_ordered"], "stg_fmcg_purchase_orders": ["qty_ordered"],
+    "stg_fmcg_receipts": ["qty_received"], "stg_fmcg_inventory": ["on_hand"],
     "stg_inventory_lots": ["quantity_on_hand"],
     "stg_buyer_orders": ["requested_quantity"],
     "stg_waste_adjustments": ["quantity_lost"],
@@ -67,6 +71,9 @@ DATE_ORDER_RULES: dict[str, list[tuple[str, str]]] = {
 
 # Date columns whose values must parse for the row to be usable at all.
 REQUIRED_DATE_COLUMNS: dict[str, list[str]] = {
+    "stg_fmcg_orders": ["order_date"], "stg_fmcg_purchase_orders": ["po_date"],
+    "stg_fmcg_receipts": ["receipt_date"], "stg_fmcg_inventory": ["snapshot_date"],
+    "stg_fmcg_promotions": ["week_start"],
     "stg_supplier_deliveries": ["delivery_date"],
     "stg_buyer_orders": [],
     "stg_inventory_lots": [],

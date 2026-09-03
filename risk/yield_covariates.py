@@ -227,7 +227,7 @@ def weather_shift_for_window(
         WHERE obs_date BETWEEN ? AND ?
         """,
         [window_start, window_end],
-    ).fetchone()
+    ).fetchone() or (0, False, False)
     n_days, flagged, from_forecast = int(row[0]), bool(row[1]), bool(row[2])
     if n_days == 0:
         return {"active": False, "delta": 0.0,
@@ -261,7 +261,7 @@ def weather_shift_for_window(
             "unresolved_variance": unresolved_weather_variance(
                 float(verdict["measured_effect_delta_fill"]), lead_days),
             "reason": ("admitted signal + heat-flagged window; "
-                       + skill["reason"]),
+                       + str(skill["reason"])),
             "n_window_days": n_days}
 
 

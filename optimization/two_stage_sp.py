@@ -92,7 +92,6 @@ class TwoStageStochasticLP:
         fill draws enter as coefficients, not variables.
         """
         import pyomo.environ as pyo
-        from pyomo.opt import SolverFactory
 
         if aggregate_weeks:
             demand_scenarios = (

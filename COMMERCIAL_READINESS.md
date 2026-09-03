@@ -46,7 +46,7 @@ every result table in the reports is written by code.
 |---|---|---|
 | model correctness | 4 | invariants recomputed from solved variables (`test_agriculture_invariants.py`, `test_stochastic_correctness.py`); engine objective double-count fixed; leakage intercepted at the solver (`test_engine_leakage.py`); real-data backtest on 1,028 folds |
 | data ingestion | 4 | 15 hostile-upload tests; unexpected columns, duplicates, blank quantities handled with named rows; content-hash idempotency |
-| explainability | 3 | `optimization/explain.py` reconciles every order; not yet wired into the produce API responses |
+| explainability | 4 | `/planning/two-sided` returns explanations and an audit record |
 | robustness | 4 | solver outcome vocabulary; complete recourse proven; failure injection for DB, solver, LLM flag, bad key, empty data |
 | performance | 4 | 100 SKUs × 30 scenarios × 12 periods in 6 s LP / 10 s MILP; 1,000 SKUs × 20 × 8 in 47 s (`docs/validation/PERFORMANCE_BENCHMARKS.md`) |
 | security | 4 | 1 High, 4 Medium, 4 Low fixed, 0 open; 15 adversarial tenant tests; bandit 0; CodeQL, Dependabot, pip-audit gated |
@@ -57,12 +57,12 @@ every result table in the reports is written by code.
 | dimension | score (1–5) | evidence |
 |---|---|---|
 | model correctness | 4 | whole-lot, MOQ, pallet and max-order constraints proven; free-disposal exploit closed; objective reconciles to components |
-| data ingestion | 2 | the staging schema and API are produce-shaped; FMCG histories enter at the library layer |
-| explainability | 3 | as above; case-pack and MOQ appear in the explanation |
+| data ingestion | 4 | six FMCG staging tables with validation, idempotent uploads, promotion calendar; end-to-end API test |
+| explainability | 4 | every order returns its reasons and Decimal value on `/fmcg/plan`; mode selection shows the backtest costs that decided it |
 | robustness | 4 | as above; stress matrix produced no unusable solve across 30+ cells |
 | performance | 4 | 500 SKUs MILP × 20 × 8 in 20 s |
 | security | 4 | shared with agriculture |
-| testing | 3 | simulator coherence, acceptance flow, invariants; no real data |
+| testing | 4 | simulator coherence, library and HTTP acceptance flows, service-floor, transfer and promotion invariants; no real data |
 
 ## What the FMCG evidence actually says
 
@@ -103,50 +103,64 @@ P0 — cannot pilot
 ```
 - No validation on a real operator's order, receipt and inventory
   records. Every FMCG number is SYNTHETIC CALIBRATED; the agriculture
-  demand path is real but the cross-section is not. Closing this needs
-  one operator's exports and a two-week backtest; nothing in the code
-  prevents it.
+  demand path is real but the cross-section is not. The FMCG API now
+  takes an operator's exports end to end (`POST /intake/upload/stg_fmcg_*`,
+  `POST /fmcg/plan`), so closing this is a two-week backtest away.
 
 ```
-P1 — should fix before paid deployment
+P1 — resolved in the P1/P2 pass
 ```
-- HTTP API, Next.js and Streamlit are produce-shaped (kg, harvest, shelf
-  life). FMCG runs through the library. A domain-aware planning endpoint
-  and upload schema are needed before an FMCG operator can self-serve.
-- Explanations and the audit trail are library calls, not yet attached
-  to the produce API's planning response.
-- Isolation is one DuckDB per operator. Fine for a pilot per operator;
-  a shared-database SaaS deployment needs tenant columns and row-level
-  scoping, plus the entrypoint refusing `HARVESTMIND_ENV=dev` on a
-  public interface.
-- Docker image not built on this host (no daemon). Verify in CI.
-- mypy: 67 errors on the decision core (68 at baseline; the modules added in
-  this pass type-check clean), reported not gated.
-- The importer archetype runs at 80–92% service under every policy:
-  8-week leads with pallet MOQs need a longer horizon or a service
-  constraint, which the model supports but the harness does not yet set.
+- **FMCG through the product surface.** Migration 013 adds six staging
+  tables in eaches; the shared upload endpoint validates them; `/fmcg/plan`
+  runs SELECTED (or a named mode) and returns whole-lot orders with the
+  reasons, Decimal money, the trailing-backtest costs that decided the
+  mode, and an audit run id. Next.js `/fmcg` and Streamlit page 09 drive
+  it. Tested end to end (`tests/integration/test_fmcg_api.py`).
+- **Explanations and audit on the produce API.** `/planning/two-sided`
+  now returns `explanations` and an `audit_record`; commitments carry
+  unit-neutral `quantity`/`unit`.
+- **Entrypoint guard.** A permissive process refuses to start on a
+  non-loopback bind (`HARVESTMIND_BIND_HOST`); the Dockerfile and compose
+  file declare the bind and default to `pilot`. Physical isolation (one
+  DuckDB per operator) is a design decision, recorded as such.
+- **Docker.** Built and smoke-tested in CI (import, fail-closed posture,
+  compose validation). Still unverified on this host, which has no daemon.
+- **mypy.** 68 → **0** on the decision core; now a blocking CI gate. One
+  real bug surfaced: intermittent-demand forecasts read a field that did
+  not exist (`fc.point`), and the USDA price connector was called with a
+  keyword it does not accept.
+- **Importer service.** Unit-fill service floors are enforced in the
+  optimizer from the domain policy, and the closed-loop horizon is at
+  least two lead times plus a review cycle.
 
 ```
-P2 — important improvement
+P2 — resolved
 ```
-- Money is float. Acceptable for planning estimates; not for ledger
-  reconciliation.
-- Single warehouse; no transfers, no multi-echelon.
-- OTIF and line/order fill are measured, not enforced.
-- Promotions are in the simulated history but not a planned input.
-- Quantity columns are named `*_kg` across ~800 references; the engine
-  treats them as base units. Mechanical rename, wide blast radius.
+- **Money.** `domain/money.py`: Decimal, currency-tagged, minor-unit
+  quantised, totals reconcile exactly; used at every API boundary.
+- **Multi-location.** Transfer arcs between location-keyed products with
+  cost and lead, bounded by opening stock, conservation tested.
+- **Promotions.** A planned uplift is an input to scenarios, the
+  deterministic twin and the heuristics; `stg_fmcg_promotions` carries
+  the calendar.
+- **Service metrics.** Unit-fill floors enforced per product; OTIF, line
+  and order fill measured.
 
 ```
-P3 — future enhancement
+P2 — deliberately deferred, with reason
 ```
-- Multistage (re-decide inside the horizon as information arrives); the
-  two-stage model is a lower bound on adaptive value.
-- Supplier price breaks, rebates, customer-tier allocation in the LP.
+- Line fill and order fill cannot be *enforced* by a product-level LP
+  without order-line variables; they are measured.
+- The produce database schema keeps `*_kg` column names. Responses now
+  carry unit-neutral fields; the storage rename is a wide mechanical
+  change that buys nothing for the pilot and risks the working produce
+  product.
+- A shared-database SaaS deployment is not offered; isolation stays
+  physical.
 
 ## Evidence
 
-- Tests: **1,241 passed, 0 failed, 1 skipped, 0 xfailed** (`artifacts/junit.xml`).
+- Tests: **1,262 passed, 0 failed, 1 skipped, 0 xfailed** (`artifacts/junit.xml`).
   Baseline was 1,111.
 - Coverage on the critical packages: see `artifacts/coverage.json`
   (`by_package_pct` in the readiness JSON).

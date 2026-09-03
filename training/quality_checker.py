@@ -9,7 +9,6 @@ that only knows one trick. Every check reports what it excluded and why.
 from __future__ import annotations
 
 import hashlib
-import json
 from pathlib import Path
 from typing import Any
 

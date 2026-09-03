@@ -18,6 +18,7 @@ import {
   Truck,
   ListChecks,
   FlaskConical,
+  Boxes,
 } from "lucide-react";
 
 type NavItem = {
@@ -33,6 +34,7 @@ const NAV_MAIN: NavItem[] = [
 
 const NAV_DATA: NavItem[] = [
   { href: "/upload", label: "Data Upload", Icon: UploadCloud },
+  { href: "/fmcg", label: "FMCG Plan", Icon: Boxes },
   { href: "/data-quality", label: "Data Quality", Icon: Database },
 ];
 

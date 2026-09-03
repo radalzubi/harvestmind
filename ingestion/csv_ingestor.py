@@ -15,6 +15,8 @@ import pandas as pd
 # before the SQL is constructed — prevents identifier injection through the
 # `table` argument when called from automated pipelines.
 ALLOWED_TABLES: frozenset[str] = frozenset({
+    "stg_fmcg_skus", "stg_fmcg_orders", "stg_fmcg_purchase_orders",
+    "stg_fmcg_receipts", "stg_fmcg_inventory", "stg_fmcg_promotions",
     "fact_orders",
     "fact_order_lines",
     "fact_purchase_orders",
@@ -46,6 +48,27 @@ _IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
 COLUMN_MAPS: dict[str, dict[str, str]] = {
+    "stg_fmcg_skus": {"SKU": "sku", "Item": "sku", "Item Code": "sku", "Description": "sku_name",
+                      "Supplier": "supplier_id", "Cost": "unit_cost", "Unit Cost": "unit_cost",
+                      "Price": "unit_price", "Units per Case": "units_per_case", "Case Pack": "units_per_case",
+                      "MOQ": "moq_units", "Shelf Life (days)": "shelf_life_days"},
+    "stg_fmcg_orders": {"Order ID": "order_id", "Customer": "customer_id", "Customer ID": "customer_id",
+                        "Order Date": "order_date", "Requested Delivery": "requested_delivery_date",
+                        "SKU": "sku", "Item": "sku", "Qty": "qty_ordered", "Quantity": "qty_ordered",
+                        "Qty Ordered": "qty_ordered", "Qty Shipped": "qty_shipped", "Channel": "channel"},
+    "stg_fmcg_purchase_orders": {"PO": "po_id", "PO Number": "po_id", "PO Date": "po_date",
+                                 "Supplier": "supplier_id", "SKU": "sku", "Item": "sku",
+                                 "Qty": "qty_ordered", "Qty Ordered": "qty_ordered", "Unit Cost": "unit_cost",
+                                 "Expected Delivery": "expected_delivery_date"},
+    "stg_fmcg_receipts": {"Receipt": "receipt_id", "PO": "po_id", "PO Number": "po_id",
+                          "Receipt Date": "receipt_date", "Received Date": "receipt_date",
+                          "SKU": "sku", "Qty Received": "qty_received", "Received": "qty_received",
+                          "Qty Rejected": "qty_rejected"},
+    "stg_fmcg_inventory": {"Date": "snapshot_date", "Snapshot Date": "snapshot_date", "SKU": "sku",
+                           "Location": "location_id", "Warehouse": "location_id", "On Hand": "on_hand",
+                           "In Transit": "in_transit"},
+    "stg_fmcg_promotions": {"SKU": "sku", "Week": "week_start", "Week Start": "week_start",
+                            "Uplift": "uplift", "Multiplier": "uplift"},
     "orders": {
         "Order ID": "order_id",
         "Buyer": "buyer_id",

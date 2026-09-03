@@ -452,7 +452,7 @@ def run_benchmark(
         cw = {j: e["cost"] for j, e in econ.items()}
         cu = {j: e["margin"] for j, e in econ.items()}
 
-        commits: dict[str, dict[str, float]] = {}
+        commits: dict[str, dict] = {}
 
         sp_res = TwoStageStochasticLP(
             newsvendor_objective=True, waste_cost_by_product=cw,

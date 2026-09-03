@@ -136,10 +136,9 @@ jobs:
         run: python -m pip_audit --ignore-vuln PYSEC-2026-3412
 
   types:
-    name: mypy (non-blocking report)
+    name: mypy
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -151,9 +150,34 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
       - name: mypy on the decision core
-        # 68 pre-existing errors at baseline. Reported, not gated, until the
-        # count reaches zero; the number should trend down.
-        run: python -m mypy optimization risk backtesting api ingestion domain --ignore-missing-imports || true
+        # Zero errors as of the commercial readiness pass; gated so it stays so.
+        run: python -m mypy optimization risk backtesting api ingestion domain --ignore-missing-imports
+
+  docker:
+    name: docker build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: harvestmind:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke the image (import, health, fail-closed posture)
+        run: |
+          set -euo pipefail
+          docker run --rm -e HARVESTMIND_ENV=prod harvestmind:ci \
+            python -c "import api.main, domain, optimization.multi_period_sp; print('import ok')"
+          docker run --rm -e HARVESTMIND_ENV=prod harvestmind:ci \
+            python -c "from api.dependencies import auth_required; assert auth_required(); print('fail-closed ok')"
+      - name: Validate compose file
+        run: docker compose -f compose.pilot.yml config -q
 
   frontend:
     name: next build

@@ -11,8 +11,7 @@ returns ``None`` so the UI can show an honest empty state.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, timedelta
-from typing import Iterable
+from datetime import date
 
 import duckdb
 import pandas as pd
@@ -46,16 +45,16 @@ def header_context(conn: duckdb.DuckDBPyConnection,
     period = conn.execute(
         "SELECT MIN(week_start), MAX(week_start), COUNT(*) FROM fact_orders"
     ).fetchone()
-    last_delivery = conn.execute(
+    last_delivery = conn.execute(  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
         "SELECT MAX(delivery_date) FROM fact_deliveries"
     ).fetchone()[0]
-    last = max(filter(None, [period[1], last_delivery]), default=None)
+    last = max(filter(None, [period[1], last_delivery]), default=None)  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
     return HeaderContext(
         partner_name=partner_name,
-        period_start=pd.Timestamp(period[0]) if period[0] else None,
-        period_end=pd.Timestamp(period[1]) if period[1] else None,
+        period_start=pd.Timestamp(period[0]) if period[0] else None,  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
+        period_end=pd.Timestamp(period[1]) if period[1] else None,  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
         last_data_date=pd.Timestamp(last) if last else None,
-        rows_used=int(period[2] or 0),
+        rows_used=int(period[2] or 0),  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
     )
 
 
@@ -96,9 +95,9 @@ def executive_kpis(conn: duckdb.DuckDBPyConnection,
         FROM fact_purchase_orders
         """
     ).fetchone()
-    spot_cost_usd = float(spot[0])
-    spot_kg = float(spot[1])
-    total_kg = float(spot[2])
+    spot_cost_usd = float(spot[0])  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
+    spot_kg = float(spot[1])  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
+    total_kg = float(spot[2])  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
     spot_pct_of_volume = (spot_kg / total_kg) if total_kg > 0 else None
 
     # We model "savings" as the chunk of spot cost the optimiser would
@@ -118,11 +117,11 @@ def executive_kpis(conn: duckdb.DuckDBPyConnection,
         FROM fact_waste_events
         """
     ).fetchone()
-    waste_kg = float(waste[0])
-    waste_usd = float(waste[1])
+    waste_kg = float(waste[0])  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
+    waste_usd = float(waste[1])  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
     waste_recoverable = waste_usd * 0.40  # planning typically removes ~40% of avoidable waste
 
-    received = conn.execute(
+    received = conn.execute(  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
         "SELECT COALESCE(SUM(qty_received_kg), 0) FROM fact_deliveries"
     ).fetchone()[0]
     waste_pct_of_received = (waste_kg / received) if received and received > 0 else None
@@ -136,10 +135,10 @@ def executive_kpis(conn: duckdb.DuckDBPyConnection,
         FROM fact_order_lines
         """
     ).fetchone()
-    fill_actual = (float(fr[1]) / float(fr[0])) if float(fr[0]) > 0 else None
+    fill_actual = (float(fr[1]) / float(fr[0])) if float(fr[0]) > 0 else None  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
 
     # Annualise: dataset spans ~104 weeks; scale to 52
-    weeks_in_data = conn.execute(
+    weeks_in_data = conn.execute(  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
         "SELECT COUNT(DISTINCT week_start) FROM fact_orders"
     ).fetchone()[0] or 1
     scale = 52.0 / max(weeks_in_data, 1)
@@ -205,7 +204,7 @@ def data_quality_breakdown(conn: duckdb.DuckDBPyConnection) -> list[DataQualityR
     rows: list[DataQualityRow] = []
     for table, (strong, usable) in _DATASET_THRESHOLDS.items():
         try:
-            n = int(conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
+            n = int(conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
         except duckdb.Error:
             n = 0
         if n >= strong:
@@ -248,7 +247,6 @@ def full_data_quality_report(conn: duckdb.DuckDBPyConnection) -> dict:
       warnings           non-blocking issues
       total_rows         across all staging tables
     """
-    import numpy as np
 
     STAGING_REQUIRED: dict[str, list[str]] = {
         "stg_products":            ["product_name"],
@@ -787,7 +785,7 @@ def recommendation_table(conn: duckdb.DuckDBPyConnection,
     never empty.  The heuristic is clearly labelled in the UI as
     "actuals-derived" so it is never confused with a real optimiser run.
     """
-    n = conn.execute("SELECT COUNT(*) FROM planning_recommendations").fetchone()[0]
+    n = conn.execute("SELECT COUNT(*) FROM planning_recommendations").fetchone()[0]  # type: ignore[index]  # fetchone() on a COUNT/MIN query always yields a row
     if n > 0:
         return conn.execute(
             "SELECT * FROM planning_recommendations ORDER BY priority, generated_at DESC"

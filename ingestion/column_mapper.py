@@ -273,7 +273,7 @@ def detect_and_convert_units(
             stripped = norm
             for tok in _LB_TOKENS + _TON_TOKENS:
                 stripped = stripped.replace(f"({tok})", "").replace(f" {tok}", "").strip()
-            target = COLUMN_ALIASES.get(stripped)
+            target = COLUMN_ALIASES.get(stripped) or ""
 
         if target and target in df.columns:
             df[target] = pd.to_numeric(df[target], errors="coerce") * factor

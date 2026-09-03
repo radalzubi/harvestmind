@@ -48,6 +48,21 @@ def _reject_if_too_large(contents: bytes, filename: str | None) -> None:
 # ── Staging table allowlist ───────────────────────────────────────────────────
 
 STAGING_TABLES: dict[str, dict[str, Any]] = {
+    # ── FMCG (eaches; see db/migrations/013_fmcg_staging.sql) ──────────────
+    "stg_fmcg_skus": {"required_cols": {"sku", "unit_cost"}, "date_cols": [],
+                      "description": "FMCG SKU master with pack structure"},
+    "stg_fmcg_orders": {"required_cols": {"sku", "qty_ordered", "order_date"},
+                        "date_cols": ["order_date", "requested_delivery_date"],
+                        "description": "FMCG customer order lines"},
+    "stg_fmcg_purchase_orders": {"required_cols": {"po_id", "sku", "qty_ordered", "po_date"},
+                                 "date_cols": ["po_date", "expected_delivery_date"],
+                                 "description": "FMCG purchase orders"},
+    "stg_fmcg_receipts": {"required_cols": {"po_id", "qty_received", "receipt_date"},
+                          "date_cols": ["receipt_date"], "description": "FMCG supplier receipts"},
+    "stg_fmcg_inventory": {"required_cols": {"sku", "on_hand", "snapshot_date"},
+                           "date_cols": ["snapshot_date"], "description": "FMCG inventory snapshots"},
+    "stg_fmcg_promotions": {"required_cols": {"sku", "week_start", "uplift"},
+                            "date_cols": ["week_start"], "description": "FMCG promotion calendar"},
     "stg_products": {
         "required_cols": {"product_name"},
         "date_cols": [],
@@ -311,7 +326,7 @@ async def upload_csv(
                         ins_df[dcol], errors="coerce").dt.date
             ins_df = stamp_lineage(
                 ins_df, operator_id=operator_id,
-                upload_session_id=upload_session_id,
+                upload_session_id=upload_session_id or "",
                 source_file=file.filename or "upload.csv")
             assert_lineage_present(ins_df)
             rows_inserted = insert_from_df(conn, table, ins_df,
@@ -365,6 +380,10 @@ def load_sample_data(conn=Depends(get_conn)):
     errors: list[str] = []
 
     for table, meta in STAGING_TABLES.items():
+        if table.startswith("stg_fmcg_"):
+            # FMCG samples live under data/samples/fmcg/ and are uploaded
+            # through the FMCG flow; this demo loader is the produce onboarding.
+            continue
         csv_path = samples_dir / f"{table}.csv"
         if not csv_path.exists():
             errors.append(f"Sample file not found: {csv_path.name}")
@@ -420,12 +439,25 @@ def intake_status(conn=Depends(get_conn)):
             "row_count": count,
             "loaded": count > 0,
         }
+    # Two table families, one per operating domain. "all loaded" is asked
+    # per family: a produce operator never uploads FMCG tables and vice
+    # versa, so a single flag across both would never be true.
+    families = {
+        "produce": [t for t in result if not t.startswith("stg_fmcg_")],
+        "fmcg": [t for t in result if t.startswith("stg_fmcg_")],
+    }
+    fam = {name: {"tables": ts,
+                  "any_loaded": any(result[t]["loaded"] for t in ts),
+                  "all_loaded": all(result[t]["loaded"] for t in ts)}
+           for name, ts in families.items()}
     any_loaded = any(v["loaded"] for v in result.values())
-    all_loaded = all(v["loaded"] for v in result.values())
     return {
         "tables": result,
+        "families": fam,
         "any_data_loaded": any_loaded,
-        "all_tables_loaded": all_loaded,
+        # Legacy flag: the produce family, which is what every existing
+        # caller meant by "all tables".
+        "all_tables_loaded": fam["produce"]["all_loaded"],
     }
 
 
@@ -475,7 +507,7 @@ async def extract_files(
             _reject_if_too_large(content, f.filename)
             if registry is not None:
                 from infrastructure.vault_storage import store_raw_upload
-                store_raw_upload(registry, operator_id,
+                store_raw_upload(registry, operator_id or "",
                                  f.filename or "upload.bin", content)
             suffix = _P(f.filename or "upload.csv").suffix or ".csv"
             with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
@@ -484,7 +516,7 @@ async def extract_files(
 
         from ingestion.llm_extractor import extract as llm_extract
         try:
-            result = llm_extract(tmp_paths)
+            result = llm_extract(list(tmp_paths))
         except ValueError as e:   # unsupported file type etc.
             raise HTTPException(
                 status_code=422,
@@ -604,7 +636,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
                                 detail=f"Unknown operator {operator_id!r}")
         frames = {
             t: stamp_lineage(df, operator_id=operator_id,
-                             upload_session_id=session_id,
+                             upload_session_id=str(session_id or ""),
                              source_file=",".join(
                                  session.get("source_files", [])) or "extract")
             for t, df in frames.items()
@@ -640,7 +672,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
         if vault_dbm is not None:
             vault_dbm.close_all()
 
-    log_confirmation(session_id, accepted_rows, corrections)
+    log_confirmation(str(session_id or ""), accepted_rows, corrections)
 
     # Vault copy of the confirmed snapshot (operator-scoped sessions/)
     pool_result = None
@@ -649,7 +681,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
             import json as _json
             from infrastructure.vault_storage import store_session_snapshot
             store_session_snapshot(
-                registry, operator_id, session_id,
+                registry, operator_id, str(session_id or ""),
                 _json.dumps({"session_id": session_id,
                              "rows": accepted_rows,
                              "corrections": corrections}, default=str))
@@ -667,8 +699,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
     # operator corrections are the gold labels (Phase 4 accumulator).
     try:
         from training.data_accumulator import record_confirmed_session
-        record_confirmed_session(
-            session_id,
+        record_confirmed_session(str(session_id or ""),
             mock_mode=bool(session.get("mock_mode", True)),
             prompt_version=session.get("prompt_version", "unknown"),
             raw_input_sample=", ".join(session.get("source_files", [])),

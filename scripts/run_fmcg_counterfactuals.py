@@ -76,6 +76,16 @@ def fold_from_history(h, origin: int, horizon: int, train: int, cover_weeks: flo
             pipeline[(j, t)] = mean_dem[j]
     cap = {j: max(mean_dem[j] * 3.0, 1.0) for j in products}
 
+    # Planned promotions inside the horizon are KNOWN at the origin (an
+    # operator publishes its promo calendar); they are an input.
+    promo: dict = {}
+    if len(h.promotions):
+        pw = h.promotions.copy()
+        pw["week"] = (pd.to_datetime(pw["week_start"]) - pd.to_datetime(h.customer_orders["order_date"].min())).dt.days // 7
+        for r in pw.itertuples():
+            t = int(r.week) - origin
+            if 0 <= t < horizon and r.sku in sup_of:
+                promo[(r.sku, t)] = float(r.uplift)
     cc = CostConfig(currency="USD", holding_rate_per_period=holding_per_week,
                     shortage_cost_per_unit=margin, waste_cost_per_unit=cost,
                     emergency_cost_multiplier=1.0, emergency_capacity_factor=0.0,
@@ -84,7 +94,7 @@ def fold_from_history(h, origin: int, horizon: int, train: int, cover_weeks: flo
     fi = FoldInputs(origin=origin, horizon=horizon, products=products, supplier_of=sup_of,
                     lead_of=lead_of, train_demand=train_dem, train_fill=train_fill,
                     unit_cost=cost, margin=margin, capacity=cap, opening=opening,
-                    pipeline=pipeline, policy=policy)
+                    pipeline=pipeline, policy=policy, promo_multiplier=promo)
     return fi, FoldTruth(demand=truth_dem, fill=truth_fill, lead=truth_lead)
 
 
@@ -109,14 +119,19 @@ def run_rolling(a) -> int:
             n_run = min(a.run_periods, spec.weeks - start - 1)
             fi0, _ = fold_from_history(h, start, a.horizon, a.train, a.cover_weeks, a.sla_target)
             products, sup_of, lead_of = fi0.products, fi0.supplier_of, fi0.lead_of
+            # A horizon shorter than two lead times plus a review cycle cannot
+            # see the consequence of today's order; the importer archetype
+            # under-served every policy for exactly this reason.
+            horizon = max(a.horizon, 2 * max(lead_of.values()) + a.review)
+            if horizon != a.horizon:
+                print(f"  {name}: horizon raised {a.horizon} -> {horizon} for lead "
+                      f"{max(lead_of.values())}", flush=True)
             # realised path over the whole run
             ol = h.order_lines.copy()
             ol["week"] = ol["order_id"].str[4:8].astype(int)
             dem = ol.groupby(["sku", "week"])["qty_ordered"].sum()
-            truth_d = {(j, t): float(dem.get((j, start + t), 0.0)) for j in products for t in range(n_run + a.horizon)}
+            truth_d = {(j, t): float(dem.get((j, start + t), 0.0)) for j in products for t in range(n_run + horizon)}
             truth_f, truth_l = {}, {}
-            for t in range(n_run + a.horizon):
-                fi_t, tr = fold_from_history(h, start + t, 1, a.train, a.cover_weeks, a.sla_target) if False else (None, None)
             # per-supplier realised fills by absolute week from the PO log
             po = h.purchase_orders.copy()
             po["week"] = (pd.to_datetime(po["po_date"]) - pd.to_datetime(h.purchase_orders["po_date"].min())).dt.days // 7
@@ -126,14 +141,14 @@ def run_rolling(a) -> int:
             for s_ in set(sup_of.values()):
                 sub = po[po["supplier_id"] == s_]
                 base = float(sub[sub["week"] < start]["fill"].mean()) if len(sub[sub["week"] < start]) else 0.95
-                for t in range(n_run + a.horizon):
+                for t in range(n_run + horizon):
                     row = sub[sub["week"] == start + t]
                     truth_f[(s_, t)] = float(row["fill"].mean()) if len(row) else base
                     truth_l[(s_, t)] = lead_of[s_]
             cap_total = sum(st.mean(fi0.train_demand[j]) for j in products) * a.warehouse_cap_weeks
 
-            def make_inputs(t, on_hand, pipeline, _h=h, _start=start):
-                fi, _ = fold_from_history(_h, _start + t, a.horizon, a.train, a.cover_weeks, a.sla_target)
+            def make_inputs(t, on_hand, pipeline, _h=h, _start=start, _hz=horizon):
+                fi, _ = fold_from_history(_h, _start + t, _hz, a.train, a.cover_weeks, a.sla_target)
                 fi.opening = dict(on_hand)
                 fi.pipeline = dict(pipeline)
                 return fi
@@ -143,7 +158,7 @@ def run_rolling(a) -> int:
             for pol in pols:
                 res[pol] = rolling_evaluate(pol, make_inputs, truth_d, truth_f, truth_l, products,
                                             sup_of, lead_of, fi0.unit_cost, fi0.margin, fi0.policy,
-                                            n_run, a.review, a.horizon, cap_total, rng,
+                                            n_run, a.review, horizon, cap_total, rng,
                                             dict(fi0.opening), n_scen=a.scenarios)
                 per[pol].append(res[pol])
                 fails += res[pol].solver_failures
@@ -174,7 +189,8 @@ def run_rolling(a) -> int:
     out = {"classification": "SYNTHETIC CALIBRATED", "mode": "closed_loop_rolling", "config": vars(a),
            "elapsed_s": round(time.time() - t_all, 1), "archetypes": results}
     (ROOT / "artifacts").mkdir(exist_ok=True)
-    (ROOT / "artifacts" / "fmcg_counterfactuals_rolling.json").write_text(json.dumps(out, indent=1))
+    suffix = "" if a.archetypes == "all" else "_" + "_".join(n[:1] for n in names)
+    (ROOT / "artifacts" / f"fmcg_counterfactuals_rolling{suffix}.json").write_text(json.dumps(out, indent=1))
     md = ROOT / "docs" / "validation" / "evidence"
     md.mkdir(parents=True, exist_ok=True)
     lines = ["# FMCG closed-loop counterfactuals (SYNTHETIC CALIBRATED)", "",
@@ -193,7 +209,7 @@ def run_rolling(a) -> int:
                      f"{se.get('median', 0):+.2f}% (win {se.get('win_rate', 0):.0%}) | "
                      f"{sv['stochastic_sp']:.1%} / {sv['deterministic_sp']:.1%} / {sv['order_up_to']:.1%} | "
                      f"{ai['stochastic_sp']:,.0f} / {ai['deterministic_sp']:,.0f} / {ai['order_up_to']:,.0f} | {r['selections']} |")
-    (md / "fmcg_counterfactuals_rolling.md").write_text("\n".join(lines) + "\n")
+    (md / f"fmcg_counterfactuals_rolling{suffix}.md").write_text("\n".join(lines) + "\n")
     print(f"\nwrote artifacts/fmcg_counterfactuals_rolling.json ({out['elapsed_s']}s)")
     return 0
 

@@ -15,13 +15,16 @@ step "ruff (new work must be clean; repo-wide debt reported)"
 python3 -m ruff check domain optimization/solve_status.py optimization/explain.py optimization/audit_trail.py \
   backtesting/counterfactual.py synthetic/fmcg validation scripts/validate_commercial_real_data.py \
   scripts/run_fmcg_counterfactuals.py scripts/run_fmcg_stress_matrix.py scripts/benchmark_performance.py \
-  scripts/build_readiness_json.py tests/unit/test_optimizer_invariants.py tests/unit/test_domain_model.py \
+  scripts/build_readiness_json.py scripts/fill_validation_tables.py api/routers/fmcg.py domain/money.py \
+  tests/unit/test_optimizer_service_and_transfers.py tests/unit/test_promo_input.py tests/unit/test_money.py \
+  tests/unit/test_entrypoint_guard.py tests/integration/test_fmcg_api.py dashboard/pages/09_fmcg_plan.py \
+  tests/unit/test_optimizer_invariants.py tests/unit/test_domain_model.py \
   tests/unit/test_tenant_isolation.py tests/unit/test_ingestion_adversarial.py tests/unit/test_fmcg_simulator.py \
   tests/unit/test_agriculture_invariants.py tests/unit/test_solver_robustness.py || fail=1
 python3 -m ruff check . --statistics > artifacts/ruff_repo.txt 2>&1 || true
 
-step "mypy on the decision core (reported)"
-python3 -m mypy optimization risk backtesting api ingestion domain --ignore-missing-imports > artifacts/mypy.txt 2>&1 || true
+step "mypy on the decision core (must be zero)"
+python3 -m mypy optimization risk backtesting api ingestion domain --ignore-missing-imports > artifacts/mypy.txt 2>&1 || fail=1
 grep -c "error:" artifacts/mypy.txt | sed 's/^/  errors: /'
 
 step "bandit (medium+, must be zero)"

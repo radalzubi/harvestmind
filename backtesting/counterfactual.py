@@ -63,6 +63,11 @@ class FoldInputs:
     opening: dict
     pipeline: dict               # (product, t) -> qty already in transit
     policy: DomainPolicy
+    # Planned promotions the operator KNOWS about at the origin:
+    # (product, t) -> demand multiplier. A known uplift is an input, not a
+    # surprise; scenarios are scaled by it and the deterministic twin sees
+    # the same expectation.
+    promo_multiplier: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -158,6 +163,10 @@ def _mean(xs): return float(st.mean(xs)) if xs else 0.0
 def _sd(xs): return float(st.pstdev(xs)) if len(xs) > 1 else 0.0
 
 
+def _promo(fi: FoldInputs, j: str, t: int) -> float:
+    return float(fi.promo_multiplier.get((j, t), 1.0))
+
+
 def policy_naive_forecast(fi: FoldInputs) -> dict:
     out = {}
     for j in fi.products:
@@ -165,7 +174,7 @@ def policy_naive_forecast(fi: FoldInputs) -> dict:
         f = max(_mean(fi.train_fill[s]), 0.3)
         q = _mean(fi.train_demand[j]) / f
         for t in range(fi.horizon):
-            out[(s, j, t)] = _round(fi, j, q)
+            out[(s, j, t)] = _round(fi, j, q * _promo(fi, j, t))
     return out
 
 
@@ -215,9 +224,10 @@ def _open_loop_position_policy(fi: FoldInputs, reorder_point, order_up_to) -> di
         lead = int(fi.lead_of[s])
         pos = fi.opening.get(j, 0.0) + sum(q for (jj, t), q in fi.pipeline.items() if jj == j)
         for t in range(fi.horizon):
-            pos -= mu
-            if pos <= reorder_point(j, mu, lead):
-                q = max(order_up_to(j, mu, lead) - pos, 0.0) / f
+            mu_t = mu * _promo(fi, j, t)
+            pos -= mu_t
+            if pos <= reorder_point(j, mu_t, lead):
+                q = max(order_up_to(j, mu_t, lead) - pos, 0.0) / f
                 q = _round(fi, j, q)
                 out[(s, j, t)] = q
                 pos += q * f
@@ -256,6 +266,10 @@ def _optimizer_kwargs(fi: FoldInputs, warehouse_cap):
         inventory_capacity_total=warehouse_cap,
         pack_specs={j: fi.policy.pack_spec_for(j) for j in fi.products
                     if fi.policy.pack_spec_for(j).is_discrete} or None,
+        service_floor_by_product=(
+            {j: fi.policy.service_target.level for j in fi.products}
+            if fi.policy.service_target.metric == "unit_fill"
+            and fi.policy.service_target.scope == "global" else None),
         time_limit_s=60.0,
     )
 
@@ -301,6 +315,7 @@ def _scenarios(fi: FoldInputs, n_scen: int, rng) -> tuple[pd.DataFrame, dict, di
             for t in range(fi.horizon):
                 pool = pools[j][t]
                 d = float(rng.choice(pool)) if pool else 0.0
+                d *= float(fi.promo_multiplier.get((j, t), 1.0))
                 rows.append({"scenario_index": w, "scenario_weight": 1 / n_scen,
                              "product_id": j, "period": t, "demand_kg": d})
         for s in sups:
@@ -311,22 +326,39 @@ def _scenarios(fi: FoldInputs, n_scen: int, rng) -> tuple[pd.DataFrame, dict, di
 
 def policy_deterministic_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=1) -> tuple[dict | None, dict]:
     rows = [{"scenario_index": 0, "scenario_weight": 1.0, "product_id": j, "period": t,
-             "demand_kg": _mean(_seasonal_pool(fi.train_demand[j], t))}
+             "demand_kg": _mean(_seasonal_pool(fi.train_demand[j], t))
+             * float(fi.promo_multiplier.get((j, t), 1.0))}
             for j in fi.products for t in range(fi.horizon)]
     sups = sorted(set(fi.supplier_of.values()))
-    r = MultiPeriodStochasticLP(**_optimizer_kwargs(fi, warehouse_cap)).solve(
-        pd.DataFrame(rows), _supply_df(fi),
-        lead_times={(0, s): int(fi.lead_of[s]) for s in sups},
-        yield_scenarios={(0, s): _mean(fi.train_fill[s]) or 1.0 for s in sups},
-        opening_inventory=fi.opening)
+    kw = _optimizer_kwargs(fi, warehouse_cap)
+    args = (pd.DataFrame(rows), _supply_df(fi))
+    kws: dict = dict(lead_times={(0, s): int(fi.lead_of[s]) for s in sups},
+               yield_scenarios={(0, s): _mean(fi.train_fill[s]) or 1.0 for s in sups},
+               opening_inventory=fi.opening)
+    r = MultiPeriodStochasticLP(**kw).solve(*args, **kws)
+    if not r["usable"] and kw.get("service_floor_by_product"):
+        kw["service_floor_by_product"] = None
+        r = MultiPeriodStochasticLP(**kw).solve(*args, **kws)
+        r["warnings"] = list(r.get("warnings", [])) + ["service floor unattainable; solved without it"]
+        r["floor_relaxed"] = True
     return ({k: v for k, v in r["x"].items() if v > 0} if r["usable"] else None), r
 
 
 def policy_stochastic_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=30) -> tuple[dict | None, dict]:
     scen, leads, fills = _scenarios(fi, n_scen, rng)
-    r = MultiPeriodStochasticLP(**_optimizer_kwargs(fi, warehouse_cap)).solve(
+    kw = _optimizer_kwargs(fi, warehouse_cap)
+    r = MultiPeriodStochasticLP(**kw).solve(
         scen, _supply_df(fi), lead_times=leads, yield_scenarios=fills,
         opening_inventory=fi.opening)
+    if not r["usable"] and kw.get("service_floor_by_product"):
+        # The floor was unattainable with this capacity: solve without it and
+        # say so, rather than silently handing the fold to a heuristic.
+        kw["service_floor_by_product"] = None
+        r = MultiPeriodStochasticLP(**kw).solve(
+            scen, _supply_df(fi), lead_times=leads, yield_scenarios=fills,
+            opening_inventory=fi.opening)
+        r["warnings"] = list(r.get("warnings", [])) + ["service floor unattainable; solved without it"]
+        r["floor_relaxed"] = True
     return ({k: v for k, v in r["x"].items() if v > 0} if r["usable"] else None), r
 
 

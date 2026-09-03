@@ -41,7 +41,14 @@ def run_ingestion_pipeline(
     # --- USDA AMS prices ---
     try:
         from ingestion.usda_ams_connector import fetch_and_store
-        n = fetch_and_store(conn, days_back=days_back)
+        import inspect as _inspect
+        # The USDA connector counts in weeks; test stubs and older connectors
+        # count in days. Pass whichever the callee actually accepts.
+        _params = _inspect.signature(fetch_and_store).parameters
+        if "weeks_back" in _params:
+            n = fetch_and_store(conn, weeks_back=max(1, int(days_back) // 7))
+        else:
+            n = fetch_and_store(conn, days_back=days_back)  # type: ignore[call-arg]
         counts["fact_market_prices"] = counts.get("fact_market_prices", 0) + n
         if verbose and n > 0:
             print(f"  USDA AMS: {n} price records")
