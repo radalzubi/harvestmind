@@ -57,6 +57,13 @@ class MultiPeriodStochasticLP:
     # they wait, which is the cost of ordering early in a fresh supply chain.
     decay_rate_per_period: float = 0.05
     decay_rate_by_product: dict | None = None
+    # Real operators cannot hold unbounded stock. Warehouse space and
+    # working capital both bind, and without one of them priced or
+    # constrained the model will buy many months of cover to avoid a
+    # shortage that costs a single margin. Both default to None so Project
+    # A's existing behaviour is unchanged.
+    inventory_capacity_total: float | None = None
+    inventory_capacity_by_product: dict | None = None
     solver: str = "highs"
     time_limit_s: float = 300.0
 
@@ -78,6 +85,9 @@ class MultiPeriodStochasticLP:
                           Missing pairs default to 0 (arrives immediately).
         yield_scenarios:  (scenario_index, supplier_id) -> fill in [0, 1].
         opening_inventory: product_id -> kg on hand before period 0.
+
+        Raises ValueError if the model is infeasible under an inventory
+        cap that is too tight to absorb opening stock.
         """
         import pyomo.environ as pyo
         from pyomo.opt import SolverFactory
@@ -189,6 +199,25 @@ class MultiPeriodStochasticLP:
             return mm.x[i, j, t] <= cap.get((i, j), 0.0)
 
         m.cap = pyo.Constraint(m.IJ, m.T, rule=cap_rule)
+
+        icp = self.inventory_capacity_by_product or {}
+        if icp:
+            def inv_cap_product(mm, j, t, w):
+                lim = icp.get(j)
+                if lim is None:
+                    return pyo.Constraint.Skip
+                return mm.inv[j, t, w] <= float(lim)
+
+            m.inv_cap_product = pyo.Constraint(
+                m.J, m.T, m.W, rule=inv_cap_product)
+
+        if self.inventory_capacity_total is not None:
+            total_cap = float(self.inventory_capacity_total)
+
+            def inv_cap_total(mm, t, w):
+                return sum(mm.inv[j, t, w] for j in mm.J) <= total_cap
+
+            m.inv_cap_total = pyo.Constraint(m.T, m.W, rule=inv_cap_total)
 
         if self.spot_capacity_factor is not None:
             rho = float(self.spot_capacity_factor)
