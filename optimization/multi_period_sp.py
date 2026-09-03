@@ -35,6 +35,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+from optimization.solve_status import SolveOutcome, run_solver
 from optimization.two_stage_sp import _normalized_weights
 
 
@@ -64,6 +65,12 @@ class MultiPeriodStochasticLP:
     # A's existing behaviour is unchanged.
     inventory_capacity_total: float | None = None
     inventory_capacity_by_product: dict | None = None
+    # Discrete ordering. product_id -> domain.uom.PackSpec. A product with a
+    # spec is ordered in whole lots (cases, layers or pallets) with an
+    # optional minimum order; products without one stay continuous. Any
+    # spec turns the model from an LP into a MILP, still solved by HiGHS.
+    pack_specs: dict | None = None
+    mip_rel_gap: float = 0.005
     solver: str = "highs"
     time_limit_s: float = 300.0
 
@@ -90,7 +97,6 @@ class MultiPeriodStochasticLP:
         cap that is too tight to absorb opening stock.
         """
         import pyomo.environ as pyo
-        from pyomo.opt import SolverFactory
 
         T = int(self.n_periods)
         if T < 1:
@@ -145,6 +151,14 @@ class MultiPeriodStochasticLP:
         # Stage 1: the ordering SCHEDULE. Ordering earlier is what this
         # variable makes expressible.
         m.x = pyo.Var(m.IJ, m.T, domain=pyo.NonNegativeReals)
+        # Discrete lots. x is kept as the quantity the rest of the model
+        # sees; for a packed product it is tied to an integer lot count.
+        specs = {j: sp for j, sp in (self.pack_specs or {}).items()
+                 if j in products and sp.is_discrete}
+        m.IJD = pyo.Set(initialize=[(i, j) for (i, j) in cap if j in specs],
+                        dimen=2)
+        m.n_lots = pyo.Var(m.IJD, m.T, domain=pyo.NonNegativeIntegers)
+        m.y_order = pyo.Var(m.IJD, m.T, domain=pyo.Binary)
         # Stage 2, per scenario and period.
         m.inv = pyo.Var(m.J, m.T, m.W, domain=pyo.NonNegativeReals)
         m.s = pyo.Var(m.J, m.T, m.W, domain=pyo.NonNegativeReals)
@@ -195,6 +209,35 @@ class MultiPeriodStochasticLP:
 
         m.unmet_cap = pyo.Constraint(m.J, m.T, m.W, rule=unmet_cap)
 
+        def lot_tie(mm, i, j, t):
+            return mm.x[i, j, t] == specs[j].lot_units * mm.n_lots[i, j, t]
+
+        m.lot_tie = pyo.Constraint(m.IJD, m.T, rule=lot_tie)
+
+        def lot_big_m(mm, i, j, t):
+            # An order exists only if its binary is on. Big-M is the lot
+            # count that fills capacity, so it is tight, not arbitrary.
+            lots_cap = max(1.0, cap.get((i, j), 0.0) / specs[j].lot_units)
+            return mm.n_lots[i, j, t] <= float(np.ceil(lots_cap)) * mm.y_order[i, j, t]
+
+        m.lot_big_m = pyo.Constraint(m.IJD, m.T, rule=lot_big_m)
+
+        def moq_rule(mm, i, j, t):
+            sp = specs[j]
+            if sp.moq_units <= 0:
+                return pyo.Constraint.Skip
+            return mm.x[i, j, t] >= sp.moq_units * mm.y_order[i, j, t]
+
+        m.moq = pyo.Constraint(m.IJD, m.T, rule=moq_rule)
+
+        def max_order_rule(mm, i, j, t):
+            sp = specs[j]
+            if sp.max_units_per_order is None:
+                return pyo.Constraint.Skip
+            return mm.x[i, j, t] <= sp.max_units_per_order
+
+        m.max_order = pyo.Constraint(m.IJD, m.T, rule=max_order_rule)
+
         def cap_rule(mm, i, j, t):
             return mm.x[i, j, t] <= cap.get((i, j), 0.0)
 
@@ -227,21 +270,35 @@ class MultiPeriodStochasticLP:
 
             m.spot_cap = pyo.Constraint(m.J, m.T, m.W, rule=spot_cap)
 
-        opt = SolverFactory("appsi_highs" if self.solver == "highs"
-                            else self.solver)
-        res = opt.solve(m, tee=False)
-        status = str(res.solver.termination_condition)
-        ok = status in ("optimal", "locallyOptimal")
+        outcome: SolveOutcome = run_solver(
+            m, solver=self.solver, time_limit_s=self.time_limit_s,
+            mip_rel_gap=self.mip_rel_gap if specs else None)
+        status = outcome.status
+        ok = outcome.usable
 
         schedule = {(i, j, t): float(pyo.value(m.x[i, j, t]) or 0.0)
                     for (i, j) in cap for t in range(T)} if ok else {}
+        if ok and specs:
+            # Snap away solver tolerance so a report never shows 11.9999
+            # cases. Integer feasibility was enforced by the MILP; this
+            # only cleans the float representation.
+            for (i, j, t), v in list(schedule.items()):
+                if j in specs:
+                    lot = specs[j].lot_units
+                    schedule[(i, j, t)] = float(round(v / lot)) * lot
         by_period = {}
         for (_i, _j, t), v in schedule.items():
             by_period[t] = by_period.get(t, 0.0) + v
 
         return {
             "status": status,
+            "usable": ok,
             "objective": float(pyo.value(m.obj)) if ok else None,
+            "objective_bound": outcome.bound,
+            "gap": outcome.gap,
+            "runtime_s": outcome.runtime_s,
+            "warnings": list(outcome.warnings),
+            "discrete_products": sorted(specs),
             "x": schedule,
             "ordered_by_period": by_period,
             "n_periods": T,
