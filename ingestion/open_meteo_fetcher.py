@@ -21,6 +21,8 @@ network is unavailable — same posture as the other connectors.
 
 from __future__ import annotations
 
+from typing import Any
+
 from datetime import date, timedelta
 
 import pandas as pd
@@ -80,7 +82,7 @@ def fetch_history(
     end = end_date or (date.today() - timedelta(days=5))
     start = start_date or (end - timedelta(days=3653))
 
-    params = {
+    params: dict[str, Any] = {
         "latitude": latitude,
         "longitude": longitude,
         "start_date": start.isoformat(),
@@ -140,7 +142,7 @@ def fetch_forecast(
     """
     import requests
 
-    params = {
+    params: dict[str, Any] = {
         "latitude": latitude,
         "longitude": longitude,
         "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum",

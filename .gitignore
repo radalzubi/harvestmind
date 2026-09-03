@@ -113,3 +113,6 @@ artifacts/baseline/pip_audit.json
 artifacts/pip_audit.json
 artifacts/*.log
 artifacts/full_suite_mid.txt
+
+# audit-trail sidecars written at runtime (tests included)
+data/runs/

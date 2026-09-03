@@ -111,7 +111,12 @@ def value_of_information(model_kwargs: dict, scen: pd.DataFrame, supply: pd.Data
     statuses["EV"] = ev_res["status"]
     if not ev_res["usable"]:
         raise ValueError(f"EV not solvable: {ev_res['status']}")
-    eev_res = MultiPeriodStochasticLP(**{**kw, "fixed_schedule": ev_res["x"]}).solve(
+    # EEV and WS are EVALUATIONS of a decision, not optimisations over x: a
+    # service floor (a constraint on recourse) can make a fixed schedule
+    # infeasible on scenarios it was never chosen for. The floors are
+    # dropped for those two solves and the classification says so.
+    kw_eval = {k: v for k, v in kw.items() if k != "service_floor_by_product"}
+    eev_res = MultiPeriodStochasticLP(**{**kw_eval, "fixed_schedule": ev_res["x"]}).solve(
         scen, supply, lead_times=lead_times, yield_scenarios=yield_scenarios,
         opening_inventory=opening_inventory)
     statuses["EEV"] = eev_res["status"]
@@ -126,7 +131,7 @@ def value_of_information(model_kwargs: dict, scen: pd.DataFrame, supply: pd.Data
         one["scenario_weight"] = 1.0
         lt1 = {k: v for k, v in lead_times.items() if k[0] == w_idx}
         ys1 = {k: v for k, v in yield_scenarios.items() if k[0] == w_idx}
-        r1 = MultiPeriodStochasticLP(**kw).solve(one, supply, lead_times=lt1, yield_scenarios=ys1,
+        r1 = MultiPeriodStochasticLP(**kw_eval).solve(one, supply, lead_times=lt1, yield_scenarios=ys1,
                                                  opening_inventory=opening_inventory)
         if not r1["usable"]:
             raise ValueError(f"WS scenario {w_idx} not solvable: {r1['status']}")
