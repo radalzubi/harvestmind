@@ -13,6 +13,17 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field, fields
+from enum import Enum
+
+
+class Provenance(str, Enum):
+    """Where a commercially decisive number came from. Every cost that can
+    flip a recommendation carries one, and the API reports them."""
+    OPERATOR = "operator"          # supplied by the client in their upload or config
+    MEASURED = "measured"          # derived from the client's own transaction history
+    PUBLIC = "public_benchmark"    # a published benchmark, named in the config
+    ASSUMED = "assumed"            # a stated default; reduces autonomy
+    UNKNOWN = "unknown"            # nothing known; the decision must not depend on it
 
 
 def _finite_nonneg(name: str, v: float) -> None:
@@ -77,6 +88,9 @@ class CostConfig:
     working_capital_rate_per_period: float = 0.0
     markdown_cost_per_unit: dict = field(default_factory=dict)
     transfer_cost_per_unit: float = 0.0
+    # Provenance per term, e.g. {"holding_rate_per_period": "public_benchmark",
+    # "shortage_cost_per_unit": "operator"}. Missing entries read as ASSUMED.
+    provenance: dict = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not isinstance(self.currency, str) or len(self.currency) != 3 \
@@ -84,13 +98,17 @@ class CostConfig:
             raise ValueError(f"currency must be a 3-letter ISO code, got {self.currency!r}")
         for f in fields(self):
             v = getattr(self, f.name)
-            if f.name in ("currency", "emergency_capacity_factor", "sla_fill_target"):
+            if f.name in ("currency", "emergency_capacity_factor", "sla_fill_target", "provenance"):
                 continue
             if isinstance(v, dict):
                 for k, x in v.items():
                     _finite_nonneg(f"{f.name}[{k}]", x)
             else:
                 _finite_nonneg(f.name, v)
+        for term, prov in self.provenance.items():
+            if prov not in {p.value for p in Provenance}:
+                raise ValueError(f"provenance[{term}] must be one of "
+                                 f"{sorted(p.value for p in Provenance)}, got {prov!r}")
         if self.emergency_cost_multiplier < 1.0:
             raise ValueError("emergency_cost_multiplier must be >= 1; emergency "
                              "supply is never cheaper than contracted")
@@ -106,6 +124,14 @@ class CostConfig:
                 f"holding_rate_per_period {self.holding_rate_per_period} is "
                 "above 25% per period; check the period (monthly rates run "
                 "1.5-2.5%, weekly 0.3-0.6%)")
+
+    def provenance_of(self, term: str) -> str:
+        return str(self.provenance.get(term, Provenance.ASSUMED.value))
+
+    def decisive_unknowns(self) -> list:
+        """Terms whose provenance is UNKNOWN. A plan that depends on one of
+        these must reduce its autonomy (anchor to the incumbent) or refuse."""
+        return [t for t, p in self.provenance.items() if p == Provenance.UNKNOWN.value]
 
     def validate_for_products(self, product_ids) -> None:
         """Refuse to optimize products with no priced shortage or waste."""

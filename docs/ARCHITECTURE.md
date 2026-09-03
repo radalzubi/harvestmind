@@ -22,9 +22,9 @@ nothing lower imports anything higher.
 | layer | what it owns | domain-aware? |
 |---|---|---|
 | `domain/` | units, pack structure, validated economics, service metrics, the two policies | yes — this is the only place that knows the domains apart |
-| `optimization/` | LP/MILP formulations, solver outcome vocabulary, explanations, audit | no — consumes a policy's answers as data |
-| `risk/`, `forecasting/` | scenario generation, supplier fill distributions, disruption presets, demand forecasts and scoring | no |
-| `backtesting/` | leakage-guarded rolling origins, settlement, policy ladder, closed-loop evaluator | no — settlement reads the policy for decay, cost terms, pack rounding |
+| `optimization/` | LP/MILP formulations (time-varying supply, fixed schedules, baseline anchoring, CVaR regret), `vss_evpi.py`, `safe_stochastic.py` (anchored and DRO candidates), solver outcome vocabulary, explanations, audit | no — consumes a policy's answers as data |
+| `risk/`, `forecasting/` | scenario generation, `supply_paths.py` (block-bootstrap, route-correlated supplier paths), disruption presets, demand forecasts and scoring | no |
+| `backtesting/` | leakage-guarded rolling origins, settlement, policy ladder, closed-loop evaluator; `incumbent.py` (the operator's own policy, configured or INFERRED), `safe_selector.py` (multi-fold nested selection with conservative gates), `regime.py` (transparent per-SKU regimes) | no — settlement reads the policy for decay, cost terms, pack rounding |
 | `synthetic/` | agriculture generator; `fmcg/` calibrated distributor archetypes | one generator per domain |
 | `ingestion/` | CSV/LLM intake, column mapping, validation, quarantine reports | produce staging (kg) and FMCG staging (eaches, migration 013) |
 | `api/` | routers, auth, vault routing, error boundary, request ids; `routers/fmcg.py` plans from `stg_fmcg_*` in eaches | produce routers plus an FMCG surface |
@@ -58,3 +58,16 @@ frontends (about 800 references). The engine treats them as base units and
 the domain policy names the unit; renaming is a P2 because it is
 mechanical, wide, and buys nothing until the API surface is made
 domain-aware.
+
+## The decision loop (FMCG, `/fmcg/plan`)
+
+```
+uploads -> build_inputs (provenance: OPERATOR / MEASURED / PUBLIC / ASSUMED / UNKNOWN)
+        -> incumbent (configured or INFERRED from POs)
+        -> safe_select: inner folds replay recorded supplier outcomes; candidates
+           {incumbent, order-up-to, deterministic, stochastic, anchored}; gates;
+           nested hold-out confirmation
+        -> winner's schedule; first commit_window weeks EXECUTABLE, rest ADVISORY
+        -> diagnostics: regime per SKU, VSS/EVPI, baseline-relative regret
+        -> explanations, Decimal money, audit record, next replan cadence/triggers
+```

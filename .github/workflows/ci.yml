@@ -177,6 +177,10 @@ jobs:
           docker run --rm -e HARVESTMIND_ENV=prod harvestmind:ci \
             python -c "from api.dependencies import auth_required; assert auth_required(); print('fail-closed ok')"
       - name: Validate compose file
+        # The compose file refuses to start without an admin key; CI supplies
+        # a placeholder so the file itself can be validated.
+        env:
+          HARVESTMIND_ADMIN_KEY: ci-placeholder-not-a-secret
         run: docker compose -f compose.pilot.yml config -q
 
   frontend:

@@ -31,6 +31,7 @@ import pandas as pd
 # rejected (fail-closed) rather than silently passing with zero rules — a
 # write to an unrecognized table is never legitimate on the intake path.
 KNOWN_STAGING_TABLES: frozenset[str] = frozenset({
+    "stg_fmcg_suppliers", "stg_fmcg_economics",
     "stg_fmcg_skus", "stg_fmcg_orders", "stg_fmcg_purchase_orders",
     "stg_fmcg_receipts", "stg_fmcg_inventory", "stg_fmcg_promotions",
     "stg_products",

@@ -68,7 +68,24 @@ def fold_from_history(h, origin: int, horizon: int, train: int, cover_weeks: flo
             truth_lead[(s, t)] = lead_of[s]
     truth_dem = {(j, t): float(dem.get((j, origin + t), 0.0)) for j in products for t in range(horizon)}
 
+    # Per-PO supplier outcomes before the origin, keyed by relative week, for
+    # the safe selector's inner folds and the block-bootstrap supply paths.
+    supply_events: dict = {}
+    for r in tr_po.itertuples():
+        rel = int(r.week) - origin
+        if rel < 0 and r.fill == r.fill:
+            lead_w = lead_of.get(r.supplier_id, 2)
+            supply_events.setdefault(str(r.supplier_id), {})[rel] = (float(r.fill), int(lead_w))
+    # The incumbent INFERRED from the operator's own PO log (labelled so).
+    from backtesting.incumbent import infer_incumbent
+    inv_by = h.inventory_snapshots.copy()
+    inv_by["week"] = (pd.to_datetime(inv_by["week_start"]) - pd.to_datetime(h.inventory_snapshots["week_start"].min())).dt.days // 7
+    inv_map = {(r.sku, int(r.week)): float(r.on_hand + r.in_transit) for r in inv_by.itertuples()}
     mean_dem = {j: st.mean(train_dem[j]) if train_dem[j] else 0.0 for j in products}
+    po_hist = [{"sku": r.sku, "period": int(r.week), "qty": float(r.qty_ordered),
+                "inventory_position_before": inv_map.get((r.sku, int(r.week)))}
+               for r in tr_po.itertuples() if r.sku in sup_of]
+    incumbent = infer_incumbent(po_hist, mean_dem, pack_specs=h.pack_specs)
     opening = {j: mean_dem[j] * cover_weeks for j in products}
     pipeline = {}
     for j in products:
@@ -94,7 +111,9 @@ def fold_from_history(h, origin: int, horizon: int, train: int, cover_weeks: flo
     fi = FoldInputs(origin=origin, horizon=horizon, products=products, supplier_of=sup_of,
                     lead_of=lead_of, train_demand=train_dem, train_fill=train_fill,
                     unit_cost=cost, margin=margin, capacity=cap, opening=opening,
-                    pipeline=pipeline, policy=policy, promo_multiplier=promo)
+                    pipeline=pipeline, policy=policy, promo_multiplier=promo,
+                    supply_events=supply_events, incumbent=incumbent,
+                    route_of={s_: f"route_{k % 2}" for k, s_ in enumerate(sorted(set(sup_of.values())))})
     return fi, FoldTruth(demand=truth_dem, fill=truth_fill, lead=truth_lead)
 
 

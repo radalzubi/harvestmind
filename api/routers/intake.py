@@ -63,6 +63,10 @@ STAGING_TABLES: dict[str, dict[str, Any]] = {
                            "date_cols": ["snapshot_date"], "description": "FMCG inventory snapshots"},
     "stg_fmcg_promotions": {"required_cols": {"sku", "week_start", "uplift"},
                             "date_cols": ["week_start"], "description": "FMCG promotion calendar"},
+    "stg_fmcg_suppliers": {"required_cols": {"supplier_id"}, "date_cols": [],
+                           "description": "FMCG supplier master with route/manufacturer tags and capacity"},
+    "stg_fmcg_economics": {"required_cols": {"key", "value"}, "date_cols": [],
+                           "description": "FMCG economic parameters with provenance"},
     "stg_products": {
         "required_cols": {"product_name"},
         "date_cols": [],

@@ -99,6 +99,37 @@ SELECTED and not the stochastic model alone, and the reason the first
 pilot must measure the operator's actual carrying cost before promising
 anything.
 
+## Safe adaptive decision engine (this pass)
+
+The product no longer chooses among optimizers; it tests whether departing
+from the operator's own policy is justified. Frozen design, unseen seeds,
+SYNTHETIC CALIBRATED, nine regimes (`docs/validation/SAFE_POLICY_VALIDATION.md`,
+`artifacts/safe_policy_validation.json`):
+
+- **Standalone stochastic optimizer vs the inferred incumbent**: median
+  -53.1% to +58.9% across regimes; worst single run -67.8%.
+  At the calibrated carrying cost it loses in every low-carry regime; at
+  high carrying cost it wins large.
+- **SAFE_SELECTED vs the incumbent**: median -3.4% to +13.7%; worst
+  single run -27.6% (one run in the mixed-portfolio regime, where a
+  deterministic candidate cleared the gate and then lost — reported, not
+  removed). In the easy/slack and low-carry regimes SAFE stays within
+  2.1% of the incumbent; in the high-carry regimes it captures
+  -3.4% to +13.7% of the value uncertainty creates.
+- **Mode selection**: the incumbent was retained in 166 of 216 re-plans
+  (77%); deterministic 33, order-up-to 10,
+  stochastic 7. Retaining the incumbent in a calm period is the
+  intended outcome.
+- **Anchored stochastic candidate** as parameterised (λ=0.5, regime-weighted
+  L1): median -39.1% to +22.3%. Not safe on its own at
+  the calibrated carrying cost; useful only through the selector.
+
+Negative findings kept: the anchored candidate's in-sample regret control
+did not translate into out-of-sample safety at low carrying cost; one
+mixed-regime run lost 27.6% after the gate opened; the incumbent inferred
+from the simulated PO log is a competent order-up-to with safety stock, so
+"no candidate cleared the threshold" was the common — and correct — answer.
+
 ## Remaining blockers
 
 ```

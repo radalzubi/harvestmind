@@ -8,13 +8,13 @@ ordering schedule cost less than what a competent planner would have done?
 shortage (lost margin), disposal, SLA penalty, emergency premium.
 
 RULES THAT ARE NOT NEGOTIABLE, learned the hard way in this repository:
-  * credited with what ARRIVES, not what was ordered;
-  * one settlement function for every policy;
+  * credited with what ARRIVES, not what was ordered
+  * one settlement function for every policy
   * no outcome-based fold filtering
-  strata are reported, not removed;
+  strata are reported, not removed
   * scenarios from the training window only
   realised shocks only in
-    settlement;
+    settlement
   * the naive baselines are competent (safety stock, fill gross-up), not
     straw men.
 
@@ -30,6 +30,8 @@ Baselines (section 14 of the readiness spec):
 """
 
 from __future__ import annotations
+
+from typing import Any
 
 import math
 import statistics as st
@@ -68,6 +70,22 @@ class FoldInputs:
     # surprise; scenarios are scaled by it and the deterministic twin sees
     # the same expectation.
     promo_multiplier: dict = field(default_factory=dict)
+    # Timestamped supplier outcomes BEFORE the origin: supplier ->
+    # {rel_period (int < 0): (fill, lead_periods)}. This is what the safe
+    # selector replays as truth inside its inner folds, and what the
+    # time-varying scenario generator resamples. train_fill stays for the
+    # heuristics' mean gross-up.
+    supply_events: dict = field(default_factory=dict)
+    # The operator's own policy, first-class (backtesting.incumbent).
+    incumbent: Any = None
+    # supplier -> shared-risk tag (route/port/carrier/manufacturer), optional
+    route_of: dict = field(default_factory=dict)
+    # provenance of decisive economics, from CostConfig; here for reporting
+    provenance: dict = field(default_factory=dict)
+
+    def history_periods_low(self, threshold: int = 52) -> bool:
+        n = min(len(v) for v in self.train_demand.values()) if self.train_demand else 0
+        return n < threshold
 
 
 @dataclass
@@ -305,8 +323,40 @@ def _seasonal_pool(hist: list, h: int, width: int = 2) -> list:
     return pool or hist
 
 
+def _supply_scenarios(fi: FoldInputs, n_scen: int, rng, sups: list) -> tuple[dict, dict, dict]:
+    """(w, i, t) fills and leads. Block bootstrap over recorded supplier
+    events when the fold carries them (temporal persistence and
+    cross-supplier co-movement preserved), else the legacy per-scenario
+    draw with mean lead, labelled as such."""
+    if fi.supply_events and any(fi.supply_events.get(s_) for s_ in sups):
+        from risk.supply_paths import build_supply_paths
+        overlay: dict | None = None
+        if fi.route_of:
+            try:
+                from risk.disruption_scenarios import PRESETS
+                overlay = {}
+                for r_ in set(fi.route_of.values()):
+                    for sc in PRESETS.values():
+                        if sc.name != "baseline" and sc.affected_routes and sc.applies_to(r_):
+                            overlay[r_] = {"fill_mult": sc.fill_multiplier, "lead_mult": 1.5}
+                            break
+            except Exception:  # noqa: BLE001
+                overlay = None
+        paths = build_supply_paths({s_: fi.supply_events.get(s_, {}) for s_ in sups}, sups, n_scen,
+                                   fi.horizon, rng, block_length=4, route_of=fi.route_of or None,
+                                   route_disruption=overlay or None,
+                                   default_lead=int(max(fi.lead_of.values())) if fi.lead_of else 2)
+        return paths.fills, paths.leads, {"method": paths.method, "assumptions": paths.assumptions}
+    leads, fills = {}, {}
+    for w in range(n_scen):
+        for s_ in sups:
+            fills[(w, s_)] = float(rng.choice(fi.train_fill[s_])) if fi.train_fill.get(s_) else 1.0
+            leads[(w, s_)] = int(fi.lead_of[s_])
+    return fills, leads, {"method": "iid_fill_mean_lead", "assumptions": ["no per-period supply events"]}
+
+
 def _scenarios(fi: FoldInputs, n_scen: int, rng) -> tuple[pd.DataFrame, dict, dict]:
-    rows, leads, fills = [], {}, {}
+    rows = []
     sups = sorted(set(fi.supplier_of.values()))
     pools = {j: [_seasonal_pool(fi.train_demand[j], h) for h in range(fi.horizon)]
              for j in fi.products}
@@ -318,9 +368,7 @@ def _scenarios(fi: FoldInputs, n_scen: int, rng) -> tuple[pd.DataFrame, dict, di
                 d *= float(fi.promo_multiplier.get((j, t), 1.0))
                 rows.append({"scenario_index": w, "scenario_weight": 1 / n_scen,
                              "product_id": j, "period": t, "demand_kg": d})
-        for s in sups:
-            fills[(w, s)] = float(rng.choice(fi.train_fill[s])) if fi.train_fill[s] else 1.0
-            leads[(w, s)] = int(fi.lead_of[s])
+    fills, leads, _info = _supply_scenarios(fi, n_scen, rng, sups)
     return pd.DataFrame(rows), leads, fills
 
 
@@ -337,7 +385,7 @@ def policy_deterministic_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=1) -> tup
                opening_inventory=fi.opening)
     r = MultiPeriodStochasticLP(**kw).solve(*args, **kws)
     if not r["usable"] and kw.get("service_floor_by_product"):
-        kw["service_floor_by_product"] = None
+        kw["service_floor_by_product"] = None  # type: ignore[assignment]
         r = MultiPeriodStochasticLP(**kw).solve(*args, **kws)
         r["warnings"] = list(r.get("warnings", [])) + ["service floor unattainable; solved without it"]
         r["floor_relaxed"] = True
@@ -353,7 +401,7 @@ def policy_stochastic_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=30) -> tuple
     if not r["usable"] and kw.get("service_floor_by_product"):
         # The floor was unattainable with this capacity: solve without it and
         # say so, rather than silently handing the fold to a heuristic.
-        kw["service_floor_by_product"] = None
+        kw["service_floor_by_product"] = None  # type: ignore[assignment]
         r = MultiPeriodStochasticLP(**kw).solve(
             scen, _supply_df(fi), lead_times=leads, yield_scenarios=fills,
             opening_inventory=fi.opening)
@@ -568,3 +616,57 @@ def rolling_evaluate(policy_name: str, make_inputs, truth_demand: dict, truth_fi
                          sla_penalty=sla, fill_rate=served / demanded if demanded else 1.0,
                          avg_inventory=inv_sum / max(n_periods, 1), periods=n_periods,
                          solver_failures=failures, selections=selections)
+
+
+# ── safe candidates: baseline-anchored and distributionally robust ─────────
+def _incumbent_schedule(fi: FoldInputs) -> dict:
+    from backtesting.incumbent import configured_incumbent
+    inc = fi.incumbent or configured_incumbent(cover_weeks=(max(fi.lead_of.values()) + 1) if fi.lead_of else 2.0)
+    return inc.build_schedule(fi)
+
+
+def anchor_penalties(fi: FoldInputs, regimes: dict | None = None) -> dict:
+    """rho_j: how strongly SKU j is held to the incumbent, per unit deviated.
+    Calm SKUs are held tightly (a multiple of holding cost per unit),
+    volatile/constrained/promotion SKUs loosely
+    a SKU whose margin is
+    UNKNOWN is held ten times tighter. Transparent, documented, not fitted."""
+    if regimes is None:
+        from backtesting.regime import diagnose
+        regimes = diagnose(fi)
+    weight = {"CALM": 4.0, "RECOVERY": 2.0, "VOLATILE_DEMAND": 0.5, "PROMOTION": 0.25,
+              "SUPPLY_CONSTRAINED": 0.5, "DISRUPTION": 0.25}
+    ch = fi.policy.cost_config.holding_rate_per_period
+    unknown_margin = fi.provenance.get("shortage_cost_per_unit") == "unknown"
+    out = {}
+    for j in fi.products:
+        r = regimes[j].regime if j in regimes else "CALM"
+        out[j] = fi.unit_cost[j] * ch * weight.get(r, 1.0) * (10.0 if unknown_margin else 1.0)
+    return out
+
+
+def policy_anchored_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=30, cvar_lambda: float = 0.5,
+                       cvar_alpha: float = 0.9) -> tuple[dict | None, dict]:
+    from optimization.safe_stochastic import AnchorConfig, solve_anchored
+    scen, leads, fills = _scenarios(fi, n_scen, rng)
+    base = _incumbent_schedule(fi)
+    kw = _optimizer_kwargs(fi, warehouse_cap)
+    try:
+        r = solve_anchored(kw, scen, _supply_df(fi), baseline_schedule=base,
+                           anchor=AnchorConfig(rho_by_product=anchor_penalties(fi), cvar_alpha=cvar_alpha,
+                                               cvar_lambda=cvar_lambda),
+                           lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
+    except ValueError as exc:            # baseline infeasible as a reference under the model's constraints
+        return None, {"status": "error", "warnings": [str(exc)]}
+    return ({k: v for k, v in r["x"].items() if v > 0} if r["usable"] else None), r
+
+
+def policy_dro(fi: FoldInputs, warehouse_cap, rng, n_scen=30, radius: float = 0.2) -> tuple[dict | None, dict]:
+    from optimization.safe_stochastic import solve_dro
+    scen, leads, fills = _scenarios(fi, n_scen, rng)
+    r = solve_dro(_optimizer_kwargs(fi, warehouse_cap), scen, _supply_df(fi), radius=radius,
+                  lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
+    return ({k: v for k, v in r["x"].items() if v > 0} if r["usable"] else None), r
+
+
+EXTRA_CANDIDATES = {"anchored_sp": policy_anchored_sp, "dro": policy_dro}

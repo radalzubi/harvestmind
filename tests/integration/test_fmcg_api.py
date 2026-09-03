@@ -55,18 +55,35 @@ def test_upload_plan_explain_audit(client, history):
     st = cl.get("/fmcg/status", headers=h).json()
     assert st["ready_to_plan"] and st["unit"] == "each"
 
-    r = cl.post("/fmcg/plan?mode=selected&horizon_weeks=12&train_weeks=40&scenarios=10", headers=h)
+    ready = cl.get("/fmcg/readiness", headers=h).json()
+    assert ready["verdict"] in ("READY", "READY_WITH_CAVEATS") and "weakened_conclusions" in ready
+
+    r = cl.post("/fmcg/plan?mode=safe&horizon_weeks=12&commit_window_weeks=4&train_weeks=40&scenarios=10", headers=h)
     assert r.status_code == 200, r.text
     plan = r.json()
-    assert plan["mode_run"] in ("order_up_to", "deterministic_sp", "stochastic_sp")
-    assert plan["unit"] == "each" and plan["currency"] == "USD"
-    assert plan["run_id"].startswith("run-")
+    assert plan["mode_run"] in ("incumbent", "order_up_to", "deterministic_sp", "stochastic_sp", "anchored_sp")
+    assert plan["baseline_policy"].startswith("client policy") and plan["reason"]
+    assert set(plan["candidate_evidence"]) >= {"order_up_to", "deterministic_sp", "stochastic_sp", "anchored_sp"}
+    assert plan["unit"] == "each" and plan["currency"] == "USD" and plan["run_id"].startswith("run-")
+    assert plan["economics_provenance"]["unit_cost"] == "operator"
+    assert plan["economics_provenance"]["supplier_fill"] == "measured"
+    assert plan["supply_model"]["method"] == "moving_block_bootstrap"
+    assert plan["regime"]["dominant"] and plan["carrying_cost_sensitivity"]
+    assert plan["executable_until_week"] == 4 and plan["advisory_horizon_weeks"] == 12
     assert plan["orders"], "no orders recommended"
+    statuses = {o["status"] for o in plan["orders"]}
+    assert statuses <= {"EXECUTABLE", "ADVISORY"}
+    assert all(o["status"] == ("EXECUTABLE" if o["week_offset"] < 4 else "ADVISORY") for o in plan["orders"])
     for o in plan["orders"]:
         assert abs(o["order_units"] / o["units_per_lot"] - round(o["order_units"] / o["units_per_lot"])) < 1e-6
-        assert o["lots"] >= 1 and o["explanation"] and "reconciles" in o["explanation"][-1] or True
+        assert "incumbent_units" in o and "deviation_from_incumbent" in o and o["regime"]
         assert "amount" in o["purchase_value"] and o["purchase_value"]["currency"] == "USD"
-    assert "amount" in plan["purchase_value"]
+    assert "amount" in plan["purchase_value_executable"]
+    if plan["vss_evpi"]:
+        assert plan["vss_evpi"]["vss"] >= 0 and plan["vss_evpi"]["evpi"] >= 0
+    # a plan that keeps the incumbent is a successful outcome and says why
+    if plan["mode_run"] == "incumbent":
+        assert "threshold" in plan["reason"] or "held-out" in plan["reason"] or "insufficient" in plan["reason"]
 
 
 def test_plan_without_history_is_a_clear_422(client):
@@ -84,3 +101,19 @@ def test_other_operator_cannot_see_the_plan_inputs(client, history, tmp_path):
     tok2 = reg.issue_token(other.operator_id)
     st = cl.get("/fmcg/status", headers={"Authorization": f"Bearer {tok2}"}).json()
     assert st["tables"]["stg_fmcg_skus"] == 0
+
+
+def test_missing_margin_is_unknown_and_anchors_rather_than_inventing(client, history):
+    cl, h = client
+    skus = history.skus[["sku", "supplier_id", "unit_cost", "units_per_case", "moq_units"]]   # no price, no margin
+    _upload(cl, h, "stg_fmcg_skus", skus)
+    ol = history.order_lines.merge(history.customer_orders[["order_id", "customer_id", "order_date"]], on="order_id")
+    _upload(cl, h, "stg_fmcg_orders", ol[["order_id", "customer_id", "order_date", "sku", "qty_ordered"]])
+    r = cl.post("/fmcg/plan?mode=safe&train_weeks=40&scenarios=10", headers=h)
+    assert r.status_code == 200, r.text
+    plan = r.json()
+    assert plan["economics_provenance"]["shortage_cost_per_unit"] == "unknown"
+    assert any("UNKNOWN" in w for w in plan["warnings"])
+    assert plan["economics_provenance"]["supplier_capacity"] in ("assumed", "measured")
+    assert any("capacity" in w.lower() for w in plan["warnings"])
+    assert plan["mode_run"] == "incumbent"       # nothing priced can justify a departure

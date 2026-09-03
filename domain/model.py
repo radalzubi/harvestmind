@@ -58,6 +58,11 @@ class DomainPolicy:
     # not in the LP, because the LP tracks product totals, not lots.
     fefo: bool = False
     review_period: str = "week"
+    # Service segmentation: class name -> ServiceTarget, and product -> class.
+    # The optimizer enforces a unit-fill floor per product from these; line,
+    # order fill and OTIF are measured in settlement, never enforced.
+    service_by_class: dict = field(default_factory=dict)
+    sku_class: dict = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.decay_rate_per_period < 1.0:
@@ -79,6 +84,17 @@ class DomainPolicy:
         if self.domain is Domain.AGRICULTURE_PERISHABLE:
             if self.base_unit not in (Unit.KG, Unit.LB, Unit.CRATE):
                 raise ValueError("perishable produce base unit must be kg, lb or crate")
+
+    def service_level_for(self, product_id: str) -> float:
+        cls = self.sku_class.get(product_id)
+        if cls and cls in self.service_by_class:
+            return float(self.service_by_class[cls].level)
+        return float(self.service_target.level)
+
+    def service_floors(self, product_ids) -> dict:
+        """Per-product unit-fill floors the optimizer can enforce."""
+        return {j: self.service_level_for(j) for j in product_ids
+                if self.service_target.metric == "unit_fill"}
 
     def pack_spec_for(self, product_id: str) -> PackSpec:
         return self.pack_specs.get(product_id, CONTINUOUS)

@@ -90,6 +90,7 @@ def main() -> int:
     openloop = _json("fmcg_counterfactuals.json")
     stress = _json("fmcg_stress_demand_cv_fill.json")
     perf = _json("performance_benchmarks.json")
+    safe = _json("safe_policy_validation.json")
     real = (ROOT / "docs/reports/evidence/real_validation/SUMMARY_TABLE.txt").exists()
 
     blockers = []
@@ -128,6 +129,13 @@ def main() -> int:
             "open_loop": {k: v["edge_vs"]["deterministic_sp"].get("median") for k, v in openloop["archetypes"].items()} if openloop else "missing",
             "stress_cells": len(stress["cells"]) if stress else "missing",
             "performance": perf.get("optimizer") if perf else "missing",
+            "safe_selected": ({name: {"sp_vs_incumbent_median_pct": r["policies"]["stochastic_sp"]["delta_vs_incumbent_pct"].get("median"),
+                                      "sp_worst_pct": r["policies"]["stochastic_sp"]["worst_delta_pct"],
+                                      "safe_vs_incumbent_median_pct": r["policies"]["safe_selected"]["delta_vs_incumbent_pct"].get("median"),
+                                      "safe_worst_pct": r["policies"]["safe_selected"]["worst_delta_pct"],
+                                      "safe_fill_diff_pt": r["policies"]["safe_selected"]["fill_diff_vs_incumbent_pt"],
+                                      "selections": r["safe_selections"]}
+                               for name, r in safe["regimes"].items()} if safe else "missing"),
         },
         "remaining_blockers": blockers,
     }

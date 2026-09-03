@@ -15,6 +15,7 @@ import pandas as pd
 # before the SQL is constructed — prevents identifier injection through the
 # `table` argument when called from automated pipelines.
 ALLOWED_TABLES: frozenset[str] = frozenset({
+    "stg_fmcg_suppliers", "stg_fmcg_economics",
     "stg_fmcg_skus", "stg_fmcg_orders", "stg_fmcg_purchase_orders",
     "stg_fmcg_receipts", "stg_fmcg_inventory", "stg_fmcg_promotions",
     "fact_orders",
@@ -69,6 +70,10 @@ COLUMN_MAPS: dict[str, dict[str, str]] = {
                            "In Transit": "in_transit"},
     "stg_fmcg_promotions": {"SKU": "sku", "Week": "week_start", "Week Start": "week_start",
                             "Uplift": "uplift", "Multiplier": "uplift"},
+    "stg_fmcg_suppliers": {"Supplier": "supplier_id", "Supplier ID": "supplier_id", "Name": "supplier_name",
+                           "Route": "route", "Port": "route", "Carrier": "route", "Manufacturer": "manufacturer",
+                           "Capacity per Week": "capacity_per_week", "Promised Lead (weeks)": "lead_time_promised_weeks"},
+    "stg_fmcg_economics": {"Key": "key", "Parameter": "key", "Value": "value", "Provenance": "provenance", "Note": "note"},
     "orders": {
         "Order ID": "order_id",
         "Buyer": "buyer_id",

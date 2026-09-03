@@ -16,6 +16,10 @@ python3 -m ruff check domain optimization/solve_status.py optimization/explain.p
   backtesting/counterfactual.py synthetic/fmcg validation scripts/validate_commercial_real_data.py \
   scripts/run_fmcg_counterfactuals.py scripts/run_fmcg_stress_matrix.py scripts/benchmark_performance.py \
   scripts/build_readiness_json.py scripts/fill_validation_tables.py api/routers/fmcg.py domain/money.py \
+  backtesting/safe_selector.py backtesting/incumbent.py backtesting/regime.py optimization/vss_evpi.py \
+  optimization/safe_stochastic.py risk/supply_paths.py domain/carrying_cost.py ingestion/pilot_readiness.py \
+  scripts/run_safe_policy_validation.py scripts/fill_safe_validation_doc.py tests/unit/test_safe_selector.py \
+  tests/unit/test_safe_stochastic.py tests/unit/test_supply_paths.py tests/unit/test_incumbent_regime_readiness.py \
   tests/unit/test_optimizer_service_and_transfers.py tests/unit/test_promo_input.py tests/unit/test_money.py \
   tests/unit/test_entrypoint_guard.py tests/integration/test_fmcg_api.py dashboard/pages/09_fmcg_plan.py \
   tests/unit/test_optimizer_invariants.py tests/unit/test_domain_model.py \
@@ -56,6 +60,9 @@ if [ $FULL -eq 1 ]; then
   step "stress matrix"
   python3 scripts/run_fmcg_stress_matrix.py --axes demand_cv,fill --seeds 2 --folds 2 --scenarios 15 > artifacts/fmcg_stress_cv_fill.log 2>&1 || fail=1
   python3 scripts/run_fmcg_stress_matrix.py --axes cover --seeds 2 --folds 3 --scenarios 15 > artifacts/fmcg_stress_cover.log 2>&1 || fail=1
+  step "safe-policy validation (frozen design, unseen seeds)"
+  python3 scripts/run_safe_policy_validation.py --small > artifacts/safe_policy_validation.log 2>&1 || fail=1
+  python3 scripts/fill_safe_validation_doc.py || true
   step "performance benchmarks"
   python3 scripts/benchmark_performance.py > artifacts/performance.log 2>&1 || true
 fi

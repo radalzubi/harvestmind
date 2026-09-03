@@ -76,6 +76,24 @@ class MultiPeriodStochasticLP:
     # semantics as the single-period model. A floor the capacity cannot
     # meet makes the model infeasible, which run_solver reports as such.
     service_floor_by_product: dict | None = None
+    # ── Safe / baseline-anchored formulation ─────────────────────────────
+    # A FIXED schedule turns the model into a recourse evaluation of that
+    # schedule (used for EEV, baseline costs, and scoring any policy on the
+    # scenario set). A BASELINE schedule is the incumbent the operator
+    # would have run: the objective can add an L1 deviation penalty
+    # rho_j * |x - b| (linearised) and a CVaR term on scenario-relative
+    # regret cost_w(x) - cost_w(b), plus an optional hard CVaR budget.
+    # None of these guarantees anything out of sample; they shape the
+    # in-sample decision toward the incumbent where uncertainty is cheap.
+    fixed_schedule: dict | None = None
+    baseline_schedule: dict | None = None
+    anchor_rho_by_product: dict | None = None
+    regret_cvar_alpha: float = 0.90
+    regret_cvar_lambda: float = 0.0
+    regret_cvar_budget: float | None = None
+    # Per-scenario baseline costs, if the caller already evaluated them;
+    # otherwise computed here by a fixed-schedule solve.
+    baseline_scenario_costs: dict | None = None
     # Transfers between locations. A "location" is expressed by the caller
     # as a distinct product key (e.g. "SKU-1@WH-A"); an arc
     # (from_key, to_key, cost_per_unit, lead_periods) lets stock move
@@ -98,9 +116,13 @@ class MultiPeriodStochasticLP:
                            period, demand_kg]
         supply:           [supplier_id, product_id, capacity_kg, price_per_kg]
                           capacity is PER PERIOD.
-        lead_times:       (scenario_index, supplier_id) -> integer periods.
+        lead_times:       (scenario_index, supplier_id) -> integer periods, or
+                          (scenario_index, supplier_id, placement_period) for
+                          a lead that varies over the horizon. The
+                          period-specific key wins when both are present.
                           Missing pairs default to 0 (arrives immediately).
-        yield_scenarios:  (scenario_index, supplier_id) -> fill in [0, 1].
+        yield_scenarios:  (scenario_index, supplier_id[, placement_period])
+                          -> fill in [0, 1], same precedence rule.
         opening_inventory: product_id -> kg on hand before period 0.
 
         Raises ValueError if the model is infeasible under an inventory
@@ -148,8 +170,15 @@ class MultiPeriodStochasticLP:
         def _cu(j): return float(cu.get(j, self.lost_sale_per_kg_usd))
         def _ch(j): return float(ch.get(j, self.holding_cost_per_kg_per_period))
         def _cd(j): return float(cd.get(j, self.decay_rate_per_period))
-        def _fill(w, i): return float(ys.get((w, i), 1.0))
-        def _lead(w, i): return int(lt.get((w, i), 0))
+        def _fill(w, i, tp=None):
+            if tp is not None and (w, i, tp) in ys:
+                return float(ys[(w, i, tp)])
+            return float(ys.get((w, i), 1.0))
+
+        def _lead(w, i, tp=None):
+            if tp is not None and (w, i, tp) in lt:
+                return int(lt[(w, i, tp)])
+            return int(lt.get((w, i), 0))
 
         m = pyo.ConcreteModel()
         m.I = pyo.Set(initialize=suppliers)
@@ -182,29 +211,98 @@ class MultiPeriodStochasticLP:
         m.u = pyo.Var(m.J, m.T, m.W, domain=pyo.NonNegativeReals)
         m.wst = pyo.Var(m.J, m.T, m.W, domain=pyo.NonNegativeReals)
 
+        def scen_cost(mm, w):
+            """Recourse cost of scenario w: the quantity every diagnostic
+            (VSS, EVPI, regret, CVaR) is built from."""
+            return (sum(
+                avg_price[j] * (self.spot_cost_multiplier - 1.0) * mm.s[j, t, w]
+                + _cw(j) * mm.wst[j, t, w]
+                + _cu(j) * mm.u[j, t, w]
+                + _ch(j) * mm.inv[j, t, w]
+                for j in mm.J for t in mm.T)
+                + sum(arcs[a][2] * mm.z[a, t, w] for a in mm.A for t in mm.T))
+
+        base_sched = {(str(i), str(j), int(t)): float(q)
+                      for (i, j, t), q in (self.baseline_schedule or {}).items()}
+        anchor_rho = {str(j): float(r) for j, r in (self.anchor_rho_by_product or {}).items()
+                      if float(r) > 0}
+        anchored = bool(base_sched) and bool(anchor_rho)
+        base_costs = {int(w): float(c) for w, c in (self.baseline_scenario_costs or {}).items()}
+        use_cvar = bool(base_sched) and (self.regret_cvar_lambda > 0
+                                         or self.regret_cvar_budget is not None)
+        if use_cvar and not base_costs:
+            # Evaluate the baseline once on the same scenarios so regret is
+            # relative to what the incumbent would actually have cost here.
+            ref = MultiPeriodStochasticLP(**{**self.__dict__, "fixed_schedule": base_sched,
+                                            "baseline_schedule": None, "anchor_rho_by_product": None,
+                                            "regret_cvar_lambda": 0.0, "regret_cvar_budget": None,
+                                            "baseline_scenario_costs": None,
+                                            "service_floor_by_product": None})
+            r_ref = ref.solve(demand_scenarios, supply, lead_times=lead_times,
+                              yield_scenarios=yield_scenarios,
+                              opening_inventory=opening_inventory)
+            if not r_ref["usable"]:
+                raise ValueError("baseline schedule could not be evaluated on the "
+                                 f"scenario set (status {r_ref['status']}); it is "
+                                 "not a feasible reference here")
+            base_costs = {int(w): float(c) for w, c in r_ref["scenario_costs"].items()}
+
+        if anchored:
+            m.dev_plus = pyo.Var(m.IJ, m.T, domain=pyo.NonNegativeReals)
+            m.dev_minus = pyo.Var(m.IJ, m.T, domain=pyo.NonNegativeReals)
+
+            def dev_rule(mm, i, j, t):
+                return mm.x[i, j, t] - base_sched.get((i, j, t), 0.0) == \
+                    mm.dev_plus[i, j, t] - mm.dev_minus[i, j, t]
+
+            m.dev = pyo.Constraint(m.IJ, m.T, rule=dev_rule)
+
+        if use_cvar:
+            alpha = float(self.regret_cvar_alpha)
+            if not 0.0 < alpha < 1.0:
+                raise ValueError("regret_cvar_alpha must be in (0, 1)")
+            m.eta = pyo.Var(domain=pyo.Reals)
+            m.zr = pyo.Var(m.W, domain=pyo.NonNegativeReals)
+
+            def cvar_rule(mm, w):
+                return mm.zr[w] >= scen_cost(mm, w) - base_costs.get(w, 0.0) - mm.eta
+
+            m.cvar_excess = pyo.Constraint(m.W, rule=cvar_rule)
+
+            def cvar_expr(mm):
+                return mm.eta + sum(weights[w] * mm.zr[w] for w in mm.W) / (1.0 - alpha)
+
+            if self.regret_cvar_budget is not None:
+                m.cvar_budget = pyo.Constraint(expr=cvar_expr(m) <= float(self.regret_cvar_budget))
+
         def obj(mm):
-            return sum(
-                weights[w] * sum(
-                    avg_price[j] * (self.spot_cost_multiplier - 1.0)
-                    * mm.s[j, t, w]
-                    + _cw(j) * mm.wst[j, t, w]
-                    + _cu(j) * mm.u[j, t, w]
-                    + _ch(j) * mm.inv[j, t, w]
-                    for j in mm.J for t in mm.T)
-                + sum(arcs[a][2] * mm.z[a, t, w] for a in mm.A for t in mm.T)
-                for w in mm.W)
+            total = sum(weights[w] * scen_cost(mm, w) for w in mm.W)
+            if anchored:
+                total += sum(anchor_rho.get(j, 0.0) * (mm.dev_plus[i, j, t] + mm.dev_minus[i, j, t])
+                             for (i, j) in mm.IJ for t in mm.T)
+            if use_cvar and self.regret_cvar_lambda > 0:
+                total += float(self.regret_cvar_lambda) * cvar_expr(mm)
+            return total
 
         m.obj = pyo.Objective(rule=obj, sense=pyo.minimize)
 
+        if self.fixed_schedule is not None:
+            fixed = {(str(i), str(j), int(t)): float(q) for (i, j, t), q in self.fixed_schedule.items()}
+
+            def fix_rule(mm, i, j, t):
+                return mm.x[i, j, t] == fixed.get((i, j, t), 0.0)
+
+            m.fix_x = pyo.Constraint(m.IJ, m.T, rule=fix_rule)
+
         def arrivals(mm, j, t, w):
-            """Orders placed at t - L[i,w] land in period t."""
+            """Orders placed at tp land in period tp + L[i,w,tp]."""
             out = 0.0
             for (i, jj) in mm.IJ:
                 if jj != j:
                     continue
-                placed = t - _lead(w, i)
-                if 0 <= placed < T:
-                    out += _fill(w, i) * mm.x[i, j, placed]
+                for tp in range(T):
+                    if tp + _lead(w, i, tp) == t:
+                        out += _fill(w, i, tp) * mm.x[i, j, tp]
             return out
 
         def transfers_net(mm, j, t, w):
@@ -294,7 +392,7 @@ class MultiPeriodStochasticLP:
             # over it would make every long-lead problem infeasible.
             first_reach = {}
             for j in floors:
-                leads_j = [min(_lead(w, i) for w in scenarios) for (i, jj) in cap if jj == j]
+                leads_j = [min(_lead(w, i, 0) for w in scenarios) for (i, jj) in cap if jj == j]
                 first_reach[j] = min(leads_j) if leads_j else 0
 
             def service_floor(mm, j):
@@ -354,10 +452,27 @@ class MultiPeriodStochasticLP:
         for (_i, _j, t), v in schedule.items():
             by_period[t] = by_period.get(t, 0.0) + v
 
+        scenario_costs = ({int(w): float(pyo.value(scen_cost(m, w))) for w in scenarios}
+                          if ok else {})
+        expected_cost = (sum(weights[w] * c for w, c in scenario_costs.items())
+                         if ok else None)
+        regret = ({w: scenario_costs[w] - base_costs[w] for w in scenario_costs if w in base_costs}
+                  if ok and base_costs else {})
+        cvar_val: float | None = None
+        if ok and use_cvar:
+            cvar_val = float(pyo.value(m.eta) + sum(weights[w] * pyo.value(m.zr[w]) for w in m.W)
+                             / (1.0 - float(self.regret_cvar_alpha)))
         return {
             "status": status,
             "usable": ok,
             "objective": float(pyo.value(m.obj)) if ok else None,
+            "expected_cost": expected_cost,
+            "scenario_costs": scenario_costs,
+            "scenario_weights": {int(w): float(weights[w]) for w in scenarios},
+            "baseline_scenario_costs": base_costs,
+            "regret_by_scenario": regret,
+            "regret_cvar": cvar_val,
+            "anchored": anchored,
             "objective_bound": outcome.bound,
             "gap": outcome.gap,
             "runtime_s": outcome.runtime_s,

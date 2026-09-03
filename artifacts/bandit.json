@@ -1,19 +1,19 @@
 {
   "errors": [],
-  "generated_at": "2026-09-03T19:31:45Z",
+  "generated_at": "2026-09-03T21:21:05Z",
   "metrics": {
     "_totals": {
-      "CONFIDENCE.HIGH": 15,
+      "CONFIDENCE.HIGH": 17,
       "CONFIDENCE.LOW": 0,
       "CONFIDENCE.MEDIUM": 0,
       "CONFIDENCE.UNDEFINED": 0,
       "SEVERITY.HIGH": 0,
-      "SEVERITY.LOW": 15,
+      "SEVERITY.LOW": 17,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 17039,
+      "loc": 18435,
       "nosec": 0,
-      "skipped_tests": 24
+      "skipped_tests": 26
     },
     "api/__init__.py": {
       "CONFIDENCE.HIGH": 0,
@@ -154,7 +154,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 201,
+      "loc": 427,
       "nosec": 0,
       "skipped_tests": 1
     },
@@ -193,7 +193,7 @@
       "SEVERITY.LOW": 3,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 584,
+      "loc": 588,
       "nosec": 0,
       "skipped_tests": 2
     },
@@ -284,7 +284,20 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 478,
+      "loc": 557,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "backtesting/incumbent.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 92,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -327,6 +340,19 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "backtesting/regime.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 81,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "backtesting/roi_calculator.py": {
       "CONFIDENCE.HIGH": 1,
       "CONFIDENCE.LOW": 0,
@@ -350,6 +376,19 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 431,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "backtesting/safe_selector.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 276,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -392,6 +431,19 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "domain/carrying_cost.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 41,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "domain/economics.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -401,7 +453,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 102,
+      "loc": 122,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -414,7 +466,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 109,
+      "loc": 120,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -778,7 +830,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 236,
+      "loc": 241,
       "nosec": 0,
       "skipped_tests": 3
     },
@@ -912,6 +964,19 @@
       "nosec": 0,
       "skipped_tests": 2
     },
+    "ingestion/pilot_readiness.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 103,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
     "ingestion/pipeline.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -960,7 +1025,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 224,
+      "loc": 225,
       "nosec": 0,
       "skipped_tests": 1
     },
@@ -1064,7 +1129,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 280,
+      "loc": 368,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1120,6 +1185,19 @@
       "nosec": 0,
       "skipped_tests": 0
     },
+    "optimization/safe_stochastic.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 1,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 127,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
     "optimization/scenario_reduction.py": {
       "CONFIDENCE.HIGH": 0,
       "CONFIDENCE.LOW": 0,
@@ -1169,6 +1247,19 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 278,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "optimization/vss_evpi.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 121,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1403,6 +1494,19 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 266,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "risk/supply_paths.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 121,
       "nosec": 0,
       "skipped_tests": 0
     },
