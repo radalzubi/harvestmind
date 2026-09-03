@@ -131,16 +131,16 @@ of any claim.
 `artifacts/fmcg_counterfactuals_rolling.json`, 3 seeds per archetype.
 
 <!-- ROLLING_TABLE_BEGIN -->
-Configuration: seeds 3, run 40 periods, re-plan every 4, horizon 12, train 52, scenarios 20, opening cover 5.4 wk, warehouse cap 8.0 wk, SLA target 0.95. Elapsed 827.1 s.
+Configuration: seeds 3, run 40 periods, re-plan every 4, horizon 12, train 52, scenarios 20, opening cover 5.4 wk, warehouse cap 8.0 wk, SLA target 0.95. Elapsed 1311.2 s.
 
 | archetype | SP vs deterministic | win | SP vs order-up-to | SP vs min/max | SP vs naive | **SELECTED vs deterministic** | service SP / det / OUT | selections | solver failures |
 |---|---|---|---|---|---|---|---|---|---|
-| A_stable | -26.75% | 33% | -28.70% | +22.11% | +30.18% | **+6.64%** (win 67%) | 99.9% / 98.6% / 100.0% | {'order_up_to': 17, 'deterministic_sp': 13} | 0 |
-| B_volatile_retail | +32.64% | 100% | -21.79% | +15.73% | +5.53% | **+41.58%** (win 100%) | 97.3% / 91.0% / 97.8% | {'order_up_to': 20, 'stochastic_sp': 4, 'deterministic_sp': 6} | 0 |
-| C_constrained_supplier | -5.74% | 33% | -49.99% | +17.70% | -23.31% | **+27.98%** (win 100%) | 99.3% / 96.2% / 99.4% | {'order_up_to': 24, 'stochastic_sp': 2, 'deterministic_sp': 4} | 0 |
-| D_importer | +8.58% | 100% | -72.10% | -38.42% | +61.46% | **+48.05%** (win 100%) | 83.3% / 80.1% / 91.7% | {'order_up_to': 30} | 0 |
-| E_mixed_portfolio | +11.84% | 100% | -33.90% | +12.79% | +6.35% | **+33.67%** (win 100%) | 99.4% / 95.8% / 99.7% | {'order_up_to': 28, 'deterministic_sp': 2} | 0 |
-| F_disruption | +31.59% | 67% | -29.20% | +24.43% | +13.72% | **+43.55%** (win 100%) | 99.6% / 96.2% / 99.8% | {'order_up_to': 25, 'deterministic_sp': 5} | 0 |
+| A_stable | -30.99% | 0% | -29.92% | +21.33% | +30.78% | **-3.46%** (win 33%) | 99.9% / 98.7% / 100.0% | {'order_up_to': 20, 'deterministic_sp': 10} | 0 |
+| B_volatile_retail | +13.79% | 100% | -14.14% | +20.78% | +6.74% | **+34.68%** (win 100%) | 98.2% / 93.4% / 98.0% | {'order_up_to': 19, 'stochastic_sp': 4, 'deterministic_sp': 7} | 0 |
+| C_constrained_supplier | -36.32% | 0% | -38.86% | +19.54% | -14.93% | **+6.65%** (win 100%) | 99.5% / 97.1% / 99.3% | {'order_up_to': 25, 'deterministic_sp': 3, 'stochastic_sp': 2} | 0 |
+| D_importer | -7.10% | 0% | -42.03% | -18.42% | +70.16% | **+24.43%** (win 100%) | 88.0% / 87.3% / 91.7% | {'order_up_to': 30} | 0 |
+| E_mixed_portfolio | +9.44% | 100% | -32.91% | +11.43% | +7.49% | **+31.59%** (win 100%) | 99.5% / 96.1% / 99.7% | {'order_up_to': 28, 'deterministic_sp': 2} | 0 |
+| F_disruption | +14.17% | 67% | -27.03% | +17.81% | +16.73% | **+31.61%** (win 100%) | 99.7% / 97.2% / 99.8% | {'order_up_to': 21, 'deterministic_sp': 9} | 0 |
 
 Edges are median percentage cost reductions over 3 seeded 40-week runs; win is the share of runs where the stochastic optimizer's cost was lower. Costs are holding + lost margin + disposal + SLA penalty in the domain's economics.
 <!-- ROLLING_TABLE_END -->

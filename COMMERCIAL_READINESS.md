@@ -70,18 +70,21 @@ Closed loop, six archetypes, three 40-week runs each, re-planning every
 four weeks, every policy carrying its own state and bound by the same
 supplier capacity (`docs/validation/COMMERCIAL_MODEL_VALIDATION.md`):
 
-- The stochastic optimizer beats its point-forecast twin in the volatile,
-  importer, mixed-portfolio and disruption archetypes (+9% to +33%, 67–100%
-  of runs) and loses in the stable and constrained-supplier ones (−6%,
-  −27%).
+- The stochastic optimizer beats its point-forecast twin in 3 of 6
+  archetypes (+9% to +14%) and loses in the others
+  (-36% at worst). Regenerated after the P1/P2 pass: service floors,
+  promotions as input, and a horizon of at least two lead times changed
+  every number, mostly by raising service for all policies.
 - **A competently tuned order-up-to heuristic beats the stochastic
-  optimizer in every archetype (by 22% to 72%).** At the calibrated
+  optimizer in every archetype (by 14% to 42%).** At the calibrated
   holding cost of 2%/month, insurance stock is nearly free and a heuristic
   that over-stocks wins; the optimizer prices the trade-off and holds less.
 - The deployable mode, SELECTED — backtest order-up-to, deterministic and
   stochastic on the operator's own trailing history and run the winner —
-  beats the deterministic optimizer in all six archetypes (+7% to +48%),
-  and does so mostly by choosing the heuristic (17–30 of 30 re-plans).
+  beats the deterministic optimizer in 5 of 6 archetypes
+  (+35% at best) and is within 3.5% of it in the stable one,
+  mostly by choosing the heuristic. The importer archetype, which
+  under-served every policy before, now runs at 88% service.
 - Where does the stochastic model win outright? Lean operators (opening
   cover ≤ 1 week, +8% to +19% over deterministic), high demand variability
   (CV 1.2 with fill ≤ 0.9, +35% to +42%), and — the decisive one — high
