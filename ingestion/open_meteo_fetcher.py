@@ -21,7 +21,7 @@ network is unavailable — same posture as the other connectors.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import cast, Any
 
 from datetime import date, timedelta
 
@@ -51,7 +51,7 @@ def geocode(name: str, timeout: int = 20) -> tuple[float, float] | None:
     try:
         resp = requests.get(
             GEOCODE_URL,
-            params={"name": name, "count": 1, "language": "en", "format": "json"},
+            params=cast(dict[str, Any], {"name": name, "count": 1, "language": "en", "format": "json"}),
             timeout=timeout,
         )
         resp.raise_for_status()
