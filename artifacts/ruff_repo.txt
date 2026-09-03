@@ -1,0 +1,10 @@
+94	E402	[ ] module-import-not-at-top-of-file
+36	F401	[*] unused-import
+25	E702	[ ] multiple-statements-on-one-line-semicolon
+14	F541	[*] f-string-missing-placeholders
+ 9	E701	[ ] multiple-statements-on-one-line-colon
+ 5	F841	[ ] unused-variable
+ 4	E741	[ ] ambiguous-variable-name
+ 2	E712	[ ] true-false-comparison
+Found 189 errors.
+[*] 50 fixable with the `--fix` option (7 hidden fixes can be enabled with the `--unsafe-fixes` option).

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import math
 
-import numpy as np
 import pandas as pd
 import pyomo.environ as pyo
 import pytest
@@ -51,33 +50,6 @@ def _kw(products=("A",), holding=0.02, unmet=1.0, waste=2.0, decay=0.0, **extra)
 
 def _leads(sups=("S1",), n_scen=2, lead=1):
     return {(w, i): lead for w in range(n_scen) for i in sups}
-
-
-def _balance_residuals(model, products, T, opening, fills, leads):
-    """Recompute opening + arrivals + spot - served - waste - closing per (j,t,w)."""
-    out = []
-    for w in model.W:
-        for j in products:
-            prev = float(opening.get(j, 0.0))
-            for t in range(T):
-                arrivals = 0.0
-                for (i, jj) in model.IJ:
-                    if jj != j:
-                        continue
-                    placed = t - leads.get((w, i), 0)
-                    if 0 <= placed < T:
-                        arrivals += fills.get((w, i), 1.0) * pyo.value(model.x[i, j, placed])
-                d = 0.0
-                for (ww, jj, tt), dv in getattr(model, "_d", {}).items():
-                    pass
-                served = None  # not directly exposed; use balance identity
-                inv = pyo.value(model.inv[j, t, w])
-                s = pyo.value(model.s[j, t, w])
-                wst = pyo.value(model.wst[j, t, w])
-                u = pyo.value(model.u[j, t, w])
-                out.append((w, j, t, prev, arrivals, s, wst, u, inv))
-                prev = inv
-    return out
 
 
 class TestConservationAndSigns:

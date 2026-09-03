@@ -45,3 +45,19 @@ order and fill records for any distributor, so the cross-section of any
 simulated operator stays synthetic, and an arrival shortfall is a **proxy**
 for a fill rate, never a measurement of one: tonnage landed is observable,
 tonnage ordered is not.
+
+## Classification of every dataset and artifact in this repository
+
+| artifact | class |
+|---|---|
+| `data/external/fred/*.csv` | REAL PUBLIC (US Census via FRED, public domain) |
+| `data/external/portwatch/*.csv` | REAL PUBLIC (IMF PortWatch, open data) |
+| `validation/commercial/real_data.py` route shock panel | DERIVED FROM REAL PUBLIC (arrival-shortfall proxy; not a fill rate) |
+| `docs/reports/evidence/real_validation/*` | DERIVED FROM REAL PUBLIC (backtest outputs on the real demand path; cross-section synthetic) |
+| `synthetic/fmcg/distributor_sim.py` output, `artifacts/fmcg_*.json` | SYNTHETIC CALIBRATED (public benchmarks shape the parameters) |
+| `synthetic/generator.py`, `synthetic/realistic_operator_sim.py` output | SYNTHETIC CALIBRATED (USDA ERS, Wallace Center, Indiana hub volumes) |
+| `synthetic/commercial/*` (Project B v1/v2, Project C) | SYNTHETIC CALIBRATED |
+| `data/samples/*` | SYNTHETIC ILLUSTRATIVE |
+| `db/seeds/*` | SYNTHETIC ILLUSTRATIVE (dimension seeds) |
+
+No artifact in this repository is a real operator's records.

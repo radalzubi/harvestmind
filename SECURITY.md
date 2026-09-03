@@ -99,3 +99,17 @@ or per-buyer rows are not rendered into the partner ROI HTML. If you
 extend the template, keep raw line items out of the partner-facing
 summary; cell-level data must stay behind HarvestMind operator authentication
 and the deployment's network controls.
+
+
+## Deployment posture (added in the commercial readiness pass)
+
+- Set `HARVESTMIND_ENV=pilot|staging|prod` on any networked deployment.
+  Authentication is enforced in those environments regardless of
+  `HARVESTMIND_AUTH_REQUIRED`; only `dev` is permissive.
+- `GET /health` reports `env` and `auth_enforced`; `GET /ready` checks the
+  database and the solver. Check both after every deploy.
+- Every response carries `X-Request-ID`; quote it when reporting an error.
+  Unhandled errors never return a traceback.
+- Findings, fixes and residual risks: `docs/security/SECURITY_HARDENING_REPORT.md`.
+- CI gates: bandit (medium+ must be zero), pip-audit, CodeQL, secret scan
+  in `scripts/commercial_validate.sh`; Dependabot weekly.

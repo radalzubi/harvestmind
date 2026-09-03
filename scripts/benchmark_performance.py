@@ -6,10 +6,8 @@ docs/validation/PERFORMANCE_BENCHMARKS.md
 """
 from __future__ import annotations
 
-import io
 import json
 import platform
-import statistics as st
 import sys
 import time
 from pathlib import Path
@@ -29,7 +27,8 @@ ROOT = Path(__file__).resolve().parent.parent
 def _timeit(fn, n=3):
     ts = []
     for _ in range(n):
-        t0 = time.perf_counter(); fn(); ts.append(time.perf_counter() - t0)
+        t0 = time.perf_counter()
+        fn(); ts.append(time.perf_counter() - t0)
     return {"p50": float(np.median(ts)), "min": float(min(ts)), "max": float(max(ts)), "n": n}
 
 
@@ -94,7 +93,8 @@ def main() -> int:
     for path in ("/health", "/ready", "/"):
         lat = []
         for _ in range(50):
-            t0 = time.perf_counter(); client.get(path); lat.append((time.perf_counter() - t0) * 1000)
+            t0 = time.perf_counter()
+            client.get(path); lat.append((time.perf_counter() - t0) * 1000)
         out["api"][path] = {"p50_ms": float(np.percentile(lat, 50)), "p95_ms": float(np.percentile(lat, 95)),
                             "p99_ms": float(np.percentile(lat, 99))}
         print(f"  {path:<10} {out['api'][path]}")

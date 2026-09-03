@@ -107,3 +107,9 @@ pool/signals/
 training/forecaster_checkpoints/
 training/extraction_checkpoints/
 training/retraining_log.jsonl
+
+# raw audit output can quote advisory text that looks like a credential
+artifacts/baseline/pip_audit.json
+artifacts/pip_audit.json
+artifacts/*.log
+artifacts/full_suite_mid.txt

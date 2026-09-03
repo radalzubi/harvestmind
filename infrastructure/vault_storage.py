@@ -9,6 +9,7 @@ or replay starts from these files.
 
 from __future__ import annotations
 
+import hashlib
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,13 +24,57 @@ def _safe_name(filename: str) -> str:
     return _SAFE_NAME_RE.sub("_", base) or "upload.bin"
 
 
+class DuplicateUploadError(ValueError):
+    """The identical file content was already stored for this operator."""
+
+    def __init__(self, existing: Path) -> None:
+        super().__init__(f"identical file already uploaded as {existing.name}")
+        self.existing = existing
+
+
+def _content_hash(content: bytes) -> str:
+    return hashlib.sha256(content).hexdigest()
+
+
+def find_duplicate_upload(registry: OperatorRegistry, operator_id: str,
+                          content: bytes) -> Path | None:
+    """Return the earlier upload with identical bytes, if any."""
+    # Hashes live beside, not inside, the uploads directory: the uploads
+    # listing is the operator's write-once record and must contain only
+    # their files.
+    hashes = registry.vault_dir(operator_id) / "upload_hashes"
+    if not hashes.exists():
+        return None
+    h = _content_hash(content)
+    for side in hashes.glob("*.sha256"):
+        try:
+            if side.read_text().strip() == h:
+                original = registry.vault_dir(operator_id) / "uploads" / side.name[:-len(".sha256")]
+                return original if original.exists() else side
+        except OSError:
+            continue
+    return None
+
+
 def store_raw_upload(
     registry: OperatorRegistry,
     operator_id: str,
     filename: str,
     content: bytes,
+    allow_duplicate: bool = False,
 ) -> Path:
-    """Copy raw upload bytes into the vault, write-once. Returns the path."""
+    """Copy raw upload bytes into the vault, write-once. Returns the path.
+
+    IDEMPOTENT BY CONTENT. A retried request, a double click or a re-sent
+    export carries the same bytes; storing and loading them again doubles
+    every quantity in the staging table. The content hash is kept beside
+    each file and a repeat is refused unless the caller says it is
+    deliberate.
+    """
+    if not allow_duplicate:
+        dup = find_duplicate_upload(registry, operator_id, content)
+        if dup is not None:
+            raise DuplicateUploadError(dup)
     uploads = registry.vault_dir(operator_id) / "uploads"
     uploads.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")
@@ -39,6 +84,9 @@ def store_raw_upload(
         n += 1
         target = uploads / f"{ts}.{n}_{_safe_name(filename)}"
     target.write_bytes(content)
+    hashes = registry.vault_dir(operator_id) / "upload_hashes"
+    hashes.mkdir(parents=True, exist_ok=True)
+    (hashes / f"{target.name}.sha256").write_text(_content_hash(content))
     registry.record_upload(operator_id)
     return target
 

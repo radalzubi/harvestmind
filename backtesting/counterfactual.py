@@ -10,8 +10,10 @@ shortage (lost margin), disposal, SLA penalty, emergency premium.
 RULES THAT ARE NOT NEGOTIABLE, learned the hard way in this repository:
   * credited with what ARRIVES, not what was ordered;
   * one settlement function for every policy;
-  * no outcome-based fold filtering; strata are reported, not removed;
-  * scenarios from the training window only; realised shocks only in
+  * no outcome-based fold filtering
+  strata are reported, not removed;
+  * scenarios from the training window only
+  realised shocks only in
     settlement;
   * the naive baselines are competent (safety stock, fill gross-up), not
     straw men.
@@ -273,10 +275,12 @@ def _seasonal_pool(hist: list, h: int, width: int = 2) -> list:
     the whole history when fewer than one full cycle is available.
 
     An iid bootstrap over a full year hands the optimizer a distribution
-    centred on the annual mean; a 12-week window sitting on the seasonal
+    centred on the annual mean
+    a 12-week window sitting on the seasonal
     peak then reads as an 11% upward surprise every fold. Scored on 4,404
     real origin-horizon pairs this seasonal resampling cut the interval
-    score by a third relative to the iid version; it is the default here.
+    score by a third relative to the iid version
+    it is the default here.
     """
     n = len(hist)
     if n < SEASON:
@@ -359,7 +363,8 @@ def policy_selected(fi: FoldInputs, warehouse_cap, rng, n_scen=30, holdout=None)
     h = holdout or max(4, fi.horizon // 2)
     if min(len(v) for v in fi.train_demand.values()) < h + 8:
         sched, meta = policy_stochastic_sp(fi, warehouse_cap, rng, n_scen)
-        meta = dict(meta); meta["selected"] = "stochastic_sp (insufficient history)"
+        meta = dict(meta)
+        meta["selected"] = "stochastic_sp (insufficient history)"
         return sched, meta
     inner, itruth = _inner_fold(fi, h)
     inner_cap = None if warehouse_cap is None else warehouse_cap
@@ -379,7 +384,8 @@ def policy_selected(fi: FoldInputs, warehouse_cap, rng, n_scen=30, holdout=None)
         sched, meta = policy_deterministic_sp(fi, warehouse_cap, rng)
     else:
         sched, meta = policy_stochastic_sp(fi, warehouse_cap, rng, n_scen)
-    meta = dict(meta); meta["selected"] = winner; meta["selection_costs"] = costs
+    meta = dict(meta)
+    meta["selected"] = winner; meta["selection_costs"] = costs
     return sched, meta
 
 
@@ -510,8 +516,10 @@ def rolling_evaluate(policy_name: str, make_inputs, truth_demand: dict, truth_fi
                     lost = left * decay
                     disposal += lost * float(cc.waste_cost_per_unit.get(j, unit_cost[j]))
                     left -= lost
-                pending[j] = left; stock_total += left
-                served += got; demanded += d
+                pending[j] = left
+                stock_total += left
+                served += got
+                demanded += d
             if warehouse_cap is not None and stock_total > warehouse_cap > 0:
                 scale = warehouse_cap / stock_total
                 for j in pending:

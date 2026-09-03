@@ -109,7 +109,8 @@ def run_rolling(a) -> int:
             fi0, _ = fold_from_history(h, start, a.horizon, a.train, a.cover_weeks, a.sla_target)
             products, sup_of, lead_of = fi0.products, fi0.supplier_of, fi0.lead_of
             # realised path over the whole run
-            ol = h.order_lines.copy(); ol["week"] = ol["order_id"].str[4:8].astype(int)
+            ol = h.order_lines.copy()
+            ol["week"] = ol["order_id"].str[4:8].astype(int)
             dem = ol.groupby(["sku", "week"])["qty_ordered"].sum()
             truth_d = {(j, t): float(dem.get((j, start + t), 0.0)) for j in products for t in range(n_run + a.horizon)}
             truth_f, truth_l = {}, {}

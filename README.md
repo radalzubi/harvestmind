@@ -12,6 +12,35 @@ supply is confirmed.
 
 ---
 
+
+## Two operating domains
+
+HarvestMind runs one optimization engine in two markets. `domain/` holds
+the only code that knows them apart:
+
+| | agriculture (perishable produce) | FMCG (shelf-stable distribution) |
+|---|---|---|
+| unit | kg | each / case / pallet |
+| supply risk | yield on a commitment | fill and lead time on an order |
+| over-buying costs | spoilage | capital |
+| ordering | continuous | whole lots, MOQ (MILP) |
+
+The recommended FMCG mode is **SELECTED**: order-up-to, the deterministic
+and the stochastic optimizer are backtested on the operator's own trailing
+history and the winner is run, because the stochastic model earns its keep
+only when conditions bind (see `docs/validation/COMMERCIAL_MODEL_VALIDATION.md`).
+
+## Is it releasable?
+
+```bash
+./scripts/commercial_validate.sh          # gates, minutes
+./scripts/commercial_validate.sh --full   # plus simulation matrices
+```
+
+writes `artifacts/commercial_readiness.json`. The current verdict and the
+open blockers are in `COMMERCIAL_READINESS.md`. Architecture and dependency
+map: `docs/ARCHITECTURE.md`. Mathematics: `docs/MATH_SPEC.md`.
+
 ## What It Does
 
 ### 1. Diagnostic — where margin is leaking, in dollars

@@ -129,7 +129,9 @@ SECURITY_HEADERS = {
 def test_health_ok(full_client):
     r = full_client.get("/health")
     assert r.status_code == 200
-    assert r.json() == {"status": "ok", "service": "harvestmind-api"}
+    body = r.json()
+    assert body["status"] == "ok" and body["service"] == "harvestmind-api"
+    assert {"env", "auth_enforced"} <= set(body)      # security posture is reported
 
 
 def test_root_ok(full_client):

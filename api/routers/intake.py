@@ -122,10 +122,15 @@ async def upload_csv(
     table: str,
     file: UploadFile = File(...),
     operator_id: str | None = None,
+    force: bool = False,
     conn=Depends(get_conn),
     authed: str | None = Depends(require_operator),
 ):
     """Upload a CSV file into a staging table.
+
+    ``force=true`` loads a file whose exact content was already uploaded;
+    otherwise a repeat is refused with a rejection report, so a retry or a
+    double click cannot double the staged quantities.
 
     Returns:
         table          target table name
@@ -163,11 +168,22 @@ async def upload_csv(
         from infrastructure.operator_registry import (
             OperatorNotFoundError, OperatorRegistry,
         )
-        from infrastructure.vault_storage import store_raw_upload
+        from infrastructure.vault_storage import (
+            DuplicateUploadError, store_raw_upload,
+        )
         try:
             registry = OperatorRegistry()
-            store_raw_upload(registry, operator_id,
-                             file.filename or "upload.csv", contents)
+            try:
+                store_raw_upload(registry, operator_id,
+                                 file.filename or "upload.csv", contents,
+                                 allow_duplicate=force)
+            except DuplicateUploadError as dup:
+                return {
+                    "table": table, "rows_inserted": 0, "warnings": [],
+                    "errors": [f"{dup}. Nothing was loaded. Clear the table "
+                               f"or re-send with force=true if this repeat "
+                               f"is deliberate."],
+                }
             vault_dbm = DBManager(registry)
             conn = vault_dbm.get_operator_connection(operator_id)
         except (OperatorNotFoundError, FileNotFoundError):

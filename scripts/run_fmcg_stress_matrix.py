@@ -59,16 +59,21 @@ def cell(demand_cv, fill, lead_cv, bias, service, seeds, folds, scen, n_skus, co
             res = run_policies(fi, truth, cap, rng, n_scen=scen,
                                policies=("order_up_to", "deterministic_sp", "stochastic_sp", "selected"))
             for pol, r in res.items():
-                statuses[pol] = statuses.get(pol, {}); statuses[pol][r["status"]] = statuses[pol].get(r["status"], 0) + 1
-            sp = res["stochastic_sp"]["settlement"]; det = res["deterministic_sp"]["settlement"]
-            out = res["order_up_to"]["settlement"]; sel = res["selected"]["settlement"]
+                statuses[pol] = statuses.get(pol, {})
+                statuses[pol][r["status"]] = statuses[pol].get(r["status"], 0) + 1
+            sp = res["stochastic_sp"]["settlement"]
+            det = res["deterministic_sp"]["settlement"]
+            out = res["order_up_to"]["settlement"]
+            sel = res["selected"]["settlement"]
             if sel and det and det.total > 0:
                 edges_sel.append((det.total - sel.total) / det.total * 100)
             if sp is None:
                 continue
             fills_sp.append(sp.fill_rate)
             if det and det.total > 0:
-                e = (det.total - sp.total) / det.total * 100; edges_det.append(e); worst = min(worst, e)
+                e = (det.total - sp.total) / det.total * 100
+                edges_det.append(e)
+                worst = min(worst, e)
             if out and out.total > 0:
                 edges_out.append((out.total - sp.total) / out.total * 100)
     return {"vs_deterministic": summarize(edges_det, boot=300), "vs_order_up_to": summarize(edges_out, boot=300),
@@ -86,10 +91,12 @@ def main() -> int:
     a = p.parse_args()
     axes = a.axes.split(",")
     base = {"demand_cv": 0.30, "fill": 0.95, "lead_cv": 0.30, "bias": 0.0, "service": 0.97, "cover": 38 / 7}
-    t0 = time.time(); cells = []
+    t0 = time.time()
+    cells = []
     combos = list(itertools.product(*[GRID[ax] for ax in axes]))
     for combo in combos:
-        params = dict(base); params.update(dict(zip(axes, combo)))
+        params = dict(base)
+        params.update(dict(zip(axes, combo)))
         r = cell(params["demand_cv"], params["fill"], params["lead_cv"], params["bias"],
                  params["service"], a.seeds, a.folds, a.scenarios, a.skus, params["cover"])
         cells.append({"params": params, **r})
@@ -100,13 +107,16 @@ def main() -> int:
            "config": vars(a), "elapsed_s": round(time.time() - t0, 1), "cells": cells}
     (ROOT / "artifacts").mkdir(exist_ok=True)
     (ROOT / "artifacts" / f"fmcg_stress_{'_'.join(axes)}.json").write_text(json.dumps(out, indent=1))
-    md = ROOT / "docs" / "validation" / "evidence"; md.mkdir(parents=True, exist_ok=True)
+    md = ROOT / "docs" / "validation" / "evidence"
+    md.mkdir(parents=True, exist_ok=True)
     lines = [f"# FMCG stress matrix over {axes} (SYNTHETIC CALIBRATED)", "",
              f"base {base}; seeds {a.seeds}, folds {a.folds}, scenarios {a.scenarios}, skus {a.skus}", "",
              "| " + " | ".join(axes) + " | SP vs deterministic (median) | win | worst | SELECTED vs deterministic | vs order-up-to | SP service | unusable solves |",
              "|" + "---|" * (len(axes) + 7)]
     for c in cells:
-        v = c["vs_deterministic"]; o = c["vs_order_up_to"]; sl = c["selected_vs_deterministic"]
+        v = c["vs_deterministic"]
+        o = c["vs_order_up_to"]
+        sl = c["selected_vs_deterministic"]
         bad = sum(n for pol, d in c["solver_status"].items() for s_, n in d.items() if s_ not in ("optimal", "feasible", "heuristic"))
         lines.append("| " + " | ".join(str(c["params"][ax]) for ax in axes) +
                      f" | {v.get('median', float('nan')):+.2f}% | {v.get('win_rate', 0):.0%} | {v.get('worst', float('nan')):+.1f}% | "

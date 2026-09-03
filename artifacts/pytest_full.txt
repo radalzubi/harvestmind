@@ -1,0 +1,210 @@
+........................................................................ [  5%]
+........................................................................ [ 11%]
+...................................F.................................... [ 17%]
+..................F.F.F......................s.......................... [ 23%]
+........................................................................ [ 28%]
+........................................................................ [ 34%]
+........................................................................ [ 40%]
+........................................................................ [ 46%]
+........................................................................ [ 52%]
+........................................................................ [ 57%]
+........................................................................ [ 63%]
+........................................................................ [ 69%]
+........................................................................ [ 75%]
+........................................................................ [ 81%]
+........................................................................ [ 86%]
+........................................................................ [ 92%]
+........................................................................ [ 98%]
+..................                                                       [100%]
+=================================== FAILURES ===================================
+_________________ test_full_flow_operator_to_pool_to_scheduler _________________
+
+env = (<infrastructure.operator_registry.OperatorRegistry object at 0x123ce1220>, PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_full_flow_operator_to_poo0'))
+
+    def test_full_flow_operator_to_pool_to_scheduler(env):
+        registry, tmp_path = env
+        op = registry.create_operator("Hub A", pool_consent=True,
+                                      region="midwest")
+        client = TestClient(api_main.app)
+    
+        # 1. smart upload → raw copy + extraction session
+        r = client.post(f"/intake/extract?operator_id={op.operator_id}",
+                        files=[("files", ("orders.csv", CSV, "text/csv"))])
+        assert r.status_code == 200
+        session = r.json()
+        assert session["mock_mode"] is True
+        uploads = list((registry.vault_dir(op.operator_id) / "uploads").iterdir())
+>       assert len(uploads) == 1 and uploads[0].read_text() == CSV
+E       AssertionError: assert (2 == 1)
+E        +  where 2 = len([PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_full_flow_ope...ytest-283/test_full_flow_operator_to_poo0/data/operators/op_2f630bf9/uploads/20260903T163231831884_orders.csv.sha256')])
+
+tests/integration/test_full_data_flow.py:62: AssertionError
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/intake/extract?operator_id=op_2f630bf9 "HTTP/1.1 200 OK"
+__________________________ test_raw_upload_write_once __________________________
+
+registry = <infrastructure.operator_registry.OperatorRegistry object at 0x126940910>
+
+    def test_raw_upload_write_once(registry):
+        op = registry.create_operator("Hub A")
+        p1 = store_raw_upload(registry, op.operator_id, "orders.csv", b"v1")
+        p2 = store_raw_upload(registry, op.operator_id, "orders.csv", b"v2")
+        assert p1 != p2                       # never overwrite
+        assert p1.read_bytes() == b"v1"       # first copy untouched
+        assert p2.read_bytes() == b"v2"
+        uploads = list((registry.vault_dir(op.operator_id) / "uploads").iterdir())
+>       assert len(uploads) == 2
+E       AssertionError: assert 4 == 2
+E        +  where 4 = len([PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_raw_upload_wr...radalzubi/pytest-283/test_raw_upload_write_once0/data/operators/op_e1fe270c/uploads/20260903T163233746965_orders.csv')])
+
+tests/integration/test_vault_wiring.py:52: AssertionError
+___________ test_upload_with_operator_id_lands_in_vault_with_lineage ___________
+
+registry = <infrastructure.operator_registry.OperatorRegistry object at 0x1261e93d0>
+
+    def test_upload_with_operator_id_lands_in_vault_with_lineage(registry):
+        op = registry.create_operator("Hub A")
+        client = TestClient(api_main.app)
+        r = client.post(
+            f"/intake/upload/stg_buyer_orders?operator_id={op.operator_id}",
+            files={"file": ("orders.csv", CLEAN_CSV, "text/csv")})
+        assert r.status_code == 200, r.text
+        assert r.json()["rows_inserted"] == 1, r.json()
+    
+        # raw copy in the vault
+        uploads = list((registry.vault_dir(op.operator_id) / "uploads").iterdir())
+>       assert len(uploads) == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = len([PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_upload_with_o...ytest-283/test_upload_with_operator_id_l0/data/operators/op_e95fa2e1/uploads/20260903T163233823685_orders.csv.sha256')])
+
+tests/integration/test_vault_wiring.py:77: AssertionError
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/intake/upload/stg_buyer_orders?operator_id=op_e95fa2e1 "HTTP/1.1 200 OK"
+_____________________ test_extract_confirm_scoped_to_vault _____________________
+
+registry = <infrastructure.operator_registry.OperatorRegistry object at 0x1261d2530>
+
+    def test_extract_confirm_scoped_to_vault(registry):
+        op = registry.create_operator("Hub A")
+        client = TestClient(api_main.app)
+        r = client.post(f"/intake/extract?operator_id={op.operator_id}",
+                        files=[("files", ("orders.csv", CSV, "text/csv"))])
+        assert r.status_code == 200
+        session = r.json()
+        assert session["operator_id"] == op.operator_id
+        # raw copy stored
+>       assert len(list((registry.vault_dir(op.operator_id) / "uploads")
+                        .iterdir())) == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = len([PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_extract_confi...ytest-283/test_extract_confirm_scoped_to0/data/operators/op_e1b0daf0/uploads/20260903T163233880367_orders.csv.sha256')])
+E        +    where [PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_extract_confi...ytest-283/test_extract_confirm_scoped_to0/data/operators/op_e1b0daf0/uploads/20260903T163233880367_orders.csv.sha256')] = list(<generator object Path.iterdir.<locals>.<genexpr> at 0x125eabc40>)
+E        +      where <generator object Path.iterdir.<locals>.<genexpr> at 0x125eabc40> = iterdir()
+E        +        where iterdir = (PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_extract_confirm_scoped_to0/data/operators/op_e1b0daf0') / 'uploads').iterdir
+E        +          where PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_extract_confirm_scoped_to0/data/operators/op_e1b0daf0') = vault_dir('op_e1b0daf0')
+E        +            where vault_dir = <infrastructure.operator_registry.OperatorRegistry object at 0x1261d2530>.vault_dir
+E        +            and   'op_e1b0daf0' = OperatorRecord(operator_id='op_e1b0daf0', name='Hub A', created_at=datetime.datetime(2026, 9, 3, 16, 32, 33, 869389, t...t_date=datetime.datetime(2026, 9, 3, 16, 32, 33, 869663, tzinfo=TzInfo(0)), pool_contribution_count=0, token_hash=None).operator_id
+
+tests/integration/test_vault_wiring.py:110: AssertionError
+------------------------------ Captured log call -------------------------------
+INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/intake/extract?operator_id=op_e1b0daf0 "HTTP/1.1 200 OK"
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.14.3-final-0 _______________
+
+Name                                              Stmts   Miss  Cover
+---------------------------------------------------------------------
+api/__init__.py                                       0      0   100%
+api/dependencies.py                                 104     41    61%
+api/main.py                                          74      6    92%
+api/models/__init__.py                                0      0   100%
+api/models/schemas.py                                59      0   100%
+api/routers/__init__.py                               0      0   100%
+api/routers/admin.py                                 24      0   100%
+api/routers/backtest.py                              39     13    67%
+api/routers/data.py                                  62      2    97%
+api/routers/diagnostics.py                           29      0   100%
+api/routers/forecasts.py                             21     11    48%
+api/routers/fsma.py                                 100      7    93%
+api/routers/intake.py                               301     57    81%
+api/routers/planning.py                              61     28    54%
+api/routers/pool.py                                  31      2    94%
+api/routers/reports.py                               53     30    43%
+api/routers/training.py                              27     14    48%
+backtesting/__init__.py                               0      0   100%
+backtesting/benchmark_suite.py                      320     19    94%
+backtesting/counterfactual.py                       337    146    57%
+backtesting/leakage_guard.py                         50      2    96%
+backtesting/policy_comparison.py                     49      0   100%
+backtesting/procurement_metrics.py                   18     11    39%
+backtesting/roi_calculator.py                       114      9    92%
+backtesting/rolling_origin_engine.py                218     18    92%
+backtesting/service_metrics.py                       35     35     0%
+backtesting/waste_metrics.py                         21     21     0%
+domain/__init__.py                                    4      0   100%
+domain/economics.py                                  63      4    94%
+domain/model.py                                      66      7    89%
+domain/uom.py                                        97     12    88%
+ingestion/__init__.py                                 0      0   100%
+ingestion/column_mapper.py                          135     18    87%
+ingestion/csv_ingestor.py                            55      1    98%
+ingestion/drought_monitor_fetcher.py                 40      7    82%
+ingestion/enso_oni_fetcher.py                        35      7    80%
+ingestion/extraction_safeguards.py                  155     16    90%
+ingestion/extraction_sessions.py                    105     12    89%
+ingestion/llm_extractor.py                          204     32    84%
+ingestion/llm_mock_responder.py                     151     21    86%
+ingestion/llm_unstructured.py                        50      0   100%
+ingestion/nass_quickstats_fetcher.py                 57     57     0%
+ingestion/noaa_weather_fetcher.py                    42      0   100%
+ingestion/open_meteo_fetcher.py                      98     26    73%
+ingestion/pipeline.py                                74     28    62%
+ingestion/usda_ams_connector.py                     127     13    90%
+ingestion/usda_food_hub_directory.py                 51      1    98%
+ingestion/validators.py                              96      2    98%
+ingestion/weather_features.py                        10      0   100%
+optimization/__init__.py                              0      0   100%
+optimization/audit_trail.py                          70     18    74%
+optimization/cvar_extension.py                       99      6    94%
+optimization/explain.py                              52      0   100%
+optimization/gamma_robust_lp.py                      58      2    97%
+optimization/lp_baseline.py                          94     12    87%
+optimization/multi_period_sp.py                     145      6    96%
+optimization/naive_lastyear_policy.py                54      8    85%
+optimization/order_up_to_policy.py                   15      0   100%
+optimization/recourse_simulator.py                   50      0   100%
+optimization/saa_bounds.py                           86      6    93%
+optimization/scenario_reduction.py                   49      1    98%
+optimization/solve_status.py                         82     14    83%
+optimization/two_stage_sp.py                        161     11    93%
+optimization/vss_evaluation.py                      140     21    85%
+risk/__init__.py                                      0      0   100%
+risk/calibration.py                                  38      1    97%
+risk/confidence.py                                   16      0   100%
+risk/correlated_scenarios.py                        282     17    94%
+risk/disruption_scenarios.py                         50      1    98%
+risk/safe_commit.py                                  93      6    94%
+risk/scenario_generation.py                         166     31    81%
+risk/shelf_life.py                                   46      1    98%
+risk/supplier_distribution.py                       110      3    97%
+risk/yield_covariates.py                            108      5    95%
+synthetic/__init__.py                                 0      0   100%
+synthetic/archetypes.py                              12      0   100%
+synthetic/commercial/__init__.py                      0      0   100%
+synthetic/commercial/integrated_producer_sim.py      61     61     0%
+synthetic/commercial/jordan_distributor_sim.py       85     85     0%
+synthetic/commercial/jordan_distributor_v2.py       102     67    34%
+synthetic/fmcg/__init__.py                            0      0   100%
+synthetic/fmcg/distributor_sim.py                   152      1    99%
+synthetic/generate_pilot_dataset.py                  24     24     0%
+synthetic/generator.py                              213     11    95%
+synthetic/indiana_operator_sim.py                   166      3    98%
+synthetic/realistic_operator_sim.py                 204    204     0%
+synthetic/seasonality.py                             17      0   100%
+---------------------------------------------------------------------
+TOTAL                                              6962   1362    80%
+Coverage JSON written to file artifacts/coverage.json
+=========================== short test summary info ============================
+FAILED tests/integration/test_full_data_flow.py::test_full_flow_operator_to_pool_to_scheduler
+FAILED tests/integration/test_vault_wiring.py::test_raw_upload_write_once - A...
+FAILED tests/integration/test_vault_wiring.py::test_upload_with_operator_id_lands_in_vault_with_lineage
+FAILED tests/integration/test_vault_wiring.py::test_extract_confirm_scoped_to_vault
+4 failed, 1237 passed, 1 skipped in 61.05s (0:01:01)

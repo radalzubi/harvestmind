@@ -39,6 +39,14 @@ class SolveOutcome:
     raw_condition: str = ""
 
 
+def _has_integers(model) -> bool:
+    import pyomo.environ as pyo
+    for v in model.component_data_objects(pyo.Var, active=True):
+        if v.is_integer() or v.is_binary():
+            return True
+    return False
+
+
 def _gap(obj: float | None, bound: float | None) -> float | None:
     if obj is None or bound is None:
         return None
@@ -97,7 +105,14 @@ def run_solver(model, solver: str = "highs", time_limit_s: float = 300.0,
     obj = bound = None
     if usable:
         try:
-            if hasattr(opt, "load_vars"):
+            wants_duals = hasattr(model, "dual") and not _has_integers(model)
+            if wants_duals:
+                # An LP that declared a dual Suffix (shadow prices) needs the
+                # full solution load. Feasibility is already established, so
+                # this second solve cannot raise for infeasibility and costs
+                # one cheap LP.
+                opt.solve(model, tee=False, load_solutions=True, options=options)
+            elif hasattr(opt, "load_vars"):
                 opt.load_vars()
             else:
                 model.solutions.load_from(res)

@@ -51,14 +51,11 @@ def test_supply_handed_to_the_optimizer_is_strictly_before_the_origin(capture):
     engine = eng.RollingOriginEngine(cfg)
     engine.run(orders, deliveries)
     assert capture.calls, "optimizer was never invoked"
-    origins = sorted(set(pd.to_datetime(orders["week_start"]).dt.date))[cfg.n_train_weeks - 1:]
     for demand_scen, supply in capture.calls:
-        if "week_start" in supply.columns and supply["week_start"].notna().any():
-            ws = pd.to_datetime(supply["week_start"]).dt.date
-            # supply rows are labelled with the HORIZON week they serve, so the
-            # only leak-free property is that their CAPACITY came from the past;
-            # the engine builds it from LeakageGuard-filtered deliveries. Check
-            # instead that no scenario demand equals a realised future total.
+        # supply rows are labelled with the HORIZON week they serve, so the
+        # only leak-free property is that their CAPACITY came from the past;
+        # the engine builds it from LeakageGuard-filtered deliveries. Check
+        # instead that no scenario demand equals a realised future total.
         realised = orders.groupby(["product_id", "week_start"])["qty_ordered_kg"].sum()
         future_totals = set(np.round(realised.values, 2))
         d = set(np.round(demand_scen["demand_kg"].values, 2))

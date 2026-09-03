@@ -116,7 +116,8 @@ class TestInformationTiming:
     def test_fixed_first_stage_cannot_beat_free_first_stage(self):
         """Evaluating a given x against the scenarios (the EEV machinery)
         must never report a lower expected cost than the optimum."""
-        scen = _scen([80, 120, 160]); sup = _supply({("S1", "A"): 150})
+        scen = _scen([80, 120, 160])
+        sup = _supply({("S1", "A"): 150})
         best = _model().solve(scen, sup)
         for xf in (60.0, 100.0, 150.0):
             fixed = _model().solve_with_fixed_first_stage(scen, sup, {("S1", "A"): xf})
