@@ -42,7 +42,7 @@ def _hub_id(name: str, city: str, state: str, listing_id: str | None) -> str:
     if listing_id:
         return f"HUB-{listing_id}"
     payload = f"{(name or '').strip().lower()}|{(city or '').strip().lower()}|{(state or '').strip().lower()}"
-    return f"HUB-{hashlib.md5(payload.encode('utf-8')).hexdigest()[:10].upper()}"
+    return f"HUB-{hashlib.md5(payload.encode('utf-8'), usedforsecurity=False).hexdigest()[:10].upper()}"
 
 
 def fetch_food_hubs(

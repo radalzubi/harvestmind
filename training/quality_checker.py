@@ -22,7 +22,8 @@ CLASS_BALANCE_MAX_SHARE = 0.80
 def _input_hash(entry: dict) -> str:
     return hashlib.md5(
         (str(entry.get("operator_id")) +
-         str(entry.get("raw_input_sample"))).encode()).hexdigest()
+         str(entry.get("raw_input_sample"))).encode(),
+        usedforsecurity=False).hexdigest()
 
 
 def check_corpus(root: Path | None = None) -> dict[str, Any]:

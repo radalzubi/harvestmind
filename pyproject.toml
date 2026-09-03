@@ -48,8 +48,8 @@ dependencies = [
 dashboard = [
     "streamlit>=1.57",
     "plotly>=5.20",
-    "gitpython>=3.1.58",
-    "tornado>=6.5.7",
+    "gitpython>=3.1.59",
+    "tornado>=6.5.8",
 ]
 llm = ["anthropic>=0.40"]
 pdf = [
@@ -62,6 +62,11 @@ dev = [
     "pytest-cov>=4.0",
     "black>=24.0",
     "ruff==0.15.12",
+    "hypothesis>=6.100",
+    "mypy>=1.10",
+    "bandit>=1.7",
+    "pip-audit>=2.7",
+    "packaging>=23.0",
 ]
 
 [project.scripts]

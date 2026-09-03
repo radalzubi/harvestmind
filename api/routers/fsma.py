@@ -124,7 +124,8 @@ def list_lots(
         params.append(end_date)
 
     where_clause = ("WHERE " + " AND ".join(where)) if where else ""
-    sql = f"""
+    sql = (  # nosec B608 - columns constant, filters parameterised
+        f"""
         SELECT lot_id, traceability_lot_code, tlc_source_reference, product_id,
                quantity_kg, unit_of_measure, harvest_date, pack_date,
                supplier_id, gtin_14, sscc, lot_status
@@ -132,7 +133,7 @@ def list_lots(
         {where_clause}
         ORDER BY harvest_date DESC NULLS LAST
         LIMIT 500
-    """
+    """)  # nosec B608 - columns constant, filters parameterised
     df = conn.execute(sql, params).df()
     return df.to_dict(orient="records")
 

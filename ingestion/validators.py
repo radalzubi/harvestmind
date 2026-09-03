@@ -39,6 +39,12 @@ KNOWN_STAGING_TABLES: frozenset[str] = frozenset({
 })
 
 # Columns subject to the non-negativity rule, per staging table.
+_REQUIRED_QUANTITY_COLUMNS: dict[str, list[str]] = {
+    "stg_inventory_lots": ["quantity_on_hand"],
+    "stg_buyer_orders": ["requested_quantity"],
+    "stg_waste_adjustments": ["quantity_lost"],
+}
+
 QUANTITY_COLUMNS: dict[str, list[str]] = {
     "stg_products": [],
     "stg_supplier_deliveries": [
@@ -150,6 +156,32 @@ def validate_staging_df(
         return result
     ref_today = today or date.today()
 
+    # ── exact duplicate rows → warning ───────────────────────────────────
+    # A duplicated line in an export usually means a re-run export or a
+    # double-keyed entry. Loading it doubles a quantity silently, so it is
+    # surfaced with row numbers; the operator decides whether it is real.
+    dup_mask = df.duplicated(keep="first")
+    if dup_mask.any():
+        result.warnings.append(
+            f"{int(dup_mask.sum())} exact duplicate row(s) "
+            f"({_example_rows(dup_mask)}) — loaded as-is; remove them if "
+            f"they are a re-export rather than repeated transactions."
+        )
+
+    # ── required quantities that are missing → error ─────────────────────
+    # A blank quantity is not zero. Treating it as zero would understate
+    # demand or stock without any trace, so the file is rejected with the
+    # rows named.
+    for col in _REQUIRED_QUANTITY_COLUMNS.get(table, []):
+        if col in df.columns:
+            missing = pd.to_numeric(df[col], errors="coerce").isna()
+            if missing.any():
+                result.errors.append(
+                    f"{col}: {int(missing.sum())} missing or non-numeric "
+                    f"value(s) ({_example_rows(missing)}). A blank quantity "
+                    f"is not zero; fill it in or drop the row."
+                )
+
     # ── negatives in quantity / price columns → error ────────────────────
     for col in QUANTITY_COLUMNS.get(table, []):
         if col not in df.columns:
@@ -240,7 +272,7 @@ def validate_loaded_tables(conn) -> dict[str, dict]:
     out: dict[str, dict] = {}
     for table in QUANTITY_COLUMNS:
         try:
-            df = conn.execute(f"SELECT * FROM {table}").df()  # noqa: S608
+            df = conn.execute(f"SELECT * FROM {table}").df()  # noqa: S608  # nosec B608 - table from allowlist iteration
         except Exception:
             continue
         out[table] = validate_staging_df(table, df).to_dict()

@@ -110,6 +110,51 @@ jobs:
         continue-on-error: true
         run: ruff check . --statistics || true
 
+  security:
+    name: security (bandit, pip-audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: bandit (medium severity and above, non-test packages)
+        # Every string-built SQL statement in the tree is an allowlisted
+        # identifier or a constant and carries a per-line `nosec B608` with
+        # its justification; a new one without that annotation fails here.
+        run: python -m bandit -r api infrastructure ingestion optimization risk backtesting reports pool forecasting domain -ll -q
+      - name: pip-audit (installed project closure)
+        # Audits the environment CI just built from pyproject, which is the
+        # project's own dependency closure. PYSEC-2026-3412 (weasyprint, an
+        # optional PDF extra not installed here) has no published fix.
+        run: python -m pip_audit --ignore-vuln PYSEC-2026-3412
+
+  types:
+    name: mypy (non-blocking report)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: mypy on the decision core
+        # 68 pre-existing errors at baseline. Reported, not gated, until the
+        # count reaches zero; the number should trend down.
+        run: python -m mypy optimization risk backtesting api ingestion domain --ignore-missing-imports || true
+
   frontend:
     name: next build
     runs-on: ubuntu-latest

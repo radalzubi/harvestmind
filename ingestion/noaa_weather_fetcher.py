@@ -114,6 +114,6 @@ def fetch_and_store(conn, days_back: int = 30) -> int:
         "drought_monitor_cat, enso_oni_index, gdd_base10"
     )
     conn.execute(
-        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"
+        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"  # nosec B608 - cols from schema constant
     )
     return len(df)

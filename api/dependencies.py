@@ -12,16 +12,35 @@ from fastapi import Depends, Header, HTTPException, Request
 ROOT = Path(__file__).resolve().parents[1]
 
 
+_ENFORCED_ENVS = ("pilot", "prod", "production", "staging")
+
+
+def deployment_env() -> str:
+    """HARVESTMIND_ENV: dev (default), pilot, staging or prod."""
+    return os.getenv("HARVESTMIND_ENV", "dev").strip().lower() or "dev"
+
+
 def auth_required() -> bool:
     """Whether the API enforces operator authentication.
 
-    Default OFF (localhost / dev, preserving existing behavior). Set
-    HARVESTMIND_AUTH_REQUIRED=true in any networked/pilot deployment: then
-    every operator-scoped request MUST carry a valid API token and
-    `operator_id` is taken from that token, never from a query/body param.
-    Read live (not cached) so tests and deployments can flip it via env.
+    FAIL-CLOSED OUTSIDE DEV. Authentication is enforced when EITHER
+    HARVESTMIND_AUTH_REQUIRED=true OR HARVESTMIND_ENV names a deployed
+    environment (pilot, staging, prod). An explicit
+    HARVESTMIND_AUTH_REQUIRED=false does NOT switch enforcement off in a
+    deployed environment: the previous behaviour let a networked pilot ship
+    with the dev default, in which any caller could select any operator's
+    vault with ?operator_id=. Dev stays permissive so local work and the
+    test-suite are unchanged. Read live so tests can flip it via env.
     """
+    if deployment_env() in _ENFORCED_ENVS:
+        return True
     return os.getenv("HARVESTMIND_AUTH_REQUIRED", "false").lower() == "true"
+
+
+def auth_posture() -> dict:
+    """What /health reports so an operator can see the posture, not guess it."""
+    return {"env": deployment_env(), "auth_enforced": auth_required(),
+            "rate_limit_per_min": int(os.getenv("HARVESTMIND_RATE_LIMIT_PER_MIN", "0"))}
 
 
 def _token_from_headers(authorization: str | None, x_api_key: str | None) -> str | None:

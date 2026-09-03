@@ -204,7 +204,7 @@ def fetch_and_store_forecast(
         "drought_monitor_cat, enso_oni_index, gdd_base10"
     )
     conn.execute(
-        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"
+        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"  # nosec B608 - cols from schema constant
     )
     return len(df)
 
@@ -238,6 +238,6 @@ def fetch_and_store(
         "drought_monitor_cat, enso_oni_index, gdd_base10"
     )
     conn.execute(
-        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"
+        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"  # nosec B608 - cols from schema constant
     )
     return len(df)

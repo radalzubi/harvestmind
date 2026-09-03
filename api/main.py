@@ -78,7 +78,34 @@ app.include_router(admin.router)
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "harvestmind-api"}
+    """Liveness plus security posture, so a deployment can be checked from
+    outside rather than trusted. Never includes secrets or paths."""
+    from api.dependencies import auth_posture
+    return {"status": "ok", "service": "harvestmind-api", **auth_posture()}
+
+
+@app.get("/ready")
+def ready():
+    """Readiness: the root database opens and the solver is importable."""
+    import duckdb
+    from api.dependencies import get_db_path
+    checks = {}
+    try:
+        conn = duckdb.connect(get_db_path(), read_only=True)
+        conn.execute("SELECT 1").fetchone()
+        conn.close()
+        checks["database"] = "ok"
+    except Exception as exc:  # noqa: BLE001
+        checks["database"] = f"unavailable: {type(exc).__name__}"
+    try:
+        import highspy  # noqa: F401
+        checks["solver"] = "ok"
+    except Exception as exc:  # noqa: BLE001
+        checks["solver"] = f"unavailable: {type(exc).__name__}"
+    ok = all(v == "ok" for v in checks.values())
+    from fastapi.responses import JSONResponse
+    return JSONResponse(status_code=200 if ok else 503,
+                        content={"status": "ready" if ok else "not_ready", **checks})
 
 
 @app.get("/")

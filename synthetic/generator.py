@@ -35,7 +35,7 @@ _RNG_SEED = int(os.getenv("SYNTHETIC_SEED", "42"))
 
 def _sid(prefix: str, *parts: str) -> str:
     """Deterministic stable ID from a prefix + content hash."""
-    h = hashlib.md5("|".join(parts).encode()).hexdigest()[:12]
+    h = hashlib.md5("|".join(parts).encode(), usedforsecurity=False).hexdigest()[:12]
     return f"{prefix}-{h}"
 
 

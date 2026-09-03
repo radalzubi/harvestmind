@@ -219,19 +219,19 @@ def ingest_csv(
         return 0
 
     if if_exists == "replace":
-        conn.execute(f"DELETE FROM {table}")  # noqa: S608  table is allowlisted
+        conn.execute(f"DELETE FROM {table}")  # noqa: S608  table is allowlisted  # nosec B608 - table allowlisted
 
     if if_exists == "ignore":
         # Position-based insert — requires UNIQUE/PK constraints on the table.
         # SELECT * passes all DataFrame columns by position; DuckDB raises if
         # column counts mismatch, which is the correct behaviour for normalized tables.
-        conn.execute(f"INSERT OR IGNORE INTO {table} SELECT * FROM df")  # noqa: S608
+        conn.execute(f"INSERT OR IGNORE INTO {table} SELECT * FROM df")  # noqa: S608  # nosec B608 - table allowlisted
     else:
         # For "append" and "replace" (after DELETE): use explicit column names so
         # that schema columns with DEFAULT values (e.g. imported_at) are not
         # required in the CSV and receive their defaults automatically.
         cols = ", ".join(f'"{c}"' for c in df.columns)
-        conn.execute(f'INSERT INTO {table} ({cols}) SELECT {cols} FROM df')  # noqa: S608
+        conn.execute(f'INSERT INTO {table} ({cols}) SELECT {cols} FROM df')  # noqa: S608  # nosec B608 - table allowlisted
     return n
 
 

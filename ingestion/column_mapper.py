@@ -287,7 +287,7 @@ def detect_and_convert_units(
 def _row_hash(row: pd.Series, prefix: str) -> str:
     """Stable short hash of all row values — used for deterministic synthetic IDs."""
     payload = "|".join(str(v) for v in row.to_list())
-    return f"{prefix}-{hashlib.md5(payload.encode('utf-8')).hexdigest()[:8].upper()}"
+    return f"{prefix}-{hashlib.md5(payload.encode('utf-8'), usedforsecurity=False).hexdigest()[:8].upper()}"
 
 
 _INSERT_IDENT_RE = __import__("re").compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -321,16 +321,16 @@ def insert_from_df(
     cols_sql = ", ".join(df.columns)
     conflict_sql = " ON CONFLICT DO NOTHING" if on_conflict == "ignore" else ""
 
-    before = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
+    before = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]  # nosec B608 - identifier validated by _INSERT_IDENT_RE
     conn.register("hm_insert_df", df)
     try:
         conn.execute(
-            f"INSERT INTO {table_name} ({cols_sql}) "
+            f"INSERT INTO {table_name} ({cols_sql}) "  # nosec B608 - identifier validated by _INSERT_IDENT_RE
             f"SELECT {cols_sql} FROM hm_insert_df{conflict_sql}"
         )
     finally:
         conn.unregister("hm_insert_df")
-    after = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
+    after = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]  # nosec B608 - identifier validated by _INSERT_IDENT_RE
     return int(after - before)
 
 

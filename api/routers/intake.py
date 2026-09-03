@@ -217,6 +217,28 @@ async def upload_csv(
         # Apply column map for checks
         mapped_df = full_df.rename(columns=col_map)
 
+        # Columns the staging table cannot hold are dropped with a warning
+        # rather than passed to the insert, which previously surfaced as a
+        # DuckDB binder error and a 500. The operator sees which columns
+        # were ignored; nothing is silently reinterpreted.
+        try:
+            known_cols = {row[1] for row in conn.execute(
+                f"PRAGMA table_info('{table}')").fetchall()}  # nosec B608 - table allowlisted
+        except Exception:  # noqa: BLE001
+            known_cols = set()
+        if known_cols:
+            extra = [c for c in mapped_df.columns if c not in known_cols]
+            if extra:
+                warnings.append(
+                    f"Ignored {len(extra)} column(s) not in {table}: "
+                    f"{extra[:8]}{' ...' if len(extra) > 8 else ''}")
+                mapped_df = mapped_df.drop(columns=extra)
+                full_df = full_df.drop(columns=[c for c in full_df.columns
+                                                 if col_map.get(c, c) in extra])
+                # legacy path re-reads the temp file: rewrite it without the
+                # dropped columns so both paths see the same frame
+                full_df.to_csv(tmp_path, index=False)
+
         # Check for all-null required columns after mapping
         for req in meta["required_cols"]:
             if req in mapped_df.columns:
@@ -363,7 +385,7 @@ def load_sample_data(conn=Depends(get_conn)):
 def clear_staging_table(table: str, conn=Depends(get_conn)):
     """Truncate a staging table to allow clean re-upload."""
     _validate_staging_table(table)
-    conn.execute(f"DELETE FROM {table}")  # noqa: S608  table is allowlisted
+    conn.execute(f"DELETE FROM {table}")  # noqa: S608  table is allowlisted  # nosec B608 - table allowlisted by _validate_staging_table
     return {"table": table, "status": "cleared"}
 
 
@@ -373,7 +395,7 @@ def intake_status(conn=Depends(get_conn)):
     result: dict[str, Any] = {}
     for table, meta in STAGING_TABLES.items():
         try:
-            row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()  # noqa: S608
+            row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()  # noqa: S608  # nosec B608 - table allowlisted by _validate_staging_table
             count = int(row[0]) if row else 0
         except Exception:
             count = 0
