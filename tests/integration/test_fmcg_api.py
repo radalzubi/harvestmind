@@ -58,22 +58,38 @@ def test_upload_plan_explain_audit(client, history):
     ready = cl.get("/fmcg/readiness", headers=h).json()
     assert ready["verdict"] in ("READY", "READY_WITH_CAVEATS") and "weakened_conclusions" in ready
 
+    stt = cl.get("/fmcg/state?train_weeks=40", headers=h)
+    assert stt.status_code == 200, stt.text
+    body = stt.json()
+    assert abs(sum(body["portfolio"]["probabilities"].values()) - 1.0) < 1e-6
+    assert set(body["sku"]) and set(body["supplier"]) and "posture" in body and body["replan_triggers"]
+    assert body["signal_sources"]["provenance"] in ("REAL_PUBLIC", None)
+    # a route with no port signal is reported UNAVAILABLE, never assumed normal
+    assert all(("available" in v) for v in body["signals"].values())
+
     r = cl.post("/fmcg/plan?mode=safe&horizon_weeks=12&commit_window_weeks=4&train_weeks=40&scenarios=10", headers=h)
     assert r.status_code == 200, r.text
     plan = r.json()
-    assert plan["mode_run"] in ("incumbent", "order_up_to", "deterministic_sp", "stochastic_sp", "anchored_sp")
+    assert plan["mode_run"] in ("incumbent", "order_up_to", "deterministic_sp", "stochastic_sp", "anchored_sp", "adaptive_sp")
     assert plan["baseline_policy"].startswith("client policy") and plan["reason"]
-    assert set(plan["candidate_evidence"]) >= {"order_up_to", "deterministic_sp", "stochastic_sp", "anchored_sp"}
+    # the posture decides which candidates are even evaluated
+    assert set(plan["candidate_evidence"]) <= set(plan["candidates_admitted"])
+    assert set(plan["candidate_evidence"]) >= {"order_up_to", "deterministic_sp"}
+    assert abs(sum(plan["state"]["portfolio"]["probabilities"].values()) - 1.0) < 1e-6
+    assert 0.0 <= plan["autonomy"]["score"] <= 1.0 and plan["narrative"].startswith("Current regime")
+    assert plan["posture"]["commit_window"] >= 1
     assert plan["unit"] == "each" and plan["currency"] == "USD" and plan["run_id"].startswith("run-")
     assert plan["economics_provenance"]["unit_cost"] == "operator"
     assert plan["economics_provenance"]["supplier_fill"] == "measured"
     assert plan["supply_model"]["method"] == "moving_block_bootstrap"
     assert plan["regime"]["dominant"] and plan["carrying_cost_sensitivity"]
-    assert plan["executable_until_week"] == 4 and plan["advisory_horizon_weeks"] == 12
+    assert 1 <= plan["executable_until_week"] <= 4 == plan["commit_window_requested"]
+    assert plan["advisory_horizon_weeks"] == 12
     assert plan["orders"], "no orders recommended"
     statuses = {o["status"] for o in plan["orders"]}
     assert statuses <= {"EXECUTABLE", "ADVISORY"}
-    assert all(o["status"] == ("EXECUTABLE" if o["week_offset"] < 4 else "ADVISORY") for o in plan["orders"])
+    cw = plan["executable_until_week"]
+    assert all(o["status"] == ("EXECUTABLE" if o["week_offset"] < cw else "ADVISORY") for o in plan["orders"])
     for o in plan["orders"]:
         assert abs(o["order_units"] / o["units_per_lot"] - round(o["order_units"] / o["units_per_lot"])) < 1e-6
         assert "incumbent_units" in o and "deviation_from_incumbent" in o and o["regime"]

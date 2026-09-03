@@ -26,6 +26,8 @@ the only code that knows them apart:
 | ordering | continuous | whole lots, MOQ (MILP) |
 
 FMCG operators upload their exports to `stg_fmcg_*` and call `POST /fmcg/plan` (Next.js `/fmcg`, Streamlit page 09).
+Before any candidate runs, the **adaptive state layer** (`adaptive/`) estimates the operating state from the operator's own supply and demand history plus public logistics signals: regime probabilities (not a label), a stress score with named components, change points that need two bad receipts rather than one, and per-SKU hysteresis. The state sets the optimizer's *posture* — scenario width, CVaR weight, regret budget, how far it may move from the incumbent, how much it is charged for churn, how long orders stay executable, and which candidates the safe gate may even consider. `GET /fmcg/state` shows it; `POST /fmcg/plan` returns it with every plan (`docs/optimization/ADAPTIVE_DECISION_ENGINE.md`, validation in `docs/validation/ADAPTIVE_ENGINE_VALIDATION.md`).
+
 The default FMCG mode is **SAFE_SELECTED** (`mode=safe`): the operator's own policy is the incumbent, candidates are backtested on the operator's history in multiple leakage-free folds with recorded supplier outcomes, and a candidate displaces the incumbent only when its conservative lower bound on improvement clears a threshold, service is non-inferior, downside regret is within budget, and it is confirmed on held-out folds. `mode_run=incumbent` with `No candidate cleared the conservative improvement threshold` is a successful result (`docs/optimization/SAFE_ADAPTIVE_OPTIMIZER.md`).
 
 The earlier mode, **SELECTED**: order-up-to, the deterministic

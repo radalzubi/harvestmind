@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import Any
 
 import statistics as st
+from pathlib import Path
 from datetime import date
 
 import numpy as np
@@ -27,6 +28,9 @@ from backtesting.counterfactual import (
 from backtesting.incumbent import configured_incumbent, infer_incumbent
 from backtesting.regime import diagnose, summarize as regime_summary
 from backtesting.safe_selector import INCUMBENT, SafeSelectionConfig, safe_select
+from adaptive.controller import explain_posture
+from adaptive.engine import estimate, in_recovery_by_route, p_disruptive_by_route
+from adaptive.signals import SignalStore, load_portwatch_signals
 from domain.carrying_cost import CarryingCostComponents, sensitivity_grid
 from domain.economics import Provenance, ServiceTarget
 from ingestion.pilot_readiness import assess as assess_readiness
@@ -305,9 +309,59 @@ def build_inputs(conn, *, horizon: int, train_weeks: int, service_level: float,
     return fi, report
 
 
+PORTWATCH_CSV = Path(__file__).resolve().parents[2] / "data" / "external" / "portwatch" / "regional_ports_daily.csv"
+PORT_OF_ROUTE = {"aqaba": "AQABA", "red_sea": "AQABA", "sea": "AQABA", "haifa": "HAIFA"}
+
+
+def _signal_store() -> tuple[SignalStore, dict]:
+    """Logistics evidence available to the planner: IMF PortWatch monthly
+    throughput (REAL PUBLIC) for the ports the operator's routes touch.
+    A missing file yields an EMPTY store, which the estimator reads as
+    evidence UNAVAILABLE, never as normal conditions."""
+    store = SignalStore(max_age_days=75.0)          # monthly series: two missed months = stale
+    n = load_portwatch_signals(store, PORTWATCH_CSV, ports=("Aqaba",))
+    return store, {"portwatch_rows": n, "path": str(PORTWATCH_CSV.name), "provenance": "REAL_PUBLIC" if n else None}
+
+
+def _state_for(fi, evidence_strength: float = 0.0):
+    store, src = _signal_store()
+    est = estimate(fi, store, evidence_strength=evidence_strength, port_of_route=PORT_OF_ROUTE)
+    est.posture.p_disruptive_by_route = p_disruptive_by_route(est, fi)  # type: ignore[attr-defined]
+    est.posture.in_recovery_by_route = in_recovery_by_route(est, fi)    # type: ignore[attr-defined]
+    return est, src
+
+
+def _replan_triggers(est) -> list:
+    p = est.portfolio
+    out = [f"portfolio p(disruptive) crosses {'0.35 (exit)' if p.p_disruptive() > 0.6 else '0.60 (enter)'}",
+           "a change-point alarm on any supplier's fill or lead series",
+           "demand level shift beyond 2 sd on any SKU (CUSUM)",
+           "port throughput index below 0.85 on a route the operator uses, or the signal going stale",
+           "inventory discrepancy above 10%", "promotion calendar change inside the horizon"]
+    return out
+
+
+@router.get("/state")
+def state(
+    horizon_weeks: int = Query(12, ge=4, le=26),
+    train_weeks: int = Query(52, ge=MIN_HISTORY_WEEKS, le=156),
+    conn=Depends(get_conn),
+    authed: str | None = Depends(require_operator),
+):
+    """The operating state as the engine sees it: regime probabilities,
+    stress with its named components, change points, signal freshness,
+    and the posture the optimizer would be given. Read-only."""
+    fi, report = build_inputs(conn, horizon=horizon_weeks, train_weeks=train_weeks, service_level=0.97,
+                              holding_rate_per_week=None, currency="USD", incumbent_cover_weeks=None)
+    est, src = _state_for(fi)
+    return {**est.as_dict(), "signal_sources": src, "economics_provenance": report["provenance"],
+            "replan_triggers": _replan_triggers(est),
+            "classification": "state estimate from operator history and public logistics signals; not a forecast"}
+
+
 @router.post("/plan", dependencies=[Depends(rate_limiter)])
 def plan(
-    mode: str = Query("safe", pattern="^(safe|selected|stochastic|deterministic|order_up_to|incumbent|anchored)$"),
+    mode: str = Query("safe", pattern="^(safe|adaptive|selected|stochastic|deterministic|order_up_to|incumbent|anchored)$"),
     horizon_weeks: int = Query(12, ge=4, le=26),
     commit_window_weeks: int = Query(4, ge=1, le=8),
     train_weeks: int = Query(52, ge=MIN_HISTORY_WEEKS, le=156),
@@ -339,10 +393,20 @@ def plan(
     sched: Any = None
     meta: dict = {}
     cfg = SafeSelectionConfig(min_rel_improvement=min_rel_improvement, n_scen=scenarios)
+    # ── adaptive state: estimated BEFORE any candidate runs, from history and signals only ──
+    est, signal_src = _state_for(fi)
+    fi.posture = est.posture
+    commit_window_requested = commit_window_weeks
+    commit_window_weeks = min(commit_window_weeks, int(est.posture.commit_window))
     if mode in ("safe", "selected"):
-        decision = safe_select(fi, cap_total, rng, cfg, extra_candidates={"anchored_sp": EXTRA_CANDIDATES["anchored_sp"]})
+        decision = safe_select(fi, cap_total, rng, cfg, posture=est.posture,
+                               extra_candidates={"anchored_sp": EXTRA_CANDIDATES["anchored_sp"],
+                                                 "adaptive_sp": EXTRA_CANDIDATES["adaptive_sp"]})
         sched, meta, mode_run = decision.schedule, dict(decision.meta), decision.mode_run
         warnings += decision.warnings
+    elif mode == "adaptive":
+        sched, meta = EXTRA_CANDIDATES["adaptive_sp"](fi, cap_total, rng, scenarios)  # type: ignore[operator]
+        mode_run = "adaptive_sp"
     elif mode == "incumbent":
         sched, meta, mode_run = fi.incumbent.build_schedule(fi), {"status": "heuristic"}, INCUMBENT  # type: ignore[union-attr]
     elif mode == "stochastic":
@@ -408,13 +472,27 @@ def plan(
                        scenario_config={"n_scen": scenarios, "seasonal": True, "promotions": len(fi.promo_multiplier),
                                         "supply_paths": "block_bootstrap" if fi.supply_events else "iid"},
                        objective_breakdown={"vss_evpi": info or {}, "regret": regret, "regime": reg_sum})
+    improvement = None
+    if decision and mode_run in decision.evidence and decision.evidence[mode_run].stats:
+        stt = decision.evidence[mode_run].stats
+        improvement = {"mean": stt.get("mean"), "lower_bound": stt.get("lower_bound"),
+                       "downside_regret": stt.get("downside_regret", 0.0)}
+    narrative = explain_posture(est.portfolio, est.posture, info, report["incumbent"], mode_run,
+                                decision.reason if decision else f"{mode_run} run as requested",
+                                improvement, commit_window_weeks, horizon_weeks)
     resp = {
         "run_id": audit.run_id, "mode_requested": mode, "mode_run": mode_run,
+        "state": {**est.as_dict(), "signal_sources": signal_src},
+        "posture": est.posture.as_dict(),
+        "autonomy": {"score": est.posture.autonomy, "reasons": est.posture.reasons},
+        "narrative": narrative,
         "baseline_policy": report["incumbent"], "incumbent_notes": report["incumbent_notes"],
         "reason": decision.reason if decision else f"{mode_run} run as requested; no selection performed",
         "candidate_policies": (list(decision.evidence) if decision else []),
         "candidate_evidence": (decision.as_dict()["candidates"] if decision else {}),
         "selection_gates": (decision.gates_config if decision else None),
+        "candidates_admitted": meta.get("candidates_admitted"),
+        "commit_window_requested": commit_window_requested,
         "conservative_improvement_vs_baseline": (
             decision.evidence[mode_run].stats.get("lower_bound") if decision and mode_run in decision.evidence else None),
         "service_difference_vs_baseline_pt": (
@@ -432,10 +510,8 @@ def plan(
         "supply_model": {"history_events": report["supply_history_events"], "route_tags": report["route_tags"],
                          "method": "moving_block_bootstrap" if fi.supply_events else "iid_fill_mean_lead"},
         "executable_until_week": commit_window_weeks, "advisory_horizon_weeks": horizon_weeks,
-        "next_replan": {"cadence_weeks": commit_window_weeks,
-                        "triggers": ["demand shift beyond the trailing p95", "supplier fill below 0.85 on any route",
-                                     "lead-time change of one week or more", "inventory discrepancy above 10%",
-                                     "promotion calendar change inside the horizon"]},
+        "next_replan": {"cadence_weeks": commit_window_weeks, "adaptive_commit_window": est.posture.commit_window,
+                        "triggers": _replan_triggers(est)},
         "solver_status": meta.get("status", "heuristic"), "warnings": warnings + list(meta.get("warnings", [])),
         "horizon_weeks": horizon_weeks, "unit": "each", "currency": currency,
         "products_planned": len(fi.products), "promotions_applied": len(fi.promo_multiplier),

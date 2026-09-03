@@ -99,7 +99,11 @@ SELECTED and not the stochastic model alone, and the reason the first
 pilot must measure the operator's actual carrying cost before promising
 anything.
 
-## Safe adaptive decision engine (this pass)
+## Adaptive decision engine (post-research pass)
+
+The hard regime labels are replaced by an estimated operating state (regime probabilities, stress with named components, change points that need two bad receipts, per-SKU hysteresis, logistics signals with provenance and staleness where absence is never read as normal) and a state-dependent posture that changes *how* the optimizer optimizes: scenario width and persistence, CVaR weight and level on baseline-relative regret, regret budget, anchoring scale, per-SKU trust regions inside the MILP, a plan-stability cost against the previously published schedule, the executable commit window, the safe gate's thresholds, and which candidates are admitted at all. An autonomy score summarises how much freedom the optimizer is given and why; less evidence always means less autonomy. Transition behaviour (progressive disruption, sudden shock, false alarm, demand-only shock, recovery, asymmetric suppliers, easy/slack) is validated closed-loop on unseen seeds in `docs/validation/ADAPTIVE_ENGINE_VALIDATION.md`; design in `docs/optimization/ADAPTIVE_DECISION_ENGINE.md`. The engine has not been run on a real operator's live data.
+
+## Safe adaptive decision engine (previous pass)
 
 The product no longer chooses among optimizers; it tests whether departing
 from the operator's own policy is justified. Frozen design, unseen seeds,

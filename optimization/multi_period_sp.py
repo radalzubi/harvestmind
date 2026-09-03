@@ -94,6 +94,15 @@ class MultiPeriodStochasticLP:
     # Per-scenario baseline costs, if the caller already evaluated them;
     # otherwise computed here by a fixed-schedule solve.
     baseline_scenario_costs: dict | None = None
+    # Trust region: product -> fraction; |x - b| <= frac * max(b, one lot) per
+    # (supplier, product, period). Inside the MILP, so MOQ, pallet and
+    # capacity constraints still hold. Requires baseline_schedule.
+    trust_region_by_product: dict | None = None
+    trust_region_lower: bool = True      # False keeps only "no more than incumbent + width"
+    # Plan stability: cost per unit of change vs the previously published
+    # schedule (per unit cost fraction is the caller's choice); linearised.
+    previous_schedule: dict | None = None
+    change_cost_by_product: dict | None = None
     # Transfers between locations. A "location" is expressed by the caller
     # as a distinct product key (e.g. "SKU-1@WH-A"); an arc
     # (from_key, to_key, cost_per_unit, lead_periods) lets stock move
@@ -228,16 +237,31 @@ class MultiPeriodStochasticLP:
                       if float(r) > 0}
         anchored = bool(base_sched) and bool(anchor_rho)
         base_costs = {int(w): float(c) for w, c in (self.baseline_scenario_costs or {}).items()}
+        ref_warnings: list = []
         use_cvar = bool(base_sched) and (self.regret_cvar_lambda > 0
                                          or self.regret_cvar_budget is not None)
         if use_cvar and not base_costs:
             # Evaluate the baseline once on the same scenarios so regret is
             # relative to what the incumbent would actually have cost here.
-            ref = MultiPeriodStochasticLP(**{**self.__dict__, "fixed_schedule": base_sched,
+            # The incumbent is evaluated the way the settlement treats it:
+            # orders clipped to supplier capacity, no service floor, no lot
+            # integrality (its quantities are what they are), no hard
+            # inventory cap (overflow is priced through holding here and as
+            # disposal in the settlement). The planner's own constraints
+            # still bind the planner; they are not a reason to have no
+            # reference.
+            cap_ij = {(str(r.supplier_id), str(r.product_id)): float(r.capacity_kg)
+                      for r in supply.itertuples()} if "capacity_kg" in supply.columns else {}
+            ref_sched = {k: min(q, cap_ij.get((k[0], k[1]), q)) for k, q in base_sched.items()}
+            ref = MultiPeriodStochasticLP(**{**self.__dict__, "fixed_schedule": ref_sched,
                                             "baseline_schedule": None, "anchor_rho_by_product": None,
                                             "regret_cvar_lambda": 0.0, "regret_cvar_budget": None,
                                             "baseline_scenario_costs": None,
-                                            "service_floor_by_product": None})
+                                            "service_floor_by_product": None, "pack_specs": None,
+                                            "inventory_capacity_total": None,
+                                            "inventory_capacity_by_product": None,
+                                            "trust_region_by_product": None, "previous_schedule": None,
+                                            "change_cost_by_product": None})
             r_ref = ref.solve(demand_scenarios, supply, lead_times=lead_times,
                               yield_scenarios=yield_scenarios,
                               opening_inventory=opening_inventory)
@@ -246,6 +270,55 @@ class MultiPeriodStochasticLP:
                                  f"scenario set (status {r_ref['status']}); it is "
                                  "not a feasible reference here")
             base_costs = {int(w): float(c) for w, c in r_ref["scenario_costs"].items()}
+            if any(ref_sched[k] < base_sched[k] for k in base_sched):
+                ref_warnings.append("baseline orders above supplier capacity were clipped for the reference")
+
+        trust = {str(j): float(f) for j, f in (self.trust_region_by_product or {}).items()
+                 if str(j) in products and float(f) >= 0}
+        if trust and base_sched:
+            lot_of = {str(j): (specs[j].lot_units if j in specs else 1.0) for j in products}
+            cap_ij_tr = {(str(r.supplier_id), str(r.product_id)): float(r.capacity_kg)
+                         for r in supply.itertuples()} if "capacity_kg" in supply.columns else {}
+
+            # Width is at least one lot so pack rounding can never make the
+            # region empty: a baseline of 100 units with 12-unit cases and a
+            # 3% region still admits 96 and 108. The region is centred on the
+            # baseline as it could actually be executed (clipped to supplier
+            # capacity), the same reference the regret uses.
+            def _centre(i, j, t):
+                b = base_sched.get((i, j, t), 0.0)
+                return min(b, cap_ij_tr.get((i, j), b))
+
+            def _width(j, b):
+                return max(trust[j] * b, lot_of[j])
+
+            def trust_hi(mm, i, j, t):
+                if j not in trust:
+                    return pyo.Constraint.Skip
+                b = _centre(i, j, t)
+                return mm.x[i, j, t] <= b + _width(j, b)
+
+            def trust_lo(mm, i, j, t):
+                if j not in trust or not self.trust_region_lower:
+                    return pyo.Constraint.Skip
+                b = _centre(i, j, t)
+                return mm.x[i, j, t] >= max(b - _width(j, b), 0.0)
+
+            m.trust_hi = pyo.Constraint(m.IJ, m.T, rule=trust_hi)
+            m.trust_lo = pyo.Constraint(m.IJ, m.T, rule=trust_lo)
+
+        prev_sched = {(str(i), str(j), int(t)): float(q)
+                      for (i, j, t), q in (self.previous_schedule or {}).items()}
+        chg = {str(j): float(c) for j, c in (self.change_cost_by_product or {}).items() if float(c) > 0}
+        stabilised = bool(chg) and self.previous_schedule is not None
+        if stabilised:
+            m.chg_plus = pyo.Var(m.IJ, m.T, domain=pyo.NonNegativeReals)
+            m.chg_minus = pyo.Var(m.IJ, m.T, domain=pyo.NonNegativeReals)
+
+            def chg_rule(mm, i, j, t):
+                return mm.x[i, j, t] - prev_sched.get((i, j, t), 0.0) == mm.chg_plus[i, j, t] - mm.chg_minus[i, j, t]
+
+            m.chg = pyo.Constraint(m.IJ, m.T, rule=chg_rule)
 
         if anchored:
             m.dev_plus = pyo.Var(m.IJ, m.T, domain=pyo.NonNegativeReals)
@@ -282,6 +355,9 @@ class MultiPeriodStochasticLP:
                              for (i, j) in mm.IJ for t in mm.T)
             if use_cvar and self.regret_cvar_lambda > 0:
                 total += float(self.regret_cvar_lambda) * cvar_expr(mm)
+            if stabilised:
+                total += sum(chg.get(j, 0.0) * (mm.chg_plus[i, j, t] + mm.chg_minus[i, j, t])
+                             for (i, j) in mm.IJ for t in mm.T)
             return total
 
         m.obj = pyo.Objective(rule=obj, sense=pyo.minimize)
@@ -473,10 +549,12 @@ class MultiPeriodStochasticLP:
             "regret_by_scenario": regret,
             "regret_cvar": cvar_val,
             "anchored": anchored,
+            "trust_region": trust,
+            "plan_stabilised": stabilised,
             "objective_bound": outcome.bound,
             "gap": outcome.gap,
             "runtime_s": outcome.runtime_s,
-            "warnings": list(outcome.warnings),
+            "warnings": list(outcome.warnings) + ref_warnings,
             "discrete_products": sorted(specs),
             "transfers": ({(arcs[a][0], arcs[a][1], t, w): float(pyo.value(m.z[a, t, w]) or 0.0)
                            for a in m.A for t in range(T) for w in scenarios

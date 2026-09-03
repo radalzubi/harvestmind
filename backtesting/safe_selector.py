@@ -36,8 +36,10 @@ Insufficient history returns the incumbent, never the stochastic model.
 
 from __future__ import annotations
 
+from typing import Any
+
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 
@@ -48,7 +50,7 @@ from backtesting.counterfactual import (
 from backtesting.incumbent import IncumbentPolicy, configured_incumbent
 
 INCUMBENT = "incumbent"
-COMPLEXITY = {"incumbent": 0, "order_up_to": 1, "deterministic_sp": 2, "anchored_sp": 3,
+COMPLEXITY = {"incumbent": 0, "order_up_to": 1, "deterministic_sp": 2, "anchored_sp": 3, "adaptive_sp": 3,
               "stochastic_sp": 4, "dro": 5}
 
 
@@ -212,8 +214,20 @@ def run_candidate(name: str, fi: FoldInputs, warehouse_cap, rng, n_scen: int,
 
 def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | None = None,
                 candidates: tuple = ("order_up_to", "deterministic_sp", "stochastic_sp"),
-                extra_candidates: dict | None = None) -> SafeDecision:
+                extra_candidates: dict | None = None, posture: Any = None) -> SafeDecision:
+    """``posture`` (adaptive.controller.Posture) makes the gate state-
+    dependent: the improvement threshold and confidence come from the
+    posture, the candidate set is the posture's admitted set intersected
+    with what the caller offers, and the decision records the posture."""
     cfg = cfg or SafeSelectionConfig()
+    posture_meta: dict = {}
+    if posture is not None:
+        cfg = replace(cfg, min_rel_improvement=float(posture.min_rel_improvement),
+                      confidence=float(posture.confidence))
+        admitted = set(posture.candidates)
+        candidates = tuple(c for c in candidates if c in admitted)
+        extra_candidates = {k: v for k, v in (extra_candidates or {}).items() if k in admitted}
+        posture_meta = {"posture": posture.as_dict(), "candidates_admitted": sorted(admitted)}
     if fi.incumbent is None:
         fi.incumbent = configured_incumbent(cover_weeks=max(fi.lead_of.values()) + 1 if fi.lead_of else 2.0)
         inc_note = "no incumbent supplied; a lead+1 order-up-to stands in and is labelled so"
@@ -227,7 +241,7 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
         sched, _ = run_candidate(INCUMBENT, fi, warehouse_cap, rng, cfg.n_scen)
         return SafeDecision(mode_run=INCUMBENT, schedule=sched, reason=reason, incumbent_label=label,
                             evidence=evidence or {}, gates_config=cfg.__dict__.copy(),
-                            history_periods=n_hist, warnings=warnings)
+                            history_periods=n_hist, warnings=warnings, meta=dict(posture_meta))
 
     if n_hist < cfg.min_history:
         return decide_incumbent(f"insufficient history ({n_hist} < {cfg.min_history} periods); "
@@ -236,6 +250,8 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
     hold_folds = inner_folds(fi, cfg.n_holdout_folds, cfg.holdout, offset=0)
     if len(sel_folds) < 2:
         return decide_incumbent(f"only {len(sel_folds)} usable inner fold(s); incumbent retained")
+    if not candidates and not extra_candidates:
+        return decide_incumbent("the current posture admits no candidate beyond the incumbent")
 
     def evaluate(folds, names):
         base_costs, base_fill, base_inv = [], [], []
@@ -310,4 +326,4 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
                                f"over {evidence[winner].n_folds} folds, service non-inferior, downside within budget, "
                                f"confirmed on held-out folds",
                         incumbent_label=label, evidence=evidence, gates_config=cfg.__dict__.copy(),
-                        history_periods=n_hist, warnings=warnings, meta=meta)
+                        history_periods=n_hist, warnings=warnings, meta={**meta, **posture_meta})

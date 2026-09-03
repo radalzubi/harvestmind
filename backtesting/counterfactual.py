@@ -82,6 +82,13 @@ class FoldInputs:
     route_of: dict = field(default_factory=dict)
     # provenance of decisive economics, from CostConfig; here for reporting
     provenance: dict = field(default_factory=dict)
+    # Adaptive engine: the schedule published at the previous review (for
+    # the plan-stability cost) and an optional signal store / tracker handed
+    # through by the caller so the state estimate can use logistics evidence.
+    previous_schedule: dict | None = None
+    signal_store: Any = None
+    state_tracker: Any = None
+    posture: Any = None
 
     def history_periods_low(self, threshold: int = 52) -> bool:
         n = min(len(v) for v in self.train_demand.values()) if self.train_demand else 0
@@ -356,6 +363,12 @@ def _supply_scenarios(fi: FoldInputs, n_scen: int, rng, sups: list) -> tuple[dic
 
 
 def _scenarios(fi: FoldInputs, n_scen: int, rng) -> tuple[pd.DataFrame, dict, dict]:
+    """Seasonal demand bootstrap plus supply paths. When the fold carries a
+    POSTURE (adaptive engine), the demand spread is scaled by the posture's
+    scenario width and the supply paths are conditioned on the estimated
+    disruption probability per route; every optimizer candidate then sees
+    the same state-conditioned scenarios, so the selection compares
+    policies, not scenario sets."""
     rows = []
     sups = sorted(set(fi.supplier_of.values()))
     pools = {j: [_seasonal_pool(fi.train_demand[j], h) for h in range(fi.horizon)]
@@ -368,6 +381,19 @@ def _scenarios(fi: FoldInputs, n_scen: int, rng) -> tuple[pd.DataFrame, dict, di
                 d *= float(fi.promo_multiplier.get((j, t), 1.0))
                 rows.append({"scenario_index": w, "scenario_weight": 1 / n_scen,
                              "product_id": j, "period": t, "demand_kg": d})
+    posture = getattr(fi, "posture", None)
+    if posture is not None:
+        from adaptive.conditional_scenarios import conditional_supply_paths, widen_demand
+        rows = widen_demand(rows, float(posture.scenario_width), rng)
+        est = getattr(posture, "estimate", None)
+        p_route = getattr(posture, "p_disruptive_by_route", None) or {}
+        rec_route = getattr(posture, "in_recovery_by_route", None) or {}
+        if fi.supply_events and any(fi.supply_events.get(s_) for s_ in sups):
+            cs = conditional_supply_paths(fi.supply_events, sups, fi.route_of or {}, p_route, n_scen, fi.horizon,
+                                          rng, persistence=int(posture.persistence), in_recovery=rec_route,
+                                          default_lead=int(max(fi.lead_of.values())) if fi.lead_of else 2)
+            return pd.DataFrame(rows), cs.leads, cs.fills
+        del est
     fills, leads, _info = _supply_scenarios(fi, n_scen, rng, sups)
     return pd.DataFrame(rows), leads, fills
 
@@ -669,4 +695,70 @@ def policy_dro(fi: FoldInputs, warehouse_cap, rng, n_scen=30, radius: float = 0.
     return ({k: v for k, v in r["x"].items() if v > 0} if r["usable"] else None), r
 
 
-EXTRA_CANDIDATES = {"anchored_sp": policy_anchored_sp, "dro": policy_dro}
+def policy_adaptive_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=30) -> tuple[dict | None, dict]:
+    """The state-conditioned candidate: scenarios, CVaR weight and level,
+    regret budget, anchoring scale, per-SKU trust region and the plan-
+    stability cost all come from the fold's posture. Without a posture it
+    estimates one from the fold itself (no signal store)."""
+    from adaptive.engine import adaptive_kwargs, estimate, in_recovery_by_route, p_disruptive_by_route
+    from optimization.safe_stochastic import AnchorConfig, solve_anchored
+    posture = getattr(fi, "posture", None)
+    if posture is None:
+        est = estimate(fi, getattr(fi, "signal_store", None), tracker=getattr(fi, "state_tracker", None))
+        posture = est.posture
+        posture.p_disruptive_by_route = p_disruptive_by_route(est, fi)  # type: ignore[attr-defined]
+        posture.in_recovery_by_route = in_recovery_by_route(est, fi)    # type: ignore[attr-defined]
+        fi.posture = posture
+    scen, leads, fills = _scenarios(fi, n_scen, rng)
+    base = _incumbent_schedule(fi)
+    kw = _optimizer_kwargs(fi, warehouse_cap)
+    extra = adaptive_kwargs(fi, posture, base, fi.unit_cost)
+    kw.update({k: v for k, v in extra.items() if k not in ("baseline_schedule", "anchor_rho_by_product",
+                                                             "regret_cvar_alpha", "regret_cvar_lambda",
+                                                             "regret_budget_share")})
+    budget = None
+    if extra.get("regret_budget_share") is not None:
+        budget = float(extra["regret_budget_share"])           # share of baseline expected cost, resolved below
+    try:
+        anchor = AnchorConfig(rho_by_product=extra["anchor_rho_by_product"], cvar_alpha=float(extra["regret_cvar_alpha"]),
+                              cvar_lambda=float(extra["regret_cvar_lambda"]), cvar_budget=None)
+        r = solve_anchored(kw, scen, _supply_df(fi), baseline_schedule=base, anchor=anchor,
+                           lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
+        if r["usable"] and budget is not None and r.get("baseline_scenario_costs"):
+            b_exp = float(sum(float(r["scenario_weights"][w]) * float(c)
+                              for w, c in r["baseline_scenario_costs"].items())) if isinstance(r["scenario_weights"], dict) \
+                else float(np.mean(list(r["baseline_scenario_costs"].values())))
+            if r.get("regret_cvar") is not None and r["regret_cvar"] > budget * b_exp:
+                anchor = AnchorConfig(rho_by_product=anchor.rho_by_product, cvar_alpha=anchor.cvar_alpha,
+                                      cvar_lambda=anchor.cvar_lambda, cvar_budget=budget * b_exp)
+                r = solve_anchored(kw, scen, _supply_df(fi), baseline_schedule=base, anchor=anchor,
+                                   lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
+    except ValueError as exc:
+        return None, {"status": "error", "warnings": [str(exc)]}
+    if not r["usable"] and kw.get("service_floor_by_product"):
+        # Inside a trust region the service floor is a target, not a
+        # constraint: staying near the incumbent takes precedence, the
+        # shortfall is priced through the objective, and the relaxation
+        # is reported (and counted as a fallback by the selector).
+        kw["service_floor_by_product"] = None
+        r = solve_anchored(kw, scen, _supply_df(fi), baseline_schedule=base, anchor=anchor,
+                           lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
+        r["warnings"] = list(r.get("warnings", [])) + ["service floor unattainable inside the trust region; solved without it"]
+        r["floor_relaxed"] = True
+    if not r["usable"] and kw.get("trust_region_by_product"):
+        # A trust region the MILP still cannot satisfy is information. The
+        # lower bound is the one that can collide with the inventory cap
+        # (the incumbent would over-order into a full warehouse), so drop
+        # it and keep "no more than the incumbent plus the width", which is
+        # the safety-relevant half. Reported and counted as a fallback.
+        kw["trust_region_lower"] = False
+        r = solve_anchored(kw, scen, _supply_df(fi), baseline_schedule=base, anchor=anchor,
+                           lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
+        r["warnings"] = list(r.get("warnings", [])) + ["trust region lower bound infeasible (capacity); upper bound kept"]
+        r["trust_region_relaxed"] = True
+    r["candidate"] = "adaptive_sp"
+    r["posture"] = posture.as_dict()
+    return ({k: v for k, v in r["x"].items() if v > 0} if r["usable"] else None), r
+
+
+EXTRA_CANDIDATES = {"anchored_sp": policy_anchored_sp, "dro": policy_dro, "adaptive_sp": policy_adaptive_sp}

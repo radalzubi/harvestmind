@@ -28,7 +28,7 @@ python3 -m ruff check domain optimization/solve_status.py optimization/explain.p
 python3 -m ruff check . --statistics > artifacts/ruff_repo.txt 2>&1 || true
 
 step "mypy on the decision core (must be zero)"
-python3 -m mypy optimization risk backtesting api ingestion domain --ignore-missing-imports > artifacts/mypy.txt 2>&1 || fail=1
+python3 -m mypy optimization risk backtesting api ingestion domain adaptive --ignore-missing-imports > artifacts/mypy.txt 2>&1 || fail=1
 grep -c "error:" artifacts/mypy.txt | sed 's/^/  errors: /'
 
 step "bandit (medium+, must be zero)"

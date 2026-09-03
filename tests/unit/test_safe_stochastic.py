@@ -95,11 +95,18 @@ class TestAnchoringAndRegret:
         if not b.get("budget_relaxed"):
             assert b["regret_cvar"] <= 1e-6
 
-    def test_infeasible_baseline_reference_is_reported(self):
-        base = {("S", "A", 0): 10_000.0}          # above capacity: cannot be a feasible reference
-        with pytest.raises(ValueError, match="feasible reference"):
-            solve_anchored(_kw(), SCEN, _sup(), baseline_schedule=base,
+    def test_baseline_above_capacity_is_clipped_for_the_reference(self):
+        """The incumbent is evaluated the way the settlement treats it: an
+        order above supplier capacity is clipped, not declared infeasible,
+        and the clipping is reported."""
+        base = {("S", "A", 0): 10_000.0}          # far above the 400 capacity
+        r = solve_anchored(_kw(), SCEN, _sup(), baseline_schedule=base,
                            anchor=AnchorConfig(rho_by_product={}, cvar_lambda=1.0), lead_times=LEADS, yield_scenarios={})
+        assert r["usable"] and r["baseline_scenario_costs"]
+        assert any("clipped" in w for w in r["warnings"])
+        clipped = MultiPeriodStochasticLP(**_kw(), fixed_schedule={("S", "A", 0): 400.0}).solve(SCEN, _sup(), lead_times=LEADS)
+        for w, c in clipped["scenario_costs"].items():
+            assert r["baseline_scenario_costs"][w] == pytest.approx(c, rel=1e-6)
 
 
 class TestDRO:

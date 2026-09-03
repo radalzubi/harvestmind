@@ -72,6 +72,13 @@ class ArchetypeSpec:
     disruption_lead_mult: float = 1.0
     disrupted_supplier_share: float = 0.0
     service_target: float = 0.97
+    # Progressive episode: list of (week, fill_mult, lead_mult) breakpoints,
+    # linearly interpolated, applied to the disrupted suppliers. Lets a
+    # test build deterioration -> trough -> recovery, a false alarm (one
+    # week), or a demand-only shock (profile empty, demand_shock set).
+    disruption_profile: list = field(default_factory=list)
+    disrupted_suppliers: tuple = ()          # explicit supplier ids; overrides the share draw
+    demand_shock: tuple | None = None        # (week, len, multiplier) demand-side shock
 
 
 ARCHETYPES: dict[str, ArchetypeSpec] = {
@@ -136,7 +143,8 @@ def build_history(archetype: str = "A_stable", seed: int = 0,
         "base_fill": float(np.clip(rng.normal(sp.fill_mean, sp.fill_sd), 0.5, 1.0)),
         "lead_mean_weeks": float(max(0.5, rng.normal(sp.lead_mean_weeks, sp.lead_mean_weeks * 0.15))),
         "lead_cv": sp.lead_cv,
-        "disrupted": bool(rng.random() < sp.disrupted_supplier_share),
+        "disrupted": (f"SUP-{k+1:03d}" in sp.disrupted_suppliers) if sp.disrupted_suppliers
+                     else bool(rng.random() < sp.disrupted_supplier_share),
     } for k in range(sp.n_suppliers)])
 
     skus, pack_specs = [], {}
@@ -184,7 +192,24 @@ def build_history(archetype: str = "A_stable", seed: int = 0,
     season = 1.0 + sp.seasonal_amp * np.sin(2 * np.pi * np.arange(sp.weeks) / 52.0)
 
     # ── supplier state per week (disruption is a state, not a flag) ──────
+    def _profile_mult(w):
+        """(fill_mult, lead_mult) from the progressive profile at week w."""
+        pts = sorted(sp.disruption_profile)
+        if not pts or w < pts[0][0] or w > pts[-1][0]:
+            return 1.0, 1.0
+        for (w0, f0, l0), (w1, f1, l1) in zip(pts, pts[1:]):
+            if w0 <= w <= w1:
+                a = 0.0 if w1 == w0 else (w - w0) / (w1 - w0)
+                return f0 + (f1 - f0) * a, l0 + (l1 - l0) * a
+        return pts[-1][1], pts[-1][2]
+
     def supplier_state(sid_row, w):
+        if sp.disruption_profile:
+            fm, lm = _profile_mult(w)
+            hit = sid_row["disrupted"] and fm < 0.999
+            fill = sid_row["base_fill"] * (fm if sid_row["disrupted"] else 1.0)
+            lead = sid_row["lead_mean_weeks"] * (lm if sid_row["disrupted"] else 1.0)
+            return float(np.clip(fill, 0.0, 1.0)), float(lead), bool(hit)
         hit = (sp.disruption_week is not None and sid_row["disrupted"]
                and sp.disruption_week <= w < sp.disruption_week + sp.disruption_len)
         fill = sid_row["base_fill"] * (sp.disruption_fill_mult if hit else 1.0)
@@ -210,6 +235,8 @@ def build_history(archetype: str = "A_stable", seed: int = 0,
                 dem_total = 0.0
             else:
                 mult = season[w] * (sp.promo_uplift if r.sku in promo_sku.get(w, set()) else 1.0)
+                if sp.demand_shock and sp.demand_shock[0] <= w < sp.demand_shock[0] + sp.demand_shock[1]:
+                    mult *= float(sp.demand_shock[2])
                 dem_total = max(0.0, rng.normal(r.base_weekly_units * mult,
                                                 r.base_weekly_units * mult * sp.demand_cv))
             if r.abc == "C" and rng.random() < 0.35:

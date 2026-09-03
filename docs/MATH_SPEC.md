@@ -676,3 +676,26 @@ can see its own consequence.
 passes through `domain/money.py::Money`, a Decimal quantised to the
 currency's minor unit; a breakdown's total is the sum of its quantised
 parts exactly (`money_breakdown`), and cross-currency addition is refused.
+
+
+## 27. Adaptive state and posture  ★
+
+**State.** For entity $e$ (supplier, SKU, portfolio) and regime $r \in \mathcal{R}$ (ten regimes, four disruptive), evidence scores $s_e(r)$ are sums of named feature terms (§5.1 of the engine document) over a prior $s(\text{NORMAL}) = 2,\ s(\text{CALM}) = 1$, and
+$$p_e(r) = \frac{\exp(s_e(r)/\tau)}{\sum_{r'} \exp(s_e(r')/\tau)},\qquad \tau = 0.6 .$$
+A SKU $j$ with supplier $i$ mixes the supplier's supply-regime mass in directly:
+$p_j(r) \propto p_i(r)\,\mathbb{1}[r \in \mathcal{S}] + p_j^{\text{own}}(r)\,(1 - \sum_{r' \in \mathcal{S}} p_i(r'))$.
+The portfolio is the value-weighted mixture, plus $v_{\text{dis}} = \sum_j w_j \mathbb{1}[p_j(\mathcal{D}) > 0.5] / \sum_j w_j$.
+
+**Change points.** Two-sided CUSUM on $z_t = \text{clip}((x_t - \mu_0)/\sigma_0, \pm 4)$ with $S^+_t = \max(0, S^+_{t-1} + z_t - k)$, $S^-_t = \max(0, S^-_{t-1} - z_t - k)$, alarm when $\max(S^+, S^-) > h$, $k = 0.5$, $h = 5$, $\sigma_0 \ge 0.02|\mu_0|$. Page–Hinkley with $\delta = 0.5\sigma$, $\lambda = 4\sigma$. An alarm is evidence only if the estimated shift $\ge 6$ fill points.
+
+**Hysteresis.** $\bar p_t = (1-\alpha)\bar p_{t-1} + \alpha p_t$, $\alpha = 0.5$; the disrupted flag enters when $\bar p_t(\mathcal{D}) > 0.60$ and leaves after two consecutive updates with $\bar p_t(\mathcal{D}) < 0.35$; one tracker per SKU and one for the portfolio.
+
+**Stress.** $S = \sum_c w_c\, \phi_c \in [0,1]$ with the component weights listed in the engine document; components are reported with the score.
+
+**Posture.** Severity $t = \max(p^{\text{eff}}(\mathcal{D}),\ S,\ v_{\text{dis}})$ with $p^{\text{eff}} = \max(p, 0.6)$ while the flag holds. Every knob is a monotone interpolation $\kappa(t) = \kappa_0 + (\kappa_1 - \kappa_0)\,t$ between its calm and disrupted values: scenario width, block length, $\lambda_{\text{CVaR}}$, $\alpha_{\text{CVaR}}$, regret budget share, anchoring scale, change-cost rate, commit window, gate threshold and confidence. Trust-region fraction is stepped by SKU severity (5 / 15 / 40 / 80%) and scaled by $(0.5 + 0.5\,a)$ where the autonomy $a = \text{clip}(0.15 + 0.45 S + 0.40\, \text{evidence})$ is capped by data quality, calibration confidence and economics provenance.
+
+**Optimizer additions.** With baseline $b_{ijt}$ (clipped to supplier capacity) and width $w_{ijt} = \max(f_j b_{ijt},\ \ell_j)$ ($\ell_j$ one lot):
+$$\max(b_{ijt} - w_{ijt}, 0) \le x_{ijt} \le b_{ijt} + w_{ijt},$$
+and plan stability $x_{ijt} - x^{\text{prev}}_{ijt} = c^+_{ijt} - c^-_{ijt}$ with objective term $\sum \kappa_j (c^+_{ijt} + c^-_{ijt})$, $\kappa_j = $ unit cost $\times$ change-cost rate. These sit inside the MILP with the anchoring $\rho_j |x - b|$, the CVaR$_\alpha$ of baseline-relative regret (§21) and the optional hard regret budget.
+
+**Conditional scenarios.** Per scenario $\omega$ and route $g$, a disruption indicator $D_{\omega g} \sim \text{Bernoulli}(p_g(\mathcal{D}))$ shared by all suppliers on the route; when it fires, fills are multiplied by a deterioration–trough–recovery path (depth and length learned from the supplier's own worst episode when one exists, else the default profile labelled ASSUMED) and lead times stretched in proportion to the fill loss. Demand deviations from the cross-scenario mean are scaled by the posture width.
