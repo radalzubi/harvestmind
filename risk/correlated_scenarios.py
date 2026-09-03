@@ -4,8 +4,9 @@ WHY THIS EXISTS
 ---------------
 ``risk/scenario_generation.yield_scenarios_from_distributions`` draws each
 supplier's fill rate independently from its own Beta. That is wrong in a
-specific and costly way: weather is regional. A heat wave, a freeze or a
-drought hits every grower in a supply shed at once, so their shortfalls
+specific and costly way. In AGRICULTURE (Project A) the mechanism is
+regional weather: a heat wave, a freeze or a drought hits every grower in a
+supply shed at once, so their shortfalls
 arrive together rather than cancelling.
 
 The consequence is measurable, not theoretical. Independent draws average
@@ -15,6 +16,15 @@ VSS ~ 0 result we spent a long time explaining. Independence was doing the
 work, not the economics. Miranda & Glauber (1997) put the same point in
 insurance terms: correlated weather shocks make a book of business 20-50x
 riskier than independence implies (see agronomy/systemic_risk.py).
+
+In COMMERCIAL DISTRIBUTION (Project B) the mechanism is a SHARED CHANNEL,
+not shared geography. Two suppliers whose factories sit on different
+continents fail together if both ship through the same port, the same
+chokepoint or the same land crossing. The mathematics is identical, the
+covariance structure is not, and neither project's fitted correlation
+transfers to the other. Tag suppliers by route
+(risk/disruption_scenarios.ROUTES) rather than by region when estimating
+dependence for Project B.
 
 WHAT IS PRESERVED
 -----------------
@@ -254,7 +264,9 @@ def equicorrelation_matrix(n: int, rho: float) -> np.ndarray:
     """Constant-correlation matrix — the shared-regional-shock model.
 
     Used when there is not enough joint history to estimate a full matrix
-    but the operator knows their growers share a weather region. One
+    but the operator knows their suppliers share an exposure: a weather
+    region in agriculture, a port or land crossing in commercial
+    distribution. One
     number, honestly labelled, beats a noisy full matrix estimated from
     six overlapping deliveries.
     """
