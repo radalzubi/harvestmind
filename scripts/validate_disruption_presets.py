@@ -54,7 +54,8 @@ def _runs(flags: list[bool]) -> list[int]:
         if f:
             cur += 1
         elif cur:
-            out.append(cur); cur = 0
+            out.append(cur)
+            cur = 0
     if cur:
         out.append(cur)
     return out

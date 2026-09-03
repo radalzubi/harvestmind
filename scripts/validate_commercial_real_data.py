@@ -45,7 +45,7 @@ from synthetic.commercial.jordan_distributor_v2 import (  # noqa: E402
     ABC_STRUCTURE, GROSS_MARGIN_IMPORT, ROUTE_PROFILE,
 )
 from validation.commercial.real_data import (  # noqa: E402
-    PORT_DATA_START, REGIMES, demand_index, months_between, regime_of,
+    PORT_DATA_START, REGIMES, demand_index, regime_of,
     route_shock_panel,
 )
 
@@ -217,7 +217,8 @@ def _harness_failure(res: dict) -> str | None:
 
 def run_fold(op, months_all, index, shocks, origin_idx, train_m,
              n_scen, rng, base_units, idio_cv, opening_cover, seed,
-             inv_cap_months=2.0, service_z=1.64):
+             inv_cap_months=2.0, service_z=1.64,
+             iid_scenarios=False):
     train = months_all[origin_idx - train_m:origin_idx]
     evalm = months_all[origin_idx:origin_idx + HORIZON]
     if len(evalm) < HORIZON:
@@ -241,12 +242,40 @@ def run_fold(op, months_all, index, shocks, origin_idx, train_m,
 
     # ---- scenarios bootstrapped from the training window ----
     rows, leads, yields_ = [], {}, {}
-    growth = [index[train[i + 1]] / index[train[i]]
+    # Scenario paths by compounding resampled month-over-month growth.
+    #
+    # SEASONAL BY DEFAULT, and that is a correction rather than a
+    # preference. The original generator pooled every growth rate
+    # regardless of calendar month, which on a NOT seasonally adjusted
+    # series discards the strongest signal in it. Scored on 4,404
+    # origin-horizon pairs of real US Census history, the pooled version
+    # reached a Weighted Interval Score of 0.0541 against 0.0356 for the
+    # seasonal one, 52% worse, and worse than both a seasonal-naive and a
+    # random-walk reference. It was also badly over-dispersed: 95.9%
+    # coverage from a nominal 80% interval, so the optimizer was hedging
+    # against a spread far wider than history supports.
+    pooled = [index[train[i + 1]] / index[train[i]]
               for i in range(len(train) - 1) if index[train[i]] > 0]
+    by_month: dict[int, list[float]] = {}
+    for i in range(len(train) - 1):
+        if index[train[i]] > 0:
+            by_month.setdefault(int(train[i + 1][5:7]), []).append(
+                index[train[i + 1]] / index[train[i]])
+    origin_month = int(months_all[origin_idx][5:7])
+
+    def _pool(h: int) -> list[float]:
+        if iid_scenarios:
+            return pooled
+        cal = (origin_month + h - 1) % 12 + 1
+        # Fall back to the pooled set when a calendar bucket is too thin to
+        # resample from; three years of training gives only three draws.
+        return by_month.get(cal) or pooled
+
     for w in range(n_scen):
         path, cur = [], 1.0
-        for _ in range(HORIZON):
-            cur *= float(rng.choice(growth)) if growth else 1.0
+        for h in range(HORIZON):
+            pool_h = _pool(h)
+            cur *= float(rng.choice(pool_h)) if pool_h else 1.0
             path.append(cur)
         for j in keep:
             for t in range(HORIZON):
@@ -386,6 +415,19 @@ def main() -> int:
     p.add_argument("--real-supply-only", action="store_true",
                    help="only folds whose evaluation window has PortWatch data")
     p.add_argument("--stride", type=int, default=1)
+    p.add_argument("--csv", default=None,
+                   help="write one row per fold, so runs can be compared "
+                        "PAIRED on identical folds rather than by comparing "
+                        "two medians over two different fold sets.")
+    p.add_argument("--iid-scenarios", action="store_true",
+                   help="resample growth rates ignoring calendar month, the "
+                        "original behaviour. Measurably worse calibrated on "
+                        "real history; kept only for comparison.")
+    p.add_argument("--flat-supply", action="store_true",
+                   help="replace the measured route shocks with all-ones. "
+                        "The control arm: everything else identical, so any "
+                        "difference is attributable to supply uncertainty "
+                        "alone rather than to the period or the seeds.")
     p.add_argument("--inv-cap-months", type=float, default=2.0,
                    help="warehouse ceiling in months of demand; "
                         "real US wholesaler mean is 1.26, p90 1.35")
@@ -395,6 +437,8 @@ def main() -> int:
 
     index = demand_index()
     shocks = route_shock_panel()
+    if a.flat_supply:
+        shocks = {r: {m: 1.0 for m in s_} for r, s_ in shocks.items()}
     seeds = [int(s) for s in a.seeds.split(",")]
     months = [m for m in sorted(index) if m >= a.start]
 
@@ -402,8 +446,13 @@ def main() -> int:
     print("COMMERCIAL OPTIMIZER — BACKTEST ON REAL PUBLIC DATA")
     print("=" * 78)
     print("  demand path   US Census MWTS NAICS 4244 via FRED (real, NSA)")
-    print("  supply shocks IMF PortWatch AIS, per-route ports (real)")
+    print("  supply shocks " + ("DISABLED (control arm, all fills at base)"
+                                 if a.flat_supply else
+                                 "IMF PortWatch AIS, per-route ports (real)"))
     print(f"  cross-section synthetic; idio CV = {a.idio_cv}")
+    print("  scenarios     " + ("iid growth bootstrap (miscalibrated)"
+                               if a.iid_scenarios else
+                               "seasonal growth bootstrap"))
     print(f"  opening cover {a.opening_cover} months   horizon {HORIZON} months")
     print(f"  warehouse cap {a.inv_cap_months} months "
           f"(real wholesaler I/S mean 1.26, p90 1.35)")
@@ -411,6 +460,7 @@ def main() -> int:
           f"({len(months)} months, {len(seeds)} seeds)")
 
     TAGS = ("naive", "det_mean", "det_p90", "sp")
+    fold_rows: list[dict] = []
     BASES = ("naive", "det_mean", "det_p90")
     by_regime: dict[str, dict] = {}
     grand = {b: [] for b in BASES}
@@ -431,7 +481,8 @@ def main() -> int:
                 continue
             r = run_fold(op, months, index, shocks, oi, a.train_months,
                          a.scenarios, rng, a.base_units, a.idio_cv,
-                         a.opening_cover, seed, a.inv_cap_months, a.service_z)
+                         a.opening_cover, seed, a.inv_cap_months,
+                         a.service_z, a.iid_scenarios)
             if not r:
                 continue
             bad = [t for t in TAGS if _harness_failure(r[t])]
@@ -450,6 +501,14 @@ def main() -> int:
             # so the split cannot be drawn to favour the policy under test.
             # "binding" means the month was hard enough that missing demand
             # actually cost something.
+            fold_rows.append({
+                "seed": seed, "origin": months[oi], "eval_mid": mid,
+                "regime": regime, "real_supply": int(has_supply),
+                "mean_shock": round(r["_mean_shock"], 5),
+                **{f"{t}_{k}": round(r[t][k], 4)
+                   for t in TAGS
+                   for k in ("total", "shortage", "holding", "overflow",
+                             "fill_rate")}})
             _bt = r["det_mean"]["total"]
             _stratum = ("binding"
                         if _bt > 0 and r["det_mean"]["shortage"] / _bt > 0.20
@@ -495,7 +554,8 @@ def main() -> int:
                    ("det_p90", "SP vs cautious p90")):
         e = grand[b]
         if e:
-            lo = np.percentile(e, 25); hi = np.percentile(e, 75)
+            lo = np.percentile(e, 25)
+            hi = np.percentile(e, 75)
             print(f"    {lab:26} median {st.median(e):+7.2f}%  "
                   f"IQR [{lo:+.2f}, {hi:+.2f}]  "
                   f"wins {sum(1 for x in e if x > 0)}/{len(e)}")
@@ -514,6 +574,15 @@ def main() -> int:
                       f"wins {sum(1 for x in _e if x > 0)}/{len(_e)}   {_lab}")
     if suppressed:
         print(f"    folds suppressed by guard: {suppressed}")
+    if a.csv and fold_rows:
+        import csv as _csv
+        path = Path(a.csv)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w", newline="") as fh:
+            w = _csv.DictWriter(fh, fieldnames=list(fold_rows[0]))
+            w.writeheader()
+            w.writerows(fold_rows)
+        print(f"    per-fold rows -> {path}  ({len(fold_rows)} folds)")
     print("-" * 78 + "\n")
     return 0
 

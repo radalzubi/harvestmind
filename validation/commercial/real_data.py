@@ -42,7 +42,6 @@ from __future__ import annotations
 import csv
 import statistics as st
 from collections import defaultdict
-from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
