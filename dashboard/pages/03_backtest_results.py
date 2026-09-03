@@ -81,7 +81,7 @@ if run_btn:
             else:
                 st.error("Backtest produced no rows. Check that enough order history is loaded.")
         except Exception as e:
-            st.error(f"Backtest failed: {type(e).__name__}: {e}")
+            st.error(f"Backtest failed ({type(e).__name__}). See the server log.")
 
 # ── Display ───────────────────────────────────────────────────────────────
 if results_df is None or results_df.empty:

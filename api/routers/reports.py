@@ -54,7 +54,7 @@ def roi_report_html(
     try:
         html = render_roi_report(roi, results_df, partner_name=partner_name)
     except ROIReportError as e:
-        raise HTTPException(status_code=422, detail=str(e)) from e
+        raise HTTPException(status_code=422, detail=f"Report inputs invalid ({type(e).__name__})") from e
     return HTMLResponse(content=html)
 
 
@@ -79,7 +79,7 @@ def diagnostic_report_html(
     try:
         html = render_diagnostic_report(summary, partner_name=partner_name)
     except DiagnosticReportError as e:
-        raise HTTPException(status_code=422, detail=str(e)) from e
+        raise HTTPException(status_code=422, detail=f"Report inputs invalid ({type(e).__name__})") from e
     return HTMLResponse(content=html)
 
 

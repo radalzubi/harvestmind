@@ -189,7 +189,7 @@ async def upload_csv(
         except Exception as e:
             raise HTTPException(
                 status_code=422,
-                detail=f"Could not parse CSV: {e}",
+                detail=f"Could not parse CSV ({type(e).__name__}); check the delimiter, encoding and header row",
             )
 
         raw_cols = list(preview.columns)
@@ -472,7 +472,7 @@ async def extract_files(
         except ValueError as e:   # unsupported file type etc.
             raise HTTPException(
                 status_code=422,
-                detail=str(e))
+                detail=f"Confirmation failed ({type(e).__name__})")
         payload = result.model_dump()
         # original filenames, not temp names, for the UI
         payload["source_files"] = [f.filename for f in files]

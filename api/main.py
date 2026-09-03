@@ -63,6 +63,36 @@ async def security_headers(request, call_next):
     )
     return response
 
+# ── Request ids, structured error boundary ───────────────────────────────────
+# Every response carries X-Request-ID. An unhandled exception is logged
+# server-side WITH its traceback under that id and answered with a generic
+# message carrying only the id, so an operator can quote it to support and a
+# stack trace never reaches a browser. Validation and HTTP errors keep their
+# curated `detail`.
+import logging as _logging
+import uuid as _uuid
+
+from fastapi import Request as _Request
+from fastapi.responses import JSONResponse as _JSONResponse
+
+_log = _logging.getLogger("harvestmind.api")
+
+
+@app.middleware("http")
+async def _request_id_middleware(request: _Request, call_next):
+    rid = request.headers.get("X-Request-ID") or f"req-{_uuid.uuid4().hex[:12]}"
+    request.state.request_id = rid
+    try:
+        response = await call_next(request)
+    except Exception:  # noqa: BLE001  boundary: log with traceback, answer generically
+        _log.exception("unhandled error request_id=%s path=%s", rid, request.url.path)
+        return _JSONResponse(status_code=500, headers={"X-Request-ID": rid},
+                             content={"detail": "Internal error. Quote this request id to support.",
+                                      "request_id": rid})
+    response.headers["X-Request-ID"] = rid
+    return response
+
+
 app.include_router(planning.router)
 app.include_router(backtest.router)
 app.include_router(data.router)

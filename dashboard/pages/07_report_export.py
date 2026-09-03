@@ -164,9 +164,9 @@ with c2:
                     st.session_state["report_filename"] = f"{filename_base}_report.html"
                     st.success("Report generated.")
             except ROIReportError as e:
-                st.error(f"Report not generated: {e}")
+                st.error(f"Report not generated ({type(e).__name__}). See the server log.")
             except Exception as e:
-                st.error(f"Failed: {type(e).__name__}: {e}")
+                st.error(f"Failed ({type(e).__name__}). See the server log.")
     if "report_html" in st.session_state:
         st.download_button(
             "Download HTML",

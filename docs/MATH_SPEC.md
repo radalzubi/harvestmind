@@ -531,3 +531,114 @@ contingent on spot economics: about +11% when emergency coverage is cheap and
 capped at 30% of demand, about -4% when expensive and capped at 15%. Against
 naive and order-up-to policies it wins everywhere tested. This is surfaced in
 the product, not buried.
+
+---
+
+## 21. Multi-period stochastic program with random lead times  ★
+
+Implemented in `optimization/multi_period_sp.py` (`MultiPeriodStochasticLP`).
+The single-period model of §13 has no time index and therefore cannot
+recommend ordering *earlier*; this model can.
+
+**Sets.** suppliers $i \in I$, products $j \in J$, periods $t \in T=\{0,\dots,H-1\}$,
+scenarios $\omega \in \Omega$ with weights $p_\omega \ge 0$, $\sum_\omega p_\omega = 1$
+(completed and renormalised by `_normalized_weights`).
+
+**Scenario data.** demand $d_{jt\omega}$; lead time $L_{i\omega} \in \mathbb{Z}_{\ge 0}$;
+fill $f_{i\omega} \in [0,1]$; per-period supplier capacity $Y_{ij}$; opening
+stock $I_{j,-1}$.
+
+**First stage (here-and-now).** ordering schedule $x_{ijt} \ge 0$, committed
+before any $\omega$ resolves. It carries no scenario index; this is the
+information-timing constraint and is asserted by
+`test_first_stage_is_scenario_invariant`.
+
+**Second stage (per $\omega$).** inventory $I_{jt\omega}$, spot $s_{jt\omega}$,
+unmet $u_{jt\omega}$, waste $w_{jt\omega}$, all $\ge 0$.
+
+**Arrivals.** $A_{jt\omega} = \sum_i f_{i\omega}\, x_{ij,\,t-L_{i\omega}}$ for $0 \le t-L_{i\omega} < H$,
+else 0. An order placed at $t$ lands at $t+L_{i\omega}$; the yield multiplier
+enters here and nowhere else (`test_balance_holds_per_scenario_with_yield_applied_exactly_once`).
+
+**Balance.** $I_{jt\omega} = I_{j,t-1,\omega} + A_{jt\omega} + s_{jt\omega} - (d_{jt\omega}-u_{jt\omega}) - w_{jt\omega}$.
+
+**Decay.** $w_{jt\omega} \ge \delta_j\, I_{j,t-1,\omega}$: carried perishable stock
+spoils; $\delta_j = 0$ for shelf-stable goods.
+
+**Bounds.** $u_{jt\omega} \le d_{jt\omega}$; $x_{ijt} \le Y_{ij}$;
+$s_{jt\omega} \le \rho\, d_{jt\omega}$ when a spot ration $\rho$ is set;
+$\sum_j I_{jt\omega} \le \bar I$ when a warehouse capacity is set.
+
+**Objective.**
+$$\min \sum_\omega p_\omega \sum_{j,t}\Big[ \bar c_j(\mu-1)\, s_{jt\omega} + c^w_j w_{jt\omega} + c^u_j u_{jt\omega} + c^h_j I_{jt\omega} \Big]$$
+with spot premium $\mu \ge 1$ on the average contract price $\bar c_j$, disposal
+$c^w_j$, lost margin $c^u_j$, and holding $c^h_j$ per unit per period.
+Procurement cost of committed-and-sold units is not charged (newsvendor
+recourse economics, §13); consequently **disposal must be priced at unit
+cost or the model buys freely and dumps** — this was a live defect and is
+guarded by `test_free_disposal_exploit_is_closed`.
+
+**Complete recourse.** Because $u$ and $w$ are unbounded slacks, every valid
+input is feasible; an `infeasible` status can only come from a caller bug
+(`test_complete_recourse_means_always_feasible`).
+
+**Effective underage cost.** With spot available, the cost of being short is
+$\min(c^u_j,\ \bar c_j(\mu-1))$, and the critical fractile falls accordingly.
+This is correct economics, not a bug; a reviewer expecting the textbook
+newsvendor quantity must set $\rho=0$.
+
+## 22. Discrete ordering (FMCG)  ★
+
+For a product with a `PackSpec` (lot size $q_j$ in base units, minimum
+$m_j$, maximum $M_j$):
+
+$$x_{ijt} = q_j\, n_{ijt},\quad n_{ijt} \in \mathbb{Z}_{\ge 0},\qquad
+n_{ijt} \le \lceil Y_{ij}/q_j \rceil\, y_{ijt},\quad y_{ijt} \in \{0,1\},$$
+$$x_{ijt} \ge m_j\, y_{ijt},\qquad x_{ijt} \le M_j .$$
+
+The big-M is the lot count that fills capacity, so it is tight. Products
+without a spec stay continuous, and a spec on one product leaves every
+other product's schedule identical (`test_continuous_products_unaffected_by_other_products_specs`).
+The model is then a MILP solved by HiGHS to `mip_rel_gap`; the returned
+`gap` and `status` say whether optimality was proven.
+
+`PackSpec` rounds an MOQ that is not a whole lot up to one at construction,
+so the optimizer never sees an unsatisfiable minimum. Heuristic policies
+use `round_to_pack`, which rounds **up** (a short order is an unpriced
+shortage) and applies the MOQ only when ordering at all.
+
+## 23. Solver outcome vocabulary
+
+`optimization/solve_status.py`. `optimal` (proven, or within gap),
+`feasible` (time limit with an incumbent; carries a warning),
+`infeasible`, `unbounded`, `timeout` (no incumbent), `error`. Only the
+first two are `usable`; an unusable outcome returns **empty** decisions,
+never zeros, because "commit nothing" is a real recommendation and must
+not be confused with "could not solve".
+
+## 24. Domain policy
+
+`domain/model.py`. The engine is domain-blind; a `DomainPolicy` supplies
+$\delta_j$, the pack specs, the `CostConfig` (which cost terms are live and
+in what currency — one run, one currency), the `ServiceTarget` with its
+metric named (`unit_fill` is the one the LP enforces in expectation),
+whether supply uncertainty is a *yield* on a commitment (produce) or a
+*fill* of an order (FMCG), and whether lots are FEFO (enforced in
+settlement, since the LP tracks product totals).
+
+| | agriculture (perishable) | FMCG |
+|---|---|---|
+| base unit | kg | each / case |
+| $\delta_j$ | $> 0$ | 0 |
+| ordering | continuous | whole cases / pallets, MOQ |
+| supply uncertainty | yield, single harvest | fill and lead time |
+| what over-buying costs | spoilage | capital |
+
+## 25. Policy selection by backtest
+
+`backtesting/counterfactual.py::policy_selected`. The stochastic model's
+edge over its point-forecast twin is conditional: positive when supply or
+demand bind, negative in an easy regime where insurance is never used.
+The selected mode runs both on a fold built **inside the training window**
+(the last $h$ training periods as truth) and deploys the winner. Nothing at
+or after the origin is used.
