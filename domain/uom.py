@@ -126,8 +126,8 @@ class PackSpec:
         if self.order_multiple == Unit.CASE:
             return float(self.units_per_case)
         if self.order_multiple == Unit.LAYER:
-            return float(self.units_per_layer)
-        return float(self.units_per_pallet)
+            return float(self.units_per_layer or self.units_per_case)
+        return float(self.units_per_pallet or self.units_per_case)
 
     @property
     def is_discrete(self) -> bool:

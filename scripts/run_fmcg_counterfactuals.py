@@ -34,7 +34,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def fold_from_history(h, origin: int, horizon: int, train: int, cover_weeks: float,
-                      sla_target: float | None) -> tuple[FoldInputs, FoldTruth]:
+                      sla_target: float | None,
+                      holding_per_week: float = 0.02 / 4.33) -> tuple[FoldInputs, FoldTruth]:
     skus = h.skus[h.skus["abc"].isin(["A", "B"])]
     products = list(skus["sku"])
     sup_of = dict(zip(skus["sku"], skus["supplier_id"]))
@@ -75,7 +76,7 @@ def fold_from_history(h, origin: int, horizon: int, train: int, cover_weeks: flo
             pipeline[(j, t)] = mean_dem[j]
     cap = {j: max(mean_dem[j] * 3.0, 1.0) for j in products}
 
-    cc = CostConfig(currency="USD", holding_rate_per_period=0.02 / 4.33,
+    cc = CostConfig(currency="USD", holding_rate_per_period=holding_per_week,
                     shortage_cost_per_unit=margin, waste_cost_per_unit=cost,
                     emergency_cost_multiplier=1.0, emergency_capacity_factor=0.0,
                     sla_penalty_rate=0.03 if sla_target else 0.0, sla_fill_target=sla_target)
@@ -163,7 +164,8 @@ def run_rolling(a) -> int:
             "avg_inventory": {pol: st.mean(r.avg_inventory for r in v) for pol, v in per.items()},
             "solver_failures": fails, "selections": sel_counts,
         }
-        e = results[name]["edge_vs"]; sv = results[name]["service"]
+        e = results[name]["edge_vs"]
+        sv = results[name]["service"]
         print(f"{name:<24} runs={a.seeds}  SP vs det {e['deterministic_sp'].get('median', float('nan')):+6.2f}% "
               f"(win {e['deterministic_sp'].get('win_rate', 0):.0%})  vs OUT {e['order_up_to'].get('median', float('nan')):+6.2f}%  "
               f"SELECTED vs det {results[name]['selected_edge_vs_deterministic'].get('median', float('nan')):+6.2f}%  "
@@ -173,7 +175,8 @@ def run_rolling(a) -> int:
            "elapsed_s": round(time.time() - t_all, 1), "archetypes": results}
     (ROOT / "artifacts").mkdir(exist_ok=True)
     (ROOT / "artifacts" / "fmcg_counterfactuals_rolling.json").write_text(json.dumps(out, indent=1))
-    md = ROOT / "docs" / "validation" / "evidence"; md.mkdir(parents=True, exist_ok=True)
+    md = ROOT / "docs" / "validation" / "evidence"
+    md.mkdir(parents=True, exist_ok=True)
     lines = ["# FMCG closed-loop counterfactuals (SYNTHETIC CALIBRATED)", "",
              f"runs (seeds) {a.seeds}, run length {a.run_periods} periods, re-plan every {a.review}, "
              f"horizon {a.horizon}, train {a.train}, scenarios {a.scenarios}, opening cover {a.cover_weeks:.1f} wk, "
@@ -181,7 +184,10 @@ def run_rolling(a) -> int:
              "| archetype | SP vs deterministic | win | SP vs order-up-to | SP vs min/max | SP vs naive | SELECTED vs deterministic | service SP / det / OUT | avg inv SP / det / OUT | selections |",
              "|---|---|---|---|---|---|---|---|---|---|"]
     for name, r in results.items():
-        e = r["edge_vs"]; sv = r["service"]; ai = r["avg_inventory"]; se = r["selected_edge_vs_deterministic"]
+        e = r["edge_vs"]
+        sv = r["service"]
+        ai = r["avg_inventory"]
+        se = r["selected_edge_vs_deterministic"]
         lines.append(f"| {name} | {e['deterministic_sp'].get('median', 0):+.2f}% | {e['deterministic_sp'].get('win_rate', 0):.0%} | "
                      f"{e['order_up_to'].get('median', 0):+.2f}% | {e['min_max'].get('median', 0):+.2f}% | {e['naive_forecast'].get('median', 0):+.2f}% | "
                      f"{se.get('median', 0):+.2f}% (win {se.get('win_rate', 0):.0%}) | "
@@ -247,8 +253,10 @@ def main() -> int:
                     s = r["settlement"]
                     if s is None:
                         continue
-                    per_pol[pol]["total"].append(s.total); per_pol[pol]["fill"].append(s.fill_rate)
-                    per_pol[pol]["hold"].append(s.holding); per_pol[pol]["short"].append(s.shortage)
+                    per_pol[pol]["total"].append(s.total)
+                    per_pol[pol]["fill"].append(s.fill_rate)
+                    per_pol[pol]["hold"].append(s.holding)
+                    per_pol[pol]["short"].append(s.shortage)
                     if pol != "stochastic_sp" and s.total > 0:
                         edges[pol].append((s.total - sp.total) / s.total * 100)
                 det = res["deterministic_sp"]["settlement"]
@@ -275,7 +283,8 @@ def main() -> int:
            "elapsed_s": round(time.time() - t_all, 1), "archetypes": results}
     (ROOT / "artifacts").mkdir(exist_ok=True)
     (ROOT / "artifacts" / "fmcg_counterfactuals.json").write_text(json.dumps(out, indent=1))
-    md = ROOT / "docs" / "validation" / "evidence"; md.mkdir(parents=True, exist_ok=True)
+    md = ROOT / "docs" / "validation" / "evidence"
+    md.mkdir(parents=True, exist_ok=True)
     lines = ["# FMCG counterfactuals (SYNTHETIC CALIBRATED)", "",
              f"seeds {a.seeds}, folds/seed {a.folds_per_seed}, horizon {a.horizon}, "
              f"train {a.train}, scenarios {a.scenarios}, opening cover {a.cover_weeks:.1f} wk, "
@@ -283,7 +292,9 @@ def main() -> int:
              "| archetype | folds | vs deterministic | win | CI95 median | vs order-up-to | vs naive | vs min/max | binding | slack | service SP / det / OUT |",
              "|---|---|---|---|---|---|---|---|---|---|---|"]
     for name, r in results.items():
-        e = r["edge_vs"]; sdet = e["deterministic_sp"]; sv = r["service"]
+        e = r["edge_vs"]
+        sdet = e["deterministic_sp"]
+        sv = r["service"]
         b = r["strata_vs_deterministic"]
         lines.append(
             f"| {name} | {r['folds']} | {sdet.get('median', 0):+.2f}% | {sdet.get('win_rate', 0):.0%} | "

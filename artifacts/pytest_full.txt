@@ -1,7 +1,7 @@
 ........................................................................ [  5%]
 ........................................................................ [ 11%]
-...................................F.................................... [ 17%]
-..................F.F.F......................s.......................... [ 23%]
+........................................................................ [ 17%]
+.............................................s.......................... [ 23%]
 ........................................................................ [ 28%]
 ........................................................................ [ 34%]
 ........................................................................ [ 40%]
@@ -16,97 +16,6 @@
 ........................................................................ [ 92%]
 ........................................................................ [ 98%]
 ..................                                                       [100%]
-=================================== FAILURES ===================================
-_________________ test_full_flow_operator_to_pool_to_scheduler _________________
-
-env = (<infrastructure.operator_registry.OperatorRegistry object at 0x123ce1220>, PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_full_flow_operator_to_poo0'))
-
-    def test_full_flow_operator_to_pool_to_scheduler(env):
-        registry, tmp_path = env
-        op = registry.create_operator("Hub A", pool_consent=True,
-                                      region="midwest")
-        client = TestClient(api_main.app)
-    
-        # 1. smart upload → raw copy + extraction session
-        r = client.post(f"/intake/extract?operator_id={op.operator_id}",
-                        files=[("files", ("orders.csv", CSV, "text/csv"))])
-        assert r.status_code == 200
-        session = r.json()
-        assert session["mock_mode"] is True
-        uploads = list((registry.vault_dir(op.operator_id) / "uploads").iterdir())
->       assert len(uploads) == 1 and uploads[0].read_text() == CSV
-E       AssertionError: assert (2 == 1)
-E        +  where 2 = len([PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_full_flow_ope...ytest-283/test_full_flow_operator_to_poo0/data/operators/op_2f630bf9/uploads/20260903T163231831884_orders.csv.sha256')])
-
-tests/integration/test_full_data_flow.py:62: AssertionError
------------------------------- Captured log call -------------------------------
-INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/intake/extract?operator_id=op_2f630bf9 "HTTP/1.1 200 OK"
-__________________________ test_raw_upload_write_once __________________________
-
-registry = <infrastructure.operator_registry.OperatorRegistry object at 0x126940910>
-
-    def test_raw_upload_write_once(registry):
-        op = registry.create_operator("Hub A")
-        p1 = store_raw_upload(registry, op.operator_id, "orders.csv", b"v1")
-        p2 = store_raw_upload(registry, op.operator_id, "orders.csv", b"v2")
-        assert p1 != p2                       # never overwrite
-        assert p1.read_bytes() == b"v1"       # first copy untouched
-        assert p2.read_bytes() == b"v2"
-        uploads = list((registry.vault_dir(op.operator_id) / "uploads").iterdir())
->       assert len(uploads) == 2
-E       AssertionError: assert 4 == 2
-E        +  where 4 = len([PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_raw_upload_wr...radalzubi/pytest-283/test_raw_upload_write_once0/data/operators/op_e1fe270c/uploads/20260903T163233746965_orders.csv')])
-
-tests/integration/test_vault_wiring.py:52: AssertionError
-___________ test_upload_with_operator_id_lands_in_vault_with_lineage ___________
-
-registry = <infrastructure.operator_registry.OperatorRegistry object at 0x1261e93d0>
-
-    def test_upload_with_operator_id_lands_in_vault_with_lineage(registry):
-        op = registry.create_operator("Hub A")
-        client = TestClient(api_main.app)
-        r = client.post(
-            f"/intake/upload/stg_buyer_orders?operator_id={op.operator_id}",
-            files={"file": ("orders.csv", CLEAN_CSV, "text/csv")})
-        assert r.status_code == 200, r.text
-        assert r.json()["rows_inserted"] == 1, r.json()
-    
-        # raw copy in the vault
-        uploads = list((registry.vault_dir(op.operator_id) / "uploads").iterdir())
->       assert len(uploads) == 1
-E       AssertionError: assert 2 == 1
-E        +  where 2 = len([PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_upload_with_o...ytest-283/test_upload_with_operator_id_l0/data/operators/op_e95fa2e1/uploads/20260903T163233823685_orders.csv.sha256')])
-
-tests/integration/test_vault_wiring.py:77: AssertionError
------------------------------- Captured log call -------------------------------
-INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/intake/upload/stg_buyer_orders?operator_id=op_e95fa2e1 "HTTP/1.1 200 OK"
-_____________________ test_extract_confirm_scoped_to_vault _____________________
-
-registry = <infrastructure.operator_registry.OperatorRegistry object at 0x1261d2530>
-
-    def test_extract_confirm_scoped_to_vault(registry):
-        op = registry.create_operator("Hub A")
-        client = TestClient(api_main.app)
-        r = client.post(f"/intake/extract?operator_id={op.operator_id}",
-                        files=[("files", ("orders.csv", CSV, "text/csv"))])
-        assert r.status_code == 200
-        session = r.json()
-        assert session["operator_id"] == op.operator_id
-        # raw copy stored
->       assert len(list((registry.vault_dir(op.operator_id) / "uploads")
-                        .iterdir())) == 1
-E       AssertionError: assert 2 == 1
-E        +  where 2 = len([PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_extract_confi...ytest-283/test_extract_confirm_scoped_to0/data/operators/op_e1b0daf0/uploads/20260903T163233880367_orders.csv.sha256')])
-E        +    where [PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_extract_confi...ytest-283/test_extract_confirm_scoped_to0/data/operators/op_e1b0daf0/uploads/20260903T163233880367_orders.csv.sha256')] = list(<generator object Path.iterdir.<locals>.<genexpr> at 0x125eabc40>)
-E        +      where <generator object Path.iterdir.<locals>.<genexpr> at 0x125eabc40> = iterdir()
-E        +        where iterdir = (PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_extract_confirm_scoped_to0/data/operators/op_e1b0daf0') / 'uploads').iterdir
-E        +          where PosixPath('/private/var/folders/yn/8pr6mhqx7rl8s4kwsky51w340000gn/T/pytest-of-radalzubi/pytest-283/test_extract_confirm_scoped_to0/data/operators/op_e1b0daf0') = vault_dir('op_e1b0daf0')
-E        +            where vault_dir = <infrastructure.operator_registry.OperatorRegistry object at 0x1261d2530>.vault_dir
-E        +            and   'op_e1b0daf0' = OperatorRecord(operator_id='op_e1b0daf0', name='Hub A', created_at=datetime.datetime(2026, 9, 3, 16, 32, 33, 869389, t...t_date=datetime.datetime(2026, 9, 3, 16, 32, 33, 869663, tzinfo=TzInfo(0)), pool_contribution_count=0, token_hash=None).operator_id
-
-tests/integration/test_vault_wiring.py:110: AssertionError
------------------------------- Captured log call -------------------------------
-INFO     httpx:_client.py:1025 HTTP Request: POST http://testserver/intake/extract?operator_id=op_e1b0daf0 "HTTP/1.1 200 OK"
 ================================ tests coverage ================================
 _______________ coverage: platform darwin, python 3.14.3-final-0 _______________
 
@@ -124,14 +33,14 @@ api/routers/data.py                                  62      2    97%
 api/routers/diagnostics.py                           29      0   100%
 api/routers/forecasts.py                             21     11    48%
 api/routers/fsma.py                                 100      7    93%
-api/routers/intake.py                               301     57    81%
+api/routers/intake.py                               301     39    87%
 api/routers/planning.py                              61     28    54%
 api/routers/pool.py                                  31      2    94%
 api/routers/reports.py                               53     30    43%
 api/routers/training.py                              27     14    48%
 backtesting/__init__.py                               0      0   100%
 backtesting/benchmark_suite.py                      320     19    94%
-backtesting/counterfactual.py                       337    146    57%
+backtesting/counterfactual.py                       338    146    57%
 backtesting/leakage_guard.py                         50      2    96%
 backtesting/policy_comparison.py                     49      0   100%
 backtesting/procurement_metrics.py                   18     11    39%
@@ -200,11 +109,6 @@ synthetic/indiana_operator_sim.py                   166      3    98%
 synthetic/realistic_operator_sim.py                 204    204     0%
 synthetic/seasonality.py                             17      0   100%
 ---------------------------------------------------------------------
-TOTAL                                              6962   1362    80%
+TOTAL                                              6963   1344    81%
 Coverage JSON written to file artifacts/coverage.json
-=========================== short test summary info ============================
-FAILED tests/integration/test_full_data_flow.py::test_full_flow_operator_to_pool_to_scheduler
-FAILED tests/integration/test_vault_wiring.py::test_raw_upload_write_once - A...
-FAILED tests/integration/test_vault_wiring.py::test_upload_with_operator_id_lands_in_vault_with_lineage
-FAILED tests/integration/test_vault_wiring.py::test_extract_confirm_scoped_to_vault
-4 failed, 1237 passed, 1 skipped in 61.05s (0:01:01)
+1241 passed, 1 skipped in 56.99s

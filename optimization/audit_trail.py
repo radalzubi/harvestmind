@@ -88,7 +88,7 @@ def record_run(*, domain: str, config: dict, inputs: dict, result: dict,
         objective=result.get("objective"), objective_breakdown=objective_breakdown or {},
         gap=result.get("gap"), runtime_s=result.get("runtime_s"),
         warnings=list(result.get("warnings", [])))
-    root = Path(data_root or os.getenv("HARVESTMIND_DATA_ROOT", "data")) / "runs"
+    root = Path(data_root or os.getenv("HARVESTMIND_DATA_ROOT") or "data") / "runs"
     try:
         root.mkdir(parents=True, exist_ok=True)
         (root / f"{rec.run_id}.json").write_text(rec.to_json())
@@ -98,7 +98,7 @@ def record_run(*, domain: str, config: dict, inputs: dict, result: dict,
         try:
             cols = {r[1] for r in conn.execute("PRAGMA table_info('optimization_run_log')").fetchall()}
             if {"run_id"} <= cols:
-                payload = {"run_id": rec.run_id}
+                payload: dict[str, object] = {"run_id": rec.run_id}
                 for c, v in (("model_type", rec.model_version), ("solver_status", rec.status),
                              ("objective_value", rec.objective), ("solve_time_s", rec.runtime_s),
                              ("run_timestamp", rec.timestamp), ("config_json", json.dumps(rec.config)),

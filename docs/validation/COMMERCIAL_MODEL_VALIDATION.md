@@ -130,18 +130,51 @@ of any claim.
 
 `artifacts/fmcg_counterfactuals_rolling.json`, 3 seeds per archetype.
 
-<!-- ROLLING_TABLE -->
+<!-- ROLLING_TABLE_BEGIN -->
+Configuration: seeds 3, run 40 periods, re-plan every 4, horizon 12, train 52, scenarios 20, opening cover 5.4 wk, warehouse cap 8.0 wk, SLA target 0.95. Elapsed 827.1 s.
+
+| archetype | SP vs deterministic | win | SP vs order-up-to | SP vs min/max | SP vs naive | **SELECTED vs deterministic** | service SP / det / OUT | selections | solver failures |
+|---|---|---|---|---|---|---|---|---|---|
+| A_stable | -26.75% | 33% | -28.70% | +22.11% | +30.18% | **+6.64%** (win 67%) | 99.9% / 98.6% / 100.0% | {'order_up_to': 17, 'deterministic_sp': 13} | 0 |
+| B_volatile_retail | +32.64% | 100% | -21.79% | +15.73% | +5.53% | **+41.58%** (win 100%) | 97.3% / 91.0% / 97.8% | {'order_up_to': 20, 'stochastic_sp': 4, 'deterministic_sp': 6} | 0 |
+| C_constrained_supplier | -5.74% | 33% | -49.99% | +17.70% | -23.31% | **+27.98%** (win 100%) | 99.3% / 96.2% / 99.4% | {'order_up_to': 24, 'stochastic_sp': 2, 'deterministic_sp': 4} | 0 |
+| D_importer | +8.58% | 100% | -72.10% | -38.42% | +61.46% | **+48.05%** (win 100%) | 83.3% / 80.1% / 91.7% | {'order_up_to': 30} | 0 |
+| E_mixed_portfolio | +11.84% | 100% | -33.90% | +12.79% | +6.35% | **+33.67%** (win 100%) | 99.4% / 95.8% / 99.7% | {'order_up_to': 28, 'deterministic_sp': 2} | 0 |
+| F_disruption | +31.59% | 67% | -29.20% | +24.43% | +13.72% | **+43.55%** (win 100%) | 99.6% / 96.2% / 99.8% | {'order_up_to': 25, 'deterministic_sp': 5} | 0 |
+
+Edges are median percentage cost reductions over 3 seeded 40-week runs; win is the share of runs where the stochastic optimizer's cost was lower. Costs are holding + lost margin + disposal + SLA penalty in the domain's economics.
+<!-- ROLLING_TABLE_END -->
 
 #### Stress matrix
 
-`artifacts/fmcg_stress_demand_cv_fill.json` (30 cells, demand CV × supplier
-fill) and `artifacts/fmcg_stress_cover.json` (opening cover), 2 seeds × 2–3
-folds, open loop. Pattern: the stochastic optimizer's edge over the point
-forecast is negative at CV ≤ 0.3 and positive at CV ≥ 0.5 with fill ≤ 0.9,
-reaching +20% to +34% at CV 1.2; a single cell shows a −392% worst fold at
-CV 1.2 / fill 0.8 (a spike the deterministic plan happened to miss less).
-Opening cover decides the sign: +18% at 0.5 weeks, negative from 1 week up.
-No cell produced an unusable solver status.
+Open loop, 2 seeds × 2–3 folds per cell, seasonal scenarios, SELECTED
+included. Files: `docs/validation/evidence/fmcg_stress_demand_cv_fill.md`
+(30 cells), `fmcg_stress_cover.md`, `fmcg_stress_holding_cover.md` (20
+cells). No cell produced an unusable solver status.
+
+| axis | stochastic vs deterministic | SELECTED vs deterministic |
+|---|---|---|
+| demand CV 0.05–0.15 (any fill) | −5% to −15%, 0% wins | **+7% to +17%**, 75–100% wins |
+| demand CV 0.8 | −40% to +9%, 25–50% wins | −6% to +6% |
+| demand CV 1.2, fill ≤ 0.9 | **+35% to +42%**, 75–100% wins | 0 to +7% |
+| opening cover 0.5 wk | **+18.7%**, 100% wins | +5% |
+| opening cover 1.0 wk | +7.8%, 67% | +3% |
+| opening cover ≥ 2 wk | −13% to −19%, 33% | +6% to +10% |
+| holding 0.46%/wk (calibrated), any cover ≥ 1 wk | −8% to −20% | +7% to +10% |
+| holding 4.6%/wk (≈20%/month), cover ≥ 2 wk | **+1% to +5%, 75–100% wins; and beats order-up-to by +6% to +38%** | ~+3% |
+
+Two tail cells at CV ≥ 0.8 show a single worst fold of −277% and −1,183%
+against the deterministic plan: a demand spike the point-forecast plan
+happened to miss less badly. They are reported because the distribution
+is the result; the medians in those cells are −14% and −8%.
+
+**The crossover.** The stochastic optimizer beats the tuned order-up-to
+heuristic only when carrying cost is high enough that over-stocking is
+expensive: at 4.6% of unit cost per week it wins by 6–38%; at the
+calibrated 0.46% it loses. An operator's true all-in carrying cost
+(financing, space, obsolescence, insurance) is therefore the first number
+a pilot must establish, because it decides which mode the product should
+run.
 
 ### What the FMCG evidence supports
 

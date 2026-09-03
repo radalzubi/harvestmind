@@ -51,7 +51,8 @@ def _coverage() -> dict:
         pkg = f.split("/")[0]
         s = v["summary"]
         b = by_pkg.setdefault(pkg, {"covered": 0, "total": 0})
-        b["covered"] += s["covered_lines"]; b["total"] += s["num_statements"]
+        b["covered"] += s["covered_lines"]
+        b["total"] += s["num_statements"]
     return {"total_pct": round(d["totals"]["percent_covered"], 1),
             "by_package_pct": {k: round(100 * v["covered"] / v["total"], 1) for k, v in by_pkg.items() if v["total"]}}
 
@@ -82,7 +83,9 @@ def _json(name: str) -> dict | None:
 
 def main() -> int:
     tests = _tests()
-    cov = _coverage(); sec = _bandit(); audit = _pip_audit()
+    cov = _coverage()
+    sec = _bandit()
+    audit = _pip_audit()
     rolling = _json("fmcg_counterfactuals_rolling.json")
     openloop = _json("fmcg_counterfactuals.json")
     stress = _json("fmcg_stress_demand_cv_fill.json")

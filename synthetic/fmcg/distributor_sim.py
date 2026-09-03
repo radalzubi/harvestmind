@@ -174,7 +174,7 @@ def build_history(archetype: str = "A_stable", seed: int = 0,
     promo_weeks = set(rng.choice(sp.weeks, size=min(sp.weeks, sp.promo_weeks_per_year * (sp.weeks // 52 + 1)),
                                  replace=False).tolist())
     promos = []
-    promo_sku = {}
+    promo_sku: dict[int, set] = {}
     for w in promo_weeks:
         chosen = rng.choice(skus.index, size=max(1, sp.n_skus // 8), replace=False)
         for i in chosen:

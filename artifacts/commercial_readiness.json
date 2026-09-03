@@ -1,0 +1,261 @@
+{
+ "status": "YES_WITH_CONDITIONS",
+ "git_commit": "3c03787b82c47b69fc69e2e4a108936cb12ecf4a",
+ "tests": {
+  "passed": 1241,
+  "failed": 0,
+  "skipped": 1,
+  "xfailed": 0
+ },
+ "coverage": {
+  "total_pct": 80.7,
+  "by_package_pct": {
+   "api": 80.4,
+   "backtesting": 77.6,
+   "domain": 90.0,
+   "ingestion": 83.8,
+   "optimization": 90.9,
+   "risk": 92.8,
+   "synthetic": 56.0
+  }
+ },
+ "security": {
+  "critical_open": 0,
+  "high_open": 0,
+  "medium_open": 0,
+  "dependency_audit": {
+   "vulnerable_packages": [
+    "bleach",
+    "click",
+    "cryptography",
+    "gitpython",
+    "idna",
+    "jupyter-server",
+    "jupyterlab",
+    "mistune",
+    "msgpack",
+    "notebook",
+    "paramiko",
+    "pillow",
+    "pip",
+    "pydantic-settings",
+    "pypdf2",
+    "python-multipart",
+    "setuptools",
+    "soupsieve",
+    "starlette",
+    "tornado",
+    "urllib3"
+   ],
+   "advisories": 133
+  }
+ },
+ "agriculture": {
+  "validated": true,
+  "basis": "real public demand (US Census) and port data (IMF PortWatch); invariants recomputed from solved models"
+ },
+ "fmcg": {
+  "validated": true,
+  "basis": "SYNTHETIC CALIBRATED closed-loop counterfactuals; no operator data"
+ },
+ "benchmarks": {
+  "closed_loop": {
+   "A_stable": {
+    "sp_vs_deterministic_median_pct": -26.753311760236215,
+    "sp_vs_deterministic_win_rate": 0.3333333333333333,
+    "sp_vs_order_up_to_median_pct": -28.699758229630067,
+    "selected_vs_deterministic_median_pct": 6.635360676196435,
+    "service": {
+     "naive_forecast": 1.0,
+     "seasonal_naive": 1.0,
+     "static_safety": 1.0,
+     "min_max": 0.9815534891974836,
+     "order_up_to": 0.9999656233035434,
+     "deterministic_sp": 0.9858793993844278,
+     "stochastic_sp": 0.9991650773936929,
+     "selected": 0.9998711261674617
+    },
+    "selections": {
+     "order_up_to": 17,
+     "deterministic_sp": 13
+    }
+   },
+   "B_volatile_retail": {
+    "sp_vs_deterministic_median_pct": 32.6374655142285,
+    "sp_vs_deterministic_win_rate": 1.0,
+    "sp_vs_order_up_to_median_pct": -21.78797328628637,
+    "selected_vs_deterministic_median_pct": 41.583364955165095,
+    "service": {
+     "naive_forecast": 0.9544999952793555,
+     "seasonal_naive": 0.9663727867447407,
+     "static_safety": 0.9998164515994894,
+     "min_max": 0.9438146109529996,
+     "order_up_to": 0.9776554160282602,
+     "deterministic_sp": 0.910004231340758,
+     "stochastic_sp": 0.9729026067180419,
+     "selected": 0.9733744386975555
+    },
+    "selections": {
+     "order_up_to": 20,
+     "stochastic_sp": 4,
+     "deterministic_sp": 6
+    }
+   },
+   "C_constrained_supplier": {
+    "sp_vs_deterministic_median_pct": -5.741998476370155,
+    "sp_vs_deterministic_win_rate": 0.3333333333333333,
+    "sp_vs_order_up_to_median_pct": -49.98992718511182,
+    "selected_vs_deterministic_median_pct": 27.984009794588477,
+    "service": {
+     "naive_forecast": 0.9670894724097088,
+     "seasonal_naive": 0.9804046525250435,
+     "static_safety": 0.9990969794594002,
+     "min_max": 0.956677663055778,
+     "order_up_to": 0.9939325844505102,
+     "deterministic_sp": 0.9618607508813203,
+     "stochastic_sp": 0.9925523653243931,
+     "selected": 0.9936740379222104
+    },
+    "selections": {
+     "order_up_to": 24,
+     "stochastic_sp": 2,
+     "deterministic_sp": 4
+    }
+   },
+   "D_importer": {
+    "sp_vs_deterministic_median_pct": 8.579818717659048,
+    "sp_vs_deterministic_win_rate": 1.0,
+    "sp_vs_order_up_to_median_pct": -72.10004067927579,
+    "selected_vs_deterministic_median_pct": 48.05432757236602,
+    "service": {
+     "naive_forecast": 0.911364850459467,
+     "seasonal_naive": 0.91319018248603,
+     "static_safety": 0.9214785214778828,
+     "min_max": 0.8833036466892091,
+     "order_up_to": 0.9173557738050673,
+     "deterministic_sp": 0.800639774256401,
+     "stochastic_sp": 0.8331523106731057,
+     "selected": 0.9173557738050673
+    },
+    "selections": {
+     "order_up_to": 30
+    }
+   },
+   "E_mixed_portfolio": {
+    "sp_vs_deterministic_median_pct": 11.842416457424031,
+    "sp_vs_deterministic_win_rate": 1.0,
+    "sp_vs_order_up_to_median_pct": -33.89579386647342,
+    "selected_vs_deterministic_median_pct": 33.67369510168041,
+    "service": {
+     "naive_forecast": 0.995748579870733,
+     "seasonal_naive": 0.9947899319748592,
+     "static_safety": 1.0,
+     "min_max": 0.975334891949578,
+     "order_up_to": 0.9972488207810415,
+     "deterministic_sp": 0.9576800400434256,
+     "stochastic_sp": 0.9942640996165639,
+     "selected": 0.9934045200004709
+    },
+    "selections": {
+     "order_up_to": 28,
+     "deterministic_sp": 2
+    }
+   },
+   "F_disruption": {
+    "sp_vs_deterministic_median_pct": 31.58880894950165,
+    "sp_vs_deterministic_win_rate": 0.6666666666666666,
+    "sp_vs_order_up_to_median_pct": -29.199719752926274,
+    "selected_vs_deterministic_median_pct": 43.554358586747036,
+    "service": {
+     "naive_forecast": 0.9977484277635916,
+     "seasonal_naive": 0.9975876323973452,
+     "static_safety": 1.0,
+     "min_max": 0.9753166568565927,
+     "order_up_to": 0.9981974666040281,
+     "deterministic_sp": 0.9621316652768825,
+     "stochastic_sp": 0.9958487160794579,
+     "selected": 0.9981635823702464
+    },
+    "selections": {
+     "order_up_to": 25,
+     "deterministic_sp": 5
+    }
+   }
+  },
+  "open_loop": {
+   "A_stable": -13.5809218702902,
+   "B_volatile_retail": -5.824613361874823,
+   "C_constrained_supplier": -13.764076677516016,
+   "D_importer": -3.129446612310385,
+   "E_mixed_portfolio": -21.231072623796486,
+   "F_disruption": -18.66929709050092
+  },
+  "stress_cells": 30,
+  "performance": {
+   "skus=10,scen=30,H=12,LP": {
+    "p50": 0.4779058750718832,
+    "min": 0.458899041172117,
+    "max": 0.5607528332620859,
+    "n": 3
+   },
+   "skus=100,scen=30,H=12,LP": {
+    "p50": 6.045939875300974,
+    "min": 5.945570582989603,
+    "max": 6.624938915949315,
+    "n": 3
+   },
+   "skus=100,scen=30,H=12,MILP": {
+    "p50": 9.684564458206296,
+    "min": 9.540332625154406,
+    "max": 9.793610208202153,
+    "n": 3
+   },
+   "skus=1000,scen=20,H=8,LP": {
+    "p50": 46.985092020593584,
+    "min": 46.34857587516308,
+    "max": 47.62160816602409,
+    "n": 2
+   },
+   "skus=500,scen=20,H=8,MILP": {
+    "p50": 19.769778021145612,
+    "min": 19.35687725013122,
+    "max": 20.182678792160004,
+    "n": 2
+   }
+  }
+ },
+ "remaining_blockers": [
+  {
+   "priority": "P0",
+   "item": "no end-to-end validation on a real operator's order and receipt records; all FMCG results are SYNTHETIC CALIBRATED"
+  },
+  {
+   "priority": "P1",
+   "item": "HTTP API, Next.js and Streamlit surfaces are produce-shaped (kg, shelf life); FMCG runs at the library layer"
+  },
+  {
+   "priority": "P1",
+   "item": "isolation is one DuckDB per operator; a shared-database SaaS deployment would need tenant columns and row-level scoping"
+  },
+  {
+   "priority": "P1",
+   "item": "Docker image not built on this host (no daemon); verify in CI or on a host with Docker"
+  },
+  {
+   "priority": "P1",
+   "item": "mypy reports errors on the decision core; gate is non-blocking until zero"
+  },
+  {
+   "priority": "P2",
+   "item": "money is float; acceptable for planning estimates, not for ledger reconciliation"
+  },
+  {
+   "priority": "P2",
+   "item": "single warehouse; no transfers or multi-echelon"
+  },
+  {
+   "priority": "P2",
+   "item": "OTIF and line/order fill are measured in settlement but not enforced as constraints"
+  }
+ ]
+}

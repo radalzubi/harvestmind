@@ -286,7 +286,7 @@ class MultiPeriodStochasticLP:
                 if j in specs:
                     lot = specs[j].lot_units
                     schedule[(i, j, t)] = float(round(v / lot)) * lot
-        by_period = {}
+        by_period: dict[int, float] = {}
         for (_i, _j, t), v in schedule.items():
             by_period[t] = by_period.get(t, 0.0) + v
 

@@ -39,10 +39,15 @@ GRID = {
     "bias": [-0.30, -0.15, 0.0, 0.15, 0.30],
     "service": [0.90, 0.95, 0.97, 0.98, 0.99],
     "cover": [0.5, 1.0, 2.0, 3.0, 5.4],
+    # weekly holding rate as a fraction of unit cost: 0.46%/wk is the
+    # calibrated 2%/month; 2.3%/wk is a working-capital-constrained
+    # importer paying 10%/month all-in (financing, space, obsolescence).
+    "holding": [0.0046, 0.01, 0.023, 0.046],
 }
 
 
-def cell(demand_cv, fill, lead_cv, bias, service, seeds, folds, scen, n_skus, cover=38 / 7):
+def cell(demand_cv, fill, lead_cv, bias, service, seeds, folds, scen, n_skus, cover=38 / 7,
+         holding=0.02 / 4.33):
     edges_det, edges_out, edges_sel, fills_sp, statuses, worst = [], [], [], [], {}, 0.0
     for seed in range(seeds):
         spec = ArchetypeSpec(name="stress", n_skus=n_skus, n_suppliers=3, n_customers=6,
@@ -51,7 +56,7 @@ def cell(demand_cv, fill, lead_cv, bias, service, seeds, folds, scen, n_skus, co
         h = build_history("stress", seed=seed, spec=spec)
         rng = np.random.default_rng(seed + 77)
         for oi in np.linspace(54, 110 - 12 - 1, folds).astype(int):
-            fi, truth = fold_from_history(h, int(oi), 12, 52, cover, service)
+            fi, truth = fold_from_history(h, int(oi), 12, 52, cover, service, holding)
             if bias:
                 for j in fi.train_demand:
                     fi.train_demand[j] = [x * (1 + bias) for x in fi.train_demand[j]]
@@ -90,7 +95,8 @@ def main() -> int:
     p.add_argument("--axes", default="demand_cv,fill", help="which axes to sweep jointly; others at base")
     a = p.parse_args()
     axes = a.axes.split(",")
-    base = {"demand_cv": 0.30, "fill": 0.95, "lead_cv": 0.30, "bias": 0.0, "service": 0.97, "cover": 38 / 7}
+    base = {"demand_cv": 0.30, "fill": 0.95, "lead_cv": 0.30, "bias": 0.0, "service": 0.97, "cover": 38 / 7,
+            "holding": 0.02 / 4.33}
     t0 = time.time()
     cells = []
     combos = list(itertools.product(*[GRID[ax] for ax in axes]))
@@ -98,7 +104,8 @@ def main() -> int:
         params = dict(base)
         params.update(dict(zip(axes, combo)))
         r = cell(params["demand_cv"], params["fill"], params["lead_cv"], params["bias"],
-                 params["service"], a.seeds, a.folds, a.scenarios, a.skus, params["cover"])
+                 params["service"], a.seeds, a.folds, a.scenarios, a.skus, params["cover"],
+                 params["holding"])
         cells.append({"params": params, **r})
         v = r["vs_deterministic"]
         print(f"  {params}  vs det {v.get('median', float('nan')):+6.2f}%  win {v.get('win_rate', 0):.0%}  "

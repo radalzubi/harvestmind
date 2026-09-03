@@ -309,7 +309,7 @@ def _scenarios(fi: FoldInputs, n_scen: int, rng) -> tuple[pd.DataFrame, dict, di
     return pd.DataFrame(rows), leads, fills
 
 
-def policy_deterministic_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=1) -> tuple[dict, dict]:
+def policy_deterministic_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=1) -> tuple[dict | None, dict]:
     rows = [{"scenario_index": 0, "scenario_weight": 1.0, "product_id": j, "period": t,
              "demand_kg": _mean(_seasonal_pool(fi.train_demand[j], t))}
             for j in fi.products for t in range(fi.horizon)]
@@ -322,7 +322,7 @@ def policy_deterministic_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=1) -> tup
     return ({k: v for k, v in r["x"].items() if v > 0} if r["usable"] else None), r
 
 
-def policy_stochastic_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=30) -> tuple[dict, dict]:
+def policy_stochastic_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=30) -> tuple[dict | None, dict]:
     scen, leads, fills = _scenarios(fi, n_scen, rng)
     r = MultiPeriodStochasticLP(**_optimizer_kwargs(fi, warehouse_cap)).solve(
         scen, _supply_df(fi), lead_times=leads, yield_scenarios=fills,
@@ -350,7 +350,7 @@ def _inner_fold(fi: FoldInputs, holdout: int) -> tuple[FoldInputs, FoldTruth]:
     return inner, FoldTruth(demand=truth_d, fill=truth_f, lead=truth_l)
 
 
-def policy_selected(fi: FoldInputs, warehouse_cap, rng, n_scen=30, holdout=None) -> tuple[dict, dict]:
+def policy_selected(fi: FoldInputs, warehouse_cap, rng, n_scen=30, holdout=None) -> tuple[dict | None, dict]:
     """Choose among a competent order-up-to heuristic, the point-forecast
     optimizer and the stochastic optimizer by backtesting ALL THREE on the
     operator's own trailing history, then run the winner. The heuristic is a
@@ -377,7 +377,7 @@ def policy_selected(fi: FoldInputs, warehouse_cap, rng, n_scen=30, holdout=None)
     for name, fn in candidates.items():
         sched, _ = fn(inner)
         costs[name] = settle(sched, inner, itruth, inner_cap).total if sched is not None else float("inf")
-    winner = min(costs, key=costs.get)
+    winner = min(costs, key=lambda k: costs[k])
     if winner == "order_up_to":
         sched, meta = policy_order_up_to(fi), {"status": "heuristic"}
     elif winner == "deterministic_sp":
@@ -385,15 +385,16 @@ def policy_selected(fi: FoldInputs, warehouse_cap, rng, n_scen=30, holdout=None)
     else:
         sched, meta = policy_stochastic_sp(fi, warehouse_cap, rng, n_scen)
     meta = dict(meta)
-    meta["selected"] = winner; meta["selection_costs"] = costs
+    meta["selected"] = winner
+    meta["selection_costs"] = costs
     return sched, meta
 
 
 def run_policies(fi: FoldInputs, truth: FoldTruth, warehouse_cap, rng,
                  n_scen: int = 30, policies=POLICIES) -> dict:
-    out = {}
+    out: dict = {}
     for name in policies:
-        meta = {}
+        meta: dict = {}
         if name == "deterministic_sp":
             sched, meta = policy_deterministic_sp(fi, warehouse_cap, rng)
         elif name == "stochastic_sp":
