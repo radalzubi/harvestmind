@@ -133,29 +133,32 @@ def main() -> int:
         if sel:
             L.append(f"| {r['test']} | {r['seed']} | {sel} |")
     L += ["", "## What the tables show (qualitative; the numbers above are the evidence)", "",
-          "- **Supply-side transitions (A, B, C, easy).** The standalone stochastic optimizer and the anchored "
-          "candidate lose heavily to the incumbent on every seed: they re-plan into the disruption with wide "
-          "scenarios and carry stock the incumbent does not. The posture-driven `adaptive_sp` stays within a "
-          "few percent of the incumbent because the trust region and anchoring hold it there; `adaptive_safe` "
-          "retains the incumbent throughout. On this simulator the incumbent (lead-plus-one cover) is already "
-          "competent in supply disruptions, so the honest reading is *no harm done, little value added*.",
+          "- **The gate is the product.** `adaptive_safe` (state-conditioned candidates behind the evidence gate) "
+          "tracks the incumbent within about a percent on every supply-side story, the false alarm, the recovery "
+          "and the easy/slack case. The ungated candidate `adaptive_sp`, which in EFFICIENCY mode is the free "
+          "optimizer, loses heavily on exactly those stories: a cheap-holding, deep-cover operation is where an "
+          "expected-cost optimizer over-orders, and only the evidence gate stops it. So the deployable mode is the "
+          "gated one; the ungated candidate is a diagnostic.",
           "- **Detection.** The affected suppliers' SKUs cross p(disruptive) 0.5 after the trough is visible in "
-          "receipts (lead time plus two bad deliveries plus smoothing). The gradual profile is detected later "
-          "than the sudden one, as it should be. The unaffected suppliers stay low, and the false-alarm test "
-          "produces at most a brief flag blip on one seed and no cost penalty.",
-          "- **Demand-only shock (D) — negative result.** The engine correctly reads *no supply problem* (no "
-          "detection, no flags), but the posture's severity is built from disruptive supply regimes and "
-          "stress, so the trust region stays tight and `adaptive_sp` captures only a small part of the value "
-          "the unconstrained stochastic optimizer finds; the posture-gated `adaptive_safe` does slightly worse "
-          "than the incumbent. Demand-regime evidence (DEMAND_VOLATILE, PROMOTION) needs its own severity "
-          "channel that widens the *upside* of the trust region. This is left as the first follow-up rather "
-          "than fixed here, because fixing it now would mean tuning against the evaluation seeds.",
-          "- **Hysteresis.** Posture flips count changes in the number of flagged SKUs between reviews, so "
-          "progressive entry and exit register as several small steps rather than thrash; the portfolio-level "
-          "flag rarely enters because the value share disrupted stays below the enter threshold in the "
-          "asymmetric designs, which is the intended per-SKU behaviour.",
-          "- **Easy/slack.** Nothing happens and the engine leaves the operation alone: commit window at its "
-          "maximum, no flags, churn at or below the incumbent's.", "",
+          "receipts (lead time plus two bad deliveries plus smoothing); the sudden shock is caught faster than the "
+          "gradual one; unaffected suppliers stay low; the false alarm produces no posture flip and no cost.",
+          "- **Demand-only shock: still a negative result.** The design iterations fixed the *candidate* (the "
+          "ungated `adaptive_sp` now captures the surge, from +1.5% to about +20%), and the portfolio-level shift "
+          "trigger fires only on this test, three weeks into the shock. But the *gated* result did not improve and "
+          "is slightly worse than the incumbent on the final iteration. Two causes, both measured in the diagnostic: "
+          "(1) inside the shock every candidate beats the incumbent on the in-shock inner folds, but one pre-shock "
+          "fold shows a large loss and the downside gate blocks on that stale evidence; (2) the free optimizer's "
+          "gain comes from serving volatile demand better across the whole run, not only inside the shock, so "
+          "switching to it for two or three reviews and back adds churn and inherits a stock position the incumbent "
+          "did not plan for. The principled next step is a regime-matched gate: when the state reports a fresh "
+          "portfolio shift, evaluate downside only on folds after the shift, and retain the incumbent when fewer "
+          "than two such folds exist. It is not implemented here because it needs its own frozen run.",
+          "- **Efficiency mode admits the heuristic.** On the asymmetric-suppliers story the normal-bar gate let "
+          "`order_up_to` through several times on inner-fold evidence that did not hold out of sample, costing a "
+          "little. The bar in EFFICIENCY mode may be slightly too low for heuristics; noted, not tuned.",
+          "- **Hysteresis and the easy case.** Posture flips count changes in the number of flagged SKUs, so "
+          "progressive entry and exit register as a few steps rather than thrash; in the easy/slack case nothing "
+          "happens and nothing is done: commit window at its maximum, no flags, churn at the incumbent's level.", "",
           "## Reading the results", "",
           "- A positive number is a cost reduction relative to the incumbent on the same realised path; a negative "
           "number is a loss. Worst is the worst seed.",
