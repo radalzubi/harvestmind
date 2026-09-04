@@ -282,6 +282,8 @@ def finish(results: dict, tests: list, policies, out: Path) -> None:
                     summ[name][pol]["transition"] = {
                         "detection_lag_weeks": [x["detection_lag_weeks"] for x in tr],
                         "peak_p_disruptive": st.mean(x["peak_p_disruptive"] for x in tr),
+                        "peak_p_affected": st.mean(x.get("peak_p_affected", x["peak_p_disruptive"]) for x in tr),
+                        "peak_p_unaffected": st.mean((x.get("peak_p_unaffected") or 0.0) for x in tr),
                         "final_p_disruptive": st.mean(x["final_p_disruptive"] for x in tr),
                         "posture_flips": st.mean(x["posture_flips"] for x in tr),
                         "weeks_disrupted_posture": st.mean(x["weeks_disrupted_posture"] for x in tr),

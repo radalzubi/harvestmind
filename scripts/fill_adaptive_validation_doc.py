@@ -73,8 +73,9 @@ def main() -> int:
             tr = summ[name].get(pol, {}).get("transition")
             if tr:
                 lags = [x for x in tr["detection_lag_weeks"] if x is not None]
-                L += ["", f"*State trajectory ({pol}):* peak p(disruptive) on affected SKUs "
-                          f"{summ[name][pol]['transition'].get('peak_p_disruptive', 0):.2f} portfolio; "
+                L += ["", f"*State trajectory ({pol}):* peak p(disruptive) {tr.get('peak_p_affected', 0):.2f} on the "
+                          f"affected suppliers' SKUs, {tr.get('peak_p_unaffected', 0):.2f} on the others, "
+                          f"{tr.get('peak_p_disruptive', 0):.2f} portfolio; "
                           f"detection lag from onset {lags if lags else 'not detected / no onset'} weeks; "
                           f"posture flips per run {tr['posture_flips']:.1f}; weeks in disrupted posture "
                           f"{tr['weeks_disrupted_posture']:.0f}; smallest commit window {tr['min_commit_window']}; "
@@ -98,7 +99,31 @@ def main() -> int:
         sel = r["policy"].get("adaptive_safe", {}).get("selections")
         if sel:
             L.append(f"| {r['test']} | {r['seed']} | {sel} |")
-    L += ["", "## Reading the results", "",
+    L += ["", "## What the tables show (qualitative; the numbers above are the evidence)", "",
+          "- **Supply-side transitions (A, B, C, easy).** The standalone stochastic optimizer and the anchored "
+          "candidate lose heavily to the incumbent on every seed: they re-plan into the disruption with wide "
+          "scenarios and carry stock the incumbent does not. The posture-driven `adaptive_sp` stays within a "
+          "few percent of the incumbent because the trust region and anchoring hold it there; `adaptive_safe` "
+          "retains the incumbent throughout. On this simulator the incumbent (lead-plus-one cover) is already "
+          "competent in supply disruptions, so the honest reading is *no harm done, little value added*.",
+          "- **Detection.** The affected suppliers' SKUs cross p(disruptive) 0.5 after the trough is visible in "
+          "receipts (lead time plus two bad deliveries plus smoothing). The gradual profile is detected later "
+          "than the sudden one, as it should be. The unaffected suppliers stay low, and the false-alarm test "
+          "produces at most a brief flag blip on one seed and no cost penalty.",
+          "- **Demand-only shock (D) — negative result.** The engine correctly reads *no supply problem* (no "
+          "detection, no flags), but the posture's severity is built from disruptive supply regimes and "
+          "stress, so the trust region stays tight and `adaptive_sp` captures only a small part of the value "
+          "the unconstrained stochastic optimizer finds; the posture-gated `adaptive_safe` does slightly worse "
+          "than the incumbent. Demand-regime evidence (DEMAND_VOLATILE, PROMOTION) needs its own severity "
+          "channel that widens the *upside* of the trust region. This is left as the first follow-up rather "
+          "than fixed here, because fixing it now would mean tuning against the evaluation seeds.",
+          "- **Hysteresis.** Posture flips count changes in the number of flagged SKUs between reviews, so "
+          "progressive entry and exit register as several small steps rather than thrash; the portfolio-level "
+          "flag rarely enters because the value share disrupted stays below the enter threshold in the "
+          "asymmetric designs, which is the intended per-SKU behaviour.",
+          "- **Easy/slack.** Nothing happens and the engine leaves the operation alone: commit window at its "
+          "maximum, no flags, churn at or below the incumbent's.", "",
+          "## Reading the results", "",
           "- A positive number is a cost reduction relative to the incumbent on the same realised path; a negative "
           "number is a loss. Worst is the worst seed.",
           "- Detection lag is measured on the SKUs of the suppliers the simulator actually disrupted, from the "
