@@ -23,6 +23,7 @@ warning so it is never mistaken for proven.
 from __future__ import annotations
 
 import math
+import os
 import time
 from dataclasses import dataclass, field
 
@@ -71,6 +72,12 @@ def run_solver(model, solver: str = "highs", time_limit_s: float = 300.0,
     name = "appsi_highs" if solver == "highs" else solver
     opt = SolverFactory(name)
     options: dict = {"time_limit": float(time_limit_s)}
+    threads = os.environ.get("HARVESTMIND_SOLVER_THREADS")
+    if threads:
+        # Several validation workers on one machine: one HiGHS thread each
+        # avoids oversubscription, which slowed solves by two orders of
+        # magnitude when three processes shared the cores.
+        options["threads"] = int(threads)
     if mip_rel_gap is not None:
         options["mip_rel_gap"] = float(mip_rel_gap)
     t0 = time.perf_counter()

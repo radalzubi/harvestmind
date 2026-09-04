@@ -232,7 +232,10 @@ def main() -> int:
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--tests", default="")
     ap.add_argument("--out", default=str(ROOT / "artifacts" / "adaptive_transition_validation.json"))
+    ap.add_argument("--merge", nargs="*", default=None, help="part files to combine into --out")
     a = ap.parse_args()
+    if a.merge is not None:
+        return merge(a.merge, Path(a.out))
     seeds = FROZEN["eval_seeds"][:1] if a.quick else FROZEN["eval_seeds"]
     tests = [t for t in FROZEN["tests"] if not a.tests or t in a.tests.split(",")]
     policies = POLICIES if not a.quick else ("incumbent", "stochastic_sp", "adaptive_sp", "adaptive_safe")
@@ -255,7 +258,12 @@ def main() -> int:
                 print(f"{name:26s} seed {seed} {pol:14s} total {r['total']:12.0f} fill {r['fill']:.3f} "
                       f"churn {r['plan_change']:.2f} {r['selections']}", flush=True)
             results["runs"].append(row)
-    # summaries: each policy vs incumbent per test
+    finish(results, tests, policies, Path(a.out))
+    return 0
+
+
+def finish(results: dict, tests: list, policies, out: Path) -> None:
+    """Summaries (each policy vs incumbent per test) and the artifact."""
     summ: dict = {}
     for name in tests:
         rows = [r for r in results["runs"] if r["test"] == name]
@@ -279,11 +287,24 @@ def main() -> int:
                         "weeks_disrupted_posture": st.mean(x["weeks_disrupted_posture"] for x in tr),
                         "min_commit_window": min(x["min_commit_window"] for x in tr)}
     results["summary"] = summ
-    results["elapsed_s"] = time.time() - results["started"]
-    out = Path(a.out)
+    results["elapsed_s"] = results.get("elapsed_s") or (time.time() - results["started"])
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(results, indent=1, default=float))
     print(f"wrote {out} in {results['elapsed_s']:.0f}s")
+
+
+def merge(parts: list, out: Path) -> int:
+    """Combine per-test part files written by parallel workers."""
+    runs, elapsed, policies = [], 0.0, None
+    for pth in parts:
+        d = json.loads(Path(pth).read_text())
+        runs += d["runs"]
+        elapsed = max(elapsed, d.get("elapsed_s", 0.0))
+        policies = policies or d["policies"]
+    results = {"frozen": FROZEN, "policies": policies, "runs": runs, "started": time.time(), "elapsed_s": elapsed,
+               "parts": [str(p) for p in parts]}
+    tests = [t for t in FROZEN["tests"] if any(r["test"] == t for r in runs)]
+    finish(results, tests, tuple(policies or ()), out)
     return 0
 
 

@@ -267,8 +267,8 @@ class MultiPeriodStochasticLP:
                               opening_inventory=opening_inventory)
             if not r_ref["usable"]:
                 raise ValueError("baseline schedule could not be evaluated on the "
-                                 f"scenario set (status {r_ref['status']}); it is "
-                                 "not a feasible reference here")
+                                 f"scenario set (status {r_ref['status']}; {'; '.join(r_ref.get('warnings', []))[:300]}); "
+                                 "it is not a feasible reference here")
             base_costs = {int(w): float(c) for w, c in r_ref["scenario_costs"].items()}
             if any(ref_sched[k] < base_sched[k] for k in base_sched):
                 ref_warnings.append("baseline orders above supplier capacity were clipped for the reference")

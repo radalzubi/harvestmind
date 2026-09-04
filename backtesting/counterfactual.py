@@ -735,27 +735,30 @@ def policy_adaptive_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=30) -> tuple[d
                                    lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
     except ValueError as exc:
         return None, {"status": "error", "warnings": [str(exc)]}
-    if not r["usable"] and kw.get("service_floor_by_product"):
-        # Inside a trust region the service floor is a target, not a
-        # constraint: staying near the incumbent takes precedence, the
-        # shortfall is priced through the objective, and the relaxation
-        # is reported (and counted as a fallback by the selector).
-        kw["service_floor_by_product"] = None
-        r = solve_anchored(kw, scen, _supply_df(fi), baseline_schedule=base, anchor=anchor,
-                           lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
-        r["warnings"] = list(r.get("warnings", [])) + ["service floor unattainable inside the trust region; solved without it"]
-        r["floor_relaxed"] = True
-    if not r["usable"] and kw.get("trust_region_by_product"):
-        # A trust region the MILP still cannot satisfy is information. The
-        # lower bound is the one that can collide with the inventory cap
-        # (the incumbent would over-order into a full warehouse), so drop
-        # it and keep "no more than the incumbent plus the width", which is
-        # the safety-relevant half. Reported and counted as a fallback.
-        kw["trust_region_lower"] = False
-        r = solve_anchored(kw, scen, _supply_df(fi), baseline_schedule=base, anchor=anchor,
-                           lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
-        r["warnings"] = list(r.get("warnings", [])) + ["trust region lower bound infeasible (capacity); upper bound kept"]
-        r["trust_region_relaxed"] = True
+    try:
+        if not r["usable"] and kw.get("service_floor_by_product"):
+            # Inside a trust region the service floor is a target, not a
+            # constraint: staying near the incumbent takes precedence, the
+            # shortfall is priced through the objective, and the relaxation
+            # is reported (and counted as a fallback by the selector).
+            kw["service_floor_by_product"] = None
+            r = solve_anchored(kw, scen, _supply_df(fi), baseline_schedule=base, anchor=anchor,
+                               lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
+            r["warnings"] = list(r.get("warnings", [])) + ["service floor unattainable inside the trust region; solved without it"]
+            r["floor_relaxed"] = True
+        if not r["usable"] and kw.get("trust_region_by_product"):
+            # A trust region the MILP still cannot satisfy is information. The
+            # lower bound is the one that can collide with the inventory cap
+            # (the incumbent would over-order into a full warehouse), so drop
+            # it and keep "no more than the incumbent plus the width", which is
+            # the safety-relevant half. Reported and counted as a fallback.
+            kw["trust_region_lower"] = False
+            r = solve_anchored(kw, scen, _supply_df(fi), baseline_schedule=base, anchor=anchor,
+                               lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening)
+            r["warnings"] = list(r.get("warnings", [])) + ["trust region lower bound infeasible (capacity); upper bound kept"]
+            r["trust_region_relaxed"] = True
+    except ValueError as exc:            # a relaxation solve lost its reference: report, never crash the loop
+        return None, {"status": "error", "warnings": [str(exc)], "candidate": "adaptive_sp"}
     r["candidate"] = "adaptive_sp"
     r["posture"] = posture.as_dict()
     return ({k: v for k, v in r["x"].items() if v > 0} if r["usable"] else None), r
