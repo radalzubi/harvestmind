@@ -141,7 +141,7 @@ def recent_shift_onset(xs: list, window: int = 16, min_post: int = 3, t_threshol
     n = len(xs)
     if n < ref_len // 2 + min_post + 2:
         return {"onset": None, "age": None, "t": 0.0, "shift": 0.0}
-    strongest = (0.0, None, 0.0)
+    strongest: tuple[float, int | None, float] = (0.0, None, 0.0)
     for tau in range(n - min_post, max(ref_len // 2, n - window) - 1, -1):
         post = xs[tau:]
         pre = xs[max(0, tau - ref_len):tau]

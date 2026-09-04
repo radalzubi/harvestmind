@@ -82,6 +82,39 @@ def main() -> int:
                           f"final p(disruptive) {tr['final_p_disruptive']:.2f}."]
                 break
         L.append("")
+    # design-iteration comparison, all from artifacts (no numbers typed)
+    ABL = [("original posture (supply-built severity, calm = tight region)", "adaptive_transition_validation_v1_original.json"),
+           ("+ efficiency/protection modes + demand channel", "adaptive_transition_validation_ablation_modes_only.json"),
+           ("+ state-evidence selection, SKU-level shift trigger", "adaptive_transition_validation_ablation_sku_level_trigger.json"),
+           ("final: portfolio-level shift trigger", ART.name)]
+    rows_abl = []
+    for label, fname in ABL:
+        pth = ROOT / "artifacts" / fname
+        if not pth.exists():
+            continue
+        dd = json.loads(pth.read_text())
+        rows_abl.append((label, dd["summary"]))
+    if len(rows_abl) > 1:
+        tests_abl = [t for t in fz["tests"] if all(t in r[1] for r in rows_abl)]
+        L += ["## Design iterations on the same frozen tests (adaptive_safe, mean vs incumbent; worst seed in brackets)", "",
+              "| iteration | " + " | ".join(tests_abl) + " |", "|---|" + "---|" * len(tests_abl)]
+        for label, summ_i in rows_abl:
+            cells = []
+            for t in tests_abl:
+                v = summ_i[t].get("adaptive_safe", {})
+                cells.append(f"{pct(v.get('mean'))} [{pct(v.get('worst'))}]" if v else "n/a")
+            L.append(f"| {label} | " + " | ".join(cells) + " |")
+        L += ["", "The same for the ungated state-conditioned candidate (`adaptive_sp`), which shows what the posture alone does before the gate:", "",
+              "| iteration | " + " | ".join(tests_abl) + " |", "|---|" + "---|" * len(tests_abl)]
+        for label, summ_i in rows_abl:
+            cells = []
+            for t in tests_abl:
+                v = summ_i[t].get("adaptive_sp", {})
+                cells.append(f"{pct(v.get('mean'))} [{pct(v.get('worst'))}]" if v else "n/a")
+            L.append(f"| {label} | " + " | ".join(cells) + " |")
+        L.append("")
+    L += ["Leading indicators: whether the public feeds lead Aqaba throughput is tested separately in "
+          "`docs/validation/evidence/leading_indicators.md` (real history, negative results kept).", ""]
     # per-run detail with affected/unaffected
     L += ["## Per-run state detail", "",
           "| test | seed | policy | peak p affected | peak p unaffected | detection week | flips | disrupted weeks | min commit |",
