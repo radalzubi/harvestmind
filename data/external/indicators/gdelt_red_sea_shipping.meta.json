@@ -1,0 +1,7 @@
+{
+ "fetched_at": "2026-09-04T14:25:23.128699+00:00",
+ "source": "GDELT DOC 2.0 timelinevol",
+ "url": "https://api.gdeltproject.org/api/v2/doc/doc?query=%28Houthi%20OR%20%22Red%20Sea%22%20OR%20%22Bab%20el-Mandeb%22%29%20shipping&mode=timelinevol&timespan=24m&format=json",
+ "rows": 699,
+ "provenance": "REAL_PUBLIC"
+}

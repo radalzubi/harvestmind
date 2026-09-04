@@ -17,6 +17,7 @@ from datetime import datetime
 from typing import Any
 
 from adaptive.controller import Posture, PostureConfig, posture_from_state
+from adaptive.leading import demand_outlook, disruption_outlook
 from adaptive.signals import SignalStore
 from adaptive.state_estimator import (REGIMES, EntityState, StateConfig, StateTracker, TrackerBank, aggregate,
                                       sku_state, supplier_state)
@@ -31,6 +32,8 @@ class Estimate:
     signals: dict = field(default_factory=dict)
     change_points: dict = field(default_factory=dict)
     as_of: str | None = None
+    outlooks: dict = field(default_factory=dict)
+    demand_outlook: Any = None
 
     def as_dict(self) -> dict:
         return {
@@ -46,6 +49,8 @@ class Estimate:
             "posture": self.posture.as_dict(),
             "signals": self.signals,
             "change_points": self.change_points,
+            "outlooks": {r: o.as_dict() for r, o in self.outlooks.items()},
+            "demand_outlook": self.demand_outlook.as_dict() if self.demand_outlook is not None else None,
         }
 
 
@@ -64,6 +69,11 @@ def estimate(fi, store: SignalStore | None = None, as_of: datetime | None = None
     sups = sorted(set(fi.supplier_of.values()))
     sig_status: dict = {}
     sup_states: dict = {}
+    outlooks: dict = {}
+    if store is not None:
+        for r_ in sorted(set((fi.route_of or {}).values())):
+            outlooks[r_] = disruption_outlook(store, str(r_).lower(), as_of)
+    d_out = demand_outlook(store, "US", as_of) if store is not None else None
     for s_ in sups:
         ev = fi.supply_events.get(s_, {}) if fi.supply_events else {}
         keys = sorted(k for k in ev if k < 0)                     # keys are relative to the origin; < 0 = observed
@@ -83,7 +93,8 @@ def estimate(fi, store: SignalStore | None = None, as_of: datetime | None = None
                 p_idx = 1.0 - flag.value           # an operator flag is evidence too
         elif route:
             p_status = {"available": False, "stale": True, "reason": "no signal store attached"}
-        sup_states[s_] = supplier_state(s_, fills, leads, p_idx, p_status, state_cfg)
+        sup_states[s_] = supplier_state(s_, fills, leads, p_idx, p_status, state_cfg,
+                                        outlook=outlooks.get(str(route).lower()) if route else None)
     sku_states: dict = {}
     for j in fi.products:
         promo = any(k[0] == j and v > 1.0 for k, v in (fi.promo_multiplier or {}).items())
@@ -122,7 +133,7 @@ def estimate(fi, store: SignalStore | None = None, as_of: datetime | None = None
                                  tracker_disrupted=tracked, sku_flags=sku_flags, cfg=posture_cfg)
     cps = {s_: sup_states[s_].change_points for s_ in sups}
     return Estimate(portfolio, sku_states, sup_states, posture, sig_status, cps,
-                    as_of.isoformat() if as_of else None)
+                    as_of.isoformat() if as_of else None, outlooks, d_out)
 
 
 def p_disruptive_by_route(est: Estimate, fi) -> dict:

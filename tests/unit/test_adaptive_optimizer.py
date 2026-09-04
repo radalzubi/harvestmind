@@ -116,4 +116,7 @@ class TestAdaptiveCandidateEndToEnd:
         sched, meta = EXTRA_CANDIDATES["adaptive_sp"](fi, None, np.random.default_rng(0), 10)
         assert meta["candidate"] == "adaptive_sp" and "posture" in meta
         assert sched is not None and all(v >= 0 for v in sched.values())
-        assert meta["trust_region"] and meta["anchored"]
+        assert meta["anchored"]
+        assert meta["posture"]["mode"] in ("EFFICIENCY", "BALANCED", "PROTECTION")
+        if meta["posture"]["mode"] != "EFFICIENCY":
+            assert meta["trust_region"]

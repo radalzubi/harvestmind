@@ -30,6 +30,7 @@ from backtesting.regime import diagnose, summarize as regime_summary
 from backtesting.safe_selector import INCUMBENT, SafeSelectionConfig, safe_select
 from adaptive.controller import explain_posture
 from adaptive.engine import estimate, in_recovery_by_route, p_disruptive_by_route
+from adaptive.indicators import load_all_indicators
 from adaptive.signals import SignalStore, load_portwatch_signals
 from domain.carrying_cost import CarryingCostComponents, sensitivity_grid
 from domain.economics import Provenance, ServiceTarget
@@ -320,7 +321,9 @@ def _signal_store() -> tuple[SignalStore, dict]:
     evidence UNAVAILABLE, never as normal conditions."""
     store = SignalStore(max_age_days=75.0)          # monthly series: two missed months = stale
     n = load_portwatch_signals(store, PORTWATCH_CSV, ports=("Aqaba",))
-    return store, {"portwatch_rows": n, "path": str(PORTWATCH_CSV.name), "provenance": "REAL_PUBLIC" if n else None}
+    counts = load_all_indicators(store)             # chokepoints, GSCPI, freight, fuel, news, demand
+    return store, {"portwatch_rows": n, "path": str(PORTWATCH_CSV.name), "provenance": "REAL_PUBLIC" if n else None,
+                   "indicators": counts, "indicator_cache": "data/external/indicators (scripts/fetch_indicators.py)"}
 
 
 def _state_for(fi, evidence_strength: float = 0.0):
@@ -355,6 +358,7 @@ def state(
                               holding_rate_per_week=None, currency="USD", incumbent_cover_weeks=None)
     est, src = _state_for(fi)
     return {**est.as_dict(), "signal_sources": src, "economics_provenance": report["provenance"],
+            "mode": est.posture.mode,
             "replan_triggers": _replan_triggers(est),
             "classification": "state estimate from operator history and public logistics signals; not a forecast"}
 

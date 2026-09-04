@@ -1,0 +1,7 @@
+{
+ "fetched_at": "2026-09-04T14:14:18.349527+00:00",
+ "source": "FRED GASDESW",
+ "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=GASDESW",
+ "rows": 1694,
+ "provenance": "REAL_PUBLIC"
+}

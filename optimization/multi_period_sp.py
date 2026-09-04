@@ -273,8 +273,9 @@ class MultiPeriodStochasticLP:
             if any(ref_sched[k] < base_sched[k] for k in base_sched):
                 ref_warnings.append("baseline orders above supplier capacity were clipped for the reference")
 
+        # A fraction >= 1 means "no region" for that product (efficiency mode).
         trust = {str(j): float(f) for j, f in (self.trust_region_by_product or {}).items()
-                 if str(j) in products and float(f) >= 0}
+                 if str(j) in products and 0 <= float(f) < 1.0}
         if trust and base_sched:
             lot_of = {str(j): (specs[j].lot_units if j in specs else 1.0) for j in products}
             cap_ij_tr = {(str(r.supplier_id), str(r.product_id)): float(r.capacity_kg)

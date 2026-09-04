@@ -144,7 +144,66 @@ pins the exact sequence.
 < 0; the signal store is queried `as_of` the origin. `TestEngineLeakage` puts a catastrophe at
 and after the origin and checks the state is identical to the clean history.
 
+## 5.5 Leading indicators: forecasting trouble before receipts show it
+
+Receipts lag: the validation measured four to ten weeks from the onset of a supply
+episode to detection, because a fill shortfall is only observed when the delayed order
+lands. `adaptive/indicators.py` and `adaptive/leading.py` add public, keyless feeds that
+move earlier, each cached by `scripts/fetch_indicators.py` with a `fetched_at` stamp:
+
+| feed | source | index | reaches the estimator as |
+|---|---|---|---|
+| chokepoint transits (Bab el-Mandeb, Suez, Hormuz, Cape) | IMF PortWatch, daily AIS | 7-day mean / trailing 365-day median | lane outlook |
+| port throughput (Aqaba) | IMF PortWatch | monthly imports / trailing 12-month median | port evidence and lane outlook |
+| shipping news coverage per lane | GDELT DOC 2.0 | 7-day coverage share / trailing 180-day median | lane outlook |
+| Global Supply Chain Pressure Index | NY Fed | level (sd units) | lane outlook |
+| Brent crude | FRED | 30-day mean / trailing 365-day median | lane outlook |
+| Freight Transportation Services Index | FRED | 12-month change | lane outlook |
+| retail sales, consumer sentiment | FRED | 12-month change; 5-year z-score | demand outlook |
+
+`disruption_outlook(store, route, as_of)` combines whatever is available into a logistic
+risk with a named contribution per feed and a **quality** that falls with every feed that
+is missing or stale. Missing feeds contribute nothing and are listed; a lane with no feeds
+gets quality zero and the words "outlook UNAVAILABLE". The weights are design constants,
+labelled ASSUMED. The supplier state reads the outlook as WATCH evidence (and, when the
+excess risk is large, PORT_DISRUPTION evidence) scaled by the outlook's quality, so it can
+raise the posture before the first short delivery, but a one-feed outlook counts for little.
+
+Whether these feeds actually lead is a question, not an assumption:
+`scripts/validate_leading_indicators.py` cross-correlates each indicator with Aqaba's
+import index at leads of zero to twelve weeks over the full span and over the Red Sea
+crisis, with a noise floor of 2/√n, and writes the answer, positive or negative, to
+`docs/validation/evidence/leading_indicators.md`.
+
+## 5.6 The demand channel
+
+Demand evidence has its own severity: `demand_severity` per SKU from the DEMAND_VOLATILE and
+PROMOTION probabilities, the demand drift component and a detected level shift, value-weighted
+to the portfolio. It widens the scenarios, opens the *upside* of the trust region
+(`demand_trust_open × demand_severity`), shortens the commit window and admits the
+stochastic candidate, without pretending a supply problem exists. This is the fix for the
+negative result in the first transition validation, where a demand-only shock left the
+optimizer pinned to the incumbent.
+
 ## 6. Posture: what the state changes
+
+### 6.0 Three modes, one continuous mapping
+
+Severity `t = max(p_eff, S, value_share_disrupted)` selects a mode, with the trackers'
+hysteresis upstream so it cannot flicker:
+
+| mode | when | what the optimizer is allowed |
+|---|---|---|
+| **EFFICIENCY** | t < 0.25 | optimise ordinary expected cost: trust region **off**, light anchor (ρ scale 0.25), every candidate admitted, the safe gate at its normal bar (lower bound must beat the incumbent by 2% at 80% confidence on the operator's own history), commit window 4 |
+| **BALANCED** | 0.25 ≤ t < 0.55 | trust region by SKU severity, anchoring and CVaR rising with t, gate tightening |
+| **PROTECTION** | t ≥ 0.55 | tight trust region, CVaR weight up to 1.0 at α 0.95, regret budget, commit window down to 1, robust candidate when the estimator itself is uncertain |
+
+In every mode the engine keeps reading the state at each review and re-deriving the
+posture; the mode is a label on a continuous mapping, not a switch that changes the code
+path. The safe gate protects the incumbent in efficiency mode the way it always has: by
+evidence on the operator's history, not by a bound.
+
+
 
 `posture_from_state` maps severity `t = max(p_eff, S, value_share_disrupted)` (with `p_eff`
 raised to 0.6 while the tracker holds the disrupted flag) through monotone interpolations:
@@ -156,13 +215,13 @@ raised to 0.6 while the tracker holds the disrupted flag) through monotone inter
 | CVaR weight λ on baseline-relative regret | 0.10 | 1.00 | objective |
 | CVaR level α | 0.80 | 0.95 | objective |
 | regret budget (share of baseline expected cost) | none | 0.15 + 0.35·(1−t) | hard constraint, relaxed and reported if infeasible |
-| anchoring scale on ρ_j | 2.0 | 0.25 | L1 penalty, × (1.5 − autonomy) |
-| trust region per SKU | 5% | 15% / 40% / 80% by SKU severity | MILP bounds |
+| anchoring scale on ρ_j | 0.25 (efficiency) / 0.75 (calm) | 0.25 | L1 penalty, × (1.5 − autonomy) |
+| trust region per SKU | off (efficiency) / 5% | 15% / 40% / 80% by SKU severity, + 0.6 × demand severity | MILP bounds |
 | plan-stability cost (per unit changed, × unit cost) | 0.02 | 0.005 | objective |
 | commit window (weeks) | 4 | 1 | EXECUTABLE / ADVISORY split |
-| selection threshold (lower bound must beat) | 5% | 2% | safe gate |
-| selection confidence | 0.90 | 0.75 | safe gate |
-| candidates admitted | order_up_to, deterministic_sp (+ anchored_sp with evidence) | + stochastic_sp; + dro when p > 0.5 and data quality or calibration is poor | safe gate |
+| selection threshold (lower bound must beat) | 2% (efficiency) / 3% | 2% | safe gate |
+| selection confidence | 0.80 (efficiency) / 0.85 | 0.75 | safe gate |
+| candidates admitted | all (efficiency); order_up_to, deterministic_sp, anchored_sp, adaptive_sp (balanced) | + stochastic_sp when t > 0.45 or demand severity > 0.4; + dro when p > 0.5 and data quality or calibration is poor | safe gate |
 
 In calm periods the optimizer is held close to the incumbent, charged for churn, allowed to
 commit four weeks, and must clear a high bar to replace the incumbent. In disrupted periods it
@@ -227,6 +286,8 @@ is charged against what the operator actually saw last review.
 |---|---|
 | supplier fill and lead series | REAL OPERATOR (from POs and receipts) |
 | port throughput index | REAL PUBLIC (IMF PortWatch), monthly, stale after 75 days |
+| chokepoint transits, GSCPI, freight, fuel, news coverage, retail sales, sentiment | REAL PUBLIC (IMF PortWatch, NY Fed, FRED, GDELT), cached with fetch stamps; whether they lead is tested, not assumed |
+| outlook weights | ASSUMED design constants, reported per call with each feed's contribution |
 | disruption path depth/length | MEASURED from the supplier's own history when an episode exists, else ASSUMED and labelled |
 | posture constants (table in §6) | design constants, developed on calibration seeds, never fitted to evaluation seeds |
 | regime evidence scores | design constants, transparent, listed in §5.1 |

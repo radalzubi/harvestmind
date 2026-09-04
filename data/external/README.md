@@ -38,6 +38,18 @@ be checked against a period in which it actually happened.
 PortWatch records **Aqaba as carrying 100% of Jordan's maritime imports**.
 Jordan's single-seaport exposure is therefore measured, not assumed.
 
+## indicators/ — leading indicators (keyless public feeds, `scripts/fetch_indicators.py`)
+
+| file | source | cadence |
+|---|---|---|
+| `freight_index.csv` | FRED TSIFRGHT, Freight Transportation Services Index | monthly |
+| `brent_usd.csv`, `diesel_usd.csv` | FRED DCOILBRENTEU, GASDESW | daily, weekly |
+| `consumer_sentiment.csv`, `retail_sales_usd_m.csv` | FRED UMCSENT, RSXFS | monthly |
+| `gscpi.csv` | NY Fed Global Supply Chain Pressure Index | monthly |
+| `gdelt_*.csv` | GDELT DOC 2.0 timeline volume (coverage share) per shipping lane / Jordan economy | daily, trailing 24 months |
+
+Each has a `.meta.json` sidecar with `fetched_at`, so freshness is honest. All REAL PUBLIC.
+
 ## What these data cannot do
 
 They are aggregate. No public source publishes SKU-level or supplier-level
@@ -52,6 +64,7 @@ tonnage ordered is not.
 |---|---|
 | `data/external/fred/*.csv` | REAL PUBLIC (US Census via FRED, public domain) |
 | `data/external/portwatch/*.csv` | REAL PUBLIC (IMF PortWatch, open data) |
+| `data/external/indicators/*.csv` | REAL PUBLIC (FRED, NY Fed, GDELT) |
 | `validation/commercial/real_data.py` route shock panel | DERIVED FROM REAL PUBLIC (arrival-shortfall proxy; not a fill rate) |
 | `docs/reports/evidence/real_validation/*` | DERIVED FROM REAL PUBLIC (backtest outputs on the real demand path; cross-section synthetic) |
 | `synthetic/fmcg/distributor_sim.py` output, `artifacts/fmcg_*.json` | SYNTHETIC CALIBRATED (public benchmarks shape the parameters) |

@@ -174,11 +174,31 @@ def test_posture_is_monotone_in_severity():
     assert bad.cvar_lambda > calm.cvar_lambda and bad.cvar_alpha > calm.cvar_alpha
     assert bad.scenario_width > calm.scenario_width and bad.persistence > calm.persistence
     assert bad.commit_window < calm.commit_window
-    assert bad.trust_region["A"] > calm.trust_region["A"]
-    assert bad.rho_scale < calm.rho_scale
-    assert bad.min_rel_improvement < calm.min_rel_improvement
-    assert "stochastic_sp" in bad.candidates and "stochastic_sp" not in calm.candidates
+    # calm = EFFICIENCY mode: region off (>= 1), full candidate set, normal gate
+    assert calm.mode == "EFFICIENCY" and calm.trust_region["A"] >= 1.0
+    assert bad.mode == "PROTECTION" and bad.trust_region["A"] < 1.0
+    mid = posture_from_state(_portfolio(0.4, 0.4), {"A": _portfolio(0.4, 0.4)})
+    assert mid.mode == "BALANCED" and mid.trust_region["A"] < 1.0
+    assert bad.trust_region["A"] > mid.trust_region["A"]
+    assert "stochastic_sp" in calm.candidates and "stochastic_sp" in bad.candidates
+    assert "stochastic_sp" not in mid.candidates
     assert calm.regret_budget_share is None and bad.regret_budget_share is not None
+    assert calm.min_rel_improvement <= mid.min_rel_improvement
+
+
+def test_demand_severity_opens_the_trust_region_and_widens_scenarios():
+    sup = _portfolio(0.4, 0.4)
+    sku_quiet = _portfolio(0.4, 0.4)
+    sku_surge = _portfolio(0.4, 0.4)
+    sku_surge.features["demand_severity"] = 0.8
+    quiet = posture_from_state(sup, {"A": sku_quiet})
+    surge_port = _portfolio(0.4, 0.4)
+    surge_port.features["demand_severity"] = 0.8
+    surge = posture_from_state(surge_port, {"A": sku_surge})
+    assert surge.trust_region["A"] > quiet.trust_region["A"]
+    assert surge.scenario_width > quiet.scenario_width
+    assert surge.demand_severity > quiet.demand_severity
+    assert "stochastic_sp" in surge.candidates
 
 
 def test_autonomy_falls_with_poor_data_and_unknown_economics():

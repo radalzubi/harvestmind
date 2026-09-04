@@ -76,7 +76,7 @@ def test_upload_plan_explain_audit(client, history):
     assert set(plan["candidate_evidence"]) <= set(plan["candidates_admitted"])
     assert set(plan["candidate_evidence"]) >= {"order_up_to", "deterministic_sp"}
     assert abs(sum(plan["state"]["portfolio"]["probabilities"].values()) - 1.0) < 1e-6
-    assert 0.0 <= plan["autonomy"]["score"] <= 1.0 and plan["narrative"].startswith("Current regime")
+    assert 0.0 <= plan["autonomy"]["score"] <= 1.0 and plan["narrative"].startswith("Mode:")
     assert plan["posture"]["commit_window"] >= 1
     assert plan["unit"] == "each" and plan["currency"] == "USD" and plan["run_id"].startswith("run-")
     assert plan["economics_provenance"]["unit_cost"] == "operator"

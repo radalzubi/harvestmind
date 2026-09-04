@@ -24,6 +24,7 @@ from __future__ import annotations
 import math
 import statistics as st
 from dataclasses import dataclass, field
+from typing import Any
 
 from adaptive.change_point import cusum, page_hinkley, recent_vs_longrun
 
@@ -87,8 +88,11 @@ def _clip01(x: float) -> float:
 
 
 def supplier_state(entity_id: str, fills: list, leads: list, port_index: float | None,
-                   port_status: dict | None, cfg: StateConfig | None = None) -> EntityState:
-    """fills, leads: chronological, dated at or before as_of."""
+                   port_status: dict | None, cfg: StateConfig | None = None,
+                   outlook: Any = None) -> EntityState:
+    """fills, leads: chronological, dated at or before as_of. ``outlook`` is
+    an ``adaptive.leading.Outlook`` for the supplier's lane: forward-looking
+    evidence from public indicators, weighted by its own quality."""
     cfg = cfg or StateConfig()
     f = [float(x) for x in fills]
     L = [float(x) for x in leads]
@@ -186,8 +190,26 @@ def supplier_state(entity_id: str, fills: list, leads: list, port_index: float |
     else:
         comps["port"] = 0.0
 
-    weights = {"fill_level": 0.30, "fill_decline": 0.25, "fill_variance": 0.10, "lead_drift": 0.15,
-               "lead_variance": 0.05, "port": 0.15}
+    # Leading indicators: evidence that the lane is ABOUT to deteriorate.
+    # They raise WATCH (and, when strong, PORT_DISRUPTION) before receipts
+    # can show anything, scaled by the outlook's quality so a one-feed
+    # outlook counts for little. Excess risk over the ~10% base is what counts.
+    if outlook is not None and getattr(outlook, "quality", 0.0) > 0:
+        excess = max(0.0, float(outlook.risk) - 0.12)
+        q = float(outlook.quality)
+        comps["outlook"] = _clip01(excess / 0.6) * q
+        feats["outlook_risk"] = float(outlook.risk)
+        feats["outlook_quality"] = q
+        if excess > 0.08:
+            scores["WATCH"] += 3.0 * excess * q
+            reasons.append(f"leading indicators put lane risk at {outlook.risk:.0%} (quality {q:.2f})")
+            reasons.extend(list(outlook.reasons)[:2])
+        if excess > 0.35:
+            scores["PORT_DISRUPTION"] += 3.0 * (excess - 0.35) * q
+    else:
+        comps["outlook"] = 0.0
+    weights = {"fill_level": 0.28, "fill_decline": 0.22, "fill_variance": 0.08, "lead_drift": 0.14,
+               "lead_variance": 0.04, "port": 0.12, "outlook": 0.12}
     stress = _clip01(sum(weights[k] * comps.get(k, 0.0) for k in weights))
     probs = _softmax(scores, cfg.temperature)
     return EntityState("supplier", entity_id, probs, stress, comps, feats, cps, reasons, dq)
@@ -256,6 +278,12 @@ def sku_state(entity_id: str, demand: list, cover_periods: float, promo_ahead: b
         dq = min(dq, max(supplier.data_quality, 0.3))
     weights = {"demand_cv": 0.25, "demand_drift": 0.15, "cover": 0.25, "supply": 0.35}
     stress = _clip01(sum(weights[k] * comps.get(k, 0.0) for k in weights))
+    # Demand severity is its own channel: volatility, level shift, a planned
+    # promotion. It opens the UPSIDE of the trust region and widens the
+    # scenarios without pretending a supply problem exists.
+    feats["demand_severity"] = _clip01(0.6 * (probs.get("DEMAND_VOLATILE", 0.0) + probs.get("PROMOTION", 0.0))
+                                       + 0.4 * comps.get("demand_drift", 0.0)
+                                       + (0.3 if feats.get("demand_shift_sd", 0.0) > 2.0 else 0.0))
     return EntityState("sku", entity_id, probs, stress, comps, feats, cps, reasons, dq)
 
 
@@ -276,7 +304,8 @@ def aggregate(states: list, weights: list | None = None) -> EntityState:
     for s in sorted(states, key=lambda x: -x.stress)[:3]:
         reasons.extend([f"{s.entity_id}: {r}" for r in s.reasons[:1]])
     dq = sum(wi * s.data_quality for wi, s in zip(w, states)) / tot
-    return EntityState("portfolio", "*", probs, stress, comps, {}, {}, reasons, dq)
+    feats = {"demand_severity": sum(wi * float(s.features.get("demand_severity", 0.0)) for wi, s in zip(w, states)) / tot}
+    return EntityState("portfolio", "*", probs, stress, comps, feats, {}, reasons, dq)
 
 
 @dataclass
