@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
+from adaptive.change_point import recent_shift_onset, recent_vs_longrun
 from adaptive.controller import Posture, PostureConfig, posture_from_state
 from adaptive.leading import demand_outlook, disruption_outlook
 from adaptive.signals import SignalStore
@@ -116,6 +117,27 @@ def estimate(fi, store: SignalStore | None = None, as_of: datetime | None = None
     elif tracker is not None:
         portfolio.probabilities = tracker.update(portfolio.probabilities)
         tracked = tracker.posture_disrupted
+    # Portfolio demand series: SKU-level shift detection is noisy on volatile
+    # SKUs, but a level shift shared across the portfolio averages the noise
+    # out. Value-weighted, CUSUM against the first half as reference.
+    n_d = min((len(fi.train_demand[j]) for j in fi.products if fi.train_demand.get(j)), default=0)
+    if n_d >= 16:
+        series = [sum(float(fi.unit_cost.get(j, 1.0)) * float(fi.train_demand[j][-n_d + t]) for j in fi.products)
+                  for t in range(n_d)]
+        onset = recent_shift_onset(series)
+        drift = recent_vs_longrun(series, 4)
+        portfolio.features["demand_shift_sd_portfolio"] = float(drift["shift_sd"])
+        portfolio.features["demand_shift_t_portfolio"] = float(onset["t"])
+        age_p = onset["age"]
+        portfolio.features["demand_shift_age_portfolio"] = age_p
+        fresh_p = bool(age_p is not None and age_p <= 12 and abs(drift["shift_sd"]) > 2.0)
+        portfolio.features["demand_shift_portfolio_fresh"] = fresh_p
+        if fresh_p:
+            portfolio.features["demand_shift_fresh_share"] = 1.0
+            portfolio.features["demand_severity"] = max(float(portfolio.features.get("demand_severity", 0.0)),
+                                                        min(1.0, 0.5 + abs(drift["shift_sd"]) / 10.0))
+            portfolio.reasons.insert(0, f"portfolio demand level shift {drift['shift_sd']:+.1f} sd, "
+                                        f"{age_p} periods old")
     # share of value sitting in SKUs the estimator reads as disrupted: a
     # third of the portfolio at p=0.8 is a disruption, whatever the mean says
     tot_w = sum(weights) or 1.0

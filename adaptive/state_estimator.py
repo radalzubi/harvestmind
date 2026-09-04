@@ -26,7 +26,7 @@ import statistics as st
 from dataclasses import dataclass, field
 from typing import Any
 
-from adaptive.change_point import cusum, page_hinkley, recent_vs_longrun
+from adaptive.change_point import cusum, page_hinkley, recent_shift_onset, recent_vs_longrun
 
 REGIMES = ("CALM", "NORMAL", "WATCH", "TIGHT", "DEMAND_VOLATILE", "SUPPLY_CONSTRAINED",
            "PORT_DISRUPTION", "SEVERE_DISRUPTION", "PROMOTION", "RECOVERY")
@@ -236,7 +236,7 @@ def sku_state(entity_id: str, demand: list, cover_periods: float, promo_ahead: b
         cp = cusum(d, reference_n=min(12, max(4, n // 2)))
         feats.update(demand_cv=cv, demand_shift_sd=drift["shift_sd"], intermittency=inter, spike_ratio=spike,
                      cover_periods=cover_periods,
-                     demand_shift_age=(n - cp.index) if (cp.detected and cp.index is not None) else None)
+                     demand_shift_age=recent_shift_onset(d)["age"])
         comps["demand_cv"] = _clip01((cv - 0.2) / 0.8)
         comps["demand_drift"] = _clip01(abs(drift["shift_sd"]) / 3.0)
         comps["cover"] = _clip01((cfg.cover_thin * 1.5 - cover_periods) / (cfg.cover_thin * 1.5))

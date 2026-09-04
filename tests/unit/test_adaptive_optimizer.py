@@ -120,3 +120,36 @@ class TestAdaptiveCandidateEndToEnd:
         assert meta["posture"]["mode"] in ("EFFICIENCY", "BALANCED", "PROTECTION")
         if meta["posture"]["mode"] != "EFFICIENCY":
             assert meta["trust_region"]
+
+
+class TestPortfolioDemandShift:
+    def test_shared_shift_on_noisy_skus_is_seen_at_portfolio_level(self):
+        """Thirty SKUs with CV 0.5 and a x1.6 shift in the last six weeks:
+        few SKUs register a shift on their own, the portfolio does."""
+        from adaptive.engine import estimate
+        from backtesting.counterfactual import FoldInputs
+        from domain.model import fmcg_policy
+        rng = np.random.default_rng(3)
+        pol = fmcg_policy({})
+        prods = [f"P{k}" for k in range(30)]
+        dem = {}
+        for j in prods:
+            base = rng.gamma(4.0, 25.0, 52)
+            base[-6:] *= 1.6
+            dem[j] = [float(x) for x in base]
+        kw = dict(origin=52, horizon=8, products=prods, supplier_of={j: "S" for j in prods}, lead_of={"S": 2},
+                  train_demand=dem, train_fill={"S": [0.96]}, unit_cost={j: 1.0 for j in prods},
+                  margin={j: 0.3 for j in prods}, capacity={j: 1e6 for j in prods},
+                  opening={j: 200.0 for j in prods}, pipeline={}, policy=pol,
+                  supply_events={"S": {t: (0.96, 2) for t in range(-52, 0)}})
+        est = estimate(FoldInputs(**kw))
+        f = est.portfolio.features
+        assert f["demand_shift_portfolio_fresh"] and f["demand_shift_age_portfolio"] <= 8
+        assert f["demand_shift_fresh_share"] == 1.0 and est.posture.demand_shift_fresh_share == 1.0
+        assert est.posture.demand_severity >= 0.5
+        # and a flat portfolio does not
+        for j in prods:
+            dem[j] = [float(x) for x in rng.gamma(4.0, 25.0, 52)]
+        est2 = estimate(FoldInputs(**{**kw, "train_demand": dem}))
+        assert not est2.portfolio.features.get("demand_shift_portfolio_fresh")
+        assert est2.posture.demand_shift_fresh_share < 0.3
