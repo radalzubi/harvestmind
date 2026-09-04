@@ -236,6 +236,20 @@ admitted only when the estimator itself is uncertain.
 reasons for every cap are returned. Autonomy scales every SKU's trust region
 (× (0.5 + 0.5·autonomy)) and the anchoring scale. *Less evidence = less autonomy, always.*
 
+### 6.2 State-evidence selection
+
+The safe gate evidences a candidate on backtest folds inside the training window. When a
+large share of value has just had a demand level shift, every fold predates the shift, so
+the gate cannot see the value of responding and would retain an incumbent that is now
+under-ordering (the first validation measured exactly that). In that one situation the
+state itself is the evidence: if `demand_severity ≥ 0.5` and the fresh-shift value share
+is ≥ 0.3, the gate runs the state-conditioned candidate with a **hard** regret budget
+(10% of the incumbent's expected cost under the conditioned scenarios) and accepts it only
+if the budget held; otherwise it falls through to the backtest gate. The decision says
+`selection_basis: state` and carries the reason. Supply-side departures are never selected
+this way: for those the receipts and the leading indicators are the evidence, and the
+protection posture bounds what the optimizer may do.
+
 ## 7. Conditional scenarios
 
 `conditional_supply_paths` starts from the moving-block bootstrap of the supplier's own

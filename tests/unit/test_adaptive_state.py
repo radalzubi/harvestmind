@@ -262,3 +262,46 @@ def test_widen_demand_keeps_the_mean():
     out = widen_demand([dict(r) for r in rows], 1.5, None)
     assert abs(sum(r["demand_kg"] for r in out) / 3 - 100.0) < 1e-9
     assert max(r["demand_kg"] for r in out) == 130.0
+
+
+def test_state_evidence_selection_needs_a_fresh_demand_shift():
+    """A fresh level shift on a third of value + high demand severity lets
+    the gate select the state-conditioned candidate under a hard regret
+    budget; without the shift the backtest gate runs as usual."""
+    from types import SimpleNamespace
+    from backtesting.safe_selector import SafeSelectionConfig, safe_select
+    from backtesting.counterfactual import FoldInputs
+    from domain.model import fmcg_policy
+    pol = fmcg_policy({})
+    kw = dict(origin=60, horizon=6, products=["A"], supplier_of={"A": "S"}, lead_of={"S": 1},
+              train_demand={"A": [100.0] * 54 + [180.0] * 6}, train_fill={"S": [0.96]}, unit_cost={"A": 1.0},
+              margin={"A": 0.5}, capacity={"A": 5000.0}, opening={"A": 150.0}, pipeline={}, policy=pol,
+              supply_events={"S": {t: (0.96, 1) for t in range(-52, 0)}})
+    calls = []
+
+    def fake_adaptive(fi, cap, rng, n):
+        calls.append(fi.origin)
+        return {("S", "A", 0): 180.0}, {"status": "optimal", "usable": True}
+    post = SimpleNamespace(demand_severity=0.7, demand_shift_fresh_share=1.0, regret_budget_share=0.10,
+                           min_rel_improvement=0.02, confidence=0.8, candidates=("order_up_to", "adaptive_sp"),
+                           as_dict=lambda: {})
+    d = safe_select(FoldInputs(**kw), None, np.random.default_rng(0), SafeSelectionConfig(n_boot=50, n_scen=5),
+                    posture=post, extra_candidates={"adaptive_sp": fake_adaptive})
+    assert d.mode_run == "adaptive_sp" and "state-evidence" in d.reason and d.meta["selection_basis"] == "state"
+    assert calls == [60]
+    quiet = SimpleNamespace(demand_severity=0.1, demand_shift_fresh_share=0.0, regret_budget_share=None,
+                            min_rel_improvement=0.02, confidence=0.8, candidates=("order_up_to",), as_dict=lambda: {})
+    d2 = safe_select(FoldInputs(**kw), None, np.random.default_rng(0), SafeSelectionConfig(n_boot=50, n_scen=5),
+                     posture=quiet, extra_candidates={"adaptive_sp": fake_adaptive})
+    assert d2.mode_run != "adaptive_sp" and "state-evidence" not in d2.reason
+
+
+def test_fresh_demand_shift_is_measured():
+    sup = _calm_supplier()
+    shifted = sku_state("A", [100.0] * 40 + [170.0] * 6, 2.0, False, sup)
+    flat = sku_state("A", [100.0] * 46, 2.0, False, sup)
+    assert shifted.features.get("demand_shift_age") is not None and shifted.features["demand_shift_age"] <= 8
+    assert flat.features.get("demand_shift_age") is None
+    port = aggregate([shifted, flat], [1.0, 1.0])
+    assert abs(port.features["demand_shift_fresh_share"] - 0.5) < 1e-9
+    assert shifted.features["demand_severity"] > flat.features["demand_severity"]

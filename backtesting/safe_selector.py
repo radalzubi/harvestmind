@@ -246,6 +246,31 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
     if n_hist < cfg.min_history:
         return decide_incumbent(f"insufficient history ({n_hist} < {cfg.min_history} periods); "
                                 "no candidate can be evidenced, incumbent retained")
+
+    # ── state-evidence selection ──────────────────────────────────────────
+    # When a large share of value has just had a demand level shift, every
+    # backtest fold predates the shift and cannot evidence a response to it;
+    # the gate would retain an incumbent that is now under-ordering. The
+    # state itself is the evidence here: run the state-conditioned candidate
+    # with a HARD regret budget relative to the incumbent under the
+    # conditioned scenarios, and accept it only if that budget held.
+    if (posture is not None and "adaptive_sp" in (extra_candidates or {})
+            and float(getattr(posture, "demand_severity", 0.0)) >= 0.5
+            and float(getattr(posture, "demand_shift_fresh_share", 0.0)) >= 0.3):
+        sched, m = run_candidate("adaptive_sp", fi, warehouse_cap, rng, cfg.n_scen, extra_candidates)
+        share = float(getattr(posture, "demand_shift_fresh_share", 0.0))
+        if sched is not None and not m.get("budget_relaxed") and m.get("usable", True):
+            return SafeDecision(
+                mode_run="adaptive_sp", schedule=sched,
+                reason=(f"state-evidence selection: a demand level shift within the last 12 periods covers "
+                        f"{share:.0%} of value, so backtest folds predate it and cannot evidence a response; "
+                        f"the state-conditioned candidate ran with a hard regret budget of "
+                        f"{posture.regret_budget_share:.0%} of incumbent expected cost, which held"),
+                incumbent_label=label, evidence={}, gates_config=cfg.__dict__.copy(), history_periods=n_hist,
+                warnings=warnings + ["selection based on the estimated state, not on backtest folds"],
+                meta={**m, **posture_meta, "selection_basis": "state"})
+        warnings.append("state-evidence selection attempted but the regret budget did not hold; "
+                        "falling through to the backtest gate")
     sel_folds = inner_folds(fi, cfg.n_folds, cfg.holdout, offset=cfg.n_holdout_folds * cfg.holdout)
     hold_folds = inner_folds(fi, cfg.n_holdout_folds, cfg.holdout, offset=0)
     if len(sel_folds) < 2:

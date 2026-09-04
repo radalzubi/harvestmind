@@ -235,7 +235,8 @@ def sku_state(entity_id: str, demand: list, cover_periods: float, promo_ahead: b
         spike = (max(d[-cfg.recent_n:]) / mu) if mu > 0 else 0.0
         cp = cusum(d, reference_n=min(12, max(4, n // 2)))
         feats.update(demand_cv=cv, demand_shift_sd=drift["shift_sd"], intermittency=inter, spike_ratio=spike,
-                     cover_periods=cover_periods)
+                     cover_periods=cover_periods,
+                     demand_shift_age=(n - cp.index) if (cp.detected and cp.index is not None) else None)
         comps["demand_cv"] = _clip01((cv - 0.2) / 0.8)
         comps["demand_drift"] = _clip01(abs(drift["shift_sd"]) / 3.0)
         comps["cover"] = _clip01((cfg.cover_thin * 1.5 - cover_periods) / (cfg.cover_thin * 1.5))
@@ -304,7 +305,12 @@ def aggregate(states: list, weights: list | None = None) -> EntityState:
     for s in sorted(states, key=lambda x: -x.stress)[:3]:
         reasons.extend([f"{s.entity_id}: {r}" for r in s.reasons[:1]])
     dq = sum(wi * s.data_quality for wi, s in zip(w, states)) / tot
-    feats = {"demand_severity": sum(wi * float(s.features.get("demand_severity", 0.0)) for wi, s in zip(w, states)) / tot}
+    feats = {"demand_severity": sum(wi * float(s.features.get("demand_severity", 0.0)) for wi, s in zip(w, states)) / tot,
+             # share of value in SKUs whose demand level shifted within the last 12 periods: when it is
+             # large, backtest folds that predate the shift are not evidence about the present
+             "demand_shift_fresh_share": sum(wi for wi, s in zip(w, states)
+                                             if (s.features.get("demand_shift_age") or 99) <= 12
+                                             and abs(float(s.features.get("demand_shift_sd", 0.0))) > 2.0) / tot}
     return EntityState("portfolio", "*", probs, stress, comps, feats, {}, reasons, dq)
 
 

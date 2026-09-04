@@ -74,6 +74,7 @@ class Posture:
     stress: float
     mode: str = "BALANCED"            # EFFICIENCY | BALANCED | PROTECTION
     demand_severity: float = 0.0
+    demand_shift_fresh_share: float = 0.0
     outlook_risk: float = 0.0
     autonomy: float = 0.0
     dominant: str = "NORMAL"
@@ -143,6 +144,7 @@ def posture_from_state(portfolio: EntityState, sku_states: dict, *, evidence_str
     outlook_risk = float(max([float(s.features.get("outlook_risk", 0.0)) for s in sku_states.values()] + [0.0]))
     t = max(p_eff, portfolio.stress, share)                # supply severity in [0, 1]
     d_sev = float(portfolio.features.get("demand_severity", 0.0))
+    fresh = float(portfolio.features.get("demand_shift_fresh_share", 0.0))
     sku_flags = sku_flags or {}
     auton, why = autonomy_score(portfolio, evidence_strength, calibration_confidence, economics_quality)
     mode = "EFFICIENCY" if t < cfg.efficiency_max else ("PROTECTION" if t >= cfg.protection_min else "BALANCED")
@@ -189,13 +191,16 @@ def posture_from_state(portfolio: EntityState, sku_states: dict, *, evidence_str
         gate_conf = _lerp(cfg.confidence_calm, cfg.confidence_disrupted, t)
         rho = _lerp(cfg.rho_scale_calm, cfg.rho_scale_disrupted, t) * (1.5 - auton)
     return Posture(
-        p_disruptive=p_dis, stress=portfolio.stress, mode=mode, demand_severity=d_sev, outlook_risk=outlook_risk,
+        p_disruptive=p_dis, stress=portfolio.stress, mode=mode, demand_severity=d_sev,
+        demand_shift_fresh_share=fresh, outlook_risk=outlook_risk,
         autonomy=auton, dominant=dominant,
         scenario_width=_lerp(cfg.width_calm, cfg.width_disrupted, width_t),
         persistence=int(round(_lerp(cfg.persistence_calm, cfg.persistence_disrupted, t))),
         cvar_lambda=_lerp(cfg.lambda_calm, cfg.lambda_disrupted, t),
         cvar_alpha=_lerp(cfg.alpha_calm, cfg.alpha_disrupted, t),
-        regret_budget_share=None if t < 0.3 else 0.15 + 0.35 * (1 - t),
+        # a demand-driven departure from the incumbent is always budgeted
+        regret_budget_share=(None if (t < 0.3 and d_sev < 0.5) else
+                             (0.10 if t < 0.3 else 0.15 + 0.35 * (1 - t))),
         rho_scale=rho,
         trust_region=trust,
         change_cost_rate=_lerp(cfg.change_cost_calm, cfg.change_cost_disrupted, t),

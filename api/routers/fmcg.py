@@ -496,6 +496,8 @@ def plan(
         "candidate_evidence": (decision.as_dict()["candidates"] if decision else {}),
         "selection_gates": (decision.gates_config if decision else None),
         "candidates_admitted": meta.get("candidates_admitted"),
+        "selection_basis": meta.get("selection_basis", "backtest" if decision else "requested"),
+        "mode": est.posture.mode,
         "commit_window_requested": commit_window_requested,
         "conservative_improvement_vs_baseline": (
             decision.evidence[mode_run].stats.get("lower_bound") if decision and mode_run in decision.evidence else None),
