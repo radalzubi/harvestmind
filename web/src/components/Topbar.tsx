@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronDown } from "lucide-react";
-import { useToast } from "@/components/Toast";
+import { ChevronDown } from "lucide-react";
 
 const TITLES: Record<string, string> = {
   "/start": "Start",
@@ -28,7 +27,6 @@ const PERIODS = ["Last 4 weeks", "Last 12 weeks", "Last 26 weeks", "Last 52 week
 export function Topbar() {
   const pathname = usePathname() || "/";
   const title = TITLES[pathname] ?? "Overview";
-  const toast = useToast();
   const [period, setPeriod] = useState("Last 12 weeks");
   const [open, setOpen] = useState(false);
 
@@ -72,7 +70,6 @@ export function Topbar() {
                   onClick={() => {
                     setPeriod(p);
                     setOpen(false);
-                    toast.push(`Period: ${p}`, "info");
                   }}
                   style={{
                     display: "block",
@@ -95,13 +92,6 @@ export function Topbar() {
         )}
       </div>
 
-      <button
-        className="iconbtn"
-        onClick={() => toast.push("3 unread alerts · open Recommendations", "info")}
-        style={{ border: "1px solid var(--line)" }}
-      >
-        <Bell size={15} strokeWidth={1.6} />
-      </button>
     </header>
   );
 }

@@ -5,11 +5,13 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Circle, Download, Loader2, Play } from "lucide-react";
 import { Card, CardBody, CardHead, InfoBanner, PageHeader, Tbtn } from "@/components/ui";
-import { apiFetch, downloadReport, getApiToken, getJob, getMe, setSector, startDiagnostic, type IntakeStatus, type Job, type Me } from "@/lib/api";
+import { apiFetch, downloadReport, familyOf, getApiToken, getJob, getMe, setSector, startDiagnostic, type IntakeStatus, type Job, type Me } from "@/lib/api";
+
+const SECTOR_LABEL: Record<string, string> = { commercial: "Commercial goods", produce: "Fresh produce", meats: "Meat and seafood" };
 import { useToast } from "@/components/Toast";
 
 
-const FILES: Record<Me["sector"], Array<{ table: string; label: string }>> = {
+const FILES: Record<"commercial" | "produce", Array<{ table: string; label: string }>> = {
   commercial: [
     { table: "stg_fmcg_skus", label: "Product list" },
     { table: "stg_fmcg_orders", label: "Sales (customer orders)" },
@@ -82,7 +84,7 @@ function StartInner() {
   if (error) return <div className="page"><InfoBanner kind="warn" title="Could not load your workspace">{error}</InfoBanner></div>;
   if (!me) return <div className="page">Loading…</div>;
 
-  const files = FILES[me.sector] ?? FILES.commercial;
+  const files = FILES[familyOf(me.sector)];
   const tables = status?.tables ?? {};
   const rows = (t: string) => tables[t]?.row_count ?? 0;
   const uploaded = files.filter((f) => rows(f.table) > 0).length;
@@ -94,7 +96,7 @@ function StartInner() {
 
   return (
     <div className="page">
-      <PageHeader title={`${me.name}`} sub={`${me.sector === "commercial" ? "Commercial goods" : "Fresh produce"} workspace · ${me.region}`} />
+      <PageHeader title={`${me.name}`} sub={`${SECTOR_LABEL[me.sector] ?? "Your"} workspace · ${me.region}`} />
       {isNew && (
         <InfoBanner kind="warn" title="Save your workspace key now">
           This key is the only way back into this workspace and it is shown once. It is not stored anywhere but your browser session.

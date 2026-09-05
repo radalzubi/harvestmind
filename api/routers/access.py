@@ -27,7 +27,7 @@ from infrastructure.mailer import configured as mail_configured, send_email
 from infrastructure.operator_registry import OperatorNotFoundError, OperatorRegistry
 
 router = APIRouter(tags=["access"])
-SECTORS = ("produce", "commercial")
+SECTORS = ("produce", "meats", "commercial")
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 

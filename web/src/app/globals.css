@@ -13,17 +13,18 @@
   --ink-100: #F4F4F5;
   --ink-50:  #FAFAFA;
 
-  --bg:        #FAFAF9;
+  --bg:        #F7F7F4;
   --surface:   #FFFFFF;
   --surface-2: #F7F7F6;
-  --line:      #ECECE9;
-  --line-soft: #F2F2EF;
+  --line:      #E8E8E3;
+  --line-soft: #F0F0EC;
+  --line-strong: #D9D9D2;
 
-  --accent:        #4F46E5;
-  --accent-strong: #4338CA;
-  --accent-soft:   #EEF2FF;
-  --accent-12:     rgba(79,70,229,0.10);
-  --accent-08:     rgba(79,70,229,0.06);
+  --accent:        #0E9F6E;
+  --accent-strong: #0B7A55;
+  --accent-soft:   #E6F6EF;
+  --accent-12:     rgba(14,159,110,0.12);
+  --accent-08:     rgba(14,159,110,0.07);
 
   --good:    #15803D;
   --good-bg: #F0FDF4;
@@ -40,8 +41,8 @@
   --info:    #1D4ED8;
   --info-bg: #EFF6FF;
 
-  --sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: var(--font-sans), 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --mono: var(--font-mono), 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --radius-sm: 6px;
   --radius:    8px;
@@ -51,6 +52,7 @@
   --shadow-sm: 0 1px 0 rgba(24,24,27,0.03);
   --shadow:    0 1px 2px rgba(24,24,27,0.04);
   --shadow-md: 0 2px 6px rgba(24,24,27,0.05), 0 1px 2px rgba(24,24,27,0.04);
+  --shadow-lg: 0 18px 40px -18px rgba(24,24,27,0.18), 0 2px 6px rgba(24,24,27,0.04);
 }
 
 * { box-sizing: border-box; }
@@ -527,49 +529,3 @@ table.t td.product { color: var(--ink-900); font-weight: 500; }
 .legend { display: inline-flex; align-items: center; gap: 14px; font-size: 12px; color: var(--ink-500); }
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .legend-swatch { width: 8px; height: 8px; border-radius: 2px; }
-
-/* ── Public landing ───────────────────────────────── */
-.land { max-width: 1080px; margin: 0 auto; padding: 0 28px 64px; color: var(--ink-800); }
-.land-top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
-.land-brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; color: var(--ink-900); }
-.land-mark { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--ink-900); color: #fff; font-weight: 700; }
-.land-nav { display: flex; gap: 18px; align-items: center; font-size: 13.5px; }
-.land-nav a { color: var(--ink-700); text-decoration: none; }
-.land-cta-sm { padding: 7px 12px; border-radius: var(--radius); background: var(--ink-900); color: #fff !important; }
-.land-hero { padding: 56px 0 32px; max-width: 760px; }
-.land-eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
-.land-hero h1 { font-size: 40px; line-height: 1.08; letter-spacing: -0.02em; margin: 0 0 18px; color: var(--ink-900); text-wrap: balance; }
-.land-lede { font-size: 16.5px; line-height: 1.6; color: var(--ink-600); margin: 0; }
-.land-pick h2, .land-trust h2 { font-size: 20px; margin: 44px 0 16px; color: var(--ink-900); }
-.land-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-.land-card { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow-sm); }
-.land-card h3 { margin: 0; font-size: 18px; color: var(--ink-900); }
-.land-who { margin: 0; color: var(--ink-500); font-size: 13.5px; }
-.land-card ul { margin: 4px 0 8px; padding-left: 18px; color: var(--ink-700); line-height: 1.55; }
-.land-cta { margin-top: auto; display: inline-block; padding: 10px 14px; border-radius: var(--radius); background: var(--accent); color: #fff; text-decoration: none; font-weight: 500; font-size: 13.5px; }
-.land-cta:hover { background: var(--accent-strong); }
-.land-trust-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 28px; font-size: 14px; line-height: 1.55; color: var(--ink-700); }
-.land-trust-grid b { color: var(--ink-900); }
-.land-foot { display: flex; justify-content: space-between; margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-500); }
-.land-foot a { color: var(--ink-700); }
-.land-form { max-width: 560px; margin: 0 auto; padding: 40px 28px 64px; }
-.land-form label { display: block; font-size: 13px; color: var(--ink-700); margin: 14px 0 6px; }
-.land-form input, .land-form select, .land-form textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: var(--radius); font: inherit; background: var(--surface); color: var(--ink-900); }
-.land-form textarea { min-height: 84px; }
-.land-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.land-seg button { padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font: inherit; cursor: pointer; text-align: left; }
-.land-seg button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--ink-900); }
-.land-seg small { display: block; color: var(--ink-500); margin-top: 2px; }
-.land-done { border: 1px solid var(--good-line); background: var(--good-bg); color: var(--good); padding: 16px; border-radius: var(--radius-lg); }
-@media (max-width: 760px) { .land-cards, .land-trust-grid { grid-template-columns: 1fr; } .land-hero h1 { font-size: 30px; } }
-
-.spin { animation: spin 1s linear infinite; }
-
-/* ── Welcome ─────────────────────────────────────── */
-.welcome { min-height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 48px 24px; gap: 14px; }
-.welcome-logo { max-width: 320px; max-height: 120px; }
-.welcome-mark { width: 88px; height: 88px; border-radius: 22px; background: var(--ink-900); color: #fff; display: grid; place-items: center; font-size: 40px; font-weight: 700; }
-.welcome h1 { font-size: 34px; margin: 6px 0 0; letter-spacing: -0.02em; color: var(--ink-900); }
-.welcome-sub { color: var(--ink-600); max-width: 52ch; margin: 0 0 8px; font-size: 16px; }
-.land-key { display: flex; gap: 8px; max-width: 420px; margin-top: 10px; }
-.land-key input { flex: 1; padding: 11px 12px; border: 1px solid var(--line); border-radius: var(--radius); font: inherit; font-size: 16px; letter-spacing: 0.08em; }

@@ -553,22 +553,25 @@ export function fmtPct(n: number | null | undefined, decimals = 1): string {
 
 export interface AccessRequestInput {
   company: string; contact_name: string; email: string; country: string;
-  sector: "commercial" | "produce"; erp?: string; sku_count?: number | null; note?: string;
+  sector: Sector; erp?: string; sku_count?: number | null; note?: string;
 }
 
 export function requestAccess(body: AccessRequestInput): Promise<{ id: string; status: string; message: string }> {
   return apiFetch("/access/request", { method: "POST", body: JSON.stringify(body) });
 }
-export function getSector(): "commercial" | "produce" | null {
+export type Sector = "commercial" | "produce" | "meats";
+/** Table family a sector uploads into: meats share the perishable-lot tables with produce. */
+export function familyOf(s: Sector | null | undefined): "commercial" | "produce" { return s === "commercial" ? "commercial" : "produce"; }
+export function getSector(): Sector | null {
   if (typeof window === "undefined") return null;
   const s = window.sessionStorage.getItem("harvestmind.sector");
   return s === "commercial" || s === "produce" ? s : null;
 }
-export function setSector(s: "commercial" | "produce"): void {
+export function setSector(s: Sector): void {
   if (typeof window !== "undefined") window.sessionStorage.setItem("harvestmind.sector", s);
 }
 
-export interface Me { operator_id: string; name: string; display_name?: string; logo_url?: string | null; sector: "commercial" | "produce"; region: string; created_at: string; upload_count: number }
+export interface Me { operator_id: string; name: string; display_name?: string; logo_url?: string | null; sector: Sector; region: string; created_at: string; upload_count: number }
 export function getMe(): Promise<Me> { return apiFetch<Me>("/me"); }
 
 export interface Job {

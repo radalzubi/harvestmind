@@ -8,7 +8,8 @@ import {
   LayoutDashboard, UploadCloud, Database, Users, Package, Activity, ShieldCheck, FileText,
   TrendingUp, Truck, ListChecks, FlaskConical, Boxes, Rocket, Radar, KeyRound,
 } from "lucide-react";
-import { getApiToken, getMe, getSector, setSector } from "@/lib/api";
+import { familyOf, getApiToken, getMe, getSector, setSector, type Sector } from "@/lib/api";
+import { Logo } from "@/components/site/Logo";
 
 type NavItem = { href: string; label: string; Icon: typeof LayoutDashboard };
 type Section = { label?: string; items: NavItem[] };
@@ -47,7 +48,7 @@ function Group({ items, current }: { items: NavItem[]; current: string }) {
 
 export function Sidebar() {
   const pathname = usePathname() || "/";
-  const [sector, setSectorState] = useState<"commercial" | "produce" | null>(null);
+  const [sector, setSectorState] = useState<Sector | null>(null);
   const [name, setName] = useState<string>("");
 
   useEffect(() => {
@@ -62,14 +63,13 @@ export function Sidebar() {
     return () => window.removeEventListener("harvestmind-auth-change", load);
   }, []);
 
-  const sections = sector === "commercial" ? COMMERCIAL : sector === "produce" ? PRODUCE
-    : [{ items: [{ href: "/start", label: "Start", Icon: Rocket }] }];
+  const sections = sector == null ? [{ items: [{ href: "/start", label: "Start", Icon: Rocket }] }]
+    : familyOf(sector) === "commercial" ? COMMERCIAL : PRODUCE;
 
   return (
     <aside className="rail">
       <div className="rail-brand">
-        <div className="rail-brand-mark">Z</div>
-        <div className="rail-brand-name">Zaad Supply</div>
+        <Logo size={22} />
       </div>
       <div style={{ overflow: "auto", flex: 1 }}>
         {sections.map((s, i) => (

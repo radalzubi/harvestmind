@@ -5,7 +5,7 @@ import { Upload, CheckCircle, XCircle, AlertTriangle, Database } from "lucide-re
 import { Card, CardBody, CardHead, PageHeader, Badge, Tbtn } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 import { useRouter } from "next/navigation";
-import { apiFetch, uploadCSV, clearStagingTable, getIntakeStatus, loadSampleData, extractFiles, getSector, getMe, setSector, type UploadResult, type IntakeStatus, type SampleLoadResult } from "@/lib/api";
+import { apiFetch, uploadCSV, clearStagingTable, getIntakeStatus, loadSampleData, extractFiles, familyOf, getSector, getMe, setSector, type Sector, type UploadResult, type IntakeStatus, type SampleLoadResult } from "@/lib/api";
 import { useEffect } from "react";
 
 type TableSpec = { table: string; label: string; description: string; required: string[] };
@@ -35,8 +35,9 @@ interface TableState {
 
 export default function UploadPage() {
   const toast = useToast();
-  const [sector, setSectorState] = useState<"commercial" | "produce">(() => getSector() ?? "produce");
-  const STAGING_TABLES = sector === "commercial" ? COMMERCIAL_TABLES : PRODUCE_TABLES;
+  const [sector, setSectorState] = useState<Sector>(() => getSector() ?? "produce");
+  const family = familyOf(sector);
+  const STAGING_TABLES = family === "commercial" ? COMMERCIAL_TABLES : PRODUCE_TABLES;
   const [states, setStates] = useState<Record<string, TableState>>(() =>
     Object.fromEntries([...PRODUCE_TABLES, ...COMMERCIAL_TABLES].map((t) => [t.table, { status: "idle" }]))
   );
@@ -144,7 +145,7 @@ export default function UploadPage() {
     <div className="page">
       <PageHeader
         title="Upload"
-        sub={sector === "commercial"
+        sub={family === "commercial"
           ? "Six exports from your ERP: product list, sales, purchase orders, goods received, stock counts, suppliers. Twelve to twenty-four months of history."
           : "Five exports: products, supplier deliveries, inventory lots, buyer orders, waste log."}
       />
@@ -184,7 +185,7 @@ export default function UploadPage() {
         </CardBody>
       </Card>
 
-      {sector === "commercial" && (
+      {family === "commercial" && (
         <Card style={{ marginBottom: 20 }}>
           <CardHead title="Try it with a synthetic distributor" sub="A made-up commercial-goods distributor: mixed lanes, promotions, one constrained supplier. Clearly labelled synthetic; replaces any FMCG data in this workspace." />
           <CardBody>
@@ -202,7 +203,7 @@ export default function UploadPage() {
       )}
 
       {/* Quick-start: one-click sample loader (produce sample set) */}
-      {sector === "produce" && <Card style={{ marginBottom: 20 }}>
+      {family === "produce" && <Card style={{ marginBottom: 20 }}>
         <CardHead
           title="Quick Start — Load Sample Dataset"
           sub="Skip manual upload and explore Zaad Supply with a pre-built demo dataset"
