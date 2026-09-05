@@ -123,10 +123,10 @@ def _worker(job: dict, op: str, sector: str) -> None:
     try:
         conn = dbm.get_operator_connection(op)
         summary = _run_commercial(conn, job) if sector == "commercial" else _run_produce(conn, job)
-        path = _reports_dir(registry, op) / f"{job['id']}.json"
-        path.write_text(json.dumps({**job, "summary": summary}, indent=1, default=str))
         _set(job, status="done", progress="report ready", summary=summary,
              finished_at=datetime.now(timezone.utc).isoformat())
+        path = _reports_dir(registry, op) / f"{job['id']}.json"
+        path.write_text(json.dumps(job, indent=1, default=str))
     except Exception as exc:  # noqa: BLE001
         log.exception("diagnostic failed for %s", op)
         _set(job, status="failed", progress="failed", error=f"{type(exc).__name__}: {exc}"[:300],

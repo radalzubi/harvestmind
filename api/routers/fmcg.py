@@ -400,7 +400,9 @@ def latest_gate_decision(operator_id: str | None, n_products: int, history_perio
         except (OSError, ValueError):
             continue
         summ = rec.get("summary") or {}
-        if rec.get("status") != "done" or rec.get("kind") != "diagnostic" or not summ.get("decision"):
+        # older report files were written a moment before the job flipped to
+        # "done", so the summary, not the status flag, is the evidence
+        if rec.get("status") == "failed" or rec.get("kind") != "diagnostic" or not summ.get("decision"):
             continue
         finished = rec.get("finished_at") or rec.get("created_at") or ""
         try:
