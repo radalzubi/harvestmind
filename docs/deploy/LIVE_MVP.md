@@ -5,15 +5,15 @@ Two deployables: the API container (FastAPI, DuckDB vaults on a persistent disk)
 ## 1. API on Fly.io (or any host with a persistent volume)
 
 ```bash
-fly launch --no-deploy --copy-config --name harvestmind-api
+fly launch --no-deploy --copy-config --name zaad-api
 fly volumes create harvestmind_data --size 10 --region fra
 fly secrets set \
   HARVESTMIND_ADMIN_KEY="$(openssl rand -hex 32)" \
-  CORS_ALLOWED_ORIGINS="https://app.yourdomain.com" \
-  HARVESTMIND_APP_URL="https://app.yourdomain.com" \
-  HARVESTMIND_ADMIN_EMAIL="you@yourdomain.com" \
+  CORS_ALLOWED_ORIGINS="https://zaadsupply.com" \
+  HARVESTMIND_APP_URL="https://zaadsupply.com" \
+  HARVESTMIND_ADMIN_EMAIL="you@zaadsupply.com" \
   RESEND_API_KEY="re_..." \
-  HARVESTMIND_MAIL_FROM="HarvestMind <access@yourdomain.com>"
+  HARVESTMIND_MAIL_FROM="Zaad Supply <access@zaadsupply.com>"
 fly deploy
 ```
 
@@ -21,7 +21,7 @@ fly deploy
 
 ## 2. Web app on Vercel
 
-Project root `web/`. Environment: `NEXT_PUBLIC_API_URL=https://harvestmind-api.fly.dev` (never put a token in a `NEXT_PUBLIC_*` variable). Point `app.yourdomain.com` at the Vercel project.
+Project root `web/`. Environment: `NEXT_PUBLIC_API_URL=https://zaad-api.fly.dev` (never put a token in a `NEXT_PUBLIC_*` variable). Point `zaadsupply.com` at the Vercel project.
 
 ## 2b. Invited workspaces with a short key
 
@@ -32,6 +32,19 @@ fly secrets set HARVESTMIND_SEED_WORKSPACES="NTDCO|commercial|839285|/logos/ntdc
 ```
 
 Entries are `name|sector|key|logo`, separated by `;`. The key is stored hashed and works like a token: the customer types it on the landing page and lands on a welcome screen with their name and logo, then their workspace. Put the logo file in `web/public/logos/`. Short keys are for a handful of invited pilots; rotate them with `scripts/seed_workspace.py` and clear them after the pilot.
+
+## 2c. DNS at Namecheap for zaadsupply.com
+
+Advanced DNS, four records; leave everything else default and delete the parking records Namecheap adds.
+
+| type | host | value | for |
+|---|---|---|---|
+| A | @ | 76.76.21.21 | site root on Vercel |
+| CNAME | www | cname.vercel-dns.com | site www on Vercel |
+| CNAME | api | zaad-api.fly.dev | API on Fly |
+| CNAME | _acme-challenge.api | (value printed by `fly certs add api.zaadsupply.com`) | API certificate |
+
+Then in Vercel add `zaadsupply.com` and `www.zaadsupply.com` to the project (it confirms the two records), and run `fly certs check api.zaadsupply.com` until it reports issued. Propagation is minutes at Namecheap, occasionally an hour.
 
 ## 3. Operating it
 

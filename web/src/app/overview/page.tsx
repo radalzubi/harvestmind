@@ -61,7 +61,7 @@ export default function OverviewPage() {
       {!hasData && (
         <EmptyState
           title="No operator data loaded yet"
-          body="Upload your CSV files to generate a diagnostic. HarvestMind needs product, delivery, inventory, order, and waste data to calculate waste loss, shortage risk, and available-to-promise."
+          body="Upload your CSV files to generate a diagnostic. Zaad Supply needs product, delivery, inventory, order, and waste data to calculate waste loss, shortage risk, and available-to-promise."
           action={
             <Link href="/upload">
               <Tbtn variant="primary">Upload your data or load sample dataset →</Tbtn>

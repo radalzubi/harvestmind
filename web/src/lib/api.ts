@@ -1,5 +1,5 @@
 /**
- * HarvestMind API client.
+ * Zaad Supply API client.
  * All fetch calls go through this module.
  * Base URL is read from NEXT_PUBLIC_API_URL (default: http://localhost:8000).
  */

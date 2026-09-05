@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SectorPicker } from "@/components/SectorPicker";
 
 export const metadata: Metadata = {
-  title: "HarvestMind",
+  title: "Zaad Supply",
   description: "Purchasing decisions for businesses that import what they sell, safe by construction.",
 };
 
@@ -11,7 +11,7 @@ export default function Landing() {
   return (
     <main className="land">
       <header className="land-top">
-        <div className="land-brand"><span className="land-mark">H</span> HarvestMind</div>
+        <div className="land-brand"><span className="land-mark">Z</span> Zaad Supply</div>
         <nav className="land-nav">
           <Link href="/access">I have a workspace key</Link>
         </nav>
@@ -41,7 +41,7 @@ export default function Landing() {
       </section>
 
       <footer className="land-foot">
-        <span>HarvestMind · Amman</span>
+        <span>Zaad Supply · Amman</span>
         <Link href="/access">Reconnect with a key</Link>
       </footer>
     </main>

@@ -22,7 +22,7 @@ def send_email(to: str, subject: str, text: str) -> dict:
         r = requests.post(
             "https://api.resend.com/emails",
             headers={"Authorization": f"Bearer {os.environ['RESEND_API_KEY']}", "Content-Type": "application/json"},
-            json={"from": os.getenv("HARVESTMIND_MAIL_FROM", "HarvestMind <access@harvestmind.app>"),
+            json={"from": os.getenv("HARVESTMIND_MAIL_FROM", "Zaad Supply <access@zaadsupply.com>"),
                   "to": [to], "subject": subject, "text": text},
             timeout=20,
         )

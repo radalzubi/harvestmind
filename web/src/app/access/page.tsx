@@ -63,7 +63,7 @@ function AccessInner() {
       <InfoBanner kind="info" title="Session-only credential">
         The token stays in this browser tab session. It is not persisted to
         local storage, bundled into the app, or sent anywhere except the
-        configured HarvestMind API.
+        configured Zaad Supply API.
       </InfoBanner>
       <Card style={{ marginTop: 16 }}>
         <CardHead

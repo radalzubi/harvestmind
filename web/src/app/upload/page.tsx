@@ -205,7 +205,7 @@ export default function UploadPage() {
       {sector === "produce" && <Card style={{ marginBottom: 20 }}>
         <CardHead
           title="Quick Start — Load Sample Dataset"
-          sub="Skip manual upload and explore HarvestMind with a pre-built demo dataset"
+          sub="Skip manual upload and explore Zaad Supply with a pre-built demo dataset"
         />
         <CardBody>
           <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 14, lineHeight: 1.6 }}>

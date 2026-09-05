@@ -68,8 +68,8 @@ export function Sidebar() {
   return (
     <aside className="rail">
       <div className="rail-brand">
-        <div className="rail-brand-mark">H</div>
-        <div className="rail-brand-name">HarvestMind</div>
+        <div className="rail-brand-mark">Z</div>
+        <div className="rail-brand-name">Zaad Supply</div>
       </div>
       <div style={{ overflow: "auto", flex: 1 }}>
         {sections.map((s, i) => (

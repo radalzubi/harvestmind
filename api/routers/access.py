@@ -84,7 +84,7 @@ def request_access(req: AccessRequest):
     _save(registry, rows)
     admin_to = os.getenv("HARVESTMIND_ADMIN_EMAIL")
     if admin_to:
-        send_email(admin_to, f"HarvestMind access request: {req.company}",
+        send_email(admin_to, f"Zaad Supply access request: {req.company}",
                    f"{req.company} ({req.country}, {req.sector}) — {req.contact_name} <{req.email}>\n"
                    f"ERP: {req.erp or '-'}  SKUs: {req.sku_count or '-'}\n{req.note}\n\nRequest id: {rid}")
     return {"id": rid, "status": "pending",
@@ -123,11 +123,11 @@ def approve(rid: str):
     rec = registry.create_operator(row["company"], region=row["country"], sector=row["sector"])
     token = registry.issue_token(rec.operator_id)
     link = f"{_app_url()}/access?token={token}"
-    mail = send_email(row["email"], "Your HarvestMind access",
+    mail = send_email(row["email"], "Your Zaad Supply access",
                       f"Hello {row['contact_name']},\n\nYour workspace for {row['company']} is ready.\n"
                       f"Open this link once to connect: {link}\n\nThe link carries your access token; it is shown "
                       f"only in this email and cannot be recovered, so keep it. Nothing you upload is shared with "
-                      f"anyone else, and identifiers are pseudonymised before storage.\n\nHarvestMind")
+                      f"anyone else, and identifiers are pseudonymised before storage.\n\nZaad Supply")
     row.update(status="approved", operator_id=rec.operator_id, approved_at=datetime.now(timezone.utc).isoformat(),
                email_sent=bool(mail.get("sent")))
     _save(registry, rows)

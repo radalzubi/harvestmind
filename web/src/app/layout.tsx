@@ -4,7 +4,7 @@ import { Shell } from "@/components/Shell";
 import { ToastProvider } from "@/components/Toast";
 
 export const metadata: Metadata = {
-  title: "HarvestMind",
+  title: "Zaad Supply",
   description: "Purchasing decisions for import-dependent distributors and producers, safe by construction.",
 };
 

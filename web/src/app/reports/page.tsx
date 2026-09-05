@@ -63,7 +63,7 @@ export default function ReportsPage() {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
-                HarvestMind Diagnostic
+                Zaad Supply Diagnostic
                 {data && (
                   <span style={{ marginLeft: 8 }}>
                     <Badge kind="low">{new Date(data.as_of).toLocaleDateString()}</Badge>

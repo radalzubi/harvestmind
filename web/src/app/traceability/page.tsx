@@ -124,7 +124,7 @@ export default function TraceabilityPage() {
       {t.total_lots === 0 && (
         <EmptyState
           title="No inventory lot data loaded"
-          body="Upload your inventory lots to see FSMA-204 lot-level traceability completeness. HarvestMind checks for lot_id, product_id, supplier_id, arrival_date, quantity, and unit on each lot."
+          body="Upload your inventory lots to see FSMA-204 lot-level traceability completeness. Zaad Supply checks for lot_id, product_id, supplier_id, arrival_date, quantity, and unit on each lot."
           action={<Link href="/upload"><Tbtn variant="primary">Upload stg_inventory_lots.csv</Tbtn></Link>}
         />
       )}

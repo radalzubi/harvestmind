@@ -1,6 +1,6 @@
-# Fly.io definition for the HarvestMind API. The web app deploys separately
+# Fly.io definition for the Zaad Supply API. The web app deploys separately
 # (Vercel) and points NEXT_PUBLIC_API_URL at this app's URL.
-app = "harvestmind-api"
+app = "zaad-api"
 primary_region = "fra"
 
 [build]

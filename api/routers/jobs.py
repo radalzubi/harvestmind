@@ -204,7 +204,7 @@ def render_report_pdf(company: str, job: dict) -> bytes:
     s = job["summary"]
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=18*mm, rightMargin=18*mm, topMargin=18*mm, bottomMargin=18*mm,
-                            title=f"HarvestMind diagnostic: {company}")
+                            title=f"Zaad Supply diagnostic: {company}")
     ink = colors.HexColor("#111111")
     grey = colors.HexColor("#555555")
     rule = colors.HexColor("#CCCCCC")
@@ -212,7 +212,7 @@ def render_report_pdf(company: str, job: dict) -> bytes:
     H2 = ParagraphStyle("h2", fontName="Helvetica-Bold", fontSize=12.5, leading=16, textColor=ink, spaceBefore=14, spaceAfter=6)
     P = ParagraphStyle("p", fontName="Helvetica", fontSize=10, leading=14, textColor=ink)
     S = ParagraphStyle("s", parent=P, textColor=grey, fontSize=9, leading=12)
-    el: list = [Paragraph(f"HarvestMind diagnostic: {company}", H1),
+    el: list = [Paragraph(f"Zaad Supply diagnostic: {company}", H1),
                 Paragraph(f"Sector {s.get('sector')} · run {job['id']} · {str(job.get('finished_at') or '')[:10]} · "
                           "a backtest on your own history against your own policy, not a forecast of savings", S)]
 

@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.routers import fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin, access, jobs
 
 app = FastAPI(
-    title="HarvestMind API",
+    title="Zaad Supply API",
     description="Available-to-promise and traceability diagnostics for perishable produce operators",
     version="0.1.0",
     docs_url="/docs",
@@ -156,7 +156,7 @@ def ready():
 @app.get("/")
 def root():
     return {
-        "name": "HarvestMind",
+        "name": "Zaad Supply",
         "version": "0.1.0",
         "docs": "/docs",
     }
