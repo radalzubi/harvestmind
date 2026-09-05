@@ -15,6 +15,7 @@ from __future__ import annotations
 import io
 import json
 import logging
+import os
 import threading
 import uuid
 from datetime import datetime, timezone
@@ -110,6 +111,13 @@ def _run_produce(conn, job: dict) -> dict:
 
 
 def _worker(job: dict, op: str, sector: str) -> None:
+    # The backtest is CPU-bound and shares the process with the web server.
+    # On Linux, nice() applies to the calling thread only, so this keeps the
+    # request loop (and the platform health check) responsive on a small VM.
+    try:
+        os.nice(10)
+    except (AttributeError, OSError):
+        pass
     registry = OperatorRegistry()
     dbm = DBManager(registry)
     try:

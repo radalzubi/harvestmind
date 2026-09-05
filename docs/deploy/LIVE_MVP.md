@@ -42,9 +42,11 @@ Advanced DNS, four records; leave everything else default and delete the parking
 | A | @ | 76.76.21.21 | site root on Vercel |
 | CNAME | www | cname.vercel-dns.com | site www on Vercel |
 | CNAME | api | zaad-api.fly.dev | API on Fly |
-| CNAME | _acme-challenge.api | (value printed by `fly certs add api.zaadsupply.com`) | API certificate |
+| CNAME | _acme-challenge.api | `api.zaadsupply.com.<app-hash>.flydns.net.` as printed by `fly certs add api.zaadsupply.com` (currently `api.zaadsupply.com.8wmo2qe.flydns.net.`) | API certificate |
 
-Then in Vercel add `zaadsupply.com` and `www.zaadsupply.com` to the project (it confirms the two records), and run `fly certs check api.zaadsupply.com` until it reports issued. Propagation is minutes at Namecheap, occasionally an hour.
+Then in Vercel add `zaadsupply.com` and `www.zaadsupply.com` to the project (it confirms the two records), and run `fly certs check api.zaadsupply.com` until it reports issued. Propagation is minutes at Namecheap, occasionally an hour. Done on 2026-09-05; the certificate is issued and auto-renews.
+
+The diagnostic job runs in the API process. On the shared-cpu-2x machine the commercial backtest on the synthetic sample takes well over ten minutes, and it is only tracked in memory, so a deploy while a job is running loses that job (the operator simply runs it again). The solver is pinned to one thread and the worker thread is niced so the health check keeps passing during a run.
 
 ## 3. Operating it
 
