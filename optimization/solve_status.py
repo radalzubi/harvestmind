@@ -57,6 +57,15 @@ def _gap(obj: float | None, bound: float | None) -> float | None:
     return abs(obj - bound) / denom
 
 
+def highs_options() -> dict:
+    """Process-wide HiGHS options every solve must pass consistently.
+    HiGHS keeps a global scheduler: a thread count set on one solve after
+    another solve already ran without it yields termination 'unknown', so
+    every call site applies the same options (or none)."""
+    threads = os.environ.get("HARVESTMIND_SOLVER_THREADS")
+    return {"threads": int(threads)} if threads else {}
+
+
 def run_solver(model, solver: str = "highs", time_limit_s: float = 300.0,
                mip_rel_gap: float | None = None) -> SolveOutcome:
     """Solve a pyomo model and classify the result.
@@ -72,12 +81,11 @@ def run_solver(model, solver: str = "highs", time_limit_s: float = 300.0,
     name = "appsi_highs" if solver == "highs" else solver
     opt = SolverFactory(name)
     options: dict = {"time_limit": float(time_limit_s)}
-    threads = os.environ.get("HARVESTMIND_SOLVER_THREADS")
-    if threads and name == "appsi_highs":            # other interfaces reject the option
+    if name == "appsi_highs":                          # other interfaces reject the option
         # Several validation workers on one machine: one HiGHS thread each
         # avoids oversubscription, which slowed solves by two orders of
         # magnitude when three processes shared the cores.
-        options["threads"] = int(threads)
+        options.update(highs_options())
     if mip_rel_gap is not None:
         options["mip_rel_gap"] = float(mip_rel_gap)
     t0 = time.perf_counter()

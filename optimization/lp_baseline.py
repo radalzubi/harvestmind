@@ -163,7 +163,8 @@ class LPBaseline:
             model.spot_cap = pyo.Constraint(model.J, model.T, rule=spot_cap_rule)
 
         solver = SolverFactory("appsi_highs" if self.solver == "highs" else self.solver)
-        results = solver.solve(model, tee=False)
+        from optimization.solve_status import highs_options
+        results = solver.solve(model, tee=False, options=highs_options() if self.solver == "highs" else {})
 
         status = str(results.solver.termination_condition)
         obj_val = pyo.value(model.obj) if status in ("optimal","locallyOptimal") else None
