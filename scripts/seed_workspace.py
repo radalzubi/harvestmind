@@ -1,6 +1,6 @@
 """Create or refresh an invited workspace with a short key and a logo.
 
-    python scripts/seed_workspace.py --name NTDCO --sector commercial --code 839285 --logo /logos/ntdco.svg
+    python scripts/seed_workspace.py --name NTDCO --sector commercial --code 839285 --logo /logos/ntdco.jpg
 
 Equivalent to one entry of HARVESTMIND_SEED_WORKSPACES, which the API also
 applies at startup. The code is stored as a hash; the logo path is served

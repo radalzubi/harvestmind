@@ -28,7 +28,7 @@ Project root `web/`. Environment: `NEXT_PUBLIC_API_URL=https://harvestmind-api.f
 Set one secret and the API creates them at startup (idempotent):
 
 ```bash
-fly secrets set HARVESTMIND_SEED_WORKSPACES="NTDCO|commercial|839285|/logos/ntdco.svg"
+fly secrets set HARVESTMIND_SEED_WORKSPACES="NTDCO|commercial|839285|/logos/ntdco.jpg"
 ```
 
 Entries are `name|sector|key|logo`, separated by `;`. The key is stored hashed and works like a token: the customer types it on the landing page and lands on a welcome screen with their name and logo, then their workspace. Put the logo file in `web/public/logos/`. Short keys are for a handful of invited pilots; rotate them with `scripts/seed_workspace.py` and clear them after the pilot.

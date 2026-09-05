@@ -96,7 +96,7 @@ def test_key_only_mode(registry, monkeypatch):
 
 
 def test_short_key_opens_seeded_workspace_and_greets_the_company(registry, monkeypatch):
-    monkeypatch.setenv("HARVESTMIND_SEED_WORKSPACES", "NTDCO|commercial|839285|/logos/ntdco.svg")
+    monkeypatch.setenv("HARVESTMIND_SEED_WORKSPACES", "NTDCO|commercial|839285|/logos/ntdco.jpg")
     from infrastructure.seed_workspaces import seed_workspaces_from_env
     ids = seed_workspaces_from_env(registry)
     assert len(ids) == 1
@@ -105,7 +105,7 @@ def test_short_key_opens_seeded_workspace_and_greets_the_company(registry, monke
     cl = TestClient(api_main.app)
     me = cl.get("/me", headers={"Authorization": "Bearer 839285"})
     assert me.status_code == 200, me.text
-    assert me.json()["display_name"] == "NTDCO" and me.json()["logo_url"] == "/logos/ntdco.svg"
+    assert me.json()["display_name"] == "NTDCO" and me.json()["logo_url"] == "/logos/ntdco.jpg"
     assert me.json()["sector"] == "commercial"
     assert cl.get("/me", headers={"Authorization": "Bearer 839286"}).status_code == 401
     # the code is stored hashed, never in clear
