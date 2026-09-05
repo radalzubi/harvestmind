@@ -60,8 +60,12 @@ def _run_commercial(conn, job: dict) -> dict:
     _set(job, progress="estimating the operating state and lane risk")
     est, src = _state_for(fi)
     fi.posture = est.posture
-    _set(job, progress="backtesting candidates on your own history (this is the slow part)")
-    decision = safe_select(fi, None, np.random.default_rng(0), SafeSelectionConfig(n_scen=20), posture=est.posture,
+    # Scenario count for the fold candidates. Validation ran at 20; the pilot
+    # machine (shared CPU) can be set lower via env to trade fidelity of the
+    # candidates' own decisions for wall time. The truth folds are unaffected.
+    n_scen = int(os.environ.get("HARVESTMIND_GATE_SCENARIOS", "20"))
+    _set(job, progress=f"backtesting candidates on your own history at {n_scen} scenarios per fold (this is the slow part)")
+    decision = safe_select(fi, None, np.random.default_rng(0), SafeSelectionConfig(n_scen=n_scen), posture=est.posture,
                            extra_candidates={"anchored_sp": EXTRA_CANDIDATES["anchored_sp"],
                                              "adaptive_sp": EXTRA_CANDIDATES["adaptive_sp"]})
     ev = decision.evidence.get(decision.mode_run)
