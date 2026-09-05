@@ -116,3 +116,4 @@ artifacts/full_suite_mid.txt
 
 # audit-trail sidecars written at runtime (tests included)
 data/runs/
+.vercel

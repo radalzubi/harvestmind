@@ -46,11 +46,11 @@ Advanced DNS, four records; leave everything else default and delete the parking
 
 Then in Vercel add `zaadsupply.com` and `www.zaadsupply.com` to the project (it confirms the two records), and run `fly certs check api.zaadsupply.com` until it reports issued. Propagation is minutes at Namecheap, occasionally an hour. Done on 2026-09-05; the certificate is issued and auto-renews.
 
-The diagnostic job runs in the API process. On the shared-cpu-2x machine the commercial backtest on the synthetic sample takes well over ten minutes, and it is only tracked in memory, so a deploy while a job is running loses that job (the operator simply runs it again). The solver is pinned to one thread and the worker thread is niced so the health check keeps passing during a run.
+The diagnostic job runs in the API process. On the shared-cpu-2x machine the commercial backtest on the synthetic sample takes well over ten minutes, and it is only tracked in memory, so a deploy while a job is running loses that job (the operator simply runs it again). The solver is pinned to one thread and the worker thread is niced so the health check keeps passing during a run. The purchase plan (`/fmcg/plan?mode=safe`) does not rerun the gate: it applies the latest diagnostic's verdict for the workspace and solves once, so it returns in seconds; without a matching diagnostic it answers 409 `diagnostic_required`. The public site has an English/Arabic toggle (copy in `web/src/lib/i18n`).
 
 ### Vercel project settings
 
-The project `zaad` has Root Directory set to `web`, so pushes to GitHub build correctly (preview deployments for branches, production for `main`). `vercel --prod` from `web/` still deploys production directly, which is how the pilot site is updated today. The public site is a Next.js app: marketing pages live under `web/src/app/(site)`, the workspace under the other routes; sectors are produce, meats and commercial (meats shares the produce table family).
+The project `zaad` has Root Directory set to `web`, so pushes to GitHub build correctly (preview deployments for branches, production for `main`). `vercel --prod` from the repository root (the project is linked there, `.vercel/` is ignored) deploys production directly, which is how the pilot site is updated today; running it from `web/` fails because the root directory would resolve to `web/web`. The public site is a Next.js app: marketing pages live under `web/src/app/(site)`, the workspace under the other routes; sectors are produce, meats and commercial (meats shares the produce table family).
 
 ## 3. Operating it
 
