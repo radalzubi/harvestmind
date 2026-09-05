@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, CardBody, CardHead, InfoBanner, PageHeader, PageLoading, PageError } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
 
@@ -17,6 +18,16 @@ export default function StatePage() {
   const [s, setS] = useState<State | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => { apiFetch<State>("/fmcg/state").then(setS).catch((e) => setError(e.message)); }, []);
+  if (error && /upload/i.test(error)) {
+    return (
+      <div className="page">
+        <PageHeader title="State and lanes" sub="Appears once your history is loaded" />
+        <InfoBanner kind="info" title="Nothing to read yet">
+          {error} <Link href="/upload">Go to upload</Link>.
+        </InfoBanner>
+      </div>
+    );
+  }
   if (error) return <div className="page"><PageError error={error} /></div>;
   if (!s) return <PageLoading message="Reading your operating state…" />;
   const probs = Object.entries(s.portfolio.probabilities).sort((a, b) => b[1] - a[1]).slice(0, 5);
