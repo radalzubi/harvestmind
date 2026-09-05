@@ -138,7 +138,7 @@ def test_root_ok(full_client):
     r = full_client.get("/")
     assert r.status_code == 200
     body = r.json()
-    assert body["name"] == "HarvestMind"
+    assert body["name"] == "Zaad Supply"
     assert body["docs"] == "/docs"
 
 
