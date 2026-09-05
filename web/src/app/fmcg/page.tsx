@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 
 type Money = { amount: string; currency: string };
@@ -24,28 +25,31 @@ export default function FmcgPage() {
   const [horizon, setHorizon] = useState(12);
   const [service, setService] = useState(0.97);
   const [open, setOpen] = useState<number | null>(null);
+  const [needsDiagnostic, setNeedsDiagnostic] = useState(false);
 
   const refresh = () => apiFetch<Status>("/fmcg/status").then(setStatus).catch((e) =>
     setError(e instanceof Error ? e.message : "status failed"));
   useEffect(() => { refresh(); }, []);
 
   async function build() {
-    setBusy(true); setError(null); setPlan(null);
+    setBusy(true); setError(null); setPlan(null); setNeedsDiagnostic(false);
     try {
       const q = new URLSearchParams({ mode, horizon_weeks: String(horizon), service_level: String(service) });
       setPlan(await apiFetch<Plan>(`/fmcg/plan?${q}`, { method: "POST" }));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "plan failed");
+      const msg = e instanceof Error ? e.message : "plan failed";
+      if (msg.includes("diagnostic_required")) setNeedsDiagnostic(true);
+      else setError(msg);
     } finally { setBusy(false); }
   }
 
-  const money = (m?: Money) => (m ? `${Number(m.amount).toLocaleString()} ${m.currency}` : "—");
+  const money = (m?: Money) => (m ? `${Number(m.amount).toLocaleString()} ${m.currency}` : "n/a");
 
   return (
     <main className="p-6 space-y-6 max-w-6xl">
       <h1 className="text-2xl font-semibold">Purchase plan</h1>
       <p className="text-sm opacity-80">Whole cases and pallets, MOQ, fill and lead-time risk. A recommendation on
-        your uploaded history, in eaches — not a realised saving.</p>
+        your uploaded history, in eaches, not a realised saving.</p>
 
       <section className="rounded border p-4 space-y-2">
         <h2 className="font-medium">1. Your data</h2>
@@ -58,7 +62,7 @@ export default function FmcgPage() {
 
       <section className="rounded border p-4 space-y-3">
         <h2 className="font-medium">2. Plan</h2>
-        <p className="text-xs opacity-70">Safe: keeps your current policy unless a candidate is evidenced on your own history. Adaptive: the state-conditioned optimizer, ungated. The others are single policies for comparison.</p>
+        <p className="text-xs opacity-70">Safe: applies the verdict of your latest diagnostic, so it solves in seconds. The diagnostic is where the candidates are backtested on your own history. Adaptive: the state-conditioned optimizer, ungated. The others are single policies for comparison.</p>
         <div className="flex gap-4 flex-wrap items-end">
           <label className="text-sm">Mode
             <select className="block border rounded px-2 py-1" value={mode} onChange={(e) => setMode(e.target.value)}>
@@ -73,6 +77,12 @@ export default function FmcgPage() {
           <button className="rounded bg-black text-white px-4 py-2 disabled:opacity-40"
             disabled={busy || !status?.ready_to_plan} onClick={build}>{busy ? "Solving…" : "Build plan"}</button>
         </div>
+        {needsDiagnostic && (
+          <p className="text-sm rounded border border-amber-300 bg-amber-50 px-3 py-2" role="alert">
+            Run the diagnostic first. It backtests the candidates on your history and decides whether the optimizer may change your orders; the plan then solves in seconds.{" "}
+            <Link className="underline font-medium" href="/start">Go to Start</Link>
+          </p>
+        )}
         {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
         {plan && (
           <div className="space-y-3">

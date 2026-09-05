@@ -27,7 +27,7 @@ from backtesting.counterfactual import (
 )
 from backtesting.incumbent import configured_incumbent, infer_incumbent
 from backtesting.regime import diagnose, summarize as regime_summary
-from backtesting.safe_selector import INCUMBENT, SafeSelectionConfig, safe_select
+from backtesting.safe_selector import INCUMBENT, SafeSelectionConfig, run_candidate, safe_select
 from adaptive.controller import explain_posture
 from adaptive.engine import estimate, in_recovery_by_route, p_disruptive_by_route
 from adaptive.indicators import load_all_indicators
@@ -378,6 +378,47 @@ def state(
             "classification": "state estimate from operator history and public logistics signals; not a forecast"}
 
 
+
+def latest_gate_decision(operator_id: str | None, n_products: int, history_periods: int,
+                         max_age_days: int = 14) -> dict | None:
+    """Most recent finished diagnostic for this workspace whose data shape
+    matches what is loaded now (same product count and history length).
+    Returns None when there is none, so the caller can ask for one."""
+    import json
+    from datetime import datetime, timedelta, timezone
+    from infrastructure.operator_registry import OperatorRegistry
+    if not operator_id:
+        return None
+    reports = OperatorRegistry().vault_dir(operator_id) / "reports"
+    if not reports.exists():
+        return None
+    cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+    best: dict | None = None
+    for path in reports.glob("job_*.json"):
+        try:
+            rec = json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+        summ = rec.get("summary") or {}
+        if rec.get("status") != "done" or rec.get("kind") != "diagnostic" or not summ.get("decision"):
+            continue
+        finished = rec.get("finished_at") or rec.get("created_at") or ""
+        try:
+            when = datetime.fromisoformat(finished)
+        except ValueError:
+            continue
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        if when < cutoff:
+            continue
+        if summ.get("products") != n_products or summ.get("history_periods") != history_periods:
+            continue
+        if best is None or finished > best["finished_at"]:
+            best = {"job_id": rec.get("id"), "finished_at": finished, "decision": summ["decision"],
+                    "reason": summ.get("reason", ""), "improvement": summ.get("improvement"),
+                    "candidates": summ.get("candidates", {})}
+    return best
+
 @router.post("/plan", dependencies=[Depends(rate_limiter)])
 def plan(
     mode: str = Query("safe", pattern="^(safe|adaptive|selected|stochastic|deterministic|order_up_to|incumbent|anchored)$"),
@@ -392,6 +433,7 @@ def plan(
     currency: str = Query("USD", pattern="^[A-Z]{3}$"),
     seed: int = Query(0, ge=0),
     min_rel_improvement: float = Query(0.03, ge=0.0, le=0.5),
+    diagnostics: bool = Query(False, description="also compute VSS/EVPI (20+ extra solves)"),
     conn=Depends(get_conn),
     authed: str | None = Depends(require_operator),
 ):
@@ -417,7 +459,27 @@ def plan(
     fi.posture = est.posture
     commit_window_requested = commit_window_weeks
     commit_window_weeks = min(commit_window_weeks, int(est.posture.commit_window))
-    if mode in ("safe", "selected"):
+    gate_source: dict | None = None
+    if mode == "safe":
+        # The gate (rolling folds x candidates x scenarios) is the slow part
+        # and the diagnostic job has already run it on this workspace. Reuse
+        # that verdict when it matches the data as it stands now; otherwise
+        # ask for a diagnostic rather than block the request for minutes.
+        gate_source = latest_gate_decision(authed, n_products=len(fi.products),
+                                           history_periods=min(len(v) for v in fi.train_demand.values()) if fi.train_demand else 0)
+        if gate_source is None:
+            raise HTTPException(409, {"code": "diagnostic_required",
+                                      "message": "Run the diagnostic first. It backtests the candidates on your "
+                                                 "history and decides whether the optimizer may change your orders; "
+                                                 "the plan then solves in seconds."})
+        mode_run = gate_source["decision"]
+        sched, meta = run_candidate(mode_run, fi, cap_total, rng, scenarios,
+                                    {"anchored_sp": EXTRA_CANDIDATES["anchored_sp"],
+                                     "adaptive_sp": EXTRA_CANDIDATES["adaptive_sp"]})
+        meta = dict(meta)
+        warnings.append(f"gate verdict reused from diagnostic {gate_source['job_id']} finished "
+                        f"{gate_source['finished_at'][:16].replace('T', ' ')} UTC: {gate_source['reason']}")
+    elif mode == "selected":
         decision = safe_select(fi, cap_total, rng, cfg, posture=est.posture,
                                extra_candidates={"anchored_sp": EXTRA_CANDIDATES["anchored_sp"],
                                                  "adaptive_sp": EXTRA_CANDIDATES["adaptive_sp"]})
@@ -447,12 +509,15 @@ def plan(
     regimes = diagnose(fi)
     reg_sum = regime_summary(regimes)
     info = None
-    try:
+    if not diagnostics:
+        warnings.append("VSS/EVPI not computed (pass diagnostics=true; it is 20+ extra solves)")
+    else:
+      try:
         scen, leads, fills = _scenarios(fi, min(scenarios, 20), np.random.default_rng(seed + 1))
         iv = value_of_information(_optimizer_kwargs(fi, cap_total), scen, _supply_df(fi), leads, fills, fi.opening,
                                   distribution_confidence="low" if fi.history_periods_low() else "unknown")
         info = iv.as_dict()
-    except Exception as exc:  # noqa: BLE001  diagnostics never block the plan
+      except Exception as exc:  # noqa: BLE001  diagnostics never block the plan
         warnings.append(f"VSS/EVPI unavailable ({type(exc).__name__})")
     regret = {}
     if meta.get("regret_by_scenario"):
@@ -492,6 +557,8 @@ def plan(
                                         "supply_paths": "block_bootstrap" if fi.supply_events else "iid"},
                        objective_breakdown={"vss_evpi": info or {}, "regret": regret, "regime": reg_sum})
     improvement = None
+    if gate_source and gate_source.get("improvement"):
+        improvement = gate_source["improvement"]
     if decision and mode_run in decision.evidence and decision.evidence[mode_run].stats:
         stt = decision.evidence[mode_run].stats
         improvement = {"mean": stt.get("mean"), "lower_bound": stt.get("lower_bound"),

@@ -67,7 +67,11 @@ def test_upload_plan_explain_audit(client, history):
     # a route with no port signal is reported UNAVAILABLE, never assumed normal
     assert all(("available" in v) for v in body["signals"].values())
 
+    # mode=safe reuses the diagnostic's gate verdict; without one it asks for it
     r = cl.post("/fmcg/plan?mode=safe&horizon_weeks=12&commit_window_weeks=4&train_weeks=40&scenarios=10", headers=h)
+    assert r.status_code == 409 and r.json()["detail"]["code"] == "diagnostic_required"
+    # mode=selected runs the gate inline
+    r = cl.post("/fmcg/plan?mode=selected&horizon_weeks=12&commit_window_weeks=4&train_weeks=40&scenarios=10", headers=h)
     assert r.status_code == 200, r.text
     plan = r.json()
     assert plan["mode_run"] in ("incumbent", "order_up_to", "deterministic_sp", "stochastic_sp", "anchored_sp", "adaptive_sp")
@@ -125,7 +129,7 @@ def test_missing_margin_is_unknown_and_anchors_rather_than_inventing(client, his
     _upload(cl, h, "stg_fmcg_skus", skus)
     ol = history.order_lines.merge(history.customer_orders[["order_id", "customer_id", "order_date"]], on="order_id")
     _upload(cl, h, "stg_fmcg_orders", ol[["order_id", "customer_id", "order_date", "sku", "qty_ordered"]])
-    r = cl.post("/fmcg/plan?mode=safe&train_weeks=40&scenarios=10", headers=h)
+    r = cl.post("/fmcg/plan?mode=selected&train_weeks=40&scenarios=10", headers=h)
     assert r.status_code == 200, r.text
     plan = r.json()
     assert plan["economics_provenance"]["shortage_cost_per_unit"] == "unknown"

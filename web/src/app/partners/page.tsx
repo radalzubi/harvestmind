@@ -35,7 +35,7 @@ export default function PartnersPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Hooks must run on every render — keep them above the early returns and
+  // Hooks must run on every render, keep them above the early returns and
   // make them null-safe so hook order never changes (Rules of Hooks).
   const sortedSuppliers = useMemo(
     () => [...(data?.supplier.suppliers ?? [])].sort((a, b) => (riskOrder[a.risk_level] ?? 3) - (riskOrder[b.risk_level] ?? 3)),
@@ -52,7 +52,7 @@ export default function PartnersPage() {
 
   const { supplier, buyer } = data;
 
-  // Suppliers with known fill rates only — Unknown tier is excluded from averages
+  // Suppliers with known fill rates only, Unknown tier is excluded from averages
   const ratedSuppliers = supplier.suppliers.filter((s) => s.fill_rate !== null);
   const avgSupplierFill = ratedSuppliers.length > 0
     ? ratedSuppliers.reduce((acc, x) => acc + (x.fill_rate as number), 0) / ratedSuppliers.length
@@ -107,7 +107,7 @@ export default function PartnersPage() {
           </KPIRow>
 
           <Card style={{ marginTop: 16 }}>
-            <CardHead title="Supplier Reliability" sub="Sorted by risk tier — High first" />
+            <CardHead title="Supplier Reliability" sub="Sorted by risk tier, High first" />
             <CardBody tight>
               {sortedSuppliers.length === 0 ? (
                 <EmptyState
@@ -136,10 +136,10 @@ export default function PartnersPage() {
                         : "var(--accent)";
                       return (
                         <tr key={s.supplier_id}>
-                          <td>{s.supplier_name || s.supplier_id || "—"}</td>
+                          <td>{s.supplier_name || s.supplier_id || "n/a"}</td>
                           <td className="r">{fmt(s.n_deliveries)}</td>
                           <td className="r" style={{ color, fontWeight: 600 }}>
-                            {fr === null ? "—" : fmtPct(fr)}
+                            {fr === null ? "n/a" : fmtPct(fr)}
                           </td>
                           <td className="r" style={{ color: s.rejection_rate > 0.1 ? "var(--danger)" : undefined }}>
                             {fmtPct(s.rejection_rate)}
@@ -178,7 +178,7 @@ export default function PartnersPage() {
           </KPIRow>
 
           <Card style={{ marginTop: 16 }}>
-            <CardHead title="Buyer Fulfillment" sub="Sorted by risk tier — High first" />
+            <CardHead title="Buyer Fulfillment" sub="Sorted by risk tier, High first" />
             <CardBody tight>
               {sortedBuyers.length === 0 ? (
                 <EmptyState
@@ -201,7 +201,7 @@ export default function PartnersPage() {
                   <tbody>
                     {sortedBuyers.map((b) => (
                       <tr key={b.buyer_id}>
-                        <td>{b.buyer_name || b.buyer_id || "—"}</td>
+                        <td>{b.buyer_name || b.buyer_id || "n/a"}</td>
                         <td className="r">{fmt(b.n_orders)}</td>
                         <td className="r" style={{
                           color: b.fulfillment_rate < 0.90 ? "var(--danger)" : b.fulfillment_rate < 0.95 ? "var(--warn)" : "var(--accent)",

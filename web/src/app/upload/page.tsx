@@ -63,7 +63,7 @@ export default function UploadPage() {
       const result = await uploadCSV(table, file);
       if (result.errors.length > 0) {
         setStates((s) => ({ ...s, [table]: { status: "error", result } }));
-        toast.push(`${table}: upload failed — ${result.errors[0]}`);
+        toast.push(`${table}: upload failed: ${result.errors[0]}`);
       } else {
         setStates((s) => ({
           ...s,
@@ -126,7 +126,7 @@ export default function UploadPage() {
     try {
       const result = await loadSampleData();
       setSampleResult(result);
-      toast.push(`Sample data loaded — ${result.total_rows} rows across ${result.tables_loaded} tables`);
+      toast.push(`Sample data loaded: ${result.total_rows} rows across ${result.tables_loaded} tables`);
       refreshStatus();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to load sample data";
@@ -150,10 +150,10 @@ export default function UploadPage() {
           : "Five exports: products, supplier deliveries, inventory lots, buyer orders, waste log."}
       />
 
-      {/* Smart upload — LLM extraction layer (additive; classic flow below unchanged) */}
+      {/* Smart upload, LLM extraction layer (additive; classic flow below unchanged) */}
       <Card style={{ marginBottom: 20 }}>
         <CardHead
-          title="Smart Upload — Any Format"
+          title="Smart Upload: Any Format"
           sub="Drop whatever you have: messy Excel, QuickBooks exports, PDF invoices, CSVs, message logs. We read it, map it, and show you everything for confirmation before anything loads."
         />
         <CardBody>
@@ -205,12 +205,12 @@ export default function UploadPage() {
       {/* Quick-start: one-click sample loader (produce sample set) */}
       {family === "produce" && <Card style={{ marginBottom: 20 }}>
         <CardHead
-          title="Quick Start — Load Sample Dataset"
+          title="Quick Start: Load Sample Dataset"
           sub="Skip manual upload and explore Zaad Supply with a pre-built demo dataset"
         />
         <CardBody>
           <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 14, lineHeight: 1.6 }}>
-            Loads 5 sample tables covering tomatoes, cucumbers, strawberries, and more — with
+            Loads 5 sample tables covering tomatoes, cucumbers, strawberries, and more, with
             intentional quality issues (near-expiry lots, a low-fill-rate supplier, a buyer with
             recurring missed orders) so every diagnostic panel shows real findings.{" "}
             <strong style={{ color: "var(--text)" }}>
@@ -366,7 +366,7 @@ export default function UploadPage() {
                   {state.result.errors.length === 0 && state.result.warnings.length === 0 && (
                     <div style={{ display: "flex", gap: 6, alignItems: "center", color: "var(--accent)", fontSize: 12 }}>
                       <CheckCircle size={13} />
-                      {state.result.rows_inserted} rows loaded — no issues
+                      {state.result.rows_inserted} rows loaded, no issues
                     </div>
                   )}
                 </div>

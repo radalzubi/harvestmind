@@ -112,7 +112,7 @@ function ConfirmInner() {
     [flagged]
   );
 
-  if (!sessionId) return <PageError error="No session id — start from the Upload page." />;
+  if (!sessionId) return <PageError error="No session id, start from the Upload page." />;
   if (loading) return <PageLoading message="Loading extraction session…" />;
   if (error) return <PageError error={error} />;
   if (!session) return null;
@@ -230,12 +230,12 @@ function ConfirmInner() {
       />
 
       {session.mock_mode && (
-        <InfoBanner kind="warn" title="Running in demo mode —">
+        <InfoBanner kind="warn" title="Running in demo mode">
           smart mapping not yet active. Data extracted using standard mapping rules.
         </InfoBanner>
       )}
       {session.fallback_used && (
-        <InfoBanner kind="warn" title="Smart mapping temporarily unavailable —">
+        <InfoBanner kind="warn" title="Smart mapping temporarily unavailable">
           using standard mapping. Results below came from the deterministic fallback.
         </InfoBanner>
       )}
@@ -268,7 +268,7 @@ function ConfirmInner() {
 
       {/* Column mappings */}
       <Card style={{ marginTop: 16 }}>
-        <CardHead title="Column Mapping" sub="How your columns were read — correct anything that looks wrong" />
+        <CardHead title="Column Mapping" sub="How your columns were read, correct anything that looks wrong" />
         <CardBody tight>
           <table className="data-table">
             <thead><tr><th>Your column</th><th>Mapped to</th><th>Why</th></tr></thead>
@@ -425,7 +425,7 @@ function ConfirmInner() {
                                   />
                                 ) : (
                                   <>
-                                    {String(r.fields[c] ?? "—")}
+                                    {String(r.fields[c] ?? "n/a")}
                                     {derived && (
                                       <span title={m.inference_source} style={{ marginLeft: 4, fontStyle: "italic", color: "var(--muted)", fontWeight: 700 }}>ƒ</span>
                                     )}

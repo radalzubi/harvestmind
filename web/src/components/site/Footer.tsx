@@ -1,41 +1,29 @@
+"use client";
+
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { useLocale } from "@/lib/i18n";
 
 export function Footer() {
+  const { t } = useLocale();
+  const f = t.footer;
   return (
     <footer className="site-footer">
       <div className="site-footer-inner">
         <div className="site-footer-brand">
           <Logo size={22} muted />
-          <p>Purchasing decisions for businesses that import what they sell. Built in Amman.</p>
+          <p>{f.blurb}</p>
         </div>
         <div className="site-footer-cols">
-          <div>
-            <h4>Product</h4>
-            <Link href="/product">How it works</Link>
-            <Link href="/sectors">Sectors</Link>
-            <Link href="/security">Security</Link>
-          </div>
-          <div>
-            <h4>Company</h4>
-            <Link href="/about">About</Link>
-            <Link href="/contact">Contact</Link>
-          </div>
-          <div>
-            <h4>Workspace</h4>
-            <Link href="/get-started">Get started</Link>
-            <Link href="/get-started?mode=key">Enter a key</Link>
-          </div>
-          <div>
-            <h4>Legal</h4>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
-          </div>
+          <div><h4>{f.product}</h4><Link href="/product">{f.howItWorks}</Link><Link href="/sectors">{f.sectors}</Link><Link href="/security">{f.security}</Link></div>
+          <div><h4>{f.company}</h4><Link href="/about">{f.about}</Link><Link href="/contact">{f.contact}</Link></div>
+          <div><h4>{f.workspace}</h4><Link href="/get-started">{f.getStarted}</Link><Link href="/get-started?mode=key">{f.enterKey}</Link></div>
+          <div><h4>{f.legal}</h4><Link href="/privacy">{f.privacy}</Link><Link href="/terms">{f.terms}</Link></div>
         </div>
       </div>
       <div className="site-footer-base">
-        <span>© {new Date().getFullYear()} Zaad Supply</span>
-        <span>No forecasts of savings. Ever.</span>
+        <span>© {new Date().getFullYear()} {f.rights}</span>
+        <span>{f.tagline}</span>
       </div>
     </footer>
   );

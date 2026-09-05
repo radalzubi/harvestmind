@@ -532,7 +532,7 @@ export async function openDiagnosticReport(
 }
 
 export function fmt(n: number | null | undefined, digits = 0): string {
-  if (n == null || isNaN(n)) return "—";
+  if (n == null || isNaN(n)) return "n/a";
   return n.toLocaleString("en-US", {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
@@ -540,12 +540,12 @@ export function fmt(n: number | null | undefined, digits = 0): string {
 }
 
 export function fmtUSD(n: number | null | undefined): string {
-  if (n == null || isNaN(n)) return "$—";
+  if (n == null || isNaN(n)) return "n/a";
   return "$" + fmt(n, 0);
 }
 
 export function fmtPct(n: number | null | undefined, decimals = 1): string {
-  if (n == null || isNaN(n)) return "—%";
+  if (n == null || isNaN(n)) return "n/a";
   return (n * 100).toFixed(decimals) + "%";
 }
 

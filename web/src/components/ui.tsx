@@ -25,7 +25,7 @@ export function Badge({
 export function RiskBadge({ level }: { level?: string | null }) {
   const k = (level || "").toLowerCase() as RiskKind;
   const known: RiskKind[] = ["low", "medium", "high", "critical"];
-  return <Badge kind={known.includes(k) ? k : "neutral"}>{level || "—"}</Badge>;
+  return <Badge kind={known.includes(k) ? k : "neutral"}>{level || "n/a"}</Badge>;
 }
 
 export function Tbtn({
@@ -302,7 +302,7 @@ export function PageError({ error }: { error: string }) {
           {isNetwork
             ? isLocalhost
               ? "The local backend isn't running. Start it with: uvicorn api.main:app --reload"
-              : "This deployment is frontend-only — no backend is connected. Run Zaad Supply locally to see live diagnostic data, or contact the team for a demo."
+              : "This deployment is frontend-only, no backend is connected. Run Zaad Supply locally to see live diagnostic data, or contact the team for a demo."
             : error}
         </div>
       </div>

@@ -46,7 +46,7 @@ export default function ReportsPage() {
 
       {/* Report card */}
       <Card>
-        <CardHead title="Diagnostic Report" sub="Full operator diagnostic — ready to share with your team" />
+        <CardHead title="Diagnostic Report" sub="Full operator diagnostic, ready to share with your team" />
         <CardBody>
           <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
             <div style={{
@@ -73,7 +73,7 @@ export default function ReportsPage() {
               <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.6, marginBottom: 12 }}>
                 12-section HTML report covering waste loss, shortage loss, supplier reliability,
                 buyer fulfillment, inventory risk, traceability, ATP recommendations, and savings opportunity.
-                Rendered live from your uploaded data — no static snapshots.
+                Rendered live from your uploaded data, no static snapshots.
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <Tbtn variant="primary" icon={<ExternalLink size={12} />} onClick={openReport}>

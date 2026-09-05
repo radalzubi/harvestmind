@@ -60,7 +60,7 @@ export default function BenchmarkPage() {
       <Card>
         <CardHead
           title="Spot Economics Assumption"
-          sub="The SP-vs-LP edge depends on what emergency coverage really costs you — pick an assumption, or better, tell us your real numbers"
+          sub="The SP-vs-LP edge depends on what emergency coverage really costs you, pick an assumption, or better, tell us your real numbers"
         />
         <CardBody>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -115,19 +115,19 @@ export default function BenchmarkPage() {
           <KPIRow>
             <KPI
               label="SP vs Deterministic LP"
-              value={result.sp_vs_deterministic_lp?.edge_pct != null ? `${result.sp_vs_deterministic_lp.edge_pct}%` : "—"}
+              value={result.sp_vs_deterministic_lp?.edge_pct != null ? `${result.sp_vs_deterministic_lp.edge_pct}%` : "n/a"}
               deltaDir={(result.sp_vs_deterministic_lp?.edge_pct ?? 0) > 0 ? "up" : "down"}
               sub={`wins ${result.sp_vs_deterministic_lp?.wins}/${result.sp_vs_deterministic_lp?.n} · t=${result.sp_vs_deterministic_lp?.paired_t}`}
             />
             <KPI
               label="SP vs Naive"
-              value={result.sp_vs_naive?.edge_pct != null ? `${result.sp_vs_naive.edge_pct}%` : "—"}
+              value={result.sp_vs_naive?.edge_pct != null ? `${result.sp_vs_naive.edge_pct}%` : "n/a"}
               deltaDir={(result.sp_vs_naive?.edge_pct ?? 0) > 0 ? "up" : "down"}
               sub={`wins ${result.sp_vs_naive?.wins}/${result.sp_vs_naive?.n}`}
             />
             <KPI
               label="SP vs Order-up-to"
-              value={result.sp_vs_order_up_to?.edge_pct != null ? `${result.sp_vs_order_up_to.edge_pct}%` : "—"}
+              value={result.sp_vs_order_up_to?.edge_pct != null ? `${result.sp_vs_order_up_to.edge_pct}%` : "n/a"}
               deltaDir={(result.sp_vs_order_up_to?.edge_pct ?? 0) > 0 ? "up" : "down"}
               sub={`wins ${result.sp_vs_order_up_to?.wins}/${result.sp_vs_order_up_to?.n}`}
             />
@@ -159,7 +159,7 @@ export default function BenchmarkPage() {
                         {POLICY_LABELS[key] ?? key}
                       </td>
                       <td className="r" style={{ fontWeight: 600 }}>{fmtUSD(row.cost_per_origin)}</td>
-                      <td className="r">{row.service_pct != null ? `${row.service_pct}%` : "—"}</td>
+                      <td className="r">{row.service_pct != null ? `${row.service_pct}%` : "n/a"}</td>
                       <td className="r">{fmt(row.waste_kg_per_origin)}</td>
                       <td className="r">{row.n_folds}</td>
                     </tr>

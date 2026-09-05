@@ -5,29 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, KeyRound, Sparkles } from "lucide-react";
 import { apiFetch, clearApiToken, setApiToken, setSector, type Sector } from "@/lib/api";
+import { useLocale } from "@/lib/i18n";
 
 type Mode = "key" | "signup";
 type Step = "sector" | "mode" | "details";
 
-const SECTORS: Array<{ slug: Sector; title: string; body: string }> = [
-  { slug: "produce", title: "Fresh produce", body: "Fruit, vegetables, anything with a shelf life in days." },
-  { slug: "meats", title: "Meat and seafood", body: "Fresh and frozen, cold chain, lot-level traceability." },
-  { slug: "commercial", title: "Commercial goods", body: "Packaged goods, household products, raw materials." },
-];
-const LABEL: Record<Sector, string> = { produce: "fresh produce", meats: "meat and seafood", commercial: "commercial goods" };
 
-const DETAILS: Record<Mode, string[]> = {
-  key: [
-    "We check the key against its workspace and greet you by your company name.",
-    "The key lives only in this browser tab. Close the tab and it is gone from here.",
-    "You land in your workspace: upload, diagnostic, purchase plan and reports.",
-  ],
-  signup: [
-    "A private, isolated workspace opens immediately. No form, no email.",
-    "You get a key, shown once. Save it; it is the only way back in.",
-    "Upload a year of files. Codes are pseudonymised the moment they land, then run the diagnostic.",
-  ],
-};
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const slide = {
@@ -41,6 +24,9 @@ export function GetStarted() {
   const router = useRouter();
   const params = useSearchParams();
   const reduce = useReducedMotion();
+  const { t } = useLocale();
+  const g = t.gs;
+  const SECTORS = g.sectors as Array<{ slug: Sector; title: string; body: string }>;
   const [sector, setSectorChoice] = useState<Sector | null>(null);
   const [mode, setMode] = useState<Mode | null>(null);
   const [step, setStep] = useState<Step>("sector");
@@ -77,7 +63,7 @@ export function GetStarted() {
       }
     } catch (e) {
       if (mode === "key") clearApiToken();
-      setError(mode === "key" ? "That key did not open a workspace. Check it and try again." : (e instanceof Error ? e.message : "Could not open a workspace"));
+      setError(mode === "key" ? g.badKey : (e instanceof Error ? e.message : g.failed));
     } finally { setBusy(false); }
   };
 
@@ -93,9 +79,9 @@ export function GetStarted() {
         <AnimatePresence mode="wait" initial={false}>
           {step === "sector" && (
             <motion.div key="sector" {...(reduce ? {} : slide)} className="gs-step">
-              <p className="eyebrow">Step 1 of 3</p>
-              <h1 className="h1">What do you bring in?</h1>
-              <p className="lede">Pick the closest fit. It sets which files we ask for and how the diagnostic reads them.</p>
+              <p className="eyebrow">{g.step} 1 {g.of} 3</p>
+              <h1 className="h1">{g.q1}</h1>
+              <p className="lede">{g.q1sub}</p>
               <div className="gs-cards">
                 {SECTORS.map((s, i) => (
                   <motion.button key={s.slug} type="button" className="gs-card" onClick={() => pickSector(s.slug)}
@@ -103,7 +89,7 @@ export function GetStarted() {
                     whileHover={reduce ? undefined : { y: -3 }} whileTap={{ scale: 0.99 }}>
                     <span className="gs-card-title">{s.title}</span>
                     <span className="gs-card-body">{s.body}</span>
-                    <ArrowRight size={16} className="gs-card-arrow" />
+                    <ArrowRight size={16} className="gs-card-arrow dir-icon" />
                   </motion.button>
                 ))}
               </div>
@@ -112,21 +98,21 @@ export function GetStarted() {
 
           {step === "mode" && (
             <motion.div key="mode" {...(reduce ? {} : slide)} className="gs-step">
-              <button className="gs-back" onClick={back}><ArrowLeft size={14} /> Back</button>
-              <p className="eyebrow">Step 2 of 3 · {sector ? LABEL[sector] : ""}</p>
-              <h1 className="h1">How would you like in?</h1>
+              <button className="gs-back" onClick={back}><ArrowLeft size={14} className="dir-icon" /> {g.back}</button>
+              <p className="eyebrow">{g.step} 2 {g.of} 3 · {sector ? g.label[sector] : ""}</p>
+              <h1 className="h1">{g.q2}</h1>
               <div className="gs-cards two">
                 <motion.button type="button" className="gs-card" onClick={() => pickMode("key")} whileHover={reduce ? undefined : { y: -3 }} whileTap={{ scale: 0.99 }}>
                   <KeyRound size={20} className="gs-card-icon" />
-                  <span className="gs-card-title">Use a key</span>
-                  <span className="gs-card-body">You were given a workspace key. It takes you straight to your workspace.</span>
-                  <ArrowRight size={16} className="gs-card-arrow" />
+                  <span className="gs-card-title">{g.useKey}</span>
+                  <span className="gs-card-body">{g.useKeyBody}</span>
+                  <ArrowRight size={16} className="gs-card-arrow dir-icon" />
                 </motion.button>
                 <motion.button type="button" className="gs-card" onClick={() => pickMode("signup")} whileHover={reduce ? undefined : { y: -3 }} whileTap={{ scale: 0.99 }}>
                   <Sparkles size={20} className="gs-card-icon" />
-                  <span className="gs-card-title">Sign up for a key</span>
-                  <span className="gs-card-body">Open a private workspace now and get a key to come back with.</span>
-                  <ArrowRight size={16} className="gs-card-arrow" />
+                  <span className="gs-card-title">{g.signup}</span>
+                  <span className="gs-card-body">{g.signupBody}</span>
+                  <ArrowRight size={16} className="gs-card-arrow dir-icon" />
                 </motion.button>
               </div>
             </motion.div>
@@ -134,11 +120,11 @@ export function GetStarted() {
 
           {step === "details" && mode && (
             <motion.div key="details" {...(reduce ? {} : slide)} className="gs-step">
-              <button className="gs-back" onClick={back}><ArrowLeft size={14} /> Back</button>
-              <p className="eyebrow">Step 3 of 3 · {sector ? LABEL[sector] : "your workspace"}</p>
-              <h1 className="h1">{mode === "key" ? "What happens next" : "What happens next"}</h1>
+              <button className="gs-back" onClick={back}><ArrowLeft size={14} className="dir-icon" /> {g.back}</button>
+              <p className="eyebrow">{g.step} 3 {g.of} 3 · {sector ? g.label[sector] : g.yourWorkspace}</p>
+              <h1 className="h1">{g.q3}</h1>
               <ol className="gs-details">
-                {DETAILS[mode].map((d, i) => (
+                {g.details[mode].map((d, i) => (
                   <motion.li key={d} initial={reduce ? false : { opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 + i * 0.1, duration: 0.5, ease }}>
                     <span className="gs-check"><Check size={13} /></span>{d}
                   </motion.li>
@@ -146,13 +132,13 @@ export function GetStarted() {
               </ol>
               {mode === "key" ? (
                 <form className="gs-form" onSubmit={(e) => { e.preventDefault(); void go(); }}>
-                  <input inputMode="numeric" autoComplete="off" autoFocus placeholder="Your key" aria-label="Workspace key" value={key} onChange={(e) => setKey(e.target.value)} />
-                  <button className="btn btn-primary btn-lg" type="submit" disabled={busy || !key.trim()}>{busy ? "Checking…" : "Open my workspace"} <ArrowRight size={16} /></button>
+                  <input inputMode="numeric" autoComplete="off" autoFocus placeholder={g.keyPlaceholder} aria-label={g.keyLabel} value={key} onChange={(e) => setKey(e.target.value)} />
+                  <button className="btn btn-primary btn-lg" type="submit" disabled={busy || !key.trim()}>{busy ? g.checking : g.openMine} <ArrowRight size={16} className="dir-icon" /></button>
                 </form>
               ) : (
                 <div className="gs-form">
-                  {!sector && <p className="gs-hint">Choose a sector first.</p>}
-                  <button className="btn btn-primary btn-lg" type="button" disabled={busy || !sector} onClick={() => void go()}>{busy ? "Opening…" : "Open a workspace"} <ArrowRight size={16} /></button>
+                  {!sector && <p className="gs-hint">{g.chooseFirst}</p>}
+                  <button className="btn btn-primary btn-lg" type="button" disabled={busy || !sector} onClick={() => void go()}>{busy ? g.opening : g.openNew} <ArrowRight size={16} className="dir-icon" /></button>
                 </div>
               )}
               {error && <p className="gs-error" role="alert">{error}</p>}

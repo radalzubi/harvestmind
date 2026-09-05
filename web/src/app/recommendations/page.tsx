@@ -64,15 +64,15 @@ export default function RecsPage() {
             <KPI label="Medium Risk" value={fmt(nMedium)} />
             <KPI
               label="Confidence Index"
-              value={conf?.index != null ? `${conf.index}/100` : "—"}
-              sub={conf?.index != null ? "internal index — not a probability" : (conf?.reason ?? "needs more history")}
+              value={conf?.index != null ? `${conf.index}/100` : "n/a"}
+              sub={conf?.index != null ? "internal index, not a probability" : (conf?.reason ?? "needs more history")}
             />
           </KPIRow>
 
           <Card style={{ marginTop: 16 }}>
             <CardHead
               title="Commitment Recommendations"
-              sub="Action · reason · risk — holdbacks sized from the shrunk supplier distributions, not raw averages"
+              sub="Action · reason · risk, holdbacks sized from the shrunk supplier distributions, not raw averages"
             />
             <CardBody tight>
               <table className="data-table">

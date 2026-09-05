@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, IBM_Plex_Sans_Arabic, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import "./site.css";
 import { Shell } from "@/components/Shell";
 import { ToastProvider } from "@/components/Toast";
+import { LocaleProvider } from "@/lib/i18n";
 
-const sans = Geist({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
-const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
+const sans = Instrument_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-sans", display: "swap" });
+const display = Bricolage_Grotesque({ subsets: ["latin"], weight: ["500", "600"], variable: "--font-display", display: "swap" });
+const arabic = IBM_Plex_Sans_Arabic({ subsets: ["arabic"], weight: ["400", "500", "600"], variable: "--font-arabic", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://zaadsupply.com"),
@@ -17,11 +19,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="en" className={`${sans.variable} ${display.variable} ${arabic.variable}`} suppressHydrationWarning>
       <body>
-        <ToastProvider>
-          <Shell>{children}</Shell>
-        </ToastProvider>
+        <LocaleProvider>
+          <ToastProvider>
+            <Shell>{children}</Shell>
+          </ToastProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

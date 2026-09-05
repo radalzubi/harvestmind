@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight } from "lucide-react";
+import { useLocale } from "@/lib/i18n";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export function Hero() {
   const reduce = useReducedMotion();
+  const { t } = useLocale();
+  const h = t.hero;
   const up = (d: number) => ({
     initial: reduce ? false : { opacity: 0, y: 22 },
     animate: { opacity: 1, y: 0 },
@@ -21,22 +24,18 @@ export function Hero() {
         <div className="hero-grid" />
       </div>
       <div className="wrap hero-inner">
-        <motion.p className="eyebrow" {...up(0.05)}>Purchasing decisions for businesses that import what they sell</motion.p>
+        <motion.p className="eyebrow" {...up(0.05)}>{h.eyebrow}</motion.p>
         <motion.h1 className="display" {...up(0.15)}>
-          How much to buy, and when,<br />
-          <span className="display-muted">without ever making your buying worse.</span>
+          {h.h1a}<br />
+          <span className="display-muted">{h.h1b}</span>
         </motion.h1>
-        <motion.p className="lede hero-lede" {...up(0.28)}>
-          Upload a year of purchase orders, receipts, sales and stock counts. See how you order today, what a safe optimizer would have done on that same history, and the risk on your supply lanes right now.
-        </motion.p>
+        <motion.p className="lede hero-lede" {...up(0.28)}>{h.lede}</motion.p>
         <motion.div className="cta-row" {...up(0.38)}>
-          <Link href="/get-started" className="btn btn-primary btn-lg">Get started <ArrowRight size={16} /></Link>
-          <Link href="/product" className="btn btn-ghost btn-lg">How it works</Link>
+          <Link href="/get-started" className="btn btn-primary btn-lg">{h.cta} <ArrowRight size={16} className="dir-icon" /></Link>
+          <Link href="/product" className="btn btn-ghost btn-lg">{h.how}</Link>
         </motion.div>
         <motion.div className="hero-proof" {...up(0.5)}>
-          <span>Backtested on your history</span><i />
-          <span>Pseudonymised on arrival</span><i />
-          <span>No forecast of savings, ever</span>
+          {h.proof.map((p, i) => (<span key={p} style={{ display: "contents" }}>{i > 0 && <i />}<span>{p}</span></span>))}
         </motion.div>
       </div>
     </section>
