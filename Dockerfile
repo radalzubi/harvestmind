@@ -21,4 +21,4 @@ USER harvestmind
 ENV HARVESTMIND_BIND_HOST=:: \
     HARVESTMIND_ENV=pilot
 EXPOSE 8000
-CMD ["uvicorn", "api.main:app", "--host", "::", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+CMD ["python", "-m", "api.serve"]
