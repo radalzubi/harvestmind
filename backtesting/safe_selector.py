@@ -36,6 +36,8 @@ Insufficient history returns the incumbent, never the stochastic model.
 
 from __future__ import annotations
 
+import os
+
 from typing import Any
 
 import math
@@ -212,6 +214,63 @@ def run_candidate(name: str, fi: FoldInputs, warehouse_cap, rng, n_scen: int,
     raise ValueError(f"unknown candidate {name}")
 
 
+
+# ── candidate fan-out ────────────────────────────────────────────────────────
+def _gate_workers() -> int:
+    """Processes to solve a fold's candidates in parallel; 1 = sequential.
+    Each process uses one HiGHS thread, so this is a count of cores."""
+    try:
+        return max(1, int(os.environ.get("HARVESTMIND_GATE_WORKERS", "1")))
+    except ValueError:
+        return 1
+
+
+def _picklable_meta(meta: dict) -> dict:
+    """Solver metadata carries the pyomo model and closures; the gate only
+    reads plain values, so keep what crosses a process boundary."""
+    import pickle
+    out = {}
+    for k, v in (meta or {}).items():
+        if k == "model":
+            continue
+        try:
+            pickle.dumps(v)
+        except Exception:  # noqa: BLE001
+            continue
+        out[k] = v
+    return out
+
+
+def _run_candidate_seeded(args):
+    name, fi, warehouse_cap, seed, n_scen, extra = args
+    sched, meta = run_candidate(name, fi, warehouse_cap, np.random.default_rng(seed), n_scen, extra)
+    return name, (sched, _picklable_meta(meta))
+
+
+def _run_candidates(names, inner, warehouse_cap, rng, n_scen, extra, workers: int) -> dict:
+    """Sequential mode consumes ``rng`` exactly as before (validation runs are
+    reproducible). Parallel mode draws one child seed per candidate from
+    ``rng`` and solves them in separate processes; results are deterministic
+    for a given seed but not bit-identical to the sequential stream."""
+    if workers <= 1 or len(names) <= 1:
+        return {n: run_candidate(n, inner, warehouse_cap, rng, n_scen, extra) for n in names}
+    import concurrent.futures as cf
+    import multiprocessing as mp
+    seeds = {n: int(rng.integers(0, 2**32 - 1)) for n in names}
+    jobs = [(n, inner, warehouse_cap, seeds[n], n_scen, extra) for n in names]
+    out: dict = {}
+    try:
+        with cf.ProcessPoolExecutor(max_workers=min(workers, len(names)), mp_context=mp.get_context("spawn")) as ex:
+            for name, res in ex.map(_run_candidate_seeded, jobs):
+                out[name] = res
+    except Exception as exc:  # noqa: BLE001  pickling or pool failure: the sequential path is always available
+        # fall back to sequential with the same child seeds so the answer is
+        # the same as a healthy parallel run would have given
+        import logging
+        logging.getLogger("harvestmind.gate").warning("parallel gate unavailable (%s); solving sequentially", type(exc).__name__)
+        out = {n: run_candidate(n, inner, warehouse_cap, np.random.default_rng(seeds[n]), n_scen, extra) for n in names}
+    return out
+
 def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | None = None,
                 candidates: tuple = ("order_up_to", "deterministic_sp", "stochastic_sp"),
                 extra_candidates: dict | None = None, posture: Any = None) -> SafeDecision:
@@ -278,6 +337,8 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
     if not candidates and not extra_candidates:
         return decide_incumbent("the current posture admits no candidate beyond the incumbent")
 
+    workers = _gate_workers()
+
     def evaluate(folds, names):
         base_costs, base_fill, base_inv = [], [], []
         per = {n: {"delta": [], "svc": [], "inv": [], "usable": 0, "fallback": 0} for n in names}
@@ -287,8 +348,9 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
             base_costs.append(b.total)
             base_fill.append(b.fill_rate)
             base_inv.append(b.inventory_periods)
+            results = _run_candidates(names, inner, warehouse_cap, rng, cfg.n_scen, extra_candidates, workers)
             for n in names:
-                sched, m = run_candidate(n, inner, warehouse_cap, rng, cfg.n_scen, extra_candidates)
+                sched, m = results[n]
                 if sched is None:
                     per[n]["fallback"] += 1
                     continue

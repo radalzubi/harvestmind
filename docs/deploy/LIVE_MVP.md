@@ -54,6 +54,12 @@ The diagnostic's cost is the gate: 4 selection folds plus 2 held-out folds, up t
 
 The project `zaad` has Root Directory set to `web`, so pushes to GitHub build correctly (preview deployments for branches, production for `main`). `vercel --prod` from the repository root (the project is linked there, `.vercel/` is ignored) deploys production directly, which is how the pilot site is updated today; running it from `web/` fails because the root directory would resolve to `web/web`. The public site is a Next.js app: marketing pages live under `web/src/app/(site)`, the workspace under the other routes; sectors are produce, meats and commercial (meats shares the produce table family).
 
+### Dedicated solver machines
+
+Each diagnostic runs on its own Fly machine, created by the API through the Machines API from the API's own image and destroyed when the worker exits (`infrastructure/fly_machines.py`, `api/worker.py`). The worker fetches the workspace's staging tables as parquet over the private network (`/jobs/internal/{id}/bundle`, shared secret `HARVESTMIND_WORKER_TOKEN`), rebuilds them in a scratch vault, runs the same diagnostic code, posts progress and the result back, and exits; it never sees a workspace key. Fly bills per second, so a 4-core `performance` machine for a few minutes costs cents.
+
+Secrets: `FLY_API_TOKEN` (a deploy token for the app, `fly tokens create deploy -a zaad-api`) and `HARVESTMIND_WORKER_TOKEN` (random). Sizing in `fly.toml` env: `HARVESTMIND_WORKER_CPUS`, `HARVESTMIND_WORKER_MEMORY_MB`, `HARVESTMIND_WORKER_CPU_KIND`; `HARVESTMIND_GATE_WORKERS` is the number of processes the gate uses to solve a fold's candidates in parallel (one HiGHS thread each), and `HARVESTMIND_GATE_SCENARIOS` the scenario count per fold. `HARVESTMIND_WORKER_MACHINES=false` (or a missing token) falls back to the in-process thread. A machine job that reports nothing for `HARVESTMIND_JOB_STALE_S` (default 1800) is marked failed and its machine destroyed. `fly machines list -a zaad-api` shows any worker still alive; they are named `worker-<job>`.
+
 ## 3. Operating it
 
 - **Approve a request**: `GET /admin/access-requests` then `POST /admin/access-requests/{id}/approve` with header `X-Admin-Key`. The requester gets the link by email, or you send it.

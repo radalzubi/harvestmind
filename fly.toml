@@ -15,7 +15,10 @@ primary_region = 'fra'
   HARVESTMIND_DATA_ROOT = '/var/lib/harvestmind'
   HARVESTMIND_ENV = 'pilot'
   HARVESTMIND_SOLVER_THREADS = '1'
-  HARVESTMIND_GATE_SCENARIOS = '10'
+  HARVESTMIND_GATE_SCENARIOS = '20'
+  HARVESTMIND_WORKER_CPUS = '4'
+  HARVESTMIND_WORKER_MEMORY_MB = '8192'
+  HARVESTMIND_GATE_WORKERS = '4'
 
 [[mounts]]
   source = 'harvestmind_data'

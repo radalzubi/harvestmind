@@ -5,6 +5,13 @@ policy, a backtested comparison with a conservative lower bound, the lane
 risk today, and a PDF that says all of it including "no material
 improvement" when that is the answer. Solves can take minutes, so the job
 runs in a worker thread against the operator's own vault and the UI polls.
+When Fly machine launching is configured (infrastructure/fly_machines.py)
+the job instead runs on a dedicated ephemeral machine that fetches a data
+bundle over the private network and posts the result back:
+
+  GET  /jobs/internal/{id}/bundle    worker: staging tables as parquet, zipped
+  POST /jobs/internal/{id}/progress  worker: progress text
+  POST /jobs/internal/{id}/result    worker: done/failed + summary
 
   POST /jobs/diagnostic          operator: start (one at a time per operator)
   GET  /jobs/{id}                operator: status, progress, summary
@@ -12,20 +19,24 @@ runs in a worker thread against the operator's own vault and the UI polls.
 """
 from __future__ import annotations
 
+import hmac
 import io
 import json
 import logging
 import os
+import tempfile
 import threading
 import uuid
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, Header, HTTPException
 from fastapi.responses import Response
 
 from api.dependencies import rate_limiter, require_operator
+from infrastructure import fly_machines
 from infrastructure.db_manager import DBManager
 from infrastructure.operator_registry import OperatorNotFoundError, OperatorRegistry
 
@@ -44,6 +55,10 @@ def _reports_dir(registry: OperatorRegistry, op: str) -> Path:
 def _set(job: dict, **kw: Any) -> None:
     with _LOCK:
         job.update(kw)
+        job["updated_at"] = datetime.now(timezone.utc).isoformat()
+    hook = job.get("_hook")
+    if hook is not None:
+        hook(kw)
 
 
 def _run_commercial(conn, job: dict) -> dict:
@@ -129,8 +144,7 @@ def _worker(job: dict, op: str, sector: str) -> None:
         summary = _run_commercial(conn, job) if sector == "commercial" else _run_produce(conn, job)
         _set(job, status="done", progress="report ready", summary=summary,
              finished_at=datetime.now(timezone.utc).isoformat())
-        path = _reports_dir(registry, op) / f"{job['id']}.json"
-        path.write_text(json.dumps(job, indent=1, default=str))
+        _persist(job)
     except Exception as exc:  # noqa: BLE001
         log.exception("diagnostic failed for %s", op)
         _set(job, status="failed", progress="failed", error=f"{type(exc).__name__}: {exc}"[:300],
@@ -161,12 +175,120 @@ def start_diagnostic(authed: str | None = Depends(require_operator)):
            "created_at": datetime.now(timezone.utc).isoformat(), "finished_at": None, "error": None, "summary": None}
     with _LOCK:
         _JOBS[job_id] = job
-    threading.Thread(target=_worker, args=(job, authed, job["sector"]), daemon=True).start()
+    _dispatch(job, authed)
     return _public(job)
 
 
+STALE_AFTER_S = int(os.environ.get("HARVESTMIND_JOB_STALE_S", "1800"))
+
+
+def _dispatch(job: dict, op: str) -> None:
+    """Dedicated machine when configured, otherwise a thread in this process."""
+    if fly_machines.enabled():
+        api = f"http://[{os.environ.get('FLY_PRIVATE_IP', '::1')}]:8000"
+        try:
+            mid = fly_machines.launch_worker(job["id"], {"ZAAD_JOB_ID": job["id"], "ZAAD_INTERNAL_API": api,
+                                                        "HARVESTMIND_WORKER_TOKEN": os.environ.get("HARVESTMIND_WORKER_TOKEN", "")})
+            _set(job, runner="machine", machine_id=mid, progress="starting a dedicated solver machine")
+            return
+        except Exception as exc:  # noqa: BLE001  fall back to the in-process thread
+            log.warning("machine launch failed, running in-process: %s", exc)
+            _set(job, warnings_runner=f"machine launch failed ({type(exc).__name__}); ran in-process")
+    _set(job, runner="thread")
+    threading.Thread(target=_worker, args=(job, op, job["sector"]), daemon=True).start()
+
+
+def _persist(job: dict) -> None:
+    registry = OperatorRegistry()
+    path = _reports_dir(registry, job["operator_id"]) / f"{job['id']}.json"
+    path.write_text(json.dumps({k: v for k, v in job.items() if not k.startswith("_")}, indent=1, default=str))
+
+
+def _check_stale(job: dict) -> None:
+    """A machine job that stopped reporting is marked failed rather than
+    spinning forever in the UI."""
+    if job.get("status") != "running" or job.get("runner") != "machine":
+        return
+    last = str(job.get("updated_at") or job.get("created_at") or "")
+    try:
+        age = (datetime.now(timezone.utc) - datetime.fromisoformat(last)).total_seconds()
+    except (TypeError, ValueError):
+        return
+    if age > STALE_AFTER_S:
+        _set(job, status="failed", progress="failed", finished_at=datetime.now(timezone.utc).isoformat(),
+             error=f"no progress from the solver machine for {int(age // 60)} minutes; run it again")
+        if job.get("machine_id"):
+            fly_machines.destroy_machine(job["machine_id"])
+        _persist(job)
+
+
+# ── worker-facing endpoints (private network + shared token) ────────────────
+def require_worker(x_worker_token: str | None = Header(default=None)) -> None:
+    expected = os.environ.get("HARVESTMIND_WORKER_TOKEN", "")
+    if not expected or not x_worker_token or not hmac.compare_digest(expected, x_worker_token):
+        raise HTTPException(401, "worker token required")
+
+
+def _job_for_worker(job_id: str) -> dict:
+    with _LOCK:
+        job = _JOBS.get(job_id)
+    if job is None or job.get("runner") != "machine":
+        raise HTTPException(404, "unknown job")
+    return job
+
+
+@router.get("/internal/{job_id}/bundle", dependencies=[Depends(require_worker)])
+def worker_bundle(job_id: str):
+    """The workspace's non-empty staging tables as parquet in a zip, plus job meta."""
+    from api.routers.intake import STAGING_TABLES
+    job = _job_for_worker(job_id)
+    registry = OperatorRegistry()
+    rec = registry.get_operator(job["operator_id"])
+    dbm = DBManager(registry)
+    buf = io.BytesIO()
+    try:
+        conn = dbm.get_operator_connection(job["operator_id"])
+        with tempfile.TemporaryDirectory() as td, zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("job.json", json.dumps({"id": job_id, "sector": job["sector"], "name": rec.name}))
+            for table in STAGING_TABLES:
+                row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()  # noqa: S608  # nosec B608 - allowlisted names
+                if not row or not row[0]:
+                    continue
+                path = Path(td) / f"{table}.parquet"
+                conn.execute(f"COPY (SELECT * FROM {table}) TO '{path}' (FORMAT PARQUET)")  # noqa: S608  # nosec B608
+                zf.write(path, f"{table}.parquet")
+    finally:
+        try:
+            dbm.close_all()
+        except Exception:  # noqa: BLE001
+            pass
+    _set(job, progress="solver machine fetched the data")
+    return Response(content=buf.getvalue(), media_type="application/zip")
+
+
+@router.post("/internal/{job_id}/progress", dependencies=[Depends(require_worker)])
+def worker_progress(job_id: str, body: dict = Body(...)):
+    job = _job_for_worker(job_id)
+    _set(job, progress=str(body.get("progress", ""))[:200])
+    return {"ok": True}
+
+
+@router.post("/internal/{job_id}/result", dependencies=[Depends(require_worker)])
+def worker_result(job_id: str, body: dict = Body(...)):
+    job = _job_for_worker(job_id)
+    if body.get("status") == "done" and body.get("summary"):
+        _set(job, status="done", progress="report ready", summary=body["summary"],
+             finished_at=datetime.now(timezone.utc).isoformat())
+    else:
+        _set(job, status="failed", progress="failed", error=str(body.get("error", "worker failed"))[:300],
+             finished_at=datetime.now(timezone.utc).isoformat())
+    _persist(job)
+    return {"ok": True}
+
+
 def _public(job: dict) -> dict:
-    return {k: v for k, v in job.items() if k != "operator_id"}
+    _check_stale(job)
+    return {k: v for k, v in job.items() if k != "operator_id" and not k.startswith("_")}
 
 
 def _get(job_id: str, authed: str | None) -> dict:
