@@ -11,7 +11,7 @@ primary_region = 'fra'
 
 [env]
   DUCKDB_PATH = '/var/lib/harvestmind/root.duckdb'
-  HARVESTMIND_BIND_HOST = '0.0.0.0'
+  HARVESTMIND_BIND_HOST = '::'
   HARVESTMIND_DATA_ROOT = '/var/lib/harvestmind'
   HARVESTMIND_ENV = 'pilot'
   HARVESTMIND_SOLVER_THREADS = '1'

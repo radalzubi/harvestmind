@@ -167,6 +167,9 @@ def start_diagnostic(authed: str | None = Depends(require_operator)):
         raise HTTPException(404, "unknown operator")
     with _LOCK:
         running = [j for j in _JOBS.values() if j["operator_id"] == authed and j["status"] in ("queued", "running")]
+    for j in running:
+        _check_stale(j)
+    running = [j for j in running if j["status"] == "running"]
     if running:
         return _public(running[0])
     job_id = f"job_{uuid.uuid4().hex[:10]}"
@@ -180,6 +183,8 @@ def start_diagnostic(authed: str | None = Depends(require_operator)):
 
 
 STALE_AFTER_S = int(os.environ.get("HARVESTMIND_JOB_STALE_S", "1800"))
+BOOT_STALE_S = int(os.environ.get("HARVESTMIND_JOB_BOOT_STALE_S", "300"))
+BOOT_PROGRESS = "starting a dedicated solver machine"
 
 
 def _dispatch(job: dict, op: str) -> None:
@@ -189,7 +194,7 @@ def _dispatch(job: dict, op: str) -> None:
         try:
             mid = fly_machines.launch_worker(job["id"], {"ZAAD_JOB_ID": job["id"], "ZAAD_INTERNAL_API": api,
                                                         "HARVESTMIND_WORKER_TOKEN": os.environ.get("HARVESTMIND_WORKER_TOKEN", "")})
-            _set(job, runner="machine", machine_id=mid, progress="starting a dedicated solver machine")
+            _set(job, runner="machine", machine_id=mid, progress=BOOT_PROGRESS)
             return
         except Exception as exc:  # noqa: BLE001  fall back to the in-process thread
             log.warning("machine launch failed, running in-process: %s", exc)
@@ -214,7 +219,10 @@ def _check_stale(job: dict) -> None:
         age = (datetime.now(timezone.utc) - datetime.fromisoformat(last)).total_seconds()
     except (TypeError, ValueError):
         return
-    if age > STALE_AFTER_S:
+    # a machine that never fetched the data (boot or network failure) frees
+    # the workspace quickly; one that went quiet mid-solve gets the long limit
+    limit = BOOT_STALE_S if job.get("progress") == BOOT_PROGRESS else STALE_AFTER_S
+    if age > limit:
         _set(job, status="failed", progress="failed", finished_at=datetime.now(timezone.utc).isoformat(),
              error=f"no progress from the solver machine for {int(age // 60)} minutes; run it again")
         if job.get("machine_id"):
