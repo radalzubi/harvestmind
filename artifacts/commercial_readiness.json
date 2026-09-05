@@ -1,22 +1,22 @@
 {
  "status": "YES_WITH_CONDITIONS",
- "git_commit": "90c3938caf863afa7bbdeb0e49b550b58b8b52f2",
+ "git_commit": "d5240eb2dd9d4fcafecc9f8d805d21f278084f4d",
  "tests": {
-  "passed": 1301,
+  "passed": 1354,
   "failed": 0,
   "skipped": 1,
   "xfailed": 0
  },
  "coverage": {
-  "total_pct": 81.6,
+  "total_pct": 81.8,
   "by_package_pct": {
-   "api": 79.4,
-   "backtesting": 81.1,
-   "domain": 88.1,
-   "ingestion": 83.8,
+   "api": 79.7,
+   "backtesting": 80.9,
+   "domain": 88.2,
+   "ingestion": 84.3,
    "optimization": 91.4,
    "risk": 92.3,
-   "synthetic": 56.0
+   "synthetic": 56.6
   }
  },
  "security": {
@@ -47,7 +47,7 @@
     "tornado",
     "urllib3"
    ],
-   "advisories": 133
+   "advisories": 134
   }
  },
  "agriculture": {

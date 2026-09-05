@@ -50,6 +50,15 @@ Jordan's single-seaport exposure is therefore measured, not assumed.
 
 Each has a `.meta.json` sidecar with `fetched_at`, so freshness is honest. All REAL PUBLIC.
 
+## priors/ — public priors for what an operator has not measured (`scripts/fetch_public_priors.py`)
+
+| file | source | used for |
+|---|---|---|
+| `lpi.csv` | World Bank Logistics Performance Index, latest year per country | lead-time variability prior by supplier origin country (`domain/priors.lead_time_cv_prior`), until 8+ receipts exist |
+| `ers_lafa_loss.csv` | USDA ERS Loss-Adjusted Food Availability, per-commodity loss shares at each stage | perishability prior by commodity (`domain/priors.decay_rate_prior`), until write-offs are measured |
+
+The mappings from index to parameter are ASSUMED and documented in `domain/priors.py`; every prior carries a provenance and is reported wherever it is in use. Both REAL PUBLIC.
+
 ## What these data cannot do
 
 They are aggregate. No public source publishes SKU-level or supplier-level
@@ -65,6 +74,7 @@ tonnage ordered is not.
 | `data/external/fred/*.csv` | REAL PUBLIC (US Census via FRED, public domain) |
 | `data/external/portwatch/*.csv` | REAL PUBLIC (IMF PortWatch, open data) |
 | `data/external/indicators/*.csv` | REAL PUBLIC (FRED, NY Fed, GDELT) |
+| `data/external/priors/*.csv` | REAL PUBLIC (World Bank, USDA ERS); parameter mappings ASSUMED |
 | `validation/commercial/real_data.py` route shock panel | DERIVED FROM REAL PUBLIC (arrival-shortfall proxy; not a fill rate) |
 | `docs/reports/evidence/real_validation/*` | DERIVED FROM REAL PUBLIC (backtest outputs on the real demand path; cross-section synthetic) |
 | `synthetic/fmcg/distributor_sim.py` output, `artifacts/fmcg_*.json` | SYNTHETIC CALIBRATED (public benchmarks shape the parameters) |

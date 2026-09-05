@@ -111,7 +111,7 @@ def build_inputs(conn, *, horizon: int, train_weeks: int, service_level: float,
     inv = _df(conn, "SELECT sku, snapshot_date, on_hand, in_transit FROM stg_fmcg_inventory")
     promo = _df(conn, "SELECT sku, week_start, uplift FROM stg_fmcg_promotions")
     try:
-        sup_master = _df(conn, "SELECT supplier_id, route, manufacturer, capacity_per_week FROM stg_fmcg_suppliers")
+        sup_master = _df(conn, "SELECT supplier_id, route, manufacturer, capacity_per_week, origin_iso3 FROM stg_fmcg_suppliers")
     except Exception:  # noqa: BLE001
         sup_master = pd.DataFrame()
     econ, econ_prov = _economics(conn)
@@ -292,6 +292,20 @@ def build_inputs(conn, *, horizon: int, train_weeks: int, service_level: float,
     else:
         incumbent = configured_incumbent(cover_weeks=max(lead_of.values()) + 1.0)
         warnings.append("no PO history to infer the incumbent from; a lead+1 order-up-to stands in")
+    # Lead-time variability: measured from receipts where the supplier has
+    # enough of them, otherwise a public prior by origin country (labelled).
+    from domain.priors import lead_time_cv_prior
+    origin_iso = {str(r.supplier_id): (str(r.origin_iso3) if isinstance(getattr(r, "origin_iso3", None), str)
+                                        and r.origin_iso3 else None) for r in sup_master.itertuples()}
+    lead_cv_prior: dict = {}
+    priors_report: dict = {}
+    for s_ in sorted(set(sup_of.values())):
+        n_ev = len(supply_events.get(s_, {}))
+        if n_ev < 8:
+            pr = lead_time_cv_prior(origin_iso.get(s_))
+            lead_cv_prior[s_] = pr.value
+            priors_report[s_] = {**pr.as_dict(), "receipts_recorded": n_ev,
+                                 "note": "prior in use; replaced by measured lead times once 8+ receipts exist"}
     route_of = {str(r.supplier_id): str(r.route) for r in sup_master.itertuples()
                 if isinstance(getattr(r, "route", None), str) and r.route} if len(sup_master) else {}
     fi = FoldInputs(origin=int(origin.timestamp() // 604800), horizon=horizon, products=products,
@@ -300,13 +314,14 @@ def build_inputs(conn, *, horizon: int, train_weeks: int, service_level: float,
                     unit_cost={j: cost[j] for j in products}, margin=margin, capacity=cap,
                     opening=opening, pipeline=pipeline, policy=policy, promo_multiplier=promo_mult,
                     supply_events=supply_events, incumbent=incumbent, route_of=route_of,
+                    lead_cv_prior=lead_cv_prior,
                     provenance=provenance)
     report = {"provenance": provenance, "warnings": warnings, "unknown_margin_skus": unknown_margin,
               "carrying_cost": comps.breakdown("week"),
               "carrying_cost_sensitivity": sensitivity_grid(comps, "week"),
               "incumbent": incumbent.label, "incumbent_notes": incumbent.notes[:5],
               "supply_history_events": {k: len(v) for k, v in supply_events.items()},
-              "route_tags": len(route_of)}
+              "route_tags": len(route_of), "priors": priors_report}
     return fi, report
 
 
@@ -510,6 +525,7 @@ def plan(
         "regime": {"dominant": reg_sum["dominant"], "counts": reg_sum["counts"],
                    "by_sku": {k: v.regime for k, v in regimes.items()}},
         "economics_provenance": report["provenance"], "carrying_cost": report["carrying_cost"],
+        "priors_in_use": report.get("priors", {}),
         "carrying_cost_sensitivity": report["carrying_cost_sensitivity"],
         "constraint_provenance": {"supplier_capacity": report["provenance"].get("supplier_capacity"),
                                   "pack_structure": Provenance.OPERATOR.value},

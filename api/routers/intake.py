@@ -15,6 +15,7 @@ Security: table parameter is validated against the staging allowlist.
 
 from __future__ import annotations
 
+import io
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -142,10 +143,18 @@ async def upload_csv(
     file: UploadFile = File(...),
     operator_id: str | None = None,
     force: bool = False,
+    anonymize: bool = True,
     conn=Depends(get_conn),
     authed: str | None = Depends(require_operator),
 ):
     """Upload a CSV file into a staging table.
+
+    ``anonymize=true`` (default) replaces identifier columns with keyed
+    hashes and drops free-text name/contact columns BEFORE the file
+    reaches the vault, using a per-operator secret held only in the
+    registry (see docs/security/DATA_HANDLING.md). Files anonymised
+    client-side with scripts/anonymize_export.py pass through unchanged.
+    With HARVESTMIND_REQUIRE_ANONYMIZED=1 a raw file is refused.
 
     ``force=true`` loads a file whose exact content was already uploaded;
     otherwise a repeat is refused with a rejection report, so a retry or a
@@ -176,6 +185,7 @@ async def upload_csv(
 
     warnings: list[str] = []
     errors: list[str] = []
+    anonymization: dict | None = None
 
     # Operator-scoped path: copy the raw original into the vault FIRST
     # (write-once ground truth), then process against the vault DB.
@@ -192,6 +202,27 @@ async def upload_csv(
         )
         try:
             registry = OperatorRegistry()
+            import os as _os
+
+            import pandas as _pd
+
+            from ingestion.anonymize import anonymize_csv_bytes, looks_anonymized
+            try:
+                _already = looks_anonymized(_pd.read_csv(io.BytesIO(contents), nrows=200))
+            except Exception:  # noqa: BLE001
+                _already = False
+            if anonymize and not _already:
+                secret = registry.anonymization_secret(operator_id)
+                contents, rep = anonymize_csv_bytes(contents, secret)
+                anonymization = {**rep.as_dict(), "mode": "server"}
+            elif _already:
+                anonymization = {"mode": "client", "note": "file arrived pseudonymised; stored as received"}
+            elif _os.environ.get("HARVESTMIND_REQUIRE_ANONYMIZED", "").strip() in ("1", "true", "yes"):
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                    detail="raw identifiers refused: anonymise the export "
+                                           "(anonymize=true or scripts/anonymize_export.py)")
+            else:
+                anonymization = {"mode": "none", "warning": "raw identifiers stored at operator's request"}
             try:
                 store_raw_upload(registry, operator_id,
                                  file.filename or "upload.csv", contents,
@@ -349,6 +380,7 @@ async def upload_csv(
             "table": table,
             "description": meta["description"],
             "rows_inserted": rows_inserted,
+            "anonymization": anonymization,
             "warnings": warnings,
             "errors": errors,
         }

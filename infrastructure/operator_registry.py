@@ -50,6 +50,7 @@ class OperatorRecord(BaseModel):
     pool_consent_date: Optional[datetime] = None
     pool_contribution_count: int = 0
     token_hash: Optional[str] = None       # sha256 of the operator's API token
+    anon_secret: Optional[str] = None      # HMAC key for id pseudonymisation; never leaves the registry
 
 
 class OperatorRegistry:
@@ -146,6 +147,16 @@ class OperatorRegistry:
         return self.get_operator(operator_id)
 
     # ── API tokens (authentication) ──────────────────────────────────────
+
+    def anonymization_secret(self, operator_id: str) -> str:
+        """Per-operator HMAC key used to hash identifiers before storage.
+        Created on first use, kept only in the registry file (0600), never
+        written to the operator's database or returned by any endpoint."""
+        rec = self.get_operator(operator_id)
+        if not rec.anon_secret:
+            rec.anon_secret = secrets.token_hex(32)
+            self._update_record(rec)
+        return rec.anon_secret
 
     def issue_token(self, operator_id: str) -> str:
         """Generate a fresh API token for an operator, store only its hash,

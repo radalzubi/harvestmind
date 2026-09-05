@@ -1,22 +1,22 @@
 ........................................................................ [  5%]
-........................................................................ [ 11%]
-........................................................................ [ 16%]
-.................................................s...................... [ 22%]
-........................................................................ [ 27%]
-........................................................................ [ 33%]
-........................................................................ [ 38%]
-........................................................................ [ 44%]
-........................................................................ [ 49%]
-........................................................................ [ 55%]
-........................................................................ [ 60%]
-........................................................................ [ 66%]
-........................................................................ [ 71%]
-........................................................................ [ 77%]
-........................................................................ [ 82%]
-........................................................................ [ 88%]
-........................................................................ [ 94%]
-........................................................................ [ 99%]
-......                                                                   [100%]
+........................................................................ [ 10%]
+........................................................................ [ 15%]
+........................................................................ [ 21%]
+.......................s................................................ [ 26%]
+........................................................................ [ 31%]
+........................................................................ [ 37%]
+........................................................................ [ 42%]
+........................................................................ [ 47%]
+........................................................................ [ 53%]
+........................................................................ [ 58%]
+........................................................................ [ 63%]
+........................................................................ [ 69%]
+........................................................................ [ 74%]
+........................................................................ [ 79%]
+........................................................................ [ 85%]
+........................................................................ [ 90%]
+........................................................................ [ 95%]
+...........................................................              [100%]
 =============================== warnings summary ===============================
 api/main.py:95
 tests/integration/test_api_security.py::test_cors_default_is_localhost_only
@@ -54,17 +54,17 @@ api/routers/admin.py                                 24      0   100%
 api/routers/backtest.py                              39     13    67%
 api/routers/data.py                                  62      2    97%
 api/routers/diagnostics.py                           29      0   100%
-api/routers/fmcg.py                                 280     51    82%
+api/routers/fmcg.py                                 329     56    83%
 api/routers/forecasts.py                             21     11    48%
 api/routers/fsma.py                                  99      7    93%
-api/routers/intake.py                               304     37    88%
+api/routers/intake.py                               322     42    87%
 api/routers/planning.py                              89     56    37%
 api/routers/pool.py                                  31      2    94%
 api/routers/reports.py                               53     30    43%
 api/routers/training.py                              27     14    48%
 backtesting/__init__.py                               0      0   100%
 backtesting/benchmark_suite.py                      320     19    94%
-backtesting/counterfactual.py                       418    157    62%
+backtesting/counterfactual.py                       485    172    65%
 backtesting/incumbent.py                             65      1    98%
 backtesting/leakage_guard.py                         50      2    96%
 backtesting/policy_comparison.py                     49      0   100%
@@ -72,16 +72,18 @@ backtesting/procurement_metrics.py                   18     11    39%
 backtesting/regime.py                                69      3    96%
 backtesting/roi_calculator.py                       114      9    92%
 backtesting/rolling_origin_engine.py                218     18    92%
-backtesting/safe_selector.py                        191     21    89%
+backtesting/safe_selector.py                        207     24    88%
 backtesting/service_metrics.py                       35     35     0%
 backtesting/waste_metrics.py                         21     21     0%
 domain/__init__.py                                    4      0   100%
 domain/carrying_cost.py                              29      1    97%
 domain/economics.py                                  78      7    91%
-domain/model.py                                      75     11    85%
+domain/model.py                                      78     11    86%
 domain/money.py                                      61     10    84%
+domain/priors.py                                     67      8    88%
 domain/uom.py                                        97     12    88%
 ingestion/__init__.py                                 0      0   100%
+ingestion/anonymize.py                               57      2    96%
 ingestion/column_mapper.py                          135     18    87%
 ingestion/csv_ingestor.py                            55      1    98%
 ingestion/drought_monitor_fetcher.py                 40      7    82%
@@ -92,8 +94,8 @@ ingestion/llm_extractor.py                          204     32    84%
 ingestion/llm_mock_responder.py                     151     21    86%
 ingestion/llm_unstructured.py                        50      0   100%
 ingestion/nass_quickstats_fetcher.py                 57     57     0%
-ingestion/noaa_weather_fetcher.py                    42      0   100%
-ingestion/open_meteo_fetcher.py                      98     26    73%
+ingestion/noaa_weather_fetcher.py                    43      0   100%
+ingestion/open_meteo_fetcher.py                      99     26    74%
 ingestion/pilot_readiness.py                         65      9    86%
 ingestion/pipeline.py                                78     29    63%
 ingestion/usda_ams_connector.py                     127     13    90%
@@ -106,17 +108,17 @@ optimization/cvar_extension.py                       99      6    94%
 optimization/explain.py                              52      0   100%
 optimization/gamma_robust_lp.py                      58      2    97%
 optimization/lp_baseline.py                          94     12    87%
-optimization/multi_period_sp.py                     247      7    97%
+optimization/multi_period_sp.py                     288     10    97%
 optimization/naive_lastyear_policy.py                54      8    85%
 optimization/order_up_to_policy.py                   15      0   100%
 optimization/recourse_simulator.py                   50      0   100%
 optimization/saa_bounds.py                           86      6    93%
 optimization/safe_stochastic.py                      91     12    87%
 optimization/scenario_reduction.py                   49      1    98%
-optimization/solve_status.py                         82     14    83%
+optimization/solve_status.py                         86     15    83%
 optimization/two_stage_sp.py                        160     11    93%
 optimization/vss_evaluation.py                      140     21    85%
-optimization/vss_evpi.py                             80      6    92%
+optimization/vss_evpi.py                             81      6    93%
 risk/__init__.py                                      0      0   100%
 risk/calibration.py                                  38      1    97%
 risk/confidence.py                                   16      0   100%
@@ -135,13 +137,13 @@ synthetic/commercial/integrated_producer_sim.py      61     61     0%
 synthetic/commercial/jordan_distributor_sim.py       85     85     0%
 synthetic/commercial/jordan_distributor_v2.py       102     67    34%
 synthetic/fmcg/__init__.py                            0      0   100%
-synthetic/fmcg/distributor_sim.py                   152      1    99%
+synthetic/fmcg/distributor_sim.py                   172      3    98%
 synthetic/generate_pilot_dataset.py                  24     24     0%
 synthetic/generator.py                              213     11    95%
 synthetic/indiana_operator_sim.py                   166      3    98%
 synthetic/realistic_operator_sim.py                 204    204     0%
 synthetic/seasonality.py                             17      0   100%
 ---------------------------------------------------------------------
-TOTAL                                              8232   1514    82%
+TOTAL                                              8577   1558    82%
 Coverage JSON written to file artifacts/coverage.json
-1301 passed, 1 skipped, 4 warnings in 66.10s (0:01:06)
+1354 passed, 1 skipped, 4 warnings in 159.89s (0:02:39)

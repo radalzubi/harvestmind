@@ -89,6 +89,9 @@ class FoldInputs:
     signal_store: Any = None
     state_tracker: Any = None
     posture: Any = None
+    # supplier -> lead-time CV prior (PUBLIC_BENCHMARK/ASSUMED), used only
+    # when the supplier has no recorded receipt history to draw from
+    lead_cv_prior: dict = field(default_factory=dict)
 
     def history_periods_low(self, threshold: int = 52) -> bool:
         n = min(len(v) for v in self.train_demand.values()) if self.train_demand else 0
@@ -355,11 +358,22 @@ def _supply_scenarios(fi: FoldInputs, n_scen: int, rng, sups: list) -> tuple[dic
                                    default_lead=int(max(fi.lead_of.values())) if fi.lead_of else 2)
         return paths.fills, paths.leads, {"method": paths.method, "assumptions": paths.assumptions}
     leads, fills = {}, {}
+    prior = getattr(fi, "lead_cv_prior", None) or {}
     for w in range(n_scen):
         for s_ in sups:
             fills[(w, s_)] = float(rng.choice(fi.train_fill[s_])) if fi.train_fill.get(s_) else 1.0
-            leads[(w, s_)] = int(fi.lead_of[s_])
-    return fills, leads, {"method": "iid_fill_mean_lead", "assumptions": ["no per-period supply events"]}
+            cv = float(prior.get(s_, 0.0))
+            if cv > 0:
+                # No receipts to resample: draw the lead from a lognormal with
+                # the public prior's CV around the quoted mean (never below 1).
+                mu = float(fi.lead_of[s_])
+                sigma = (math.log(1.0 + cv * cv)) ** 0.5
+                leads[(w, s_)] = max(1, int(round(mu * math.exp(rng.normal(-0.5 * sigma * sigma, sigma)))))
+            else:
+                leads[(w, s_)] = int(fi.lead_of[s_])
+    method = "iid_fill_prior_lead" if prior else "iid_fill_mean_lead"
+    return fills, leads, {"method": method, "assumptions": ["no per-period supply events"]
+                          + ([f"lead-time CV from public prior for {sorted(prior)}"] if prior else [])}
 
 
 def _scenarios(fi: FoldInputs, n_scen: int, rng) -> tuple[pd.DataFrame, dict, dict]:

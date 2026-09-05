@@ -1,0 +1,117 @@
+group,commodity,primary_to_retail,retail_to_consumer,consumer
+fruit,Fresh oranges,0.03,0.11569651802974827,0.27
+fruit,Fresh tangerines,0.05,0.20437688512800264,0.26
+fruit,Fresh grapefruit,0.03,0.12836730422519543,0.5
+fruit,Fresh lemons,0.04,0.06963065155121988,0.47
+fruit,Fresh limes,0.05,0.08317462745050064,0.16
+fruit,Fresh apples,0.04,0.08619981232754516,0.1
+fruit,Fresh apricots,0.09,0.3505755274152872,0.07
+fruit,Fresh avocados,0.06,0.09323293125886757,0.26
+fruit,Fresh bananas,0.0,0.07966253243459345,0.36
+fruit,Fresh cantaloupe,0.08,0.12198975570771645,0.49
+fruit,Fresh cherries,0.08,0.038721252909784475,0.09
+fruit,Fresh cranberries,0.04,0.05971997107778945,0.02
+fruit,Fresh grapes,0.09,0.07584522135785493,0.04
+fruit,Fresh honeydew,0.08,0.22760924000355245,0.54
+fruit,Fresh mangoes,0.05,0.1446516558351099,0.31
+fruit,Fresh papaya,0.05,0.5489067905605425,0.33
+fruit,Fresh peaches,0.05,0.11910544877832084,0.07
+fruit,Fresh pears,0.05,0.17578948639861824,0.1
+fruit,Fresh pineapple,0.05,0.14629115889840036,0.49
+fruit,Fresh plums,0.05,0.17316554490124736,0.06
+fruit,Fresh strawberries,0.08,0.09753979637346216,0.06
+fruit,Fresh watermelon,0.1,0.16777334931261265,0.48
+fruit,Canned apples,0.19999999999999996,0.06,0.0
+fruit,Canned apricots,0.44000000000000006,0.06,0.0
+fruit,Canned sweet cherries,0.16317991631799167,0.06,0.0
+fruit,Canned tart cherries,0.049999999999999926,0.06,0.0
+fruit,Canned peaches,0.2,0.06,0.0
+fruit,Canned pears,0.0,0.06,0.0
+fruit,Canned pineapple,0.4148624926857812,0.06,0.0
+fruit,Canned plums,0.51,0.06,0.0
+fruit,Canned olives,0.06,0.06,0.0
+fruit,Frozen blackberries,0.029126213592232997,0.06,0.0
+fruit,Frozen blueberries,0.029126213592232997,0.06,0.0
+fruit,Frozen raspberries,0.04761904761904767,0.06,0.0
+fruit,Frozen strawberries,,0.06,0.0
+fruit,Frozen other berries,0.12280701754385959,0.06,0.0
+fruit,Frozen apples,0.4011976047904191,0.06,0.0
+fruit,Frozen apricots,0.09090909090909094,0.06,0.0
+fruit,Frozen sweet cherries,0.15254237288135586,0.06,0.0
+fruit,Frozen tart cherries,0.09909909909909921,0.06,0.0
+fruit,Frozen peaches,0.19999999999999996,0.06,0.0
+fruit,Frozen plums,0.15254237288135586,0.06,0.0
+fruit,Dried apples,0.875,0.06,0.0
+fruit,Dried apricots,0.8201438848920862,0.06,0.0
+fruit,Dried dates,0.06542056074766356,0.06,0.1
+fruit,Dried figs,0.6598639455782314,0.06,0.0
+fruit,Dried peaches,0.8337489609310057,0.06,0.0
+fruit,Dried pears,0.8415213946117274,0.06,0.0
+fruit,Dried plums,0.6153846153846154,0.06,0.0
+fruit,Raisins,0.7822508923519415,0.06,0.0
+fruit,Grapefruit juice,0.5579801006526505,0.06,0.0
+fruit,Lemon juice,0.6634615384615385,0.06,0.0
+fruit,Lime juice,0.6675,0.06,0.0
+fruit,Orange juice,0.5380508090141688,0.06,0.0
+fruit,Apple juice,0.26666666666666655,0.06,0.0
+fruit,Grape juice,0.19090909090909094,0.06,0.0
+fruit,Pineapple juice,0.4133333333333332,0.06,0.0
+fruit,Prune juice,0.27692307692307677,0.06,0.0
+vegetables,Fresh artichokes,0.07,0.193056118815094,0.6
+vegetables,Fresh asparagus,0.09,0.09410995471375738,0.47
+vegetables,Fresh bell peppers,0.08,0.07769541182047696,0.18
+vegetables,Fresh broccoli,0.08,0.11954226994973766,0.39
+vegetables,Fresh brussels sprouts,0.08,0.18756516925932998,0.1
+vegetables,Fresh cabbage,0.07,0.14075567949270273,0.2
+vegetables,Fresh carrots,0.03,0.051397840080096985,0.11
+vegetables,Fresh cauliflower,0.08,0.1400759012316408,0.61
+vegetables,Fresh celery,0.07,0.051030237747599114,0.11
+vegetables,Fresh sweet corn,0.08,0.6115433231566946,0.64
+vegetables,Fresh cucumbers,0.08,0.061301197779286234,0.27
+vegetables,Fresh eggplant,0.1,0.2132762029927196,0.19
+vegetables,Fresh escarole,0.1,0.4768317656579837,0.14
+vegetables,Fresh garlic,0.19,0.07422584415243681,0.13
+vegetables,Fresh head lettuce,0.07,0.08726204145169379,0.16
+vegetables,Fresh mushrooms,0.06,0.12699579279497386,0.03
+vegetables,Fresh okra,0.12,0.2441804409121493,0.14
+vegetables,Fresh onions,0.06,0.09756780966636171,0.1
+vegetables,Fresh potatoes,0.04,0.06499191301422509,0.1
+vegetables,Fresh radishes,0.03,0.21021318277658899,0.1
+vegetables,Fresh snap beans,0.06,0.18562325077739558,0.12
+vegetables,Fresh spinach,0.12,0.1439399100517041,0.28
+vegetables,Fresh squash,0.1,0.12469713580038543,0.17
+vegetables,Fresh sweet potatoes,0.1,0.14180436723052242,0.28
+vegetables,Fresh tomatoes,0.15,0.13182088658999208,0.09
+vegetables,Canned asparagus,0.18,0.06,0.0
+vegetables,Canned snap beans,0.4,0.06,0.0
+vegetables,Canned cabbage,0.56,0.06,0.0
+vegetables,Canned carrots,0.25,0.06,0.0
+vegetables,Canned sweet corn,0.27,0.06,0.0
+vegetables,Canned cucumbers,0.6,0.06,0.0
+vegetables,Canned green peas,0.34,0.06,0.0
+vegetables,Canned mushrooms,0.35,0.06,0.0
+vegetables,Canned potatoes,0.29,0.06,0.0
+vegetables,Canned tomatoes,0.59,0.06,0.0
+vegetables,Other canned vegetables,0.24,0.06,0.0
+vegetables,Frozen asparagus,0.47917000000000004,0.06,0.0
+vegetables,Frozen snap beans,0.15254,0.06,0.0
+vegetables,Frozen broccoli,0.24812,0.06,0.0
+vegetables,Frozen carrots,0.45055,0.06,0.0
+vegetables,Frozen cauliflower,0.30067,0.06,0.0
+vegetables,Frozen sweet corn,0.72973,0.06,0.0
+vegetables,Frozen green peas,0.08256999999999999,0.06,0.0
+vegetables,Frozen lima beans,0.04761904761904773,0.06,0.0
+vegetables,Frozen potatoes,0.55,0.06,0.0
+vegetables,Frozen spinach,0.3007,0.06,0.0
+vegetables,Misc frozen vegetables,0.333333,0.06,0.0
+vegetables,Dehydrated onions,0.89,0.06,0.0
+vegetables,Dehydrated potatoes,0.86,0.06,0.0
+vegetables,Potato chips,0.75,0.06,0.0
+vegetables,Dry peas and lentils,0.0,0.06,0.0
+vegetables,Dry black beans,0.0,0.06,0.0
+vegetables,Dry great northern beans,0.0,0.06,0.0
+vegetables,Dry lima beans,0.0,0.06,0.0
+vegetables,Dry navy beans,0.0,0.06,0.0
+vegetables,Dry pinto beans,0.0,0.06,0.0
+vegetables,Dry red kidney beans,0.0,0.06,0.0
+vegetables,Other dry beans,0.0,0.06,0.0

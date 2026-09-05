@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-09-03T21:21:05Z",
+  "generated_at": "2026-09-04T23:59:41Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 17,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 17,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 18435,
+      "loc": 18940,
       "nosec": 0,
       "skipped_tests": 26
     },
@@ -154,7 +154,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 427,
+      "loc": 512,
       "nosec": 0,
       "skipped_tests": 1
     },
@@ -193,7 +193,7 @@
       "SEVERITY.LOW": 3,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 588,
+      "loc": 617,
       "nosec": 0,
       "skipped_tests": 2
     },
@@ -284,7 +284,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 557,
+      "loc": 648,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -388,7 +388,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 276,
+      "loc": 308,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -466,7 +466,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 120,
+      "loc": 129,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -480,6 +480,19 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 75,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "domain/priors.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 103,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -778,7 +791,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 168,
+      "loc": 178,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -805,6 +818,19 @@
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
       "loc": 0,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "ingestion/anonymize.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 87,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -947,7 +973,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 93,
+      "loc": 94,
       "nosec": 0,
       "skipped_tests": 1
     },
@@ -960,7 +986,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 203,
+      "loc": 204,
       "nosec": 0,
       "skipped_tests": 2
     },
@@ -1129,7 +1155,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 368,
+      "loc": 420,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1220,7 +1246,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 118,
+      "loc": 122,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -1259,7 +1285,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 121,
+      "loc": 122,
       "nosec": 0,
       "skipped_tests": 0
     },

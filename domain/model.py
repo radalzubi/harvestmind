@@ -121,11 +121,21 @@ class DomainPolicy:
 
 def agriculture_policy(cost_config: CostConfig | None = None,
                        service_level: float = 0.95,
-                       decay_rate_per_period: float = 0.05,
-                       base_unit: Unit = Unit.KG) -> DomainPolicy:
-    """Perishable produce: continuous kilograms, decaying stock, yield risk."""
+                       decay_rate_per_period: float | None = None,
+                       base_unit: Unit = Unit.KG,
+                       commodity: str | None = None,
+                       category: str | None = None) -> DomainPolicy:
+    """Perishable produce: continuous kilograms, decaying stock, yield risk.
+
+    ``decay_rate_per_period`` measured by the operator wins. Otherwise the
+    rate comes from ``domain.priors.decay_rate_prior`` (USDA ERS loss share
+    for the commodity when cached, else a category table), labelled so.
+    """
     cc = cost_config or CostConfig(currency="USD", emergency_cost_multiplier=1.30,
                                    emergency_capacity_factor=0.30)
+    if decay_rate_per_period is None:
+        from domain.priors import decay_rate_prior
+        decay_rate_per_period = decay_rate_prior(commodity, category).value
     return DomainPolicy(
         domain=Domain.AGRICULTURE_PERISHABLE, base_unit=base_unit,
         cost_config=cc,
