@@ -1,35 +1,38 @@
-# Fly.io definition for the Zaad Supply API. The web app deploys separately
-# (Vercel) and points NEXT_PUBLIC_API_URL at this app's URL.
-app = "zaad-api"
-primary_region = "fra"
+# fly.toml app configuration file generated for zaad-api on 2026-09-05T14:42:07-04:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'zaad-api'
+primary_region = 'fra'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [env]
-  HARVESTMIND_ENV = "pilot"
-  HARVESTMIND_BIND_HOST = "0.0.0.0"
-  HARVESTMIND_DATA_ROOT = "/var/lib/harvestmind"
-  DUCKDB_PATH = "/var/lib/harvestmind/root.duckdb"
-  HARVESTMIND_SOLVER_THREADS = "2"
+  DUCKDB_PATH = '/var/lib/harvestmind/root.duckdb'
+  HARVESTMIND_BIND_HOST = '0.0.0.0'
+  HARVESTMIND_DATA_ROOT = '/var/lib/harvestmind'
+  HARVESTMIND_ENV = 'pilot'
+  HARVESTMIND_SOLVER_THREADS = '2'
 
 [[mounts]]
-  source = "harvestmind_data"
-  destination = "/var/lib/harvestmind"
+  source = 'harvestmind_data'
+  destination = '/var/lib/harvestmind'
 
 [http_service]
   internal_port = 8000
   force_https = true
-  auto_stop_machines = false
+  auto_stop_machines = 'off'
   auto_start_machines = true
   min_machines_running = 1
 
-[[http_service.checks]]
-  interval = "30s"
-  timeout = "5s"
-  method = "GET"
-  path = "/health"
+  [[http_service.checks]]
+    interval = '30s'
+    timeout = '5s'
+    method = 'GET'
+    path = '/health'
 
 [[vm]]
-  size = "shared-cpu-2x"
-  memory = "2gb"
+  size = 'shared-cpu-2x'
+  memory = '2gb'
