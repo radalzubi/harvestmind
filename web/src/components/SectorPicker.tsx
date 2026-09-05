@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch, setApiToken } from "@/lib/api";
 
@@ -31,6 +32,10 @@ export function SectorPicker() {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selfServe, setSelfServe] = useState<boolean | null>(null);
+  useEffect(() => {
+    apiFetch<{ self_serve: boolean }>("/access/config").then((c) => setSelfServe(c.self_serve)).catch(() => setSelfServe(true));
+  }, []);
 
   const start = async (sector: "commercial" | "produce") => {
     setBusy(sector); setError(null);
@@ -45,6 +50,15 @@ export function SectorPicker() {
     }
   };
 
+  if (selfServe === false) {
+    return (
+      <section className="land-pick">
+        <h2>Enter your workspace key</h2>
+        <p className="land-who" style={{ marginBottom: 12 }}>Workspaces are opened by HarvestMind and the key is handed to you directly. Have one?</p>
+        <Link className="land-cta" href="/access">Enter key</Link>
+      </section>
+    );
+  }
   return (
     <section className="land-pick">
       <h2>Pick your sector and start</h2>

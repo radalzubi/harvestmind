@@ -79,3 +79,17 @@ def test_self_serve_start_creates_isolated_workspace(registry):
     assert cl.get("/me", headers={"Authorization": f"Bearer {ta}"}).json()["sector"] == "produce"
     assert cl.get("/me", headers={"Authorization": f"Bearer {tb}"}).json()["name"].startswith("Workspace")
     assert cl.post("/access/start", json={"sector": "banking"}).status_code == 422
+
+
+def test_key_only_mode(registry, monkeypatch):
+    monkeypatch.setenv("HARVESTMIND_SELF_SERVE", "false")
+    cl = TestClient(api_main.app)
+    assert cl.get("/access/config").json()["self_serve"] is False
+    assert cl.post("/access/start", json={"sector": "commercial"}).status_code == 404
+    h = {"X-Admin-Key": "test-admin-key-not-a-secret"}
+    w = cl.post("/admin/workspaces", json={"name": "NTDCO", "sector": "commercial", "region": "Jordan"}, headers=h)
+    assert w.status_code == 200, w.text
+    tok = w.json()["token"]
+    assert cl.get("/me", headers={"Authorization": f"Bearer {tok}"}).json()["name"] == "NTDCO"
+    listing = cl.get("/admin/workspaces", headers=h).json()
+    assert [x["name"] for x in listing] == ["NTDCO"] and "token" not in listing[0]

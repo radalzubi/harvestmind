@@ -235,7 +235,7 @@ class StartRequest(BaseModel):
 def self_serve_start(req: StartRequest):
     if req.sector not in SECTORS:
         raise HTTPException(422, f"sector must be one of {SECTORS}")
-    if os.getenv("HARVESTMIND_SELF_SERVE", "true").strip().lower() in ("0", "false", "no"):
+    if not _self_serve():
         raise HTTPException(404, "self-serve workspaces are disabled")
     registry = OperatorRegistry()
     name = (req.company.strip() or f"Workspace {secrets.token_hex(2)}")[:120]
@@ -243,3 +243,46 @@ def self_serve_start(req: StartRequest):
     token = registry.issue_token(rec.operator_id)
     return {"operator_id": rec.operator_id, "sector": req.sector, "name": rec.name, "token": token,
             "note": "This token is your only key to this workspace. It is shown once. Keep it."}
+
+
+# ── Key-only mode ───────────────────────────────────────────────────────────
+# With HARVESTMIND_SELF_SERVE=false the landing page offers only "enter your
+# key". Workspaces are then created by the admin and the key is handed to
+# the customer out of band (in person, WhatsApp, email).
+
+def _self_serve() -> bool:
+    return os.getenv("HARVESTMIND_SELF_SERVE", "true").strip().lower() not in ("0", "false", "no")
+
+
+@router.get("/access/config")
+def access_config():
+    return {"self_serve": _self_serve(), "sectors": list(SECTORS)}
+
+
+class CreateWorkspace(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    sector: str
+    region: str = Field(default="unspecified", max_length=60)
+
+
+@router.post("/admin/workspaces", dependencies=[Depends(require_admin)])
+def admin_create_workspace(req: CreateWorkspace):
+    """Create a workspace and return its key ONCE. The key is stored only as
+    a hash; hand it to the customer yourself."""
+    if req.sector not in SECTORS:
+        raise HTTPException(422, f"sector must be one of {SECTORS}")
+    registry = OperatorRegistry()
+    rec = registry.create_operator(req.name, region=req.region, sector=req.sector)
+    token = registry.issue_token(rec.operator_id)
+    return {"operator_id": rec.operator_id, "name": rec.name, "sector": req.sector, "token": token,
+            "access_link": f"{_app_url()}/access?token={token}",
+            "note": "shown once; the customer enters the key on /access or opens the link"}
+
+
+@router.get("/admin/workspaces", dependencies=[Depends(require_admin)])
+def admin_list_workspaces():
+    """Metadata only: never rows."""
+    registry = OperatorRegistry()
+    return [{"operator_id": r.operator_id, "name": r.name, "sector": getattr(r, "sector", "produce"),
+             "region": r.region, "created_at": r.created_at, "upload_count": r.upload_count,
+             "last_upload": r.last_upload} for r in registry.list_operators()]
