@@ -543,8 +543,10 @@ async def extract_files(
             _reject_if_too_large(content, f.filename)
             if registry is not None:
                 from infrastructure.vault_storage import store_raw_upload
+                # Nothing loads until the mapping is confirmed, so re-sending
+                # the same file is a re-read, not a double load.
                 store_raw_upload(registry, operator_id or "",
-                                 f.filename or "upload.bin", content)
+                                 f.filename or "upload.bin", content, allow_duplicate=True)
             suffix = _P(f.filename or "upload.csv").suffix or ".csv"
             with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
                 tmp.write(content)
