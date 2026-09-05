@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import api.main as api_main
-import api.routers.intake as intake_router
+
 import ingestion.extraction_sessions as sessions
 from infrastructure.operator_registry import OperatorRegistry
 from infrastructure.vault_storage import store_raw_upload
