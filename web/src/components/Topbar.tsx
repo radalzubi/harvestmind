@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
+import { AssistantButton } from "@/components/Assistant";
 
 const TITLES: Record<string, string> = {
   "/start": "Start",
@@ -34,6 +35,7 @@ export function Topbar() {
     <header className="topbar">
       <div className="topbar-title">{title}</div>
       <div className="topbar-spacer" />
+      <AssistantButton />
 
       <div style={{ position: "relative" }}>
         <button

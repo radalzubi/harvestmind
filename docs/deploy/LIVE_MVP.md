@@ -60,6 +60,10 @@ Each diagnostic runs on its own Fly machine, created by the API through the Mach
 
 Secrets: `FLY_API_TOKEN` (a deploy token for the app, `fly tokens create deploy -a zaad-api`) and `HARVESTMIND_WORKER_TOKEN` (random). Sizing in `fly.toml` env: `HARVESTMIND_WORKER_CPUS`, `HARVESTMIND_WORKER_MEMORY_MB`, `HARVESTMIND_WORKER_CPU_KIND`; `HARVESTMIND_GATE_WORKERS` is the number of processes the gate uses to solve a fold's candidates in parallel (one HiGHS thread each), and `HARVESTMIND_GATE_SCENARIOS` the scenario count per fold. `HARVESTMIND_WORKER_MACHINES=false` (or a missing token) falls back to the in-process thread. A machine job that reports nothing for `HARVESTMIND_JOB_STALE_S` (default 1800) is marked failed and its machine destroyed. `fly machines list -a zaad-api` shows any worker still alive; they are named `worker-<job>`.
 
+### Assistant and plain language
+
+`/fmcg/state` carries a `plain` block (`adaptive/plain_language.py`): every number on the State page rewritten as a sentence, deterministic, no model. The workspace's Explain button (top right) opens the assistant: `GET /assistant/summary` and `POST /assistant/ask` (`api/routers/assistant.py`). The assistant sees only what the engine computed for that workspace (state, latest diagnostic verdict, table counts) and is instructed to use those figures only and never to promise savings. With `ANTHROPIC_API_KEY` set it uses Claude (`HARVESTMIND_ASSISTANT_MODEL`, default `claude-opus-5`); without it, it returns the deterministic reading and says so. Set the key with `fly secrets set ANTHROPIC_API_KEY=... -a zaad-api`; the same key also switches on the smart-upload model when `USE_REAL_LLM=true`.
+
 ## 3. Operating it
 
 - **Approve a request**: `GET /admin/access-requests` then `POST /admin/access-requests/{id}/approve` with header `X-Admin-Key`. The requester gets the link by email, or you send it.

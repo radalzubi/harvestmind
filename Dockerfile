@@ -9,7 +9,7 @@ WORKDIR /app
 COPY pyproject.toml ./
 COPY . ./
 RUN pip install --no-cache-dir --upgrade "pip>=26.2" "setuptools>=83" \
-    && pip install --no-cache-dir .
+    && pip install --no-cache-dir ".[llm]"
 
 RUN useradd --create-home --uid 10001 harvestmind \
     && mkdir -p /var/lib/harvestmind \

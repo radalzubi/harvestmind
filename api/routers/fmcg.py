@@ -27,6 +27,7 @@ from backtesting.counterfactual import (
 )
 from backtesting.incumbent import configured_incumbent, infer_incumbent
 from backtesting.regime import diagnose, summarize as regime_summary
+from adaptive.plain_language import explain_state
 from backtesting.safe_selector import INCUMBENT, SafeSelectionConfig, run_candidate, safe_select
 from adaptive.controller import explain_posture
 from adaptive.engine import estimate, in_recovery_by_route, p_disruptive_by_route
@@ -395,10 +396,12 @@ def state(
     fi, report = build_inputs(conn, horizon=horizon_weeks, train_weeks=train_weeks, service_level=0.97,
                               holding_rate_per_week=None, currency="USD", incumbent_cover_weeks=None)
     est, src = _state_for(fi)
-    return {**est.as_dict(), "signal_sources": src, "economics_provenance": report["provenance"],
-            "mode": est.posture.mode,
-            "replan_triggers": _replan_triggers(est),
-            "classification": "state estimate from operator history and public logistics signals; not a forecast"}
+    out = {**est.as_dict(), "signal_sources": src, "economics_provenance": report["provenance"],
+           "mode": est.posture.mode,
+           "replan_triggers": _replan_triggers(est),
+           "classification": "state estimate from operator history and public logistics signals; not a forecast"}
+    out["plain"] = explain_state(out)
+    return out
 
 
 
