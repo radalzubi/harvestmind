@@ -5,7 +5,7 @@ import { Upload, CheckCircle, XCircle, AlertTriangle, Database } from "lucide-re
 import { Card, CardBody, CardHead, PageHeader, Badge, Tbtn } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 import { useRouter } from "next/navigation";
-import { uploadCSV, clearStagingTable, getIntakeStatus, loadSampleData, extractFiles, getSector, getMe, setSector, type UploadResult, type IntakeStatus, type SampleLoadResult } from "@/lib/api";
+import { apiFetch, uploadCSV, clearStagingTable, getIntakeStatus, loadSampleData, extractFiles, getSector, getMe, setSector, type UploadResult, type IntakeStatus, type SampleLoadResult } from "@/lib/api";
 import { useEffect } from "react";
 
 type TableSpec = { table: string; label: string; description: string; required: string[] };
@@ -183,6 +183,23 @@ export default function UploadPage() {
           )}
         </CardBody>
       </Card>
+
+      {sector === "commercial" && (
+        <Card style={{ marginBottom: 20 }}>
+          <CardHead title="Try it with a synthetic distributor" sub="A made-up commercial-goods distributor: mixed lanes, promotions, one constrained supplier. Clearly labelled synthetic; replaces any FMCG data in this workspace." />
+          <CardBody>
+            <Tbtn variant="primary" icon={<Database size={13} strokeWidth={1.6} />} pending={sampleLoading} onClick={async () => {
+              setSampleLoading(true); setSampleError(null);
+              try {
+                const r = await apiFetch<{ total_rows: number; tables: Record<string, number> }>("/intake/load-sample-fmcg", { method: "POST" });
+                toast.push(`Synthetic sample loaded: ${r.total_rows.toLocaleString()} rows`);
+                refreshStatus();
+              } catch (e) { setSampleError(e instanceof Error ? e.message : "failed"); } finally { setSampleLoading(false); }
+            }}>{sampleLoading ? "Loading…" : "Load synthetic sample"}</Tbtn>
+            {sampleError && <span style={{ marginLeft: 12, color: "var(--bad)" }}>{sampleError}</span>}
+          </CardBody>
+        </Card>
+      )}
 
       {/* Quick-start: one-click sample loader (produce sample set) */}
       {sector === "produce" && <Card style={{ marginBottom: 20 }}>

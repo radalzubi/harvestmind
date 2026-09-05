@@ -186,32 +186,8 @@ def create_demo_operator(sector: str = "commercial", seed: int = 7):
     loaded: dict = {}
     try:
         if sector == "commercial":
-            import pandas as pd
-
-            from synthetic.fmcg.distributor_sim import build_history
-            h = build_history("E_mixed_portfolio", seed=seed)
-            po = h.purchase_orders.copy()
-            rec_df = h.receipts.copy()
-            skus = h.skus[["sku", "supplier_id", "unit_cost", "unit_price", "units_per_case", "moq_units", "category"]]
-            orders = h.order_lines.merge(h.customer_orders[["order_id", "customer_id", "order_date"]], on="order_id")
-            orders = orders[["order_id", "customer_id", "order_date", "sku", "qty_ordered"]]
-            inv = h.inventory_snapshots.rename(columns={"week_start": "snapshot_date"})[["snapshot_date", "sku", "on_hand", "in_transit"]]
-            sup = h.suppliers[["supplier_id"]].copy()
-            sup["route"] = ["aqaba" if i % 2 == 0 else "road_saudi" for i in range(len(sup))]
-            sup["origin_iso3"] = ["DEU" if i % 2 == 0 else "SAU" for i in range(len(sup))]
-            for table, df in (("stg_fmcg_skus", skus), ("stg_fmcg_orders", orders),
-                              ("stg_fmcg_purchase_orders", po[["po_id", "po_date", "supplier_id", "sku", "qty_ordered", "unit_cost"]]),
-                              ("stg_fmcg_receipts", rec_df[["po_id", "receipt_date", "sku", "qty_received"]]),
-                              ("stg_fmcg_inventory", inv), ("stg_fmcg_suppliers", sup)):
-                frame = df.copy()
-                for c in frame.columns:
-                    if "date" in c:
-                        frame[c] = pd.to_datetime(frame[c]).dt.date
-                conn.register("_demo_df", frame)
-                cols = ", ".join(frame.columns)
-                conn.execute(f"INSERT INTO {table} ({cols}) SELECT {cols} FROM _demo_df")  # nosec B608 - table allowlisted above
-                conn.unregister("_demo_df")
-                loaded[table] = int(len(frame))
+            from api.routers.intake import load_fmcg_sample_into
+            loaded = load_fmcg_sample_into(conn, seed=seed)["tables"]
         else:
             from api.routers.intake import load_sample_data
             loaded = load_sample_data(conn=conn)

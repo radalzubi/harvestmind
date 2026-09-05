@@ -112,3 +112,18 @@ def test_short_key_opens_seeded_workspace_and_greets_the_company(registry, monke
     import json as _json
     raw = _json.dumps(_json.loads((registry.registry_dir / "operators.json").read_text()))
     assert "839285" not in raw
+
+
+def test_commercial_sample_loads_into_the_workspace(registry):
+    cl = TestClient(api_main.app)
+    tok = cl.post("/access/start", json={"sector": "commercial", "company": "Sample Co"}).json()["token"]
+    h = {"Authorization": f"Bearer {tok}"}
+    r = cl.post("/intake/load-sample-fmcg", headers=h)
+    assert r.status_code == 200, r.text
+    assert r.json()["classification"] == "SYNTHETIC CALIBRATED" and r.json()["tables"]["stg_fmcg_purchase_orders"] > 100
+    st = cl.get("/fmcg/status", headers=h).json()
+    assert st["ready_to_plan"] is True
+    # another workspace sees nothing of it
+    tok2 = cl.post("/access/start", json={"sector": "commercial"}).json()["token"]
+    st2 = cl.get("/fmcg/status", headers={"Authorization": f"Bearer {tok2}"}).json()
+    assert all(v == 0 for v in st2["tables"].values())
