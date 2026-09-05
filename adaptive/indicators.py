@@ -23,6 +23,7 @@ actually carry against the port throughput they are supposed to anticipate.
 
 from __future__ import annotations
 
+import bisect
 import csv
 import json
 import statistics as st
@@ -76,12 +77,21 @@ def _series(name: str) -> list[tuple[datetime, float]]:
 
 
 def _trailing_index(xs: list, window_days: int, recent_days: int) -> list[tuple[datetime, float]]:
-    """value = mean(last recent_days) / median(prior window_days), per date."""
+    """value = mean(last recent_days) / median(prior window_days), per date.
+    ``xs`` is sorted; the two windows slide with bisect so a long daily
+    series costs O(n log n) rather than a rescan of the past per date."""
+    if not xs:
+        return []
+    dates = [d for d, _ in xs]
+    vals = [v for _, v in xs]
+    min_prior = max(10, window_days // 30)
     out = []
-    for k, (d, _v) in enumerate(xs):
-        recent = [v for dd, v in xs[:k + 1] if dd > d - timedelta(days=recent_days)]
-        prior = [v for dd, v in xs[:k + 1] if d - timedelta(days=window_days + recent_days) < dd <= d - timedelta(days=recent_days)]
-        if len(prior) >= max(10, window_days // 30) and recent:
+    for k, d in enumerate(dates):
+        r0 = bisect.bisect_right(dates, d - timedelta(days=recent_days), 0, k + 1)     # first dd > d - recent
+        p0 = bisect.bisect_right(dates, d - timedelta(days=window_days + recent_days), 0, k + 1)
+        recent = vals[r0:k + 1]
+        prior = vals[p0:r0]
+        if len(prior) >= min_prior and recent:
             med = st.median(prior)
             if med > 0:
                 out.append((d, st.mean(recent) / med))
@@ -89,9 +99,14 @@ def _trailing_index(xs: list, window_days: int, recent_days: int) -> list[tuple[
 
 
 def _z(xs: list, window_days: int) -> list[tuple[datetime, float]]:
+    if not xs:
+        return []
+    dates = [d for d, _ in xs]
+    vals = [v for _, v in xs]
     out = []
     for k, (d, v) in enumerate(xs):
-        prior = [vv for dd, vv in xs[:k] if dd > d - timedelta(days=window_days)]
+        p0 = bisect.bisect_right(dates, d - timedelta(days=window_days), 0, k)
+        prior = vals[p0:k]
         if len(prior) >= 12:
             sd = st.pstdev(prior) or 1e-9
             out.append((d, (v - st.mean(prior)) / sd))

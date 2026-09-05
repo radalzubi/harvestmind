@@ -329,16 +329,39 @@ PORTWATCH_CSV = Path(__file__).resolve().parents[2] / "data" / "external" / "por
 PORT_OF_ROUTE = {"aqaba": "AQABA", "red_sea": "AQABA", "sea": "AQABA", "haifa": "HAIFA"}
 
 
+_SIGNAL_CACHE: dict = {}
+
+
+def _indicator_signature() -> tuple:
+    """mtimes of every indicator file; the store is rebuilt only when one changes."""
+    from adaptive.indicators import IND, PORTWATCH
+    sig = []
+    for root in (PORTWATCH, IND):
+        try:
+            sig.extend(sorted((p.name, p.stat().st_mtime_ns) for p in Path(root).glob("*.csv")))
+        except OSError:
+            continue
+    return tuple(sig)
+
+
 def _signal_store() -> tuple[SignalStore, dict]:
     """Logistics evidence available to the planner: IMF PortWatch monthly
     throughput (REAL PUBLIC) for the ports the operator's routes touch.
     A missing file yields an EMPTY store, which the estimator reads as
-    evidence UNAVAILABLE, never as normal conditions."""
+    evidence UNAVAILABLE, never as normal conditions. The store is public
+    data shared by every workspace, so it is built once per process and
+    reused until an indicator file changes."""
+    sig = _indicator_signature()
+    hit = _SIGNAL_CACHE.get("store")
+    if hit and hit[0] == sig:
+        return hit[1], dict(hit[2])
     store = SignalStore(max_age_days=75.0)          # monthly series: two missed months = stale
     n = load_portwatch_signals(store, PORTWATCH_CSV, ports=("Aqaba",))
     counts = load_all_indicators(store)             # chokepoints, GSCPI, freight, fuel, news, demand
-    return store, {"portwatch_rows": n, "path": str(PORTWATCH_CSV.name), "provenance": "REAL_PUBLIC" if n else None,
-                   "indicators": counts, "indicator_cache": "data/external/indicators (scripts/fetch_indicators.py)"}
+    src = {"portwatch_rows": n, "path": str(PORTWATCH_CSV.name), "provenance": "REAL_PUBLIC" if n else None,
+           "indicators": counts, "indicator_cache": "data/external/indicators (scripts/fetch_indicators.py)"}
+    _SIGNAL_CACHE["store"] = (sig, store, src)
+    return store, dict(src)
 
 
 def _state_for(fi, evidence_strength: float = 0.0):
