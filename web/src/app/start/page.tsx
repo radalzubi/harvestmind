@@ -5,10 +5,9 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Circle, Download, Loader2, Play } from "lucide-react";
 import { Card, CardBody, CardHead, InfoBanner, PageHeader, Tbtn } from "@/components/ui";
-import { apiFetch, downloadReport, getApiToken, getJob, getMe, setSector, startDiagnostic, type Job, type Me } from "@/lib/api";
+import { apiFetch, downloadReport, getApiToken, getJob, getMe, setSector, startDiagnostic, type IntakeStatus, type Job, type Me } from "@/lib/api";
 import { useToast } from "@/components/Toast";
 
-type IntakeStatus = { tables: Record<string, number>; ready_to_plan?: boolean; families?: Record<string, unknown> };
 
 const FILES: Record<Me["sector"], Array<{ table: string; label: string }>> = {
   commercial: [
@@ -84,9 +83,10 @@ function StartInner() {
   if (!me) return <div className="page">Loading…</div>;
 
   const files = FILES[me.sector] ?? FILES.commercial;
-  const counts = status?.tables ?? {};
-  const uploaded = files.filter((f) => (counts[f.table] ?? 0) > 0).length;
-  const requiredDone = files.filter((f) => !f.label.includes("optional")).every((f) => (counts[f.table] ?? 0) > 0);
+  const tables = status?.tables ?? {};
+  const rows = (t: string) => tables[t]?.row_count ?? 0;
+  const uploaded = files.filter((f) => rows(f.table) > 0).length;
+  const requiredDone = files.filter((f) => !f.label.includes("optional")).every((f) => rows(f.table) > 0);
   const uploadHref = "/upload";
   const running = job && (job.status === "queued" || job.status === "running");
   const summary = (job?.summary ?? null) as Record<string, unknown> | null;
@@ -114,7 +114,7 @@ function StartInner() {
         <CardBody>
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
             {files.map((f) => {
-              const n = counts[f.table] ?? 0;
+              const n = rows(f.table);
               return (
                 <li key={f.table} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   {n > 0 ? <CheckCircle size={16} color="var(--good)" /> : <Circle size={16} color="var(--ink-300)" />}
