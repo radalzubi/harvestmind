@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, authHeaders } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 type Money = { amount: string; currency: string };
 type Order = {
@@ -15,34 +15,19 @@ type Plan = {
 };
 type Status = { tables: Record<string, number>; ready_to_plan: boolean; minimum_history_weeks: number };
 
-const TABLES = ["stg_fmcg_skus", "stg_fmcg_orders", "stg_fmcg_purchase_orders",
-  "stg_fmcg_receipts", "stg_fmcg_inventory", "stg_fmcg_promotions"];
-
 export default function FmcgPage() {
   const [status, setStatus] = useState<Status | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [mode, setMode] = useState("selected");
+  const [mode, setMode] = useState("safe");
   const [horizon, setHorizon] = useState(12);
   const [service, setService] = useState(0.97);
-  const [table, setTable] = useState(TABLES[0]);
   const [open, setOpen] = useState<number | null>(null);
 
   const refresh = () => apiFetch<Status>("/fmcg/status").then(setStatus).catch((e) =>
     setError(e instanceof Error ? e.message : "status failed"));
   useEffect(() => { refresh(); }, []);
-
-  async function upload(file: File) {
-    setError(null);
-    const fd = new FormData();
-    fd.append("file", file);
-    const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
-    const res = await fetch(`${base}/intake/upload/${table}`, { method: "POST", body: fd, headers: authHeaders() });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok || !body.rows_inserted) setError((body.errors ?? [`HTTP ${res.status}`]).join("; "));
-    refresh();
-  }
 
   async function build() {
     setBusy(true); setError(null); setPlan(null);
@@ -58,33 +43,26 @@ export default function FmcgPage() {
 
   return (
     <main className="p-6 space-y-6 max-w-6xl">
-      <h1 className="text-2xl font-semibold">FMCG purchase plan</h1>
+      <h1 className="text-2xl font-semibold">Purchase plan</h1>
       <p className="text-sm opacity-80">Whole cases and pallets, MOQ, fill and lead-time risk. A recommendation on
         your uploaded history, in eaches — not a realised saving.</p>
 
-      <section className="rounded border p-4 space-y-3">
-        <h2 className="font-medium">1. Upload exports</h2>
-        <div className="flex gap-3 items-center flex-wrap">
-          <select className="border rounded px-2 py-1" value={table} onChange={(e) => setTable(e.target.value)}>
-            {TABLES.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
-          <input type="file" accept=".csv" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-        </div>
+      <section className="rounded border p-4 space-y-2">
+        <h2 className="font-medium">1. Your data</h2>
         {status && (
-          <table className="text-sm"><tbody>
-            {Object.entries(status.tables).map(([t, n]) => (
-              <tr key={t}><td className="pr-4 font-mono">{t}</td><td>{n.toLocaleString()} rows</td></tr>
-            ))}
-          </tbody></table>
+          <p className="text-sm">{Object.values(status.tables).reduce((a, b) => a + b, 0).toLocaleString()} rows loaded across {Object.values(status.tables).filter((n) => n > 0).length} files.
+            {" "}<a className="underline" href="/upload">Upload or replace files</a>.</p>
         )}
+        {status && !status.ready_to_plan && <p className="text-sm text-amber-700">Upload the required files first (at least {status.minimum_history_weeks} weeks of history).</p>}
       </section>
 
       <section className="rounded border p-4 space-y-3">
         <h2 className="font-medium">2. Plan</h2>
+        <p className="text-xs opacity-70">Safe: keeps your current policy unless a candidate is evidenced on your own history. Adaptive: the state-conditioned optimizer, ungated. The others are single policies for comparison.</p>
         <div className="flex gap-4 flex-wrap items-end">
           <label className="text-sm">Mode
             <select className="block border rounded px-2 py-1" value={mode} onChange={(e) => setMode(e.target.value)}>
-              {["selected", "stochastic", "deterministic", "order_up_to"].map((m) => <option key={m}>{m}</option>)}
+              {["safe", "adaptive", "stochastic", "deterministic", "order_up_to", "incumbent"].map((m) => <option key={m}>{m}</option>)}
             </select></label>
           <label className="text-sm">Horizon (weeks)
             <input className="block border rounded px-2 py-1 w-24" type="number" min={4} max={26} value={horizon}

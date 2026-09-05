@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
 import { Topbar } from "@/components/Topbar";
 
-const PUBLIC = ["/", "/request-access", "/produce", "/commercial"];
+const PUBLIC = ["/"];
 
 /** Public pages render bare; everything else gets the workspace shell. */
 export function Shell({ children }: { children: React.ReactNode }) {

@@ -12,6 +12,10 @@
 4. **Audit trail.** `optimization/audit_trail.py` records input *hashes*, configuration and results, never raw rows. Run sidecars under `data/runs/` are git-ignored.
 5. **Pooling.** Cross-operator pooling (`api/routers/pool.py`) uses only consented, anonymised operators; consent is a per-operator flag in the registry.
 
+## A vault the operator of the service does not open
+
+There is no administrator endpoint or screen that returns a workspace's rows. The admin API (`X-Admin-Key`) can list workspaces and access requests, create a workspace, issue or rotate a key, and build a synthetic demo; it cannot read uploads, staging tables, plans or reports. Reading a vault requires the workspace's own key or shell access to the host's disk, and the disk holds pseudonymised identifiers only. For the self-serve MVP the workspace key is shown once in the browser that created the workspace and is stored nowhere else; losing it means the workspace is gone, and that is by design.
+
 ## What is never committed to the repository
 
 `data/operators/`, `data/raw/`, `data/processed/`, `data/partner/`, `data/runs/`, model artifacts, extraction logs and training corpora are all in `.gitignore`. Public series under `data/external/` are the only data committed, and each is classified in `data/external/README.md`.

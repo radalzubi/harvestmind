@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Circle, Download, Loader2, Play } from "lucide-react";
 import { Card, CardBody, CardHead, InfoBanner, PageHeader, Tbtn } from "@/components/ui";
-import { apiFetch, downloadReport, getApiToken, getJob, getMe, startDiagnostic, type Job, type Me } from "@/lib/api";
+import { apiFetch, downloadReport, getApiToken, getJob, getMe, setSector, startDiagnostic, type Job, type Me } from "@/lib/api";
 import { useToast } from "@/components/Toast";
 
 type IntakeStatus = { tables: Record<string, number>; ready_to_plan?: boolean; families?: Record<string, unknown> };
@@ -27,8 +28,11 @@ const FILES: Record<Me["sector"], Array<{ table: string; label: string }>> = {
   ],
 };
 
-export default function StartPage() {
+function StartInner() {
   const toast = useToast();
+  const params = useSearchParams();
+  const isNew = params.get("new") === "1";
+  const [copied, setCopied] = useState(false);
   const [me, setMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<IntakeStatus | null>(null);
   const [job, setJob] = useState<Job | null>(null);
@@ -37,7 +41,7 @@ export default function StartPage() {
 
   useEffect(() => {
     if (!getApiToken()) { setError("no-token"); return; }
-    getMe().then(setMe).catch((e) => setError(e.message));
+    getMe().then((m) => { setMe(m); setSector(m.sector); }).catch((e) => setError(e.message));
     apiFetch<IntakeStatus>("/intake/status").then(setStatus).catch(() => {});
     return () => { if (timer.current) window.clearInterval(timer.current); };
   }, []);
@@ -83,7 +87,7 @@ export default function StartPage() {
   const counts = status?.tables ?? {};
   const uploaded = files.filter((f) => (counts[f.table] ?? 0) > 0).length;
   const requiredDone = files.filter((f) => !f.label.includes("optional")).every((f) => (counts[f.table] ?? 0) > 0);
-  const uploadHref = me.sector === "commercial" ? "/fmcg" : "/upload";
+  const uploadHref = "/upload";
   const running = job && (job.status === "queued" || job.status === "running");
   const summary = (job?.summary ?? null) as Record<string, unknown> | null;
   const improvement = summary?.improvement as { mean?: number; lower_bound?: number; worst?: number; n_folds?: number } | null | undefined;
@@ -91,9 +95,18 @@ export default function StartPage() {
   return (
     <div className="page">
       <PageHeader title={`${me.name}`} sub={`${me.sector === "commercial" ? "Commercial goods" : "Fresh produce"} workspace · ${me.region}`} />
+      {isNew && (
+        <InfoBanner kind="warn" title="Save your workspace key now">
+          This key is the only way back into this workspace and it is shown once. It is not stored anywhere but your browser session.
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
+            <code style={{ fontFamily: "var(--mono)", fontSize: 12, background: "var(--surface)", padding: "6px 8px", borderRadius: 6, border: "1px solid var(--line)", wordBreak: "break-all" }}>{getApiToken()}</code>
+            <Tbtn onClick={() => { navigator.clipboard.writeText(getApiToken() ?? "").then(() => setCopied(true)).catch(() => {}); }}>{copied ? "Copied" : "Copy"}</Tbtn>
+          </div>
+        </InfoBanner>
+      )}
       <InfoBanner kind="info" title="Your files stay yours">
-        Identifiers are pseudonymised the moment a file arrives and your vault is isolated from every other company.
-        Prefer to anonymise before uploading? Ask us for the script and we never see a real code.
+        Identifiers are pseudonymised the moment a file arrives and your vault is isolated from every other workspace.
+        There is no administrator screen that shows your data.
       </InfoBanner>
 
       <Card style={{ marginTop: 16 }}>
@@ -157,4 +170,8 @@ export default function StartPage() {
 
 function fmtPct(x?: number | null): string {
   return x == null ? "n/a" : `${x >= 0 ? "+" : ""}${(x * 100).toFixed(1)}%`;
+}
+
+export default function StartPage() {
+  return <Suspense fallback={null}><StartInner /></Suspense>;
 }

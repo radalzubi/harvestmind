@@ -219,3 +219,27 @@ def create_demo_operator(sector: str = "commercial", seed: int = 7):
     token = registry.issue_token(rec.operator_id)
     return {"operator_id": rec.operator_id, "sector": sector, "loaded": loaded, "token": token,
             "note": "set HARVESTMIND_DEMO_TOKEN to this value (and HARVESTMIND_DEMO_SECTOR) and restart"}
+
+
+# ── Self-serve start (MVP) ──────────────────────────────────────────────────
+# A visitor picks a sector and gets an isolated workspace immediately. No
+# form, no approval: the token is the only credential, shown once to the
+# browser that created the workspace. Rate limited like every public route.
+
+class StartRequest(BaseModel):
+    sector: str
+    company: str = Field(default="", max_length=120)
+
+
+@router.post("/access/start", dependencies=[Depends(rate_limiter)])
+def self_serve_start(req: StartRequest):
+    if req.sector not in SECTORS:
+        raise HTTPException(422, f"sector must be one of {SECTORS}")
+    if os.getenv("HARVESTMIND_SELF_SERVE", "true").strip().lower() in ("0", "false", "no"):
+        raise HTTPException(404, "self-serve workspaces are disabled")
+    registry = OperatorRegistry()
+    name = (req.company.strip() or f"Workspace {secrets.token_hex(2)}")[:120]
+    rec = registry.create_operator(name, region="unspecified", sector=req.sector)
+    token = registry.issue_token(rec.operator_id)
+    return {"operator_id": rec.operator_id, "sector": req.sector, "name": rec.name, "token": token,
+            "note": "This token is your only key to this workspace. It is shown once. Keep it."}

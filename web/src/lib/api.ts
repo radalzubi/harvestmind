@@ -559,6 +559,14 @@ export interface AccessRequestInput {
 export function requestAccess(body: AccessRequestInput): Promise<{ id: string; status: string; message: string }> {
   return apiFetch("/access/request", { method: "POST", body: JSON.stringify(body) });
 }
+export function getSector(): "commercial" | "produce" | null {
+  if (typeof window === "undefined") return null;
+  const s = window.sessionStorage.getItem("harvestmind.sector");
+  return s === "commercial" || s === "produce" ? s : null;
+}
+export function setSector(s: "commercial" | "produce"): void {
+  if (typeof window !== "undefined") window.sessionStorage.setItem("harvestmind.sector", s);
+}
 
 export interface Me { operator_id: string; name: string; sector: "commercial" | "produce"; region: string; created_at: string; upload_count: number }
 export function getMe(): Promise<Me> { return apiFetch<Me>("/me"); }

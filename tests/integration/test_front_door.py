@@ -67,3 +67,15 @@ def test_request_approve_connect_and_me(registry):
     other = registry.create_operator("Other", sector="produce")
     t2 = registry.issue_token(other.operator_id)
     assert cl.get(f"/jobs/{jid}", headers={"Authorization": f"Bearer {t2}"}).status_code == 404
+
+
+def test_self_serve_start_creates_isolated_workspace(registry):
+    cl = TestClient(api_main.app)
+    a = cl.post("/access/start", json={"sector": "produce", "company": "Green Hub"})
+    b = cl.post("/access/start", json={"sector": "commercial"})
+    assert a.status_code == 200 and b.status_code == 200, (a.text, b.text)
+    ta, tb = a.json()["token"], b.json()["token"]
+    assert a.json()["operator_id"] != b.json()["operator_id"]
+    assert cl.get("/me", headers={"Authorization": f"Bearer {ta}"}).json()["sector"] == "produce"
+    assert cl.get("/me", headers={"Authorization": f"Bearer {tb}"}).json()["name"].startswith("Workspace")
+    assert cl.post("/access/start", json={"sector": "banking"}).status_code == 422

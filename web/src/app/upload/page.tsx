@@ -5,40 +5,26 @@ import { Upload, CheckCircle, XCircle, AlertTriangle, Database } from "lucide-re
 import { Card, CardBody, CardHead, PageHeader, Badge, Tbtn } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 import { useRouter } from "next/navigation";
-import { uploadCSV, clearStagingTable, getIntakeStatus, loadSampleData, extractFiles, type UploadResult, type IntakeStatus, type SampleLoadResult } from "@/lib/api";
+import { uploadCSV, clearStagingTable, getIntakeStatus, loadSampleData, extractFiles, getSector, getMe, setSector, type UploadResult, type IntakeStatus, type SampleLoadResult } from "@/lib/api";
 import { useEffect } from "react";
 
-const STAGING_TABLES: Array<{ table: string; label: string; description: string; required: string[] }> = [
-  {
-    table: "stg_products",
-    label: "Products",
-    description: "Product catalog with shelf life and traceability flags",
-    required: ["product_name"],
-  },
-  {
-    table: "stg_supplier_deliveries",
-    label: "Supplier Deliveries",
-    description: "Historical supplier delivery data with acceptance/rejection quantities",
-    required: ["product_name", "delivery_date"],
-  },
-  {
-    table: "stg_inventory_lots",
-    label: "Inventory Lots",
-    description: "Current lot-level inventory with expiration dates",
-    required: ["product_name", "quantity_on_hand"],
-  },
-  {
-    table: "stg_buyer_orders",
-    label: "Buyer Orders",
-    description: "Buyer order history with fulfillment quantities",
-    required: ["product_name", "requested_quantity"],
-  },
-  {
-    table: "stg_waste_adjustments",
-    label: "Waste Adjustments",
-    description: "Waste and spoilage log with dollar values",
-    required: ["product_name", "quantity_lost"],
-  },
+type TableSpec = { table: string; label: string; description: string; required: string[] };
+
+const PRODUCE_TABLES: TableSpec[] = [
+  { table: "stg_products", label: "Products", description: "Product catalog with shelf life and traceability flags", required: ["product_name"] },
+  { table: "stg_supplier_deliveries", label: "Supplier deliveries", description: "Historical supplier deliveries with accepted and rejected quantities", required: ["product_name", "delivery_date"] },
+  { table: "stg_inventory_lots", label: "Inventory lots", description: "Current lot-level inventory with expiration dates", required: ["product_name", "quantity_on_hand"] },
+  { table: "stg_buyer_orders", label: "Buyer orders", description: "Buyer order history with fulfilled quantities", required: ["product_name", "requested_quantity"] },
+  { table: "stg_waste_adjustments", label: "Waste log", description: "Waste and spoilage with values lost", required: ["product_name", "quantity_lost"] },
+];
+
+const COMMERCIAL_TABLES: TableSpec[] = [
+  { table: "stg_fmcg_skus", label: "Product list", description: "One row per product: item code, supplier, cost, selling price, units per case, minimum order", required: ["sku", "unit_cost"] },
+  { table: "stg_fmcg_orders", label: "Sales (customer orders)", description: "Customer order lines: date, item, quantity ordered, quantity shipped", required: ["sku", "qty_ordered", "order_date"] },
+  { table: "stg_fmcg_purchase_orders", label: "Purchase orders", description: "What you ordered from suppliers: PO number, date, supplier, item, quantity", required: ["po_id", "sku", "qty_ordered", "po_date"] },
+  { table: "stg_fmcg_receipts", label: "Goods received", description: "What arrived against each PO: PO number, date received, quantity received", required: ["po_id", "qty_received", "receipt_date"] },
+  { table: "stg_fmcg_inventory", label: "Stock counts", description: "Stock on hand per item, weekly or monthly", required: ["sku", "on_hand", "snapshot_date"] },
+  { table: "stg_fmcg_suppliers", label: "Supplier list (optional)", description: "Supplier code, shipping route or port, country of origin, quoted lead time", required: ["supplier_id"] },
 ];
 
 interface TableState {
@@ -49,13 +35,16 @@ interface TableState {
 
 export default function UploadPage() {
   const toast = useToast();
+  const [sector, setSectorState] = useState<"commercial" | "produce">(() => getSector() ?? "produce");
+  const STAGING_TABLES = sector === "commercial" ? COMMERCIAL_TABLES : PRODUCE_TABLES;
   const [states, setStates] = useState<Record<string, TableState>>(() =>
-    Object.fromEntries(STAGING_TABLES.map((t) => [t.table, { status: "idle" }]))
+    Object.fromEntries([...PRODUCE_TABLES, ...COMMERCIAL_TABLES].map((t) => [t.table, { status: "idle" }]))
   );
   const [intakeStatus, setIntakeStatus] = useState<IntakeStatus | null>(null);
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
+    getMe().then((me) => { setSector(me.sector); setSectorState(me.sector); }).catch(() => {});
     getIntakeStatus()
       .then(setIntakeStatus)
       .catch(() => {});
@@ -154,8 +143,10 @@ export default function UploadPage() {
   return (
     <div className="page">
       <PageHeader
-        title="Data Upload"
-        sub="Load operator CSV files into HarvestMind staging tables. All 5 tables required for a full diagnostic."
+        title="Upload"
+        sub={sector === "commercial"
+          ? "Six exports from your ERP: product list, sales, purchase orders, goods received, stock counts, suppliers. Twelve to twenty-four months of history."
+          : "Five exports: products, supplier deliveries, inventory lots, buyer orders, waste log."}
       />
 
       {/* Smart upload — LLM extraction layer (additive; classic flow below unchanged) */}
@@ -193,8 +184,8 @@ export default function UploadPage() {
         </CardBody>
       </Card>
 
-      {/* Quick-start: one-click sample loader */}
-      <Card style={{ marginBottom: 20 }}>
+      {/* Quick-start: one-click sample loader (produce sample set) */}
+      {sector === "produce" && <Card style={{ marginBottom: 20 }}>
         <CardHead
           title="Quick Start — Load Sample Dataset"
           sub="Skip manual upload and explore HarvestMind with a pre-built demo dataset"
@@ -238,7 +229,7 @@ export default function UploadPage() {
             </div>
           )}
         </CardBody>
-      </Card>
+      </Card>}
 
       {/* Progress summary */}
       <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>

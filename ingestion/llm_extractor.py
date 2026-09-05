@@ -73,6 +73,30 @@ TARGET_SCHEMA: dict[str, list[str]] = {
         "adjustment_id", "date", "product_id", "product_name", "lot_id",
         "quantity_lost", "reason", "estimated_value_lost",
     ],
+    # Commercial goods (migration 013/014): eaches, cases, POs and receipts.
+    "stg_fmcg_skus": [
+        "sku", "sku_name", "category", "supplier_id", "unit_cost", "unit_price",
+        "units_per_case", "cases_per_layer", "layers_per_pallet", "order_multiple",
+        "moq_units", "shelf_life_days", "abc_class",
+    ],
+    "stg_fmcg_orders": [
+        "order_id", "customer_id", "order_date", "requested_delivery_date", "sku",
+        "qty_ordered", "qty_shipped", "channel",
+    ],
+    "stg_fmcg_purchase_orders": [
+        "po_id", "po_date", "supplier_id", "sku", "qty_ordered", "unit_cost",
+        "expected_delivery_date",
+    ],
+    "stg_fmcg_receipts": [
+        "receipt_id", "po_id", "receipt_date", "sku", "qty_received", "qty_rejected",
+    ],
+    "stg_fmcg_inventory": [
+        "snapshot_date", "sku", "location_id", "on_hand", "in_transit",
+    ],
+    "stg_fmcg_suppliers": [
+        "supplier_id", "supplier_name", "route", "origin_iso3",
+        "lead_time_promised_weeks", "capacity_per_week",
+    ],
 }
 
 # Fields that matter most for downstream math; used for the schema-
@@ -86,13 +110,23 @@ REQUIRED_FIELDS: dict[str, list[str]] = {
     "stg_buyer_orders": ["product_name", "requested_quantity",
                          "fulfilled_quantity", "delivery_date"],
     "stg_waste_adjustments": ["product_name", "quantity_lost"],
+    "stg_fmcg_skus": ["sku", "unit_cost"],
+    "stg_fmcg_orders": ["sku", "qty_ordered", "order_date"],
+    "stg_fmcg_purchase_orders": ["po_id", "sku", "qty_ordered", "po_date"],
+    "stg_fmcg_receipts": ["po_id", "qty_received", "receipt_date"],
+    "stg_fmcg_inventory": ["sku", "on_hand", "snapshot_date"],
+    "stg_fmcg_suppliers": ["supplier_id"],
 }
 
 SYSTEM_PROMPT = f"""\
-You are HarvestMind's data extraction specialist for US fresh-produce
-distribution operations. Your job is to read messy operator data and
-extract clean structured records matching HarvestMind's 5-table staging
-schema exactly.
+You are HarvestMind's data extraction specialist for distribution
+operations: fresh produce (the stg_* tables in kilograms and lots) and
+commercial packaged goods (the stg_fmcg_* tables in eaches, cases, purchase
+orders and receipts). Your job is to read messy operator data and extract
+clean structured records matching HarvestMind's staging schema exactly.
+Decide the family from the data: kilograms, lots, expiry dates and
+grades mean produce; SKUs, cases, purchase orders and receipts mean
+commercial. Never mix families in one extraction.
 
 THE SCHEMA (field names must match exactly):
 {json.dumps(TARGET_SCHEMA, indent=2)}
