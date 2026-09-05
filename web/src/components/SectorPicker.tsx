@@ -1,79 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch, setApiToken } from "@/lib/api";
+import { apiFetch, clearApiToken, setApiToken, setSector } from "@/lib/api";
 
-const SECTORS = [
-  {
-    key: "commercial" as const,
-    name: "Commercial goods",
-    who: "Distributors and manufacturers of packaged goods, household products and raw materials",
-    lines: [
-      "Whole cases, pallets and minimum orders, in the units you buy in",
-      "Real fill rates and lead times measured from your own receipts, by supplier and by lane",
-      "A warning on your sea lanes weeks before your deliveries slip",
-    ],
-  },
-  {
-    key: "produce" as const,
-    name: "Fresh produce",
-    who: "Produce importers, distributors, food hubs and growers",
-    lines: [
-      "Shelf life and spoilage priced into every order, first-expiry-first-out",
-      "Yield and weather risk on the supply side, not only demand",
-      "Waste and lost sales measured in your own numbers",
-    ],
-  },
-];
-
+/** Two ways in: start a commercial-goods workspace, or enter a key you were given. */
 export function SectorPicker() {
   const router = useRouter();
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [key, setKey] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [selfServe, setSelfServe] = useState<boolean | null>(null);
-  useEffect(() => {
-    apiFetch<{ self_serve: boolean }>("/access/config").then((c) => setSelfServe(c.self_serve)).catch(() => setSelfServe(true));
-  }, []);
 
-  const start = async (sector: "commercial" | "produce") => {
-    setBusy(sector); setError(null);
+  const start = async () => {
+    setBusy(true); setError(null);
     try {
-      const r = await apiFetch<{ token: string }>("/access/start", { method: "POST", body: JSON.stringify({ sector }) });
-      setApiToken(r.token);
-      window.sessionStorage.setItem("harvestmind.sector", sector);
+      const r = await apiFetch<{ token: string }>("/access/start", { method: "POST", body: JSON.stringify({ sector: "commercial" }) });
+      setApiToken(r.token); setSector("commercial");
       router.push("/start?new=1");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not open a workspace");
-      setBusy(null);
+      setError(e instanceof Error ? e.message : "Could not open a workspace"); setBusy(false);
     }
   };
 
-  if (selfServe === false) {
-    return (
-      <section className="land-pick">
-        <h2>Enter your workspace key</h2>
-        <p className="land-who" style={{ marginBottom: 12 }}>Workspaces are opened by HarvestMind and the key is handed to you directly. Have one?</p>
-        <Link className="land-cta" href="/access">Enter key</Link>
-      </section>
-    );
-  }
+  const enter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!key.trim()) return;
+    setBusy(true); setError(null);
+    setApiToken(key.trim());
+    try {
+      await apiFetch("/me");
+      router.push("/welcome");
+    } catch {
+      clearApiToken();
+      setError("That key did not open a workspace. Check it and try again.");
+      setBusy(false);
+    }
+  };
+
   return (
     <section className="land-pick">
-      <h2>Pick your sector and start</h2>
-      <p className="land-who" style={{ marginBottom: 12 }}>A private workspace opens immediately. No form, no account; you get a key to come back with.</p>
+      <h2>Start</h2>
       <div className="land-cards">
-        {SECTORS.map((s) => (
-          <article key={s.key} className="land-card">
-            <h3>{s.name}</h3>
-            <p className="land-who">{s.who}</p>
-            <ul>{s.lines.map((l) => <li key={l}>{l}</li>)}</ul>
-            <button className="land-cta" style={{ border: 0, cursor: "pointer" }} disabled={busy !== null} onClick={() => start(s.key)}>
-              {busy === s.key ? "Opening your workspace…" : `Start with ${s.name.toLowerCase()}`}
-            </button>
-          </article>
-        ))}
+        <article className="land-card">
+          <h3>Commercial goods</h3>
+          <p className="land-who">Distributors and manufacturers of packaged goods, household products and raw materials. A private workspace opens immediately; you get a key to come back with.</p>
+          <button className="land-cta" style={{ border: 0, cursor: "pointer" }} disabled={busy} onClick={start}>
+            {busy ? "Opening…" : "Start with commercial goods"}
+          </button>
+        </article>
+        <article className="land-card">
+          <h3>I have a key</h3>
+          <p className="land-who">Enter the key you were given and we will take you to your workspace.</p>
+          <form className="land-key" onSubmit={enter}>
+            <input inputMode="numeric" autoComplete="off" placeholder="Your key" value={key} onChange={(e) => setKey(e.target.value)} aria-label="Workspace key" />
+            <button className="land-cta" style={{ border: 0, cursor: "pointer", marginTop: 0 }} disabled={busy || !key.trim()} type="submit">Enter</button>
+          </form>
+        </article>
       </div>
       {error && <p style={{ color: "var(--bad)", marginTop: 12 }} role="alert">{error}</p>}
     </section>

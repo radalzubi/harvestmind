@@ -1,6 +1,8 @@
 """HarvestMind FastAPI application."""
 from __future__ import annotations
 
+import logging
+
 import logging as _logging
 import uuid as _uuid
 
@@ -94,6 +96,11 @@ async def _request_id_middleware(request: _Request, call_next):
 
 @app.on_event("startup")
 async def _refuse_permissive_public_bind() -> None:
+    try:
+        from infrastructure.seed_workspaces import seed_workspaces_from_env
+        seed_workspaces_from_env()
+    except Exception:  # noqa: BLE001  seeding must never block startup
+        logging.getLogger("harvestmind.api").exception("workspace seeding failed")
     from api.dependencies import assert_safe_to_serve
     assert_safe_to_serve()
 

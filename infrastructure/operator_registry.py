@@ -52,6 +52,9 @@ class OperatorRecord(BaseModel):
     token_hash: Optional[str] = None       # sha256 of the operator's API token
     anon_secret: Optional[str] = None      # HMAC key for id pseudonymisation; never leaves the registry
     sector: str = "produce"                # produce | commercial: which intake and planner the UI shows
+    access_code_hash: Optional[str] = None # sha256 of a short human key (pilot invites); accepted like a token
+    display_name: Optional[str] = None     # how the welcome screen greets them, if different from name
+    logo_url: Optional[str] = None         # path or URL of the customer's logo for the welcome screen
 
 
 class OperatorRegistry:
@@ -161,6 +164,30 @@ class OperatorRegistry:
             self._update_record(rec)
         return rec.anon_secret
 
+    def set_access_code(self, operator_id: str, code: str) -> None:
+        """A short human key (e.g. a six-digit pilot invite) that authenticates
+        like a token. Stored as a hash. Meant for a handful of invited
+        workspaces, not for the public: rotate or clear it after the pilot."""
+        if not code or len(code.strip()) < 6:
+            raise ValueError("access code must be at least 6 characters")
+        rec = self.get_operator(operator_id)
+        rec.access_code_hash = _hash_token(code.strip())
+        self._update_record(rec)
+
+    def set_profile(self, operator_id: str, display_name: str | None = None, logo_url: str | None = None) -> None:
+        rec = self.get_operator(operator_id)
+        if display_name is not None:
+            rec.display_name = display_name
+        if logo_url is not None:
+            rec.logo_url = logo_url
+        self._update_record(rec)
+
+    def find_by_name(self, name: str):
+        for rec in self.list_operators():
+            if rec.name == name:
+                return rec
+        return None
+
     def issue_token(self, operator_id: str) -> str:
         """Generate a fresh API token for an operator, store only its hash,
         and return the raw token ONCE (it cannot be recovered later)."""
@@ -180,7 +207,13 @@ class OperatorRegistry:
             return None
         candidate = _hash_token(raw_token)
         for rec in self._load().values():
-            th = rec.get("token_hash")
+            if rec.get("status") != "active":
+                continue
+            for field_name in ("token_hash", "access_code_hash"):
+                th = rec.get(field_name)
+                if th and hmac.compare_digest(th, candidate):
+                    return rec["operator_id"]
+            th = None
             if (th and rec.get("status") == "active"
                     and hmac.compare_digest(th, candidate)):
                 return rec["operator_id"]

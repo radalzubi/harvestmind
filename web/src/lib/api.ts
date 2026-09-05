@@ -568,7 +568,7 @@ export function setSector(s: "commercial" | "produce"): void {
   if (typeof window !== "undefined") window.sessionStorage.setItem("harvestmind.sector", s);
 }
 
-export interface Me { operator_id: string; name: string; sector: "commercial" | "produce"; region: string; created_at: string; upload_count: number }
+export interface Me { operator_id: string; name: string; display_name?: string; logo_url?: string | null; sector: "commercial" | "produce"; region: string; created_at: string; upload_count: number }
 export function getMe(): Promise<Me> { return apiFetch<Me>("/me"); }
 
 export interface Job {

@@ -101,6 +101,7 @@ def me(authed: str | None = Depends(require_operator)):
     except OperatorNotFoundError:
         raise HTTPException(404, "unknown operator")
     return {"operator_id": rec.operator_id, "name": rec.name, "sector": getattr(rec, "sector", "produce"),
+            "display_name": getattr(rec, "display_name", None) or rec.name, "logo_url": getattr(rec, "logo_url", None),
             "region": rec.region, "created_at": rec.created_at, "upload_count": rec.upload_count}
 
 

@@ -23,6 +23,16 @@ fly deploy
 
 Project root `web/`. Environment: `NEXT_PUBLIC_API_URL=https://harvestmind-api.fly.dev` (never put a token in a `NEXT_PUBLIC_*` variable). Point `app.yourdomain.com` at the Vercel project.
 
+## 2b. Invited workspaces with a short key
+
+Set one secret and the API creates them at startup (idempotent):
+
+```bash
+fly secrets set HARVESTMIND_SEED_WORKSPACES="NTDCO|commercial|839285|/logos/ntdco.svg"
+```
+
+Entries are `name|sector|key|logo`, separated by `;`. The key is stored hashed and works like a token: the customer types it on the landing page and lands on a welcome screen with their name and logo, then their workspace. Put the logo file in `web/public/logos/`. Short keys are for a handful of invited pilots; rotate them with `scripts/seed_workspace.py` and clear them after the pilot.
+
 ## 3. Operating it
 
 - **Approve a request**: `GET /admin/access-requests` then `POST /admin/access-requests/{id}/approve` with header `X-Admin-Key`. The requester gets the link by email, or you send it.
