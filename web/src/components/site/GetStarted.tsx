@@ -27,21 +27,16 @@ export function GetStarted() {
   const { t } = useLocale();
   const g = t.gs;
   const SECTORS = g.sectors as Array<{ slug: Sector; title: string; body: string }>;
-  const [sector, setSectorChoice] = useState<Sector | null>(null);
-  const [mode, setMode] = useState<Mode | null>(null);
-  const [step, setStep] = useState<Step>("sector");
+  // Deep links (/get-started?sector=produce, ?mode=key) start on the right
+  // step at first render, so nothing has to animate out of the way.
+  const initialSector = (() => { const v = params.get("sector"); return v && SECTORS.some((x) => x.slug === v) ? (v as Sector) : null; })();
+  const initialMode = (() => { const v = params.get("mode"); return v === "key" || v === "signup" ? (v as Mode) : null; })();
+  const [sector, setSectorChoice] = useState<Sector | null>(initialSector);
+  const [mode, setMode] = useState<Mode | null>(initialMode);
+  const [step, setStep] = useState<Step>(initialMode ? "details" : initialSector ? "mode" : "sector");
   const [key, setKey] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Deep links: /get-started?sector=produce, /get-started?mode=key
-  useEffect(() => {
-    const s = params.get("sector") as Sector | null;
-    const m = params.get("mode") as Mode | null;
-    if (s && SECTORS.some((x) => x.slug === s)) { setSectorChoice(s); setStep("mode"); }
-    if (m === "key" || m === "signup") { setMode(m); setStep("details"); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const pickSector = (s: Sector) => { setSectorChoice(s); setError(null); setStep("mode"); };
   const pickMode = (m: Mode) => { setMode(m); setError(null); setStep("details"); };
