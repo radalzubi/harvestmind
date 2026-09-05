@@ -48,6 +48,10 @@ Then in Vercel add `zaadsupply.com` and `www.zaadsupply.com` to the project (it 
 
 The diagnostic job runs in the API process. On the shared-cpu-2x machine the commercial backtest on the synthetic sample takes well over ten minutes, and it is only tracked in memory, so a deploy while a job is running loses that job (the operator simply runs it again). The solver is pinned to one thread and the worker thread is niced so the health check keeps passing during a run.
 
+### Vercel project settings
+
+The project `zaad` has Root Directory set to `web`, so pushes to GitHub build correctly (preview deployments for branches, production for `main`). `vercel --prod` from `web/` still deploys production directly, which is how the pilot site is updated today. The public site is a Next.js app: marketing pages live under `web/src/app/(site)`, the workspace under the other routes; sectors are produce, meats and commercial (meats shares the produce table family).
+
 ## 3. Operating it
 
 - **Approve a request**: `GET /admin/access-requests` then `POST /admin/access-requests/{id}/approve` with header `X-Admin-Key`. The requester gets the link by email, or you send it.
