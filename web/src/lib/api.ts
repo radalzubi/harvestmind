@@ -548,3 +548,34 @@ export function fmtPct(n: number | null | undefined, decimals = 1): string {
   if (n == null || isNaN(n)) return "—%";
   return (n * 100).toFixed(decimals) + "%";
 }
+
+// ── Front door: access requests, identity, diagnostic jobs ───────────────
+
+export interface AccessRequestInput {
+  company: string; contact_name: string; email: string; country: string;
+  sector: "commercial" | "produce"; erp?: string; sku_count?: number | null; note?: string;
+}
+
+export function requestAccess(body: AccessRequestInput): Promise<{ id: string; status: string; message: string }> {
+  return apiFetch("/access/request", { method: "POST", body: JSON.stringify(body) });
+}
+
+export interface Me { operator_id: string; name: string; sector: "commercial" | "produce"; region: string; created_at: string; upload_count: number }
+export function getMe(): Promise<Me> { return apiFetch<Me>("/me"); }
+
+export interface Job {
+  id: string; kind: string; status: "queued" | "running" | "done" | "failed"; progress: string;
+  created_at: string; finished_at?: string | null; error?: string | null; summary?: Record<string, unknown> | null;
+}
+export function startDiagnostic(): Promise<Job> { return apiFetch<Job>("/jobs/diagnostic", { method: "POST" }); }
+export function getJob(id: string): Promise<Job> { return apiFetch<Job>(`/jobs/${encodeURIComponent(id)}`); }
+export function reportUrl(id: string): string { return `${BASE_URL}/jobs/${encodeURIComponent(id)}/report.pdf`; }
+export async function downloadReport(id: string): Promise<void> {
+  const res = await fetch(reportUrl(id), { headers: authHeaders() });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `harvestmind-diagnostic-${id}.pdf`; a.click();
+  URL.revokeObjectURL(url);
+}

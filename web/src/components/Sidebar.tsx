@@ -19,6 +19,7 @@ import {
   ListChecks,
   FlaskConical,
   Boxes,
+  Rocket,
 } from "lucide-react";
 
 type NavItem = {
@@ -29,7 +30,8 @@ type NavItem = {
 };
 
 const NAV_MAIN: NavItem[] = [
-  { href: "/", label: "Overview", Icon: LayoutDashboard },
+  { href: "/start", label: "Start", Icon: Rocket },
+  { href: "/overview", label: "Overview", Icon: LayoutDashboard },
 ];
 
 const NAV_DATA: NavItem[] = [
@@ -60,7 +62,7 @@ function Group({ items, current }: { items: NavItem[]; current: string }) {
   return (
     <>
       {items.map((n) => {
-        const active = n.href === "/" ? current === "/" : current.startsWith(n.href);
+        const active = current.startsWith(n.href);
         return (
           <Link
             key={n.href}

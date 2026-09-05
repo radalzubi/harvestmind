@@ -6,7 +6,8 @@ import { Bell, ChevronDown } from "lucide-react";
 import { useToast } from "@/components/Toast";
 
 const TITLES: Record<string, string> = {
-  "/": "Overview",
+  "/start": "Start",
+  "/overview": "Overview",
   "/performance": "Performance",
   "/recommendations": "Recommendations",
   "/backtest": "Benchmark",

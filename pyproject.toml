@@ -11,6 +11,7 @@ license = { text = "Proprietary" }
 authors = [{ name = "HarvestMind Team", email = "team@harvestmind.io" }]
 
 dependencies = [
+    "reportlab>=4.2",
     "pyomo>=6.7",
     "highspy>=1.7",
     "mlforecast>=0.13",

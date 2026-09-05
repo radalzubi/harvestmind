@@ -1,265 +1,91 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
-import {
-  Card,
-  CardBody,
-  CardHead,
-  EmptyState,
-  InfoBanner,
-  KPI,
-  KPIRow,
-  PageError,
-  PageHeader,
-  PageLoading,
-  Tbtn,
-} from "@/components/ui";
-import { getDiagnosticSummary, getRoiCards, openDiagnosticReport, fmtUSD, fmtPct, fmt, type DiagnosticSummary, type RoiCards } from "@/lib/api";
-import { useToast } from "@/components/Toast";
+import type { Metadata } from "next";
+import { DemoButton } from "@/components/DemoButton";
 
-export default function OverviewPage() {
-  const toast = useToast();
-  const [data, setData] = useState<DiagnosticSummary | null>(null);
-  const [roi, setRoi] = useState<RoiCards | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const metadata: Metadata = {
+  title: "HarvestMind",
+  description: "Purchasing decisions for import-dependent distributors and producers, safe by construction.",
+};
 
-  useEffect(() => {
-    getDiagnosticSummary()
-      .then(setData)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-    // measured card loads independently; its absence must never block the page
-    getRoiCards().then(setRoi).catch(() => setRoi(null));
-  }, []);
+const SECTORS = [
+  {
+    key: "commercial",
+    name: "Commercial goods",
+    who: "Distributors and manufacturers of packaged goods, household products and raw materials",
+    lines: [
+      "Whole cases, pallets and minimum orders, in the units you buy in",
+      "Real fill rates and lead times measured from your own receipts, by supplier and by lane",
+      "A warning on your sea lanes weeks before your deliveries slip",
+    ],
+  },
+  {
+    key: "produce",
+    name: "Fresh produce",
+    who: "Produce importers, distributors, food hubs and growers",
+    lines: [
+      "Shelf life and spoilage priced into every order, first-expiry-first-out",
+      "Yield and weather risk on the supply side, not only demand",
+      "Waste and lost sales measured in your own numbers",
+    ],
+  },
+];
 
-  if (loading) return <PageLoading message="Loading diagnostic summary…" />;
-  if (error) return <PageError error={error} />;
-  if (!data) return null;
-
-  const totalLoss = data.total_waste_loss_usd + data.total_shortage_loss_usd;
-  const hasData = Object.values(data.row_counts).some((v) => v > 0);
-
+export default function Landing() {
   return (
-    <div className="page">
-      <PageHeader
-        title="Overview"
-        sub={`Diagnostic as of ${new Date(data.as_of).toLocaleDateString()} · ${data.period_days}-day window · ${data.partner_name}`}
-        actions={
-          <Tbtn
-            variant="primary"
-            icon={<ExternalLink size={13} strokeWidth={1.6} />}
-            onClick={() => openDiagnosticReport().catch((reason) => toast.push(`Could not open report: ${String(reason)}`))}
-          >
-            View Report
-          </Tbtn>
-        }
-      />
+    <main className="land">
+      <header className="land-top">
+        <div className="land-brand"><span className="land-mark">H</span> HarvestMind</div>
+        <nav className="land-nav">
+          <Link href="/access">I have access</Link>
+          <Link className="land-cta-sm" href="/request-access">Request access</Link>
+        </nav>
+      </header>
 
-      {!hasData && (
-        <EmptyState
-          title="No operator data loaded yet"
-          body="Upload your CSV files to generate a diagnostic. HarvestMind needs product, delivery, inventory, order, and waste data to calculate waste loss, shortage risk, and available-to-promise."
-          action={
-            <Link href="/upload">
-              <Tbtn variant="primary">Upload your data or load sample dataset →</Tbtn>
-            </Link>
-          }
-        />
-      )}
+      <section className="land-hero">
+        <p className="land-eyebrow">Purchasing decisions for businesses that import what they sell</p>
+        <h1>How much to buy, and when, without ever making your buying worse.</h1>
+        <p className="land-lede">
+          Upload a year of your own purchase orders, receipts, sales and stock counts. Within a week you get three
+          things: how you order today as read from your own history, what a safe optimizer would have done on that
+          same history with a conservative lower bound, and the risk on your supply lanes right now. If the honest
+          answer is &ldquo;no material improvement&rdquo;, that is what the report says.
+        </p>
+      </section>
 
-      {hasData && totalLoss > 0 && (
-        <InfoBanner kind="danger" title="⚠ Addressable loss detected:">
-          {fmtUSD(totalLoss)} in waste + shortage losses identified across {data.period_days} days.
-          {data.savings.estimated_annual_savings_usd > 0 &&
-            ` Opportunity ceiling (assumed 15–30% benchmark): up to ${fmtUSD(data.savings.estimated_annual_savings_usd)}/yr.`}
-        </InfoBanner>
-      )}
-
-      <KPIRow>
-        <KPI
-          label="Waste Loss"
-          value={fmtUSD(data.waste.total_usd)}
-          deltaDir={data.waste.total_usd > 0 ? "down" : "flat"}
-          sub={`${fmt(data.waste.n_rows)} waste events`}
-        />
-        <KPI
-          label="Shortage Loss"
-          value={fmtUSD(data.shortage.total_usd)}
-          deltaDir={data.shortage.total_usd > 0 ? "down" : "flat"}
-          sub={`${fmt(data.shortage.n_at_risk)} at-risk order lines`}
-        />
-        <KPI
-          label="Risky Suppliers"
-          value={fmt(data.n_risky_suppliers)}
-          deltaDir={data.n_risky_suppliers > 0 ? "down" : "flat"}
-          sub={`of ${fmt(data.supplier.suppliers.length)} tracked`}
-        />
-        <KPI
-          label="Traceability"
-          value={fmtPct(data.traceability_completeness_pct)}
-          deltaDir={data.traceability_completeness_pct >= 0.95 ? "up" : "down"}
-          sub="FSMA-204 lot completeness"
-        />
-      </KPIRow>
-
-      {hasData && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 20 }}>
-          {/* Top risks */}
-          <Card>
-            <CardHead title="Top Loss Drivers" sub="Largest addressable losses this period" />
-            <CardBody tight>
-              {data.top_risks.length === 0 ? (
-                <div style={{ padding: "24px 12px", color: "var(--muted)", fontSize: 12, textAlign: "center" }}>
-                  No loss data found. Upload waste and order history to see top risks.
-                </div>
-              ) : (
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Category</th>
-                      <th>Item</th>
-                      <th className="r">Loss</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.top_risks.map((r, i) => (
-                      <tr key={i}>
-                        <td style={{ fontSize: 11, color: "var(--muted)" }}>{r.category}</td>
-                        <td style={{ fontSize: 12 }}>{r.item}</td>
-                        <td className="r" style={{ color: "var(--danger)", fontWeight: 600, fontSize: 12 }}>
-                          {fmtUSD(r.loss_usd)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </CardBody>
-          </Card>
-
-          {/* Savings opportunity */}
-          <Card>
-            <CardHead title="Opportunity Ceiling (Assumed)" sub="Annualized addressable loss × assumed 15–30% benchmark — not a measured result" />
-            <CardBody>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "4px 0" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 12, color: "var(--muted)" }}>Waste loss ({data.period_days}-day window)</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--danger)" }}>{fmtUSD(data.savings.waste_loss_usd)}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 12, color: "var(--muted)" }}>Shortage loss ({data.period_days}-day window)</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "var(--danger)" }}>{fmtUSD(data.savings.shortage_loss_usd)}</span>
-                </div>
-                <div style={{ height: 1, background: "var(--border)" }} />
-                {data.savings.addressable_loss_usd_period !== undefined && (
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                      Period addressable total
-                    </span>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>
-                      {fmtUSD(data.savings.addressable_loss_usd_period)}
-                    </span>
-                  </div>
-                )}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                    Annualized (×{(data.savings.annualization_factor ?? 1).toFixed(2)})
-                  </span>
-                  <span style={{ fontSize: 13, fontWeight: 600 }}>{fmtUSD(data.savings.addressable_loss_usd)}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                    Opportunity ceiling
-                    <br />
-                    <span style={{ fontSize: 10 }}>
-                      (assumed {Math.round((data.savings.reduction_pct_low ?? 0.15) * 100)}–{Math.round((data.savings.reduction_pct_high ?? 0.30) * 100)}% reduction benchmark)
-                    </span>
-                  </span>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: "var(--accent)", textAlign: "right" }}>
-                    {data.savings.estimated_annual_savings_usd_low !== undefined &&
-                     data.savings.estimated_annual_savings_usd_high !== undefined ? (
-                      <>
-                        {fmtUSD(data.savings.estimated_annual_savings_usd_low)}
-                        <span style={{ fontWeight: 400, color: "var(--muted)" }}> – </span>
-                        {fmtUSD(data.savings.estimated_annual_savings_usd_high)}
-                      </>
-                    ) : (
-                      fmtUSD(data.savings.estimated_annual_savings_usd)
-                    )}
-                  </span>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
+      <section className="land-pick">
+        <h2>Choose your sector</h2>
+        <div className="land-cards">
+          {SECTORS.map((s) => (
+            <article key={s.key} className="land-card">
+              <h3>{s.name}</h3>
+              <p className="land-who">{s.who}</p>
+              <ul>{s.lines.map((l) => <li key={l}>{l}</li>)}</ul>
+              <Link className="land-cta" href={`/request-access?sector=${s.key}`}>Request access as {s.name.toLowerCase()}</Link>
+            </article>
+          ))}
         </div>
-      )}
+      </section>
 
-      {/* Measured backtest card — separate from the assumed ceiling, never summed */}
-      {hasData && roi && (
-        <Card style={{ marginTop: 16 }}>
-          <CardHead
-            title="Measured Backtest Result"
-            sub="From a rolling-origin backtest on your own history — a different question than the assumed ceiling above; the two are never combined"
-          />
-          <CardBody>
-            {roi.measured_card.status === "measured" ? (
-              <div style={{ display: "flex", gap: 32, alignItems: "baseline", flexWrap: "wrap" }}>
-                <div>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: roi.measured_card.gate_passed ? "var(--accent)" : "var(--danger)" }}>
-                    {roi.measured_card.sp_vs_lp_edge_pct}%
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--muted)" }}>
-                    optimizer vs deterministic plan · wins {roi.measured_card.wins}/{roi.measured_card.n_origins} · t={roi.measured_card.paired_t}
-                  </div>
-                </div>
-                <div style={{ fontSize: 12, color: "var(--muted)", maxWidth: 520 }}>
-                  {roi.measured_card.verdict}
-                </div>
-              </div>
-            ) : (
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                Not yet measured — {roi.measured_card.note}
-                {roi.measured_card.weeks_available != null &&
-                  ` (${roi.measured_card.weeks_available}/${roi.measured_card.weeks_required} weeks of history available).`}
-              </div>
-            )}
-          </CardBody>
-        </Card>
-      )}
+      <section className="land-pick">
+        <h2>Or look around first</h2>
+        <p className="land-who" style={{ marginBottom: 12 }}>A shared workspace loaded with synthetic distributor data, clearly labelled as such. Nothing in it is a real company.</p>
+        <DemoButton />
+      </section>
 
-      {/* Data loaded summary */}
-      <Card style={{ marginTop: 16 }}>
-        <CardHead title="Data Loaded" sub="Rows in each staging table" />
-        <CardBody tight>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Table</th>
-                <th className="r">Rows</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(data.row_counts).map(([table, count]) => (
-                <tr key={table}>
-                  <td style={{ fontFamily: "monospace", fontSize: 11 }}>{table}</td>
-                  <td className="r">{fmt(count)}</td>
-                  <td>
-                    <span style={{ fontSize: 11, color: count > 0 ? "var(--accent)" : "var(--muted)" }}>
-                      {count > 0 ? "✓ Loaded" : "— Empty"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardBody>
-      </Card>
+      <section className="land-trust">
+        <h2>Your data never becomes someone else&rsquo;s advantage</h2>
+        <div className="land-trust-grid">
+          <div><b>Pseudonymised before storage.</b> Item, supplier and customer codes become keyed hashes the moment a file arrives; names and contacts are dropped. Or anonymise on your own machine first, with a script we give you, and we never see a real code.</div>
+          <div><b>One vault per company.</b> Your files live in their own isolated database. Nothing is pooled without your written consent, and then only lane-level aggregates.</div>
+          <div><b>Nothing is promised.</b> Every number in a report is a backtest on your own history against your own policy, with the assumptions and public priors it used listed. No forecast of savings, ever.</div>
+          <div><b>The optimizer is gated.</b> It changes your orders only when it can show, on your own past, that it would have done better. Otherwise it keeps your policy and says why.</div>
+        </div>
+      </section>
 
-      <style>{`.r { text-align: right; } .data-table { width: 100%; border-collapse: collapse; } .data-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 8px 12px; text-align: left; } .data-table td { padding: 8px 12px; border-top: 1px solid var(--border); font-size: 12px; } .data-table tr:hover td { background: rgba(255,255,255,.02); }`}</style>
-    </div>
+      <footer className="land-foot">
+        <span>HarvestMind · Amman</span>
+        <Link href="/request-access">Request access</Link>
+      </footer>
+    </main>
   );
 }

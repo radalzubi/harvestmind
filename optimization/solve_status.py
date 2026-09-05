@@ -73,7 +73,7 @@ def run_solver(model, solver: str = "highs", time_limit_s: float = 300.0,
     opt = SolverFactory(name)
     options: dict = {"time_limit": float(time_limit_s)}
     threads = os.environ.get("HARVESTMIND_SOLVER_THREADS")
-    if threads:
+    if threads and name == "appsi_highs":            # other interfaces reject the option
         # Several validation workers on one machine: one HiGHS thread each
         # avoids oversubscription, which slowed solves by two orders of
         # magnitude when three processes shared the cores.

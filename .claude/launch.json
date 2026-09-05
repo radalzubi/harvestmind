@@ -1,11 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
-    {
-      "name": "web",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "web"],
-      "port": 3000
-    }
+    { "name": "web", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 3000, "cwd": "web" },
+    { "name": "api", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "uvicorn", "api.main:app", "--port", "8000"], "port": 8000 }
   ]
 }

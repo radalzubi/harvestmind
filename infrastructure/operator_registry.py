@@ -51,6 +51,7 @@ class OperatorRecord(BaseModel):
     pool_contribution_count: int = 0
     token_hash: Optional[str] = None       # sha256 of the operator's API token
     anon_secret: Optional[str] = None      # HMAC key for id pseudonymisation; never leaves the registry
+    sector: str = "produce"                # produce | commercial: which intake and planner the UI shows
 
 
 class OperatorRegistry:
@@ -84,6 +85,7 @@ class OperatorRegistry:
         name: str,
         pool_consent: bool = False,
         region: str = "unspecified",
+        sector: str = "produce",
     ) -> OperatorRecord:
         """Create the vault: directories, a fresh fully-migrated DuckDB,
         the consent record, and the registry entry."""
@@ -105,6 +107,7 @@ class OperatorRegistry:
         record = OperatorRecord(
             operator_id=operator_id, name=name, created_at=now,
             db_path=db_rel, region=region,
+            sector=sector,
             pool_consent=pool_consent,
             pool_consent_date=now if pool_consent else None,
         )

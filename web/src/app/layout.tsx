@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/Sidebar";
-import { Topbar } from "@/components/Topbar";
+import { Shell } from "@/components/Shell";
 import { ToastProvider } from "@/components/Toast";
 
 export const metadata: Metadata = {
   title: "HarvestMind",
-  description: "AI-driven planning for fresh-produce food hubs",
+  description: "Purchasing decisions for import-dependent distributors and producers, safe by construction.",
 };
 
 export default function RootLayout({
@@ -18,13 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ToastProvider>
-          <div className="app">
-            <Sidebar />
-            <div className="main">
-              <Topbar />
-              {children}
-            </div>
-          </div>
+          <Shell>{children}</Shell>
         </ToastProvider>
       </body>
     </html>
