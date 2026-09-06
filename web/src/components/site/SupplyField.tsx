@@ -18,7 +18,7 @@
 import { useEffect, useRef } from "react";
 import { reduceMotionNow } from "@/lib/motion";
 
-type Node = { x: number; y: number; r: number; drift: number; phase: number };
+type Node = { x: number; y: number; r: number; drift: number; phase: number; layer: 0 | 1 };
 type Route = { a: number; b: number; cx: number; cy: number; act: number; target: number; hue: "calm" | "warm"; packets: number[]; speed: number };
 
 const INK = { calm: [14, 159, 110] as const, warm: [217, 119, 6] as const, node: [24, 24, 27] as const };
@@ -55,18 +55,19 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
       canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const rnd = seeded(7);
-      const n = Math.round((small ? 9 : 16) * density);
+      const n = Math.round((small ? 12 : 26) * density);
       nodes = [];
       for (let i = 0; i < n; i++) {
-        // right-weighted spread so the headline on the left stays clean
-        const x = w * (small ? 0.08 + rnd() * 0.84 : 0.34 + rnd() * 0.62);
-        const y = h * (0.12 + rnd() * 0.8);
-        nodes.push({ x, y, r: 1.6 + rnd() * 2.2, drift: 0.4 + rnd() * 0.8, phase: rnd() * Math.PI * 2 });
+        // the whole hero is the map; the paper veil keeps the headline readable
+        const layer: 0 | 1 = i % 3 === 0 ? 0 : 1;   // 0 = far, small and faint; 1 = near
+        const x = w * (0.03 + rnd() * 0.94);
+        const y = h * (0.06 + rnd() * 0.9);
+        nodes.push({ x, y, r: (layer ? 1.8 : 1.1) + rnd() * (layer ? 2.2 : 1.2), drift: 0.4 + rnd() * 0.8, phase: rnd() * Math.PI * 2, layer });
       }
       routes = [];
       // each node links to its two nearest neighbours; curved through a control point off the chord
       nodes.forEach((a, i) => {
-        const near = nodes.map((b, j) => ({ j, d: Math.hypot(a.x - b.x, a.y - b.y) })).filter((o) => o.j !== i).sort((p, q) => p.d - q.d).slice(0, 2);
+        const near = nodes.map((b, j) => ({ j, d: Math.hypot(a.x - b.x, a.y - b.y), l: b.layer })).filter((o) => o.j !== i && o.l === a.layer).sort((p, q) => p.d - q.d).slice(0, 2);
         near.forEach(({ j }) => {
           if (routes.some((r) => (r.a === i && r.b === j) || (r.a === j && r.b === i))) return;
           const b = nodes[j];
@@ -115,33 +116,41 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
     function draw() {
       ctx.clearRect(0, 0, w, h);
       ctx.lineCap = "round";
-      for (const r of routes) {
-        const a = nodes[r.a], b = nodes[r.b];
-        const c = INK[r.hue];
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(r.cx, r.cy, b.x, b.y);
-        ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.08 + r.act * 0.22})`;
-        ctx.lineWidth = 0.8 + r.act * 0.9;
-        ctx.stroke();
-        if (r.act > 0.25) {
-          for (const s of r.packets) {
-            const p = bez(r, s);
-            const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 7);
-            g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${0.55 * r.act})`); g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
-            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.9 * r.act})`; ctx.beginPath(); ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2); ctx.fill();
+      const par = pointer && !small;
+      for (const layer of [0, 1] as const) {
+        ctx.save();
+        if (par) ctx.translate(px.x * (layer ? 1 : 0.4), px.y * (layer ? 1 : 0.4));
+        const dim = layer ? 1 : 0.55;
+        for (const r of routes) {
+          const a = nodes[r.a], b = nodes[r.b];
+          if (a.layer !== layer) continue;
+          const c = INK[r.hue];
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(r.cx, r.cy, b.x, b.y);
+          ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${(0.08 + r.act * 0.24) * dim})`;
+          ctx.lineWidth = (0.8 + r.act * 0.9) * (layer ? 1 : 0.7);
+          ctx.stroke();
+          if (r.act > 0.25) {
+            for (const s of r.packets) {
+              const p = bez(r, s);
+              const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 8);
+              g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${0.6 * r.act * dim})`); g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+              ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI * 2); ctx.fill();
+              ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.95 * r.act * dim})`; ctx.beginPath(); ctx.arc(p.x, p.y, layer ? 1.7 : 1.2, 0, Math.PI * 2); ctx.fill();
+            }
           }
         }
+        nodes.forEach((n, i) => {
+          if (n.layer !== layer) return;
+          const breathe = reduce ? 0 : Math.sin(t * n.drift + n.phase) * 0.6;
+          const lit = routes.some((r) => (r.a === i || r.b === i) && r.act > 0.8);
+          ctx.beginPath(); ctx.arc(n.x, n.y, n.r + breathe + (lit ? 1 : 0), 0, Math.PI * 2);
+          ctx.fillStyle = lit ? `rgba(${INK.calm.join(",")},${0.9 * dim})` : `rgba(${INK.node.join(",")},${0.35 * dim})`;
+          ctx.fill();
+          ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 5, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(${INK.node.join(",")},${0.06 * dim})`; ctx.lineWidth = 1; ctx.stroke();
+        });
+        ctx.restore();
       }
-      nodes.forEach((n, i) => {
-        const breathe = reduce ? 0 : Math.sin(t * n.drift + n.phase) * 0.6;
-        const lit = routes.some((r) => (r.a === i || r.b === i) && r.act > 0.8);
-        ctx.beginPath(); ctx.arc(n.x, n.y, n.r + breathe + (lit ? 1 : 0), 0, Math.PI * 2);
-        ctx.fillStyle = lit ? `rgba(${INK.calm.join(",")},0.9)` : `rgba(${INK.node.join(",")},0.35)`;
-        ctx.fill();
-        ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 5, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(${INK.node.join(",")},0.06)`; ctx.lineWidth = 1; ctx.stroke();
-      });
-      host.style.transform = pointer && !small ? `translate3d(${px.x}px, ${px.y}px, 0)` : "";
     }
 
     function frame(now: number) {
@@ -165,8 +174,8 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
     const onMove = (e: PointerEvent) => {
       if (!pointer || small || reduce) return;
       const rect = host.getBoundingClientRect();
-      px.tx = ((e.clientX - rect.left) / rect.width - 0.5) * 8;
-      px.ty = ((e.clientY - rect.top) / rect.height - 0.5) * 6;
+      px.tx = ((e.clientX - rect.left) / rect.width - 0.5) * 10;
+      px.ty = ((e.clientY - rect.top) / rect.height - 0.5) * 8;
     };
     document.addEventListener("visibilitychange", onVis);
     window.addEventListener("pointermove", onMove, { passive: true });

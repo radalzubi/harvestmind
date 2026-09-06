@@ -47,6 +47,7 @@ export function Hero() {
   return (
     <section className="hero">
       <div className="hero-atmos" aria-hidden />
+      <div className="hero-sweep" aria-hidden />
       <div className="hero-noise" aria-hidden />
       {field && <SupplyField />}
       <div className="hero-veil" aria-hidden />
@@ -61,6 +62,10 @@ export function Hero() {
           <Link href="/product" className="btn btn-ghost btn-lg">{h.how}</Link>
         </motion.div>
       </div>
+      <motion.a href="#moment" className="hero-cue" aria-label="Scroll" initial={qa ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4, duration: 1 }}>
+        <span /><i />
+      </motion.a>
+      <div className="hero-vignette" aria-hidden />
     </section>
   );
 }

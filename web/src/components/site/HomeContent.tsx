@@ -19,7 +19,7 @@ export function HomeContent({ qa = false }: { qa?: boolean }) {
       <Hero />
 
       {/* the memorable interaction: a lane slips, the plan moves */}
-      <section className="section moment">
+      <section className="section moment" id="moment">
         <div className="wrap split moment-split">
           <Reveal>
             <p className="eyebrow">{c.routeEyebrow}</p>
