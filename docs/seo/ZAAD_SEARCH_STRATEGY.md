@@ -30,34 +30,27 @@ audit. Second, the word ZAAD is shared by at least six unrelated organisations. 
 entity-disambiguation problem before it is a ranking problem: the site has to state, in
 every machine-readable way, which ZAAD this is.
 
-## 2. Production status (must be read before anything else)
+## 2. Production status (updated 2026-09-06, after deployment)
 
-At the time of the audit, `https://zaadsupply.com/` returned HTTP 200 with the title
-**"HarvestMind"**, the description "AI-driven planning for fresh-produce food hubs", the
-operator dashboard shell at `/`, no robots.txt (a 404 page was returned for it), no sitemap,
-and `www.zaadsupply.com` served the same content with no redirect and no canonical.
+PR 29 was merged into `adaptive/decision-engine` (merge commit `6073eb9`) and deployed to
+production with the Vercel CLI (`vercel --prod` from the repository root, root directory
+`web`). `https://zaadsupply.com/` now serves the SEO-enabled site; the checks in section 13
+were run against the live domain and all passed.
 
-Cause: the Vercel project `zaad` is git-integrated with production branch `main`, and `main`
-received PR 26 ("Add ZAAD public pages without homepage redesign") at 09:13 local time on
-2026-09-06. That commit keeps the HarvestMind dashboard at `/` and adds the public pages under
-`/product`, `/about` and so on. The redesigned homepage merged in PR 22 lives on
-`adaptive/decision-engine`, which is what this branch is built on.
+Vercel configuration changed:
 
-This branch was not deployed to production and the Vercel production branch was not changed:
-production had been redirected by a user action minutes earlier and changing it back is a
-product decision. Until either `adaptive/decision-engine` (plus this branch) is promoted to
-production or `main` receives the homepage, every item below is verified locally and on the
-branch preview, not on the live domain. The live domain currently tells Google the site is
-HarvestMind.
+- The project's git integration still lists `main` as its production branch: the REST API
+  does not allow changing that field, so it must be changed in the dashboard (Project →
+  Settings → Git → Production Branch → `adaptive/decision-engine`). Until then, the
+  project's *Ignored Build Step* was set through the API to skip every build whose commit
+  ref is `main`, so a push to `main` can no longer produce a deployment, production or
+  otherwise. Pushes to any other branch still build previews. Production deploys for ZAAD
+  are made from `adaptive/decision-engine` with `vercel --prod`.
+- `www.zaadsupply.com` now carries a domain-level 308 redirect to `zaadsupply.com` on
+  Vercel, in addition to the redirect in `next.config.ts`.
 
-Required user decision: choose the production branch. Two clean options:
-
-1. In Vercel, project `zaad`, set the production branch to `adaptive/decision-engine` and merge
-   this branch into it; or
-2. merge `adaptive/decision-engine` and this branch into `main`.
-
-Either way, `www.zaadsupply.com` must also be attached to the project so the redirect below
-takes effect (Vercel serves an unattached alias as a duplicate).
+Earlier in the day the domain served `main` (the HarvestMind dashboard at `/`); that is
+recorded in the PR 29 description.
 
 ## 3. Technical changes implemented on this branch
 
