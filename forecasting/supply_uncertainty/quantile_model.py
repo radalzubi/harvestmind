@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import date, datetime, timezone
+from typing import Protocol
 
 import numpy as np
 
@@ -51,6 +52,10 @@ from forecasting.supply_uncertainty.contract import (
     confidence_for_tier,
     rearrange,
 )
+
+
+class _Predictor(Protocol):
+    def predict(self, X: np.ndarray) -> np.ndarray: ...
 
 
 def _lightgbm_available() -> bool:
@@ -131,7 +136,7 @@ class GradientBoostedQuantileModel:
         self.seed = seed
         self.use_lgbm = (not force_linear) and _lightgbm_available()
 
-        self.models: dict[float, object] = {}
+        self.models: dict[float, _Predictor] = {}
         self.calibrator: MondrianConformalCalibrator | None = None
         self.feature_names: list[str] = []
         self.training_cutoff: date | None = None

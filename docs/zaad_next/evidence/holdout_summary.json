@@ -1,0 +1,566 @@
+{
+  "source_sha256": "365cac6fe33a40c372daf829d640b1c131ce22a6315832722a922e41917bccb7",
+  "total_runs": 3000,
+  "aggregates": [
+    {
+      "family": "control",
+      "baseline": "incumbent",
+      "n": 5,
+      "median_pct": 0.0,
+      "range_pct": [
+        0.0,
+        0.0
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "control",
+      "baseline": "base_stock",
+      "n": 5,
+      "median_pct": 0.5991644602850046,
+      "range_pct": [
+        -0.6067626097778593,
+        0.6274144251216421
+      ],
+      "losses": 1,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "control",
+      "baseline": "service_target",
+      "n": 5,
+      "median_pct": -0.2662270475566663,
+      "range_pct": [
+        -2.261528269818591,
+        0.11240255631271334
+      ],
+      "losses": 4,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "control",
+      "baseline": "deterministic_constrained",
+      "n": 5,
+      "median_pct": -0.2662270475566663,
+      "range_pct": [
+        -2.261528269818591,
+        0.11240255631271334
+      ],
+      "losses": 4,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "control",
+      "baseline": "expected_search",
+      "n": 5,
+      "median_pct": 0.47554638578901687,
+      "range_pct": [
+        0.32751614285104375,
+        0.5657064242449853
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "control",
+      "baseline": "cvar_search",
+      "n": 5,
+      "median_pct": 0.44328637213788996,
+      "range_pct": [
+        0.2565750177412768,
+        0.47554638578901687
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "control",
+      "baseline": "route_aware",
+      "n": 5,
+      "median_pct": 0.47554638578901687,
+      "range_pct": [
+        0.32751614285104375,
+        0.5657064242449853
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "control",
+      "baseline": "zaad_gated",
+      "n": 5,
+      "median_pct": 0.0,
+      "range_pct": [
+        0.0,
+        0.0
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 5,
+      "changes": 0
+    },
+    {
+      "family": "disruption",
+      "baseline": "incumbent",
+      "n": 60,
+      "median_pct": 0.0,
+      "range_pct": [
+        0.0,
+        0.0
+      ],
+      "losses": 0,
+      "service_breaches": 38,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "disruption",
+      "baseline": "base_stock",
+      "n": 60,
+      "median_pct": -3.3766660736265774,
+      "range_pct": [
+        -8.848426472864178,
+        0.6144093812686324
+      ],
+      "losses": 46,
+      "service_breaches": 45,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "disruption",
+      "baseline": "service_target",
+      "n": 60,
+      "median_pct": 0.0,
+      "range_pct": [
+        -3.2177230928971734,
+        0.0
+      ],
+      "losses": 16,
+      "service_breaches": 40,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "disruption",
+      "baseline": "deterministic_constrained",
+      "n": 60,
+      "median_pct": 0.0,
+      "range_pct": [
+        -3.2177230928971734,
+        0.0
+      ],
+      "losses": 15,
+      "service_breaches": 40,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "disruption",
+      "baseline": "expected_search",
+      "n": 60,
+      "median_pct": 0.0,
+      "range_pct": [
+        0.0,
+        0.5314130985192405
+      ],
+      "losses": 0,
+      "service_breaches": 38,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "disruption",
+      "baseline": "cvar_search",
+      "n": 60,
+      "median_pct": 4.025032783297919,
+      "range_pct": [
+        0.0,
+        12.152736307147704
+      ],
+      "losses": 0,
+      "service_breaches": 33,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "disruption",
+      "baseline": "route_aware",
+      "n": 60,
+      "median_pct": 3.0822363146093963,
+      "range_pct": [
+        0.0,
+        11.387900632633103
+      ],
+      "losses": 0,
+      "service_breaches": 35,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "disruption",
+      "baseline": "zaad_gated",
+      "n": 60,
+      "median_pct": 3.0822363146093963,
+      "range_pct": [
+        0.0,
+        11.387900632633103
+      ],
+      "losses": 0,
+      "service_breaches": 35,
+      "abstentions": 0,
+      "changes": 55
+    },
+    {
+      "family": "normal",
+      "baseline": "incumbent",
+      "n": 200,
+      "median_pct": 0.0,
+      "range_pct": [
+        0.0,
+        0.0
+      ],
+      "losses": 0,
+      "service_breaches": 33,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "base_stock",
+      "n": 200,
+      "median_pct": 0.47556250935197264,
+      "range_pct": [
+        -0.9098206458898189,
+        1.6085240755691825
+      ],
+      "losses": 24,
+      "service_breaches": 42,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "service_target",
+      "n": 200,
+      "median_pct": 0.0,
+      "range_pct": [
+        -3.2177230928971734,
+        1.4807844177096208
+      ],
+      "losses": 93,
+      "service_breaches": 45,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "deterministic_constrained",
+      "n": 200,
+      "median_pct": -0.3111805669276368,
+      "range_pct": [
+        -3.2177230928971734,
+        0.973860773779709
+      ],
+      "losses": 140,
+      "service_breaches": 92,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "expected_search",
+      "n": 200,
+      "median_pct": 0.3486977506805048,
+      "range_pct": [
+        0.0,
+        1.4611754973860986
+      ],
+      "losses": 0,
+      "service_breaches": 33,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "cvar_search",
+      "n": 200,
+      "median_pct": 0.29273303436467996,
+      "range_pct": [
+        -13.181933026122731,
+        1.3337212007353734
+      ],
+      "losses": 5,
+      "service_breaches": 33,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "route_aware",
+      "n": 200,
+      "median_pct": 0.3486977506805048,
+      "range_pct": [
+        -13.181933026122731,
+        1.4611754973860986
+      ],
+      "losses": 5,
+      "service_breaches": 33,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "zaad_gated",
+      "n": 200,
+      "median_pct": 0.3486977506805048,
+      "range_pct": [
+        0.0,
+        1.4611754973860986
+      ],
+      "losses": 0,
+      "service_breaches": 33,
+      "abstentions": 30,
+      "changes": 164
+    },
+    {
+      "family": "normal_ofat",
+      "baseline": "incumbent",
+      "n": 75,
+      "median_pct": 0.0,
+      "range_pct": [
+        0.0,
+        0.0
+      ],
+      "losses": 0,
+      "service_breaches": 18,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal_ofat",
+      "baseline": "base_stock",
+      "n": 75,
+      "median_pct": 0.3066318641953358,
+      "range_pct": [
+        -11.492443510979752,
+        2.5295037730499166
+      ],
+      "losses": 32,
+      "service_breaches": 27,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal_ofat",
+      "baseline": "service_target",
+      "n": 75,
+      "median_pct": -0.5206271535566742,
+      "range_pct": [
+        -14.008653295057686,
+        2.389773818271444
+      ],
+      "losses": 48,
+      "service_breaches": 30,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal_ofat",
+      "baseline": "deterministic_constrained",
+      "n": 75,
+      "median_pct": -2.2114430834687155,
+      "range_pct": [
+        -14.008653295057686,
+        1.2555837725268761
+      ],
+      "losses": 58,
+      "service_breaches": 41,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal_ofat",
+      "baseline": "expected_search",
+      "n": 75,
+      "median_pct": 0.43973451826789633,
+      "range_pct": [
+        -8.785231212413246,
+        7.567894390355023
+      ],
+      "losses": 15,
+      "service_breaches": 18,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal_ofat",
+      "baseline": "cvar_search",
+      "n": 75,
+      "median_pct": 0.30270890623306324,
+      "range_pct": [
+        -8.627631095730557,
+        7.567894390355023
+      ],
+      "losses": 16,
+      "service_breaches": 18,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal_ofat",
+      "baseline": "route_aware",
+      "n": 75,
+      "median_pct": 0.43973451826789633,
+      "range_pct": [
+        -8.785231212413246,
+        7.567894390355023
+      ],
+      "losses": 15,
+      "service_breaches": 18,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal_ofat",
+      "baseline": "zaad_gated",
+      "n": 75,
+      "median_pct": 0.34220904562541754,
+      "range_pct": [
+        -8.785231212413246,
+        7.567894390355023
+      ],
+      "losses": 14,
+      "service_breaches": 19,
+      "abstentions": 5,
+      "changes": 58
+    },
+    {
+      "family": "signal_ablation",
+      "baseline": "incumbent",
+      "n": 35,
+      "median_pct": 0.0,
+      "range_pct": [
+        0.0,
+        0.0
+      ],
+      "losses": 0,
+      "service_breaches": 35,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "signal_ablation",
+      "baseline": "base_stock",
+      "n": 35,
+      "median_pct": -3.4961339062421524,
+      "range_pct": [
+        -4.1261526086321485,
+        -3.3731079208019032
+      ],
+      "losses": 35,
+      "service_breaches": 35,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "signal_ablation",
+      "baseline": "service_target",
+      "n": 35,
+      "median_pct": 0.0,
+      "range_pct": [
+        -5.349630244265883,
+        0.0
+      ],
+      "losses": 10,
+      "service_breaches": 35,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "signal_ablation",
+      "baseline": "deterministic_constrained",
+      "n": 35,
+      "median_pct": 0.0,
+      "range_pct": [
+        -5.349630244265883,
+        0.0
+      ],
+      "losses": 10,
+      "service_breaches": 35,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "signal_ablation",
+      "baseline": "expected_search",
+      "n": 35,
+      "median_pct": 0.0,
+      "range_pct": [
+        -3.1294440265503987,
+        0.0
+      ],
+      "losses": 10,
+      "service_breaches": 35,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "signal_ablation",
+      "baseline": "cvar_search",
+      "n": 35,
+      "median_pct": 6.715704023054719,
+      "range_pct": [
+        -2.4630502368125833,
+        8.036826056946095
+      ],
+      "losses": 10,
+      "service_breaches": 35,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "signal_ablation",
+      "baseline": "route_aware",
+      "n": 35,
+      "median_pct": 4.640752870645075,
+      "range_pct": [
+        -3.1294440265503987,
+        6.115514523722825
+      ],
+      "losses": 10,
+      "service_breaches": 35,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "signal_ablation",
+      "baseline": "zaad_gated",
+      "n": 35,
+      "median_pct": 4.640752870645075,
+      "range_pct": [
+        -3.1294440265503987,
+        6.115514523722825
+      ],
+      "losses": 10,
+      "service_breaches": 35,
+      "abstentions": 0,
+      "changes": 35
+    }
+  ]
+}

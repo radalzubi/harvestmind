@@ -14,7 +14,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import assistant, fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin, access, jobs
+from api.routers import assistant, fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin, access, jobs, zaad
 
 app = FastAPI(
     title="Zaad Supply API",
@@ -107,6 +107,7 @@ async def _refuse_permissive_public_bind() -> None:
 
 app.include_router(planning.router)
 app.include_router(fmcg.router)
+app.include_router(zaad.router)
 app.include_router(backtest.router)
 app.include_router(data.router)
 app.include_router(fsma.router)

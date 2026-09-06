@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "fixture_kind": "reconstructed_official_event_metadata_not_archived_capture",
+  "event_id": "baltimore-fort-mchenry-restored-2024-06-10",
+  "entity_ids": ["PORT:USBAL"],
+  "event_type": "commercial_channel_restored",
+  "source_url": "https://www.nab.usace.army.mil/Media/News-Releases/Article/3802402/us-army-corps-of-engineers-announces-full-restoration-of-baltimores-fort-mchenr/",
+  "publication_date": "2024-06-10",
+  "publication_precision": "date_only",
+  "publication_timezone": "America/New_York",
+  "published_at": null,
+  "available_after_upper_bound": "2024-06-11T04:00:00Z",
+  "availability_basis": "conservative_next_local_day_not_verified_exact_publication",
+  "research_retrieval_date": "2026-09-05",
+  "historical_eligible": false,
+  "rights_scope": "minimal_factual_metadata_and_attribution_no_photos_or_article_body",
+  "limitations": [
+    "No original 2024 response snapshot was available.",
+    "Exact publication time was not verified; do not manufacture one.",
+    "Current notice text may include later edits.",
+    "Use for date-boundary plumbing tests, not as proof of historic early-warning availability.",
+    "Commercial channel status is not operator shipment arrival or customer savings."
+  ]
+}

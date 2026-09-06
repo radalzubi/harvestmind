@@ -17,7 +17,7 @@ type Section = { label?: string; items: NavItem[] };
 const COMMERCIAL: Section[] = [
   { items: [{ href: "/start", label: "Start", Icon: Rocket }] },
   { label: "Data", items: [{ href: "/upload", label: "Upload", Icon: UploadCloud }, { href: "/data-quality", label: "Data quality", Icon: Database }] },
-  { label: "Decide", items: [{ href: "/fmcg", label: "Purchase plan", Icon: Boxes }, { href: "/state", label: "State and lanes", Icon: Radar }] },
+  { label: "Decide", items: [{ href: "/zaad", label: "Zaad workspace", Icon: LayoutDashboard }, { href: "/fmcg", label: "Purchase plan", Icon: Boxes }, { href: "/state", label: "State and lanes", Icon: Radar }] },
   { label: "Export", items: [{ href: "/reports", label: "Reports", Icon: FileText }] },
 ];
 

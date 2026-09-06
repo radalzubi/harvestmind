@@ -263,7 +263,7 @@ class PooledEmpiricalModel:
         infl = TIER_INTERVAL_INFLATION[tier]
         pooled_sd = float(np.sqrt(max(within_var, 1e-18)))
         pop_within = max(pop.within_sd, 1e-9)
-        q: dict[float, float] = {}
+        q = {}
         for lv in self.quantile_levels:
             # Population offset expressed in SD units, then rescaled to the
             # group's pooled SD — this is what keeps a 3-observation group's

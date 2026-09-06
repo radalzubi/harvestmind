@@ -1,4 +1,15 @@
-# HarvestMind
+# ZAAD
+
+Repository: `radalzubi/harvestmind` (unchanged). Company/product: **ZAAD** —
+[zaadsupply.com](https://zaadsupply.com).
+
+**New inventory/resilience prototype:** start at
+[docs/zaad_next/README.md](docs/zaad_next/README.md). Includes the isolated
+`/zaad` workspace, current-source adapter, 3,000-row frozen synthetic sweep,
+and retained failures. Verdict: **NEEDS FURTHER ENGINEERING**; not an
+autonomous procurement system or real-operator validation.
+
+## Existing supply-planning foundation
 
 **Stochastic supply planning for perishable food operators** — distributors,
 aggregators, and food hubs. Upload the operational CSVs you already have and

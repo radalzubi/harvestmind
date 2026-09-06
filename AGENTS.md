@@ -1,5 +1,18 @@
 # AGENTS.md
 
+## ZAAD inventory/resilience prototype boundary
+
+New work under `zaad/`, `/api/zaad` and web `/zaad` is isolated from legacy
+FMCG/LP adapters. Read `docs/zaad_next/MATHEMATICAL_SPEC.md` and
+`IMPLEMENTATION_STATUS.md` before changing it. The final source/config is
+frozen in `docs/zaad_next/evidence/preregistered_manifest.json`; the current
+holdout is consumed. Never tune on its results and call the same seeds fresh.
+Available stock must serve demand, every policy must share physical/ledger
+rules, and future actual receipts must never enter the planner's pending book.
+Calibrated risk, Oracle parity, real-operator savings and no-harm guarantees
+are not established. Keep the NEEDS FURTHER ENGINEERING verdict visible until
+new evidence actually supports a change. No automatic purchase-order writes.
+
 Entry point for coding agents (Codex, Claude Code, etc.) working in this
 repository. Read this before making changes.
 

@@ -783,3 +783,16 @@ not itself recurring profit. Annual recurring carry benefit requires an
 avoidable annual carry rate times sustained inventory release, without double
 counting financing. Terminal cash/salvage, alternate-source landed costs and
 OTIF are outside this experiment. See `docs/remodel/ECONOMICS_AND_PILOT.md`.
+
+## 29. ZAAD isolated work-conserving decision prototype
+
+The new `zaad/` path is separate from the legacy LP formulations above.
+Its authoritative contract and ledger are in
+`docs/zaad_next/MATHEMATICAL_SPEC.md`. It performs bounded closed-loop
+finite-policy search, not a globally optimal continuous stochastic program.
+Available inventory always serves demand; pipeline remains dated and known
+as of the origin; every baseline shares pack, route, edge-volume, budget and
+storage constraints. Signal severity is an explicitly assumed stress mapping,
+not a calibrated probability. Final synthetic service failures remain visible
+in `docs/zaad_next/BENCHMARK_RESULTS.md`; the engineering verdict is
+NEEDS FURTHER ENGINEERING, not production validation or Oracle parity.
