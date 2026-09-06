@@ -32,4 +32,6 @@ Before enrolling an operator:
 
 Known limitations: no distributed worker quota, no automated live feed scheduler,
 no calibrated real shipment model, and no production ERP write-back. The local
-browser smoke depends on the user's Mac being unlocked. Approval is not execution.
+browser smoke passed after the Mac was unlocked and the exact localhost UI origin
+was configured. Changing the draft invalidates displayed recommendations and
+approval state. Approval is not execution.

@@ -29,6 +29,12 @@ fee. Transfers preserve expiry and cannot arrive after it. Inventory has no
 free disposal or creation slack. Arrivals enter once. Existing pipeline is
 already expected-accepted; new fills apply to ordered quantities once.
 
+First-review transfers are additionally bounded by observed usable opening stock
+plus confirmed inbound transfers due now, summed across all outgoing arcs for
+that SKU/location/expiry cohort. An overdue unreceived PO is not opening stock:
+the no-history ETA fallback is at least the next review. Replay materializes
+actually observed receipts before optimization, never anticipated receipts.
+
 `sum(F) + u = demand`. Approved substitution ratios include declared service
 equivalence; incompatible customer/channel mappings are absent. Complementarity
 binaries prohibit compatible remaining stock while demand is lost. Additional

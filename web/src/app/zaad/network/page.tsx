@@ -24,13 +24,20 @@ export default function NetworkPlanner() {
   const [decision, setDecision] = useState("");
   const [reason, setReason] = useState("");
   const [reviewStatus, setReviewStatus] = useState("");
+  function invalidateDecision() {
+    setReport(null); setDecision(""); setReviewStatus(""); setReason("");
+  }
+  function editDraft(value: string) {
+    setDraft(value); invalidateDecision(); setError("");
+  }
   async function fixture(caseName: string) {
-    setError(""); setReport(null); setDecision("");
-    try { setDraft(JSON.stringify(await apiFetch(`/api/zaad/network/fixture?case=${caseName}`), null, 2)); }
+    setBusy(true); setError(""); invalidateDecision();
+    try { editDraft(JSON.stringify(await apiFetch(`/api/zaad/network/fixture?case=${caseName}`), null, 2)); }
     catch (e) { setError(e instanceof Error ? e.message : "Could not load fixture."); }
+    finally { setBusy(false); }
   }
   async function run(save: boolean) {
-    setBusy(true); setError(""); setDecision(""); setReviewStatus("");
+    setBusy(true); setError(""); invalidateDecision();
     try {
       JSON.parse(draft);
       if (save) {
@@ -62,9 +69,12 @@ export default function NetworkPlanner() {
         <input type="file" accept="application/json,.json" className="mt-2 block" disabled={busy} onChange={async e => {
           const f = e.target.files?.[0]; if (!f) return;
           if (f.size > 2 * 1024 * 1024) { setError("Interactive snapshots are limited to 2 MiB."); return; }
-          setDraft(await f.text()); setReport(null); setDecision("");
+          setBusy(true); invalidateDecision();
+          try { editDraft(await f.text()); }
+          catch { setError("Could not read the selected file."); }
+          finally { setBusy(false); }
         }} /></label>
-      <textarea aria-label="Planning state JSON" value={draft} onChange={e => setDraft(e.target.value)} className="h-64 w-full rounded-lg border bg-white p-3 font-mono text-xs" spellCheck={false} />
+      <textarea aria-label="Planning state JSON" disabled={busy} value={draft} onChange={e => editDraft(e.target.value)} className="h-64 w-full rounded-lg border bg-white p-3 font-mono text-xs" spellCheck={false} />
       <div className="flex flex-wrap gap-3"><button disabled={busy || !draft} onClick={() => run(false)} className="rounded-lg bg-emerald-900 px-4 py-2 text-white disabled:opacity-50">{busy ? "Computing…" : "Compare plans"}</button>
         <button disabled={busy || !draft} onClick={() => run(true)} className="rounded-lg border px-4 py-2 disabled:opacity-50">Save authenticated shadow decision</button></div>
       <p className="text-xs text-slate-500">Durable storage requires an authenticated operator and a dedicated shadow database. Never uploads to training.</p>

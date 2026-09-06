@@ -2,8 +2,13 @@
 
 PR21's seeds and results remain historical. New work has development seeds14001,
 pre-freeze validation15001–15002, and a separately registered final seed set.
-The exact final manifest is in `evidence/preregistered.json`; the executable
+The accepted final manifest is in `evidence/final_v2/preregistered.json`; the executable
 checks its source hash and refuses both changed code and output overwrite.
+Engine checkpoint: `488ab4c`; final seeds22001–22005. The original final attempt
+in `evidence/final.jsonl` (seeds16001–16005) is superseded because it exposed an
+overdue-PO immediate-transfer defect. `evidence/corrected/` is a partial preflight
+with seeds19001–19005, stopped for two type-check errors before its outcome
+metrics were analyzed. Neither is silently overwritten or pooled with final_v2.
 
 The executed coverage matrix has85 cells:35 service-target×opening-cover cells,
 24 demand/supply combinations with rotated topology/dependence,17 disruption
@@ -38,6 +43,6 @@ absolute base-stock modeled economic cost as denominator. Reports use
 are never treated as zero cost; paired summaries disclose the completed subset.
 
 Separate paired action probes and five force-unit-fill gate controls are retained
-in `ablations.json`. The scale probe is a sparse deterministic4-period workload,
+in `evidence/final_v2/ablations.json`. The scale probe is a sparse deterministic4-period workload,
 not the full stochastic fleet. Pending receipts, censored tails, timeouts and
 physically impossible states must remain visible in failure analysis.

@@ -1,16 +1,16 @@
 # Measured sparse scale probe
 
-Actual local results (`evidence/scalability.jsonl`):
+Actual local results on the corrected frozen engine (`evidence/final_v2/scalability.jsonl`):
 
 | SKUs | Locations | Variables | Constraints | Total seconds | Status |
 |---:|---:|---:|---:|---:|---|
 |10|5|688|733|0.015|OPTIMAL|
-|100|5|6,808|6,943|0.108|OPTIMAL|
-|1,000|5|68,008|69,043|2.019|OPTIMAL|
-|5,000|5|340,008|345,043|29.230|OPTIMAL|
+|100|5|6,808|6,943|0.106|OPTIMAL|
+|1,000|5|68,008|69,043|1.859|OPTIMAL|
+|5,000|5|340,008|345,043|28.503|OPTIMAL|
 
 One source/SKU, four periods, one deterministic scenario. The5,000-SKU process
-peaked around1.53GB RSS on this Mac. Other local jobs were running, so timings
+peaked around1.51GB RSS on this Mac. Other local jobs were running, so timings
 are indicative, not a reproducible hardware performance guarantee. This does
 **not** prove interactive5,000-SKU stochastic planning with many sources,
 substitution links, dense customer lines and12–52 periods.

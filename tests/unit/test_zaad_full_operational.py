@@ -90,7 +90,7 @@ def test_ineligible_amendment_never_appears():
     assert set(result.amendments) == {("open", "keep")}
 
 
-def test_overdue_expected_po_is_not_physically_transferable():
+def overdue_request():
     data = example("recovery").model_dump(mode="json")
     data["locations"].append({**data["locations"][0], "id": "central"})
     data["stock"][0]["quantity"] = 0.
@@ -99,7 +99,34 @@ def test_overdue_expected_po_is_not_physically_transferable():
     data["pipeline"][0]["options"] = [{**data["pipeline"][0]["options"][0], "due_in": 0}]
     data["transfers"] = [{"id": "move", "known_at": data["as_of"], "sku": "A", "origin": "central", "destination": "branch",
                            "lead_periods": 1, "capacity": 100., "cost_per_unit": .1, "loss_fraction": 0., "approved": True}]
-    req = Request.model_validate(data)
+    return Request.model_validate(data)
+
+
+def test_overdue_expected_po_is_not_physically_transferable():
+    req = overdue_request()
     result = solve(req, draw(req, 3, 1, deterministic=True))
     assert result.status == "OPTIMAL"
     assert sum(q for (_, _, t), q in result.transfers.items() if t == 0) == 0
+
+
+def test_first_transfer_bound_survives_optimistic_external_world():
+    from dataclasses import replace
+
+    req = overdue_request()
+    world = replace(draw(req, 3, 1, deterministic=True)[0], po_due={"open": 0})
+    result = solve(req, [world])
+    assert result.status == "OPTIMAL"
+    assert sum(q for (_, _, t), q in result.transfers.items() if t == 0) == 0
+
+
+def test_first_transfer_bound_is_shared_across_arcs():
+    from dataclasses import replace
+
+    data = overdue_request().model_dump(mode="json")
+    data["stock"].append({**data["stock"][0], "id": "real_stock", "location": "central", "quantity": 10.})
+    data["transfers"].append({**data["transfers"][0], "id": "other_truck"})
+    req = Request.model_validate(data)
+    world = replace(draw(req, 3, 1, deterministic=True)[0], po_due={"open": 0})
+    result = solve(req, [world])
+    assert result.status == "OPTIMAL"
+    assert sum(q for (_, _, t), q in result.transfers.items() if t == 0) <= 10. + 1e-6
