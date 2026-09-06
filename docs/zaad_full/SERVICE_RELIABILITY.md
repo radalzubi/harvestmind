@@ -181,7 +181,62 @@ Development3 passes (all retained under `docs/zaad_full/evidence/reliability/`):
   stated principle (less inventory when the supply record is clean).
 - `dev3_e` and `validation3`: see the tables below.
 
-VAL3_PLACEHOLDER
+### Development3 (seed 26001, 56 cells) and validation3 (seeds 27001, 27002, 112 replays per method)
+
+Validation3, all six methods, credibility floor .10 (`val3.jsonl`, `val3.summary.json`):
+
+| Method | Complete | Breaches | Avoidable | Median service | Mean weighted shortfall | Inventory (periods) | Benign inventory | Emergency review share | Saving vs base stock | Cost losses vs base |
+|---|---|---|---|---|---|---|---|---|---|---|
+| base_stock (frozen proxy) | 112 | 74 | 20 | .866 | .142 | 1.38 | .48 | .13 | 0 | 0 |
+| stochastic (frozen) | 111 | 78 | 24 | .881 | .121 | 1.07 | .85 | .23 | +2.92% | 30 |
+| robust (frozen) | 87 | 47 | 4 | .942 | .082 | 2.59 | 3.11 | .42 | +6.39% | 25 |
+| protected (new, CVaR on fitted worlds) | 112 | 75 | 21 | .900 | .112 | 1.41 | .48 | .26 | +2.08% | 31 |
+| gated_pr24 (frozen planner) | 112 | 74 | 20 | .872 | .133 | 1.37 | .48 | .19 | +2.04% | 6 |
+| **gated (reliability profile)** | 112 | **69** | **15** | **.904** | **.117** | 1.93 | .89 | .19 | +1.66% | 19 |
+
+Paired on the same cell and seed, gated (reliability) versus gated_pr24: service wins 58,
+losses 30, ties 24; cost wins 49, losses 55, ties 8. Versus protected: service wins 70,
+losses 27. Robust has the fewest breaches but 25 of 112 replays did not complete
+(infeasible or timed out) and it holds 2.6 periods everywhere, 3.1 on benign cells.
+
+Breach classes are identical across methods where no method could have met the target:
+44 of 112 replays are ex-post model failures (spikes, unknown promotions, volatile demand,
+severe or correlated outages far outside the review-time model) and 10 are unavoidable.
+The reliability profile's gain is entirely in the avoidable class: 15 avoidable breaches
+against 20 for the frozen planner.
+
+Development3 (dev3_e, same code): breaches 37 vs 38, avoidable 1 vs 2, median service .925
+vs .872, service wins 24 / losses 18, cost wins 22 / losses 28, inventory 1.76 vs 1.26.
+
+### Reading
+
+- **Service is more reliable.** Fewer breaches, a quarter fewer avoidable breaches, higher
+  median service, lower priority-weighted shortfall, and the paired service comparison is
+  won two to one, on seeds the code never saw.
+- **It is not free.** Inventory is 41% higher than the frozen planner on the validation
+  matrix and 85% higher on benign cells (.89 versus .48 periods of demand). Cost against
+  the base-stock proxy is slightly worse in median and lost in 19 replays against 6. That
+  is the "false protection" the brief warned about, reduced from the first passes
+  (2.9 periods on benign cells at a fixed stress weight) but not removed.
+- **The dominant failure is model failure**, not selection: 44 of 112 replays per method
+  cannot be met by any policy in the set. Better protection sizing does not fix a spike
+  that the history gave no reason to expect.
+- `holdout3` was **not** run. The profile is not promoted on this evidence: it would be
+  accepted for service and rejected for working capital, and the brief asked for both.
+
+### Verdict on the final question
+
+*Does ZAAD now maintain service as reliably as its model and data reasonably allow without
+solving every uncertainty by holding excess stock?* Partly. It is now measurably less
+likely to sacrifice service to save cost: the service-first acceptance rule and the
+not-worse stress gate stop the frozen behaviour of retaining a breaching incumbent because
+the protective plan was not cheaper, and the avoidable-breach count falls. It still solves
+some uncertainty by holding stock it does not need on quiet cells, because the declared
+stress keeps a floor weight and the calibrated spread widens on Poisson noise the history
+under-represents. **NEEDS FURTHER ENGINEERING** on false protection; the next lever is an
+evidence-driven decay of the stress floor toward zero on sources with a clean observed
+record, measured on new seeds again.
+
 
 ## 11. Remaining failure families
 
@@ -198,9 +253,12 @@ VAL3_PLACEHOLDER
    plus supply lead time exceeds what a 95% target allows from a two-period cover; the
    miss is unavoidable in the benchmark's geometry but shows that protection has to be
    placed upstream earlier than the review loop currently does.
-4. **False protection on benign cells** is reduced but not zero: the declared stress keeps
-   a floor of a tenth of its weight, which costs about a quarter of a period of demand on
-   clean single-source cells relative to the frozen planner.
+4. **False protection on benign cells** is reduced but not removed: on validation the
+   reliability profile holds .89 periods of demand on benign cells against .48 for the
+   frozen planner, and 41% more inventory across the matrix. The declared stress keeps a
+   floor of a tenth of its weight, and the calibration ratio widens the fitted spread when
+   the history under-represents the noise; both are right when the risk is real and cost
+   working capital when it is not.
 5. **Data sufficiency.** Supply profiles need six arrived records before they are
    observed; until then the declared parameters govern and the profile says so.
 6. **No real operator data.** Everything above is synthetic; the calibration ratio, level
