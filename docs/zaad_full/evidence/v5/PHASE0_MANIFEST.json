@@ -1,0 +1,65 @@
+{
+ "cycle": "network-recovery-v5",
+ "branch": "claude/zaad-network-recovery-v5",
+ "starting_commit": "060c881079c335fad66b675ca29310b9c045f629",
+ "stacked_on": "claude/zaad-calibrated-protection-v4 060c881 (PR 33)",
+ "pre_tuning_source_hash": "c44c90d678fdebf9243297be75be4a5f89cdd3cc3c760308b551aff00c89211f",
+ "seeds": {
+  "development5": [
+   32001
+  ],
+  "validation5": [
+   33001,
+   33002
+  ]
+ },
+ "frozen_unrun": {
+  "holdout4": [
+   31001,
+   31002
+  ]
+ },
+ "consumed_never_used_for_design": {
+  "holdout3": [
+   28001,
+   28002
+  ],
+  "final": [
+   22001,
+   22002,
+   22003,
+   22004,
+   22005
+  ],
+  "holdout2": [
+   25001,
+   25002
+  ],
+  "development4": [
+   29001
+  ],
+  "validation4": [
+   30001,
+   30002
+  ],
+  "development3": [
+   26001
+  ],
+  "validation3": [
+   27001,
+   27002
+  ]
+ },
+ "matrix": "v4 (72 cells) plus v5 recovery cells",
+ "reference_profiles": [
+  "gated_pr24",
+  "gated_pr30",
+  "gated_v4 (protection_v5=False)"
+ ],
+ "rules": [
+  "holdout4 not run in this cycle",
+  "design frozen before validation5",
+  "no retuning after validation5"
+ ],
+ "frozen_at": "2026-09-06T22:18:25Z"
+}

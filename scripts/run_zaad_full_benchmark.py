@@ -33,7 +33,9 @@ SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 
          # Service-reliability study. New seeds again; holdout3 stays frozen until a profile is promoted.
          "development3": [26001], "validation3": [27001, 27002], "holdout3": [28001, 28002],
          # Calibrated-protection cycle (v4). holdout3 is consumed; holdout4 is frozen and unrun during development.
-         "development4": [29001], "validation4": [30001, 30002], "holdout4": [31001, 31002]}
+         "development4": [29001], "validation4": [30001, 30002], "holdout4": [31001, 31002],
+         # Network/recovery cycle (v5). holdout4 stays frozen and unrun; v5 may only use these two splits.
+         "development5": [32001], "validation5": [33001, 33002]}
 METHODS = ["base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated"]
 RELIABILITY_METHODS = ["base_stock", "stochastic", "robust", "protected", "gated_pr24", "gated_pr30", "gated"]
 INVENTORY = {"low": .5, "balanced": 2., "high": 4.}
