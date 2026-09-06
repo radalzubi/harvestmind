@@ -101,5 +101,5 @@ Remote CI is not represented as green by these local results.
   findings** (10 low, all pre-existing). `nosec` annotations on those paths:
   13 on the base, 18 now, each with an inline reason (see PR24_FOLLOWUP).
 - Adaptation evidence: `docs/zaad_full/evidence/adaptation/` holds every row of
-  the development2 and validation2 runs for all modes, the per-run logs and
+  the development2 and validation2 runs for all modes and
   the paired summaries. `holdout2` was not run.
