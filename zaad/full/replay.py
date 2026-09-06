@@ -17,8 +17,15 @@ from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, draw, forecast_all
 
 
+# Methods frozen at PR23/PR24 behaviour run on the frozen engine profile so paired comparisons
+# against the reliability profile are like for like. "protected" and "gated" use the new profile.
+FROZEN_METHODS = {"base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated_pr24"}
+
+
 def choose(req: Request, method: str) -> Solution:
-    if method == "gated":
+    if method in FROZEN_METHODS and req.engine_profile != "pr24":
+        req = req.model_copy(update={"engine_profile": "pr24"})
+    if method in {"gated", "gated_pr24"}:
         report = plan(req)
         rows = report["actions"]
         return Solution("OPTIMAL" if report["status"] != "ABSTAIN" else "ABSTAIN",
@@ -35,7 +42,8 @@ def choose(req: Request, method: str) -> Solution:
     if method == "robust":
         extra = [w for i, stress in enumerate(req.stresses) for w in draw(req, req.seed + 100 + i, 1, stress)]
         worlds = [replace(w, weight=1 / (len(worlds) + len(extra))) for w in worlds + extra]
-    result = solve(req, worlds, service_floor=True, per_world_service=method == "robust")
+    result = solve(req, worlds, service_floor=True, per_world_service=method == "robust",
+                   service_risk="cvar" if method == "protected" else "expected")
     if result.status == "INFEASIBLE":
         # Explicit recovery solve, not a relaxed solve passed off as achieving the SLA.
         result = solve(req, worlds, service_first="all")

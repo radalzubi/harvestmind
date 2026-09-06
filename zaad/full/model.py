@@ -104,7 +104,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           service_first: str | None = None, cvar_weight: float = 0.,
           fixed: Solution | None = None, disabled: frozenset[str] = frozenset(),
           targets: dict[tuple[str, int], float] | None = None,
-          per_world_service: bool = False) -> Solution:
+          per_world_service: bool = False, service_risk: str = "expected") -> Solution:
     started = time.monotonic()
     if not worlds or abs(sum(w.weight for w in worlds) - 1) > 1e-8 or any(w.weight <= 0 for w in worlds):
         raise ValueError("positive scenario weights must sum to one")
@@ -162,6 +162,17 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
         elif when >= H:
             # Committed after the horizon: not paid inside the plan, but it must be financeable at the end.
             tail[w][index] += amount
+    # "alternates" disabled keeps only the cheapest approved source per SKU and destination, so the
+    # value of the other approved suppliers and routes can be measured rather than assumed.
+    cheapest: dict[tuple[str, str], tuple[float, str]] = {}
+    for source in req.sources:
+        if source.approved and source.compliance == "cleared":
+            term = terms[source.terms]
+            landed = source.unit_price * term.fx_rate_to_currency + source.freight_per_unit + source.handling_per_unit
+            pair = (source.sku, source.destination)
+            if pair not in cheapest or (landed, source.id) < cheapest[pair]:
+                cheapest[pair] = (landed, source.id)
+    primary_id = {key: value[1] for key, value in cheapest.items()}
     # Purchase variables and fixed costs, continuous unless actual pack/MOQ needs MILP.
     for source in req.sources:
         term = terms[source.terms]
@@ -171,6 +182,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             origin = req.as_of + timedelta(days=req.period_days * t)
             order_date = next_open(origin, calendars[source.order_calendar])
             eligible = source.approved and source.compliance == "cleared" and order_date <= source.quote_expires
+            if "alternates" in disabled and primary_id.get((source.sku, source.destination)) != source.id:
+                eligible = False
             cap = min(source.maximum, source.capacity_by_period[t]) if eligible else 0.
             q = m.var(("purchase", source.id, t), upper=cap)
             x[source.id, t] = q
@@ -514,6 +527,20 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     row[unmet[service.id, t, w]] = world.weight
                     demand += world.weight * world.demand[service.id][t]
             m.row(row, upper=(1 - service.target) * demand)
+            if service_risk == "cvar" and len(worlds) > 1 and req.service_risk_level > 0:
+                # Quantile protection (Rockafellar-Uryasev): the mean unmet fraction over the worst
+                # (1 - level) share of scenarios must also respect the target. Protection then scales
+                # with the spread of the scenarios and vanishes when they are tight.
+                eta = m.var(("service_eta", service.id))
+                tail_terms: dict[int, float] = {eta: 1.}
+                for w, world in enumerate(worlds):
+                    total_w = sum(world.demand[service.id])
+                    if total_w <= 0:
+                        continue
+                    zeta = m.var(("service_tail", service.id, w))
+                    tail_terms[zeta] = world.weight / (1 - req.service_risk_level)
+                    m.row({**{unmet[service.id, t, w]: 1 / total_w for t in range(H)}, eta: -1, zeta: -1}, upper=0)
+                m.row(tail_terms, upper=1 - service.target)
             if per_world_service:
                 for w, world in enumerate(worlds):
                     m.row({unmet[service.id, t, w]: 1 for t in range(H)},

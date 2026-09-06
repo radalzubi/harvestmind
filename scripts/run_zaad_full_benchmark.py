@@ -29,11 +29,49 @@ from zaad.full.worlds import World  # noqa: E402
 
 SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 22002, 22003, 22004, 22005],
          # Demand-adaptation study (PR24 follow-up). Never reuses consumed seeds above.
-         "development2": [23001], "validation2": [24001, 24002], "holdout2": [25001, 25002]}
+         "development2": [23001], "validation2": [24001, 24002], "holdout2": [25001, 25002],
+         # Service-reliability study. New seeds again; holdout3 stays frozen until a profile is promoted.
+         "development3": [26001], "validation3": [27001, 27002], "holdout3": [28001, 28002]}
 METHODS = ["base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated"]
+RELIABILITY_METHODS = ["base_stock", "stochastic", "robust", "protected", "gated_pr24", "gated"]
+INVENTORY = {"low": .5, "balanced": 2., "high": 4.}
+RELIABILITY_DEMANDS = ["stable", "volatile", "promotion", "increase", "decrease", "intermittent",
+                       "spike", "temporary_spike", "gradual", "unknown_promotion"]
+RELIABILITY_SUPPLIES = ["stable", "fill", "lead", "severe", "partial", "correlated"]
+RELIABILITY_NETWORKS = ["single", "two_locations", "central_branches"]
+ALTERNATIVES = ["none", "supplier", "route", "transfer", "substitution"]
+RELIABILITY_TARGETS = [.9, .95, .97, .99]
+
+
+def reliability_cells(random_cells: int = 30) -> list[dict]:
+    """One-factor-at-a-time around a balanced centre plus a seeded random sample of the grid."""
+    centre = ("balanced", "stable", "stable", "single", "none", .95)
+    combos: list[tuple] = []
+    for i, levels in enumerate((list(INVENTORY), RELIABILITY_DEMANDS, RELIABILITY_SUPPLIES, RELIABILITY_NETWORKS, ALTERNATIVES, RELIABILITY_TARGETS)):
+        for level in levels:
+            combo = list(centre)
+            combo[i] = level
+            if tuple(combo) not in combos:
+                combos.append(tuple(combo))
+    rng = np.random.default_rng(7)
+    while len(combos) < len(combos) + random_cells and random_cells > 0:
+        combo = (str(rng.choice(list(INVENTORY))), str(rng.choice(RELIABILITY_DEMANDS)), str(rng.choice(RELIABILITY_SUPPLIES)),
+                 str(rng.choice(RELIABILITY_NETWORKS)), str(rng.choice(ALTERNATIVES)), float(rng.choice(RELIABILITY_TARGETS)))
+        if combo not in combos:
+            combos.append(combo)
+            random_cells -= 1
+    values = []
+    for inventory, demand, supply, network, alternative, target in combos:
+        suppliers = "correlated" if supply == "correlated" else ("independent" if alternative == "supplier" else "single")
+        values.append({"family": "reliability", "target": target, "cover": INVENTORY[inventory], "inventory": inventory,
+                       "demand": demand, "supply": supply, "network": network, "suppliers": suppliers,
+                       "alternative": alternative, "case": "normal"})
+    return [{"cell": i, **value} for i, value in enumerate(values)]
 
 
 def cells(matrix="coverage"):
+    if matrix == "reliability":
+        return reliability_cells()
     values = []
     targets_ = [.9, .93, .95, .97, .98, .99, .995]
     stock = [.1, 1., 2., 4., 7.]
@@ -85,6 +123,15 @@ def request_for(cell, seed):
         source["lead_sd_days"] = 7. if cell["supply"] == "lead" else 0.
         if cell["case"] == "freight_spike":
             source["freight_per_unit"] = 2.
+    alternative = cell.get("alternative", "none")
+    if alternative == "route":
+        # Same supplier, a second approved itinerary through another port on its own capacity.
+        route = {**data["sources"][0], "id": "alternate_route", "route": ["supplier", "other_port", "branch"],
+                 "resources": ["alternate_route_capacity"], "freight_per_unit": data["sources"][0]["freight_per_unit"] + 1.,
+                 "capacity_by_period": [50.] * H}
+        data["sources"].append(route)
+        data["resources"].append({"id": "alternate_route_capacity", "known_at": data["as_of"], "capacity_by_period": [50.] * H,
+                                  "failure_domains": ["other_port"]})
     for resource in data["resources"]:
         resource["capacity_by_period"] = [100.] * H
     if cell["suppliers"] != "single":
@@ -94,14 +141,23 @@ def request_for(cell, seed):
         data["sources"].append(source)
         data["resources"].append({"id": "alternate_capacity", "known_at": data["as_of"], "capacity_by_period": [50.] * H,
                                   "failure_domains": ["port"] if cell["suppliers"] == "correlated" else ["other_port"]})
-    if cell["network"] != "single":
+    network = cell["network"]
+    if network == "single" and alternative == "transfer":
+        network = "two_locations"
+    if network != "single":
         data["locations"].append({**data["locations"][0], "id": "central", "kind": "central_dc", "holding_per_value_period": .003})
         data["stock"].append({**data["stock"][0], "id": "central_excess", "location": "central", "quantity": 80.})
         data["transfers"].append({"id": "central_branch", "known_at": data["as_of"], "sku": "A", "origin": "central", "destination": "branch",
                                   "lead_periods": 1, "capacity": 50., "cost_per_unit": .2, "loss_fraction": .01, "approved": True})
-        if cell["network"] == "central_branches":
+        if network == "central_branches":
             data["sources"][0]["destination"] = "central"
             data["sources"][0]["route"][-1] = "central"
+    if alternative == "substitution":
+        data["skus"].append({**data["skus"][0], "id": "B", "asset_value": 4., "terminal_value": 3.})
+        data["stock"].append({**data["stock"][0], "id": "sub_stock", "sku": "B", "quantity": 60.})
+        data["substitutions"].append({"id": "approved_B_for_A", "known_at": data["as_of"], "supplied_sku": "B", "requested_sku": "A",
+            "customers": ["customer"], "channels": ["retail"], "input_per_output": 1., "penalty_per_output": .1,
+            "service_equivalence": 1., "approved": True, "brand_approval_reference": "fixture", "cannibalization_assumption": "none"})
     if cell["family"] != "action":
         data["stock"][0]["quantity"] = cell["cover"] * 20
     data["services"][0]["target"] = cell["target"]
@@ -110,7 +166,7 @@ def request_for(cell, seed):
     history = []
     for period in range(-78, 0):
         mu = 20 * (1 + .3 * np.sin(2 * np.pi * period / 26)) if cell["demand"] == "seasonal" else 20.
-        q = max(0., rng.normal(mu, 2))
+        q = max(0., rng.normal(mu, 6. if cell["demand"] == "volatile" else 2))
         if cell["demand"] == "intermittent":
             q = q * 2 if rng.random() < .5 else 0.
         history.append({"known_at": data["as_of"], "service": "retail_A", "period": period, "quantity": q})
@@ -121,6 +177,8 @@ def request_for(cell, seed):
     data["stresses"] = [{"name": "operator_adverse", "fill_multiplier": .7, "extra_lead_days": 28,
                          "demand_multiplier": 1.1, "recovery_period": 9, "shared_failure": True,
                          "affected_resources": ["port_cap"]}]
+    if cell["family"] == "reliability":
+        data["engine_profile"] = cell.get("engine_profile", "reliability")
     return Request.model_validate(data)
 
 
@@ -135,23 +193,38 @@ def truth_for(req, cell, seed):
             mu *= 1.8
         if cell["demand"] in {"increase", "decrease"} and t >= 3:
             mu *= 1.8 if cell["demand"] == "increase" else .35
-        q = float(rng.poisson(mu))
+        if cell["demand"] == "unknown_promotion" and 3 <= t <= 5:
+            mu *= 1.8          # no event declared: the planner must detect it
+        if cell["demand"] == "spike" and t == 4:
+            mu *= 3.           # one abnormal week; a level reset here is panic buying
+        if cell["demand"] == "temporary_spike" and 4 <= t <= 5:
+            mu *= 2.
+        if cell["demand"] == "gradual":
+            mu *= 1 + .05 * t
+        if cell["demand"] == "volatile":
+            q = float(rng.negative_binomial(4, 4 / (4 + mu)))   # mean mu, variance mu + mu^2/4
+        else:
+            q = float(rng.poisson(mu))
         if cell["demand"] == "intermittent":
             q = 2 * q if rng.random() < .5 else 0.
         demand.append(q)
     arrivals, fills = {}, {}
     kind = cell["case"]
-    shock = kind not in {"normal", "none", "false_alarm", "transfer", "substitution", "recovery", "cash"}
+    supply = cell["supply"]
+    reliability = cell["family"] == "reliability"
+    shock = (supply in {"severe", "partial", "correlated"}) if reliability else kind not in {"normal", "none", "false_alarm", "transfer", "substitution", "recovery", "cash"}
     recovery = cell.get("truth_recovery", 9 if kind == "delayed_recovery" else 7)
-    extra = cell.get("truth_extra_lead", 6 if kind in {"severe", "shared_outage"} else 3)
-    floor = cell.get("truth_fill", .5 if kind in {"severe", "supplier_outage"} else .8)
+    extra = cell.get("truth_extra_lead", 6 if kind in {"severe", "shared_outage"} or supply == "severe" else (0 if supply == "partial" else 3))
+    floor = cell.get("truth_fill", .5 if kind in {"severe", "supplier_outage"} or supply == "severe" else (.6 if supply == "partial" else .8))
+    if reliability and supply == "partial":
+        recovery = H       # partial deliveries for the whole horizon, on time
     shared = rng.normal(size=H)
     for source in req.sources:
         for t in range(H):
             z = shared[t] if cell["suppliers"] == "correlated" else rng.normal()
             fill = float(np.clip(source.fill_mean + source.fill_sd * z, 0, 1))
             lead = max(1, round(source.lead_days / req.period_days + abs(rng.normal()) * source.lead_sd_days / req.period_days))
-            affected = shock and 1 <= t < recovery and (source.id == "main" or kind in {"shared_outage", "correlated"})
+            affected = shock and 1 <= t < recovery and (source.id == "main" or kind in {"shared_outage", "correlated"} or supply == "correlated")
             if affected:
                 fill *= floor
                 lead += extra
@@ -171,6 +244,7 @@ def task(args):
     d = sum(s["demand"] for r in rows for s in r["settlement"]["service_by_period"])
     served = sum(s["served"] for r in rows for s in r["settlement"]["service_by_period"])
     return {**cell, "seed": seed, "method": method, "status": result["status"], "cost": result.get("economic_cost"),
+            **reliability_metrics(req, truth, rows, cell),
             "service": served / d if d else None, "completed_reviews": len(rows), "service_breach": bool(d and served / d < cell["target"] - 1e-6),
             "recovery_solves": sum(bool(r["warnings"]) for r in rows), "failure": result.get("failure"),
             "ledger": result.get("ledger"), "seconds": time.monotonic() - started,
@@ -181,6 +255,42 @@ def task(args):
             "closing_inventory": rows[-1]["settlement"]["trace"][-1]["inventory_value"] if rows else None}
 
 
+def reliability_metrics(req, truth, rows, cell) -> dict:
+    """Service-reliability measurements per replay, kept apart from economic savings."""
+    if not rows:
+        return {"stockout_periods": None, "recovery_periods": None, "inventory_periods": None, "working_capital": None,
+                "emergency_reviews": None, "model_failure": None}
+    served = [(s["demand"], s["served"]) for r in rows for s in r["settlement"]["service_by_period"]]
+    stockouts = [i for i, (d, v) in enumerate(served) if v < d - 1e-9]
+    recovery = None
+    if stockouts:
+        first = stockouts[0]
+        later = [i for i, (d, v) in enumerate(served) if i > first and v >= d - 1e-9]
+        recovery = (later[0] - first) if later else None
+    asset = req.skus[0].asset_value
+    mean_demand = max(1e-9, sum(d for d, _ in served) / len(served))
+    inventory = [x["inventory_value"] for r in rows for x in r["settlement"]["trace"]]
+    primary = req.sources[0].id
+    emergency = sum(1 for r in rows if r["settlement"]["ledger"].get("transfer", 0.) > 0
+                    or any(p["source"] != primary and p["quantity"] > 0 for p in r["purchases"]))
+    # Ex-post model failure: realized demand far outside the review's own forecast spread, or
+    # realized supply far outside the declared fill/lead, on at least two reviews.
+    demand_misses, supply_misses = 0, 0
+    for t, r in enumerate(rows):
+        f = r["forecast"]["retail_A"]
+        if truth.demand["retail_A"][t] > f["mean"] + 3 * max(f["sd"], 1.):
+            demand_misses += 1
+        for source in req.sources:
+            if truth.fills[source.id, t] < source.fill_mean - 3 * source.fill_sd - .05 or truth.arrival[source.id, t] - t > source.lead_days / req.period_days + 2:
+                supply_misses += 1
+                break
+    return {"stockout_periods": len(stockouts), "recovery_periods": recovery,
+            "inventory_periods": float(np.mean(inventory) / (mean_demand * asset)),
+            "working_capital": float(np.mean(inventory)), "emergency_reviews": emergency,
+            "model_failure": {"demand": demand_misses >= 2, "supply": supply_misses >= 2},
+            "benign": cell.get("supply") == "stable" and cell.get("demand") in {"stable", "seasonal"} and cell.get("case") in {"normal", "none"}}
+
+
 def source_hash():
     paths = sorted((ROOT / "zaad/full").glob("*.py")) + [Path(__file__)]
     return hashlib.sha256(b"".join(p.relative_to(ROOT).as_posix().encode() + p.read_bytes() for p in paths)).hexdigest()
@@ -189,7 +299,7 @@ def source_hash():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", choices=list(SEEDS), default="development")
-    parser.add_argument("--matrix", choices=["coverage", "full"], default="coverage")
+    parser.add_argument("--matrix", choices=["coverage", "full", "reliability"], default="coverage")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--freeze", action="store_true")
@@ -199,6 +309,7 @@ def main():
     parser.add_argument("--demand", nargs="+", default=None, help="only cells with these demand patterns")
     parser.add_argument("--family", nargs="+", default=None, help="only cells of these families")
     parser.add_argument("--target", nargs="+", type=float, default=None, help="only cells with these service targets")
+    parser.add_argument("--supply", nargs="+", default=None, help="only cells with these supply patterns")
     args = parser.parse_args()
     manifest = args.output.parent / "preregistered.json"
     configuration = {"source_hash": source_hash(), "seeds": SEEDS, "methods": METHODS,
@@ -224,8 +335,10 @@ def main():
         selected = [c for c in selected if c["family"] in args.family]
     if args.target:
         selected = [c for c in selected if any(abs(c["target"] - t) < 1e-9 for t in args.target)]
+    if args.supply:
+        selected = [c for c in selected if c["supply"] in args.supply]
     selected = [{**c, "adaptation": args.adaptation} for c in selected]
-    methods = args.methods or METHODS
+    methods = args.methods or (RELIABILITY_METHODS if args.matrix == "reliability" else METHODS)
     tasks = [(c, s, m) for c in selected for s in SEEDS[args.split] for m in methods]
     with args.output.open("x") as file, ProcessPoolExecutor(max_workers=args.workers) as pool:
         for i, row in enumerate(pool.map(task, tasks, chunksize=1)):

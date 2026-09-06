@@ -11,7 +11,9 @@ import numpy as np
 from zaad.full.contracts import Calendar, Request, Source, Stress
 from zaad.full.eta import conditional_eta
 from zaad.full.forecast import estimate, sample
+from zaad.full.uncertainty import MIN_SUPPLY_RECORDS, demand_uncertainty, failure_domains_for, lead_quantile, supply_profiles
 from zaad.signals import Signal, route_evidence
+from scipy.stats import norm
 
 
 @dataclass(frozen=True)
@@ -62,18 +64,28 @@ def dates(req: Request, source: Source, t: int, extra_days: int = 0) -> tuple[in
     return period(depart), max(t + 1, period(arrive))
 
 
-def forecast_all(req: Request, adaptive: bool = True) -> dict:
-    skus = {s.id: s for s in req.skus}
-    locations = {location_key.id: location_key for location_key in req.locations}
+def history_series(req: Request) -> dict[str, np.ndarray]:
     result = {}
     for service in req.services:
         rows = sorted((r for r in req.history if r.service == service.id), key=lambda r: r.period)
         if [r.period for r in rows] != list(range(-len(rows), 0)):
             raise ValueError("demand history must be consecutive and end before origin")
-        result[service.id] = estimate(np.asarray([r.quantity for r in rows]),
-                                     service.selling_price + service.sla_per_unmet,
-                                     locations[service.location].holding_per_value_period * skus[service.sku].asset_value,
-                                     adaptive, req.demand_adaptation)
+        result[service.id] = np.asarray([r.quantity for r in rows])
+    return result
+
+
+def forecast_all(req: Request, adaptive: bool = True) -> dict:
+    skus = {s.id: s for s in req.skus}
+    locations = {location_key.id: location_key for location_key in req.locations}
+    result = {}
+    series = history_series(req)
+    for service in req.services:
+        fit = estimate(series[service.id], service.selling_price + service.sla_per_unmet,
+                       locations[service.location].holding_per_value_period * skus[service.sku].asset_value,
+                       adaptive, req.demand_adaptation)
+        if req.engine_profile == "reliability":
+            fit["uncertainty"] = demand_uncertainty(fit, series[service.id])
+        result[service.id] = fit
     return result
 
 
@@ -83,12 +95,23 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
     fits = forecast_all(req, adaptive)
     resources = {r.id: r for r in req.resources}
     signals = tuple(Signal.model_validate_json(json.dumps(v)) for v in req.signals)
+    reliability = req.engine_profile == "reliability"
+    supply = supply_profiles(req) if reliability else {}
     worlds = []
     for w in range(count):
         demand, arrival, fills, po_due, po_fill = {}, {}, {}, {}, {}
         for service in req.services:
             f = fits[service.id]
             d = np.full(req.horizon, f["mean"]) if deterministic else sample(f, rng, req.horizon)
+            if reliability and not deterministic and f["mean"] > 0:
+                # Calibration: when realized one-step errors have been wider than the fitted spread,
+                # widen the sampled deviations by that ratio (never narrow them).
+                ratio = max(1., f["uncertainty"]["calibration_ratio"])
+                if ratio > 1.:
+                    d = np.maximum(0., f["mean"] + (d - f["mean"]) * ratio)
+                # Model uncertainty: the level itself is uncertain by its calibrated standard error
+                # (wider while a regime change is young), perfectly correlated across the horizon.
+                d = d * max(0., 1. + float(rng.normal()) * f["uncertainty"]["level_se"] / f["mean"])
             for event in req.events:
                 if event.service == service.id:
                     d[event.start:min(req.horizon, event.end + 1)] *= event.multiplier
@@ -103,7 +126,10 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
             demand[service.id] = tuple(float(x) for x in d)
         common = {}
         for source in req.sources:
-            domains = sorted({d for r in source.resources for d in resources[r].failure_domains})
+            if reliability:
+                domains = list(failure_domains_for(source, resources))
+            else:
+                domains = sorted({d for r in source.resources for d in resources[r].failure_domains})
             evidence = route_evidence(signals, [source.id, source.supplier, *source.route, *source.resources, *domains], req.as_of)
             severity = max(evidence.physical_severity, evidence.official_severity)
             for t in range(req.horizon):
@@ -116,8 +142,16 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                     if (key, t) not in common:
                         common[key, t] = float(rng.normal())
                 z = 0. if deterministic else sum(common[key, t] for key in keys) / math.sqrt(len(keys))
-                f = float(np.clip(source.fill_mean + source.fill_sd * z, 0, 1))
-                delay = max(0, round(-source.lead_sd_days * z))
+                profile = supply.get(source.id)
+                if profile is not None and profile.scope == "observed":
+                    # The source's own history through the shared factor: fill from its accepted
+                    # ratios, lead from its censored Kaplan-Meier support, tail included.
+                    u = float(norm.cdf(z))
+                    f = float(np.quantile(profile.fill_samples, u)) if len(profile.fill_samples) >= MIN_SUPPLY_RECORDS else float(np.clip(profile.fill_mean + profile.fill_sd * z, 0, 1))
+                    delay = max(0, lead_quantile(profile, 1 - u) - profile.declared_lead_days)
+                else:
+                    f = float(np.clip(source.fill_mean + source.fill_sd * z, 0, 1))
+                    delay = max(0, round(-source.lead_sd_days * z))
                 # Declared mapping retained from v1, not a learned disruption probability.
                 f *= 1 - .3 * severity
                 delay += math.ceil(3 * severity) * req.period_days

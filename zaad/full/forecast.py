@@ -15,7 +15,11 @@ def change_origin(y: np.ndarray, mode: str = "symmetric") -> int:
                 costs shortage penalties while over-ordering after a false upward alarm costs
                 holding. Upward detection is unchanged.
     soft / ensemble use the symmetric origin; they blend forecasts instead of hard-resetting.
+    page_hinkley / bocpd delegate to zaad.full.surge and keep the same origin contract.
     """
+    if mode in ("page_hinkley", "bocpd"):
+        from zaad.full.surge import DETECTORS
+        return DETECTORS[mode](y)
     origin, positive, negative = 0, 0., 0.
     down_threshold = 6.5 if mode == "asymmetric" else 4.5
     for t in range(16, len(y)):

@@ -1,0 +1,647 @@
+{
+ "by_dimension": {
+  "alternative": {
+   "none": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 19,
+     "runs": 26
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 18,
+     "runs": 26
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 18,
+     "runs": 26
+    }
+   },
+   "route": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 10
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 6,
+     "runs": 10
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 10
+    }
+   },
+   "substitution": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    }
+   },
+   "supplier": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 8
+    }
+   },
+   "transfer": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 6
+    }
+   }
+  },
+  "demand": {
+   "decrease": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    }
+   },
+   "gradual": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 3,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 3,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 3,
+     "runs": 4
+    }
+   },
+   "increase": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    }
+   },
+   "intermittent": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    }
+   },
+   "promotion": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 4
+    }
+   },
+   "spike": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 4,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 3,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 4,
+     "runs": 4
+    }
+   },
+   "stable": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 9,
+     "runs": 19
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 10,
+     "runs": 19
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 9,
+     "runs": 19
+    }
+   },
+   "temporary_spike": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 2
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 2
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 2
+    }
+   },
+   "unknown_promotion": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 3,
+     "runs": 3
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 3
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 3
+    }
+   },
+   "volatile": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    }
+   }
+  },
+  "inventory": {
+   "balanced": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 19,
+     "runs": 33
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 19,
+     "runs": 33
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 19,
+     "runs": 33
+    }
+   },
+   "high": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 13,
+     "runs": 15
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 11,
+     "runs": 15
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 12,
+     "runs": 15
+    }
+   },
+   "low": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 8
+    }
+   }
+  },
+  "network": {
+   "central_branches": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 10,
+     "runs": 11
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 9,
+     "runs": 11
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 10,
+     "runs": 11
+    }
+   },
+   "single": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 21,
+     "runs": 34
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 21,
+     "runs": 34
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 21,
+     "runs": 34
+    }
+   },
+   "two_locations": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 11
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 11
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 11
+    }
+   }
+  },
+  "supply": {
+   "correlated": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 7
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 7
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 7
+    }
+   },
+   "fill": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 1,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 1,
+     "runs": 4
+    }
+   },
+   "lead": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 6,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    }
+   },
+   "partial": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    }
+   },
+   "severe": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 6
+    }
+   },
+   "stable": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 13,
+     "runs": 26
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 13,
+     "runs": 26
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 13,
+     "runs": 26
+    }
+   }
+  },
+  "target": {
+   "0.9": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 6,
+     "runs": 10
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 10
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 10
+    }
+   },
+   "0.95": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 16,
+     "runs": 28
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 16,
+     "runs": 28
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 16,
+     "runs": 28
+    }
+   },
+   "0.97": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 8,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 8,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 8,
+     "runs": 8
+    }
+   },
+   "0.99": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 9,
+     "runs": 10
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 9,
+     "runs": 10
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 9,
+     "runs": 10
+    }
+   }
+  }
+ },
+ "methods": {
+  "base_stock": {
+   "avoidable_breaches": 3,
+   "breach_classes": {
+    "AVOIDABLE": 3,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 17,
+    "MODEL_FAILURE": 21,
+    "UNAVOIDABLE": 15
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 0,
+   "emergency_review_share": 0.11607142857142858,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.33274399654586206,
+   "mean_weighted_shortfall": 0.1399154849449352,
+   "median_inventory_periods": 1.3100101621781142,
+   "median_recovery_periods": 2.5,
+   "median_saving_vs_reference_pct": 0.0,
+   "median_service": 0.8595040441700079,
+   "median_weighted_shortfall": 0.09052985023773807,
+   "median_working_capital": 152.96554172488803,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 39,
+   "worst_saving_vs_reference_pct": 0.0
+  },
+  "gated": {
+   "avoidable_breaches": 1,
+   "breach_classes": {
+    "AVOIDABLE": 1,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 19,
+    "MODEL_FAILURE": 21,
+    "UNAVOIDABLE": 15
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 18,
+   "emergency_review_share": 0.17113095238095238,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.6842967847960651,
+   "mean_weighted_shortfall": 0.1194904076846262,
+   "median_inventory_periods": 1.761893656944051,
+   "median_recovery_periods": 2,
+   "median_saving_vs_reference_pct": 1.154295586547703,
+   "median_service": 0.9254844210359394,
+   "median_weighted_shortfall": 0.03337801592526707,
+   "median_working_capital": 203.56555645745664,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 37,
+   "worst_saving_vs_reference_pct": -21.920492668333758
+  },
+  "gated_pr24": {
+   "avoidable_breaches": 2,
+   "breach_classes": {
+    "AVOIDABLE": 2,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 18,
+    "MODEL_FAILURE": 21,
+    "UNAVOIDABLE": 15
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 2,
+   "emergency_review_share": 0.14434523809523808,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.5671674294756426,
+   "mean_weighted_shortfall": 0.13205975671126843,
+   "median_inventory_periods": 1.2611910561766078,
+   "median_recovery_periods": 2.0,
+   "median_saving_vs_reference_pct": 1.9541670662933233,
+   "median_service": 0.8721611561634786,
+   "median_weighted_shortfall": 0.07447696545418975,
+   "median_working_capital": 150.28396162140888,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 38,
+   "worst_saving_vs_reference_pct": -9.60479700495738
+  }
+ },
+ "pairs": {
+  "gated_vs_gated_pr24": {
+   "cost_losses": 28,
+   "cost_wins": 22,
+   "service_losses": 18,
+   "service_wins": 24,
+   "ties": 6
+  },
+  "gated_vs_protected": {
+   "cost_losses": 0,
+   "cost_wins": 0,
+   "service_losses": 0,
+   "service_wins": 0,
+   "ties": 0
+  },
+  "protected_vs_stochastic": {
+   "cost_losses": 0,
+   "cost_wins": 0,
+   "service_losses": 0,
+   "service_wins": 0,
+   "ties": 0
+  }
+ },
+ "rows": 168
+}

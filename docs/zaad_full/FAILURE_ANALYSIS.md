@@ -114,3 +114,13 @@ achievable, priority-weighted recovery only when they are not, a
 tolerance-scaled material margin, ranking over every optimal candidate, and a
 stress gate consistent with weighted recovery. Verdict: NEEDS FURTHER
 ENGINEERING.
+
+## Service reliability branch (`claude/zaad-service-reliability`)
+
+Blocker 3 (service/robustness acceptance) is addressed by the reliability engine profile:
+calibrated demand and supply uncertainty, route-derived failure domains, quantile (CVaR)
+protection, an evidence-weighted hedged candidate, service-first acceptance, a stress gate
+that asks for not-worse-than-incumbent when the declared stress makes the SLA impossible,
+and per-service shortage classification. Development3 and validation3 evidence, every
+adverse pass included, is in [SERVICE_RELIABILITY.md](SERVICE_RELIABILITY.md). The frozen
+profile remains selectable as `engine_profile: "pr24"`.

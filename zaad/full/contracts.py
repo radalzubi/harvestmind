@@ -176,6 +176,9 @@ class Customer(Dated):
     id: str
     channel: str
     priority: float = Field(gt=0)
+    # Optional contract class label ("strategic", "wholesale", "spot", ...) used for reporting
+    # service by customer class. Targets stay on the Service record; the class never sets them.
+    service_class: str | None = None
 
 
 class Service(Dated):
@@ -365,7 +368,21 @@ class Request(Record):
     force_unit_fills: bool = False
     # How review-by-review demand refits treat a detected level change. "symmetric" is the frozen
     # PR23 behaviour; the others are evaluated on new development/validation seeds only.
-    demand_adaptation: Literal["symmetric", "asymmetric", "soft", "ensemble"] = "symmetric"
+    demand_adaptation: Literal["symmetric", "asymmetric", "soft", "ensemble", "page_hinkley", "bocpd"] = "symmetric"
+    # "pr24" is the frozen PR23/PR24 engine (expected-value service floors, declared supply
+    # parameters only, universal 1.645 proxy buffer, cost-first acceptance). "reliability" adds
+    # calibrated demand/supply uncertainty, route-derived failure domains, quantile (CVaR) service
+    # protection, uncertainty-responsive proxy protection and service-first acceptance. Both are
+    # evaluated side by side on new seeds; nothing about the frozen profile is retuned.
+    engine_profile: Literal["pr24", "reliability"] = "reliability"
+    # CVaR level for the quantile service constraint: the mean service over the worst
+    # (1 - level) share of scenarios must still meet the target. 0 reduces to the expected floor.
+    service_risk_level: float = Field(default=.5, ge=0, lt=1)
+    # Probability weight the reliability profile gives the declared stress envelopes when it ranks
+    # feasible candidates by cost and confirms benefit: protection is bought when the stress
+    # downside is expensive enough at this weight, and not otherwise. Zero reproduces cost-first
+    # ranking on fitted worlds only.
+    stress_weight: float = Field(default=.2, ge=0, le=.5)
     mode: Literal["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] = "LEAN"
     evidence_label: Literal["SYNTHETIC", "OPERATOR-SHADOW"]
 

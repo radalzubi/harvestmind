@@ -14,7 +14,10 @@ blockers in [failure analysis](FAILURE_ANALYSIS.md). The working architecture is
 substantive; the complete enterprise specification is not claimed finished.
 The PR 24 follow-up branch resolves the dust, financial-tail, order-OTIF,
 large-job and security blockers and records why downward-shift adaptation is
-still open: [PR24_FOLLOWUP.md](PR24_FOLLOWUP.md).
+still open: [PR24_FOLLOWUP.md](PR24_FOLLOWUP.md). The service-reliability branch adds
+uncertainty-responsive protection, evidence-weighted stress hedging, service-first
+acceptance, shortage classification and a reliability benchmark on new seeds:
+[SERVICE_RELIABILITY.md](SERVICE_RELIABILITY.md).
 
 ```bash
 python3 scripts/zaad_network.py --fixture transfer --output /tmp/zaad-transfer.json
