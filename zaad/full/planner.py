@@ -408,7 +408,7 @@ def plan(req: Request) -> dict:
     # incumbent that fails the same stress. Under the reliability profile the stress gate then
     # asks for "not worse than the incumbent": physically usable, inside the cost cap, no larger
     # weighted shortfall and priority consistent.
-    stress_targets_feasible = candidates["stress_network"].status == "OPTIMAL"
+    stress_targets_feasible = candidates["stress_network"].status == "OPTIMAL"   # reported; the gate prefers strict, then not-worse
 
     def _hedged_downside(before, after) -> bool:
         """Cost cap with the declared stress at its evidence weight: a plan that is much cheaper
@@ -521,7 +521,7 @@ def plan(req: Request) -> dict:
         reasons.append("Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.")
 
     candidate_gates = {chosen: {"accepted": bool(accepted), "stress": stress_report,
-                                "reason": ("accepted" if accepted else "; ".join(r for r in reasons) or "rejected")}}
+                                "reason": ("accepted" if accepted else "; ".join(str(r) for r in reasons) or "rejected")}}
     chosen_meets = bool(candidate_rows) and service_ok(req, candidate_rows)
     if not recovery_mode and not accepted:
         for alternative in sorted((n for n in feasible if n not in {chosen, "incumbent"}), key=lambda n: (hedged_cost(n), list(candidates).index(n))):
@@ -554,7 +554,7 @@ def plan(req: Request) -> dict:
                                             "reason": ("accepted" if passes else
                                                        "does not meet every service target under independent confirmation" if not service_ok(req, rows) else
                                                        "no positive hedged benefit against the incumbent" if lower is not None and lower <= 1e-6 else
-                                                       "stress gate: " + ", ".join(c.get("gate_mode", "rejected") for c in checks if not c["pass"]))}
+                                                       "stress gate: " + ", ".join(str(c.get("gate_mode", "rejected")) for c in checks if not c["pass"]))}
             if passes:
                 chosen, accepted, candidate_rows, stress_report, benefit_lower = alternative, True, rows, checks, lower
                 chosen_meets = True
@@ -679,27 +679,29 @@ def plan(req: Request) -> dict:
                                 "extra_inventory_value": extra_value, "carrying_cost_over_horizon": carrying,
                                 "hedged_shortage_avoided": avoided, "justified": bool(avoided >= carrying - 1e-9),
                                 "scope": "selection worlds; stress at its evidence weight; not a guarantee"}
-    explain = []
+    explain: list[dict[str, Any]] = []
     for row in protection:
+        row_any: dict[str, Any] = row
+        state: dict[str, Any] = row_any["state"]
         pair_services = [s for s in req.services if s.sku == row["sku"] and s.location == row["location"]]
         rel = {r["service"]: r for r in per_service}
         pipeline_units = sum(po.expected_accepted_remaining for po in req.pipeline if sources_by_id[po.source].sku == row["sku"] and sources_by_id[po.source].destination == row["location"]) if req.pipeline else 0.
         expected = [rel[s.id]["achieved_service"] for s in pair_services if rel[s.id]["achieved_service"] is not None]
         stress_values = [rel[s.id]["worst_case_stress_service"] for s in pair_services if rel[s.id]["worst_case_stress_service"] is not None]
         explain.append({"sku": row["sku"], "location": row["location"],
-                        "state": "ALLOCATE" if recovery_mode else row["state"]["regime"],
-                        "lean_baseline_units": row["state"]["lean_baseline_units"], "current_inventory_units": row["on_hand_units"],
+                        "state": "ALLOCATE" if recovery_mode else state["regime"],
+                        "lean_baseline_units": state["lean_baseline_units"], "current_inventory_units": row["on_hand_units"],
                         "current_pipeline_units": pipeline_units, "recommended_protection_units": row["protection_units"],
-                        "incremental_protection_units": row["state"]["incremental_protection_units"],
-                        "active_risk_drivers": row["state"]["active_drivers"], "driver_contribution_units": row["drivers_units"],
+                        "incremental_protection_units": state["incremental_protection_units"],
+                        "active_risk_drivers": state["active_drivers"], "driver_contribution_units": row["drivers_units"],
                         "service_targets": {s.id: s.target for s in pair_services},
                         "expected_service": min(expected) if expected else None, "stress_service": min(stress_values) if stress_values else None,
                         "marginal_value_of_protection": protection_value,
-                        "alternatives_available": row["effective_independent_sources"] > 1.5,
-                        "transfer_available": row["state"]["placement"]["transfer_lead_periods"] is not None,
-                        "substitution_available": row["substitute_cover_units"] > 0,
-                        "expected_periods_to_lean": row["state"]["periods_to_lean"], "flags": row["state"]["flags"],
-                        "placement": row["state"]["placement"],
+                        "alternatives_available": float(row_any["effective_independent_sources"]) > 1.5,
+                        "transfer_available": state["placement"]["transfer_lead_periods"] is not None,
+                        "substitution_available": float(row_any["substitute_cover_units"]) > 0,
+                        "expected_periods_to_lean": state["periods_to_lean"], "flags": state["flags"],
+                        "placement": state["placement"],
                         "intervention": ("ZAAD intervened: " + chosen if accepted else "incumbent retained: " + ("; ".join(reasons) if reasons else "no candidate improved on it")),
                         "explanation": row["explanation"]})
     mode = "ALLOCATE" if recovery_mode else req.mode
@@ -728,7 +730,7 @@ def plan(req: Request) -> dict:
             "selection_costs": {name: {"fitted": mean(r["economic_cost"] for r in rows) if rows and all(r["usable"] for r in rows) else None,
                                        "hedged": hedged_cost(name) if np.isfinite(hedged_cost(name)) else None}
                                 for name, rows in selection_rows.items()},
-            "stress_weight": stress_weight, "stress_credibility": credibility,
+            "stress_weight": stress_weight, "stress_credibility": credibility, "stress_targets_feasible": stress_targets_feasible,
             "joint_service_feasibility": {"target_vector_feasible": target_jointly_feasible,
                 "recovery_mode": recovery_mode, "material_gap": material_shortfall_gap(req),
                 "recovery_ranking": recovery_ranking,
