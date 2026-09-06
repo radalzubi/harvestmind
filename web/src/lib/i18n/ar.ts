@@ -4,7 +4,7 @@ import type { en } from "./en";
  *  أوامر الشراء، سندات الاستلام، الجرد، الموردون، مدة التوريد، الليد تايم، نقطة إعادة الطلب،
  *  مخزون الأمان، الطبالي والكراتين، الهالك، النولون، خطوط الشحن. Not a literal translation. */
 export const ar: typeof en = {
-  nav: { product: "المنتج", sectors: "القطاعات", security: "الأمان", about: "من نحن", enterKey: "أدخل المفتاح", getStarted: "ابدأ الآن", menuOpen: "افتح القائمة", menuClose: "أغلق القائمة", lang: "EN" },
+  nav: { product: "كيف يعمل", sectors: "القطاعات", security: "الأمان", about: "من نحن", enterKey: "أدخل المفتاح", getStarted: "ابدأ الآن", open: "افتح مساحة العمل", menuOpen: "افتح القائمة", menuClose: "أغلق القائمة", lang: "EN" },
   footer: {
     blurb: "قرارات الشراء للشركات التي تستورد ما تبيعه. صُنع في عمّان.",
     product: "المنتج", howItWorks: "كيف يعمل", sectors: "القطاعات", security: "الأمان",

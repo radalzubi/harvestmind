@@ -8,7 +8,7 @@
  * on its own when it scrolls into view so nobody has to discover it.
  */
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useLocale } from "@/lib/i18n";
 import { useReduce } from "@/lib/motion";
 
@@ -89,11 +89,9 @@ function Stat({ label, value, unit, tone }: { label: string; value: string; unit
     <div className="route-stat">
       <span className="route-stat-label">{label}</span>
       <span className={`route-stat-value ${tone ?? ""}`}>
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.span key={value} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3 }} style={{ display: "inline-block" }}>
-            {value}
-          </motion.span>
-        </AnimatePresence>
+        <motion.span key={value} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} style={{ display: "inline-block" }}>
+          {value}
+        </motion.span>
         {unit && <span className="route-stat-unit"> {unit}</span>}
       </span>
     </div>

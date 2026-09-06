@@ -3,12 +3,13 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "./Reveal";
 import { useLocale } from "@/lib/i18n";
+import { PageAtmos } from "./PageAtmos";
 
 export function SectorsContent() {
   const { t } = useLocale(); const c = t.sectorsPage;
   return (
     <>
-      <section className="page-hero"><div className="wrap">
+      <section className="page-hero"><PageAtmos /><div className="wrap">
         <Reveal><p className="eyebrow">{c.eyebrow}</p></Reveal>
         <Reveal delay={0.05}><h1 className="display sm">{c.h1}</h1></Reveal>
         <Reveal delay={0.1}><p className="lede">{c.lede}</p></Reveal>

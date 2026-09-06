@@ -43,6 +43,7 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
     let w = 0, h = 0, nodes: Node[] = [], routes: Route[] = [];
     let raf = 0, last = 0, running = false, visible = true, onScreen = true, t = 0;
     let phase: "normal" | "disrupt" | "adapt" | "recover" = "normal";
+    const CONTOURS = small ? 5 : 9;
     let phaseAt = 0, disrupted = -1, alternate = -1;
     const px = { x: 0, y: 0, tx: 0, ty: 0 };
 
@@ -62,7 +63,7 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
         const layer: 0 | 1 = i % 3 === 0 ? 0 : 1;   // 0 = far, small and faint; 1 = near
         const x = w * (0.03 + rnd() * 0.94);
         const y = h * (0.06 + rnd() * 0.9);
-        nodes.push({ x, y, r: (layer ? 1.8 : 1.1) + rnd() * (layer ? 2.2 : 1.2), drift: 0.4 + rnd() * 0.8, phase: rnd() * Math.PI * 2, layer });
+        nodes.push({ x, y, r: (layer ? 1.2 : 0.8) + rnd() * (layer ? 1.4 : 0.8), drift: 0.4 + rnd() * 0.8, phase: rnd() * Math.PI * 2, layer });
       }
       routes = [];
       // each node links to its two nearest neighbours; curved through a control point off the chord
@@ -73,7 +74,7 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
           const b = nodes[j];
           const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
           const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
-          const bend = (rnd() - 0.5) * Math.min(120, len * 0.45);
+          const bend = (rnd() - 0.5) * Math.min(220, len * 0.8);
           routes.push({ a: i, b: j, cx: mx - (dy / len) * bend, cy: my + (dx / len) * bend, act: 0.55, target: 0.55, hue: "calm",
                         packets: Array.from({ length: 1 + Math.floor(rnd() * 2) }, () => rnd()), speed: 0.05 + rnd() * 0.05 });
         });
@@ -113,9 +114,31 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
       px.y += (px.ty - px.y) * Math.min(1, dt * 3);
     }
 
+    function contours() {
+      // slow, wide waves: the terrain the routes cross. Phase drifts with t.
+      for (let k = 0; k < CONTOURS; k++) {
+        const y0 = h * (0.08 + (k / (CONTOURS - 1)) * 0.84);
+        const amp = h * 0.05 * (0.6 + ((k * 7) % 5) / 5);
+        const f = 1.4 + ((k * 3) % 4) * 0.35;
+        const ph = t * 0.06 * (1 + (k % 3) * 0.35) + k;
+        ctx.beginPath();
+        for (let x = -20; x <= w + 20; x += 24) {
+          const y = y0 + Math.sin((x / w) * Math.PI * f + ph) * amp + Math.sin((x / w) * Math.PI * 4.1 + ph * 1.7) * amp * 0.25;
+          if (x === -20) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = `rgba(24,24,27,${0.045 + (k % 2) * 0.02})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
     function draw() {
       ctx.clearRect(0, 0, w, h);
       ctx.lineCap = "round";
+      ctx.save();
+      if (pointer && !small) ctx.translate(px.x * 0.25, px.y * 0.25);
+      contours();
+      ctx.restore();
       const par = pointer && !small;
       for (const layer of [0, 1] as const) {
         ctx.save();
@@ -126,7 +149,7 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
           if (a.layer !== layer) continue;
           const c = INK[r.hue];
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(r.cx, r.cy, b.x, b.y);
-          ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${(0.08 + r.act * 0.24) * dim})`;
+          ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${(0.06 + r.act * 0.2) * dim})`;
           ctx.lineWidth = (0.8 + r.act * 0.9) * (layer ? 1 : 0.7);
           ctx.stroke();
           if (r.act > 0.25) {
@@ -144,10 +167,9 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
           const breathe = reduce ? 0 : Math.sin(t * n.drift + n.phase) * 0.6;
           const lit = routes.some((r) => (r.a === i || r.b === i) && r.act > 0.8);
           ctx.beginPath(); ctx.arc(n.x, n.y, n.r + breathe + (lit ? 1 : 0), 0, Math.PI * 2);
-          ctx.fillStyle = lit ? `rgba(${INK.calm.join(",")},${0.9 * dim})` : `rgba(${INK.node.join(",")},${0.35 * dim})`;
+          ctx.fillStyle = lit ? `rgba(${INK.calm.join(",")},${0.85 * dim})` : `rgba(${INK.node.join(",")},${0.22 * dim})`;
           ctx.fill();
-          ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 5, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(${INK.node.join(",")},${0.06 * dim})`; ctx.lineWidth = 1; ctx.stroke();
+
         });
         ctx.restore();
       }

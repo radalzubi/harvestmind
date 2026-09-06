@@ -1,5 +1,5 @@
 export const en = {
-  nav: { product: "Product", sectors: "Sectors", security: "Security", about: "About", enterKey: "Enter key", getStarted: "Get started", menuOpen: "Open menu", menuClose: "Close menu", lang: "عربي" },
+  nav: { product: "How it works", sectors: "Sectors", security: "Security", about: "About", enterKey: "Enter key", getStarted: "Get started", open: "Open workspace", menuOpen: "Open menu", menuClose: "Close menu", lang: "عربي" },
   footer: {
     blurb: "Purchasing decisions for businesses that import what they sell. Built in Amman.",
     product: "Product", howItWorks: "How it works", sectors: "Sectors", security: "Security",

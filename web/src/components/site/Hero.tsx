@@ -46,11 +46,13 @@ export function Hero() {
   });
   return (
     <section className="hero">
-      <div className="hero-atmos" aria-hidden />
-      <div className="hero-sweep" aria-hidden />
-      <div className="hero-noise" aria-hidden />
-      {field && <SupplyField />}
-      <div className="hero-veil" aria-hidden />
+      <div className="hero-layers" aria-hidden>
+        <div className="hero-atmos" />
+        <div className="hero-sweep" />
+        <div className="hero-noise" />
+        {field && <SupplyField />}
+        <div className="hero-veil" />
+      </div>
       <div className="wrap hero-inner">
         <motion.p className="eyebrow" {...up(0.05)}>{h.eyebrow}</motion.p>
         <motion.h1 className="display" {...up(0.18)}>
