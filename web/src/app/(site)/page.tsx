@@ -6,4 +6,7 @@ export const metadata: Metadata = {
   description: "Upload a year of history. See how you order today, what a gated optimizer would have done on that same history, and the risk on your supply lanes now.",
 };
 
-export default function Home() { return <HomeContent />; }
+export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  return <HomeContent qa={sp?.motion === "off"} />;
+}

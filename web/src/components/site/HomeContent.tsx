@@ -4,37 +4,62 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Reveal, Stagger, Item } from "./Reveal";
 import { Hero } from "./Hero";
+import { RouteCard } from "./RouteCard";
+import { InventoryField } from "./InventoryField";
+import { DecisionCard } from "./DecisionCard";
 import { useLocale } from "@/lib/i18n";
+import { QaContext } from "@/lib/motion";
 
-export function HomeContent() {
+export function HomeContent({ qa = false }: { qa?: boolean }) {
   const { t } = useLocale();
   const c = t.home;
   return (
-    <>
+    <QaContext.Provider value={qa}>
+    <div className="home">
       <Hero />
-      <section className="section" id="how">
-        <div className="wrap">
-          <Reveal><p className="eyebrow">{c.howEyebrow}</p></Reveal>
-          <Reveal delay={0.05}><h2 className="h2">{c.howH2}</h2></Reveal>
-          <Stagger className="steps">
-            {c.steps.map((s) => (
-              <Item key={s.n} className="step"><span className="step-n">{s.n}</span><h3>{s.title}</h3><p>{s.body}</p></Item>
-            ))}
-          </Stagger>
+
+      {/* the memorable interaction: a lane slips, the plan moves */}
+      <section className="section moment">
+        <div className="wrap split moment-split">
+          <Reveal>
+            <p className="eyebrow">{c.routeEyebrow}</p>
+            <h2 className="h2">{c.routeH2}</h2>
+            <p className="lede">{c.routeLede}</p>
+          </Reveal>
+          <Reveal delay={0.1} y={28}><RouteCard /></Reveal>
         </div>
       </section>
-      <section className="section section-dark">
-        <div className="wrap">
-          <Reveal><p className="eyebrow">{c.getEyebrow}</p></Reveal>
-          <div className="split">
-            <Reveal delay={0.05}><h2 className="h2">{c.getH2}</h2><p className="lede">{c.getLede}</p></Reveal>
-            <Stagger className="list-cards">
-              {c.gets.map(([tt, b]) => <Item key={tt} className="list-card"><h3>{tt}</h3><p>{b}</p></Item>)}
+
+      {/* lean, protect, allocate, recover */}
+      <section className="section">
+        <div className="wrap split field-split">
+          <Reveal delay={0.05} y={0} className="field-visual"><InventoryField /></Reveal>
+          <Reveal>
+            <p className="eyebrow">{c.fieldEyebrow}</p>
+            <h2 className="h2">{c.fieldH2}</h2>
+            <p className="lede">{c.fieldLede}</p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* how it decides */}
+      <section className="section decide">
+        <div className="wrap split">
+          <div>
+            <Reveal><p className="eyebrow">{c.decideEyebrow}</p></Reveal>
+            <Reveal delay={0.05}><h2 className="h2">{c.decideH2}</h2></Reveal>
+            <Stagger className="decide-steps" step={0.12}>
+              {c.steps.map(([k, v], i) => (
+                <Item key={k} className="decide-step"><span className="decide-n">{i + 1}</span><div><b>{k}</b><p>{v}</p></div></Item>
+              ))}
             </Stagger>
           </div>
+          <DecisionCard />
         </div>
       </section>
-      <section className="section">
+
+      {/* sectors, compact */}
+      <section className="section sectors">
         <div className="wrap">
           <Reveal><p className="eyebrow">{c.sectorsEyebrow}</p></Reveal>
           <Reveal delay={0.05}><h2 className="h2">{c.sectorsH2}</h2></Reveal>
@@ -50,6 +75,7 @@ export function HomeContent() {
           </Stagger>
         </div>
       </section>
+
       <section className="section">
         <div className="wrap">
           <Reveal className="cta-band">
@@ -62,6 +88,7 @@ export function HomeContent() {
           </Reveal>
         </div>
       </section>
-    </>
+    </div>
+    </QaContext.Provider>
   );
 }
