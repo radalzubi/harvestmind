@@ -27,7 +27,7 @@ from zaad.full.demo import example  # noqa: E402
 from zaad.full.replay import replay  # noqa: E402
 from zaad.full.worlds import World  # noqa: E402
 
-SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [16001, 16002, 16003, 16004, 16005]}
+SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 22002, 22003, 22004, 22005]}
 METHODS = ["base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated"]
 
 

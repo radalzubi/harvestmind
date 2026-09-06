@@ -283,6 +283,15 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         costs[w][q] -= (1 - arc.loss_fraction) * skus[arc.sku].terminal_value
             if ids:
                 m.row({q: 1 for q in ids}, upper=arc.capacity)
+    # Executable transfers share observed opening inventory across all arcs.
+    # Expected PO receipts, including overdue ones, cannot fund today's action.
+    confirmed: dict[tuple[str, str, int], float] = defaultdict(float)
+    for inbound in req.inbound_transfers:
+        if inbound.due_in == 0:
+            confirmed[inbound.sku, inbound.destination, inbound.expires_in] += inbound.accepted_quantity
+    for (sku, origin, expiry, t), transfer_terms in outbound.items():
+        if t == 0:
+            m.row(transfer_terms, upper=initial[sku, origin, expiry] + confirmed[sku, origin, expiry])
     for resource in req.resources:
         for t in range(H):
             row = {x[s.id, t]: skus[s.sku].volume for s in req.sources if resource.id in s.resources}

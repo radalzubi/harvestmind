@@ -130,7 +130,9 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
             keep = next(o for o in po.options if o.action == "keep")
             eta = conditional_eta(req.shipment_history, po.source,
                                   max(0, (req.as_of - po.placed_at).days), po.stage, po.carrier)
-            due = keep.due_in
+            # An unreceived PO is not opening stock, even if its quoted ETA is
+            # overdue. Replay materializes observed receipts before planning.
+            due = max(1, keep.due_in)
             if eta.support:
                 u, cdf = (.5 if deterministic else float(rng.random())), 0.
                 due = req.horizon + 1  # unsupported survival tail stays outside horizon

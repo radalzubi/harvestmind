@@ -88,3 +88,18 @@ def test_ineligible_amendment_never_appears():
     req = Request.model_validate(data)
     result = solve(req, draw(req, 15, 1, deterministic=True))
     assert set(result.amendments) == {("open", "keep")}
+
+
+def test_overdue_expected_po_is_not_physically_transferable():
+    data = example("recovery").model_dump(mode="json")
+    data["locations"].append({**data["locations"][0], "id": "central"})
+    data["stock"][0]["quantity"] = 0.
+    data["sources"][0]["destination"] = "central"
+    data["sources"][0]["route"][-1] = "central"
+    data["pipeline"][0]["options"] = [{**data["pipeline"][0]["options"][0], "due_in": 0}]
+    data["transfers"] = [{"id": "move", "known_at": data["as_of"], "sku": "A", "origin": "central", "destination": "branch",
+                           "lead_periods": 1, "capacity": 100., "cost_per_unit": .1, "loss_fraction": 0., "approved": True}]
+    req = Request.model_validate(data)
+    result = solve(req, draw(req, 3, 1, deterministic=True))
+    assert result.status == "OPTIMAL"
+    assert sum(q for (_, _, t), q in result.transfers.items() if t == 0) == 0
