@@ -31,7 +31,9 @@ SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 
          # Demand-adaptation study (PR24 follow-up). Never reuses consumed seeds above.
          "development2": [23001], "validation2": [24001, 24002], "holdout2": [25001, 25002],
          # Service-reliability study. New seeds again; holdout3 stays frozen until a profile is promoted.
-         "development3": [26001], "validation3": [27001, 27002], "holdout3": [28001, 28002]}
+         "development3": [26001], "validation3": [27001, 27002], "holdout3": [28001, 28002],
+         # Calibrated-protection cycle (v4). holdout3 is consumed; holdout4 is frozen and unrun during development.
+         "development4": [29001], "validation4": [30001, 30002], "holdout4": [31001, 31002]}
 METHODS = ["base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated"]
 RELIABILITY_METHODS = ["base_stock", "stochastic", "robust", "protected", "gated_pr24", "gated_pr30", "gated"]
 INVENTORY = {"low": .5, "balanced": 2., "high": 4.}
@@ -69,9 +71,68 @@ def reliability_cells(random_cells: int = 30) -> list[dict]:
     return [{"cell": i, **value} for i, value in enumerate(values)]
 
 
+V4_METHODS = ["base_stock", "stochastic", "robust", "gated_pr24", "gated_pr30", "gated"]
+V4_DEMANDS = RELIABILITY_DEMANDS + ["intermittent_spiky", "promotion_recovery", "surge_recovery"]
+V4_SUPPLIES = RELIABILITY_SUPPLIES + ["deterioration_recovery", "closure_recovery"]
+V4_ALTERNATIVES = ALTERNATIVES + ["transfer_constrained", "shared_route"]
+LONG_HORIZON = {"promotion_recovery", "surge_recovery", "deterioration_recovery", "closure_recovery", "decrease", "temporary_spike"}
+
+
+def v4_cells(random_cells: int = 24) -> list[dict]:
+    """Calibrated-protection matrix: the reliability OFAT set, explicit intermittent / shift /
+    supply-recovery / network / disruption cells, and a seeded random sample. Recovery cells
+    run a 20-period horizon so the return toward lean is observable."""
+    centre = ("balanced", "stable", "stable", "single", "none", .95)
+    combos: list[tuple] = []
+    for i, levels in enumerate((list(INVENTORY), V4_DEMANDS, V4_SUPPLIES, RELIABILITY_NETWORKS, V4_ALTERNATIVES, RELIABILITY_TARGETS)):
+        for level in levels:
+            combo = list(centre)
+            combo[i] = level
+            if tuple(combo) not in combos:
+                combos.append(tuple(combo))
+    explicit = [
+        ("balanced", "intermittent", "stable", "single", "transfer", .95),
+        ("balanced", "intermittent", "stable", "single", "substitution", .95),
+        ("balanced", "intermittent", "stable", "central_branches", "none", .95),
+        ("balanced", "intermittent_spiky", "stable", "single", "transfer", .95),
+        ("balanced", "intermittent_spiky", "stable", "single", "substitution", .95),
+        ("high", "intermittent", "stable", "two_locations", "transfer", .9),
+        ("balanced", "stable", "stable", "central_branches", "transfer_constrained", .95),
+        ("balanced", "stable", "stable", "central_branches", "none", .99),
+        ("balanced", "stable", "correlated", "single", "shared_route", .95),
+        ("balanced", "stable", "closure_recovery", "single", "supplier", .95),
+        ("balanced", "stable", "closure_recovery", "single", "none", .95),
+        ("balanced", "stable", "deterioration_recovery", "single", "supplier", .95),
+        ("balanced", "surge_recovery", "stable", "single", "none", .97),
+        ("balanced", "promotion_recovery", "stable", "central_branches", "none", .95),
+        ("low", "stable", "lead", "single", "none", .99),
+        ("balanced", "stable", "stable", "single", "supplier", .9),
+    ]
+    for combo in explicit:
+        if combo not in combos:
+            combos.append(combo)
+    rng = np.random.default_rng(11)
+    while random_cells > 0:
+        combo = (str(rng.choice(list(INVENTORY))), str(rng.choice(V4_DEMANDS)), str(rng.choice(V4_SUPPLIES)),
+                 str(rng.choice(RELIABILITY_NETWORKS)), str(rng.choice(V4_ALTERNATIVES)), float(rng.choice(RELIABILITY_TARGETS)))
+        if combo not in combos:
+            combos.append(combo)
+            random_cells -= 1
+    values = []
+    for inventory, demand, supply, network, alternative, target in combos:
+        suppliers = "correlated" if (supply == "correlated" or alternative == "shared_route") else ("independent" if alternative == "supplier" or supply == "closure_recovery" and alternative != "none" else "single")
+        values.append({"family": "reliability", "matrix": "v4", "target": target, "cover": INVENTORY[inventory], "inventory": inventory,
+                       "demand": demand, "supply": supply, "network": network, "suppliers": suppliers,
+                       "alternative": alternative, "case": "normal",
+                       "horizon": 20 if (demand in LONG_HORIZON or supply in LONG_HORIZON) else 12})
+    return [{"cell": i, **value} for i, value in enumerate(values)]
+
+
 def cells(matrix="coverage"):
     if matrix == "reliability":
         return reliability_cells()
+    if matrix == "v4":
+        return v4_cells()
     values = []
     targets_ = [.9, .93, .95, .97, .98, .99, .995]
     stock = [.1, 1., 2., 4., 7.]
@@ -107,7 +168,7 @@ def request_for(cell, seed):
     case = cell["case"] if cell["family"] == "action" else "normal"
     req = example(case, seed)
     data = req.model_dump(mode="json")
-    H = 12
+    H = int(cell.get("horizon", 12))
     data["horizon"], data["scenarios"], data["max_solve_seconds"] = H, 3, 5.
     data["liquidity"]["known_receivables"] = [0.] * H
     data["liquidity"]["other_payments"] = [0.] * H
@@ -124,6 +185,7 @@ def request_for(cell, seed):
         if cell["case"] == "freight_spike":
             source["freight_per_unit"] = 2.
     alternative = cell.get("alternative", "none")
+    # shared_route: the correlated alternate (same port failure domain) is added by the suppliers block above.
     if alternative == "route":
         # Same supplier, a second approved itinerary through another port on its own capacity.
         route = {**data["sources"][0], "id": "alternate_route", "route": ["supplier", "other_port", "branch"],
@@ -142,7 +204,7 @@ def request_for(cell, seed):
         data["resources"].append({"id": "alternate_capacity", "known_at": data["as_of"], "capacity_by_period": [50.] * H,
                                   "failure_domains": ["port"] if cell["suppliers"] == "correlated" else ["other_port"]})
     network = cell["network"]
-    if network == "single" and alternative == "transfer":
+    if network == "single" and alternative in {"transfer", "transfer_constrained"}:
         network = "two_locations"
     if network != "single":
         data["locations"].append({**data["locations"][0], "id": "central", "kind": "central_dc", "holding_per_value_period": .003})
@@ -152,6 +214,8 @@ def request_for(cell, seed):
         if network == "central_branches":
             data["sources"][0]["destination"] = "central"
             data["sources"][0]["route"][-1] = "central"
+        if alternative == "transfer_constrained":
+            data["transfers"][-1]["capacity"] = 12.
     if alternative == "substitution":
         data["skus"].append({**data["skus"][0], "id": "B", "asset_value": 4., "terminal_value": 3.})
         data["stock"].append({**data["stock"][0], "id": "sub_stock", "sku": "B", "quantity": 60.})
@@ -169,9 +233,14 @@ def request_for(cell, seed):
         q = max(0., rng.normal(mu, 6. if cell["demand"] == "volatile" else 2))
         if cell["demand"] == "intermittent":
             q = q * 2 if rng.random() < .5 else 0.
+        if cell["demand"] == "intermittent_spiky":
+            # Sparse usage: one period in four, with one historical spike three times the usual size.
+            q = q * 4 if rng.random() < .25 else 0.
+            if period == -30:
+                q = 20 * 12.
         history.append({"known_at": data["as_of"], "service": "retail_A", "period": period, "quantity": q})
     data["history"] = history
-    if cell["demand"] == "promotion":
+    if cell["demand"] in {"promotion", "promotion_recovery"}:
         data["events"] = [{"id": "promotion", "known_at": data["as_of"], "service": "retail_A", "start": 3, "end": 5, "multiplier": 1.8, "label": "known promotion"}]
     # Estimated stress differs deliberately from final realized severity/recovery.
     data["stresses"] = [{"name": "operator_adverse", "fill_multiplier": .7, "extra_lead_days": 28,
@@ -201,30 +270,41 @@ def truth_for(req, cell, seed):
             mu *= 2.
         if cell["demand"] == "gradual":
             mu *= 1 + .05 * t
+        if cell["demand"] == "promotion_recovery" and 3 <= t <= 5:
+            mu *= 1.8          # declared promotion, then a long normal tail
+        if cell["demand"] == "surge_recovery" and 3 <= t <= 8:
+            mu *= 1.8          # undeclared six-period surge, then normal
         if cell["demand"] == "volatile":
             q = float(rng.negative_binomial(4, 4 / (4 + mu)))   # mean mu, variance mu + mu^2/4
         else:
             q = float(rng.poisson(mu))
         if cell["demand"] == "intermittent":
             q = 2 * q if rng.random() < .5 else 0.
+        if cell["demand"] == "intermittent_spiky":
+            q = 4 * q if rng.random() < .25 else 0.
         demand.append(q)
     arrivals, fills = {}, {}
     kind = cell["case"]
     supply = cell["supply"]
     reliability = cell["family"] == "reliability"
-    shock = (supply in {"severe", "partial", "correlated"}) if reliability else kind not in {"normal", "none", "false_alarm", "transfer", "substitution", "recovery", "cash"}
+    shock = (supply in {"severe", "partial", "correlated", "deterioration_recovery", "closure_recovery"}) if reliability else kind not in {"normal", "none", "false_alarm", "transfer", "substitution", "recovery", "cash"}
     recovery = cell.get("truth_recovery", 9 if kind == "delayed_recovery" else 7)
     extra = cell.get("truth_extra_lead", 6 if kind in {"severe", "shared_outage"} or supply == "severe" else (0 if supply == "partial" else 3))
     floor = cell.get("truth_fill", .5 if kind in {"severe", "supplier_outage"} or supply == "severe" else (.6 if supply == "partial" else .8))
     if reliability and supply == "partial":
         recovery = H       # partial deliveries for the whole horizon, on time
+    if reliability and supply == "deterioration_recovery":
+        recovery, extra, floor = 8, 2, .85      # late and short from period 1 to 7, then clean
+    if reliability and supply == "closure_recovery":
+        recovery, extra, floor = 6, 10, .0      # main route closed from period 1 to 5, then restored
     shared = rng.normal(size=H)
     for source in req.sources:
         for t in range(H):
             z = shared[t] if cell["suppliers"] == "correlated" else rng.normal()
             fill = float(np.clip(source.fill_mean + source.fill_sd * z, 0, 1))
             lead = max(1, round(source.lead_days / req.period_days + abs(rng.normal()) * source.lead_sd_days / req.period_days))
-            affected = shock and 1 <= t < recovery and (source.id == "main" or kind in {"shared_outage", "correlated"} or supply == "correlated")
+            affected = shock and 1 <= t < recovery and (source.id == "main" or kind in {"shared_outage", "correlated"} or supply == "correlated"
+                                                          or (cell.get("alternative") == "shared_route"))
             if affected:
                 fill *= floor
                 lead += extra
@@ -302,7 +382,7 @@ def source_hash():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", choices=list(SEEDS), default="development")
-    parser.add_argument("--matrix", choices=["coverage", "full", "reliability"], default="coverage")
+    parser.add_argument("--matrix", choices=["coverage", "full", "reliability", "v4"], default="coverage")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--freeze", action="store_true")
@@ -325,7 +405,7 @@ def main():
             json.dump(configuration, f, indent=2)
         print("FROZEN", configuration["source_hash"], flush=True)
         return
-    if args.split in {"final", "holdout3"}:
+    if args.split in {"final", "holdout3", "holdout4"}:
         # Frozen splits: the manifest written by --freeze must match the current source and
         # configuration exactly, and no cell subset or limit may be applied.
         if args.limit or args.demand or args.family or args.target or args.supply or not manifest.exists() or json.loads(manifest.read_text()) != configuration:
@@ -343,7 +423,7 @@ def main():
     if args.supply:
         selected = [c for c in selected if c["supply"] in args.supply]
     selected = [{**c, "adaptation": args.adaptation} for c in selected]
-    methods = args.methods or (RELIABILITY_METHODS if args.matrix == "reliability" else METHODS)
+    methods = args.methods or (RELIABILITY_METHODS if args.matrix == "reliability" else V4_METHODS if args.matrix == "v4" else METHODS)
     tasks = [(c, s, m) for c in selected for s in SEEDS[args.split] for m in methods]
     with args.output.open("x") as file, ProcessPoolExecutor(max_workers=args.workers) as pool:
         for i, row in enumerate(pool.map(task, tasks, chunksize=1)):
