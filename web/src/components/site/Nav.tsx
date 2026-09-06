@@ -38,9 +38,9 @@ export function Nav() {
 
   const links = [
     { href: "/product", label: t.nav.product },
+    { href: "/how-it-works", label: t.nav.how },
     { href: "/sectors", label: t.nav.sectors },
     { href: "/about", label: t.nav.about },
-    { href: "/resources", label: t.nav.resources },
   ];
 
   return (
@@ -63,6 +63,7 @@ export function Nav() {
       </div>
       <div className="site-drawer">
         {links.map((l) => <Link key={l.href} href={l.href}>{l.label}</Link>)}
+        <Link href="/resources">{t.nav.resources}</Link>
         <Link href="/security">{t.nav.security}</Link>
         <Link href="/get-started" className="btn btn-primary" style={{ marginTop: 8 }}>{t.nav.open} <ArrowRight size={14} className="dir-icon" /></Link>
       </div>

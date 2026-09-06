@@ -20,6 +20,7 @@ export const SHARE_IMAGE = { url: `${SITE_URL}/og/zaad-supply-network.png`, widt
 export const PUBLIC_PAGES: { path: string; updated: string }[] = [
   { path: "/", updated: "2026-09-06" },
   { path: "/product", updated: "2026-09-06" },
+  { path: "/how-it-works", updated: "2026-09-06" },
   { path: "/sectors", updated: "2026-09-06" },
   { path: "/about", updated: "2026-09-06" },
   { path: "/security", updated: "2026-09-06" },

@@ -61,7 +61,7 @@ export function Hero() {
         <motion.p className="lede hero-lede" {...up(0.26)}>{h.lede}</motion.p>
         <motion.div className="cta-row" {...up(0.36)}>
           <Magnetic><Link href="/get-started" className="btn btn-primary btn-lg">{h.cta} <ArrowRight size={16} className="dir-icon" /></Link></Magnetic>
-          <Link href="/product" className="btn btn-ghost btn-lg">{h.how}</Link>
+          <Link href="/how-it-works" className="btn btn-ghost btn-lg">{h.how}</Link>
         </motion.div>
       </div>
       <motion.a href="#moment" className="hero-cue" aria-label="Scroll" initial={qa ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1, duration: 0.8 }}>

@@ -15,7 +15,7 @@ const args = process.argv.slice(2);
 const base = (args[args.indexOf("--base") + 1] || "http://localhost:3000").replace(/\/$/, "");
 const expectHost = args.includes("--expect-host") ? args[args.indexOf("--expect-host") + 1] : "https://zaadsupply.com";
 
-const PUBLIC = ["/", "/product", "/sectors", "/about", "/security", "/contact", "/resources", "/privacy", "/terms",
+const PUBLIC = ["/", "/product", "/how-it-works", "/sectors", "/about", "/security", "/contact", "/resources", "/privacy", "/terms",
   "/resources/what-is-inventory-optimization-for-distributors", "/resources/lean-protect-allocate-recover"];
 const PRIVATE = ["/upload", "/inventory", "/admin", "/reports", "/zaad/network"];
 
@@ -82,7 +82,7 @@ const sitemap = await get("/sitemap.xml");
 ok(sitemap.status === 200 && /<urlset/.test(sitemap.text), "sitemap.xml is a urlset");
 const locs = all(sitemap.text, /<loc>([^<]*)<\/loc>/g);
 ok(locs.every((u) => u.startsWith(expectHost)), `sitemap URLs on ${expectHost} (${locs.length} urls)`);
-ok(locs.includes(`${expectHost}/`) && locs.includes(`${expectHost}/product`) && locs.includes(`${expectHost}/resources`), "sitemap includes home, product, resources");
+ok(locs.includes(`${expectHost}/`) && locs.includes(`${expectHost}/product`) && locs.includes(`${expectHost}/how-it-works`) && locs.includes(`${expectHost}/resources`), "sitemap includes home, product, how-it-works, resources");
 ok(!locs.some((u) => /\/(upload|admin|api|zaad)\b/.test(u.replace(expectHost, ""))), "sitemap excludes private routes");
 ok(all(sitemap.text, /<lastmod>([^<]*)<\/lastmod>/g).length === locs.length, "every sitemap URL has lastmod");
 

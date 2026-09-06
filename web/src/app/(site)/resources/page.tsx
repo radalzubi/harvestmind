@@ -29,7 +29,7 @@ export default function ResourcesIndex() {
             ))}
           </div>
           <p className="resource-foot">
-            Want to see these ideas on your own history? <Link href="/product">See how ZAAD works</Link> or <Link href="/get-started">open a workspace</Link>.
+            Want to see these ideas on your own history? <Link href="/how-it-works">See how ZAAD works</Link> or <Link href="/get-started">open a workspace</Link>.
           </p>
         </div>
       </section>
