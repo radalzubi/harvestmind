@@ -542,7 +542,7 @@ def plan(req: Request) -> dict:
             lower = None
             if passes:
                 passes, lower, _ = confirm_service_first(incumbent_rows, rows, alternative)
-            checks = []
+            checks: list[dict[str, Any]] = []
             for i, stress in enumerate(req.stresses):
                 worlds = draw(req, req.seed + 30000 + i, req.scenarios, stress)
                 before = evaluate(req, incumbent, worlds) if incumbent.status == "OPTIMAL" else []

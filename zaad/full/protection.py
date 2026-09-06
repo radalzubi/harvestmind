@@ -21,6 +21,8 @@ projected base-stock proxy, explains the plan, and reports where protection is u
 """
 from __future__ import annotations
 
+from typing import Any
+
 import math
 
 from zaad.full.contracts import Request
@@ -89,7 +91,7 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         # Flexibility credit (v5): an alternate source counts only if it can land inside the
         # service window with meaningful capacity; otherwise it is a theoretical alternative.
         alternate_inside = None
-        if req.protection_v5 and len(eligible) > 1:
+        if req.protection_v5 and len(eligible) > 1 and primary is not None:
             window_guess = min(leads.values()) + 1
             others = [s for s in eligible if s.id != primary.id]
             alternate_inside = any(leads[s.id] + 1 <= window_guess + 1 and min(s.maximum, s.capacity_by_period[0]) >= .5 * mu * window_guess for s in others)
@@ -124,7 +126,7 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         declared_fill_sd = primary.fill_sd if primary is not None else 0.
         var_supply_declared = ((mu * declared_lead_sd) ** 2 + (mu * window * declared_fill_sd) ** 2) / effective
         lean_baseline = max(0., z * math.sqrt(window * sd_fitted ** 2 + var_supply_declared) - substitute_cover)
-        active_drivers = []
+        active_drivers: list[dict[str, Any]] = []
         if demand_score > 0:
             reasons = []
             for s in services:

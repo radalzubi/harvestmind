@@ -11,7 +11,7 @@ import numpy as np
 from zaad.full.contracts import Calendar, Request, Source, Stress
 from zaad.full.eta import conditional_eta
 from zaad.full.forecast import estimate, sample
-from zaad.full.uncertainty import MIN_SUPPLY_RECORDS, OUTLIER_Z, demand_uncertainty, failure_domains_for, lead_quantile, supply_profiles
+from zaad.full.uncertainty import MIN_SUPPLY_RECORDS, OUTLIER_Z, demand_uncertainty, failure_domains_for, lead_quantile, overdue_periods, supply_profiles
 from zaad.signals import Signal, route_evidence
 from scipy.stats import norm
 
@@ -94,6 +94,7 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
     rng = np.random.default_rng(seed)
     fits = forecast_all(req, adaptive)
     resources = {r.id: r for r in req.resources}
+    sources_by_id = {s.id: s for s in req.sources}
     signals = tuple(Signal.model_validate_json(json.dumps(v)) for v in req.signals)
     reliability = req.engine_profile == "reliability"
     supply = supply_profiles(req) if reliability else {}
@@ -200,6 +201,17 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                         break
             elif eta.scope == "outside_support":
                 due = req.horizon + 1
+            elif req.protection_v5:
+                # Overdue-order survival (v5): with too little history for a conditional ETA, an order
+                # already past the declared lead-time tail is not assumed to land next period forever.
+                # Each overdue period halves the chance it lands inside the horizon; the rest of the
+                # mass stays outside it, so the planner sources elsewhere instead of waiting.
+                age = max(0, (req.as_of - po.placed_at).days)
+                behind = overdue_periods(sources_by_id[po.source], age, req.period_days)
+                if behind >= 1:
+                    p_in = .5 ** behind
+                    inside = (p_in >= .5) if deterministic else (float(rng.random()) < p_in)
+                    due = max(1, keep.due_in) if inside else req.horizon + 1
             # No history is explicitly quote-based, not falsely labelled calibrated ETA.
             if stress and due < stress.recovery_period:
                 due += math.ceil(stress.extra_lead_days / req.period_days)

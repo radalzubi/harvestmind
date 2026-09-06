@@ -195,11 +195,15 @@ class SupplyProfile:
     recent_records: int = 0
 
 
-def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], period_days: int = 7) -> SupplyProfile:
+def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], period_days: int = 7,
+                   overdue_as_late: bool = False) -> SupplyProfile:
     """Per source fill and lead distributions from its own censored history, else declared.
 
     "Late" means arriving more than half a planning period after the declared lead, since
-    anything inside that lands in the same review period."""
+    anything inside that lands in the same review period. With overdue_as_late (v5) an open
+    order that is already past the declared lead counts as a late record in the recent window:
+    a closure shows in the risk state while the orders are still outstanding, not only once
+    they finally land."""
     ratios = tuple(float(r.accepted_ratio) for r in history
                    if r.source == source.id and r.arrived and r.accepted_ratio is not None)
     declared = source.lead_days + source.dispatch_days
@@ -223,9 +227,10 @@ def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], per
     # record. A route that closed and reopened, or a supplier that recovered, shows clean recent
     # receipts long before its full history looks clean again.
     arrived = sorted((r for r in history if r.source == source.id and r.arrived), key=lambda r: r.known_at)
-    recent = arrived[-RECENT_RECEIPTS:]
+    overdue = [r for r in history if r.source == source.id and not r.arrived and r.elapsed_days > declared + slack] if overdue_as_late else []
+    recent = sorted(arrived + overdue, key=lambda r: r.known_at)[-RECENT_RECEIPTS:]
     recent_late = float(np.mean([r.elapsed_days > declared + slack for r in recent])) if recent else (late if not eta.support else late)
-    recent_ratios = [float(r.accepted_ratio) for r in recent if r.accepted_ratio is not None]
+    recent_ratios = [float(r.accepted_ratio) for r in recent if r.arrived and r.accepted_ratio is not None]
     recent_partial = float(np.mean(np.asarray(recent_ratios) < .9)) if recent_ratios else partial
     return SupplyProfile(source.id, "observed" if observed else "declared", eta.records, eta.censored,
                          fill_mean, fill_sd, partial, ratios, declared, float(source.lead_sd_days), eta.support, eta.p50, p90,
@@ -234,7 +239,14 @@ def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], per
 
 
 def supply_profiles(req: Request) -> dict[str, SupplyProfile]:
-    return {s.id: supply_profile(s, req.shipment_history, req.period_days) for s in req.sources}
+    return {s.id: supply_profile(s, req.shipment_history, req.period_days, overdue_as_late=req.protection_v5) for s in req.sources}
+
+
+def overdue_periods(source: Source, age_days: int, period_days: int) -> int:
+    """Whole planning periods an open order is past the source's declared lead-time tail
+    (declared lead plus dispatch plus 1.28 sd). Zero while the declared model still covers it."""
+    tail = source.lead_days + source.dispatch_days + 1.2816 * source.lead_sd_days
+    return max(0, math.ceil((age_days - tail) / period_days))
 
 
 def lead_quantile(profile: SupplyProfile, u: float) -> int:
