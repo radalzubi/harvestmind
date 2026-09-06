@@ -21,20 +21,23 @@ export function RouteCard() {
   const ref = useRef<HTMLDivElement>(null);
   const played = useRef(false);
 
-  // one unprompted demonstration when the card first appears
+  // one unprompted demonstration when the card first appears; the timers
+  // live in a ref so unmounting (or leaving the page mid-demo) clears them
+  const timers = useRef<number[]>([]);
   useEffect(() => {
     const el = ref.current;
     if (!el || reduce) return;
+    const clear = () => { timers.current.forEach((id) => window.clearTimeout(id)); timers.current = []; };
     const io = new IntersectionObserver(([e]) => {
       if (!e.isIntersecting || played.current) return;
       played.current = true;
-      const a = window.setTimeout(() => setStressed(true), 900);
-      const b = window.setTimeout(() => setStressed((s) => (pinned ? s : false)), 4200);
-      return () => { window.clearTimeout(a); window.clearTimeout(b); };
+      timers.current.push(
+        window.setTimeout(() => setStressed(true), 900),
+        window.setTimeout(() => setStressed(false), 4200),
+      );
     }, { threshold: 0.6 });
     io.observe(el);
-    return () => io.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => { io.disconnect(); clear(); };
   }, [reduce]);
 
   const on = stressed || pinned;

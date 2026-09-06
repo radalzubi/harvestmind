@@ -56,7 +56,7 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
       canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const rnd = seeded(7);
-      const n = Math.round((small ? 12 : 26) * density);
+      const n = Math.round((small ? 10 : 20) * density);
       nodes = [];
       for (let i = 0; i < n; i++) {
         // the whole hero is the map; the paper veil keeps the headline readable
@@ -76,7 +76,7 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
           const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
           const bend = (rnd() - 0.5) * Math.min(220, len * 0.8);
           routes.push({ a: i, b: j, cx: mx - (dy / len) * bend, cy: my + (dx / len) * bend, act: 0.55, target: 0.55, hue: "calm",
-                        packets: Array.from({ length: 1 + Math.floor(rnd() * 2) }, () => rnd()), speed: 0.05 + rnd() * 0.05 });
+                        packets: Array.from({ length: 1 + Math.floor(rnd() * 2) }, () => rnd()), speed: 0.04 + rnd() * 0.04 });
         });
       });
     }
@@ -126,7 +126,7 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
           const y = y0 + Math.sin((x / w) * Math.PI * f + ph) * amp + Math.sin((x / w) * Math.PI * 4.1 + ph * 1.7) * amp * 0.25;
           if (x === -20) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
-        ctx.strokeStyle = `rgba(24,24,27,${0.045 + (k % 2) * 0.02})`;
+        ctx.strokeStyle = `rgba(24,24,27,${0.034 + (k % 2) * 0.014})`;
         ctx.lineWidth = 1;
         ctx.stroke();
       }
@@ -149,16 +149,16 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
           if (a.layer !== layer) continue;
           const c = INK[r.hue];
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(r.cx, r.cy, b.x, b.y);
-          ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${(0.06 + r.act * 0.2) * dim})`;
+          ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${(0.05 + r.act * 0.15) * dim})`;
           ctx.lineWidth = (0.8 + r.act * 0.9) * (layer ? 1 : 0.7);
           ctx.stroke();
           if (r.act > 0.25) {
             for (const s of r.packets) {
               const p = bez(r, s);
               const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 8);
-              g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${0.6 * r.act * dim})`); g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+              g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${0.45 * r.act * dim})`); g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
               ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI * 2); ctx.fill();
-              ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.95 * r.act * dim})`; ctx.beginPath(); ctx.arc(p.x, p.y, layer ? 1.7 : 1.2, 0, Math.PI * 2); ctx.fill();
+              ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.75 * r.act * dim})`; ctx.beginPath(); ctx.arc(p.x, p.y, layer ? 1.7 : 1.2, 0, Math.PI * 2); ctx.fill();
             }
           }
         }
@@ -167,7 +167,7 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
           const breathe = reduce ? 0 : Math.sin(t * n.drift + n.phase) * 0.6;
           const lit = routes.some((r) => (r.a === i || r.b === i) && r.act > 0.8);
           ctx.beginPath(); ctx.arc(n.x, n.y, n.r + breathe + (lit ? 1 : 0), 0, Math.PI * 2);
-          ctx.fillStyle = lit ? `rgba(${INK.calm.join(",")},${0.85 * dim})` : `rgba(${INK.node.join(",")},${0.22 * dim})`;
+          ctx.fillStyle = lit ? `rgba(${INK.calm.join(",")},${0.7 * dim})` : `rgba(${INK.node.join(",")},${0.18 * dim})`;
           ctx.fill();
 
         });
@@ -196,8 +196,8 @@ export function SupplyField({ density = 1, pointer = true }: { density?: number;
     const onMove = (e: PointerEvent) => {
       if (!pointer || small || reduce) return;
       const rect = host.getBoundingClientRect();
-      px.tx = ((e.clientX - rect.left) / rect.width - 0.5) * 10;
-      px.ty = ((e.clientY - rect.top) / rect.height - 0.5) * 8;
+      px.tx = ((e.clientX - rect.left) / rect.width - 0.5) * 8;
+      px.ty = ((e.clientY - rect.top) / rect.height - 0.5) * 6;
     };
     document.addEventListener("visibilitychange", onVis);
     window.addEventListener("pointermove", onMove, { passive: true });
