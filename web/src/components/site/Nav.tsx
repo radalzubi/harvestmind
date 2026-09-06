@@ -40,6 +40,7 @@ export function Nav() {
     { href: "/product", label: t.nav.product },
     { href: "/sectors", label: t.nav.sectors },
     { href: "/about", label: t.nav.about },
+    { href: "/resources", label: t.nav.resources },
   ];
 
   return (

@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
 import { Topbar } from "@/components/Topbar";
 
-const PUBLIC_PREFIXES = ["/get-started", "/product", "/sectors", "/security", "/about", "/contact", "/privacy", "/terms", "/welcome"];
+const PUBLIC_PREFIXES = ["/get-started", "/product", "/sectors", "/security", "/about", "/contact", "/privacy", "/terms", "/resources", "/welcome"];
 
 /** Public pages render bare (the site group adds its own nav); everything else gets the workspace shell. */
 export function Shell({ children }: { children: React.ReactNode }) {

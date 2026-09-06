@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
-    "start": "next start"
+    "start": "next start",
+    "seo:check": "node scripts/seo-check.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
