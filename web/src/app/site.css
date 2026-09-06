@@ -65,7 +65,8 @@
 
 /* hero */
 .hero { position: relative; overflow: hidden; padding: clamp(72px, 12vw, 150px) 0 clamp(64px, 9vw, 120px); isolation: isolate; }
-.hero-inner { position: relative; z-index: 3; max-width: 900px; }
+.hero-inner { position: relative; z-index: 3; }
+.hero .display { max-width: 15ch; }
 .hero-lede { margin-top: 22px; max-width: 46ch; }
 .hero .cta-row { margin-top: 30px; }
 /* back: a slow mesh of two tints over paper */
