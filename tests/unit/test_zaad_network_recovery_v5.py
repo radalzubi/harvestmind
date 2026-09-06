@@ -52,6 +52,22 @@ def _main_profile(req: Request, overdue_as_late: bool = True):
     return supply_profile(main, req.shipment_history, req.period_days, overdue_as_late=overdue_as_late)
 
 
+def _po(req: Request, po_id: str, age_days: int, quantity: float = 60.) -> dict:
+    """An open order from main, placed `age_days` ago, shaped the way replay records one."""
+    main = next(s for s in req.sources if s.id == "main")
+    placed = req.as_of - timedelta(days=age_days)
+    return {"id": po_id, "known_at": req.as_of.isoformat(), "source": "main", "revision": 1,
+            "ordered": quantity, "confirmed": quantity, "shipped": 0., "received": 0., "rejected": 0.,
+            "expected_accepted_remaining": quantity * main.fill_mean, "placed_at": placed.isoformat(), "confirmed_at": None,
+            "departed_at": None, "current_eta": (placed + timedelta(days=main.lead_days)).isoformat(),
+            "stage": "placed", "carrier": "unknown", "cancellation_status": "no_new_amendment_quote",
+            "prepaid_per_remaining_unit": 0., "allow_split_amendments": False,
+            "options": [{"id": "keep", "known_at": req.as_of.isoformat(), "action": "keep", "due_in": 0,
+                         "fee_per_unit": 0., "remaining_invoice_per_unit": 0., "payment_due_in": 0,
+                         "max_quantity": quantity, "deadline": req.as_of.isoformat(), "allowed_stages": ["placed"],
+                         "contract_reference": "committed_after_review"}]}
+
+
 # supply state recency
 
 def test_supply_state_retires_after_a_recent_clean_run():
@@ -83,19 +99,16 @@ def test_overdue_order_survival_moves_arrival_mass_outside_the_horizon():
     from zaad.full.worlds import draw
     req = example("normal")
     data = req.model_dump(mode="json")
-    po = data["pipeline"][0] if data["pipeline"] else None
-    if po is None:
-        pytest.skip("demo has no pipeline order")
     main = next(s for s in data["sources"] if s["id"] == "main")
-    stale = {**po, "placed_at": (req.as_of - timedelta(days=main["lead_days"] + 60)).isoformat()}
+    stale = _po(req, "po-stale", main["lead_days"] + 60)
     overdue = Request.model_validate({**data, "pipeline": [stale]})
     v5 = draw(overdue, 1, 12)
     v4 = draw(_with(overdue, protection_v5=False), 1, 12)
-    outside_v5 = sum(w.po_due[stale["id"]] > overdue.horizon for w in v5)
-    outside_v4 = sum(w.po_due[stale["id"]] > overdue.horizon for w in v4)
+    outside_v5 = sum(w.po_due["po-stale"] > overdue.horizon for w in v5)
+    outside_v4 = sum(w.po_due["po-stale"] > overdue.horizon for w in v4)
     assert outside_v5 > outside_v4
-    fresh = draw(req, 1, 12)
-    assert all(w.po_due[po["id"]] <= req.horizon for w in fresh)
+    fresh = Request.model_validate({**data, "pipeline": [_po(req, "po-fresh", 1)]})
+    assert all(w.po_due["po-fresh"] <= fresh.horizon for w in draw(fresh, 1, 12))
 
 
 # flexibility credit
@@ -205,3 +218,37 @@ def test_slow_transfer_keeps_more_protection_local_than_fast_transfer():
     assert slow["placement"]["local_service_units"] >= fast["placement"]["local_service_units"]
     assert fast["placement"]["pooled_network_units"] >= slow["placement"]["pooled_network_units"]
     assert fast["echelon"]["local_service_units"] <= fast["placement"]["local_service_units"] + 1e-9
+
+
+# recent fill run and backlog-implied lead
+
+def test_recent_fill_run_needs_a_run_not_a_single_short_receipt():
+    from zaad.full.uncertainty import recent_fill_run
+    clean = _main_profile(_shipments(example("normal"), late_tail=0))
+    assert recent_fill_run(clean) is None
+    one_short = _main_profile(_shipments(example("normal"), late_tail=1, short=True))
+    assert recent_fill_run(one_short) is None
+    run = _main_profile(_shipments(example("normal"), late_tail=4, short=True))
+    assert run.recent_fill_mean == pytest.approx(.6 * 4 / 6 + 1. * 2 / 6, abs=1e-6)
+    assert recent_fill_run(run) == pytest.approx(run.recent_fill_mean)
+
+
+def test_open_orders_fill_the_way_the_source_fills_now():
+    from zaad.full.worlds import draw
+    base = _shipments(example("normal"), late_tail=4, short=True)
+    req = Request.model_validate({**base.model_dump(mode="json"), "pipeline": [_po(base, "po-open", 2)]})
+    v5 = draw(req, 3, 1, deterministic=True)[0].po_fill["po-open"]
+    v4 = draw(_with(req, protection_v5=False), 3, 1, deterministic=True)[0].po_fill["po-open"]
+    assert v5 < v4 and v5 <= .8
+
+
+def test_backlog_implied_lead_holds_younger_orders_behind_the_oldest_overdue_one():
+    from zaad.full.worlds import draw
+    req = example("normal")
+    main = next(s for s in req.sources if s.id == "main")
+    old, young = _po(req, "po-old", main.lead_days + 42), _po(req, "po-young", 3)
+    with_backlog = _shipments(Request.model_validate({**req.model_dump(mode="json"), "pipeline": [old, young]}), late_tail=3, overdue_open=3)
+    w = draw(with_backlog, 5, 1, deterministic=True)[0]
+    assert w.po_due["po-young"] >= 2, w.po_due          # not "next period" while the backlog stands
+    calm = draw(Request.model_validate({**req.model_dump(mode="json"), "pipeline": [young]}), 5, 1, deterministic=True)[0]
+    assert calm.po_due["po-young"] <= w.po_due["po-young"]

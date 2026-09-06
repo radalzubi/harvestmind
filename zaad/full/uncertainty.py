@@ -193,6 +193,7 @@ class SupplyProfile:
     recent_late_probability: float = 0.   # last RECENT_RECEIPTS arrived records only (risk-source half-life)
     recent_partial_probability: float = 0.
     recent_records: int = 0
+    recent_fill_mean: float = 1.      # mean accepted ratio over the recent window (declared mean when empty)
 
 
 def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], period_days: int = 7,
@@ -232,14 +233,25 @@ def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], per
     recent_late = float(np.mean([r.elapsed_days > declared + slack for r in recent])) if recent else (late if not eta.support else late)
     recent_ratios = [float(r.accepted_ratio) for r in recent if r.arrived and r.accepted_ratio is not None]
     recent_partial = float(np.mean(np.asarray(recent_ratios) < .9)) if recent_ratios else partial
+    recent_fill = float(np.mean(recent_ratios)) if recent_ratios else fill_mean
     return SupplyProfile(source.id, "observed" if observed else "declared", eta.records, eta.censored,
                          fill_mean, fill_sd, partial, ratios, declared, float(source.lead_sd_days), eta.support, eta.p50, p90,
                          float(min(1., late)), int(tail), eta.unresolved_mass,
-                         recent_late_probability=recent_late, recent_partial_probability=recent_partial, recent_records=len(recent))
+                         recent_late_probability=recent_late, recent_partial_probability=recent_partial, recent_records=len(recent),
+                         recent_fill_mean=recent_fill)
 
 
 def supply_profiles(req: Request) -> dict[str, SupplyProfile]:
     return {s.id: supply_profile(s, req.shipment_history, req.period_days, overdue_as_late=req.protection_v5) for s in req.sources}
+
+
+def recent_fill_run(profile: SupplyProfile) -> float | None:
+    """The fill level a run of recent short receipts implies, or None when there is no such run.
+    Three or more recent records with at least half of them short (accepted ratio below .9) is a
+    run; a single short receipt is noise and returns None."""
+    if profile.recent_records >= 3 and profile.recent_partial_probability >= .5:
+        return float(min(1., max(0., profile.recent_fill_mean)))
+    return None
 
 
 def overdue_periods(source: Source, age_days: int, period_days: int) -> int:

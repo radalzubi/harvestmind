@@ -1,0 +1,211 @@
+# Network Recovery V5
+
+Development cycle 5 of the ZAAD full optimizer, stacked on the calibrated-protection V4 branch
+(PR #33, verdict NEEDS FURTHER CALIBRATION ENGINEERING). Scope: true multi-echelon placement,
+network risk pooling, the central-plus-branch failure family, explicit recovery, source-specific
+protection half-life, procurement timing, marginal inventory value, intermittent demand, a formal
+state machine and a selector rejection audit. Holdout4 stays frozen and unrun.
+
+Every adverse result in this cycle is retained below. Nothing in the frozen splits was touched.
+
+## 0. Governance
+
+| Item | Value |
+| --- | --- |
+| Branch | `claude/zaad-network-recovery-v5` on `claude/zaad-calibrated-protection-v4` |
+| Manifest | `docs/zaad_full/evidence/v5/PHASE0_MANIFEST.json` (committed before any engine change, aceabf0) |
+| Starting commit | 060c881 (validation4 evidence and V4 verdict) |
+| Development5 seed | 32001 (new, no overlap with any earlier split) |
+| Validation5 seeds | 33001, 33002 (new) |
+| Holdout4 | 31001, 31002: frozen, **unrun** |
+| Consumed, never tuned against | development1–4, validation1–4, holdout1–3 |
+| Comparators | `gated_pr24` (frozen PR24 profile), `gated_pr30` (`protection_decay=False, carry_incumbent=False, protection_v5=False`), `gated_v4` (`protection_v5=False`), `base_stock`, plus stochastic / robust where the matrix runs them |
+
+`protection_v5=False` reproduces the V4 engine exactly on every rule below, so V4 and V5 are
+compared on identical worlds except where the rule itself changes the world (overdue orders).
+
+## 1. What V5 changes (and what it does not)
+
+V5 does not redesign the optimizer. The MILP, the settlement, the causal replay and the
+incumbent-first gate are unchanged. The rules below are additive and each one is switched by
+`Request.protection_v5`.
+
+1. **Recency-weighted supply state.** The risk *state* of a source follows its last six receipts
+   (`RECENT_RECEIPTS`), the *distribution* keeps the whole record. A route that closed and
+   reopened shows clean recent receipts long before its full history looks clean, so protection
+   retires on the source's own evidence (source-specific half-life) rather than on a global clock.
+2. **Overdue orders are late now, not later.** An open order past the declared lead-time tail
+   counts as a late record in the recent window. Before this, a closure was invisible to the
+   risk state until the dead orders finally landed.
+3. **Overdue-order survival in the worlds.** With too little history for a conditional ETA, an
+   order already past the declared tail is no longer assumed to land next period forever. Each
+   overdue period halves the chance it lands inside the horizon; the remaining mass stays outside
+   it. This is what lets the planner source from an alternate during a closure instead of waiting.
+4. **Flexibility credit only inside the service window.** An approved alternate earns resilience
+   credit only if it can arrive inside the replenishment window with at least half the window's
+   demand in capacity. A slow or tiny alternate is a theoretical one and earns nothing.
+5. **Inventory-burden ranking within a cost band.** Among candidates whose hedged cost is within
+   `downside_cost_tolerance / 5` of the cheapest, the one carrying the least inventory wins.
+6. **Echelon accounting.** Every recommended protection unit is partitioned into local service
+   stock (transfer-lead demand spread at the branch), pooled network stock (the remainder that
+   can sit upstream), source protection (declared lead and fill spread) and temporary risk
+   protection (the active-driver increment). The partition never exceeds the recommendation.
+7. **Formal state machine with transition reasons.** LEAN / PROTECT / RECOVER with hysteresis,
+   each transition carrying a sentence naming the driver (or the quiet run and the units left to
+   drain). ALLOCATE remains the selector's mode when targets are jointly infeasible.
+8. **Selector rejection audit with deltas.** Every rejected candidate records its service delta per
+   service, fitted cost delta, inventory delta and stress-service pairs against the incumbent,
+   next to the reason.
+9. **Unit-based inventory metrics.** Purchased, served and inherited units, purchase-to-demand
+   ratio and inventory turn periods on every benchmark row, so "excess" can be attributed to
+   buying rather than to inherited opening stock.
+
+Not done in this cycle: a re-derivation of the MILP objective for procurement timing, or a change
+to the intermittent demand model beyond V4's occurrence × capped size mixture (its unit and period
+service are reported, not re-modelled).
+
+## 2. Diagnosis that drove the cycle
+
+### 2.1 Validation4 central-plus-branch failures
+
+The V4 report listed central+branch cells below target. Re-reading them by cause:
+
+- **Structural, all methods.** Transfer-constrained cells (branch transfer capacity 12 against
+  demand 20) sit at ~.70 for every planner including base stock; closure cells without an
+  alternate cannot be served. These are UNAVOIDABLE under the scenario, not engine failures.
+- **Intermittent central cells.** Service is bounded by the occurrence model; the V4 report's
+  unit-and-period reporting applies.
+- **One real regression.** Cell 70 (severe delay plus transfer, high inventory): `gated_pr24`
+  .95 at 3.5 periods against V4 .66 at 1.9 periods. V4 traded service for inventory where the
+  transfer arc could have carried the service. This cell family is the target of rules 1–3 and 6.
+
+### 2.2 Development5 cell 42: the idle planner
+
+`closure_recovery` with an approved alternate supplier (capacity 50/period against demand ~19.5):
+every planner, base stock included, scored .44–.47 with 12–15 stockout periods out of 20.
+Per-review replay showed the mechanism. The main route closes at period 1 (fill 0, +10 days);
+the planner buys from main through review 3, then buys **nothing for eight reviews** (4–11) while
+the shelf is empty, then resumes at 12 and only reaches the alternate at 13. The dead orders had
+too little history for a conditional ETA, so every world assumed they would land next period; the
+incumbent and every candidate agreed, so "no candidate materially improves service" was true
+inside the model and false in the world. The supply state stayed LEAN (activity 0) throughout
+because only *arrived* receipts fed it.
+
+With rules 2 and 3 the same cell sources the alternate from review 6 and holds it through the
+closure. Reviews 4–5 remain idle: an order becomes "overdue" only once it is past the declared
+tail, which is the honest earliest point.
+
+## 3. Development5, run A (engine before the overdue rules)
+
+72 cells × 5 methods, seed 32001, `docs/zaad_full/evidence/v5/dev5_a.jsonl`.
+
+| Method | Median service | Median inventory (periods) | Quiet-cell inventory | Avoidable breaches | Breaches (72) |
+| --- | --- | --- | --- | --- | --- |
+| base_stock | .919 | 1.35 | .40 | 10 | 44 |
+| gated_pr24 | .937 | 1.22 | .40 | 7 | 41 |
+| gated_pr30 | .951 | 1.86 | .71 | 3 | 37 |
+| gated_v4 | .947 | 1.90 | .69 | 4 | 38 |
+| gated (V5, run A) | .947 | 1.75 | .67 | 4 | 38 |
+
+Paired, V5 against V4 on 71 comparable cells: inventory lower on 56, higher on 15; service
+losses 26 against wins 17 (mostly quiet cells where V5 accepts .979 instead of .991 at a .95
+target, holding 1.94 instead of 2.63 periods). Against PR30: cost wins 38 / losses 33.
+
+Adverse: quiet-cell inventory .67 is still far from the .50–.60 target; median service .947 sits
+just under the .95 reference; 26 MODEL_FAILURE classifications are shared by every method
+(scenario families where the modelled state cannot be served).
+
+## 4. Development5, run B (engine with rules 2 and 3)
+
+`dev5_b.jsonl`: gated and base_stock rerun on the same 72 cells; the three frozen comparators are
+unaffected by V5-gated rules and are reused from run A (`dev5_merged.jsonl`).
+
+| Method | Median service | Mean service | Median inventory | Mean inventory | Median cost |
+| --- | --- | --- | --- | --- | --- |
+| base_stock | .919 | .863 | 1.17 | 2.98 | 1762 |
+| gated_pr24 | .937 | .877 | 1.22 | 2.93 | 1730 |
+| gated_pr30 | .951 | .891 | 1.85 | 3.06 | 1705 |
+| gated_v4 | .947 | .893 | 1.90 | 2.99 | 1683 |
+| gated (V5, run B) | **.953** | **.905** | **1.75** | **2.89** | 1707 |
+
+Run A → run B, gated, cells that moved by .02 or more:
+
+| Cell | Family | Run A | Run B | V4 |
+| --- | --- | --- | --- | --- |
+| 42 | closure_recovery, alternate supplier | .443 / 0.12 | **.743 / 0.30** | .454 / 0.12 |
+| 52 | closure_recovery, constrained transfer | .690 / 1.28 | **.879 / 1.00** | .689 / 1.30 |
+| 21 | closure_recovery, no alternate | .497 / 0.20 | **.675 / 1.14** | .497 / 0.20 |
+| 56 | closure_recovery, two locations, constrained transfer | .883 / 6.01 | **.972 / 5.31** | .883 / 6.01 |
+| 49 | severe, alternate route | .560 / 0.55 | **.730 / 0.83** | .560 / 0.55 |
+| 63 | correlated, two locations, shared route | .563 / 2.42 | .640 / 2.24 | .563 / 2.42 |
+| 58 | correlated, no alternate | .617 / 0.54 | .691 / 0.65 | .669 / 0.67 |
+| 68 | correlated, central+branches, shared route | .712 / 3.72 | .736 / 3.78 | .712 / 3.72 |
+| 20, 43 | deterioration_recovery | .815 / 2.65, .861 / 0.40 | .837 / 2.46, .881 / 0.46 | .815, .849 |
+| 19, 41 | correlated, no alternate / shared route | .727 / 0.23 | **.685 / 0.32** | .727 / 0.27 |
+| 71 | correlated, alternate route | .779 / 1.23 | **.731 / 1.23** | .725 / 1.24 |
+| 70 | severe, central+branches, transfer | .828 / 2.17 | **.777 / 2.12** | .828 / 2.17 |
+| 17 | severe, no alternate | .495 / 0.18 | **.385 / 0.14** | .495 / 0.18 |
+
+Adverse and retained: the four **severe / correlated** cells got worse (17, 70, 19/41, 71). The
+service figure is the closure-family gain minus a severe-family loss. Quiet-cell inventory is
+unchanged at .67 (V4 .69, PR30 .71); central+branches median service on the 10 such cells is
+.785 (V4 .802, PR30 .821, PR24 .865), i.e. **not improved** in run B.
+
+### 4.1 Why the severe cells got worse, and what is and is not fixable
+
+Per-review replay of cell 70 (`diag3`, review 8): the one receipt that has arrived since the
+shock took 49 days; five orders are outstanding at 14–42 days. The censored Kaplan–Meier ETA
+therefore says, correctly, "orders from this source take 49 days now" and sequences the open
+orders one period apart at half fill. New orders inherit the same 7-period lead. The replay's
+planning horizon at review 8 of a 12-review cell is **4 periods** (the replay horizon shrinks by
+one each review so that no financial data is fabricated; `horizon_note` in every replay). With a
+7-period lead and a 4-period window no purchase can land inside the window, so every candidate
+plans the same zero, the recovery ranking finds nothing "materially better" and the base-stock
+incumbent (which counts the dead pipeline as inventory position) is retained.
+
+Two further V5 rules were added on top of run B for the part that *is* the engine's:
+
+- **Recent fill run.** A run of short receipts (three or more recent records, at least half of
+  them short) sets the fill expectation for new and open orders, even when the whole record is
+  too short (< 6 records) or too long (diluted) to show it. Before this, five consecutive
+  half-filled receipts left the planner expecting the quoted .97.
+- **Backlog-implied lead.** When a source's recent orders are all late and some are already
+  overdue, its outstanding orders are assumed to ship in sequence: no younger order can land
+  before the oldest overdue one would. The freshest order stops being "due next period" while
+  the backlog stands, which is what let cell 42 reach its alternate one review earlier (5 not 6).
+
+The horizon interaction is **not** changed: extending the replay window would fabricate
+receivables and payments the operator has not supplied, which the replay design forbids, and
+production replanning already takes a fresh full-horizon snapshot. It is recorded here as a
+benchmark property that penalises every method equally in the late reviews of long shocks; PR24's
+.976 on cell 70 comes from buying 47 units at review 0 and carrying 3.8 periods, not from
+recovery intelligence.
+
+Run C (`dev5_c.jsonl`) reruns gated and base_stock with the two additional rules.
+
+## 5. Freeze
+
+_Recorded at freeze: commit SHA and source hash of `zaad/full`, before validation5 is launched._
+
+## 6. Validation5
+
+_Two fresh seeds (33001, 33002), 72 cells, methods base_stock / gated_pr24 / gated_pr30 / gated_v4 /
+gated. Filled in after the run._
+
+## 7. Report by dimension
+
+_SERVICE / INVENTORY / ECONOMICS / NETWORK / RECOVERY tables from validation5._
+
+## 8. Tests
+
+`tests/unit/test_zaad_network_recovery_v5.py` (11 tests, 1 skip when the demo has no pipeline
+order): recency retirement and reaction, overdue-as-late (V5 only), overdue survival moves arrival
+mass outside the horizon (V5 only, fresh orders untouched), flexibility credit inside the window,
+echelon partition bound and non-negativity on four demo networks, transition sentences, rejection
+deltas on audited candidates, V5 burden ≤ V4 burden on a quiet cell, pooling follows the transfer
+lead, comparator reachability. Full ZAAD unit set: 207 passed, 2 skipped. `ruff` clean; `mypy`
+at the pre-existing 8 stub errors (the four V5-introduced errors were fixed).
+
+## 9. Verdict
+
+_Exactly one of: READY FOR UNTOUCHED HOLDOUT4 · NEEDS FURTHER MULTI-ECHELON / RECOVERY ENGINEERING._

@@ -11,7 +11,7 @@ import numpy as np
 from zaad.full.contracts import Calendar, Request, Source, Stress
 from zaad.full.eta import conditional_eta
 from zaad.full.forecast import estimate, sample
-from zaad.full.uncertainty import MIN_SUPPLY_RECORDS, OUTLIER_Z, demand_uncertainty, failure_domains_for, lead_quantile, overdue_periods, supply_profiles
+from zaad.full.uncertainty import MIN_SUPPLY_RECORDS, OUTLIER_Z, demand_uncertainty, failure_domains_for, lead_quantile, overdue_periods, recent_fill_run, supply_profiles
 from zaad.signals import Signal, route_evidence
 from scipy.stats import norm
 
@@ -176,6 +176,11 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                 else:
                     f = float(np.clip(source.fill_mean + source.fill_sd * z, 0, 1))
                     delay = max(0, round(-source.lead_sd_days * z))
+                # Recent fill run (v5): a run of short receipts sets the fill expectation for the next
+                # orders even when the whole record is too short, or too long, to show it.
+                run = recent_fill_run(profile) if (req.protection_v5 and profile is not None) else None
+                if run is not None and profile is not None:
+                    f = min(f, float(np.clip(run + profile.fill_sd * z, 0, 1)))
                 # Declared mapping retained from v1, not a learned disruption probability.
                 f *= 1 - .3 * severity
                 delay += math.ceil(3 * severity) * req.period_days
@@ -184,6 +189,18 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                     delay += stress.extra_lead_days
                 fills[source.id, t] = 1. if req.force_unit_fills else f
                 arrival[source.id, t] = dates(req, source, t, delay)[1]
+        # Backlog-implied lead (v5): when a source's recent orders are all late and some are already
+        # overdue, its outstanding orders ship in sequence, so no younger order can land before the
+        # oldest overdue one would. The freshest order stops being "due next period" while the
+        # backlog stands; the planner sources elsewhere or transfers instead of waiting again.
+        backlog_age: dict[str, int] = {}
+        if req.protection_v5:
+            for po in req.pipeline:
+                profile = supply.get(po.source)
+                age = max(0, (req.as_of - po.placed_at).days)
+                if profile is not None and profile.recent_records >= 3 and profile.recent_late_probability >= .5 \
+                        and overdue_periods(sources_by_id[po.source], age, req.period_days) >= 1:
+                    backlog_age[po.source] = max(backlog_age.get(po.source, 0), age)
         for po in req.pipeline:
             keep = next(o for o in po.options if o.action == "keep")
             eta = conditional_eta(req.shipment_history, po.source,
@@ -212,11 +229,20 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                     p_in = .5 ** behind
                     inside = (p_in >= .5) if deterministic else (float(rng.random()) < p_in)
                     due = max(1, keep.due_in) if inside else req.horizon + 1
+            if po.source in backlog_age:
+                age = max(0, (req.as_of - po.placed_at).days)
+                if age < backlog_age[po.source]:
+                    due = max(due, math.ceil((backlog_age[po.source] - age) / req.period_days) + 1)
             # No history is explicitly quote-based, not falsely labelled calibrated ETA.
             if stress and due < stress.recovery_period:
                 due += math.ceil(stress.extra_lead_days / req.period_days)
             po_due[po.id] = due
             po_fill[po.id] = po.expected_accepted_remaining / po.remaining if po.remaining > 0 else 0.
+            if req.protection_v5 and po.source in supply:
+                # An open order is filled the way the source is filling now, not the way it was quoted.
+                run = recent_fill_run(supply[po.source])
+                if run is not None:
+                    po_fill[po.id] = min(po_fill[po.id], run)
             if stress:
                 po_fill[po.id] *= stress.fill_multiplier
             if req.force_unit_fills:
