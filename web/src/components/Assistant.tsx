@@ -19,14 +19,14 @@ const T = {
         model: "أجاب", noKey: "أدخل مفتاحك أولاً." },
 };
 
-export function AssistantButton() {
+export function AssistantButton({ label }: { label?: string } = {}) {
   const [open, setOpen] = useState(false);
   const { locale } = useLocale();
   const t = T[locale === "ar" ? "ar" : "en"];
   return (
     <>
       <button className="tbtn brand" onClick={() => setOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-        <Sparkles size={13} /> {t.open}
+        <Sparkles size={13} /> {label ?? t.open}
       </button>
       {open && <AssistantDrawer onClose={() => setOpen(false)} />}
     </>
