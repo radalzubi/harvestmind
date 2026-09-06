@@ -38,6 +38,12 @@ const TARGET_FIELDS: Record<string, string[]> = {
     "product_name", "order_date", "delivery_date", "requested_quantity",
     "fulfilled_quantity", "substituted_quantity", "sales_price",
     "required_quality_grade"],
+  stg_fmcg_skus: ["sku", "sku_name", "category", "supplier_id", "unit_cost", "unit_price", "units_per_case", "moq_units", "shelf_life_days", "abc_class"],
+  stg_fmcg_orders: ["order_id", "customer_id", "order_date", "requested_delivery_date", "sku", "qty_ordered", "qty_shipped", "channel"],
+  stg_fmcg_purchase_orders: ["po_id", "po_date", "supplier_id", "sku", "qty_ordered", "unit_cost", "expected_delivery_date"],
+  stg_fmcg_receipts: ["receipt_id", "po_id", "receipt_date", "sku", "qty_received", "qty_rejected"],
+  stg_fmcg_inventory: ["snapshot_date", "sku", "location_id", "on_hand", "in_transit"],
+  stg_fmcg_suppliers: ["supplier_id", "supplier_name", "route", "origin_iso3", "lead_time_promised_weeks", "capacity_per_week"],
   stg_waste_adjustments: ["adjustment_id", "date", "product_id",
     "product_name", "lot_id", "quantity_lost", "reason",
     "estimated_value_lost"],
@@ -106,7 +112,7 @@ function ConfirmInner() {
     [flagged]
   );
 
-  if (!sessionId) return <PageError error="No session id — start from the Upload page." />;
+  if (!sessionId) return <PageError error="No session id, start from the Upload page." />;
   if (loading) return <PageLoading message="Loading extraction session…" />;
   if (error) return <PageError error={error} />;
   if (!session) return null;
@@ -224,12 +230,12 @@ function ConfirmInner() {
       />
 
       {session.mock_mode && (
-        <InfoBanner kind="warn" title="Running in demo mode —">
+        <InfoBanner kind="warn" title="Running in demo mode">
           smart mapping not yet active. Data extracted using standard mapping rules.
         </InfoBanner>
       )}
       {session.fallback_used && (
-        <InfoBanner kind="warn" title="Smart mapping temporarily unavailable —">
+        <InfoBanner kind="warn" title="Smart mapping temporarily unavailable">
           using standard mapping. Results below came from the deterministic fallback.
         </InfoBanner>
       )}
@@ -262,7 +268,7 @@ function ConfirmInner() {
 
       {/* Column mappings */}
       <Card style={{ marginTop: 16 }}>
-        <CardHead title="Column Mapping" sub="How your columns were read — correct anything that looks wrong" />
+        <CardHead title="Column Mapping" sub="How your columns were read, correct anything that looks wrong" />
         <CardBody tight>
           <table className="data-table">
             <thead><tr><th>Your column</th><th>Mapped to</th><th>Why</th></tr></thead>
@@ -419,7 +425,7 @@ function ConfirmInner() {
                                   />
                                 ) : (
                                   <>
-                                    {String(r.fields[c] ?? "—")}
+                                    {String(r.fields[c] ?? "n/a")}
                                     {derived && (
                                       <span title={m.inference_source} style={{ marginLeft: 4, fontStyle: "italic", color: "var(--muted)", fontWeight: 700 }}>ƒ</span>
                                     )}

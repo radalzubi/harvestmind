@@ -1,18 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { KeyRound, LogOut } from "lucide-react";
 import { Card, CardBody, CardHead, InfoBanner, PageHeader, Tbtn } from "@/components/ui";
 import { apiFetch, clearApiToken, getApiToken, setApiToken } from "@/lib/api";
 import { useToast } from "@/components/Toast";
 
-export default function AccessPage() {
+function AccessInner() {
   const toast = useToast();
+  const router = useRouter();
+  const params = useSearchParams();
   const [token, setToken] = useState("");
   const [connected, setConnected] = useState(false);
   const [checking, setChecking] = useState(false);
 
   useEffect(() => setConnected(Boolean(getApiToken())), []);
+  // An access link from the approval email carries the token once; consume it,
+  // connect, and strip it from the address bar.
+  useEffect(() => {
+    const t = params.get("token");
+    if (!t) return;
+    setApiToken(t);
+    apiFetch("/me").then(() => {
+      setConnected(true);
+      toast.push("Workspace connected");
+      router.replace("/start");
+    }).catch(() => { clearApiToken(); toast.push("That access link is not valid"); router.replace("/access"); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
 
   const connect = async () => {
     if (!token.trim()) return;
@@ -47,7 +63,7 @@ export default function AccessPage() {
       <InfoBanner kind="info" title="Session-only credential">
         The token stays in this browser tab session. It is not persisted to
         local storage, bundled into the app, or sent anywhere except the
-        configured HarvestMind API.
+        configured Zaad Supply API.
       </InfoBanner>
       <Card style={{ marginTop: 16 }}>
         <CardHead
@@ -78,4 +94,8 @@ export default function AccessPage() {
       </Card>
     </div>
   );
+}
+
+export default function AccessPage() {
+  return <Suspense fallback={null}><AccessInner /></Suspense>;
 }

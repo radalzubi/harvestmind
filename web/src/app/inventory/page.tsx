@@ -122,7 +122,7 @@ export default function InventoryPage() {
               <tbody>
                 {waste.by_product.map((w, i) => (
                   <tr key={i}>
-                    <td>{w.product_name || "—"}</td>
+                    <td>{w.product_name || "n/a"}</td>
                     <td className="r">{fmt(w.quantity_lost_kg, 1)}</td>
                     <td className="r">{fmtUSD(w.loss_usd)}</td>
                   </tr>
@@ -148,7 +148,7 @@ export default function InventoryPage() {
               <tbody>
                 {waste.by_reason.map((w, i) => (
                   <tr key={i}>
-                    <td>{w.reason || "—"}</td>
+                    <td>{w.reason || "n/a"}</td>
                     <td className="r">{fmt(w.quantity_lost_kg, 1)}</td>
                     <td className="r">{fmtUSD(w.loss_usd)}</td>
                   </tr>

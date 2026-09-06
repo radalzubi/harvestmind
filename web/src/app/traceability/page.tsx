@@ -48,7 +48,7 @@ export default function TraceabilityPage() {
         />
       </KPIRow>
 
-      {/* Status banner — only shown when lot data exists */}
+      {/* Status banner, only shown when lot data exists */}
       {t.total_lots > 0 && <div style={{
         marginTop: 20,
         background: "var(--surface)",
@@ -76,7 +76,7 @@ export default function TraceabilityPage() {
       {/* Missing field breakdown */}
       {Object.keys(t.missing_breakdown).length > 0 && (
         <Card style={{ marginTop: 16 }}>
-          <CardHead title="Missing Fields — Lots Affected" />
+          <CardHead title="Missing Fields: Lots Affected" />
           <CardBody tight>
             <table className="data-table">
               <thead>
@@ -89,7 +89,7 @@ export default function TraceabilityPage() {
                     <tr key={field}>
                       <td style={{ fontFamily: "monospace", fontSize: 12 }}>{field}</td>
                       <td className="r">{count}</td>
-                      <td className="r">{t.total_lots > 0 ? ((count / t.total_lots) * 100).toFixed(1) + "%" : "—"}</td>
+                      <td className="r">{t.total_lots > 0 ? ((count / t.total_lots) * 100).toFixed(1) + "%" : "n/a"}</td>
                     </tr>
                   ))}
               </tbody>
@@ -110,8 +110,8 @@ export default function TraceabilityPage() {
               <tbody>
                 {t.incomplete_lots.slice(0, 50).map((lot, i) => (
                   <tr key={i}>
-                    <td style={{ fontFamily: "monospace", fontSize: 11 }}>{lot.lot_id || "—"}</td>
-                    <td>{lot.product_name || "—"}</td>
+                    <td style={{ fontFamily: "monospace", fontSize: 11 }}>{lot.lot_id || "n/a"}</td>
+                    <td>{lot.product_name || "n/a"}</td>
                     <td style={{ color: "var(--danger)", fontSize: 11 }}>{lot.missing_fields.join(", ")}</td>
                   </tr>
                 ))}
@@ -124,7 +124,7 @@ export default function TraceabilityPage() {
       {t.total_lots === 0 && (
         <EmptyState
           title="No inventory lot data loaded"
-          body="Upload your inventory lots to see FSMA-204 lot-level traceability completeness. HarvestMind checks for lot_id, product_id, supplier_id, arrival_date, quantity, and unit on each lot."
+          body="Upload your inventory lots to see FSMA-204 lot-level traceability completeness. Zaad Supply checks for lot_id, product_id, supplier_id, arrival_date, quantity, and unit on each lot."
           action={<Link href="/upload"><Tbtn variant="primary">Upload stg_inventory_lots.csv</Tbtn></Link>}
         />
       )}

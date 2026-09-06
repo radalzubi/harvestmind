@@ -100,7 +100,7 @@ export default function DataQualityPage() {
         />
       </KPIRow>
 
-      {/* Re-validate error — only shown when we already have data but the reload failed */}
+      {/* Re-validate error, only shown when we already have data but the reload failed */}
       {error && data && (
         <div style={{ marginBottom: 16, padding: "10px 14px", border: "1px solid rgba(248,113,113,0.3)", background: "rgba(248,113,113,0.06)", borderRadius: 8, fontSize: 12, color: "var(--danger)" }}>
           Re-validation failed: {error}
@@ -185,12 +185,12 @@ export default function DataQualityPage() {
         </Card>
       )}
 
-      {/* Data pool indicator — anonymized, consent-gated */}
+      {/* Data pool indicator, anonymized, consent-gated */}
       {poolStatus && (
         <Card style={{ marginTop: 16 }}>
           <CardHead
             title="Data Pool"
-            sub="Anonymized cross-operator signals that make every forecast smarter — categories and ratios only, never names, volumes, or prices"
+            sub="Anonymized cross-operator signals that make every forecast smarter, categories and ratios only, never names, volumes, or prices"
           />
           <CardBody>
             <div style={{ display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap", fontSize: 12 }}>
@@ -212,7 +212,7 @@ export default function DataQualityPage() {
                 onClick={() => setShowPoolInfo(!showPoolInfo)}
                 style={{ background: "none", border: "none", color: "var(--accent)", fontSize: 12, cursor: "pointer", textDecoration: "underline", padding: 0 }}
               >
-                Your data is anonymized — see what we use
+                Your data is anonymized, see what we use
               </button>
             </div>
             {showPoolInfo && (
