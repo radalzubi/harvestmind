@@ -27,7 +27,9 @@ from zaad.full.demo import example  # noqa: E402
 from zaad.full.replay import replay  # noqa: E402
 from zaad.full.worlds import World  # noqa: E402
 
-SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 22002, 22003, 22004, 22005]}
+SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 22002, 22003, 22004, 22005],
+         # Demand-adaptation study (PR24 follow-up). Never reuses consumed seeds above.
+         "development2": [23001], "validation2": [24001, 24002], "holdout2": [25001, 25002]}
 METHODS = ["base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated"]
 
 
@@ -103,6 +105,7 @@ def request_for(cell, seed):
     if cell["family"] != "action":
         data["stock"][0]["quantity"] = cell["cover"] * 20
     data["services"][0]["target"] = cell["target"]
+    data["demand_adaptation"] = cell.get("adaptation", "symmetric")
     rng = np.random.default_rng(seed + 210000)
     history = []
     for period in range(-78, 0):
@@ -191,6 +194,11 @@ def main():
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--freeze", action="store_true")
     parser.add_argument("--limit", type=int)
+    parser.add_argument("--adaptation", choices=["symmetric", "asymmetric", "soft", "ensemble"], default="symmetric")
+    parser.add_argument("--methods", nargs="+", default=None, help="subset of METHODS")
+    parser.add_argument("--demand", nargs="+", default=None, help="only cells with these demand patterns")
+    parser.add_argument("--family", nargs="+", default=None, help="only cells of these families")
+    parser.add_argument("--target", nargs="+", type=float, default=None, help="only cells with these service targets")
     args = parser.parse_args()
     manifest = args.output.parent / "preregistered.json"
     configuration = {"source_hash": source_hash(), "seeds": SEEDS, "methods": METHODS,
@@ -210,7 +218,15 @@ def main():
         raise SystemExit("Refusing to overwrite evidence")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     selected = configuration["cells"][:args.limit] if args.limit else configuration["cells"]
-    tasks = [(c, s, m) for c in selected for s in SEEDS[args.split] for m in METHODS]
+    if args.demand:
+        selected = [c for c in selected if c["demand"] in args.demand]
+    if args.family:
+        selected = [c for c in selected if c["family"] in args.family]
+    if args.target:
+        selected = [c for c in selected if any(abs(c["target"] - t) < 1e-9 for t in args.target)]
+    selected = [{**c, "adaptation": args.adaptation} for c in selected]
+    methods = args.methods or METHODS
+    tasks = [(c, s, m) for c in selected for s in SEEDS[args.split] for m in methods]
     with args.output.open("x") as file, ProcessPoolExecutor(max_workers=args.workers) as pool:
         for i, row in enumerate(pool.map(task, tasks, chunksize=1)):
             file.write(json.dumps(row, allow_nan=False) + "\n")
@@ -219,12 +235,12 @@ def main():
                 print(f"{i+1}/{len(tasks)} rows; {row['status']}", flush=True)
     rows = [json.loads(line) for line in args.output.read_text().splitlines()]
     summary = {}
-    for method in METHODS:
+    for method in methods:
         runs = [r for r in rows if r["method"] == method]
         savings = []
         for r in runs:
-            before = next(b for b in rows if b["cell"] == r["cell"] and b["seed"] == r["seed"] and b["method"] == "base_stock")
-            if before["cost"] is not None and r["cost"] is not None:
+            before = next((b for b in rows if b["cell"] == r["cell"] and b["seed"] == r["seed"] and b["method"] == "base_stock"), None)
+            if before is not None and before["cost"] is not None and r["cost"] is not None:
                 savings.append(100 * (before["cost"] - r["cost"]) / max(abs(before["cost"]), 1.))
         summary[method] = {"runs": len(runs), "complete": sum(r["status"] == "COMPLETE" for r in runs),
                            "service_breaches": sum(r["service_breach"] for r in runs),

@@ -12,6 +12,9 @@ Release verdict: **NEEDS FURTHER ENGINEERING**, with exact financial-tail,
 service/robustness, order-line reconciliation, large-job and inherited security
 blockers in [failure analysis](FAILURE_ANALYSIS.md). The working architecture is
 substantive; the complete enterprise specification is not claimed finished.
+The PR 24 follow-up branch resolves the dust, financial-tail, order-OTIF,
+large-job and security blockers and records why downward-shift adaptation is
+still open: [PR24_FOLLOWUP.md](PR24_FOLLOWUP.md).
 
 ```bash
 python3 scripts/zaad_network.py --fixture transfer --output /tmp/zaad-transfer.json

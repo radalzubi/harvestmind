@@ -217,8 +217,8 @@ def plan(req: Request) -> dict:
                                      "materially_better_than_incumbent": _recovery_not_worse(req, incumbent_selection, rows)})
         usable = [r for r in recovery_ranking if r["weighted_service_shortfall"] is not None and r["materially_better_than_incumbent"]]
         if usable:
-            best = min(usable, key=lambda r: (r["weighted_service_shortfall"], r["cost_mean"], list(candidates).index(r["candidate"])))
-            chosen = best["candidate"]
+            best_candidate = min(usable, key=lambda r: (r["weighted_service_shortfall"], r["cost_mean"], list(candidates).index(r["candidate"])))
+            chosen = best_candidate["candidate"]
         else:
             chosen = "incumbent"
     else:

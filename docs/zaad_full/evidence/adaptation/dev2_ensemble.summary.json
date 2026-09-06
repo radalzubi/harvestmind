@@ -1,0 +1,32 @@
+{
+  "frozen_forecast": {
+    "runs": 17,
+    "complete": 17,
+    "service_breaches": 17,
+    "paired_completes": 0,
+    "median_vs_base_stock_pct": null,
+    "min": null,
+    "max": null,
+    "cost_losses": 0
+  },
+  "stochastic": {
+    "runs": 17,
+    "complete": 15,
+    "service_breaches": 14,
+    "paired_completes": 0,
+    "median_vs_base_stock_pct": null,
+    "min": null,
+    "max": null,
+    "cost_losses": 0
+  },
+  "gated": {
+    "runs": 17,
+    "complete": 17,
+    "service_breaches": 12,
+    "paired_completes": 0,
+    "median_vs_base_stock_pct": null,
+    "min": null,
+    "max": null,
+    "cost_losses": 0
+  }
+}

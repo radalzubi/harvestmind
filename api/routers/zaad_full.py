@@ -16,10 +16,49 @@ from api.routers.zaad import bounded_rate
 from zaad.contracts import Record
 from zaad.full.contracts import Request
 from zaad.full.planner import plan
+from zaad.full.jobs import JobRunner, JobStore, QuotaExceeded
 from zaad.full.shadow import ShadowConflict, ShadowLedger
 
 router = APIRouter(prefix="/api/zaad/network", tags=["zaad-network-shadow"])
 _slots = threading.BoundedSemaphore(1)
+_runner: JobRunner | None = None
+_runner_lock = threading.Lock()
+
+
+def runner() -> JobRunner:
+    """One bounded runner per process; storage is dedicated, never the training database."""
+    global _runner
+    path = os.getenv("ZAAD_JOB_STORE")
+    if not path:
+        raise HTTPException(503, "Configure dedicated ZAAD_JOB_STORE storage for asynchronous planning jobs.")
+    with _runner_lock:
+        if _runner is None or _runner.store.path != Path(path):
+            _runner = JobRunner(JobStore(Path(path)))
+        return _runner
+
+
+LARGE_LIMITS = {"skus": 200, "sources": 400, "services": 200, "horizon": 26, "scenarios": 32, "stresses": 12}
+
+
+async def large_payload(request: HTTPRequest) -> Request:
+    """The asynchronous path accepts what /plan refuses, up to the bounded limits above."""
+    if request.headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+        raise HTTPException(415, "application/json required")
+    body = bytearray()
+    async for chunk in request.stream():
+        if len(body) + len(chunk) > 16 * 1024 * 1024:
+            raise HTTPException(413, "Snapshots over 16 MiB are outside the asynchronous job envelope.")
+        body.extend(chunk)
+    try:
+        result = Request.model_validate_json(body)
+    except ValidationError as exc:
+        raise HTTPException(422, [{"loc": list(e["loc"]), "msg": e["msg"], "type": e["type"]}
+                                 for e in exc.errors(include_input=False, include_context=False)]) from exc
+    if (len(result.skus) > LARGE_LIMITS["skus"] or len(result.sources) > LARGE_LIMITS["sources"]
+            or len(result.services) > LARGE_LIMITS["services"] or result.horizon > LARGE_LIMITS["horizon"]
+            or result.scenarios > LARGE_LIMITS["scenarios"] or len(result.stresses) > LARGE_LIMITS["stresses"]):
+        raise HTTPException(413, f"Asynchronous job limit exceeded: {LARGE_LIMITS}")
+    return result
 
 
 def ledger() -> ShadowLedger:
@@ -140,3 +179,40 @@ def outcome(decision_id: str, body: Outcome, operator: str = Depends(authenticat
     except KeyError as exc:
         raise HTTPException(404, "Decision not found") from exc
     return {"recorded": True, "used_for_training": False}
+
+
+@router.post("/jobs", dependencies=[Depends(bounded_rate)], status_code=202)
+async def submit_job(request: HTTPRequest, operator: str = Depends(authenticated)):
+    """Queue a large planning run. Small requests should use /plan, which answers inline."""
+    req = await large_payload(request)
+    if req.operator_id != operator:
+        raise HTTPException(403, "Operator mismatch")
+    run = runner()
+    try:
+        identity = run.submit(operator, req)
+    except QuotaExceeded as exc:
+        raise HTTPException(429, str(exc)) from exc
+    return {"job_id": identity, "status": "QUEUED", "timeout_s": run.timeout_for(req),
+            "executable_purchase_order": False, "approval_required": True}
+
+
+@router.get("/jobs")
+def list_jobs(operator: str = Depends(authenticated)):
+    """Status reads are cheap SQLite lookups scoped to the caller; they are not rate limited so polling works."""
+    return {"jobs": runner().store.list(operator)}
+
+
+@router.get("/jobs/{job_id}")
+def read_job(job_id: str, operator: str = Depends(authenticated)):
+    try:
+        return runner().store.get(job_id, operator)
+    except KeyError as exc:
+        raise HTTPException(404, "Job not found") from exc
+
+
+@router.delete("/jobs/{job_id}", dependencies=[Depends(bounded_rate)])
+def cancel_job(job_id: str, operator: str = Depends(authenticated)):
+    try:
+        return runner().cancel(job_id, operator)
+    except KeyError as exc:
+        raise HTTPException(404, "Job not found") from exc

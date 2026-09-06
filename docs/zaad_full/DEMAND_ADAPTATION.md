@@ -26,3 +26,23 @@ explains Croston's occurrence/size decomposition;
 [River's Page–Hinkley documentation](https://riverml.xyz/0.10.0/api/drift/PageHinkley/)
 describes the alternative online detector. Synthetic change tests show mechanism,
 not a universal detection-delay or savings guarantee.
+
+## Alternative downward-shift rules (PR 24 follow-up study)
+
+`Request.demand_adaptation` selects the changepoint rule: `symmetric`
+(default, the frozen PR 23 rule), `asymmetric` (downward threshold 6.5 with a
+two-observation confirmation), `soft` (blended pre/post fit) and `ensemble`
+(decision-loss weighted blend). They were compared on new seeds only
+(development2 23001, validation2 24001 and 24002) with paired cost and
+service comparison against `symmetric`.
+
+Result: none improves the decrease cells. On development2 all three lose the
+majority of paired decrease comparisons for the `gated` and `stochastic`
+methods (worst single losses +15% soft, +18% ensemble). On validation2 the
+asymmetric rule is neutral in median on decrease cells, raises `gated`
+service breaches from 1 to 3 there, and only helps stable cells by
+suppressing false alarms. `symmetric` stays the default; the other modes are
+retained opt-in with their adverse evidence in
+`docs/zaad_full/evidence/adaptation/`. The traced cause of the original
+downshift harm is the gated planner's proxy candidate behaviour under stress
+rejection, described in [PR24_FOLLOWUP.md](PR24_FOLLOWUP.md).

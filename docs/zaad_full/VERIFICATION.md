@@ -68,3 +68,38 @@ SciPy1.18.1/HiGHS1.15.1. Exact numeric replay across solver versions is not assu
 
 The 1k/5k scale measurements are sparse deterministic probes, not full stochastic
 production certification. See [SCALABILITY](SCALABILITY.md).
+
+## PR 24 follow-up verification (branch `claude/zaad-pr24-release-blockers`)
+
+Executed locally on macOS ARM64 in an isolated `.venv` with `.[dev,llm]`.
+Remote CI is not represented as green by these local results.
+
+- Focused suites: `tests/unit/test_zaad_tolerance_and_tail.py` 9 passed,
+  `tests/unit/test_zaad_otif_and_adaptation.py` 5 passed and 1 skipped,
+  `tests/integration/test_zaad_jobs.py` 3 passed, existing ZAAD suites
+  93 passed.
+- Full Python suite: **1,548 passed, 2 skipped** (1,545 in the main run plus
+  the 3 job tests run in their own process so the spawned solver processes
+  cannot interfere with unrelated fixtures), 119.5 seconds.
+- Ruff on every changed or new Python file: passed. The 65 pre-existing
+  repo-wide findings on untouched files are unchanged from the PR 24 base;
+  CI lints only the files a PR modifies. `git diff --check`: passed.
+- mypy on `zaad/full` and `api/routers/zaad_full.py`: only the pre-existing
+  missing-stub errors for scipy and pyomo remain; the four typing errors
+  introduced during this work were fixed before commit.
+- `npx tsc --noEmit`: passed. `next build`: passed, all routes including
+  `/zaad/network`. No web source was changed on this branch.
+- Real-HTTP smoke against uvicorn on loopback with authentication required
+  and a temporary data root: unauthenticated `POST /api/zaad/network/jobs`
+  401; authenticated submit 202 with `executable_purchase_order: false`;
+  job reached `DONE` with the stored seed, engine version and a 64-character
+  config hash; the report carried `approval_required: true`; the tenant list
+  showed only that job; a payload naming another operator returned 403;
+  `DELETE` on a finished job returned its final row; the synchronous `/plan`
+  endpoint still returned 200. No purchasing action was taken.
+- Bandit `-ll` on `api`, `infrastructure`, `zaad`: **no medium or high
+  findings** (10 low, all pre-existing). `nosec` annotations on those paths:
+  13 on the base, 18 now, each with an inline reason (see PR24_FOLLOWUP).
+- Adaptation evidence: `docs/zaad_full/evidence/adaptation/` holds every row of
+  the development2 and validation2 runs for all modes, the per-run logs and
+  the paired summaries. `holdout2` was not run.

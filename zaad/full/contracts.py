@@ -186,7 +186,7 @@ class Service(Dated):
     target: float = Field(ge=0, le=1)
     selling_price: float = Field(gt=0)
     sla_per_unmet: float = Field(ge=0)
-    metric: Literal["unit_fill", "line_fill", "order_fill", "otif"] = "unit_fill"
+    metric: Literal["unit_fill", "line_fill", "order_fill", "otif", "order_otif"] = "unit_fill"
 
 
 class DemandObservation(Dated):
@@ -207,6 +207,21 @@ class OrderLine(Dated):
     delivered_at: datetime | None = None
     filled: float = Field(ge=0)
     cancelled: float = Field(ge=0)
+    # Revisions: a superseded line is history, never demand or a service obligation.
+    revision: int = Field(default=1, ge=1)
+    superseded_by: str | None = None
+
+    @property
+    def open_quantity(self) -> float:
+        return 0. if self.superseded_by else max(0., self.quantity - self.filled - self.cancelled)
+
+    @model_validator(mode="after")
+    def line_chain(self):
+        if self.filled + self.cancelled > self.quantity + 1e-9:
+            raise ValueError("filled plus cancelled exceeds the line quantity")
+        if self.superseded_by == self.id:
+            raise ValueError("a line cannot supersede itself")
+        return self
 
 
 class Event(Dated):
@@ -348,6 +363,9 @@ class Request(Record):
     downside_cost_tolerance: float = Field(ge=0, le=1)
     service_tolerance: float = Field(ge=0, le=.1)
     force_unit_fills: bool = False
+    # How review-by-review demand refits treat a detected level change. "symmetric" is the frozen
+    # PR23 behaviour; the others are evaluated on new development/validation seeds only.
+    demand_adaptation: Literal["symmetric", "asymmetric", "soft", "ensemble"] = "symmetric"
     mode: Literal["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] = "LEAN"
     evidence_label: Literal["SYNTHETIC", "OPERATOR-SHADOW"]
 

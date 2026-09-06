@@ -1,0 +1,458 @@
+{
+ "asymmetric/frozen_forecast": {
+  "decrease": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9233849480995384,
+   "median_service_ref": 0.9233849480995384,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "increase": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.5850213917709122,
+   "median_service_ref": 0.5850213917709122,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 9,
+   "breaches_ref": 9,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.8840944378498952,
+   "median_service_ref": 0.8840944378498952,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "asymmetric/gated": {
+  "decrease": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 2,
+   "breaches_ref": 2,
+   "incomplete": 0,
+   "losses": 3,
+   "median_cost_change_pct": 0.9410692133678618,
+   "median_service": 0.9399456343769184,
+   "median_service_ref": 0.9399456343769184,
+   "pairs": 4,
+   "worst_cost_change_pct": 3.9571041878823086
+  },
+  "increase": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.7579402787303422,
+   "median_service_ref": 0.7579402787303422,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 6,
+   "breaches_ref": 6,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9435893030537138,
+   "median_service_ref": 0.9435893030537138,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "asymmetric/stochastic": {
+  "decrease": {
+   "best_cost_change_pct": -3.378091582074458,
+   "breaches": 3,
+   "breaches_ref": 3,
+   "incomplete": 0,
+   "losses": 3,
+   "median_cost_change_pct": 2.2442555454732953,
+   "median_service": 0.9054903095609266,
+   "median_service_ref": 0.927833948946811,
+   "pairs": 4,
+   "worst_cost_change_pct": 3.2819652023772035
+  },
+  "increase": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 1,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.8083434733227994,
+   "median_service_ref": 0.8083434733227994,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 7,
+   "breaches_ref": 7,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9204410039745113,
+   "median_service_ref": 0.9204410039745113,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "ensemble/frozen_forecast": {
+  "decrease": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9233849480995384,
+   "median_service_ref": 0.9233849480995384,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "increase": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.5850213917709122,
+   "median_service_ref": 0.5850213917709122,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 9,
+   "breaches_ref": 9,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.8840944378498952,
+   "median_service_ref": 0.8840944378498952,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "ensemble/gated": {
+  "decrease": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 2,
+   "breaches_ref": 2,
+   "incomplete": 0,
+   "losses": 3,
+   "median_cost_change_pct": 1.7164817239547487,
+   "median_service": 0.9399456343769184,
+   "median_service_ref": 0.9399456343769184,
+   "pairs": 4,
+   "worst_cost_change_pct": 18.481894350536887
+  },
+  "increase": {
+   "best_cost_change_pct": -2.2635359358423837,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 2,
+   "median_cost_change_pct": 0.8216877997063532,
+   "median_service": 0.7360084267666767,
+   "median_service_ref": 0.7579402787303422,
+   "pairs": 4,
+   "worst_cost_change_pct": 3.1092841043657464
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 6,
+   "breaches_ref": 6,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9435893030537138,
+   "median_service_ref": 0.9435893030537138,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "ensemble/stochastic": {
+  "decrease": {
+   "best_cost_change_pct": 2.609370379249652,
+   "breaches": 3,
+   "breaches_ref": 3,
+   "incomplete": 0,
+   "losses": 4,
+   "median_cost_change_pct": 6.031047649388804,
+   "median_service": 0.927833948946811,
+   "median_service_ref": 0.927833948946811,
+   "pairs": 4,
+   "worst_cost_change_pct": 16.29238345447638
+  },
+  "increase": {
+   "best_cost_change_pct": 0.736639955157322,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 2,
+   "losses": 2,
+   "median_cost_change_pct": 1.2356428090006066,
+   "median_service": 0.807010520942105,
+   "median_service_ref": 0.8083434733227994,
+   "pairs": 4,
+   "worst_cost_change_pct": 1.7346456628438913
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 7,
+   "breaches_ref": 7,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9204410039745113,
+   "median_service_ref": 0.9204410039745113,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "soft/frozen_forecast": {
+  "decrease": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9233849480995384,
+   "median_service_ref": 0.9233849480995384,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "increase": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.5850213917709122,
+   "median_service_ref": 0.5850213917709122,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 9,
+   "breaches_ref": 9,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.8840944378498952,
+   "median_service_ref": 0.8840944378498952,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "soft/gated": {
+  "decrease": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 2,
+   "breaches_ref": 2,
+   "incomplete": 0,
+   "losses": 3,
+   "median_cost_change_pct": 0.4857352582623182,
+   "median_service": 0.9399456343769184,
+   "median_service_ref": 0.9399456343769184,
+   "pairs": 4,
+   "worst_cost_change_pct": 15.169174140866925
+  },
+  "increase": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 3,
+   "median_cost_change_pct": 2.5034931956399333,
+   "median_service": 0.7254984910470582,
+   "median_service_ref": 0.7579402787303422,
+   "pairs": 4,
+   "worst_cost_change_pct": 3.9614455872515064
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 6,
+   "breaches_ref": 6,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9435893030537138,
+   "median_service_ref": 0.9435893030537138,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "soft/stochastic": {
+  "decrease": {
+   "best_cost_change_pct": 0.5798341851022588,
+   "breaches": 3,
+   "breaches_ref": 3,
+   "incomplete": 0,
+   "losses": 4,
+   "median_cost_change_pct": 3.443185045624098,
+   "median_service": 0.927833948946811,
+   "median_service_ref": 0.927833948946811,
+   "pairs": 4,
+   "worst_cost_change_pct": 12.098084303923983
+  },
+  "increase": {
+   "best_cost_change_pct": 0.4277847550101067,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 1,
+   "losses": 3,
+   "median_cost_change_pct": 0.6410949046203664,
+   "median_service": 0.7930660436617628,
+   "median_service_ref": 0.8083434733227994,
+   "pairs": 4,
+   "worst_cost_change_pct": 2.30777928406494
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 7,
+   "breaches_ref": 7,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9204410039745113,
+   "median_service_ref": 0.9204410039745113,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "symmetric/frozen_forecast": {
+  "decrease": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9233849480995384,
+   "median_service_ref": 0.9233849480995384,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "increase": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.5850213917709122,
+   "median_service_ref": 0.5850213917709122,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 9,
+   "breaches_ref": 9,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.8840944378498952,
+   "median_service_ref": 0.8840944378498952,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "symmetric/gated": {
+  "decrease": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 2,
+   "breaches_ref": 2,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9399456343769184,
+   "median_service_ref": 0.9399456343769184,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "increase": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.7579402787303422,
+   "median_service_ref": 0.7579402787303422,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 6,
+   "breaches_ref": 6,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9435893030537138,
+   "median_service_ref": 0.9435893030537138,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ },
+ "symmetric/stochastic": {
+  "decrease": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 3,
+   "breaches_ref": 3,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.927833948946811,
+   "median_service_ref": 0.927833948946811,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "increase": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 4,
+   "breaches_ref": 4,
+   "incomplete": 1,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.8083434733227994,
+   "median_service_ref": 0.8083434733227994,
+   "pairs": 4,
+   "worst_cost_change_pct": 0.0
+  },
+  "stable": {
+   "best_cost_change_pct": 0.0,
+   "breaches": 7,
+   "breaches_ref": 7,
+   "incomplete": 0,
+   "losses": 0,
+   "median_cost_change_pct": 0.0,
+   "median_service": 0.9204410039745113,
+   "median_service_ref": 0.9204410039745113,
+   "pairs": 9,
+   "worst_cost_change_pct": 0.0
+  }
+ }
+}

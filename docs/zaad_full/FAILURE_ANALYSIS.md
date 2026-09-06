@@ -94,3 +94,23 @@ language or by counting passing unit tests.
 
 The architecture is substantive and the isolated demo is executable. It is not
 Oracle parity, an autonomous buyer, or a fully completed commercial specification.
+
+## Status after the PR 24 follow-up (branch `claude/zaad-pr24-release-blockers`)
+
+The six blockers above are the PR 23 record and are kept verbatim. Their
+state on the follow-up branch, with detail in [PR24_FOLLOWUP.md](PR24_FOLLOWUP.md):
+
+| Blocker | State | What changed |
+|---|---|---|
+| 1 Numerical PO dust | Resolved | One unit-aware zero policy (`zaad/full/tolerance.py`) shared by extraction, replay and settlement; dust POs close instead of failing exclusivity; material orders are never erased. |
+| 2 Financial tail | Resolved for declared obligations | Terminal solvency row in the model and a matching settlement check; reports carry the reserve and headroom. Not a certification beyond the declared credit line. |
+| 3 Downward-shift adaptation | **Open** | Asymmetric, soft and ensemble rules were built and measured on new seeds. None beats the frozen symmetric rule on decrease cells; the cause is gated-planner proxy chattering under stress rejection, not the forecast. Adverse results retained. |
+| 4 Order-level OTIF | Semantics resolved, field validation open | Revisions, supersession, cancellation, partials, late receipts, complete-order and order OTIF are defined, modeled and settled. No real revision history has been run. |
+| 5 Large jobs | Boundary resolved, capacity open | Bounded asynchronous job path with tenant isolation, quotas, timeouts, cancellation and durable reproducible results. Not load-profiled at its limits. |
+| 6 Static security | Resolved | Declared bind scope and validated transport targets; Bandit medium/high clean on `api`, `infrastructure`, `zaad`. |
+
+The PR 24 selector was also corrected: strict SLA gating whenever targets are
+achievable, priority-weighted recovery only when they are not, a
+tolerance-scaled material margin, ranking over every optimal candidate, and a
+stress gate consistent with weighted recovery. Verdict: NEEDS FURTHER
+ENGINEERING.

@@ -73,7 +73,7 @@ def forecast_all(req: Request, adaptive: bool = True) -> dict:
         result[service.id] = estimate(np.asarray([r.quantity for r in rows]),
                                      service.selling_price + service.sla_per_unmet,
                                      locations[service.location].holding_per_value_period * skus[service.sku].asset_value,
-                                     adaptive)
+                                     adaptive, req.demand_adaptation)
     return result
 
 
@@ -95,9 +95,9 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
             if stress:
                 d *= stress.demand_multiplier
             for line in req.order_lines:
-                if line.service == service.id and line.due_in < req.horizon:
+                if line.service == service.id and line.due_in < req.horizon and line.open_quantity > 0:
                     # Firm lines replace the forecast lower bound, not double-counted additive demand.
-                    firm = sum(x.quantity - x.filled - x.cancelled for x in req.order_lines
+                    firm = sum(x.open_quantity for x in req.order_lines
                                if x.service == service.id and x.due_in == line.due_in)
                     d[line.due_in] = max(d[line.due_in], firm)
             demand[service.id] = tuple(float(x) for x in d)

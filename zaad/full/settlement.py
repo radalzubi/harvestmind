@@ -223,26 +223,56 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None)
     total_cost = sum(ledger.values())
     service_summary = {s.id: served_total[s.id] / demand_total[s.id] if demand_total[s.id] else None for s in req.services}
     order_metrics = {}
+    # Order-level reconciliation across every service: an order is complete only when all of its
+    # open lines (any SKU, any service) are complete, and on time only when every line is on time.
+    order_state: dict[str, dict] = defaultdict(lambda: {"lines": 0, "complete": 0, "on_time": 0, "partial": 0, "late": 0})
+    superseded = sum(1 for line in req.order_lines if line.superseded_by)
+    cancelled_lines = sum(1 for line in req.order_lines if not line.superseded_by and line.cancelled >= line.quantity - line.filled - 1e-9 and line.quantity > 0)
     for rule in req.services:
-        lines = [line for line in req.order_lines if line.service == rule.id and line.due_in < end
-                 and line.quantity - line.filled - line.cancelled > 0]
+        lines = [line for line in req.order_lines if line.service == rule.id and line.due_in < end and line.open_quantity > 0]
         available = {r["period"]: r["served"] for r in service_by_period if r["service"] == rule.id}
         full, on_time, orders = [], [], defaultdict(list)
+        open_units, filled_units, late, partial = 0., 0., 0, 0
         for line in sorted(lines, key=lambda x: (x.promised_at, x.id)):
-            quantity = line.quantity - line.filled - line.cancelled
-            filled = min(quantity, available[line.due_in])
-            available[line.due_in] -= filled
+            quantity = line.open_quantity
+            filled = min(quantity, max(0., available.get(line.due_in, 0.)))
+            available[line.due_in] = available.get(line.due_in, 0.) - filled
             complete = filled >= quantity - 1e-6
-            full.append(complete)
             when = req.as_of + timedelta(days=line.due_in * req.period_days)
-            on_time.append(complete and when <= line.promised_at)
-            orders[line.order_id].append(complete)
+            timely = when <= line.promised_at
+            full.append(complete)
+            on_time.append(complete and timely)
+            orders[line.order_id].append(complete and timely)
+            open_units += quantity
+            filled_units += filled
+            late += int(complete and not timely)
+            partial += int(0 < filled < quantity - 1e-6)
+            state = order_state[line.order_id]
+            state["lines"] += 1
+            state["complete"] += int(complete)
+            state["on_time"] += int(complete and timely)
+            state["partial"] += int(0 < filled < quantity - 1e-6)
+            state["late"] += int(complete and not timely)
         order_metrics[rule.id] = {"line_fill": sum(full) / len(full) if full else None,
                                   "order_fill": sum(all(v) for v in orders.values()) / len(orders) if orders else None,
                                   "otif": sum(on_time) / len(on_time) if on_time else None,
-                                  "scope": "declared outstanding lines only; OTIF at line level"}
+                                  "order_otif": None,   # filled after every service is reconciled
+                                  "quantity_fill": filled_units / open_units if open_units else None,
+                                  "lines": len(full), "partial_lines": partial, "late_complete_lines": late,
+                                  "scope": "declared open lines only; line metrics per service, order metrics across services"}
+    orders_summary = {"orders": len(order_state),
+                      "complete_order_rate": sum(v["complete"] == v["lines"] for v in order_state.values()) / len(order_state) if order_state else None,
+                      "order_otif_rate": sum(v["on_time"] == v["lines"] for v in order_state.values()) / len(order_state) if order_state else None,
+                      "orders_with_partial_lines": sum(v["partial"] > 0 for v in order_state.values()),
+                      "orders_with_late_lines": sum(v["late"] > 0 for v in order_state.values()),
+                      "superseded_lines_ignored": superseded, "fully_cancelled_lines_ignored": cancelled_lines,
+                      "unobserved_lines_after_horizon": sum(1 for line in req.order_lines if line.open_quantity > 0 and line.due_in >= end)}
+    for rule in req.services:
+        touched = {line.order_id for line in req.order_lines if line.service == rule.id and line.due_in < end and line.open_quantity > 0}
+        if touched:
+            order_metrics[rule.id]["order_otif"] = sum(order_state[o]["on_time"] == order_state[o]["lines"] for o in touched) / len(touched)
     return {"economic_cost": total_cost, "ledger": dict(ledger), "service": service_summary,
-            "order_metrics": order_metrics,
+            "order_metrics": order_metrics, "orders": orders_summary,
             "substituted": dict(substitute_total), "trace": trace, "service_by_period": service_by_period,
             "conservation_residual": conservation, "ledger_residual": total_cost - sum(ledger.values()),
             "unpaid_contractual_payments": terminal_liability,

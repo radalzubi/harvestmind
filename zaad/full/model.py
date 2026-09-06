@@ -459,11 +459,13 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 for q, amount in tail[w].items():
                     terminal[q] += amount
                 m.row(terminal, upper=liquidity.credit_limit - liquidity.minimum_cash)
+    order_vars: dict = {}
+    counted_orders: set = set()
     if service_floor:
         for service in req.services:
             if service.metric != "unit_fill":
                 lines = [line for line in req.order_lines if line.service == service.id
-                         and line.due_in < H and line.quantity - line.filled - line.cancelled > 0]
+                         and line.due_in < H and line.open_quantity > 0]
                 if not lines:
                     raise ValueError("order-level service requires outstanding lines in the horizon")
                 metric_terms = {}
@@ -471,13 +473,13 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 for w, world in enumerate(worlds):
                     complete: dict = {}
                     for line in lines:
-                        qty = line.quantity - line.filled - line.cancelled
+                        qty = line.open_quantity
                         full = m.var(("line_full", line.id, w), upper=1, integer=True)
                         complete[line.id] = full
                         allocated = m.var(("line_units", line.id, w), upper=qty)
                         m.row({allocated: 1, full: -qty}, lower=0)
                         complete[(line.id, "units")] = allocated
-                        if service.metric == "otif":
+                        if service.metric in ("otif", "order_otif"):
                             delivery = req.as_of + timedelta(days=line.due_in * req.period_days)
                             if delivery > line.promised_at:
                                 m.row({full: 1}, 0, 0)
@@ -485,14 +487,21 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         row = {complete[line.id, "units"]: 1 for line in lines if line.due_in == t}
                         row[unmet[service.id, t, w]] = 1
                         m.row(row, upper=world.demand[service.id][t])
-                    if service.metric == "order_fill":
+                    if service.metric in ("order_fill", "order_otif"):
+                        # One completeness variable per order and world, shared by every service the
+                        # order touches: a multi-SKU order is complete only when all its lines are.
                         for order_id in {line.order_id for line in lines}:
-                            full = m.var(("order_full", order_id, w), upper=1, integer=True)
+                            order_key = ("order_full", order_id, w)
+                            full = order_vars.get(order_key)
+                            if full is None:
+                                full = order_vars[order_key] = m.var(order_key, upper=1, integer=True)
                             for line in lines:
                                 if line.order_id == order_id:
                                     m.row({full: 1, complete[line.id]: -1}, upper=0)
-                            metric_terms[full] = world.weight
-                            denominator += world.weight
+                            if order_key not in counted_orders:
+                                counted_orders.add(order_key)
+                                metric_terms[full] = world.weight
+                                denominator += world.weight
                     else:
                         for line in lines:
                             metric_terms[complete[line.id]] = world.weight
