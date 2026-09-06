@@ -1,0 +1,2 @@
+known_at,id,deposit_fraction,balance_trigger,net_days,financing_fee_fraction,fx_rate_to_currency,currency,fx_basis,letter_of_credit_fraction
+"""2026-08-31T00:00:00Z""","""net30""",0.0,"""arrival""",30,0.0,1.0,"""USD""","""same_currency""",0.0

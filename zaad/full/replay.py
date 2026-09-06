@@ -1,0 +1,202 @@
+"""Rolling observe/refit/reoptimize replay with a private realized pipeline.
+
+The planner never sees the pre-drawn truth. Every review receives a newly built
+as-of snapshot; supplier training outcomes appear only when actually received.
+"""
+from __future__ import annotations
+
+from dataclasses import replace
+from datetime import timedelta
+import numpy as np
+
+from zaad.full.contracts import Request
+from zaad.full.model import Solution, solve
+from zaad.full.planner import plan, targets
+from zaad.full.settlement import PhysicalViolation, settle
+from zaad.full.worlds import World, dates, draw, forecast_all
+
+
+def choose(req: Request, method: str) -> Solution:
+    if method == "gated":
+        report = plan(req)
+        rows = report["actions"]
+        return Solution("OPTIMAL" if report["status"] != "ABSTAIN" else "ABSTAIN",
+                        {(r["source"], r["period"]): r["quantity"] for r in rows if r["action"] == "purchase"},
+                        {(r["transfer"], r["expiry_cohort"], r["period"]): r["quantity"] for r in rows if r["action"] == "transfer"},
+                        {(r["po"], r["option"]): r["quantity"] for r in rows if r["action"] == "po_option"},
+                        {}, None, report["cash"], 0., 0, 0, None, None,
+                        [report["status"], report["selected_policy"], *report["reasons"]])
+    deterministic = method in {"base_stock", "order_up_to", "deterministic", "frozen_forecast"}
+    worlds = draw(req, req.seed, 1 if deterministic else req.scenarios, deterministic=deterministic,
+                  adaptive=method != "frozen_forecast")
+    if method in {"base_stock", "order_up_to"}:
+        return solve(req, worlds, targets=targets(req, 1.645 if method == "base_stock" else 0.))
+    if method == "robust":
+        extra = [w for i, stress in enumerate(req.stresses) for w in draw(req, req.seed + 100 + i, 1, stress)]
+        worlds = [replace(w, weight=1 / (len(worlds) + len(extra))) for w in worlds + extra]
+    result = solve(req, worlds, service_floor=True, per_world_service=method == "robust")
+    if result.status == "INFEASIBLE":
+        # Explicit recovery solve, not a relaxed solve passed off as achieving the SLA.
+        result = solve(req, worlds, service_first="all")
+        result.warnings.append("REQUESTED_SERVICE_INFEASIBLE: lexicographic service-recovery plan")
+    return result
+
+
+def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
+    if reviews > initial.horizon:
+        raise ValueError("truth horizon shorter than replay")
+    req = initial
+    private = {p.id: (truth.po_due[p.id], truth.po_fill[p.id]) for p in initial.pipeline}
+    reviews_log: list[dict] = []
+    total_components: dict[str, float] = {}
+    first_assets, last_assets = None, 0.
+    for t in range(reviews):
+        # OBSERVE arrivals at the current origin BEFORE choosing any transfer/order.
+        # Future receipts stay private; only now-arrived POs are materialized.
+        arrived = [p for p in req.pipeline if private[p.id][0] <= t]
+        if arrived:
+            state = req.model_dump()
+            state["pipeline"] = [p.model_dump() for p in req.pipeline if p not in arrived]
+            state["stock"] = list(state["stock"])
+            state["shipment_history"] = [r.model_dump() for r in req.shipment_history if r.id not in {"censored-" + p.id for p in arrived}]
+            other_payments = list(req.liquidity.other_payments)
+            for po in arrived:
+                source = next(s for s in req.sources if s.id == po.source)
+                sku = next(s for s in req.skus if s.id == source.sku)
+                ratio = private[po.id][1]
+                state["stock"].append({"id": "observed-" + po.id, "known_at": req.as_of, "sku": source.sku,
+                                       "location": source.destination, "quantity": po.remaining * ratio,
+                                       "reserved": 0., "damaged": 0., "quarantined": 0., "expires_in": sku.shelf_life, "age_periods": 0})
+                state["shipment_history"].append({"id": "received-" + po.id, "known_at": req.as_of, "source": po.source,
+                        "elapsed_days": max(1, (req.as_of - po.placed_at).days), "arrived": True,
+                        "stage": po.stage, "carrier": po.carrier, "accepted_ratio": ratio})
+                keep = next(o for o in po.options if o.action == "keep")
+                if keep.payment_due_in < req.horizon:
+                    other_payments[keep.payment_due_in] += po.remaining * keep.remaining_invoice_per_unit
+            state["liquidity"] = {**req.liquidity.model_dump(), "other_payments": other_payments}
+            state["sources"] = []
+            for source in req.sources:
+                ratios = [r["accepted_ratio"] for r in state["shipment_history"] if r["source"] == source.id and r.get("accepted_ratio") is not None]
+                prior = next(s for s in initial.sources if s.id == source.id)
+                fields = source.model_dump()
+                if ratios:
+                    fields["fill_mean"] = max(1e-6, (12 * prior.fill_mean + sum(ratios)) / (12 + len(ratios)))
+                    if len(ratios) >= 3:
+                        fields["fill_sd"] = max(prior.fill_sd, min(.5, float(np.std(ratios))))
+                state["sources"].append(fields)
+            req = Request.model_validate(state)
+        planning_req = req.model_copy(update={"history": initial.history}) if method == "frozen_forecast" else req
+        solution = choose(planning_req, method)
+        if solution.status != "OPTIMAL":
+            return {"status": solution.status, "reviews": reviews_log, "failure": solution.warnings}
+        H = req.horizon
+        # The current review's exogenous truth is not supplied to choose().
+        demand = {s.id: tuple(list(truth.demand[s.id][t:]) + [0.] * t)[:H] for s in req.services}
+        arrival = {(s.id, k): truth.arrival[s.id, min(t + k, initial.horizon - 1)] - t for s in req.sources for k in range(H)}
+        fills = {(s.id, k): truth.fills[s.id, min(t + k, initial.horizon - 1)] for s in req.sources for k in range(H)}
+        world = World(f"truth-review-{t}", 1., demand, arrival, fills,
+                      {p.id: max(0, private[p.id][0] - t) for p in req.pipeline}, {p.id: private[p.id][1] for p in req.pipeline})
+        try:
+            outcome = settle(req, solution, world, steps=1)
+        except PhysicalViolation as exc:
+            return {"status": "PHYSICAL_FAILURE", "reviews": reviews_log, "failure": str(exc)}
+        if first_assets is None:
+            first_assets = outcome["ledger"]["opening_assets"]
+        last_assets = outcome["ledger"]["closing_assets"]
+        for component, amount in outcome["ledger"].items():
+            if component not in {"opening_assets", "closing_assets"}:
+                total_components[component] = total_components.get(component, 0.) + amount
+        reviews_log.append({"review": t, "as_of": req.as_of.isoformat(), "forecast": forecast_all(req),
+                            "purchases": [{"source": s, "quantity": q} for (s, k), q in solution.purchases.items() if k == 0],
+                            "warnings": solution.warnings, "settlement": outcome})
+        if t == reviews - 1:
+            break
+        now = req.as_of + timedelta(days=req.period_days)
+        data = req.model_dump(mode="python")
+        data["as_of"], data["seed"] = now, initial.seed + t + 1
+        # Forecast truth is appended ONLY after the outcome becomes observable.
+        history = [{**r.model_dump(), "period": r.period - 1} for r in req.history]
+        history += [{"known_at": now, "service": s.id, "period": -1, "quantity": demand[s.id][0]} for s in req.services]
+        data["history"] = history
+        data["stock"] = [{"id": f"stock-{n}", "known_at": now, "sku": row["sku"], "location": row["location"],
+                          "quantity": row["quantity"], "reserved": 0., "damaged": 0., "quarantined": 0.,
+                          "expires_in": max(0, row["expiry"] - 1), "age_periods": 0}
+                         for n, row in enumerate(outcome["end_stock"]) if row["quantity"] > 1e-7]
+        # Preserve locked inventory separately; it never becomes salable through replay.
+        data["stock"] += [{**lot.model_dump(), "id": f"locked-{n}", "known_at": now,
+                           "quantity": lot.reserved + lot.damaged + lot.quarantined,
+                           "expires_in": max(0, lot.expires_in - 1)} for n, lot in enumerate(req.stock)
+                          if lot.reserved + lot.damaged + lot.quarantined > 0]
+        pipeline = []
+        shipment_history: list = list(req.shipment_history)
+        for po in req.pipeline:
+            actual_due, actual_fill = private[po.id]
+            for option in po.options:
+                q = solution.amendments.get((po.id, option.id), 0.)
+                if q <= 1e-7 or option.action == "cancel":
+                    continue
+                expected_due = option.due_in
+                due = actual_due
+                if option.action != "keep":
+                    keep = next(o for o in po.options if o.action == "keep")
+                    due = t + option.due_in + max(0, actual_due - t - keep.due_in)
+                if due <= t:
+                    shipment_history.append({"id": f"received-{po.id}-{t}", "known_at": now, "source": po.source,
+                                             "elapsed_days": max(1, (req.as_of - po.placed_at).days), "arrived": True,
+                                             "stage": po.stage, "carrier": po.carrier})
+                    continue
+                identity = f"{po.id}_{option.id}"
+                private[identity] = due, actual_fill
+                row = po.model_dump()
+                row.update(id=identity, known_at=now, ordered=q, confirmed=q, shipped=min(q, po.shipped), received=0., rejected=0.,
+                           expected_accepted_remaining=q * po.expected_accepted_remaining / po.remaining,
+                           prepaid_per_remaining_unit=0., allow_split_amendments=False,
+                           options=[{"id": "keep", "known_at": now, "action": "keep", "due_in": max(1, expected_due - 1),
+                                     "fee_per_unit": 0., "remaining_invoice_per_unit": 0., "payment_due_in": 0,
+                                     "max_quantity": q, "deadline": now, "allowed_stages": [po.stage], "contract_reference": "committed_after_review"}])
+                pipeline.append(row)
+        for (source_id, period), q in solution.purchases.items():
+            if period != 0 or q <= 1e-7:
+                continue
+            source = next(s for s in req.sources if s.id == source_id)
+            expected = dates(req, source, 0)[1]
+            identity = f"new_{t}_{source_id}"
+            private[identity] = truth.arrival[source_id, t], truth.fills[source_id, t]
+            pipeline.append({"id": identity, "known_at": now, "source": source_id, "revision": 1,
+                "ordered": q, "confirmed": q, "shipped": 0., "received": 0., "rejected": 0.,
+                "expected_accepted_remaining": q * source.fill_mean, "placed_at": req.as_of, "confirmed_at": None,
+                "departed_at": None, "current_eta": req.as_of + timedelta(days=expected * req.period_days),
+                "stage": "placed", "carrier": "unknown", "cancellation_status": "no_new_amendment_quote",
+                "prepaid_per_remaining_unit": 0., "allow_split_amendments": False,
+                "options": [{"id": "keep", "known_at": now, "action": "keep", "due_in": max(0, expected - 1),
+                   "fee_per_unit": 0., "remaining_invoice_per_unit": 0., "payment_due_in": 0,
+                   "max_quantity": q, "deadline": now, "allowed_stages": ["placed"], "contract_reference": "committed_after_review"}]})
+        data["pipeline"] = pipeline
+        # Completed and open observations both enter the survival risk set, one current record per PO.
+        data["shipment_history"] = [r.model_dump() if hasattr(r, "model_dump") else r for r in shipment_history if not (hasattr(r, "id") and r.id.startswith("censored-"))]
+        data["shipment_history"] += [{"id": "censored-" + p["id"], "known_at": now, "source": p["source"],
+                                      "elapsed_days": (now - p["placed_at"]).days, "arrived": False,
+                                      "stage": p["stage"], "carrier": p["carrier"]} for p in pipeline]
+        data["inbound_transfers"] = [{"id": f"inbound-{n}", "known_at": now, "sku": sku,
+             "origin": next(a.origin for a in req.transfers if a.sku == sku and a.destination == location),
+             "destination": location, "accepted_quantity": quantity, "due_in": max(0, due - 1), "expires_in": expiry - 1}
+            for n, (sku, location, expiry, due, quantity, kind) in enumerate(outcome["pending"]) if kind == "transfer"]
+        # Replay does not fabricate new financial data: finite input horizon shrinks.
+        data["horizon"] = H - 1
+        for name in ("sources", "resources"):
+            data[name] = [{**r.model_dump(), "capacity_by_period": r.capacity_by_period[1:]} for r in getattr(req, name)]
+        liquidity = req.liquidity.model_dump()
+        future = outcome["future_payments"]
+        liquidity.update(known_at=now, opening_cash=outcome["trace"][0]["cash"], opening_debt=outcome["trace"][0]["debt"],
+                         known_receivables=req.liquidity.known_receivables[1:],
+                         other_payments=tuple(req.liquidity.other_payments[k] + future.get(k, 0.) for k in range(1, H)))
+        data["liquidity"] = liquidity
+        data["events"] = [{**e.model_dump(), "start": max(0, e.start - 1), "end": e.end - 1} for e in req.events if e.end >= 1]
+        data["order_lines"] = [{**line.model_dump(), "due_in": line.due_in - 1} for line in req.order_lines if line.due_in >= 1]
+        data["incumbent_orders"] = []
+        req = Request.model_validate(data)
+    total_components["opening_assets"] = first_assets or 0.
+    total_components["closing_assets"] = last_assets
+    return {"status": "COMPLETE", "method": method, "reviews": reviews_log, "ledger": total_components,
+            "economic_cost": sum(total_components.values()), "information_boundary": "new demand/supply evidence enters after observation only",
+            "horizon_note": "shrinking replay horizon; production replanning accepts a fresh full-horizon operator snapshot"}

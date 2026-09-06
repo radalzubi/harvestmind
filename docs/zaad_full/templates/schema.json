@@ -1,0 +1,1752 @@
+{
+  "$defs": {
+    "Calendar": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "weekdays": {
+          "default": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "items": {
+            "type": "integer"
+          },
+          "title": "Weekdays",
+          "type": "array"
+        },
+        "blackout_dates": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Blackout Dates",
+          "type": "array"
+        },
+        "cutoff_hour_utc": {
+          "default": 24,
+          "maximum": 24,
+          "minimum": 0,
+          "title": "Cutoff Hour Utc",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "known_at",
+        "id"
+      ],
+      "title": "Calendar",
+      "type": "object"
+    },
+    "Customer": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "channel": {
+          "title": "Channel",
+          "type": "string"
+        },
+        "priority": {
+          "exclusiveMinimum": 0,
+          "title": "Priority",
+          "type": "number"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "channel",
+        "priority"
+      ],
+      "title": "Customer",
+      "type": "object"
+    },
+    "DemandObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "service": {
+          "title": "Service",
+          "type": "string"
+        },
+        "period": {
+          "exclusiveMaximum": 0,
+          "title": "Period",
+          "type": "integer"
+        },
+        "quantity": {
+          "minimum": 0,
+          "title": "Quantity",
+          "type": "number"
+        }
+      },
+      "required": [
+        "known_at",
+        "service",
+        "period",
+        "quantity"
+      ],
+      "title": "DemandObservation",
+      "type": "object"
+    },
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "service": {
+          "title": "Service",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "minimum": 0,
+          "title": "End",
+          "type": "integer"
+        },
+        "multiplier": {
+          "minimum": 0,
+          "title": "Multiplier",
+          "type": "number"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "service",
+        "start",
+        "end",
+        "multiplier",
+        "label"
+      ],
+      "title": "Event",
+      "type": "object"
+    },
+    "InboundTransfer": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "sku": {
+          "title": "Sku",
+          "type": "string"
+        },
+        "origin": {
+          "title": "Origin",
+          "type": "string"
+        },
+        "destination": {
+          "title": "Destination",
+          "type": "string"
+        },
+        "accepted_quantity": {
+          "minimum": 0,
+          "title": "Accepted Quantity",
+          "type": "number"
+        },
+        "due_in": {
+          "minimum": 0,
+          "title": "Due In",
+          "type": "integer"
+        },
+        "expires_in": {
+          "minimum": 0,
+          "title": "Expires In",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "sku",
+        "origin",
+        "destination",
+        "accepted_quantity",
+        "due_in",
+        "expires_in"
+      ],
+      "title": "InboundTransfer",
+      "type": "object"
+    },
+    "IncumbentOrder": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "period": {
+          "minimum": 0,
+          "title": "Period",
+          "type": "integer"
+        },
+        "quantity": {
+          "minimum": 0,
+          "title": "Quantity",
+          "type": "number"
+        }
+      },
+      "required": [
+        "known_at",
+        "source",
+        "period",
+        "quantity"
+      ],
+      "title": "IncumbentOrder",
+      "type": "object"
+    },
+    "Liquidity": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "opening_cash": {
+          "title": "Opening Cash",
+          "type": "number"
+        },
+        "minimum_cash": {
+          "title": "Minimum Cash",
+          "type": "number"
+        },
+        "credit_limit": {
+          "minimum": 0,
+          "title": "Credit Limit",
+          "type": "number"
+        },
+        "opening_debt": {
+          "minimum": 0,
+          "title": "Opening Debt",
+          "type": "number"
+        },
+        "interest_per_period": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Interest Per Period",
+          "type": "number"
+        },
+        "known_receivables": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Known Receivables",
+          "type": "array"
+        },
+        "other_payments": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Other Payments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "known_at",
+        "opening_cash",
+        "minimum_cash",
+        "credit_limit",
+        "opening_debt",
+        "interest_per_period",
+        "known_receivables",
+        "other_payments"
+      ],
+      "title": "Liquidity",
+      "type": "object"
+    },
+    "Location": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "central_dc",
+            "regional_dc",
+            "branch",
+            "warehouse"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "capacity_volume": {
+          "exclusiveMinimum": 0,
+          "title": "Capacity Volume",
+          "type": "number"
+        },
+        "holding_per_value_period": {
+          "minimum": 0,
+          "title": "Holding Per Value Period",
+          "type": "number"
+        },
+        "receiving_calendar": {
+          "title": "Receiving Calendar",
+          "type": "string"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "kind",
+        "capacity_volume",
+        "holding_per_value_period",
+        "receiving_calendar"
+      ],
+      "title": "Location",
+      "type": "object"
+    },
+    "OpenPO": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "ordered": {
+          "exclusiveMinimum": 0,
+          "title": "Ordered",
+          "type": "number"
+        },
+        "confirmed": {
+          "minimum": 0,
+          "title": "Confirmed",
+          "type": "number"
+        },
+        "shipped": {
+          "minimum": 0,
+          "title": "Shipped",
+          "type": "number"
+        },
+        "received": {
+          "minimum": 0,
+          "title": "Received",
+          "type": "number"
+        },
+        "rejected": {
+          "minimum": 0,
+          "title": "Rejected",
+          "type": "number"
+        },
+        "expected_accepted_remaining": {
+          "minimum": 0,
+          "title": "Expected Accepted Remaining",
+          "type": "number"
+        },
+        "placed_at": {
+          "format": "date-time",
+          "title": "Placed At",
+          "type": "string"
+        },
+        "confirmed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Confirmed At"
+        },
+        "departed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Departed At"
+        },
+        "current_eta": {
+          "format": "date-time",
+          "title": "Current Eta",
+          "type": "string"
+        },
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "carrier": {
+          "title": "Carrier",
+          "type": "string"
+        },
+        "cancellation_status": {
+          "title": "Cancellation Status",
+          "type": "string"
+        },
+        "prepaid_per_remaining_unit": {
+          "minimum": 0,
+          "title": "Prepaid Per Remaining Unit",
+          "type": "number"
+        },
+        "allow_split_amendments": {
+          "title": "Allow Split Amendments",
+          "type": "boolean"
+        },
+        "options": {
+          "items": {
+            "$ref": "#/$defs/POOption"
+          },
+          "title": "Options",
+          "type": "array"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "source",
+        "revision",
+        "ordered",
+        "confirmed",
+        "shipped",
+        "received",
+        "rejected",
+        "expected_accepted_remaining",
+        "placed_at",
+        "confirmed_at",
+        "departed_at",
+        "current_eta",
+        "stage",
+        "carrier",
+        "cancellation_status",
+        "prepaid_per_remaining_unit",
+        "allow_split_amendments",
+        "options"
+      ],
+      "title": "OpenPO",
+      "type": "object"
+    },
+    "OrderLine": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "order_id": {
+          "title": "Order Id",
+          "type": "string"
+        },
+        "service": {
+          "title": "Service",
+          "type": "string"
+        },
+        "quantity": {
+          "minimum": 0,
+          "title": "Quantity",
+          "type": "number"
+        },
+        "due_in": {
+          "minimum": 0,
+          "title": "Due In",
+          "type": "integer"
+        },
+        "ordered_at": {
+          "format": "date-time",
+          "title": "Ordered At",
+          "type": "string"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "title": "Requested At",
+          "type": "string"
+        },
+        "promised_at": {
+          "format": "date-time",
+          "title": "Promised At",
+          "type": "string"
+        },
+        "delivered_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Delivered At"
+        },
+        "filled": {
+          "minimum": 0,
+          "title": "Filled",
+          "type": "number"
+        },
+        "cancelled": {
+          "minimum": 0,
+          "title": "Cancelled",
+          "type": "number"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "order_id",
+        "service",
+        "quantity",
+        "due_in",
+        "ordered_at",
+        "requested_at",
+        "promised_at",
+        "filled",
+        "cancelled"
+      ],
+      "title": "OrderLine",
+      "type": "object"
+    },
+    "POOption": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "keep",
+            "cancel",
+            "expedite",
+            "de_expedite",
+            "reschedule"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "due_in": {
+          "minimum": 0,
+          "title": "Due In",
+          "type": "integer"
+        },
+        "fee_per_unit": {
+          "minimum": 0,
+          "title": "Fee Per Unit",
+          "type": "number"
+        },
+        "remaining_invoice_per_unit": {
+          "minimum": 0,
+          "title": "Remaining Invoice Per Unit",
+          "type": "number"
+        },
+        "payment_due_in": {
+          "minimum": 0,
+          "title": "Payment Due In",
+          "type": "integer"
+        },
+        "max_quantity": {
+          "minimum": 0,
+          "title": "Max Quantity",
+          "type": "number"
+        },
+        "deadline": {
+          "format": "date-time",
+          "title": "Deadline",
+          "type": "string"
+        },
+        "allowed_stages": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Stages",
+          "type": "array"
+        },
+        "contract_reference": {
+          "title": "Contract Reference",
+          "type": "string"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "action",
+        "due_in",
+        "fee_per_unit",
+        "remaining_invoice_per_unit",
+        "payment_due_in",
+        "max_quantity",
+        "deadline",
+        "allowed_stages",
+        "contract_reference"
+      ],
+      "title": "POOption",
+      "type": "object"
+    },
+    "Resource": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "capacity_by_period": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Capacity By Period",
+          "type": "array"
+        },
+        "failure_domains": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Failure Domains",
+          "type": "array"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "capacity_by_period"
+      ],
+      "title": "Resource",
+      "type": "object"
+    },
+    "SKU": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "volume": {
+          "exclusiveMinimum": 0,
+          "title": "Volume",
+          "type": "number"
+        },
+        "asset_value": {
+          "exclusiveMinimum": 0,
+          "title": "Asset Value",
+          "type": "number"
+        },
+        "terminal_value": {
+          "minimum": 0,
+          "title": "Terminal Value",
+          "type": "number"
+        },
+        "shelf_life": {
+          "maximum": 520,
+          "minimum": 1,
+          "title": "Shelf Life",
+          "type": "integer"
+        },
+        "disposal_fee": {
+          "minimum": 0,
+          "title": "Disposal Fee",
+          "type": "number"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "volume",
+        "asset_value",
+        "terminal_value",
+        "shelf_life",
+        "disposal_fee"
+      ],
+      "title": "SKU",
+      "type": "object"
+    },
+    "Service": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "sku": {
+          "title": "Sku",
+          "type": "string"
+        },
+        "location": {
+          "title": "Location",
+          "type": "string"
+        },
+        "customer": {
+          "title": "Customer",
+          "type": "string"
+        },
+        "target": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Target",
+          "type": "number"
+        },
+        "selling_price": {
+          "exclusiveMinimum": 0,
+          "title": "Selling Price",
+          "type": "number"
+        },
+        "sla_per_unmet": {
+          "minimum": 0,
+          "title": "Sla Per Unmet",
+          "type": "number"
+        },
+        "metric": {
+          "default": "unit_fill",
+          "enum": [
+            "unit_fill",
+            "line_fill",
+            "order_fill",
+            "otif"
+          ],
+          "title": "Metric",
+          "type": "string"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "sku",
+        "location",
+        "customer",
+        "target",
+        "selling_price",
+        "sla_per_unmet"
+      ],
+      "title": "Service",
+      "type": "object"
+    },
+    "ShipmentObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "elapsed_days": {
+          "minimum": 0,
+          "title": "Elapsed Days",
+          "type": "integer"
+        },
+        "arrived": {
+          "title": "Arrived",
+          "type": "boolean"
+        },
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "carrier": {
+          "title": "Carrier",
+          "type": "string"
+        },
+        "accepted_ratio": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accepted Ratio"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "source",
+        "elapsed_days",
+        "arrived",
+        "stage",
+        "carrier"
+      ],
+      "title": "ShipmentObservation",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "One operator-approved supplier/SKU/destination/itinerary/price-tier option.",
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "supplier": {
+          "title": "Supplier",
+          "type": "string"
+        },
+        "sku": {
+          "title": "Sku",
+          "type": "string"
+        },
+        "destination": {
+          "title": "Destination",
+          "type": "string"
+        },
+        "route": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Route",
+          "type": "array"
+        },
+        "resources": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Resources",
+          "type": "array"
+        },
+        "capacity_by_period": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Capacity By Period",
+          "type": "array"
+        },
+        "unit_price": {
+          "exclusiveMinimum": 0,
+          "title": "Unit Price",
+          "type": "number"
+        },
+        "freight_per_unit": {
+          "minimum": 0,
+          "title": "Freight Per Unit",
+          "type": "number"
+        },
+        "handling_per_unit": {
+          "minimum": 0,
+          "title": "Handling Per Unit",
+          "type": "number"
+        },
+        "minimum": {
+          "minimum": 0,
+          "title": "Minimum",
+          "type": "number"
+        },
+        "multiple": {
+          "minimum": 0,
+          "title": "Multiple",
+          "type": "number"
+        },
+        "case_multiple": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Case Multiple",
+          "type": "number"
+        },
+        "pallet_multiple": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Pallet Multiple",
+          "type": "number"
+        },
+        "transport_multiple": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Transport Multiple",
+          "type": "number"
+        },
+        "maximum": {
+          "exclusiveMinimum": 0,
+          "title": "Maximum",
+          "type": "number"
+        },
+        "fixed_order_fee": {
+          "minimum": 0,
+          "title": "Fixed Order Fee",
+          "type": "number"
+        },
+        "terms": {
+          "title": "Terms",
+          "type": "string"
+        },
+        "order_calendar": {
+          "title": "Order Calendar",
+          "type": "string"
+        },
+        "shipping_calendar": {
+          "title": "Shipping Calendar",
+          "type": "string"
+        },
+        "lead_days": {
+          "maximum": 730,
+          "minimum": 1,
+          "title": "Lead Days",
+          "type": "integer"
+        },
+        "dispatch_days": {
+          "maximum": 365,
+          "minimum": 0,
+          "title": "Dispatch Days",
+          "type": "integer"
+        },
+        "production_calendar": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Production Calendar"
+        },
+        "production_workdays": {
+          "default": 0,
+          "maximum": 365,
+          "minimum": 0,
+          "title": "Production Workdays",
+          "type": "integer"
+        },
+        "leg_transit_days": {
+          "default": [],
+          "items": {
+            "type": "integer"
+          },
+          "title": "Leg Transit Days",
+          "type": "array"
+        },
+        "leg_arrival_calendars": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Leg Arrival Calendars",
+          "type": "array"
+        },
+        "fill_mean": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Fill Mean",
+          "type": "number"
+        },
+        "fill_sd": {
+          "maximum": 0.5,
+          "minimum": 0,
+          "title": "Fill Sd",
+          "type": "number"
+        },
+        "lead_sd_days": {
+          "maximum": 365,
+          "minimum": 0,
+          "title": "Lead Sd Days",
+          "type": "number"
+        },
+        "approved": {
+          "title": "Approved",
+          "type": "boolean"
+        },
+        "compliance": {
+          "enum": [
+            "cleared",
+            "blocked",
+            "unreviewed"
+          ],
+          "title": "Compliance",
+          "type": "string"
+        },
+        "quote_expires": {
+          "format": "date-time",
+          "title": "Quote Expires",
+          "type": "string"
+        },
+        "quote_reference": {
+          "title": "Quote Reference",
+          "type": "string"
+        },
+        "exclusive_quote_group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exclusive Quote Group"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "supplier",
+        "sku",
+        "destination",
+        "route",
+        "resources",
+        "capacity_by_period",
+        "unit_price",
+        "freight_per_unit",
+        "handling_per_unit",
+        "minimum",
+        "multiple",
+        "maximum",
+        "fixed_order_fee",
+        "terms",
+        "order_calendar",
+        "shipping_calendar",
+        "lead_days",
+        "dispatch_days",
+        "fill_mean",
+        "fill_sd",
+        "lead_sd_days",
+        "approved",
+        "compliance",
+        "quote_expires",
+        "quote_reference"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Stock": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "sku": {
+          "title": "Sku",
+          "type": "string"
+        },
+        "location": {
+          "title": "Location",
+          "type": "string"
+        },
+        "quantity": {
+          "minimum": 0,
+          "title": "Quantity",
+          "type": "number"
+        },
+        "reserved": {
+          "minimum": 0,
+          "title": "Reserved",
+          "type": "number"
+        },
+        "damaged": {
+          "minimum": 0,
+          "title": "Damaged",
+          "type": "number"
+        },
+        "quarantined": {
+          "minimum": 0,
+          "title": "Quarantined",
+          "type": "number"
+        },
+        "expires_in": {
+          "minimum": 0,
+          "title": "Expires In",
+          "type": "integer"
+        },
+        "age_periods": {
+          "minimum": 0,
+          "title": "Age Periods",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "sku",
+        "location",
+        "quantity",
+        "reserved",
+        "damaged",
+        "quarantined",
+        "expires_in",
+        "age_periods"
+      ],
+      "title": "Stock",
+      "type": "object"
+    },
+    "Stress": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "fill_multiplier": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Fill Multiplier",
+          "type": "number"
+        },
+        "extra_lead_days": {
+          "maximum": 365,
+          "minimum": 0,
+          "title": "Extra Lead Days",
+          "type": "integer"
+        },
+        "demand_multiplier": {
+          "exclusiveMinimum": 0,
+          "maximum": 3,
+          "title": "Demand Multiplier",
+          "type": "number"
+        },
+        "recovery_period": {
+          "minimum": 0,
+          "title": "Recovery Period",
+          "type": "integer"
+        },
+        "shared_failure": {
+          "title": "Shared Failure",
+          "type": "boolean"
+        },
+        "affected_resources": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Affected Resources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "fill_multiplier",
+        "extra_lead_days",
+        "demand_multiplier",
+        "recovery_period",
+        "shared_failure"
+      ],
+      "title": "Stress",
+      "type": "object"
+    },
+    "Substitute": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "supplied_sku": {
+          "title": "Supplied Sku",
+          "type": "string"
+        },
+        "requested_sku": {
+          "title": "Requested Sku",
+          "type": "string"
+        },
+        "customers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Customers",
+          "type": "array"
+        },
+        "channels": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Channels",
+          "type": "array"
+        },
+        "input_per_output": {
+          "exclusiveMinimum": 0,
+          "title": "Input Per Output",
+          "type": "number"
+        },
+        "penalty_per_output": {
+          "minimum": 0,
+          "title": "Penalty Per Output",
+          "type": "number"
+        },
+        "service_equivalence": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Service Equivalence",
+          "type": "number"
+        },
+        "approved": {
+          "title": "Approved",
+          "type": "boolean"
+        },
+        "brand_approval_reference": {
+          "title": "Brand Approval Reference",
+          "type": "string"
+        },
+        "cannibalization_assumption": {
+          "title": "Cannibalization Assumption",
+          "type": "string"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "supplied_sku",
+        "requested_sku",
+        "customers",
+        "channels",
+        "input_per_output",
+        "penalty_per_output",
+        "service_equivalence",
+        "approved",
+        "brand_approval_reference",
+        "cannibalization_assumption"
+      ],
+      "title": "Substitute",
+      "type": "object"
+    },
+    "Terms": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "deposit_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Deposit Fraction",
+          "type": "number"
+        },
+        "balance_trigger": {
+          "enum": [
+            "order",
+            "shipment",
+            "arrival"
+          ],
+          "title": "Balance Trigger",
+          "type": "string"
+        },
+        "net_days": {
+          "maximum": 365,
+          "minimum": 0,
+          "title": "Net Days",
+          "type": "integer"
+        },
+        "financing_fee_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Financing Fee Fraction",
+          "type": "number"
+        },
+        "fx_rate_to_currency": {
+          "exclusiveMinimum": 0,
+          "title": "Fx Rate To Currency",
+          "type": "number"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "fx_basis": {
+          "enum": [
+            "same_currency",
+            "contracted_hedge"
+          ],
+          "title": "Fx Basis",
+          "type": "string"
+        },
+        "letter_of_credit_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Letter Of Credit Fraction",
+          "type": "number"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "deposit_fraction",
+        "balance_trigger",
+        "net_days",
+        "financing_fee_fraction",
+        "fx_rate_to_currency",
+        "currency",
+        "fx_basis",
+        "letter_of_credit_fraction"
+      ],
+      "title": "Terms",
+      "type": "object"
+    },
+    "Transfer": {
+      "additionalProperties": false,
+      "properties": {
+        "known_at": {
+          "format": "date-time",
+          "title": "Known At",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "sku": {
+          "title": "Sku",
+          "type": "string"
+        },
+        "origin": {
+          "title": "Origin",
+          "type": "string"
+        },
+        "destination": {
+          "title": "Destination",
+          "type": "string"
+        },
+        "lead_periods": {
+          "maximum": 104,
+          "minimum": 1,
+          "title": "Lead Periods",
+          "type": "integer"
+        },
+        "capacity": {
+          "minimum": 0,
+          "title": "Capacity",
+          "type": "number"
+        },
+        "cost_per_unit": {
+          "minimum": 0,
+          "title": "Cost Per Unit",
+          "type": "number"
+        },
+        "loss_fraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Loss Fraction",
+          "type": "number"
+        },
+        "approved": {
+          "title": "Approved",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "known_at",
+        "id",
+        "sku",
+        "origin",
+        "destination",
+        "lead_periods",
+        "capacity",
+        "cost_per_unit",
+        "loss_fraction",
+        "approved"
+      ],
+      "title": "Transfer",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "zaad.network.v2",
+      "default": "zaad.network.v2",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "operator_id": {
+      "pattern": "^[a-zA-Z0-9_-]{1,80}$",
+      "title": "Operator Id",
+      "type": "string"
+    },
+    "as_of": {
+      "format": "date-time",
+      "title": "As Of",
+      "type": "string"
+    },
+    "currency": {
+      "pattern": "^[A-Z]{3}$",
+      "title": "Currency",
+      "type": "string"
+    },
+    "period_days": {
+      "maximum": 31,
+      "minimum": 1,
+      "title": "Period Days",
+      "type": "integer"
+    },
+    "horizon": {
+      "maximum": 52,
+      "minimum": 1,
+      "title": "Horizon",
+      "type": "integer"
+    },
+    "skus": {
+      "items": {
+        "$ref": "#/$defs/SKU"
+      },
+      "maxItems": 5000,
+      "minItems": 1,
+      "title": "Skus",
+      "type": "array"
+    },
+    "locations": {
+      "items": {
+        "$ref": "#/$defs/Location"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Locations",
+      "type": "array"
+    },
+    "calendars": {
+      "items": {
+        "$ref": "#/$defs/Calendar"
+      },
+      "title": "Calendars",
+      "type": "array"
+    },
+    "terms": {
+      "items": {
+        "$ref": "#/$defs/Terms"
+      },
+      "title": "Terms",
+      "type": "array"
+    },
+    "resources": {
+      "items": {
+        "$ref": "#/$defs/Resource"
+      },
+      "title": "Resources",
+      "type": "array"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/Source"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "stock": {
+      "items": {
+        "$ref": "#/$defs/Stock"
+      },
+      "title": "Stock",
+      "type": "array"
+    },
+    "transfers": {
+      "items": {
+        "$ref": "#/$defs/Transfer"
+      },
+      "title": "Transfers",
+      "type": "array"
+    },
+    "substitutions": {
+      "items": {
+        "$ref": "#/$defs/Substitute"
+      },
+      "title": "Substitutions",
+      "type": "array"
+    },
+    "customers": {
+      "items": {
+        "$ref": "#/$defs/Customer"
+      },
+      "title": "Customers",
+      "type": "array"
+    },
+    "services": {
+      "items": {
+        "$ref": "#/$defs/Service"
+      },
+      "title": "Services",
+      "type": "array"
+    },
+    "history": {
+      "items": {
+        "$ref": "#/$defs/DemandObservation"
+      },
+      "title": "History",
+      "type": "array"
+    },
+    "order_lines": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/OrderLine"
+      },
+      "title": "Order Lines",
+      "type": "array"
+    },
+    "events": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Event"
+      },
+      "title": "Events",
+      "type": "array"
+    },
+    "shipment_history": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ShipmentObservation"
+      },
+      "title": "Shipment History",
+      "type": "array"
+    },
+    "signals": {
+      "default": [],
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "maxItems": 200,
+      "title": "Signals",
+      "type": "array"
+    },
+    "pipeline": {
+      "items": {
+        "$ref": "#/$defs/OpenPO"
+      },
+      "title": "Pipeline",
+      "type": "array"
+    },
+    "inbound_transfers": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/InboundTransfer"
+      },
+      "title": "Inbound Transfers",
+      "type": "array"
+    },
+    "incumbent_orders": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/IncumbentOrder"
+      },
+      "title": "Incumbent Orders",
+      "type": "array"
+    },
+    "liquidity": {
+      "$ref": "#/$defs/Liquidity"
+    },
+    "stresses": {
+      "items": {
+        "$ref": "#/$defs/Stress"
+      },
+      "maxItems": 12,
+      "minItems": 1,
+      "title": "Stresses",
+      "type": "array"
+    },
+    "seed": {
+      "minimum": 0,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "scenarios": {
+      "maximum": 32,
+      "minimum": 1,
+      "title": "Scenarios",
+      "type": "integer"
+    },
+    "max_solve_seconds": {
+      "exclusiveMinimum": 0,
+      "maximum": 120,
+      "title": "Max Solve Seconds",
+      "type": "number"
+    },
+    "solver": {
+      "default": "highs",
+      "enum": [
+        "highs",
+        "cbc",
+        "glpk",
+        "gurobi",
+        "cplex"
+      ],
+      "title": "Solver",
+      "type": "string"
+    },
+    "downside_cost_tolerance": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Downside Cost Tolerance",
+      "type": "number"
+    },
+    "service_tolerance": {
+      "maximum": 0.1,
+      "minimum": 0,
+      "title": "Service Tolerance",
+      "type": "number"
+    },
+    "force_unit_fills": {
+      "default": false,
+      "title": "Force Unit Fills",
+      "type": "boolean"
+    },
+    "mode": {
+      "default": "LEAN",
+      "enum": [
+        "LEAN",
+        "PROTECT",
+        "ALLOCATE",
+        "RECOVER"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "evidence_label": {
+      "enum": [
+        "SYNTHETIC",
+        "OPERATOR-SHADOW"
+      ],
+      "title": "Evidence Label",
+      "type": "string"
+    }
+  },
+  "required": [
+    "operator_id",
+    "as_of",
+    "currency",
+    "period_days",
+    "horizon",
+    "skus",
+    "locations",
+    "calendars",
+    "terms",
+    "resources",
+    "sources",
+    "stock",
+    "transfers",
+    "substitutions",
+    "customers",
+    "services",
+    "history",
+    "pipeline",
+    "liquidity",
+    "stresses",
+    "seed",
+    "scenarios",
+    "max_solve_seconds",
+    "downside_cost_tolerance",
+    "service_tolerance",
+    "evidence_label"
+  ],
+  "title": "Request",
+  "type": "object"
+}

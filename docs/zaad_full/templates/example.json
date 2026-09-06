@@ -1,0 +1,616 @@
+{
+  "schema_version": "zaad.network.v2",
+  "operator_id": "synthetic_zaad",
+  "as_of": "2026-09-01T00:00:00Z",
+  "currency": "USD",
+  "period_days": 7,
+  "horizon": 6,
+  "skus": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "A",
+      "volume": 1.0,
+      "asset_value": 5.0,
+      "terminal_value": 4.0,
+      "shelf_life": 26,
+      "disposal_fee": 0.1
+    }
+  ],
+  "locations": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "branch",
+      "kind": "branch",
+      "capacity_volume": 1000.0,
+      "holding_per_value_period": 0.01,
+      "receiving_calendar": "daily"
+    }
+  ],
+  "calendars": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "daily",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "blackout_dates": [],
+      "cutoff_hour_utc": 24
+    }
+  ],
+  "terms": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "net30",
+      "deposit_fraction": 0.0,
+      "balance_trigger": "arrival",
+      "net_days": 30,
+      "financing_fee_fraction": 0.0,
+      "fx_rate_to_currency": 1.0,
+      "currency": "USD",
+      "fx_basis": "same_currency",
+      "letter_of_credit_fraction": 0.0
+    }
+  ],
+  "resources": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "supplier_cap",
+      "capacity_by_period": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "failure_domains": [
+        "supplier"
+      ]
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "port_cap",
+      "capacity_by_period": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "failure_domains": [
+        "port"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "main",
+      "supplier": "supplier",
+      "sku": "A",
+      "destination": "branch",
+      "route": [
+        "supplier",
+        "port",
+        "branch"
+      ],
+      "resources": [
+        "supplier_cap",
+        "port_cap"
+      ],
+      "capacity_by_period": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "unit_price": 5.0,
+      "freight_per_unit": 0.2,
+      "handling_per_unit": 0.1,
+      "minimum": 0.0,
+      "multiple": 0.0,
+      "case_multiple": 0.0,
+      "pallet_multiple": 0.0,
+      "transport_multiple": 0.0,
+      "maximum": 100.0,
+      "fixed_order_fee": 0.0,
+      "terms": "net30",
+      "order_calendar": "daily",
+      "shipping_calendar": "daily",
+      "lead_days": 7,
+      "dispatch_days": 0,
+      "production_calendar": null,
+      "production_workdays": 0,
+      "leg_transit_days": [],
+      "leg_arrival_calendars": [],
+      "fill_mean": 0.95,
+      "fill_sd": 0.03,
+      "lead_sd_days": 1.0,
+      "approved": true,
+      "compliance": "cleared",
+      "quote_expires": "2027-09-01T00:00:00Z",
+      "quote_reference": "synthetic_quote",
+      "exclusive_quote_group": null
+    }
+  ],
+  "stock": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "opening",
+      "sku": "A",
+      "location": "branch",
+      "quantity": 140.0,
+      "reserved": 0.0,
+      "damaged": 0.0,
+      "quarantined": 0.0,
+      "expires_in": 20,
+      "age_periods": 6
+    }
+  ],
+  "transfers": [],
+  "substitutions": [],
+  "customers": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "customer",
+      "channel": "retail",
+      "priority": 1.0
+    }
+  ],
+  "services": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "retail_A",
+      "sku": "A",
+      "location": "branch",
+      "customer": "customer",
+      "target": 0.95,
+      "selling_price": 10.0,
+      "sla_per_unmet": 1.0,
+      "metric": "unit_fill"
+    }
+  ],
+  "history": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -52,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -51,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -50,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -49,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -48,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -47,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -46,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -45,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -44,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -43,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -42,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -41,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -40,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -39,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -38,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -37,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -36,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -35,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -34,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -33,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -32,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -31,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -30,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -29,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -28,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -27,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -26,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -25,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -24,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -23,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -22,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -21,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -20,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -19,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -18,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -17,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -16,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -15,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -14,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -13,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -12,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -11,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -10,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -9,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -8,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -7,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -6,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -5,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -4,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -3,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -2,
+      "quantity": 20.0
+    },
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "service": "retail_A",
+      "period": -1,
+      "quantity": 20.0
+    }
+  ],
+  "order_lines": [],
+  "events": [],
+  "shipment_history": [],
+  "signals": [],
+  "pipeline": [
+    {
+      "known_at": "2026-08-31T00:00:00Z",
+      "id": "open",
+      "source": "main",
+      "revision": 1,
+      "ordered": 100.0,
+      "confirmed": 100.0,
+      "shipped": 0.0,
+      "received": 0.0,
+      "rejected": 0.0,
+      "expected_accepted_remaining": 95.0,
+      "placed_at": "2026-08-25T00:00:00Z",
+      "confirmed_at": "2026-08-26T00:00:00Z",
+      "departed_at": null,
+      "current_eta": "2026-09-15T00:00:00Z",
+      "stage": "confirmed",
+      "carrier": "fixture",
+      "cancellation_status": "eligible",
+      "prepaid_per_remaining_unit": 0.0,
+      "allow_split_amendments": true,
+      "options": [
+        {
+          "known_at": "2026-08-31T00:00:00Z",
+          "id": "keep",
+          "action": "keep",
+          "due_in": 2,
+          "fee_per_unit": 0.0,
+          "remaining_invoice_per_unit": 5.3,
+          "payment_due_in": 2,
+          "max_quantity": 100.0,
+          "deadline": "2026-09-02T00:00:00Z",
+          "allowed_stages": [
+            "confirmed"
+          ],
+          "contract_reference": "fixture_explicit_terms"
+        },
+        {
+          "known_at": "2026-08-31T00:00:00Z",
+          "id": "cancel",
+          "action": "cancel",
+          "due_in": 2,
+          "fee_per_unit": 0.25,
+          "remaining_invoice_per_unit": 0.0,
+          "payment_due_in": 2,
+          "max_quantity": 100.0,
+          "deadline": "2026-09-02T00:00:00Z",
+          "allowed_stages": [
+            "confirmed"
+          ],
+          "contract_reference": "fixture_explicit_terms"
+        },
+        {
+          "known_at": "2026-08-31T00:00:00Z",
+          "id": "de_expedite",
+          "action": "de_expedite",
+          "due_in": 4,
+          "fee_per_unit": 0.1,
+          "remaining_invoice_per_unit": 5.0,
+          "payment_due_in": 4,
+          "max_quantity": 100.0,
+          "deadline": "2026-09-02T00:00:00Z",
+          "allowed_stages": [
+            "confirmed"
+          ],
+          "contract_reference": "fixture_explicit_terms"
+        }
+      ]
+    }
+  ],
+  "inbound_transfers": [],
+  "incumbent_orders": [],
+  "liquidity": {
+    "known_at": "2026-08-31T00:00:00Z",
+    "opening_cash": 2000.0,
+    "minimum_cash": 100.0,
+    "credit_limit": 1000.0,
+    "opening_debt": 0.0,
+    "interest_per_period": 0.002,
+    "known_receivables": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "other_payments": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "stresses": [
+    {
+      "name": "tail",
+      "fill_multiplier": 0.8,
+      "extra_lead_days": 14,
+      "demand_multiplier": 1.1,
+      "recovery_period": 6,
+      "shared_failure": true,
+      "affected_resources": []
+    }
+  ],
+  "seed": 12001,
+  "scenarios": 3,
+  "max_solve_seconds": 15.0,
+  "solver": "highs",
+  "downside_cost_tolerance": 0.05,
+  "service_tolerance": 0.01,
+  "force_unit_fills": false,
+  "mode": "RECOVER",
+  "evidence_label": "SYNTHETIC"
+}

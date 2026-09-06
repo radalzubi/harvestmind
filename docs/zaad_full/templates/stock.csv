@@ -1,0 +1,2 @@
+known_at,id,sku,location,quantity,reserved,damaged,quarantined,expires_in,age_periods
+"""2026-08-31T00:00:00Z""","""opening""","""A""","""branch""",140.0,0.0,0.0,0.0,20,6
