@@ -74,10 +74,10 @@ def holdout_report(rows: list[dict], baseline: str = "base_stock") -> dict:
             "economic_tradeoff_breaches": base["methods"][method]["breach_classes"]["ECONOMIC_TRADEOFF"],
         }
         # Selector regimes for gated methods.
-        statuses = Counter(s for r in runs for s in (r.get("review_status") or []))
-        modes = Counter(m for r in runs for m in (r.get("review_mode") or []))
-        policies = Counter(p for r in runs for p in (r.get("review_policy") or []))
-        if statuses:
+        statuses = Counter(s for r in runs for s in (r.get("review_status") or []) if s is not None)
+        modes = Counter(m for r in runs for m in (r.get("review_mode") or []) if m is not None)
+        policies = Counter(p for r in runs for p in (r.get("review_policy") or []) if p is not None)
+        if statuses and method.startswith("gated"):
             report["selector"][method] = {"review_status": dict(statuses), "review_mode": dict(modes), "review_policy": dict(policies)}
     # Regime breakdowns with medians per method.
     for dimension in ("inventory", "demand", "supply", "network", "alternative", "target"):

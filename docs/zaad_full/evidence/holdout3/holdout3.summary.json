@@ -1,0 +1,72 @@
+{
+  "base_stock": {
+    "runs": 112,
+    "complete": 112,
+    "service_breaches": 74,
+    "paired_completes": 112,
+    "median_vs_base_stock_pct": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "cost_losses": 0
+  },
+  "stochastic": {
+    "runs": 112,
+    "complete": 112,
+    "service_breaches": 67,
+    "paired_completes": 112,
+    "median_vs_base_stock_pct": 3.0410777193670375,
+    "min": -24.5391374410374,
+    "max": 35.758635014779436,
+    "cost_losses": 24
+  },
+  "robust": {
+    "runs": 112,
+    "complete": 106,
+    "service_breaches": 41,
+    "paired_completes": 106,
+    "median_vs_base_stock_pct": 6.771825006372868,
+    "min": -22.5959190165342,
+    "max": 32.509803738689605,
+    "cost_losses": 32
+  },
+  "protected": {
+    "runs": 112,
+    "complete": 112,
+    "service_breaches": 78,
+    "paired_completes": 112,
+    "median_vs_base_stock_pct": 4.115704192920522,
+    "min": -22.589343520450548,
+    "max": 35.9504686159143,
+    "cost_losses": 40
+  },
+  "gated_pr24": {
+    "runs": 112,
+    "complete": 112,
+    "service_breaches": 73,
+    "paired_completes": 112,
+    "median_vs_base_stock_pct": 1.7224708385095564,
+    "min": -7.616675226069616,
+    "max": 21.16286908050698,
+    "cost_losses": 7
+  },
+  "gated_pr30": {
+    "runs": 112,
+    "complete": 112,
+    "service_breaches": 66,
+    "paired_completes": 112,
+    "median_vs_base_stock_pct": 1.9954133570705006,
+    "min": -12.055471318076727,
+    "max": 22.116894898923057,
+    "cost_losses": 24
+  },
+  "gated": {
+    "runs": 112,
+    "complete": 112,
+    "service_breaches": 69,
+    "paired_completes": 112,
+    "median_vs_base_stock_pct": 2.0840535146249395,
+    "min": -9.407079536085362,
+    "max": 21.393226648599047,
+    "cost_losses": 26
+  }
+}
