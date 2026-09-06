@@ -24,7 +24,8 @@ from __future__ import annotations
 import math
 
 from zaad.full.contracts import Request
-from zaad.full.uncertainty import SupplyProfile, diversification, z_for
+from zaad.full.uncertainty import (SupplyProfile, demand_state, diversification, periods_to_lean_demand, protection_activity,
+                                   resilience, supply_state, z_for)
 from zaad.full.worlds import dates
 
 
@@ -102,12 +103,58 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         raw = z * total_sd + inbound_at_risk
         protection = max(0., raw - substitute_cover)
         on_hand = sum(x.usable for x in req.stock if x.sku == sku and x.location == location)
+        # Risk state: how active each driver is, how resilient the SKU is, and the lean baseline
+        # (demand-only protection at the fitted spread with every other driver calm).
+        demand_score = max((demand_state(fits[s.id]["uncertainty"]) for s in services), default=0.) if reliability else 0.
+        supply_score = supply_state(profile) if profile is not None else 0.
+        resilient = resilience(window, effective, substitute_cover, mu * window) if eligible else 0.
+        activity = protection_activity(demand_score, supply_score, resilient) if (reliability and req.protection_decay) else 1.
+        # Lean baseline: protection with every active driver removed, i.e. the fitted demand spread
+        # and the source's declared (not observed) lead and fill spread, nothing for calibration
+        # widening, young regimes, observed tails or open orders at risk.
+        sd_fitted = math.sqrt(sum(fits[s.id]["sd"] ** 2 for s in services))
+        declared_lead_sd = (primary.lead_sd_days / req.period_days) if primary is not None else 0.
+        declared_fill_sd = primary.fill_sd if primary is not None else 0.
+        var_supply_declared = ((mu * declared_lead_sd) ** 2 + (mu * window * declared_fill_sd) ** 2) / effective
+        lean_baseline = max(0., z * math.sqrt(window * sd_fitted ** 2 + var_supply_declared) - substitute_cover)
+        active_drivers = []
+        if demand_score > 0:
+            reasons = []
+            for s in services:
+                u = fits[s.id]["uncertainty"] if reliability else {}
+                if u.get("calibration_ratio_raw", 1.) > 1.25:
+                    reasons.append(f"{s.id}: realized errors {u['calibration_ratio_raw']:.2f}x the fitted spread")
+                if u.get("regime_age") is not None and u["regime_age"] < 8:
+                    reasons.append(f"{s.id}: level change {u['regime_age']} observation(s) old")
+            active_drivers.append({"driver": "demand", "score": demand_score, "reasons": reasons})
+        if supply_score > 0:
+            active_drivers.append({"driver": "supply", "score": supply_score,
+                                   "reasons": [f"late probability {late_probability:.0%}", f"partial-delivery probability {profile.partial_probability:.0%}" if profile is not None else "declared"]})
+        if inbound_at_risk > 0:
+            active_drivers.append({"driver": "inbound_eta", "score": min(1., inbound_at_risk / max(mu, 1e-9)), "reasons": [f"{inbound_at_risk:.0f} units of open orders at late risk"]})
+        demand_wait = max((periods_to_lean_demand(fits[s.id]["uncertainty"]) for s in services), default=0) if reliability else 0
+        supply_wait = 0
+        if supply_score > 0 and profile is not None:
+            # A clean run of receipts as long as the minimum record set retires the supply driver.
+            supply_wait = 6 if profile.scope == "observed" else window
+        periods_to_lean = max(demand_wait, supply_wait) if activity > .05 else 0
+        recent_quiet = all((fits[s.id]["uncertainty"].get("last_outlier_age") is None or fits[s.id]["uncertainty"]["last_outlier_age"] >= 2)
+                           for s in services) if reliability else True
+        decaying = activity > .05 and recent_quiet and supply_score < .5
+        state = {"activity": activity, "demand_score": demand_score, "supply_score": supply_score, "resilience": resilient,
+                 "risk_active": activity > .05, "decaying": bool(decaying), "periods_to_lean": periods_to_lean,
+                 "lean_baseline_units": lean_baseline, "incremental_protection_units": max(0., protection - lean_baseline),
+                 "active_drivers": active_drivers,
+                 "false_protection_flag": bool(activity <= .05 and protection > lean_baseline * 1.25 + 1.),
+                 "scope": "activity scales the optimizer's quantile protection and the stress hedge; zero is lean"}
         drivers = {"demand_spread": z * math.sqrt(var_demand), "forecast_level": z * math.sqrt(var_level),
                    "lead_time_spread": z * math.sqrt(var_lead / effective), "fill_spread": z * math.sqrt(var_fill / effective),
                    "inbound_eta_risk": inbound_at_risk, "substitution_credit": -min(substitute_cover, raw),
                    "correlation_penalty": z * (math.sqrt(var_lead + var_fill) - math.sqrt((var_lead + var_fill) / effective))}
         criticality = max((s.selling_price + s.sla_per_unmet - skus[sku].asset_value) / skus[sku].asset_value for s in services)
         stance = "lean" if protection <= .25 * mu * window else "protect"
+        if reliability and req.protection_decay and activity <= .05:
+            stance = "lean"
         if not eligible:
             stance = "no_replenishment"
         rows.append({"sku": sku, "location": location, "services": [s.id for s in services],
@@ -119,9 +166,19 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
                      "late_probability": late_probability, "effective_independent_sources": effective,
                      "shared_domains": diversity["shared_domains"], "substitute_cover_units": substitute_cover,
                      "criticality_margin_ratio": criticality, "data_sufficiency": "thin" if thin else "adequate",
-                     "stance": stance, "explanation": explain(sku, location, protection, mu, window, drivers, effective,
-                                                              diversity["shared_domains"], substitute_cover, supply_scope, late_probability, thin, eligible)})
+                     "stance": stance, "state": state,
+                     "explanation": explain(sku, location, protection, mu, window, drivers, effective,
+                                            diversity["shared_domains"], substitute_cover, supply_scope, late_probability, thin, eligible)
+                                    + state_sentence(state)})
     return rows
+
+
+def state_sentence(state: dict) -> str:
+    if not state["risk_active"]:
+        return " Risk state: lean (no active driver)."
+    names = ", ".join(d["driver"] for d in state["active_drivers"]) or "none"
+    trend = "decaying" if state["decaying"] else "active"
+    return f" Risk state: {trend} ({names}, activity {state['activity']:.2f}); expected return to lean in {state['periods_to_lean']} period(s) if nothing new happens."
 
 
 def explain(sku, location, protection, mu, window, drivers, effective, shared, substitute_cover, supply_scope, late_probability, thin, eligible) -> str:

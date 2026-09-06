@@ -23,6 +23,10 @@ from zaad.full.eta import conditional_eta
 
 MIN_SUPPLY_RECORDS = 6
 YOUNG_REGIME = 8
+RESIDUAL_WINDOW = 12      # recent one-step residuals that define the calibrated spread
+DEAD_BAND = 1.25          # calibration ratio below which the fitted spread is trusted as is
+RATIO_CAP = 2.            # calibration widening never more than doubles the fitted spread
+OUTLIER_Z = 3.            # a residual beyond this many robust sd is an outlier, not a regime
 FLOOR_CREDIBILITY = .1    # the declared stress never drops below a tenth of its weight          # observations before a detected level shift is treated as confirmed
 
 
@@ -35,43 +39,99 @@ def _predict(a: np.ndarray, method: str) -> float:
     return float(np.mean(a[-4:])) if method == "recent_level" else point(a, method)
 
 
-def residual_calibration(y: np.ndarray, method: str, window: int = 12) -> dict:
+def residual_calibration(y: np.ndarray, method: str, window: int = RESIDUAL_WINDOW, robust: bool = True) -> dict:
     """One-step-ahead residuals of the chosen method on the most recent observations.
 
     calibration_ratio > 1 means realized errors are wider than the fitted spread implies; the
-    protection layer scales by it instead of trusting the fitted standard deviation.
+    protection layer scales by it instead of trusting the fitted standard deviation. With
+    robust=True the residual scale is the 80th percentile of absolute residuals (one abnormal
+    week does not widen it for the whole window); robust=False is the PR30 root-mean-square.
     """
     start = max(4, len(y) - window)
     residuals = np.asarray([y[t] - _predict(y[:t], method) for t in range(start, len(y))])
     sd = float(np.std(y)) if len(y) > 1 else 0.
     if not len(residuals):
-        return {"residual_sd": sd, "abs_q80": 1.2816 * sd, "calibration_ratio": 1., "bias": 0., "window": 0}
-    residual_sd = float(np.sqrt(np.mean(residuals ** 2)))
+        return {"residual_sd": sd, "residual_rms": sd, "abs_q80": 1.2816 * sd, "calibration_ratio": 1., "bias": 0.,
+                "window": 0, "last_outlier_age": None, "outliers": 0}
+    residual_rms = float(np.sqrt(np.mean(residuals ** 2)))
     abs_q80 = float(np.quantile(np.abs(residuals), .8))
+    robust_sd = abs_q80 / 1.2816
+    residual_sd = robust_sd if robust else residual_rms
     ratio = abs_q80 / max(1.2816 * sd, 1e-9) if sd > 0 else 1.
-    return {"residual_sd": residual_sd, "abs_q80": abs_q80, "calibration_ratio": float(min(4., max(.25, ratio))),
-            "bias": float(np.mean(residuals)), "window": int(len(residuals))}
+    flags = np.abs(residuals) > OUTLIER_Z * max(robust_sd, 1.)
+    ages = [len(residuals) - 1 - i for i, f in enumerate(flags) if f]
+    return {"residual_sd": float(residual_sd), "residual_rms": residual_rms, "abs_q80": abs_q80,
+            "calibration_ratio": float(min(4., max(.25, ratio))), "bias": float(np.mean(residuals)),
+            "window": int(len(residuals)), "last_outlier_age": (min(ages) if ages else None), "outliers": int(flags.sum())}
 
 
-def demand_uncertainty(fit: dict, y: np.ndarray) -> dict:
-    """Effective spread, level standard error and regime uncertainty for one service."""
+def demand_state(uncertainty: dict) -> float:
+    """How active the demand risk driver is, 0 (calm) to 1. Only events count: a level change
+    still younger than YOUNG_REGIME observations, or a cluster of outliers (two or more in the
+    residual window). Persistent calibration widening is not an event: it already widens the
+    scenario spread, and counting it here as well would double-protect a noisy but steady SKU."""
+    age = uncertainty.get("regime_age")
+    young = max(0., 1. - age / YOUNG_REGIME) if age is not None else 0.
+    outliers = int(uncertainty.get("outliers", 0) or 0)
+    last = uncertainty.get("last_outlier_age")
+    cluster = .5 if outliers >= 2 and last is not None and last < RESIDUAL_WINDOW // 2 else 0.
+    return float(max(young, cluster))
+
+
+def periods_to_lean_demand(uncertainty: dict) -> int:
+    """Reviews until the active demand drivers leave the evidence windows, if nothing new happens."""
+    remaining = 0
+    outliers = int(uncertainty.get("outliers", 0) or 0)
+    age_out = uncertainty.get("last_outlier_age")
+    if outliers >= 2 and age_out is not None:
+        remaining = max(remaining, RESIDUAL_WINDOW // 2 - int(age_out))
+    age = uncertainty.get("regime_age")
+    if age is not None and age < YOUNG_REGIME:
+        remaining = max(remaining, YOUNG_REGIME - int(age))
+    return int(remaining)
+
+
+def demand_uncertainty(fit: dict, y: np.ndarray, decay: bool = True) -> dict:
+    """Effective spread, level standard error and regime uncertainty for one service.
+
+    decay=True (state-dependent protection): robust residual scale, a dead band and cap on the
+    calibration ratio, and a young regime represented as a bounded mixture (the old level may
+    still be the truth, with a weight that fades as observations confirm the new one) instead
+    of a symmetric widening by the size of the shift. decay=False is the PR30 behaviour.
+    """
     origin = int(fit.get("segment_origin", 0))
     segment = y[origin:]
-    calibration = residual_calibration(segment, fit["method"])
+    calibration = residual_calibration(segment, fit["method"], robust=decay)
     n = max(1, len(segment))
     level_se = calibration["residual_sd"] / math.sqrt(n)
-    regime = 0.
+    regime, pre_mean, pre_weight, downward = 0., None, 0., False
     if origin > 0 and n < YOUNG_REGIME:
-        # A young regime: the level is only known to within the size of the shift itself.
         pre_mean = float(np.mean(y[:origin]))
         regime = abs(float(fit["mean"]) - pre_mean) * (1. - n / YOUNG_REGIME)
-    level_se = math.sqrt(level_se ** 2 + regime ** 2)
+        downward = float(fit["mean"]) < pre_mean
+        # Bounded mixture after a drop: the chance the old, higher level still holds, fading to
+        # zero as the regime ages. After a rise the shortage side is the expensive one, so the
+        # level error keeps the full shift-sized widening (the PR30 rule) instead of a mixture
+        # that would lean the plan toward the old, lower level.
+        pre_weight = .5 * (1. - n / YOUNG_REGIME) if downward else 0.
+    raw_ratio = float(calibration["calibration_ratio"])
+    if decay:
+        ratio = 1. if raw_ratio <= DEAD_BAND else min(RATIO_CAP, raw_ratio)
+        level_total = level_se if downward or regime == 0. else math.sqrt(level_se ** 2 + regime ** 2)
+    else:
+        ratio = raw_ratio
+        level_total = math.sqrt(level_se ** 2 + regime ** 2)
+        pre_weight = 0.
     sd_effective = max(float(fit["sd"]), calibration["residual_sd"])
     return {"sd_fitted": float(fit["sd"]), "sd_effective": float(sd_effective),
-            "residual_sd": calibration["residual_sd"], "calibration_ratio": calibration["calibration_ratio"],
-            "bias": calibration["bias"], "level_se": float(level_se), "regime_uncertainty": float(regime),
+            "residual_sd": calibration["residual_sd"], "residual_rms": calibration["residual_rms"],
+            "calibration_ratio": float(ratio), "calibration_ratio_raw": raw_ratio,
+            "bias": calibration["bias"], "level_se": float(level_total), "regime_uncertainty": float(regime),
+            "regime_age": (int(n) if origin > 0 else None), "pre_change_level": pre_mean, "pre_change_weight": float(pre_weight),
+            "last_outlier_age": calibration["last_outlier_age"], "outliers": calibration["outliers"],
             "segment_count": int(n), "history_count": int(len(y)),
             "data_sufficiency": "thin" if len(y) < 26 or n < 4 else "adequate",
+            "decay": decay,
             "scope": "one-step residuals of the chosen method since the last detected change"}
 
 
@@ -184,6 +244,31 @@ def diversification(req: Request, sku: str, location: str, profile: str = "relia
             "scope": "capacity-weighted; sources sharing a supplier or any failure domain count as one"}
 
 
+def supply_state(profile: SupplyProfile, severity: float = 0.) -> float:
+    """How active the supply risk driver is, 0 to 1: lateness beyond the declared lead, a fill
+    mean materially below full delivery, a wide fill spread, and licensed route signals. A
+    source that delivers about 95% on time with a tight spread scores zero: that is normal
+    supply, not a risk driver."""
+    shortfall = max(0., (.9 - profile.fill_mean) * 5.)
+    spread = max(0., (profile.fill_sd - .05) * 10.)
+    return float(min(1., 2. * profile.late_probability + shortfall + spread + severity))
+
+
+def resilience(window: int, effective_sources: float, substitute_cover: float, demand_per_window: float) -> float:
+    """How much the SKU can absorb a shock without protection: short replenishment plus a real
+    alternative (independent source or substitute stock covering the window) is 1, one of the
+    two is .5, neither is 0."""
+    short = window <= 2
+    alternative = effective_sources >= 1.5 or substitute_cover >= demand_per_window
+    return 1. if short and alternative else (.5 if short or alternative else 0.)
+
+
+def protection_activity(demand: float, supply: float, resilient: float) -> float:
+    """Protection state in [0, 1]: the most active risk driver, discounted by resilience.
+    Zero means lean; the optimizer's quantile protection and the stress hedge scale with it."""
+    return float(max(0., min(1., max(demand, supply) * (1. - .5 * resilient))))
+
+
 def stress_credibility(req: Request, supply: dict[str, SupplyProfile]) -> dict:
     """How much weight the declared stress envelopes deserve right now, from evidence only.
 
@@ -203,13 +288,17 @@ def stress_credibility(req: Request, supply: dict[str, SupplyProfile]) -> dict:
         evidence = route_evidence(signals, [source.id, source.supplier, *source.route, *source.resources,
                                             *failure_domains_for(source, resources)], req.as_of)
         severity = max(evidence.physical_severity, evidence.official_severity)
-        score = min(1., profile.late_probability + profile.partial_probability + severity)
+        score = supply_state(profile, severity)
         drivers[source.id] = {"late_probability": profile.late_probability, "partial_probability": profile.partial_probability,
                               "signal_severity": severity, "scope": profile.scope, "score": score}
         worst = max(worst, score)
-    credibility = min(1., max(FLOOR_CREDIBILITY, worst))
-    return {"credibility": credibility, "effective_stress_weight": req.stress_weight * credibility,
-            "drivers": drivers, "scope": "max over approved sources of late + partial + signal severity, floored"}
+    # The floor is a hedge against having no record at all. Once every approved source has an
+    # observed record, the evidence alone decides and a clean record means no hedge.
+    declared_only = any(supply[s.id].scope == "declared" for s in req.sources if s.approved and s.compliance == "cleared")
+    floor = FLOOR_CREDIBILITY if (declared_only or not req.protection_decay) else 0.
+    credibility = min(1., max(floor, worst))
+    return {"credibility": credibility, "effective_stress_weight": req.stress_weight * credibility, "floor": floor,
+            "drivers": drivers, "scope": "max over approved sources of the supply risk state (lateness, fill shortfall, fill spread, signals); floored only while a source has no observed record"}
 
 
 def profile_dict(profile: SupplyProfile) -> dict:

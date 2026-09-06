@@ -202,7 +202,8 @@ def _shortage_exposure(rows: list[dict]) -> tuple[float | None, float | None]:
     return (mean(values), max(values)) if values else (None, None)
 
 
-def alternative_value(req: Request, reference: Solution, worlds: list, reference_rows: list[dict], service_risk: str) -> dict:
+def alternative_value(req: Request, reference: Solution, worlds: list, reference_rows: list[dict], service_risk: str,
+                      risk_levels: dict[str, float] | None = None) -> dict:
     """Value of approved alternates, transfers and substitutions: the same solve with each option
     removed, compared on the selection worlds. Extra cost against expected and worst-world
     shortage avoided; nothing is assumed, every number comes from a solve and a settlement."""
@@ -219,7 +220,7 @@ def alternative_value(req: Request, reference: Solution, worlds: list, reference
     for name, present in structure.items():
         if not present:
             continue
-        restricted = solve(req, worlds, service_floor=True, service_risk=service_risk, disabled=frozenset({name}))
+        restricted = solve(req, worlds, service_floor=True, service_risk=service_risk, disabled=frozenset({name}), service_risk_levels=risk_levels)
         entry: dict = {"option": name, "status": restricted.status}
         if restricted.status != "OPTIMAL":
             entry["sentence"] = f"Without the approved {name} the service targets cannot be met on the selection worlds; the option is structurally necessary."
@@ -317,13 +318,18 @@ def plan(req: Request) -> dict:
     if stress_worlds and stress_weight > 0:
         hedged = ([replace(w, weight=(1 - stress_weight) / len(selection)) for w in selection]
                   + [replace(w, weight=stress_weight / len(stress_worlds)) for w in stress_worlds])
+    # Quantile level per service from its SKU/location risk state: calm and resilient means the
+    # expected floor only (lean); an active driver restores the full quantile protection.
+    activity = {(row["sku"], row["location"]): row["state"]["activity"] for row in protection}
+    risk_levels = ({s.id: (req.service_risk_level * activity.get((s.sku, s.location), 1.) if activity.get((s.sku, s.location), 1.) > .05 else 0.)
+                    for s in req.services} if req.protection_decay else None)
     if reliability:
         # Quantile protection: the worst share of scenarios must meet the target too.
-        candidates["protected_network"] = solve(req, selection, service_floor=True, service_risk="cvar")
+        candidates["protected_network"] = solve(req, selection, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels)
         if hedged:
             # Hedged protection: the declared stress envelopes enter the solve at their probability
             # weight, so protection is sized by how credible and how costly the stress is.
-            candidates["hedged_network"] = solve(req, hedged, service_floor=True, service_risk="cvar")
+            candidates["hedged_network"] = solve(req, hedged, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels)
     candidates["stress_network"] = solve(req, combined, service_floor=True, per_world_service=True)
     recovery = solve(req, combined, service_first="all")
     if recovery.status == "OPTIMAL":
@@ -605,12 +611,21 @@ def plan(req: Request) -> dict:
     alternatives = {}
     if reliability:
         reference_name = "protected_network" if candidates.get("protected_network") is not None and candidates["protected_network"].status == "OPTIMAL" else "stochastic_network"
-        alternatives = alternative_value(req, candidates[reference_name], selection, selection_rows.get(reference_name, []), service_risk)
+        alternatives = alternative_value(req, candidates[reference_name], selection, selection_rows.get(reference_name, []), service_risk, risk_levels)
         alternatives["reference_candidate"] = reference_name
 
     mode = "ALLOCATE" if recovery_mode else req.mode
     if reliability and not recovery_mode:
         mode = "PROTECT" if any(row["stance"] == "protect" for row in protection) else ("LEAN" if req.mode in ("LEAN", "PROTECT") else req.mode)
+    false_protection = {"rows": [{"sku": row["sku"], "location": row["location"], "protection_units": row["protection_units"],
+                                  "lean_baseline_units": row["state"]["lean_baseline_units"],
+                                  "incremental_protection_units": row["state"]["incremental_protection_units"],
+                                  "active_drivers": row["state"]["active_drivers"], "risk_active": row["state"]["risk_active"],
+                                  "decaying": row["state"]["decaying"], "periods_to_lean": row["state"]["periods_to_lean"],
+                                  "false_protection_flag": row["state"]["false_protection_flag"], "activity": row["state"]["activity"]}
+                                 for row in protection],
+                        "quantile_levels": risk_levels,
+                        "scope": "lean baseline is demand-only protection at the fitted spread; incremental is what active drivers add"}
 
     return {"schema_version": "zaad.network.report.v2", "brand": "ZAAD", "version": VERSION,
             "operator_id": req.operator_id, "as_of": req.as_of.isoformat(), "information_hash": fingerprint,
@@ -619,7 +634,8 @@ def plan(req: Request) -> dict:
             "actions": action_rows(final), "incumbent_actions": action_rows(incumbent),
             "approval_required": True, "executable_purchase_order": False,
             "forecasts": fits, "eta": eta, "service_frontier": frontier,
-            "protection": protection, "supply_profiles": {k: profile_dict(v) for k, v in supply.items()},
+            "protection": protection, "false_protection": false_protection,
+            "supply_profiles": {k: profile_dict(v) for k, v in supply.items()},
             "alternatives": alternatives, "service_reliability": service_reliability,
             "selection_costs": {name: {"fitted": mean(r["economic_cost"] for r in rows) if rows and all(r["usable"] for r in rows) else None,
                                        "hedged": hedged_cost(name) if np.isfinite(hedged_cost(name)) else None}

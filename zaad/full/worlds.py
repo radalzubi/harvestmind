@@ -11,7 +11,7 @@ import numpy as np
 from zaad.full.contracts import Calendar, Request, Source, Stress
 from zaad.full.eta import conditional_eta
 from zaad.full.forecast import estimate, sample
-from zaad.full.uncertainty import MIN_SUPPLY_RECORDS, demand_uncertainty, failure_domains_for, lead_quantile, supply_profiles
+from zaad.full.uncertainty import MIN_SUPPLY_RECORDS, OUTLIER_Z, demand_uncertainty, failure_domains_for, lead_quantile, supply_profiles
 from zaad.signals import Signal, route_evidence
 from scipy.stats import norm
 
@@ -84,7 +84,7 @@ def forecast_all(req: Request, adaptive: bool = True) -> dict:
                        locations[service.location].holding_per_value_period * skus[service.sku].asset_value,
                        adaptive, req.demand_adaptation)
         if req.engine_profile == "reliability":
-            fit["uncertainty"] = demand_uncertainty(fit, series[service.id])
+            fit["uncertainty"] = demand_uncertainty(fit, series[service.id], req.protection_decay)
         result[service.id] = fit
     return result
 
@@ -104,14 +104,26 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
             f = fits[service.id]
             d = np.full(req.horizon, f["mean"]) if deterministic else sample(f, rng, req.horizon)
             if reliability and not deterministic and f["mean"] > 0:
+                u = f["uncertainty"]
+                if req.protection_decay and u.get("outliers", 0):
+                    # One abnormal week is not a demand regime: cap bootstrapped sizes at the outlier
+                    # bound so a single spike does not populate the scenarios for a whole window.
+                    bound = f["mean"] + OUTLIER_Z * max(u["residual_sd"], 1.)
+                    d = np.minimum(d, bound)
                 # Calibration: when realized one-step errors have been wider than the fitted spread,
                 # widen the sampled deviations by that ratio (never narrow them).
-                ratio = max(1., f["uncertainty"]["calibration_ratio"])
+                ratio = max(1., u["calibration_ratio"])
                 if ratio > 1.:
                     d = np.maximum(0., f["mean"] + (d - f["mean"]) * ratio)
-                # Model uncertainty: the level itself is uncertain by its calibrated standard error
-                # (wider while a regime change is young), perfectly correlated across the horizon.
-                d = d * max(0., 1. + float(rng.normal()) * f["uncertainty"]["level_se"] / f["mean"])
+                # Model uncertainty: the level itself is uncertain by its calibrated standard error,
+                # perfectly correlated across the horizon. While a regime change is young, some
+                # worlds keep the old level instead (bounded mixture), so a drop does not fabricate
+                # demand above the old level and a rise does not fabricate demand below it.
+                u = f["uncertainty"]
+                if u.get("pre_change_level") is not None and u.get("pre_change_weight", 0.) > 0 and float(rng.random()) < u["pre_change_weight"]:
+                    d = d * max(0., u["pre_change_level"] / f["mean"])
+                else:
+                    d = d * max(0., 1. + float(rng.normal()) * u["level_se"] / f["mean"])
             for event in req.events:
                 if event.service == service.id:
                     d[event.start:min(req.horizon, event.end + 1)] *= event.multiplier

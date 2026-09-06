@@ -33,7 +33,7 @@ SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 
          # Service-reliability study. New seeds again; holdout3 stays frozen until a profile is promoted.
          "development3": [26001], "validation3": [27001, 27002], "holdout3": [28001, 28002]}
 METHODS = ["base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated"]
-RELIABILITY_METHODS = ["base_stock", "stochastic", "robust", "protected", "gated_pr24", "gated"]
+RELIABILITY_METHODS = ["base_stock", "stochastic", "robust", "protected", "gated_pr24", "gated_pr30", "gated"]
 INVENTORY = {"low": .5, "balanced": 2., "high": 4.}
 RELIABILITY_DEMANDS = ["stable", "volatile", "promotion", "increase", "decrease", "intermittent",
                        "spike", "temporary_spike", "gradual", "unknown_promotion"]
@@ -249,6 +249,9 @@ def task(args):
             "recovery_solves": sum(bool(r["warnings"]) for r in rows), "failure": result.get("failure"),
             "ledger": result.get("ledger"), "seconds": time.monotonic() - started,
             "forecast_methods": [r["forecast"]["retail_A"]["method"] for r in rows],
+            "review_status": [r["warnings"][0] if r["warnings"] else None for r in rows],
+            "review_policy": [r["warnings"][1] if len(r["warnings"]) > 1 else None for r in rows],
+            "review_mode": [next((w[5:] for w in r["warnings"] if isinstance(w, str) and w.startswith("mode=")), None) for r in rows],
             "change_origins": [r["forecast"]["retail_A"]["segment_origin"] for r in rows],
             "min_cash": min((x["cash"] for r in rows for x in r["settlement"]["trace"]), default=None),
             "max_debt": max((x["debt"] for r in rows for x in r["settlement"]["trace"]), default=None),
@@ -322,9 +325,11 @@ def main():
             json.dump(configuration, f, indent=2)
         print("FROZEN", configuration["source_hash"], flush=True)
         return
-    if args.split == "final":
-        if args.limit or not manifest.exists() or json.loads(manifest.read_text()) != configuration:
-            raise SystemExit("Final requires an exact frozen source/configuration and no run limit")
+    if args.split in {"final", "holdout3"}:
+        # Frozen splits: the manifest written by --freeze must match the current source and
+        # configuration exactly, and no cell subset or limit may be applied.
+        if args.limit or args.demand or args.family or args.target or args.supply or not manifest.exists() or json.loads(manifest.read_text()) != configuration:
+            raise SystemExit(f"{args.split} requires an exact frozen source/configuration, no filters and no run limit")
     if args.output.exists():
         raise SystemExit("Refusing to overwrite evidence")
     args.output.parent.mkdir(parents=True, exist_ok=True)

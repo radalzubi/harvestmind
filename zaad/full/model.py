@@ -104,7 +104,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           service_first: str | None = None, cvar_weight: float = 0.,
           fixed: Solution | None = None, disabled: frozenset[str] = frozenset(),
           targets: dict[tuple[str, int], float] | None = None,
-          per_world_service: bool = False, service_risk: str = "expected") -> Solution:
+          per_world_service: bool = False, service_risk: str = "expected",
+          service_risk_levels: dict[str, float] | None = None) -> Solution:
     started = time.monotonic()
     if not worlds or abs(sum(w.weight for w in worlds) - 1) > 1e-8 or any(w.weight <= 0 for w in worlds):
         raise ValueError("positive scenario weights must sum to one")
@@ -527,10 +528,12 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     row[unmet[service.id, t, w]] = world.weight
                     demand += world.weight * world.demand[service.id][t]
             m.row(row, upper=(1 - service.target) * demand)
-            if service_risk == "cvar" and len(worlds) > 1 and req.service_risk_level > 0:
+            risk_level = (service_risk_levels or {}).get(service.id, req.service_risk_level)
+            if service_risk == "cvar" and len(worlds) > 1 and risk_level > 0:
                 # Quantile protection (Rockafellar-Uryasev): the mean unmet fraction over the worst
                 # (1 - level) share of scenarios must also respect the target. Protection then scales
-                # with the spread of the scenarios and vanishes when they are tight.
+                # with the spread of the scenarios and vanishes when they are tight, or when the
+                # SKU/location risk state is calm (level scaled by protection activity).
                 eta = m.var(("service_eta", service.id))
                 tail_terms: dict[int, float] = {eta: 1.}
                 for w, world in enumerate(worlds):
@@ -538,7 +541,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     if total_w <= 0:
                         continue
                     zeta = m.var(("service_tail", service.id, w))
-                    tail_terms[zeta] = world.weight / (1 - req.service_risk_level)
+                    tail_terms[zeta] = world.weight / (1 - risk_level)
                     m.row({**{unmet[service.id, t, w]: 1 / total_w for t in range(H)}, eta: -1, zeta: -1}, upper=0)
                 m.row(tail_terms, upper=1 - service.target)
             if per_world_service:

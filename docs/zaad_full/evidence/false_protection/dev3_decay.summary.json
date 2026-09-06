@@ -1,0 +1,952 @@
+{
+ "by_dimension": {
+  "alternative": {
+   "none": {
+    "base_stock": {
+     "avoidable": 3,
+     "breaches": 19,
+     "median_inventory_periods": 0.8179141348104406,
+     "runs": 26
+    },
+    "gated": {
+     "avoidable": 2,
+     "breaches": 18,
+     "median_inventory_periods": 1.1452325870829565,
+     "runs": 26
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 18,
+     "median_inventory_periods": 0.8129971075874558,
+     "runs": 26
+    },
+    "gated_pr30": {
+     "avoidable": 2,
+     "breaches": 18,
+     "median_inventory_periods": 1.1317988031539956,
+     "runs": 26
+    }
+   },
+   "route": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 7,
+     "median_inventory_periods": 3.8318570147619004,
+     "runs": 10
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 6,
+     "median_inventory_periods": 3.6096352199726747,
+     "runs": 10
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 7,
+     "median_inventory_periods": 3.421474675711538,
+     "runs": 10
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 6,
+     "median_inventory_periods": 3.6088021195769047,
+     "runs": 10
+    }
+   },
+   "substitution": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 3.5572281293957917,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 3.9214516847396554,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 3.3144328069033397,
+     "runs": 6
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 4.054559847540367,
+     "runs": 6
+    }
+   },
+   "supplier": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 1.1026592621607683,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 1.5803289619311274,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 0.9388123307220015,
+     "runs": 8
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 1.4413781613948733,
+     "runs": 8
+    }
+   },
+   "transfer": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_inventory_periods": 4.902740821697406,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_inventory_periods": 4.530024930632473,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_inventory_periods": 4.8213203011188375,
+     "runs": 6
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_inventory_periods": 4.608950167385146,
+     "runs": 6
+    }
+   }
+  },
+  "demand": {
+   "decrease": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 0.8718894146918761,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 1.3236205929970972,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 0.917308955707915,
+     "runs": 4
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 1.7164267605370513,
+     "runs": 4
+    }
+   },
+   "gradual": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_inventory_periods": 2.3197450792278924,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_inventory_periods": 1.7972353411058961,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_inventory_periods": 1.7196730256120518,
+     "runs": 4
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_inventory_periods": 1.5991084407374674,
+     "runs": 4
+    }
+   },
+   "increase": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 2.3808965710232406,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 1.3172079760478912,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 0.904972153634093,
+     "runs": 5
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 1.015598682739501,
+     "runs": 5
+    }
+   },
+   "intermittent": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 6.011199931975776,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 6.291870457253065,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 6.309202380514392,
+     "runs": 6
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 5.977533602972236,
+     "runs": 6
+    }
+   },
+   "promotion": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 4,
+     "median_inventory_periods": 1.263104730791527,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_inventory_periods": 1.5692057406091662,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 4,
+     "median_inventory_periods": 1.2611910561766078,
+     "runs": 4
+    },
+    "gated_pr30": {
+     "avoidable": 1,
+     "breaches": 4,
+     "median_inventory_periods": 1.5810595867271073,
+     "runs": 4
+    }
+   },
+   "spike": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 4,
+     "median_inventory_periods": 4.6990216765847475,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_inventory_periods": 4.2833700191075526,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 4,
+     "median_inventory_periods": 3.747618849565305,
+     "runs": 4
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_inventory_periods": 4.356571070263813,
+     "runs": 4
+    }
+   },
+   "stable": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 9,
+     "median_inventory_periods": 0.33274399654586206,
+     "runs": 19
+    },
+    "gated": {
+     "avoidable": 2,
+     "breaches": 11,
+     "median_inventory_periods": 0.6090395951861364,
+     "runs": 19
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 9,
+     "median_inventory_periods": 0.3740680138872607,
+     "runs": 19
+    },
+    "gated_pr30": {
+     "avoidable": 1,
+     "breaches": 10,
+     "median_inventory_periods": 0.6842967847960651,
+     "runs": 19
+    }
+   },
+   "temporary_spike": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 1.005559058786894,
+     "runs": 2
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 1.9330439113721853,
+     "runs": 2
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 0.9829582731454038,
+     "runs": 2
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 1.9376710321180808,
+     "runs": 2
+    }
+   },
+   "unknown_promotion": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_inventory_periods": 4.295048740229869,
+     "runs": 3
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 3.9105785842942082,
+     "runs": 3
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 4.1335298709697215,
+     "runs": 3
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_inventory_periods": 3.4307784234487047,
+     "runs": 3
+    }
+   },
+   "volatile": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 5,
+     "median_inventory_periods": 4.395090331692891,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_inventory_periods": 4.024770862791638,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 5,
+     "median_inventory_periods": 3.9946864022622446,
+     "runs": 5
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_inventory_periods": 4.139863661294898,
+     "runs": 5
+    }
+   }
+  },
+  "inventory": {
+   "balanced": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 19,
+     "median_inventory_periods": 0.902673665309105,
+     "runs": 33
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 18,
+     "median_inventory_periods": 1.3258231512027856,
+     "runs": 33
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 19,
+     "median_inventory_periods": 0.902673665309105,
+     "runs": 33
+    },
+    "gated_pr30": {
+     "avoidable": 2,
+     "breaches": 19,
+     "median_inventory_periods": 1.3489810069942918,
+     "runs": 33
+    }
+   },
+   "high": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 13,
+     "median_inventory_periods": 4.295048740229869,
+     "runs": 15
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 12,
+     "median_inventory_periods": 3.6388526867611617,
+     "runs": 15
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 12,
+     "median_inventory_periods": 3.586838682409195,
+     "runs": 15
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 11,
+     "median_inventory_periods": 3.6252693668184905,
+     "runs": 15
+    }
+   },
+   "low": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 1.677483583582846,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 1.9139385564459066,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 0.9388123307220015,
+     "runs": 8
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 1.9531790913831295,
+     "runs": 8
+    }
+   }
+  },
+  "network": {
+   "central_branches": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 10,
+     "median_inventory_periods": 4.425908600154434,
+     "runs": 11
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 9,
+     "median_inventory_periods": 3.580417753184187,
+     "runs": 11
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 10,
+     "median_inventory_periods": 3.586838682409195,
+     "runs": 11
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 9,
+     "median_inventory_periods": 3.5923348723353192,
+     "runs": 11
+    }
+   },
+   "single": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 21,
+     "median_inventory_periods": 0.6787505432425999,
+     "runs": 34
+    },
+    "gated": {
+     "avoidable": 2,
+     "breaches": 21,
+     "median_inventory_periods": 1.0771765266301416,
+     "runs": 34
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 21,
+     "median_inventory_periods": 0.7241700842586387,
+     "runs": 34
+    },
+    "gated_pr30": {
+     "avoidable": 2,
+     "breaches": 21,
+     "median_inventory_periods": 1.1317988031539956,
+     "runs": 34
+    }
+   },
+   "two_locations": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 8,
+     "median_inventory_periods": 4.299686145306193,
+     "runs": 11
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 3.9105785842942082,
+     "runs": 11
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 4.1335298709697215,
+     "runs": 11
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 3.6252693668184905,
+     "runs": 11
+    }
+   }
+  },
+  "supply": {
+   "correlated": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 3.256110669013881,
+     "runs": 7
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 3.6388526867611617,
+     "runs": 7
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 3.256110669013881,
+     "runs": 7
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_inventory_periods": 3.6252693668184905,
+     "runs": 7
+    }
+   },
+   "fill": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 2,
+     "median_inventory_periods": 2.428024654832057,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_inventory_periods": 3.3422486364170814,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_inventory_periods": 2.253798942428491,
+     "runs": 4
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_inventory_periods": 3.2242014576632787,
+     "runs": 4
+    }
+   },
+   "lead": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 7,
+     "median_inventory_periods": 2.3852808504987584,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 6,
+     "median_inventory_periods": 2.9741090646295634,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 7,
+     "median_inventory_periods": 2.0252327506988914,
+     "runs": 8
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 6,
+     "median_inventory_periods": 3.051495517729599,
+     "runs": 8
+    }
+   },
+   "partial": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 0.6243464821734236,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 0.9853957666272822,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 0.7151855642055014,
+     "runs": 5
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 1.3957020196423808,
+     "runs": 5
+    }
+   },
+   "severe": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 3.541186369237263,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 3.2166659580195525,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 3.0711137834108446,
+     "runs": 6
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_inventory_periods": 3.1726539375259772,
+     "runs": 6
+    }
+   },
+   "stable": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 13,
+     "median_inventory_periods": 0.9978422034390695,
+     "runs": 26
+    },
+    "gated": {
+     "avoidable": 2,
+     "breaches": 13,
+     "median_inventory_periods": 1.2254844378732632,
+     "runs": 26
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 13,
+     "median_inventory_periods": 0.9946566187303385,
+     "runs": 26
+    },
+    "gated_pr30": {
+     "avoidable": 2,
+     "breaches": 13,
+     "median_inventory_periods": 1.2517118538910041,
+     "runs": 26
+    }
+   }
+  },
+  "target": {
+   "0.9": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 6,
+     "median_inventory_periods": 4.410499465923662,
+     "runs": 10
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_inventory_periods": 3.7967085228121036,
+     "runs": 10
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 5,
+     "median_inventory_periods": 3.79076254233572,
+     "runs": 10
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_inventory_periods": 3.5999464078055565,
+     "runs": 10
+    }
+   },
+   "0.95": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 16,
+     "median_inventory_periods": 0.902673665309105,
+     "runs": 28
+    },
+    "gated": {
+     "avoidable": 2,
+     "breaches": 16,
+     "median_inventory_periods": 1.2254844378732632,
+     "runs": 28
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 16,
+     "median_inventory_periods": 0.8977566380861202,
+     "runs": 28
+    },
+    "gated_pr30": {
+     "avoidable": 2,
+     "breaches": 16,
+     "median_inventory_periods": 1.2517118538910041,
+     "runs": 28
+    }
+   },
+   "0.97": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 8,
+     "median_inventory_periods": 3.1770068099162936,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 8,
+     "median_inventory_periods": 3.074760911802542,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 8,
+     "median_inventory_periods": 2.8121707352349454,
+     "runs": 8
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 8,
+     "median_inventory_periods": 3.0679627649711847,
+     "runs": 8
+    }
+   },
+   "0.99": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 9,
+     "median_inventory_periods": 1.3864175679080812,
+     "runs": 10
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 9,
+     "median_inventory_periods": 1.6925185777257208,
+     "runs": 10
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 9,
+     "median_inventory_periods": 1.3845038932931621,
+     "runs": 10
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 9,
+     "median_inventory_periods": 1.7043724238436617,
+     "runs": 10
+    }
+   }
+  }
+ },
+ "methods": {
+  "base_stock": {
+   "avoidable_breaches": 4,
+   "breach_classes": {
+    "AVOIDABLE": 4,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 17,
+    "MODEL_FAILURE": 21,
+    "UNAVOIDABLE": 14
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 0,
+   "emergency_review_share": 0.11607142857142858,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.33274399654586206,
+   "mean_weighted_shortfall": 0.1399154849449352,
+   "median_inventory_periods": 1.3100101621781142,
+   "median_recovery_periods": 2.5,
+   "median_saving_vs_reference_pct": 0.0,
+   "median_service": 0.8595040441700079,
+   "median_weighted_shortfall": 0.09052985023773807,
+   "median_working_capital": 152.96554172488803,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 39,
+   "worst_saving_vs_reference_pct": 0.0
+  },
+  "gated": {
+   "avoidable_breaches": 2,
+   "breach_classes": {
+    "AVOIDABLE": 2,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 19,
+    "MODEL_FAILURE": 21,
+    "UNAVOIDABLE": 14
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 19,
+   "emergency_review_share": 0.17261904761904762,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.4926561177697497,
+   "mean_weighted_shortfall": 0.1263813865424314,
+   "median_inventory_periods": 1.7526476835906377,
+   "median_recovery_periods": 2.0,
+   "median_saving_vs_reference_pct": 0.5004484903326232,
+   "median_service": 0.9191910971893171,
+   "median_weighted_shortfall": 0.03771845623031256,
+   "median_working_capital": 203.56555645745664,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 37,
+   "worst_saving_vs_reference_pct": -12.801296950619662
+  },
+  "gated_pr24": {
+   "avoidable_breaches": 3,
+   "breach_classes": {
+    "AVOIDABLE": 3,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 18,
+    "MODEL_FAILURE": 21,
+    "UNAVOIDABLE": 14
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 2,
+   "emergency_review_share": 0.14434523809523808,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.5671674294756426,
+   "mean_weighted_shortfall": 0.13205975671126843,
+   "median_inventory_periods": 1.2611910561766078,
+   "median_recovery_periods": 2.0,
+   "median_saving_vs_reference_pct": 1.9541670662933233,
+   "median_service": 0.8721611561634786,
+   "median_weighted_shortfall": 0.07447696545418975,
+   "median_working_capital": 150.28396162140888,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 38,
+   "worst_saving_vs_reference_pct": -9.60479700495738
+  },
+  "gated_pr30": {
+   "avoidable_breaches": 2,
+   "breach_classes": {
+    "AVOIDABLE": 2,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 19,
+    "MODEL_FAILURE": 21,
+    "UNAVOIDABLE": 14
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 18,
+   "emergency_review_share": 0.17113095238095238,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.6842967847960651,
+   "mean_weighted_shortfall": 0.11956885566917316,
+   "median_inventory_periods": 1.761893656944051,
+   "median_recovery_periods": 2,
+   "median_saving_vs_reference_pct": 1.154295586547703,
+   "median_service": 0.9254844210359394,
+   "median_weighted_shortfall": 0.03337801592526707,
+   "median_working_capital": 199.30834107157068,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 37,
+   "worst_saving_vs_reference_pct": -12.801296950619662
+  }
+ },
+ "pairs": {
+  "gated_vs_gated_pr24": {
+   "cost_losses": 29,
+   "cost_wins": 21,
+   "service_losses": 20,
+   "service_wins": 22,
+   "ties": 6
+  },
+  "gated_vs_protected": {
+   "cost_losses": 0,
+   "cost_wins": 0,
+   "service_losses": 0,
+   "service_wins": 0,
+   "ties": 0
+  },
+  "protected_vs_stochastic": {
+   "cost_losses": 0,
+   "cost_wins": 0,
+   "service_losses": 0,
+   "service_wins": 0,
+   "ties": 0
+  }
+ },
+ "rows": 224
+}

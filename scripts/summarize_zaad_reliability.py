@@ -96,11 +96,17 @@ def summarize(rows: list[dict], reference: str = "base_stock") -> dict:
         for r in rows:
             if r["status"] != "COMPLETE" or dimension not in r:
                 continue
-            cell = table.setdefault(str(r[dimension]), {}).setdefault(r["method"], {"runs": 0, "breaches": 0, "avoidable": 0})
+            cell = table.setdefault(str(r[dimension]), {}).setdefault(r["method"], {"runs": 0, "breaches": 0, "avoidable": 0, "inventory": []})
             cell["runs"] += 1
             cell["breaches"] += int(bool(r.get("service_breach")))
+            if r.get("inventory_periods") is not None:
+                cell["inventory"].append(r["inventory_periods"])
             peers = [p for p in by_key[r["cell"], r["seed"]] if p["method"] != r["method"]]
             cell["avoidable"] += int(classify(r, peers) == "AVOIDABLE")
+        for level in table.values():
+            for cell in level.values():
+                cell["median_inventory_periods"] = median(cell["inventory"]) if cell["inventory"] else None
+                del cell["inventory"]
         report["by_dimension"][dimension] = table
     # Paired: new gated versus frozen gated and versus protected on the same cell and seed.
     pairs = {}

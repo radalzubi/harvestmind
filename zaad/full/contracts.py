@@ -383,6 +383,11 @@ class Request(Record):
     # downside is expensive enough at this weight, and not otherwise. Zero reproduces cost-first
     # ranking on fitted worlds only.
     stress_weight: float = Field(default=.2, ge=0, le=.5)
+    # State-dependent protection decay (reliability profile only). True: robust residual spread,
+    # calibration dead band, bounded young-regime level mixture, evidence-conditioned stress floor
+    # and quantile protection scaled by the SKU/location risk state. False reproduces the PR30
+    # reliability profile exactly, for paired comparison.
+    protection_decay: bool = True
     mode: Literal["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] = "LEAN"
     evidence_label: Literal["SYNTHETIC", "OPERATOR-SHADOW"]
 
