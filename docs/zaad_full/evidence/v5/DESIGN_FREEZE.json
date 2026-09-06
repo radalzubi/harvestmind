@@ -1,0 +1,11 @@
+{
+ "design_frozen_commit": "1afdb67e86d4f84762c2bd242dabc4a1dff2d479",
+ "source_hash": "fc851a49af34320de4e83efa64ba5fe9efc8148637592600ad59306fc86c4b0f",
+ "frozen_at": "2026-09-06T23:33:10Z",
+ "development_runs": [
+  "dev5_a.jsonl (5 methods, engine before overdue rules)",
+  "dev5_b.jsonl (gated+base_stock, overdue rules)",
+  "dev5_c.jsonl (gated+base_stock, + recent fill run, backlog lead)"
+ ],
+ "rule": "validation5 is the pre-holdout selection run; no engine change after this record unless validation5 sends the cycle back to development; holdout4 stays unrun unless the verdict is READY FOR UNTOUCHED HOLDOUT4"
+}
