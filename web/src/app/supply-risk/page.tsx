@@ -46,16 +46,16 @@ export default function SupplyRiskPage() {
         sub="Per-supplier fill-rate distributions: shrunk mean, downside, and how much each is borrowed from the population"
       />
 
-      {/* Calibration verdict — the honesty banner */}
+      {/* Calibration verdict, the honesty banner */}
       {cal.status === "ok" && cal.gate_passed === true && (
         <InfoBanner kind="info" title="Distributions are calibrated:">
-          The 10–90% interval covered {fmtPct(cal.coverage_10_90 ?? 0)} of {fmt(cal.n_held_out)} held-out
+          The 10 to 90% interval covered {fmtPct(cal.coverage_10_90 ?? 0)} of {fmt(cal.n_held_out)} held-out
           deliveries (target 80%), PIT-uniformity KS {cal.ks_statistic?.toFixed(3)} ≤ 0.15.
           The stated uncertainties match observed reality on this data.
         </InfoBanner>
       )}
       {cal.status === "ok" && cal.gate_passed === false && (
-        <InfoBanner kind="danger" title="Calibration FAILED — do not commit on these intervals:">
+        <InfoBanner kind="danger" title="Calibration FAILED: do not commit on these intervals:">
           Coverage {fmtPct(cal.coverage_10_90 ?? 0)} vs 80% target, KS {cal.ks_statistic?.toFixed(3)}.
           The model&apos;s stated uncertainties do not match reality on this data; use raw history until recalibrated.
         </InfoBanner>
@@ -84,12 +84,12 @@ export default function SupplyRiskPage() {
             />
             <KPI
               label="Population Fill"
-              value={data.prior.mean != null ? fmtPct(data.prior.mean as number) : "—"}
-              sub={`κ = ${(data.prior.kappa as number)?.toFixed(1) ?? "—"} pseudo-deliveries`}
+              value={data.prior.mean != null ? fmtPct(data.prior.mean as number) : "n/a"}
+              sub={`κ = ${(data.prior.kappa as number)?.toFixed(1) ?? "n/a"} pseudo-deliveries`}
             />
             <KPI
               label="Calibration"
-              value={cal.gate_passed == null ? "—" : cal.gate_passed ? "PASS" : "FAIL"}
+              value={cal.gate_passed == null ? "n/a" : cal.gate_passed ? "PASS" : "FAIL"}
               deltaDir={cal.gate_passed ? "up" : "down"}
               sub={cal.coverage_10_90 != null ? `${fmtPct(cal.coverage_10_90)} of 80% target` : "needs data"}
             />
@@ -98,7 +98,7 @@ export default function SupplyRiskPage() {
           <Card style={{ marginTop: 16 }}>
             <CardHead
               title="Supplier Fill-Rate Distributions"
-              sub={`Sorted by downside (p${quantilePct}) — the conservative number commitments should rely on`}
+              sub={`Sorted by downside (p${quantilePct}), the conservative number commitments should rely on`}
             />
             <CardBody tight>
               <table className="data-table">
@@ -120,7 +120,7 @@ export default function SupplyRiskPage() {
                       <td style={{ fontWeight: 600 }}>{s.supplier_name || s.supplier_id}</td>
                       <td className="r">{fmt(s.n_deliveries)}</td>
                       <td className="r" style={{ color: "var(--muted)" }}>
-                        {s.observed_mean != null ? fmtPct(s.observed_mean) : "—"}
+                        {s.observed_mean != null ? fmtPct(s.observed_mean) : "n/a"}
                       </td>
                       <td className="r">{fmtPct(s.posterior_mean)}</td>
                       <td className="r" style={{
@@ -146,7 +146,7 @@ export default function SupplyRiskPage() {
           <Card style={{ marginTop: 16 }}>
             <CardHead
               title="External Signals (Tier 2)"
-              sub="Weather and other covariates are admitted per-operator only on measured calibration gain — never on faith"
+              sub="Weather and other covariates are admitted per-operator only on measured calibration gain, never on faith"
             />
             <CardBody tight>
               <table className="data-table">

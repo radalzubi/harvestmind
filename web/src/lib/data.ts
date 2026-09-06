@@ -77,11 +77,11 @@ export const RECS: Recommendation[] = [
   { sku: "P-1041", product: "Organic Romaine", commit: 4200, hist: 4500, fcst: 4180, std: 380, spot: 0.06, short: "Low", waste: "Medium", status: "Auto-approved",
     why: "Forecast is 7% below trailing average, driven by softer Bay District Schools demand (term break). Holding at 4,200kg keeps fill rate >97% with minimal waste tail." },
   { sku: "P-1102", product: "Heirloom Tomato", commit: 1850, hist: 1620, fcst: 1910, std: 240, spot: 0.21, short: "High", waste: "Low", status: "Needs review",
-    why: "Field & Fork Cafés ramped 2 new locations; demand 18% above trailing 8wk. Verde Valley Farms reliability has dipped (87%) — recommend split commit with Sunset Pacific." },
+    why: "Field & Fork Cafés ramped 2 new locations; demand 18% above trailing 8wk. Verde Valley Farms reliability has dipped (87%), recommend split commit with Sunset Pacific." },
   { sku: "P-1156", product: "Lacinato Kale", commit: 980, hist: 1150, fcst: 920, std: 95, spot: 0.04, short: "Low", waste: "High", status: "Needs review",
     why: "Three weeks of soft sell-through at Foothill and Hillcrest. Reduce 15% to avoid weekend spoilage; pair with markdown plan for any overage." },
   { sku: "P-1203", product: "Hass Avocado", commit: 2600, hist: 2200, fcst: 2640, std: 310, spot: 0.34, short: "Critical", waste: "Low", status: "Needs review",
-    why: "Spot exposure 34% — well above 15% threshold. Mexican supply tightening; lock additional 600kg with Sunset Pacific by Tue to avoid expected $1.40/kg premium." },
+    why: "Spot exposure 34%, well above 15% threshold. Mexican supply tightening; lock additional 600kg with Sunset Pacific by Tue to avoid expected $1.40/kg premium." },
   { sku: "P-1217", product: "Rainbow Carrot", commit: 1320, hist: 1280, fcst: 1310, std: 120, spot: 0.08, short: "Low", waste: "Low", status: "Auto-approved",
     why: "Stable demand, well-supplied by Mountain Ridge Co-op. Carrying historical commit forward." },
   { sku: "P-1284", product: "Baby Spinach", commit: 2240, hist: 2100, fcst: 2270, std: 200, spot: 0.12, short: "Medium", waste: "Medium", status: "Auto-approved",
@@ -91,9 +91,9 @@ export const RECS: Recommendation[] = [
   { sku: "P-1318", product: "Cremini Mushroom", commit: 740, hist: 690, fcst: 760, std: 80, spot: 0.18, short: "Medium", waste: "Low", status: "Auto-approved",
     why: "Steady demand from Field & Fork. Hidden Creek reliability 94%, on contract through Q3." },
   { sku: "P-1399", product: "Green Bell Pepper", commit: 1100, hist: 980, fcst: 1140, std: 130, spot: 0.16, short: "Medium", waste: "Low", status: "Auto-approved",
-    why: "Independent grocers running summer salsa promo W21–W23. Slight uplift expected; Sunset Pacific has capacity." },
+    why: "Independent grocers running summer salsa promo W21 to W23. Slight uplift expected; Sunset Pacific has capacity." },
   { sku: "P-1420", product: "Strawberry, 1lb", commit: 880, hist: 940, fcst: 860, std: 140, spot: 0.27, short: "High", waste: "High", status: "Needs review",
-    why: "High-risk SKU — both shelf life and spot exposure. Coastal weather forecast suggests yield pressure; recommend daily-replenish cadence and tighter pre-orders." },
+    why: "High-risk SKU, both shelf life and spot exposure. Coastal weather forecast suggests yield pressure; recommend daily-replenish cadence and tighter pre-orders." },
   { sku: "P-1456", product: "Blueberry, pint", commit: 620, hist: 540, fcst: 640, std: 90, spot: 0.22, short: "Medium", waste: "Medium", status: "Auto-approved",
     why: "Peak season starting; commit increase aligned with import calendar. Riverbend Growers has confirmed allocation." },
   { sku: "P-1488", product: "Yellow Onion", commit: 3100, hist: 3050, fcst: 3110, std: 95, spot: 0.02, short: "Low", waste: "Low", status: "Auto-approved",
@@ -108,7 +108,7 @@ export const LOSSES: Loss[] = [
   { sku: "P-1301", product: "Zucchini Squash",  spot:  1840, waste: 4970, total:  6810, reason: "Over-commitment",    action: "Shift cadence Wed/Fri" },
   { sku: "P-1456", product: "Blueberry, pint",  spot:  3920, waste: 2410, total:  6330, reason: "Shelf life",         action: "Tighten on-hand to 1.5d" },
   { sku: "P-1284", product: "Baby Spinach",     spot:  3100, waste: 2980, total:  6080, reason: "Quality rejection",  action: "Add 2nd grower for redundancy" },
-  { sku: "P-1399", product: "Green Bell Pepper",spot:  2240, waste: 1660, total:  3900, reason: "Demand miss",        action: "No change — in tolerance" },
+  { sku: "P-1399", product: "Green Bell Pepper",spot:  2240, waste: 1660, total:  3900, reason: "Demand miss",        action: "No change, in tolerance" },
 ];
 
 export const SUP_REL: SupplierRow[] = [
@@ -151,18 +151,18 @@ export const DQ: DQRow[] = [
 ];
 
 export const REPORTS: ReportRow[] = [
-  { id: "R-2604", name: "Foothill Market — Q1 ROI memo",   type: "ROI memo",   date: "Apr 28, 2026", status: "Sent",     pages: 4, by: "AS" },
-  { id: "R-2603", name: "Cedar Hospital — Q1 ROI memo",    type: "ROI memo",   date: "Apr 26, 2026", status: "Sent",     pages: 5, by: "AS" },
-  { id: "R-2602", name: "Field & Fork — Q1 ROI memo",      type: "ROI memo",   date: "Apr 22, 2026", status: "Draft",    pages: 4, by: "JM" },
-  { id: "R-2601", name: "Hillcrest Co-op — pilot summary", type: "Summary",    date: "Apr 18, 2026", status: "Sent",     pages: 3, by: "AS" },
-  { id: "R-2598", name: "Loss attribution — March",        type: "CSV export", date: "Apr 02, 2026", status: "Archived", pages: "—", by: "JM" },
-  { id: "R-2596", name: "Foothill Market — Mar update",    type: "ROI memo",   date: "Mar 31, 2026", status: "Sent",     pages: 4, by: "AS" },
+  { id: "R-2604", name: "Foothill Market, Q1 ROI memo",   type: "ROI memo",   date: "Apr 28, 2026", status: "Sent",     pages: 4, by: "AS" },
+  { id: "R-2603", name: "Cedar Hospital, Q1 ROI memo",    type: "ROI memo",   date: "Apr 26, 2026", status: "Sent",     pages: 5, by: "AS" },
+  { id: "R-2602", name: "Field & Fork, Q1 ROI memo",      type: "ROI memo",   date: "Apr 22, 2026", status: "Draft",    pages: 4, by: "JM" },
+  { id: "R-2601", name: "Hillcrest Co-op, pilot summary", type: "Summary",    date: "Apr 18, 2026", status: "Sent",     pages: 3, by: "AS" },
+  { id: "R-2598", name: "Loss attribution, March",        type: "CSV export", date: "Apr 02, 2026", status: "Archived", pages: "n/a", by: "JM" },
+  { id: "R-2596", name: "Foothill Market, Mar update",    type: "ROI memo",   date: "Mar 31, 2026", status: "Sent",     pages: 4, by: "AS" },
 ];
 
 export const ALERTS: Alert[] = [
-  { sev: "critical", text: "Hass Avocado spot exposure 34% — above 15% threshold", when: "2h ago" },
+  { sev: "critical", text: "Hass Avocado spot exposure 34%, above 15% threshold", when: "2h ago" },
   { sev: "high",     text: "Verde Valley Farms fill reliability dropped to 87%",    when: "5h ago" },
-  { sev: "medium",   text: "Strawberry waste rate trending up W19–W21",             when: "1d ago" },
+  { sev: "medium",   text: "Strawberry waste rate trending up W19 to W21",             when: "1d ago" },
 ];
 
 export type CostTrendPoint = { week: number; label: string; baseline: number; optimised: number };
@@ -190,7 +190,7 @@ export type BacktestRow = {
 };
 
 export const BACKTEST: BacktestRow[] = (() => {
-  // Deterministic — no Math.random in module init to keep SSR + client identical.
+  // Deterministic, no Math.random in module init to keep SSR + client identical.
   const seeded = (i: number) => {
     const s = Math.sin(i * 12.9898) * 43758.5453;
     return s - Math.floor(s);
@@ -231,7 +231,7 @@ export const WASTE_REASONS = [
 
 export const fmt = {
   cur: (v: number | null | undefined, compact = false): string => {
-    if (v == null || isNaN(v)) return "—";
+    if (v == null || isNaN(v)) return "n/a";
     if (compact) {
       const a = Math.abs(v);
       if (a >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
@@ -240,11 +240,11 @@ export const fmt = {
     return `$${Math.round(v).toLocaleString()}`;
   },
   pct: (v: number | null | undefined, d = 1): string =>
-    v == null ? "—" : `${(v * 100).toFixed(d)}%`,
+    v == null ? "n/a" : `${(v * 100).toFixed(d)}%`,
   kg: (v: number | null | undefined): string =>
-    v == null ? "—" : `${Math.round(v).toLocaleString()} kg`,
+    v == null ? "n/a" : `${Math.round(v).toLocaleString()} kg`,
   num: (v: number | null | undefined): string =>
-    v == null ? "—" : Math.round(v).toLocaleString(),
+    v == null ? "n/a" : Math.round(v).toLocaleString(),
 };
 
 export const RISK_ORDER: RiskLevel[] = ["Critical", "High", "Medium", "Low"];

@@ -53,7 +53,7 @@ export default function ForecastsPage() {
         sub="Next-week demand per product with uncertainty, from models fit to your own order history"
       />
 
-      {/* Honest gate banner — never hide an unflattering verdict */}
+      {/* Honest gate banner, never hide an unflattering verdict */}
       {ev && ev.status === "ok" && ev.gate_passed === true && (
         <InfoBanner kind="info" title="Model beats seasonal-naive out-of-sample:">
           WAPE {fmtPct(ev.wape_model ?? 0)} vs naive {fmtPct(ev.wape_seasonal_naive ?? 0)}
@@ -62,7 +62,7 @@ export default function ForecastsPage() {
         </InfoBanner>
       )}
       {ev && ev.status === "ok" && ev.gate_passed === false && (
-        <InfoBanner kind="danger" title="Honest verdict — model does NOT beat seasonal-naive:">
+        <InfoBanner kind="danger" title="Honest verdict: model does NOT beat seasonal-naive:">
           On your data the simple seasonal-naive forecaster is currently the better predictor
           (model WAPE {fmtPct(ev.wape_model ?? 0)} vs naive {fmtPct(ev.wape_seasonal_naive ?? 0)}).
           Forecasts below are shown for transparency, but the naive baseline is the honest planning input.
@@ -87,18 +87,18 @@ export default function ForecastsPage() {
             <KPI label="Products Forecast" value={fmt(fc.products.length)} />
             <KPI
               label="OOS WAPE (model)"
-              value={ev?.wape_model != null ? fmtPct(ev.wape_model) : "—"}
+              value={ev?.wape_model != null ? fmtPct(ev.wape_model) : "n/a"}
               sub="lower is better"
             />
             <KPI
               label="vs Seasonal-Naive"
-              value={ev?.oos_mase_ratio != null ? `${ev.oos_mase_ratio.toFixed(2)}×` : "—"}
+              value={ev?.oos_mase_ratio != null ? `${ev.oos_mase_ratio.toFixed(2)}×` : "n/a"}
               deltaDir={ev?.gate_passed ? "up" : "down"}
               sub="< 1.00 = model wins"
             />
             <KPI
               label="Bias"
-              value={ev?.bias_pct_model != null ? `${ev.bias_pct_model.toFixed(1)}%` : "—"}
+              value={ev?.bias_pct_model != null ? `${ev.bias_pct_model.toFixed(1)}%` : "n/a"}
               sub="+ = over-forecasting"
             />
           </KPIRow>
@@ -106,7 +106,7 @@ export default function ForecastsPage() {
           <Card style={{ marginTop: 16 }}>
             <CardHead
               title="Next-Week Demand by Product"
-              sub={`As of ${fc.as_of} · q10–q90 from held-out residuals · weekly rate held flat across the horizon`}
+              sub={`As of ${fc.as_of} · q10 to q90 from held-out residuals · weekly rate held flat across the horizon`}
             />
             <CardBody tight>
               <table className="data-table">
@@ -140,7 +140,7 @@ export default function ForecastsPage() {
             <Card style={{ marginTop: 16 }}>
               <CardHead
                 title="Rolling-Origin Evaluation"
-                sub="Out-of-sample, lookahead-protected. Metrics: WAPE / naive-ratio / bias — MAPE is never used."
+                sub="Out-of-sample, lookahead-protected. Metrics: WAPE / naive-ratio / bias, MAPE is never used."
               />
               <CardBody tight>
                 <table className="data-table">

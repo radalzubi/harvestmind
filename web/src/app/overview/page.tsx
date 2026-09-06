@@ -61,7 +61,7 @@ export default function OverviewPage() {
       {!hasData && (
         <EmptyState
           title="No operator data loaded yet"
-          body="Upload your CSV files to generate a diagnostic. HarvestMind needs product, delivery, inventory, order, and waste data to calculate waste loss, shortage risk, and available-to-promise."
+          body="Upload your CSV files to generate a diagnostic. Zaad Supply needs product, delivery, inventory, order, and waste data to calculate waste loss, shortage risk, and available-to-promise."
           action={
             <Link href="/upload">
               <Tbtn variant="primary">Upload your data or load sample dataset →</Tbtn>
@@ -74,7 +74,7 @@ export default function OverviewPage() {
         <InfoBanner kind="danger" title="⚠ Addressable loss detected:">
           {fmtUSD(totalLoss)} in waste + shortage losses identified across {data.period_days} days.
           {data.savings.estimated_annual_savings_usd > 0 &&
-            ` Opportunity ceiling (assumed 15–30% benchmark): up to ${fmtUSD(data.savings.estimated_annual_savings_usd)}/yr.`}
+            ` Opportunity ceiling (assumed 15 to 30% benchmark): up to ${fmtUSD(data.savings.estimated_annual_savings_usd)}/yr.`}
         </InfoBanner>
       )}
 
@@ -142,7 +142,7 @@ export default function OverviewPage() {
 
           {/* Savings opportunity */}
           <Card>
-            <CardHead title="Opportunity Ceiling (Assumed)" sub="Annualized addressable loss × assumed 15–30% benchmark — not a measured result" />
+            <CardHead title="Opportunity Ceiling (Assumed)" sub="Annualized addressable loss × assumed 15 to 30% benchmark, not a measured result" />
             <CardBody>
               <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "4px 0" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -175,7 +175,7 @@ export default function OverviewPage() {
                     Opportunity ceiling
                     <br />
                     <span style={{ fontSize: 10 }}>
-                      (assumed {Math.round((data.savings.reduction_pct_low ?? 0.15) * 100)}–{Math.round((data.savings.reduction_pct_high ?? 0.30) * 100)}% reduction benchmark)
+                      (assumed {Math.round((data.savings.reduction_pct_low ?? 0.15) * 100)} to {Math.round((data.savings.reduction_pct_high ?? 0.30) * 100)}% reduction benchmark)
                     </span>
                   </span>
                   <span style={{ fontSize: 16, fontWeight: 700, color: "var(--accent)", textAlign: "right" }}>
@@ -183,7 +183,7 @@ export default function OverviewPage() {
                      data.savings.estimated_annual_savings_usd_high !== undefined ? (
                       <>
                         {fmtUSD(data.savings.estimated_annual_savings_usd_low)}
-                        <span style={{ fontWeight: 400, color: "var(--muted)" }}> – </span>
+                        <span style={{ fontWeight: 400, color: "var(--muted)" }}> to </span>
                         {fmtUSD(data.savings.estimated_annual_savings_usd_high)}
                       </>
                     ) : (
@@ -197,12 +197,12 @@ export default function OverviewPage() {
         </div>
       )}
 
-      {/* Measured backtest card — separate from the assumed ceiling, never summed */}
+      {/* Measured backtest card, separate from the assumed ceiling, never summed */}
       {hasData && roi && (
         <Card style={{ marginTop: 16 }}>
           <CardHead
             title="Measured Backtest Result"
-            sub="From a rolling-origin backtest on your own history — a different question than the assumed ceiling above; the two are never combined"
+            sub="From a rolling-origin backtest on your own history, a different question than the assumed ceiling above; the two are never combined"
           />
           <CardBody>
             {roi.measured_card.status === "measured" ? (
@@ -221,7 +221,7 @@ export default function OverviewPage() {
               </div>
             ) : (
               <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                Not yet measured — {roi.measured_card.note}
+                Not yet measured: {roi.measured_card.note}
                 {roi.measured_card.weeks_available != null &&
                   ` (${roi.measured_card.weeks_available}/${roi.measured_card.weeks_required} weeks of history available).`}
               </div>
@@ -249,7 +249,7 @@ export default function OverviewPage() {
                   <td className="r">{fmt(count)}</td>
                   <td>
                     <span style={{ fontSize: 11, color: count > 0 ? "var(--accent)" : "var(--muted)" }}>
-                      {count > 0 ? "✓ Loaded" : "— Empty"}
+                      {count > 0 ? "✓ Loaded" : "Empty"}
                     </span>
                   </td>
                 </tr>
