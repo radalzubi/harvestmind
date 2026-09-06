@@ -16,8 +16,19 @@ import uvicorn
 
 def main() -> int:
     port = int(os.environ.get("PORT", "8000"))
+    # The bind scope is declared by the launcher (HARVESTMIND_BIND_HOST), never assumed. Loopback
+    # binds loopback only; the wildcard is accepted only when the app runs in an authenticated
+    # deployment env (api.dependencies refuses a permissive wildcard at startup).
+    declared = os.environ.get("HARVESTMIND_BIND_HOST", "127.0.0.1").strip()
+    if declared in ("127.0.0.1", "localhost", "::1"):
+        binds = ((socket.AF_INET, "127.0.0.1"), (socket.AF_INET6, "::1"))
+    elif declared in ("0.0.0.0", "::"):  # noqa: S104  # nosec B104 - comparison with the declared scope, bind below
+        binds = ((socket.AF_INET, "0.0.0.0"), (socket.AF_INET6, "::"))  # noqa: S104  # nosec B104 - explicit deployment opt-in
+    else:
+        print(f"serve: HARVESTMIND_BIND_HOST={declared!r} is not a supported bind scope", file=sys.stderr)
+        return 1
     socks = []
-    for family, host in ((socket.AF_INET, "0.0.0.0"), (socket.AF_INET6, "::")):  # noqa: S104 - container bind, auth enforced
+    for family, host in binds:
         try:
             s = socket.socket(family, socket.SOCK_STREAM)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

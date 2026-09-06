@@ -29,11 +29,13 @@ def enabled() -> bool:
 
 def _request(method: str, path: str, body: dict | None = None, timeout: float = 30.0) -> dict:
     app = os.environ["FLY_APP_NAME"]
+    if not MACHINES_API.startswith("https://") or "/" in app or not path.startswith("/machines"):
+        raise RuntimeError("machines API calls must be https to a fixed host and a /machines path")
     req = urllib.request.Request(f"{MACHINES_API}/apps/{app}{path}", method=method,
                                  data=json.dumps(body).encode() if body is not None else None,
                                  headers={"Authorization": f"Bearer {os.environ['FLY_API_TOKEN']}",
                                           "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310 - fixed https host
+    with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310  # nosec B310 - https scheme and path enforced above
         raw = resp.read()
     return json.loads(raw) if raw else {}
 

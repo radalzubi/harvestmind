@@ -18,6 +18,7 @@ import sys
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -26,8 +27,19 @@ from typing import Any
 log = logging.getLogger("harvestmind.worker")
 
 
-def _call(method: str, path: str, body: dict | None = None, raw: bool = False, tries: int = 5):
+def _internal_base() -> str:
+    """The API address the launcher handed us: http(s) only, no file or custom schemes."""
     base = os.environ["ZAAD_INTERNAL_API"].rstrip("/")
+    parsed = urllib.parse.urlsplit(base)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc or parsed.query or parsed.fragment:
+        raise RuntimeError("ZAAD_INTERNAL_API must be an http(s) origin")
+    return base
+
+
+def _call(method: str, path: str, body: dict | None = None, raw: bool = False, tries: int = 5):
+    base = _internal_base()
+    if not path.startswith("/jobs/internal/"):
+        raise RuntimeError("worker may only call the internal job endpoints")
     tok = os.environ["HARVESTMIND_WORKER_TOKEN"]
     data = json.dumps(body, default=str).encode() if body is not None else None
     last: Exception | None = None
@@ -35,7 +47,7 @@ def _call(method: str, path: str, body: dict | None = None, raw: bool = False, t
         req = urllib.request.Request(base + path, method=method, data=data,
                                      headers={"X-Worker-Token": tok, "Content-Type": "application/json"})
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp:  # noqa: S310 - private network address from env
+            with urllib.request.urlopen(req, timeout=120) as resp:  # noqa: S310  # nosec B310 - scheme and path validated above
                 out = resp.read()
             return out if raw else (json.loads(out) if out else {})
         except (urllib.error.URLError, OSError) as exc:

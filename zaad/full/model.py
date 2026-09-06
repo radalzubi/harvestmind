@@ -17,6 +17,7 @@ from scipy.optimize import Bounds, LinearConstraint, milp
 from scipy.sparse import coo_matrix
 
 from zaad.full.contracts import Request
+from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
 
 
@@ -152,10 +153,15 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             arrivals[w][inbound.sku, inbound.destination, inbound.expires_in, inbound.due_in][q] += 1
             if inbound.due_in >= H:
                 costs[w][q] -= skus[inbound.sku].terminal_value
+    tail: list[dict[int, float]] = [defaultdict(float) for _ in worlds]
+
     def expense(index, amount, w, when):
         costs[w][index] += amount
         if 0 <= when < H:
             payments[w][when][index] += amount
+        elif when >= H:
+            # Committed after the horizon: not paid inside the plan, but it must be financeable at the end.
+            tail[w][index] += amount
     # Purchase variables and fixed costs, continuous unless actual pack/MOQ needs MILP.
     for source in req.sources:
         term = terms[source.terms]
@@ -213,6 +219,9 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     # Outstanding PO amendments: only explicit contractual options, no invented permission.
     for order in req.pipeline:
         source = sources[order.source]
+        if po_closed(order, source):
+            # Residue from an earlier solve, not an obligation: no variables, no exclusivity row.
+            continue
         constant += order.prepaid_per_remaining_unit * order.remaining
         quantities, switches = [], []
         for option in order.options:
@@ -443,6 +452,13 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     if world.arrival[source.id, placed] > t:
                         reserve[x[source.id, placed]] += source.unit_price * term.fx_rate_to_currency * term.letter_of_credit_fraction
             m.row(reserve, upper=-liquidity.minimum_cash)
+            if t == H - 1 and tail[w]:
+                # Terminal solvency: closing cash above the floor plus unused credit must cover every
+                # invoice this plan commits to after the horizon. No forecast receipts are counted.
+                terminal = defaultdict(float, {c: -1, b: 1})
+                for q, amount in tail[w].items():
+                    terminal[q] += amount
+                m.row(terminal, upper=liquidity.credit_limit - liquidity.minimum_cash)
     if service_floor:
         for service in req.services:
             if service.metric != "unit_fill":
@@ -539,9 +555,11 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
         loss = sum(world.weight * values[unmet[service.id, t, w]] for w, world in enumerate(worlds) for t in range(H))
         service_result[service.id] = 1 - loss / total if total else 1.
     economic = constant + sum(world.weight * sum(values[q] * v for q, v in costs[w].items()) for w, world in enumerate(worlds))
-    return Solution("OPTIMAL", {k: float(max(0, values[q])) for k, q in x.items() if values[q] > 1e-7},
-                    {k: float(max(0, values[q])) for k, q in tr.items() if values[q] > 1e-7},
-                    {k: float(max(0, values[q])) for k, q in po.items() if values[q] > 1e-7},
+    pack_of = {source.id: source_pack(source) for source in req.sources}
+    po_pack = {order.id: pack_of[order.source] for order in req.pipeline}
+    return Solution("OPTIMAL", {k: float(max(0, values[q])) for k, q in x.items() if not is_dust(values[q], pack_of[k[0]])},
+                    {k: float(max(0, values[q])) for k, q in tr.items() if not is_dust(values[q])},
+                    {k: float(max(0, values[q])) for k, q in po.items() if not is_dust(values[q], po_pack[k[0]])},
                     service_result, float(economic),
                     [{"period": t, "scenario": w, "cash": float(values[cash[t, w]]), "debt": float(values[debt[t, w]])} for w in range(len(worlds)) for t in range(H)],
                     elapsed, len(m.names), len(m.rows), gap, residual, [])

@@ -13,6 +13,7 @@ from zaad.full.contracts import Request
 from zaad.full.model import Solution, solve
 from zaad.full.planner import plan, targets
 from zaad.full.settlement import PhysicalViolation, settle
+from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, draw, forecast_all
 
 
@@ -121,7 +122,7 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
         data["stock"] = [{"id": f"stock-{n}", "known_at": now, "sku": row["sku"], "location": row["location"],
                           "quantity": row["quantity"], "reserved": 0., "damaged": 0., "quarantined": 0.,
                           "expires_in": max(0, row["expiry"] - 1), "age_periods": 0}
-                         for n, row in enumerate(outcome["end_stock"]) if row["quantity"] > 1e-7]
+                         for n, row in enumerate(outcome["end_stock"]) if not is_dust(row["quantity"])]
         # Preserve locked inventory separately; it never becomes salable through replay.
         data["stock"] += [{**lot.model_dump(), "id": f"locked-{n}", "known_at": now,
                            "quantity": lot.reserved + lot.damaged + lot.quarantined,
@@ -131,9 +132,12 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
         shipment_history: list = list(req.shipment_history)
         for po in req.pipeline:
             actual_due, actual_fill = private[po.id]
+            po_source = next(s for s in req.sources if s.id == po.source)
+            if po_closed(po, po_source):
+                continue
             for option in po.options:
                 q = solution.amendments.get((po.id, option.id), 0.)
-                if q <= 1e-7 or option.action == "cancel":
+                if is_dust(q, source_pack(po_source)) or option.action == "cancel":
                     continue
                 expected_due = option.due_in
                 due = actual_due
@@ -156,9 +160,9 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
                                      "max_quantity": q, "deadline": now, "allowed_stages": [po.stage], "contract_reference": "committed_after_review"}])
                 pipeline.append(row)
         for (source_id, period), q in solution.purchases.items():
-            if period != 0 or q <= 1e-7:
-                continue
             source = next(s for s in req.sources if s.id == source_id)
+            if period != 0 or is_dust(q, source_pack(source)):
+                continue
             expected = dates(req, source, 0)[1]
             identity = f"new_{t}_{source_id}"
             private[identity] = truth.arrival[source_id, t], truth.fills[source_id, t]

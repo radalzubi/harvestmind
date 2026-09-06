@@ -11,6 +11,7 @@ import math
 
 from zaad.full.contracts import Request
 from zaad.full.model import Solution, compatible
+from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
 
 
@@ -52,13 +53,17 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None)
         initial_units += inbound.accepted_quantity
     for po in req.pipeline:
         source = sources[po.source]
+        if po_closed(po, source):
+            # Dust remaining from an earlier solve is closed, never an obligation nor a receipt.
+            continue
+        pack = source_pack(source)
         total = 0.
         active = 0
         for option in po.options:
             q = plan.amendments.get((po.id, option.id), 0.)
             if q < -1e-6 or q > option.max_quantity + 1e-6:
                 raise PhysicalViolation("amendment quantity outside contract")
-            if q <= 1e-6:
+            if is_dust(q, pack):
                 continue
             total += q
             active += 1
@@ -106,7 +111,7 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None)
             q = plan.purchases.get((source.id, t), 0.)
             if q < -1e-6:
                 raise PhysicalViolation("negative purchase")
-            if q <= 1e-6:
+            if is_dust(q, source_pack(source)):
                 continue
             order_date = next_open(period_start, calendars[source.order_calendar])
             if not source.approved or source.compliance != "cleared" or order_date > source.quote_expires:
@@ -141,7 +146,7 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None)
                 raise PhysicalViolation("shared supplier/route capacity breach")
         transfer_usage: dict[str, float] = defaultdict(float)
         for (arc_id, expiry, period), q in plan.transfers.items():
-            if period != t or q <= 1e-6:
+            if period != t or is_dust(q):
                 continue
             arc = arcs[arc_id]
             when = period_start + timedelta(days=arc.lead_periods * req.period_days)
@@ -202,6 +207,12 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None)
         trace.append({"period": t, "inventory_value": sum(q * skus[s].asset_value for (s, _, _), q in stock.items()),
                       "cash": cash, "debt": debt, "payments": payments[t], "lc_reserve": reserve,
                       "pending_units": sum(p[4] for p in pending), "expired_units": expired_units})
+    # Financial tail: every payment this plan committed after the horizon must be financeable from
+    # closing cash above the floor plus unused credit. Forecast receipts are not counted.
+    terminal_liability = sum(v for due, v in payments.items() if due >= end)
+    terminal_headroom = (cash - req.liquidity.minimum_cash) + (req.liquidity.credit_limit - debt)
+    if terminal_liability > terminal_headroom + 1e-5:
+        raise PhysicalViolation(f"post-horizon obligations {terminal_liability:.2f} exceed terminal financing headroom {terminal_headroom:.2f}")
     closing_units = sum(stock.values()) + sum(p[4] for p in pending if p[5] == "transfer")
     # External quantities still in transit have not yet entered the conservation equation.
     conservation = initial_units + received_units - served_inputs - expired_units - transit_loss - closing_units
@@ -234,7 +245,8 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None)
             "order_metrics": order_metrics,
             "substituted": dict(substitute_total), "trace": trace, "service_by_period": service_by_period,
             "conservation_residual": conservation, "ledger_residual": total_cost - sum(ledger.values()),
-            "unpaid_contractual_payments": sum(v for t, v in payments.items() if t >= end),
+            "unpaid_contractual_payments": terminal_liability,
+            "terminal_liability_reserve": terminal_liability, "terminal_financing_headroom": terminal_headroom,
             "end_stock": [{"sku": s, "location": location_key, "expiry": e, "quantity": q} for (s, location_key, e), q in stock.items()],
             "future_payments": {t: v for t, v in payments.items() if t >= end},
             "pending": pending,

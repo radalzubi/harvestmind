@@ -96,10 +96,53 @@ def weighted_shortfall(req: Request, rows: list[dict]) -> float:
     return total
 
 
+def material_shortfall_gap(req: Request) -> float:
+    """The smallest weighted-shortfall reduction that counts as a real improvement: the
+    configured service tolerance applied across every priority-weighted service."""
+    priorities = {c.id: c.priority for c in req.customers}
+    return max(1e-6, req.service_tolerance * sum(priorities[s.customer] for s in req.services))
+
+
 def _recovery_not_worse(req: Request, before: list[dict], after: list[dict]) -> bool:
-    """Recovery may miss an impossible SLA, but must reduce aggregate weighted shortfall."""
+    """Recovery may miss an impossible SLA, but must reduce the aggregate weighted shortfall by a
+    material amount on every physically usable world set. Infinite (unusable) never qualifies."""
     before_gap, after_gap = weighted_shortfall(req, before), weighted_shortfall(req, after)
-    return np.isfinite(after_gap) and after_gap + 1e-6 < before_gap
+    return bool(np.isfinite(after_gap)) and after_gap + material_shortfall_gap(req) <= before_gap
+
+
+def _priority_consistent(req: Request, before: list[dict], after: list[dict]) -> bool:
+    """A recovery may lower a service only to raise a strictly higher-priority one. Any service
+    that falls by more than the tolerance without such a beneficiary is a hidden sacrifice."""
+    if not before or not after or len(before) != len(after):
+        return False
+    priorities = {c.id: c.priority for c in req.customers}
+    worsened, improved = set(), set()
+    for service in req.services:
+        a = _service_value(req, before, service)
+        b = _service_value(req, after, service)
+        if a is None or b is None:
+            continue
+        if b < a - req.service_tolerance:
+            worsened.add(service.id)
+        elif b > a + req.service_tolerance:
+            improved.add(service.id)
+    best_improved = max((priorities[s.customer] for s in req.services if s.id in improved), default=None)
+    for service in req.services:
+        if service.id in worsened and (best_improved is None or priorities[service.customer] >= best_improved):
+            return False
+    return True
+
+
+def _within_downside(req: Request, before: list[dict], after: list[dict]) -> bool:
+    """Per-world economic downside cap against the incumbent, on usable worlds only."""
+    if not before or not after or len(before) != len(after):
+        return False
+    for a, b in zip(before, after):
+        if not a["usable"] or not b["usable"]:
+            return False
+        if b["economic_cost"] - a["economic_cost"] > req.downside_cost_tolerance * max(abs(a["economic_cost"]), 1.):
+            return False
+    return True
 
 
 def summarize(rows):
@@ -153,14 +196,31 @@ def plan(req: Request) -> dict:
     selection_rows = {name: evaluate(req, candidate, selection) for name, candidate in candidates.items() if candidate.status == "OPTIMAL"}
     feasible = [name for name, rows in selection_rows.items() if service_ok(req, rows)]
     joint_rows = selection_rows.get("joint_recovery", [])
-    target_jointly_feasible = service_ok(req, joint_rows) if joint_rows else bool(feasible)
+    # The target vector is jointly feasible when ANY candidate meets every service on the selection
+    # worlds; the joint recovery solve is one more way to show it, not the only one.
+    target_jointly_feasible = bool(feasible) or (bool(joint_rows) and service_ok(req, joint_rows))
     recovery_mode = not target_jointly_feasible
+    recovery_ranking: list[dict] = []
 
     if feasible:
         chosen = min(feasible, key=lambda name: (mean(r["economic_cost"] for r in selection_rows[name]), list(candidates).index(name)))
-    elif recovery.status == "OPTIMAL" and incumbent.status == "OPTIMAL":
+    elif incumbent.status == "OPTIMAL":
+        # Impossible SLA: rank every usable candidate by priority-weighted shortfall (cost breaks ties)
+        # and take the best one only if it beats the incumbent by a material margin.
         incumbent_selection = selection_rows.get("incumbent", evaluate(req, incumbent, selection))
-        chosen = "joint_recovery" if _recovery_not_worse(req, incumbent_selection, joint_rows) else "incumbent"
+        for name, rows in selection_rows.items():
+            if name == "incumbent":
+                continue
+            gap = weighted_shortfall(req, rows)
+            recovery_ranking.append({"candidate": name, "weighted_service_shortfall": gap if np.isfinite(gap) else None,
+                                     "cost_mean": mean(r["economic_cost"] for r in rows if r["usable"]) if any(r["usable"] for r in rows) else None,
+                                     "materially_better_than_incumbent": _recovery_not_worse(req, incumbent_selection, rows)})
+        usable = [r for r in recovery_ranking if r["weighted_service_shortfall"] is not None and r["materially_better_than_incumbent"]]
+        if usable:
+            best = min(usable, key=lambda r: (r["weighted_service_shortfall"], r["cost_mean"], list(candidates).index(r["candidate"])))
+            chosen = best["candidate"]
+        else:
+            chosen = "incumbent"
     else:
         chosen = "incumbent"
 
@@ -170,20 +230,22 @@ def plan(req: Request) -> dict:
     reasons, stress_report = [], []
     benefit_lower = None
 
-    if recovery_mode and chosen == "joint_recovery":
+    if recovery_mode and chosen != "incumbent":
+        # Independent confirmation of a recovery plan: physically usable on every world, a material
+        # weighted-shortfall improvement, no hidden low-for-high service sacrifice, and inside the
+        # economic downside cap. Absolute SLA gating does not apply to an impossible target.
         accepted = _recovery_not_worse(req, incumbent_rows, candidate_rows)
-        if accepted:
-            for before, after in zip(incumbent_rows, candidate_rows):
-                if not before["usable"] or not after["usable"]:
-                    accepted = False
-                    break
-                scale = max(abs(before["economic_cost"]), 1.0)
-                if after["economic_cost"] - before["economic_cost"] > req.downside_cost_tolerance * scale:
-                    accepted = False
-                    reasons.append("Joint recovery improves service but exceeds the configured economic downside tolerance.")
-                    break
-        if not accepted and not reasons:
-            reasons.append("Joint recovery does not materially improve weighted service shortfall versus the incumbent.")
+        if not accepted:
+            reasons.append("Recovery candidate does not materially improve weighted service shortfall versus the incumbent under independent confirmation.")
+        elif not _priority_consistent(req, incumbent_rows, candidate_rows):
+            accepted = False
+            reasons.append("Recovery candidate lowers a service without raising a higher-priority one; priority-weighted recovery rejected.")
+        elif not _within_downside(req, incumbent_rows, candidate_rows):
+            accepted = False
+            reasons.append("Recovery candidate improves service but exceeds the configured economic downside tolerance.")
+    elif recovery_mode:
+        accepted = False
+        reasons.append("No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained.")
     else:
         accepted = chosen != "incumbent" and service_ok(req, candidate_rows) and bool(incumbent_rows) and all(r["usable"] for r in incumbent_rows)
         if accepted:
@@ -208,7 +270,14 @@ def plan(req: Request) -> dict:
                 for s in req.services:
                     if a["service"][s.id] is not None and b["service"][s.id] is not None and b["service"][s.id] < a["service"][s.id] - req.service_tolerance:
                         downside_ok = False
-        pass_stress = downside_ok and (_recovery_not_worse(req, before, after) if recovery_mode else service_ok(req, after))
+        if recovery_mode:
+            # Under stress a recovery plan must stay usable, within the cost cap, materially better on
+            # weighted shortfall, and priority-consistent; the per-service no-worse rule would forbid
+            # the very reallocation a priority-weighted recovery exists to make.
+            pass_stress = (physically_ok and _within_downside(req, before, after)
+                           and _recovery_not_worse(req, before, after) and _priority_consistent(req, before, after))
+        else:
+            pass_stress = downside_ok and service_ok(req, after)
         accepted &= pass_stress
         stress_report.append({"stress": stress.model_dump(), "pass": pass_stress,
                               "incumbent": {**summarize(before), "weighted_service_shortfall": weighted_shortfall(req, before)},
@@ -288,6 +357,8 @@ def plan(req: Request) -> dict:
             "approval_required": True, "executable_purchase_order": False,
             "forecasts": fits, "eta": eta, "service_frontier": frontier,
             "joint_service_feasibility": {"target_vector_feasible": target_jointly_feasible,
+                "recovery_mode": recovery_mode, "material_gap": material_shortfall_gap(req),
+                "recovery_ranking": recovery_ranking,
                 "incumbent_weighted_shortfall": weighted_shortfall(req, incumbent_rows),
                 "recovery_weighted_shortfall": weighted_shortfall(req, recovery_rows),
                 "selected_weighted_shortfall": weighted_shortfall(req, evaluate(req, final, confirmation)) if final else None,

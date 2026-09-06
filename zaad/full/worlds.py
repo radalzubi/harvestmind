@@ -147,7 +147,7 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
             if stress and due < stress.recovery_period:
                 due += math.ceil(stress.extra_lead_days / req.period_days)
             po_due[po.id] = due
-            po_fill[po.id] = po.expected_accepted_remaining / po.remaining
+            po_fill[po.id] = po.expected_accepted_remaining / po.remaining if po.remaining > 0 else 0.
             if stress:
                 po_fill[po.id] *= stress.fill_multiplier
             if req.force_unit_fills:
