@@ -216,5 +216,5 @@ def test_dead_band_and_cap():
     rng = np.random.default_rng(2)
     y = _history(rng)
     unc = demand_uncertainty(estimate(y, 11., .05), y)
-    assert unc["calibration_ratio_raw"] <= DEAD_BAND + .5 and unc["calibration_ratio"] in (1., unc["calibration_ratio_raw"])
-    assert unc["calibration_ratio"] <= 2.
+    assert unc["calibration_ratio_raw"] <= DEAD_BAND + .5
+    assert 1. <= unc["calibration_ratio"] <= 2.      # robust residual scale against the fitted spread, capped

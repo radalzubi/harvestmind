@@ -39,7 +39,9 @@ def variant_patches(name: str):
     if name == "frozen_pr24":
         update = {"engine_profile": "pr24"}
     elif name == "pr30":
-        update = {"protection_decay": False}
+        update = {"protection_decay": False, "carry_incumbent": False}
+    elif name == "no_carry":
+        update = {"carry_incumbent": False}
     elif name == "reliability_full":
         pass
     elif name == "no_cvar":
@@ -47,14 +49,14 @@ def variant_patches(name: str):
     elif name == "no_stress_weight":
         update = {"stress_weight": 0.}
     elif name == "no_calibration_widening":
-        def patched(fit, y):
-            out = ORIGINAL_DEMAND_UNCERTAINTY(fit, y)
+        def patched(fit, y, decay=True):
+            out = ORIGINAL_DEMAND_UNCERTAINTY(fit, y, decay)
             out["calibration_ratio"] = 1.
             return out
         return update, lambda: setattr(worlds, "demand_uncertainty", patched), lambda: setattr(worlds, "demand_uncertainty", ORIGINAL_DEMAND_UNCERTAINTY)
     elif name == "no_level_uncertainty":
-        def patched_level(fit, y):
-            out = ORIGINAL_DEMAND_UNCERTAINTY(fit, y)
+        def patched_level(fit, y, decay=True):
+            out = ORIGINAL_DEMAND_UNCERTAINTY(fit, y, decay)
             out["level_se"] = 0.
             out["regime_uncertainty"] = 0.
             return out
@@ -65,8 +67,8 @@ def variant_patches(name: str):
         return update, lambda: setattr(planner, "targets", frozen_targets), lambda: setattr(planner, "targets", ORIGINAL_TARGETS)
     elif name == "lean_all":
         update = {"service_risk_level": 0., "stress_weight": 0.}
-        def patched_all(fit, y):
-            out = ORIGINAL_DEMAND_UNCERTAINTY(fit, y)
+        def patched_all(fit, y, decay=True):
+            out = ORIGINAL_DEMAND_UNCERTAINTY(fit, y, decay)
             out["calibration_ratio"] = 1.
             out["level_se"] = 0.
             out["regime_uncertainty"] = 0.
@@ -77,7 +79,7 @@ def variant_patches(name: str):
     return update, keep, keep
 
 
-VARIANTS = ["frozen_pr24", "pr30", "reliability_full", "no_cvar", "no_stress_weight", "no_calibration_widening",
+VARIANTS = ["frozen_pr24", "pr30", "reliability_full", "no_carry", "no_cvar", "no_stress_weight", "no_calibration_widening",
             "no_level_uncertainty", "frozen_proxy_buffer", "lean_all"]
 
 
@@ -110,8 +112,9 @@ def main():
     parser.add_argument("--cells", nargs="+", type=int, default=[1])
     parser.add_argument("--variants", nargs="+", default=VARIANTS)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--matrix", default="reliability")
     args = parser.parse_args()
-    grid = {c["cell"]: c for c in cells("reliability")}
+    grid = {c["cell"]: c for c in cells(args.matrix)}
     report = []
     for index in args.cells:
         cell = grid[index]

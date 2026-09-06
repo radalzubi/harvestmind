@@ -86,6 +86,7 @@ class Solution:
     gap: float | None
     residual: float | None
     warnings: list[str]
+    protection_state: list[dict] | None = None
 
 
 def compatible(req, service):
@@ -230,6 +231,16 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     costs[w][q] -= fill * skus[source.sku].terminal_value
     for group in quote_groups.values():
         m.row({v: 1 for v in group}, upper=1)
+    if req.engine_profile == "reliability" and req.order_smoothing > 0 and fixed is None:
+        # Stability: |x_t - x_{t-1}| per source charged at a small fraction of landed cost.
+        for source in req.sources:
+            term = terms[source.terms]
+            landed = source.unit_price * term.fx_rate_to_currency + source.freight_per_unit + source.handling_per_unit
+            charge = req.order_smoothing * landed
+            for t in range(1, H):
+                up = m.var(("smooth_up", source.id, t), cost=charge)
+                down = m.var(("smooth_down", source.id, t), cost=charge)
+                m.row({x[source.id, t]: 1, x[source.id, t - 1]: -1, up: -1, down: 1}, 0, 0)
     # Outstanding PO amendments: only explicit contractual options, no invented permission.
     for order in req.pipeline:
         source = sources[order.source]

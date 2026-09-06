@@ -40,10 +40,21 @@ def targets(req: Request, buffer: float = 1.645) -> dict:
     for po in req.pipeline:
         source = sources[po.source]
         pending.append((source.sku, source.destination, next(o.due_in for o in po.options if o.action == "keep"), po.expected_accepted_remaining))
+    # Echelon demand: a location with no direct source but an approved inbound transfer arc is
+    # supplied through its origin, so the proxy orders that demand upstream (and the fixed
+    # solve moves it down). Otherwise a central DC with no customers of its own buys nothing
+    # and every branch starves, which is what the frozen proxy did on central-plus-branch cells.
+    direct = {(s.sku, s.destination) for s in req.sources if s.approved and s.compliance == "cleared"}
+    upstream: dict[tuple[str, str], list[str]] = {}
+    for arc in req.transfers:
+        if arc.approved and (arc.sku, arc.destination) not in direct and (arc.sku, arc.origin) in direct:
+            upstream.setdefault((arc.sku, arc.destination), []).append(arc.origin)
     for t in range(req.horizon):
         for sku, location in stock:
             stock[sku, location] += sum(q for k, location_key, due, q in pending if k == sku and location_key == location and due == t)
             services = [s for s in req.services if s.sku == sku and s.location == location]
+            fed = [s for (k, dest), origins in upstream.items() for s in req.services if k == sku and s.sku == sku and s.location == dest and location in origins]
+            services = services + [s for s in fed if s not in services]
             mu = sum(fits[s.id]["mean"] for s in services)
             row = profile.get((sku, location))
             if row is not None:
@@ -295,6 +306,7 @@ def plan(req: Request) -> dict:
     service_risk = "cvar" if reliability else "expected"
     fits = forecast_all(req)
     supply = supply_profiles(req)
+    sources_by_id = {s.id: s for s in req.sources}
     protection = protection_profile(req, fits, supply)
     selection = draw(req, req.seed, req.scenarios)
     deterministic = draw(req, req.seed, 1, deterministic=True)
@@ -508,7 +520,8 @@ def plan(req: Request) -> dict:
             blocking["downside"] = True
         reasons.append("Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.")
 
-    candidate_gates = {chosen: {"accepted": bool(accepted), "stress": stress_report}}
+    candidate_gates = {chosen: {"accepted": bool(accepted), "stress": stress_report,
+                                "reason": ("accepted" if accepted else "; ".join(r for r in reasons) or "rejected")}}
     chosen_meets = bool(candidate_rows) and service_ok(req, candidate_rows)
     if not recovery_mode and not accepted:
         for alternative in sorted((n for n in feasible if n not in {chosen, "incumbent"}), key=lambda n: (hedged_cost(n), list(candidates).index(n))):
@@ -537,7 +550,11 @@ def plan(req: Request) -> dict:
                 checks.append({"stress": stress.model_dump(), "pass": bool(valid), "gate_mode": gate_mode,
                                "incumbent": {**summarize(before), "service": {s.id: _service_value(req, before, s) for s in req.services}},
                                "candidate": {**summarize(after), "service": {s.id: _service_value(req, after, s) for s in req.services}}})
-            candidate_gates[alternative] = {"accepted": bool(passes), "stress": checks}
+            candidate_gates[alternative] = {"accepted": bool(passes), "stress": checks,
+                                            "reason": ("accepted" if passes else
+                                                       "does not meet every service target under independent confirmation" if not service_ok(req, rows) else
+                                                       "no positive hedged benefit against the incumbent" if lower is not None and lower <= 1e-6 else
+                                                       "stress gate: " + ", ".join(c.get("gate_mode", "rejected") for c in checks if not c["pass"]))}
             if passes:
                 chosen, accepted, candidate_rows, stress_report, benefit_lower = alternative, True, rows, checks, lower
                 chosen_meets = True
@@ -639,6 +656,52 @@ def plan(req: Request) -> dict:
         alternatives = alternative_value(req, candidates[reference_name], selection, selection_rows.get(reference_name, []), service_risk, risk_levels)
         alternatives["reference_candidate"] = reference_name
 
+    # Marginal value of the chosen plan's protection against the leanest feasible candidate on
+    # the selection worlds: extra inventory carried versus shortage exposure avoided, fitted and
+    # under the declared stress at its evidence weight.
+    def mean_inventory(rows):
+        values = [x["inventory_value"] for r in rows if r["usable"] for x in r["trace"]]
+        return mean(values) if values else None
+    protection_value = None
+    if feasible:
+        leanest = min(feasible, key=lambda n: (mean_inventory(selection_rows[n]) or float("inf"), list(candidates).index(n)))
+        chosen_inv, lean_inv = mean_inventory(selection_rows.get(chosen, [])), mean_inventory(selection_rows[leanest])
+        chosen_short, _ = _shortage_exposure(selection_rows.get(chosen, []))
+        lean_short, _ = _shortage_exposure(selection_rows[leanest])
+        stress_chosen, _ = _shortage_exposure(stress_rows.get(chosen, [])) if chosen in stress_rows else (None, None)
+        stress_lean, _ = _shortage_exposure(stress_rows.get(leanest, [])) if leanest in stress_rows else (None, None)
+        if chosen_inv is not None and lean_inv is not None and chosen_short is not None and lean_short is not None:
+            extra_value = chosen_inv - lean_inv
+            holding_rate = mean(location.holding_per_value_period for location in req.locations)
+            carrying = max(0., extra_value) * holding_rate * req.horizon
+            avoided = (lean_short - chosen_short) * (1 - stress_weight) + ((stress_lean - stress_chosen) * stress_weight if stress_lean is not None and stress_chosen is not None else 0.)
+            protection_value = {"leanest_feasible_candidate": leanest, "chosen": chosen,
+                                "extra_inventory_value": extra_value, "carrying_cost_over_horizon": carrying,
+                                "hedged_shortage_avoided": avoided, "justified": bool(avoided >= carrying - 1e-9),
+                                "scope": "selection worlds; stress at its evidence weight; not a guarantee"}
+    explain = []
+    for row in protection:
+        pair_services = [s for s in req.services if s.sku == row["sku"] and s.location == row["location"]]
+        rel = {r["service"]: r for r in per_service}
+        pipeline_units = sum(po.expected_accepted_remaining for po in req.pipeline if sources_by_id[po.source].sku == row["sku"] and sources_by_id[po.source].destination == row["location"]) if req.pipeline else 0.
+        expected = [rel[s.id]["achieved_service"] for s in pair_services if rel[s.id]["achieved_service"] is not None]
+        stress_values = [rel[s.id]["worst_case_stress_service"] for s in pair_services if rel[s.id]["worst_case_stress_service"] is not None]
+        explain.append({"sku": row["sku"], "location": row["location"],
+                        "state": "ALLOCATE" if recovery_mode else row["state"]["regime"],
+                        "lean_baseline_units": row["state"]["lean_baseline_units"], "current_inventory_units": row["on_hand_units"],
+                        "current_pipeline_units": pipeline_units, "recommended_protection_units": row["protection_units"],
+                        "incremental_protection_units": row["state"]["incremental_protection_units"],
+                        "active_risk_drivers": row["state"]["active_drivers"], "driver_contribution_units": row["drivers_units"],
+                        "service_targets": {s.id: s.target for s in pair_services},
+                        "expected_service": min(expected) if expected else None, "stress_service": min(stress_values) if stress_values else None,
+                        "marginal_value_of_protection": protection_value,
+                        "alternatives_available": row["effective_independent_sources"] > 1.5,
+                        "transfer_available": row["state"]["placement"]["transfer_lead_periods"] is not None,
+                        "substitution_available": row["substitute_cover_units"] > 0,
+                        "expected_periods_to_lean": row["state"]["periods_to_lean"], "flags": row["state"]["flags"],
+                        "placement": row["state"]["placement"],
+                        "intervention": ("ZAAD intervened: " + chosen if accepted else "incumbent retained: " + ("; ".join(reasons) if reasons else "no candidate improved on it")),
+                        "explanation": row["explanation"]})
     mode = "ALLOCATE" if recovery_mode else req.mode
     if reliability and not recovery_mode:
         mode = "PROTECT" if any(row["stance"] == "protect" for row in protection) else ("LEAN" if req.mode in ("LEAN", "PROTECT") else req.mode)
@@ -659,7 +722,7 @@ def plan(req: Request) -> dict:
             "actions": action_rows(final), "incumbent_actions": action_rows(incumbent),
             "approval_required": True, "executable_purchase_order": False,
             "forecasts": fits, "eta": eta, "service_frontier": frontier,
-            "protection": protection, "false_protection": false_protection,
+            "protection": protection, "false_protection": false_protection, "explain": explain, "protection_value": protection_value,
             "supply_profiles": {k: profile_dict(v) for k, v in supply.items()},
             "alternatives": alternatives, "service_reliability": service_reliability,
             "selection_costs": {name: {"fitted": mean(r["economic_cost"] for r in rows) if rows and all(r["usable"] for r in rows) else None,

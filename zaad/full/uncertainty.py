@@ -91,6 +91,32 @@ def periods_to_lean_demand(uncertainty: dict) -> int:
     return int(remaining)
 
 
+INTERMITTENT_ZERO_SHARE = .3
+
+
+def intermittent_profile(y: np.ndarray, fit: dict) -> dict | None:
+    """Occurrence probability and conditional positive size for sparse demand, with a robust
+    size spread so one historical spike does not define the tail. None for regular demand."""
+    if float(fit.get("zero_probability", 0.)) < INTERMITTENT_ZERO_SHARE:
+        return None
+    origin = int(fit.get("segment_origin", 0))
+    segment = y[origin:] if len(y[origin:]) >= 8 else y
+    positives = segment[segment > 0]
+    if len(positives) < 3:
+        return None
+    occurrence = float(np.mean(segment > 0))
+    med = float(np.median(positives))
+    mad = float(np.median(np.abs(positives - med))) * 1.4826
+    robust_sd = max(mad, .1 * med)
+    cap = med + OUTLIER_Z * robust_sd
+    spikes = int(np.sum(positives > cap))
+    size_mean = float(np.mean(np.minimum(positives, cap)))
+    per_period_var = occurrence * (robust_sd ** 2 + size_mean ** 2) - (occurrence * size_mean) ** 2
+    return {"occurrence": occurrence, "size_median": med, "size_mean_capped": size_mean, "size_robust_sd": robust_sd,
+            "size_cap": float(cap), "historical_spikes": spikes, "per_period_sd": float(math.sqrt(max(0., per_period_var))),
+            "scope": "Bernoulli occurrence x capped positive size; zero runs reproduce the observed occurrence rate"}
+
+
 def demand_uncertainty(fit: dict, y: np.ndarray, decay: bool = True) -> dict:
     """Effective spread, level standard error and regime uncertainty for one service.
 
@@ -116,14 +142,24 @@ def demand_uncertainty(fit: dict, y: np.ndarray, decay: bool = True) -> dict:
         pre_weight = .5 * (1. - n / YOUNG_REGIME) if downward else 0.
     raw_ratio = float(calibration["calibration_ratio"])
     if decay:
-        ratio = 1. if raw_ratio <= DEAD_BAND else min(RATIO_CAP, raw_ratio)
+        # Calibrate the spread to realized one-step error: the residual RMS against the fitted
+        # spread, inside a small dead band and the cap. Under-coverage widens, never narrows.
+        # Robust residual scale (one spike does not widen it) against the fitted spread.
+        rms_ratio = calibration["residual_sd"] / max(float(fit["sd"]), 1e-9) if fit["sd"] > 0 else 1.
+        ratio = 1. if rms_ratio <= 1.1 else min(RATIO_CAP, rms_ratio)
         level_total = level_se if downward or regime == 0. else math.sqrt(level_se ** 2 + regime ** 2)
     else:
         ratio = raw_ratio
         level_total = math.sqrt(level_se ** 2 + regime ** 2)
         pre_weight = 0.
     sd_effective = max(float(fit["sd"]), calibration["residual_sd"])
-    return {"sd_fitted": float(fit["sd"]), "sd_effective": float(sd_effective),
+    intermittent = intermittent_profile(y, fit) if decay else None
+    if intermittent is not None:
+        # Sparse demand: the spread is the occurrence/size decomposition with a capped size tail,
+        # not the raw standard deviation of a series that is mostly zeros with one spike in it.
+        sd_effective = intermittent["per_period_sd"]
+        ratio = 1.
+    return {"sd_fitted": float(fit["sd"]), "sd_effective": float(sd_effective), "intermittent": intermittent,
             "residual_sd": calibration["residual_sd"], "residual_rms": calibration["residual_rms"],
             "calibration_ratio": float(ratio), "calibration_ratio_raw": raw_ratio,
             "bias": calibration["bias"], "level_se": float(level_total), "regime_uncertainty": float(regime),
@@ -296,6 +332,17 @@ def stress_credibility(req: Request, supply: dict[str, SupplyProfile]) -> dict:
     # observed record, the evidence alone decides and a clean record means no hedge.
     declared_only = any(supply[s.id].scope == "declared" for s in req.sources if s.approved and s.compliance == "cleared")
     floor = FLOOR_CREDIBILITY if (declared_only or not req.protection_decay) else 0.
+    if req.protection_decay and declared_only:
+        # Selective robustness: with no observed record, a long replenishment and no independent
+        # alternative earn the declared stress twice the floor; a short, diversified lane earns none.
+        from zaad.full.worlds import dates
+        eligible = [s for s in req.sources if s.approved and s.compliance == "cleared"]
+        longest = max((dates(req, s, 0)[1] for s in eligible), default=0)
+        suppliers = {s.supplier for s in eligible}
+        if longest >= 3 and len(suppliers) < 2:
+            floor = min(1., 2 * FLOOR_CREDIBILITY)
+        elif longest <= 1 and len(suppliers) >= 2:
+            floor = 0.
     credibility = min(1., max(floor, worst))
     return {"credibility": credibility, "effective_stress_weight": req.stress_weight * credibility, "floor": floor,
             "drivers": drivers, "scope": "max over approved sources of the supply risk state (lateness, fill shortfall, fill spread, signals); floored only while a source has no observed record"}

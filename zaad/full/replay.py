@@ -27,16 +27,24 @@ def choose(req: Request, method: str) -> Solution:
     if method in FROZEN_METHODS and req.engine_profile != "pr24":
         req = req.model_copy(update={"engine_profile": "pr24"})
     if method in PR30_METHODS and req.protection_decay:
-        req = req.model_copy(update={"protection_decay": False})
+        req = req.model_copy(update={"protection_decay": False, "carry_incumbent": False})
+    if method == "gated_pr24" and req.carry_incumbent:
+        req = req.model_copy(update={"carry_incumbent": False})
     if method in {"gated", "gated_pr24", "gated_pr30"}:
         report = plan(req)
         rows = report["actions"]
-        return Solution("OPTIMAL" if report["status"] != "ABSTAIN" else "ABSTAIN",
-                        {(r["source"], r["period"]): r["quantity"] for r in rows if r["action"] == "purchase"},
-                        {(r["transfer"], r["expiry_cohort"], r["period"]): r["quantity"] for r in rows if r["action"] == "transfer"},
-                        {(r["po"], r["option"]): r["quantity"] for r in rows if r["action"] == "po_option"},
-                        {}, None, report["cash"], 0., 0, 0, None, None,
-                        [report["status"], report["selected_policy"], f"mode={report['mode']}", *report["reasons"]])
+        solution = Solution("OPTIMAL" if report["status"] != "ABSTAIN" else "ABSTAIN",
+                            {(r["source"], r["period"]): r["quantity"] for r in rows if r["action"] == "purchase"},
+                            {(r["transfer"], r["expiry_cohort"], r["period"]): r["quantity"] for r in rows if r["action"] == "transfer"},
+                            {(r["po"], r["option"]): r["quantity"] for r in rows if r["action"] == "po_option"},
+                            {}, None, report["cash"], 0., 0, 0, None, None,
+                            [report["status"], report["selected_policy"], f"mode={report['mode']}", *report["reasons"]])
+        # Protection state per SKU/location, kept for recovery measurement (state, activity, units).
+        solution.protection_state = [{"sku": p["sku"], "location": p["location"], "regime": p["state"].get("regime"), "activity": p["state"]["activity"],
+                                      "protection_units": p["protection_units"], "lean_baseline_units": p["state"]["lean_baseline_units"],
+                                      "on_hand_units": p["on_hand_units"], "periods_to_lean": p["state"]["periods_to_lean"], "flags": p["state"].get("flags", [])}
+                                     for p in report["protection"]]
+        return solution
     deterministic = method in {"base_stock", "order_up_to", "deterministic", "frozen_forecast"}
     worlds = draw(req, req.seed, 1 if deterministic else req.scenarios, deterministic=deterministic,
                   adaptive=method != "frozen_forecast")
@@ -120,7 +128,8 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
                 total_components[component] = total_components.get(component, 0.) + amount
         reviews_log.append({"review": t, "as_of": req.as_of.isoformat(), "forecast": forecast_all(req),
                             "purchases": [{"source": s, "quantity": q} for (s, k), q in solution.purchases.items() if k == 0],
-                            "warnings": solution.warnings, "settlement": outcome})
+                            "warnings": solution.warnings, "settlement": outcome,
+                            "protection": getattr(solution, "protection_state", None)})
         if t == reviews - 1:
             break
         now = req.as_of + timedelta(days=req.period_days)
@@ -208,7 +217,13 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
         data["liquidity"] = liquidity
         data["events"] = [{**e.model_dump(), "start": max(0, e.start - 1), "end": e.end - 1} for e in req.events if e.end >= 1]
         data["order_lines"] = [{**line.model_dump(), "due_in": line.due_in - 1} for line in req.order_lines if line.due_in >= 1]
-        data["incumbent_orders"] = []
+        # The operator executes the accepted plan: its remaining purchase schedule, shifted one
+        # period, is the declared incumbent for the next review. A retained proxy carries nothing.
+        if req.carry_incumbent and method in {"gated", "gated_pr30", "gated_pr24"} and solution.warnings and solution.warnings[0] == "PENDING_REVIEW":
+            data["incumbent_orders"] = [{"known_at": now, "source": source_id, "period": period - 1, "quantity": q}
+                                        for (source_id, period), q in solution.purchases.items() if period >= 1 and period - 1 < H - 1 and q > 0]
+        else:
+            data["incumbent_orders"] = []
         req = Request.model_validate(data)
     total_components["opening_assets"] = first_assets or 0.
     total_components["closing_assets"] = last_assets

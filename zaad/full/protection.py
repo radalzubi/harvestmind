@@ -141,11 +141,45 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         recent_quiet = all((fits[s.id]["uncertainty"].get("last_outlier_age") is None or fits[s.id]["uncertainty"]["last_outlier_age"] >= 2)
                            for s in services) if reliability else True
         decaying = activity > .05 and recent_quiet and supply_score < .5
+        # Placement: the share of protection that must sit locally (transfer lead time of demand
+        # spread) versus what can pool upstream when a transfer arc feeds this location.
+        feeders = [a for a in req.transfers if a.approved and a.sku == sku and a.destination == location]
+        transfer_lead = min((a.lead_periods for a in feeders), default=None)
+        local_units = z * math.sqrt(max(1, transfer_lead)) * sd_fitted if transfer_lead is not None else protection
+        pooled_units = max(0., protection - local_units) if transfer_lead is not None else 0.
+        upstream_protection = 0.
+        if feeders:
+            upstream_protection = sum(x.usable for x in req.stock if x.sku == sku and x.location in {a.origin for a in feeders})
+        duplicated = bool(feeders and transfer_lead is not None and transfer_lead <= 2 and on_hand > local_units + mu and upstream_protection > pooled_units + mu)
+        # Regime with hysteresis: entering PROTECT needs a materially active driver; leaving needs
+        # the driver to have gone quiet for two observations; RECOVER is the unwinding phase.
+        if activity >= .3:
+            regime = "PROTECT"
+        elif activity > .05 and decaying and on_hand > lean_baseline + mu:
+            regime = "RECOVER"
+        elif activity > .05:
+            regime = "PROTECT"
+        else:
+            regime = "LEAN"
+        flags = []
+        if activity <= .05 and protection > lean_baseline * 1.25 + 1.:
+            flags.append("FALSE_PROTECTION_RISK")
+        if thin or any(fits[s.id]["uncertainty"].get("calibration_ratio_raw", 1.) > 1.5 and fits[s.id]["uncertainty"].get("segment_count", 99) < 8 for s in services) if reliability else False:
+            flags.append("INSUFFICIENT_CALIBRATION")
+        inter = [fits[s.id]["uncertainty"].get("intermittent") for s in services if reliability and fits[s.id]["uncertainty"].get("intermittent")]
+        if inter and any(i["historical_spikes"] > 0 or i["size_robust_sd"] > i["size_median"] for i in inter):
+            flags.append("INTERMITTENT_TAIL_RISK")
+        if duplicated:
+            flags.append("DUPLICATED_NETWORK_BUFFER")
+        if regime == "RECOVER":
+            flags.append("RECOVERY_IN_PROGRESS")
         state = {"activity": activity, "demand_score": demand_score, "supply_score": supply_score, "resilience": resilient,
                  "risk_active": activity > .05, "decaying": bool(decaying), "periods_to_lean": periods_to_lean,
                  "lean_baseline_units": lean_baseline, "incremental_protection_units": max(0., protection - lean_baseline),
-                 "active_drivers": active_drivers,
-                 "false_protection_flag": bool(activity <= .05 and protection > lean_baseline * 1.25 + 1.),
+                 "active_drivers": active_drivers, "regime": regime, "flags": flags,
+                 "placement": {"local_service_units": local_units, "pooled_network_units": pooled_units, "transfer_lead_periods": transfer_lead,
+                               "upstream_stock_units": upstream_protection},
+                 "false_protection_flag": "FALSE_PROTECTION_RISK" in flags,
                  "scope": "activity scales the optimizer's quantile protection and the stress hedge; zero is lean"}
         drivers = {"demand_spread": z * math.sqrt(var_demand), "forecast_level": z * math.sqrt(var_level),
                    "lead_time_spread": z * math.sqrt(var_lead / effective), "fill_spread": z * math.sqrt(var_fill / effective),

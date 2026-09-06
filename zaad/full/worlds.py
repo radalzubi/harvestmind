@@ -103,18 +103,29 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
         for service in req.services:
             f = fits[service.id]
             d = np.full(req.horizon, f["mean"]) if deterministic else sample(f, rng, req.horizon)
+            if reliability and req.protection_decay and not deterministic and f.get("uncertainty", {}).get("intermittent"):
+                # Sparse demand: Bernoulli occurrence at the observed rate, positive size resampled
+                # from history with the size tail capped, mean preserved. Zero runs are realistic
+                # and a single historical spike cannot recur every period.
+                inter = f["uncertainty"]["intermittent"]
+                sizes = np.asarray(f["sizes"])
+                sizes = np.minimum(sizes, inter["size_cap"])
+                occurs = rng.random(req.horizon) < inter["occurrence"]
+                draw_sizes = rng.choice(sizes, req.horizon) if len(sizes) else np.zeros(req.horizon)
+                scale = f["mean"] / max(1e-9, inter["occurrence"] * float(np.mean(sizes))) if len(sizes) and f["mean"] > 0 else 1.
+                d = np.where(occurs, draw_sizes * min(scale, 1.5), 0.)
             if reliability and not deterministic and f["mean"] > 0:
                 u = f["uncertainty"]
-                if req.protection_decay and u.get("outliers", 0):
-                    # One abnormal week is not a demand regime: cap bootstrapped sizes at the outlier
-                    # bound so a single spike does not populate the scenarios for a whole window.
-                    bound = f["mean"] + OUTLIER_Z * max(u["residual_sd"], 1.)
-                    d = np.minimum(d, bound)
                 # Calibration: when realized one-step errors have been wider than the fitted spread,
                 # widen the sampled deviations by that ratio (never narrow them).
                 ratio = max(1., u["calibration_ratio"])
                 if ratio > 1.:
                     d = np.maximum(0., f["mean"] + (d - f["mean"]) * ratio)
+                if req.protection_decay and u.get("outliers", 0) and not u.get("intermittent"):
+                    # One abnormal week is not a demand regime: cap sampled sizes at the outlier
+                    # bound so a single spike does not populate the scenarios for a whole window.
+                    bound = f["mean"] + OUTLIER_Z * max(u["residual_sd"], 1.) * ratio
+                    d = np.minimum(d, bound)
                 # Model uncertainty: the level itself is uncertain by its calibrated standard error,
                 # perfectly correlated across the horizon. While a regime change is young, some
                 # worlds keep the old level instead (bounded mixture), so a drop does not fabricate

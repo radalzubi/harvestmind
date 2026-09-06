@@ -388,6 +388,18 @@ class Request(Record):
     # and quantile protection scaled by the SKU/location risk state. False reproduces the PR30
     # reliability profile exactly, for paired comparison.
     protection_decay: bool = True
+    # The incumbent at the next review is the plan the operator is executing: when a candidate was
+    # accepted, its remaining schedule (shifted one period) becomes the declared incumbent instead
+    # of re-deriving the base-stock proxy every review. Stops the selector chattering between a
+    # network plan and the proxy, which front-loads purchases and inflates average inventory.
+    # Default off: on development4 the carried schedule anchored the next review to a lumpy
+    # horizon plan and raised quiet-cell inventory (evidence/v4/diag_quiet_carry_29001.json).
+    carry_incumbent: bool = False
+    # Stability cost (reliability profile): a fraction of landed unit cost charged per unit of
+    # period-to-period change in each source's order quantity, so a plan that is otherwise
+    # indifferent to timing does not lurch between large and zero orders. A genuine reason to
+    # change (shortage at 11 per unit, a stress) still dominates a 2% smoothing charge.
+    order_smoothing: float = Field(default=.02, ge=0, le=.5)
     mode: Literal["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] = "LEAN"
     evidence_label: Literal["SYNTHETIC", "OPERATOR-SHADOW"]
 
