@@ -1,0 +1,6 @@
+{
+ "design_frozen_commit": "937cbcde784078b4eab7f1fb77bc2135ab10db8f",
+ "source_hash": "3b260c4f5b7f777b831c1fdb1a668f4035c46de6471357d2fdf9781e35a12122",
+ "frozen_at": "2026-09-06T19:08:58Z",
+ "rule": "validation4 is the pre-holdout selection run; no engine change after this record unless validation4 sends the cycle back to development"
+}
