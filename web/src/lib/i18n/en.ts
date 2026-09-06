@@ -1,17 +1,17 @@
 export const en = {
-  nav: { product: "How it works", sectors: "Sectors", security: "Security", about: "About", enterKey: "Enter key", getStarted: "Get started", open: "Open workspace", menuOpen: "Open menu", menuClose: "Close menu", lang: "عربي" },
+  nav: { product: "How it works", sectors: "Sectors", security: "Security", about: "About", resources: "Resources", enterKey: "Enter key", getStarted: "Get started", open: "Open workspace", menuOpen: "Open menu", menuClose: "Close menu", lang: "عربي" },
   footer: {
-    blurb: "Purchasing decisions for businesses that import what they sell. Built in Amman.",
-    product: "Product", howItWorks: "How it works", sectors: "Sectors", security: "Security",
+    blurb: "ZAAD is inventory optimization and supply resilience software for distributors and importers. Built in Amman.",
+    product: "Product", howItWorks: "How it works", sectors: "Sectors", security: "Security", resources: "Resources",
     company: "Company", about: "About", contact: "Contact",
     workspace: "Workspace", getStarted: "Get started", enterKey: "Enter a key",
     legal: "Legal", privacy: "Privacy", terms: "Terms",
-    rights: "Zaad Supply", tagline: "No forecasts of savings. Ever.",
+    rights: "ZAAD (zaadsupply.com)", tagline: "No forecasts of savings. Ever.",
   },
   hero: {
-    eyebrow: "Supply intelligence for businesses that import what they sell",
+    eyebrow: "ZAAD · Inventory optimization and supply resilience for distributors and importers",
     h1a: "Know what to order", h1b: "before conditions change.",
-    lede: "Zaad reads your purchasing history, watches your supply lanes, and changes your orders only when the evidence says so.",
+    lede: "ZAAD reads your purchasing history, watches your supply lanes, and changes your orders only when the evidence says so.",
     cta: "Get started", how: "See how it works",
     proof: ["Backtested on your history", "Pseudonymised on arrival", "No forecast of savings, ever"],
   },
