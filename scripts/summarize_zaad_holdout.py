@@ -31,6 +31,27 @@ def rng(values):
     return {"median": median(values), "min": min(values), "max": max(values), "n": len(values)} if values else None
 
 
+def recovery_metrics(row: dict) -> dict | None:
+    """Unwind measurements from a row's protection trajectory: peak protection, review of the peak,
+    first review of a 20% reduction, half-life of excess on-hand over the lean baseline, first
+    LEAN review after the peak, excess remaining at the end."""
+    traj = row.get("protection_trajectory")
+    if not traj:
+        return None
+    protection = [sum(p["protection_units"] for p in review) for review in traj]
+    excess = [sum(max(0., p["on_hand_units"] - p["lean_baseline_units"]) for p in review) for review in traj]
+    regimes = [review[0]["regime"] if review else None for review in traj]
+    activity = [max((p["activity"] for p in review), default=0.) for review in traj]
+    peak = max(range(len(protection)), key=lambda i: protection[i])
+    reduce = next((i for i in range(peak + 1, len(protection)) if protection[i] <= .8 * protection[peak]), None)
+    half = next((i - peak for i in range(peak + 1, len(excess)) if excess[i] <= .5 * excess[peak]), None) if excess[peak] > 0 else 0
+    lean = next((i for i in range(peak + 1, len(regimes)) if regimes[i] == "LEAN"), None)
+    protect_reviews = sum(1 for g in regimes if g == "PROTECT")
+    return {"peak_protection_units": protection[peak], "peak_review": peak, "reduce_review": reduce, "half_life_reviews": half,
+            "lean_review_after_peak": lean, "excess_remaining_units": excess[-1], "protect_reviews": protect_reviews,
+            "max_activity": max(activity) if activity else 0., "final_activity": activity[-1] if activity else 0.}
+
+
 def holdout_report(rows: list[dict], baseline: str = "base_stock") -> dict:
     base = summarize(rows, reference=baseline)
     by_key: dict[tuple, list[dict]] = {}
@@ -137,6 +158,30 @@ def holdout_report(rows: list[dict], baseline: str = "base_stock") -> dict:
         pairs[f"{a}_vs_{b}"] = {"cost_wins": cost_w, "cost_losses": cost_l, "service_wins": svc_w, "service_losses": svc_l,
                                 "inventory_lower": inv_lower, "inventory_higher": inv_higher}
     report["pairs"] = pairs
+    # Recovery: long-horizon cells with a protection trajectory, per method.
+    recovery: dict = {}
+    for r in rows:
+        m = recovery_metrics(r)
+        if m is None or r.get("horizon", 12) < 20:
+            continue
+        cell = recovery.setdefault(r["method"], {"n": 0, "peak_protection": [], "reduce_review": [], "half_life": [], "lean_after_peak": [], "excess_remaining": [], "protect_reviews": [], "rows": []})
+        cell["n"] += 1
+        cell["peak_protection"].append(m["peak_protection_units"])
+        cell["excess_remaining"].append(m["excess_remaining_units"])
+        cell["protect_reviews"].append(m["protect_reviews"])
+        if m["reduce_review"] is not None:
+            cell["reduce_review"].append(m["reduce_review"] - m["peak_review"])
+        if m["half_life_reviews"] is not None:
+            cell["half_life"].append(m["half_life_reviews"])
+        if m["lean_review_after_peak"] is not None:
+            cell["lean_after_peak"].append(m["lean_review_after_peak"] - m["peak_review"])
+        cell["rows"].append({"cell": r["cell"], "seed": r["seed"], "demand": r["demand"], "supply": r["supply"], **m})
+    for method, cell in recovery.items():
+        for key in ("peak_protection", "reduce_review", "half_life", "lean_after_peak", "excess_remaining", "protect_reviews"):
+            values = cell.pop(key)
+            cell[key] = {"median": median(values), "min": min(values), "max": max(values), "n": len(values)} if values else None
+        cell["returned_to_lean_share"] = (cell["lean_after_peak"]["n"] / cell["n"]) if cell["lean_after_peak"] else 0.
+    report["recovery"] = recovery
     return report
 
 

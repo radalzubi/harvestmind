@@ -332,6 +332,9 @@ def task(args):
             "review_status": [r["warnings"][0] if r["warnings"] else None for r in rows],
             "review_policy": [r["warnings"][1] if len(r["warnings"]) > 1 else None for r in rows],
             "review_mode": [next((w[5:] for w in r["warnings"] if isinstance(w, str) and w.startswith("mode=")), None) for r in rows],
+            # Protection trajectory per review (gated methods): regime, activity, recommended and lean units, on hand.
+            "protection_trajectory": [[{k: p[k] for k in ("regime", "activity", "protection_units", "lean_baseline_units", "on_hand_units", "periods_to_lean")}
+                                       for p in (r.get("protection") or [])] for r in rows] if any(r.get("protection") for r in rows) else None,
             "change_origins": [r["forecast"]["retail_A"]["segment_origin"] for r in rows],
             "min_cash": min((x["cash"] for r in rows for x in r["settlement"]["trace"]), default=None),
             "max_debt": max((x["debt"] for r in rows for x in r["settlement"]["trace"]), default=None),
