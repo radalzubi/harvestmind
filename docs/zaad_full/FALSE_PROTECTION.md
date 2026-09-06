@@ -78,4 +78,54 @@ decaying (demand, activity 0.25); expected return to lean in 3 period(s) if noth
 happens."
 
 <!-- EVIDENCE -->
-EVIDENCE_PLACEHOLDER
+## 4. Evidence (new seeds; every row retained under `docs/zaad_full/evidence/false_protection/`)
+
+Paired replays of the gated planner under the frozen PR 24 profile, the PR 30 profile
+(`protection_decay=False`) and the decay profile, plus the competent base-stock baseline.
+
+| | Development3 (56 cells) | | | Validation3 (112 replays) | | |
+|---|---|---|---|---|---|---|
+| | PR 24 | PR 30 | **decay** | PR 24 | PR 30 | **decay** |
+| Service breaches | 38 | 37 | 37 | 74 | 69 | 71 |
+| Avoidable breaches | 3 | 2 | 2 | 8 | 3 | 5 |
+| Median service | .872 | .925 | .919 | .872 | .904 | .895 |
+| Inventory, median periods | 1.26 | 1.76 | 1.75 | 1.37 | 1.90 | 1.82 |
+| Quiet-cell inventory | .57 | .68 | .49 | .48 | .91 | .78 |
+| Decrease cells inventory | .91 | 1.71 | 1.32 | 1.49 | 2.76 | 2.20 |
+| Partial-delivery cells inventory | .71 | 1.39 | .98 | 1.30 | 2.64 | 2.20 |
+| Saving vs base stock (median) | +1.95% | +1.15% | +0.50% | +2.04% | +1.69% | +2.24% |
+
+Paired, decay versus PR 30 on the same cell and seed: development inventory lower in 33 of
+49, service wins 11 / losses 29; validation inventory lower in 80 of 100, cost wins 42 /
+losses 58, service wins 18 / losses 57. Decay versus frozen PR 24 on validation: service
+wins 56 / losses 32, inventory higher in 79 of 104.
+
+### Reading, honestly
+
+- **Quiet cells are leaner**: 28% (development) and 14% (validation) less inventory than
+  PR 30 on stable-demand, stable-supply cells; post-decrease cells 23% and 20% leaner;
+  partial-delivery cells 30% and 17% leaner. These are the cells the diagnosis named.
+- **Overall inventory did not fall materially**: 1.82 against 1.90 periods on validation,
+  4%. The bulk of PR 30's extra stock sits in variable-fill, late-supplier and severe cells
+  where the supply driver is genuinely active and the profile keeps protecting, and in the
+  persistent calibration widening that the benchmark's normal history against Poisson truth
+  triggers on every cell.
+- **Service slipped slightly**: two more breaches and two more avoidable breaches than
+  PR 30 on validation, median service .895 against .904, and PR 30 wins the paired service
+  comparison three to one. The decay profile still beats the frozen PR 24 planner on
+  service (56 / 32) with fewer breaches (71 against 74).
+- **High-risk cells stayed protected**: late-supplier cells 3.12 periods and .828 service
+  (PR 24: 2.61 and .737); severe cells .667 against .598.
+- **Recovery**: median time from first stockout to full service is 2 periods for every
+  profile; the benchmark horizon is too short to show a full decay back to lean after a
+  disruption, which the `periods_to_lean` diagnostic reports but the replay cannot verify.
+
+### Verdict for this cycle
+
+**NEEDS FURTHER FALSE-PROTECTION ENGINEERING.** The causes were identified and the fixes
+work where they were aimed, but the overall reduction is 4%, not material, and it costs a
+small amount of service. No parameter was changed after the validation result. The next
+cycle, if opened, should target the calibration widening under history/truth spread mismatch
+and the supply-driver protection sizing on variable-fill cells, with a fresh untouched
+holdout.
+
