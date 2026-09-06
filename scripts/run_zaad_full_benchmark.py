@@ -343,7 +343,8 @@ def reliability_metrics(req, truth, rows, cell) -> dict:
     if not rows:
         return {"stockout_periods": None, "recovery_periods": None, "inventory_periods": None, "working_capital": None,
                 "emergency_reviews": None, "model_failure": None}
-    served = [(s["demand"], s["served"]) for r in rows for s in r["settlement"]["service_by_period"]]
+    served_rows = [(s["demand"], s["served"]) for r in rows for s in r["settlement"]["service_by_period"]]
+    served = served_rows
     stockouts = [i for i, (d, v) in enumerate(served) if v < d - 1e-9]
     recovery = None
     if stockouts:
@@ -367,7 +368,17 @@ def reliability_metrics(req, truth, rows, cell) -> dict:
             if truth.fills[source.id, t] < source.fill_mean - 3 * source.fill_sd - .05 or truth.arrival[source.id, t] - t > source.lead_days / req.period_days + 2:
                 supply_misses += 1
                 break
+    # Purchased versus inherited stock: what the planner bought over the replay against what the
+    # fixture handed it (branch, central and substitute stock), so an inventory figure can be read
+    # as protection bought rather than stock inherited.
+    purchased = sum(p["quantity"] for r in rows for p in r["purchases"])
+    served_units = sum(v for _, v in served_rows)
+    inherited = sum(x.usable for x in req.stock)
+    transferred = sum(r["settlement"]["ledger"].get("transfer", 0.) for r in rows)
     return {"stockout_periods": len(stockouts), "recovery_periods": recovery,
+            "purchased_units": purchased, "served_units": served_units, "inherited_units": inherited,
+            "purchase_to_demand_ratio": purchased / max(1e-9, sum(d for d, _ in served_rows)),
+            "transfer_spend": transferred,
             "inventory_periods": float(np.mean(inventory) / (mean_demand * asset)),
             "working_capital": float(np.mean(inventory)), "emergency_reviews": emergency,
             "model_failure": {"demand": demand_misses >= 2, "supply": supply_misses >= 2},

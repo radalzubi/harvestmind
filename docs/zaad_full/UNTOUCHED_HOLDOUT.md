@@ -151,7 +151,10 @@ Network: central DC plus branches is the hardest structure for every gated profi
 Service: cell 14 severe delay, no alternative (.41 and .48 on the two seeds, model
 failure); cell 51 gradual growth with a late supplier at 99% (.51, model failure); cell 16
 correlated route failure (.49, model failure); cell 18 central-plus-branches with stable
-demand and supply (.49, **avoidable**: base stock reaches .95 there).
+demand and supply (.49, **avoidable**: the stochastic planner's recovery fallback reaches .95
+there; base stock itself is at .49, and every gated profile retained that base-stock
+incumbent on all twelve reviews). Correction 2026-09-06: an earlier version of this section
+wrongly credited base stock with .95 on cell 18.
 Inventory: intermittent demand with a transfer or substitute (7 to 9.8 periods of demand at
 75 to 100% service) and a post-decrease cell with a substitute (9.8 periods at 100%).
 
@@ -199,8 +202,9 @@ realized truth; the outcome measures above are the test.
    combined with a transfer or substitute alternative drives every gated profile to 7 to 10
    periods of inventory (the substitute or central stock is counted as cover and the
    intermittent history is bootstrapped with zeros and doubles); (b) the central-plus-branch
-   network with stable demand and supply is an avoidable miss for both reliability profiles
-   (cell 18: .49 service where base stock reaches .95). Persistent: model failures (33 of
+   network with stable demand and supply is an avoidable miss for every gated profile
+   (cell 18: .49 service, the retained base-stock incumbent, where the stochastic fallback
+   reaches .95). Persistent: model failures (33 of
    112 per method) on spikes, unknown promotions, severe and correlated outages; 97% and
    99% targets missed 15 to 18 of 16 to 20 times by every profile except robust.
 8. **Does robust/stress planning still help under misspecification?** Yes, strongly, and
@@ -221,7 +225,7 @@ realized truth; the outcome measures above are the test.
 |---|---|---|
 | Demand surprises no history announces | 33 model-failure breaches per method: one-week spike, unknown promotion, volatile | MODEL_FAILURE |
 | Severe and correlated supply outages with no alternative | cells 14, 16: service .41 to .49, every method | MODEL_FAILURE / UNAVOIDABLE |
-| Central DC plus branches, calm conditions | cell 18: .49 for both reliability profiles, .95 for base stock | AVOIDABLE (selector/proxy) |
+| Central DC plus branches, calm conditions | cell 18: .49 for base stock and every gated profile (incumbent retained), .95 for the stochastic fallback | AVOIDABLE (selector/proxy) |
 | Intermittent demand with transfer or substitute alternative | 7 to 10 periods of inventory, every gated profile | false protection, new |
 | High targets (97%, 99%) with a 12-period horizon and 3 scenarios | 15 to 18 of 16 to 20 breached by all but robust | capacity of the scenario set |
 | Robust solve time | 6 of 112 replays at the 5-second limit | tractability |

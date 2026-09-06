@@ -78,10 +78,13 @@ def targets(req: Request, buffer: float = 1.645) -> dict:
 
 
 def evaluate(req, solution, worlds):
+    """Gate evaluation on a world set. Later-period transfers are guidance: on a world where the
+    feeding receipt lands late they are reduced to available stock and the reduction is
+    recorded, rather than failing a plan whose period-zero actions are perfectly legal."""
     rows = []
     for world in worlds:
         try:
-            result = settle(req, solution, world)
+            result = settle(req, solution, world, future_guidance=True)
             rows.append({"world": world.name, "usable": True, **result})
         except PhysicalViolation as exc:
             rows.append({"world": world.name, "usable": False, "reason": str(exc)})
@@ -395,15 +398,35 @@ def plan(req: Request) -> dict:
     # weighted shortfall and priority consistent.
     stress_targets_feasible = candidates["stress_network"].status == "OPTIMAL"
 
-    def stress_gate(before, after, physically_ok, downside_ok, service_under_stress):
+    def _hedged_downside(before, after) -> bool:
+        """Cost cap with the declared stress at its evidence weight: a plan that is much cheaper
+        on fitted worlds is not vetoed by a stress that carries a small credibility, and a
+        credible stress counts in proportion."""
+        if not before or not after or len(before) != len(after) or any(not r["usable"] for r in before + after):
+            return False
+        fitted_gap = mean(b["economic_cost"] for b in candidate_rows) - mean(a["economic_cost"] for a in incumbent_rows) if candidate_rows and incumbent_rows and all(r["usable"] for r in candidate_rows + incumbent_rows) else 0.
+        stress_gap = mean(b["economic_cost"] - a["economic_cost"] for a, b in zip(before, after))
+        scale = max(abs(mean(a["economic_cost"] for a in before)), 1.)
+        return (1 - stress_weight) * fitted_gap + stress_weight * stress_gap <= req.downside_cost_tolerance * scale
+
+    def stress_gate(before, after, physically_ok, downside_ok, service_under_stress) -> tuple[bool, str]:
+        """Returns (pass, mode). strict: the full SLA under stress inside the per-world cost cap.
+        not_worse: physically usable, no larger priority-weighted shortfall than the incumbent
+        under the same stress, priority consistent, inside the hedged cost cap. The strict gate
+        is preferred; the not-worse gate stops the selector from keeping an incumbent that
+        fails the same stress worse than the candidate."""
         if recovery_mode:
-            return (physically_ok and _within_downside(req, before, after)
-                    and _recovery_not_worse(req, before, after) and _priority_consistent(req, before, after))
-        if reliability and not stress_targets_feasible:
-            return (physically_ok and _within_downside(req, before, after)
-                    and weighted_shortfall(req, after) <= weighted_shortfall(req, before) + material_shortfall_gap(req)
-                    and _priority_consistent(req, before, after))
-        return downside_ok and service_under_stress
+            ok = (physically_ok and _within_downside(req, before, after)
+                  and _recovery_not_worse(req, before, after) and _priority_consistent(req, before, after))
+            return ok, "recovery"
+        if downside_ok and service_under_stress:
+            return True, "strict"
+        if reliability:
+            not_worse = (physically_ok and bool(before) and all(r["usable"] for r in before)
+                         and weighted_shortfall(req, after) <= weighted_shortfall(req, before) + material_shortfall_gap(req)
+                         and _priority_consistent(req, before, after) and _hedged_downside(before, after))
+            return not_worse, ("not_worse" if not_worse else "rejected")
+        return False, "rejected"
 
     def confirm_service_first(rows_before, rows_after, name=None):
         """Cost-first when the incumbent already meets service; service-first when it does not.
@@ -471,9 +494,9 @@ def plan(req: Request) -> dict:
         # Under stress a recovery plan must stay usable, within the cost cap, materially better on
         # weighted shortfall, and priority-consistent; the per-service no-worse rule would forbid
         # the very reallocation a priority-weighted recovery exists to make.
-        pass_stress = stress_gate(before, after, physically_ok, downside_ok, service_under_stress)
+        pass_stress, gate_mode = stress_gate(before, after, physically_ok, downside_ok, service_under_stress)
         accepted &= pass_stress
-        stress_report.append({"stress": stress.model_dump(), "pass": pass_stress,
+        stress_report.append({"stress": stress.model_dump(), "pass": pass_stress, "gate_mode": gate_mode,
                               "physically_usable": physically_ok, "within_downside": downside_ok, "service_met": service_under_stress,
                               "incumbent": {**summarize(before), "weighted_service_shortfall": weighted_shortfall(req, before),
                                             "service": {s.id: _service_value(req, before, s) for s in req.services}},
@@ -509,9 +532,11 @@ def plan(req: Request) -> dict:
                             sa, sb = a["service"][service.id], b["service"][service.id]
                             if sa is not None and sb is not None and sb < sa - req.service_tolerance:
                                 valid = False
-                valid = stress_gate(before, after, usable_after, valid, service_ok(req, after))
+                valid, gate_mode = stress_gate(before, after, usable_after, valid, service_ok(req, after))
                 passes &= valid
-                checks.append({"stress": stress.model_dump(), "pass": bool(valid), "incumbent": summarize(before), "candidate": summarize(after)})
+                checks.append({"stress": stress.model_dump(), "pass": bool(valid), "gate_mode": gate_mode,
+                               "incumbent": {**summarize(before), "service": {s.id: _service_value(req, before, s) for s in req.services}},
+                               "candidate": {**summarize(after), "service": {s.id: _service_value(req, after, s) for s in req.services}}})
             candidate_gates[alternative] = {"accepted": bool(passes), "stress": checks}
             if passes:
                 chosen, accepted, candidate_rows, stress_report, benefit_lower = alternative, True, rows, checks, lower

@@ -19,9 +19,19 @@ class PhysicalViolation(ValueError):
     pass
 
 
-def settle(req: Request, plan: Solution, world: World, steps: int | None = None) -> dict:
+def settle(req: Request, plan: Solution, world: World, steps: int | None = None, future_guidance: bool = False) -> dict:
+    """Work-conserving settlement of a plan on one world.
+
+    Period-zero actions are the only ones an operator executes; later purchases and transfers
+    are replanning guidance. With future_guidance=True a transfer planned for a later period
+    that exceeds the stock actually on hand in this world is reduced to what is there and the
+    shortfall is recorded as guidance_truncated_units, instead of failing the whole plan for a
+    receipt that landed later in this world than in the planning worlds. Period zero stays
+    strict, and nothing is ever clipped upward.
+    """
     if plan.status != "OPTIMAL":
         raise PhysicalViolation("unusable solve is not a zero-order plan")
+    guidance_truncated = 0.
     skus = {s.id: s for s in req.skus}
     end = req.horizon if steps is None else steps
     if not 1 <= end <= req.horizon:
@@ -153,6 +163,11 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None)
             receive = next_open(when, calendars[locations[arc.destination].receiving_calendar])
             due = math.ceil((receive - req.as_of).total_seconds() / (req.period_days * 86400))
             key = (arc.sku, arc.origin, expiry)
+            if future_guidance and t >= 1 and arc.approved and due < expiry and 0 <= q and q > stock[key] + 1e-5:
+                guidance_truncated += q - max(0., stock[key])
+                q = max(0., stock[key])
+                if is_dust(q):
+                    continue
             if not arc.approved or due >= expiry or q > stock[key] + 1e-5 or q < 0:
                 raise PhysicalViolation("transfer lacks usable source stock or approval")
             stock[key] -= q
@@ -272,6 +287,7 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None)
         if touched:
             order_metrics[rule.id]["order_otif"] = sum(order_state[o]["on_time"] == order_state[o]["lines"] for o in touched) / len(touched)
     return {"economic_cost": total_cost, "ledger": dict(ledger), "service": service_summary,
+            "guidance_truncated_units": guidance_truncated,
             "order_metrics": order_metrics, "orders": orders_summary,
             "substituted": dict(substitute_total), "trace": trace, "service_by_period": service_by_period,
             "conservation_residual": conservation, "ledger_residual": total_cost - sum(ledger.values()),
