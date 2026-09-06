@@ -181,11 +181,38 @@ benchmark property that penalises every method equally in the late reviews of lo
 .976 on cell 70 comes from buying 47 units at review 0 and carrying 3.8 periods, not from
 recovery intelligence.
 
-Run C (`dev5_c.jsonl`) reruns gated and base_stock with the two additional rules.
+## 4.2 Development5, run C (frozen engine)
+
+`dev5_c.jsonl` (gated, base_stock) merged with the run A comparators (`dev5_merged_c.jsonl`,
+summary `dev5_c.summary.json`).
+
+| Method | Median service | Mean service | Median inventory | Quiet-cell inventory | Avoidable | Breaches (72) | Emergency review share |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| base_stock | .919 | .863 | 1.17 | .40 | 11 | 44 | .20 |
+| gated_pr24 | .937 | .877 | 1.22 | .40 | 8 | 41 | .24 |
+| gated_pr30 | .951 | .891 | 1.85 | .71 | 4 | 37 | .34 |
+| gated_v4 | .947 | .893 | 1.90 | .69 | 5 | 38 | .34 |
+| gated (V5, frozen) | **.953** | **.907** | **1.75** | .67 | **3** | **36** | .37 |
+
+Run B → run C, gated: 21 (.675 → .752), 42 (.743 → .784), 52 (.879 → .906), 20 (.837 → .866),
+71 (.731 → .782, now above V4's .725); 19 and 41 (.685 → .643) moved further down. Cells 17 and
+70 are unchanged from run B. Breach classes are identical across methods except AVOIDABLE / MET
+(25 MODEL_FAILURE and 8 UNAVOIDABLE are scenario properties).
+
+Recovery on the 20 long-horizon cells (protection trajectories): V5 returns to LEAN on 35% (V4
+35%, PR30 0%, PR24 0%); median reviews spent in PROTECT 15 (V4 12) because overdue orders now
+keep the supply state active while a backlog stands; median excess units remaining at the end
+11.7 (V4 15.0).
+
+Against the cycle targets on development5: median service .953 (target ≈ .93, met); avoidable
+3 against PR30's 4 (met); median inventory 1.75 against 1.79–1.81 (−2 to −3%, not material);
+quiet-cell inventory .67 (target .50–.60, **not met**); central+branches median service .778
+against V4 .802 (**not improved**); recovery to LEAN 35% (**not "mostly"**).
 
 ## 5. Freeze
 
-_Recorded at freeze: commit SHA and source hash of `zaad/full`, before validation5 is launched._
+`docs/zaad_full/evidence/v5/DESIGN_FREEZE.json`: commit 1afdb67, `zaad/full` source hash
+fc851a49af34320d…, recorded before validation5 was launched. No engine change after this record.
 
 ## 6. Validation5
 
