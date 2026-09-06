@@ -86,6 +86,13 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         var_fill = (mu * window * fill_sd) ** 2
         diversity = diversification(req, sku, location, req.engine_profile)
         effective = max(1., diversity["effective_independent_sources"]) if eligible else 1.
+        # Flexibility credit (v5): an alternate source counts only if it can land inside the
+        # service window with meaningful capacity; otherwise it is a theoretical alternative.
+        alternate_inside = None
+        if req.protection_v5 and len(eligible) > 1:
+            window_guess = min(leads.values()) + 1
+            others = [s for s in eligible if s.id != primary.id]
+            alternate_inside = any(leads[s.id] + 1 <= window_guess + 1 and min(s.maximum, s.capacity_by_period[0]) >= .5 * mu * window_guess for s in others)
         # Alternates earn credit against supply spread only to the extent they are independent.
         var_supply = (var_lead + var_fill) / effective
         inbound_at_risk = 0.
@@ -106,8 +113,8 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         # Risk state: how active each driver is, how resilient the SKU is, and the lean baseline
         # (demand-only protection at the fitted spread with every other driver calm).
         demand_score = max((demand_state(fits[s.id]["uncertainty"]) for s in services), default=0.) if reliability else 0.
-        supply_score = supply_state(profile) if profile is not None else 0.
-        resilient = resilience(window, effective, substitute_cover, mu * window) if eligible else 0.
+        supply_score = supply_state(profile, recency=req.protection_v5) if profile is not None else 0.
+        resilient = resilience(window, effective, substitute_cover, mu * window, alternate_inside) if eligible else 0.
         activity = protection_activity(demand_score, supply_score, resilient) if (reliability and req.protection_decay) else 1.
         # Lean baseline: protection with every active driver removed, i.e. the fitted demand spread
         # and the source's declared (not observed) lead and fill spread, nothing for calibration
@@ -173,7 +180,28 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
             flags.append("DUPLICATED_NETWORK_BUFFER")
         if regime == "RECOVER":
             flags.append("RECOVERY_IN_PROGRESS")
+        # Echelon accounting (v5): every unit of recommended protection is local service stock,
+        # pooled network stock, source/pipeline protection or temporary risk protection.
+        source_units = z * math.sqrt(var_supply_declared) if req.protection_v5 else 0.
+        temporary_units = max(0., protection - lean_baseline) if activity > .05 else 0.
+        local_service = min(protection, local_units)
+        pooled_network = max(0., min(protection - local_service, pooled_units)) if transfer_lead is not None else 0.
+        accounted = local_service + pooled_network + min(source_units, max(0., protection - local_service - pooled_network))
+        echelon = {"local_service_units": local_service, "pooled_network_units": pooled_network,
+                   "source_protection_units": min(source_units, max(0., protection - local_service - pooled_network)),
+                   "temporary_risk_units": min(temporary_units, max(0., protection - accounted)) if temporary_units else 0.,
+                   "scope": "partition of recommended protection; local = transfer-lead demand spread at the branch, pooled = the remainder that can sit upstream, source = declared lead/fill spread, temporary = active-driver increment"}
+        if regime == "PROTECT":
+            if supply_score >= demand_score:
+                transition = f"LEAN -> PROTECT: supply risk active ({', '.join(d['reasons'][0] for d in active_drivers if d['driver'] == 'supply') or 'lateness or partial deliveries'})" + ("; no alternative can arrive inside the service window" if resilient < .5 else "")
+            else:
+                transition = "LEAN -> PROTECT: demand risk active (" + ", ".join(r for d in active_drivers if d["driver"] == "demand" for r in d["reasons"]) + ")"
+        elif regime == "RECOVER":
+            transition = f"PROTECT -> RECOVER: the risk driver has gone quiet (activity {activity:.2f}) and {max(0., on_hand - lean_baseline):.0f} units above the lean baseline remain to be consumed, transferred or left unreplenished"
+        else:
+            transition = "LEAN: no active driver; protection is the lean baseline" if activity <= .05 else "LEAN"
         state = {"activity": activity, "demand_score": demand_score, "supply_score": supply_score, "resilience": resilient,
+                 "alternate_inside_window": alternate_inside, "echelon": echelon, "transition": transition,
                  "risk_active": activity > .05, "decaying": bool(decaying), "periods_to_lean": periods_to_lean,
                  "lean_baseline_units": lean_baseline, "incremental_protection_units": max(0., protection - lean_baseline),
                  "active_drivers": active_drivers, "regime": regime, "flags": flags,

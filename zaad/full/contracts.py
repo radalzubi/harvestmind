@@ -400,6 +400,11 @@ class Request(Record):
     # indifferent to timing does not lurch between large and zero orders. A genuine reason to
     # change (shortage at 11 per unit, a stress) still dominates a 2% smoothing charge.
     order_smoothing: float = Field(default=.02, ge=0, le=.5)
+    # v5 network/recovery rules: recency-weighted supply state (risk-source half-life), alternates
+    # earn flexibility credit only inside the service window, feasible candidates within a cost
+    # band are ranked by inventory burden, echelon accounting and transition reasons in the
+    # report. False reproduces the v4 (PR 33) profile for paired comparison.
+    protection_v5: bool = True
     mode: Literal["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] = "LEAN"
     evidence_label: Literal["SYNTHETIC", "OPERATOR-SHADOW"]
 

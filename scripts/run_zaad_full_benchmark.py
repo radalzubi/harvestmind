@@ -74,6 +74,7 @@ def reliability_cells(random_cells: int = 30) -> list[dict]:
 
 
 V4_METHODS = ["base_stock", "stochastic", "robust", "gated_pr24", "gated_pr30", "gated"]
+V5_METHODS = ["base_stock", "gated_pr24", "gated_pr30", "gated_v4", "gated"]
 V4_DEMANDS = RELIABILITY_DEMANDS + ["intermittent_spiky", "promotion_recovery", "surge_recovery"]
 V4_SUPPLIES = RELIABILITY_SUPPLIES + ["deterioration_recovery", "closure_recovery"]
 V4_ALTERNATIVES = ALTERNATIVES + ["transfer_constrained", "shared_route"]
@@ -385,6 +386,10 @@ def reliability_metrics(req, truth, rows, cell) -> dict:
             "purchase_to_demand_ratio": purchased / max(1e-9, sum(d for d, _ in served_rows)),
             "transfer_spend": transferred,
             "inventory_periods": float(np.mean(inventory) / (mean_demand * asset)),
+            "inventory_units_mean": float(np.mean(inventory) / asset),
+            "forecast_mean_demand": float(np.mean([r["forecast"]["retail_A"]["mean"] for r in rows])),
+            "inventory_periods_of_forecast": float(np.mean(inventory) / (asset * max(1e-9, np.mean([r["forecast"]["retail_A"]["mean"] for r in rows])))),
+            "inventory_turn_periods": float(np.mean(inventory) / asset / max(1e-9, purchased / max(1, len(rows)))),
             "working_capital": float(np.mean(inventory)), "emergency_reviews": emergency,
             "model_failure": {"demand": demand_misses >= 2, "supply": supply_misses >= 2},
             "benign": cell.get("supply") == "stable" and cell.get("demand") in {"stable", "seasonal"} and cell.get("case") in {"normal", "none"}}
@@ -440,6 +445,8 @@ def main():
         selected = [c for c in selected if c["supply"] in args.supply]
     selected = [{**c, "adaptation": args.adaptation} for c in selected]
     methods = args.methods or (RELIABILITY_METHODS if args.matrix == "reliability" else V4_METHODS if args.matrix == "v4" else METHODS)
+    if args.split in {"development5", "validation5"} and not args.methods:
+        methods = V5_METHODS
     tasks = [(c, s, m) for c in selected for s in SEEDS[args.split] for m in methods]
     with args.output.open("x") as file, ProcessPoolExecutor(max_workers=args.workers) as pool:
         for i, row in enumerate(pool.map(task, tasks, chunksize=1)):

@@ -374,8 +374,20 @@ def plan(req: Request) -> dict:
     recovery_mode = not target_jointly_feasible
     recovery_ranking: list[dict] = []
 
+    def burden(name: str) -> float:
+        values = [x["inventory_value"] for r in selection_rows.get(name, []) if r["usable"] for x in r["trace"]]
+        return mean(values) if values else float("inf")
+
     if feasible:
-        chosen = min(feasible, key=lambda name: (hedged_cost(name), list(candidates).index(name)))
+        if req.protection_v5:
+            # Marginal value (v5): estimated costs are noisy; among feasible candidates whose hedged
+            # cost lies within one downside-tolerance band of the cheapest, prefer the one that
+            # carries the least inventory. Protection has to beat the lean plan by more than noise.
+            cheapest = min(hedged_cost(n) for n in feasible)
+            band = [n for n in feasible if hedged_cost(n) <= cheapest * (1 + req.downside_cost_tolerance / 5.) + 1e-9]
+            chosen = min(band, key=lambda name: (burden(name), hedged_cost(name), list(candidates).index(name)))
+        else:
+            chosen = min(feasible, key=lambda name: (hedged_cost(name), list(candidates).index(name)))
     elif incumbent.status == "OPTIMAL":
         # Impossible SLA: rank every usable candidate by priority-weighted shortfall (cost breaks ties)
         # and take the best one only if it beats the incumbent by a material margin.
@@ -551,6 +563,10 @@ def plan(req: Request) -> dict:
                                "incumbent": {**summarize(before), "service": {s.id: _service_value(req, before, s) for s in req.services}},
                                "candidate": {**summarize(after), "service": {s.id: _service_value(req, after, s) for s in req.services}}})
             candidate_gates[alternative] = {"accepted": bool(passes), "stress": checks,
+                                            "deltas": {"service": {s.id: ((_service_value(req, rows, s) or 0.) - (_service_value(req, incumbent_rows, s) or 0.)) for s in req.services},
+                                                       "cost_fitted": (mean(r["economic_cost"] for r in rows if r["usable"]) - mean(r["economic_cost"] for r in incumbent_rows if r["usable"])) if any(r["usable"] for r in rows) and any(r["usable"] for r in incumbent_rows) else None,
+                                                       "inventory": burden(alternative) - burden("incumbent") if burden("incumbent") != float("inf") else None,
+                                                       "stress_service": {s.id: (c["candidate"].get("service", {}).get(s.id), c["incumbent"].get("service", {}).get(s.id)) for c in checks for s in req.services}},
                                             "reason": ("accepted" if passes else
                                                        "does not meet every service target under independent confirmation" if not service_ok(req, rows) else
                                                        "no positive hedged benefit against the incumbent" if lower is not None and lower <= 1e-6 else

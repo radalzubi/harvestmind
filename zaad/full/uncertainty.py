@@ -22,6 +22,7 @@ from zaad.full.contracts import Request, Resource, ShipmentObservation, Source
 from zaad.full.eta import conditional_eta
 
 MIN_SUPPLY_RECORDS = 6
+RECENT_RECEIPTS = 6       # receipts that decide whether a supply risk source is still active
 YOUNG_REGIME = 8
 RESIDUAL_WINDOW = 12      # recent one-step residuals that define the calibrated spread
 DEAD_BAND = 1.25          # calibration ratio below which the fitted spread is trusted as is
@@ -189,6 +190,9 @@ class SupplyProfile:
     late_probability: float            # mass arriving after the declared lead, unresolved tail included
     tail_days: int                     # p90 minus declared lead, never negative
     unresolved_mass: float
+    recent_late_probability: float = 0.   # last RECENT_RECEIPTS arrived records only (risk-source half-life)
+    recent_partial_probability: float = 0.
+    recent_records: int = 0
 
 
 def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], period_days: int = 7) -> SupplyProfile:
@@ -215,9 +219,18 @@ def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], per
         late = float(1 - norm.cdf(slack / source.lead_sd_days)) if source.lead_sd_days > 0 else 0.
         p90 = int(round(declared + 1.2816 * source.lead_sd_days))
     tail = max(0, (p90 if p90 is not None else declared) - declared)
+    # Recency: the risk *state* follows the last few receipts, the distribution keeps the whole
+    # record. A route that closed and reopened, or a supplier that recovered, shows clean recent
+    # receipts long before its full history looks clean again.
+    arrived = sorted((r for r in history if r.source == source.id and r.arrived), key=lambda r: r.known_at)
+    recent = arrived[-RECENT_RECEIPTS:]
+    recent_late = float(np.mean([r.elapsed_days > declared + slack for r in recent])) if recent else (late if not eta.support else late)
+    recent_ratios = [float(r.accepted_ratio) for r in recent if r.accepted_ratio is not None]
+    recent_partial = float(np.mean(np.asarray(recent_ratios) < .9)) if recent_ratios else partial
     return SupplyProfile(source.id, "observed" if observed else "declared", eta.records, eta.censored,
                          fill_mean, fill_sd, partial, ratios, declared, float(source.lead_sd_days), eta.support, eta.p50, p90,
-                         float(min(1., late)), int(tail), eta.unresolved_mass)
+                         float(min(1., late)), int(tail), eta.unresolved_mass,
+                         recent_late_probability=recent_late, recent_partial_probability=recent_partial, recent_records=len(recent))
 
 
 def supply_profiles(req: Request) -> dict[str, SupplyProfile]:
@@ -280,22 +293,31 @@ def diversification(req: Request, sku: str, location: str, profile: str = "relia
             "scope": "capacity-weighted; sources sharing a supplier or any failure domain count as one"}
 
 
-def supply_state(profile: SupplyProfile, severity: float = 0.) -> float:
+def supply_state(profile: SupplyProfile, severity: float = 0., recency: bool = False) -> float:
     """How active the supply risk driver is, 0 to 1: lateness beyond the declared lead, a fill
     mean materially below full delivery, a wide fill spread, and licensed route signals. A
     source that delivers about 95% on time with a tight spread scores zero: that is normal
-    supply, not a risk driver."""
+    supply, not a risk driver. With recency=True (v5) the lateness and partial-delivery terms
+    come from the last RECENT_RECEIPTS receipts, so the driver retires after a clean run instead
+    of after the whole history has been diluted."""
     shortfall = max(0., (.9 - profile.fill_mean) * 5.)
     spread = max(0., (profile.fill_sd - .05) * 10.)
+    if recency and profile.recent_records >= 3:
+        late = profile.recent_late_probability
+        partial = profile.recent_partial_probability
+        return float(min(1., 2. * late + 1.5 * partial + shortfall * (.5 if partial == 0 else 1.) + spread * .5 + severity))
     return float(min(1., 2. * profile.late_probability + shortfall + spread + severity))
 
 
-def resilience(window: int, effective_sources: float, substitute_cover: float, demand_per_window: float) -> float:
+def resilience(window: int, effective_sources: float, substitute_cover: float, demand_per_window: float,
+               alternative_inside_window: bool | None = None) -> float:
     """How much the SKU can absorb a shock without protection: short replenishment plus a real
-    alternative (independent source or substitute stock covering the window) is 1, one of the
-    two is .5, neither is 0."""
+    alternative (independent source that can arrive inside the service window, or substitute
+    stock covering the window) is 1, one of the two is .5, neither is 0. An alternate that is
+    approved but too slow or too small to land inside the window earns no credit (v5)."""
     short = window <= 2
-    alternative = effective_sources >= 1.5 or substitute_cover >= demand_per_window
+    usable_alternate = effective_sources >= 1.5 and (alternative_inside_window is None or alternative_inside_window)
+    alternative = usable_alternate or substitute_cover >= demand_per_window
     return 1. if short and alternative else (.5 if short or alternative else 0.)
 
 
@@ -324,7 +346,7 @@ def stress_credibility(req: Request, supply: dict[str, SupplyProfile]) -> dict:
         evidence = route_evidence(signals, [source.id, source.supplier, *source.route, *source.resources,
                                             *failure_domains_for(source, resources)], req.as_of)
         severity = max(evidence.physical_severity, evidence.official_severity)
-        score = supply_state(profile, severity)
+        score = supply_state(profile, severity, recency=req.protection_v5)
         drivers[source.id] = {"late_probability": profile.late_probability, "partial_probability": profile.partial_probability,
                               "signal_severity": severity, "scope": profile.scope, "score": score}
         worst = max(worst, score)

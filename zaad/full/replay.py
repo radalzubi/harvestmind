@@ -21,6 +21,7 @@ from zaad.full.worlds import World, dates, draw, forecast_all
 # against the reliability profile are like for like. "protected" and "gated" use the new profile.
 FROZEN_METHODS = {"base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated_pr24"}
 PR30_METHODS = {"gated_pr30", "protected_pr30"}   # reliability profile without state-dependent decay
+V4_METHODS = {"gated_v4"}                         # PR 33 profile: decay on, v5 rules off
 
 
 def choose(req: Request, method: str) -> Solution:
@@ -30,7 +31,11 @@ def choose(req: Request, method: str) -> Solution:
         req = req.model_copy(update={"protection_decay": False, "carry_incumbent": False})
     if method == "gated_pr24" and req.carry_incumbent:
         req = req.model_copy(update={"carry_incumbent": False})
-    if method in {"gated", "gated_pr24", "gated_pr30"}:
+    if method in V4_METHODS and req.protection_v5:
+        req = req.model_copy(update={"protection_v5": False})
+    if method in PR30_METHODS and req.protection_v5:
+        req = req.model_copy(update={"protection_v5": False})
+    if method in {"gated", "gated_pr24", "gated_pr30", "gated_v4"}:
         report = plan(req)
         rows = report["actions"]
         solution = Solution("OPTIMAL" if report["status"] != "ABSTAIN" else "ABSTAIN",
@@ -219,7 +224,7 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
         data["order_lines"] = [{**line.model_dump(), "due_in": line.due_in - 1} for line in req.order_lines if line.due_in >= 1]
         # The operator executes the accepted plan: its remaining purchase schedule, shifted one
         # period, is the declared incumbent for the next review. A retained proxy carries nothing.
-        if req.carry_incumbent and method in {"gated", "gated_pr30", "gated_pr24"} and solution.warnings and solution.warnings[0] == "PENDING_REVIEW":
+        if req.carry_incumbent and method in {"gated", "gated_pr30", "gated_pr24", "gated_v4"} and solution.warnings and solution.warnings[0] == "PENDING_REVIEW":
             data["incumbent_orders"] = [{"known_at": now, "source": source_id, "period": period - 1, "quantity": q}
                                         for (source_id, period), q in solution.purchases.items() if period >= 1 and period - 1 < H - 1 and q > 0]
         else:
