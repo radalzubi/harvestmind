@@ -66,7 +66,7 @@ class TestLeakage:
             # training demand ends strictly before the inner origin
             assert len(inner.train_demand["A"]) == n_hist + start
             # supply training events are strictly before the inner origin
-            assert all(p < start for p in inner.supply_events["S"])
+            assert all(p < 0 for p in inner.supply_events["S"])
             # truth covers exactly [start, start+holdout)
             assert set(t for (_, t) in truth.demand) == set(range(4))
 

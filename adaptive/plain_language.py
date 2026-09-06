@@ -121,7 +121,7 @@ def explain_state(state: dict) -> dict:
         ("Optimizers allowed to compete against your current policy: " + ", ".join(cands) + ".") if cands else "No optimizer is allowed to compete with your current policy in this state.",
     ]
 
-    lanes = []
+    lanes: list[dict] = []
     for route, o in (state.get("outlooks") or {}).items():
         risk = float(o.get("risk", 0.0))
         q = float(o.get("quality", 0.0))

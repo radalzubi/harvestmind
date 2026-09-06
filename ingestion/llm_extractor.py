@@ -496,7 +496,7 @@ def _extract_real(
         messages=[{"role": "user", "content": json.dumps(user_payload)}],
     )
     raw = "".join(block.text for block in msg.content
-                  if getattr(block, "type", "") == "text")
+                  if block.type == "text")
 
     parsed = json.loads(raw)
     parsed.setdefault("session_id", session_id)

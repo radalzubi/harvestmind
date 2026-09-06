@@ -703,3 +703,83 @@ and plan stability $x_{ijt} - x^{\text{prev}}_{ijt} = c^+_{ijt} - c^-_{ijt}$ wit
 **Leading outlook.** For lane $g$ with available feeds $k \in K_g$ and standardised excess $e_k \ge 0$ (transit shortfall $2(1-I)$, log coverage ratio, GSCPI level, fuel and freight excess), $\text{risk}_g = \sigma(b + \sum_{k} w_k\, e_k\, \phi_k)$ with $b = -2.2$, stale-feed weight $\phi_k = 0.5$, and quality $q_g = |K_g| / |K^{\text{all}}_g| \cdot (1 - 0.3\, n_{\text{stale}}/|K_g|)$. The supplier's WATCH score gains $3\,(\text{risk}_g - 0.12)^+ q_g$. Lead is tested by $r(\ell) = \text{corr}(x_t, y_{t+\ell})$, $\ell = 0..12$ weeks, declared only when $\ell^* > 0$, $r(\ell^*) > r(0) + 0.05$ and $r(\ell^*) > 2/\sqrt{n}$.
 
 **Modes.** EFFICIENCY when $t < 0.25$ (trust region off, $\rho$ scale 0.25, all candidates, gate 2% at 0.80), PROTECTION when $t \ge 0.55$, BALANCED between; demand severity $d = \sum_j w_j d_j / \sum_j w_j$ with $d_j = \text{clip}(0.6\,(p_j(\text{DV}) + p_j(\text{PROMO})) + 0.4\,\phi^{\text{drift}}_j + 0.3\,\mathbb{1}[\text{shift} > 2\sigma])$ adds $0.6\, d_j$ to SKU $j$'s trust fraction and drives scenario width through $\max(t, d)$.
+
+## 28. Commercial evidence corrections and service-frontier experiment
+
+**Source:** `optimization/multi_period_sp.py`, `optimization/service_frontier.py`,
+`backtesting/counterfactual.py`, `backtesting/safe_selector.py` and
+`scripts/run_commercial_remodel_audit.py`. This section qualifies earlier
+statements about service scope, causal information and no-harm guarantees.
+
+### Pipeline and information
+
+The balance now includes `pipeline_receipts[(j,t)]`, a nonnegative finite
+delivered-equivalent receipt, alongside yield-adjusted **new** orders. Known
+pipeline is never multiplied by new-order yield again. All optimizer candidates
+receive the same as-of pipeline input as the incumbent. Future periods outside
+the solve do not serve earlier demand. Settlement retains pending arrivals for
+rolling physical accounting.
+
+Private realized future receipts are not planner inputs. In the audit simulator,
+pending POs expose booked quantity times the training-mean fill and the booked
+expected lead; past-due unreceived orders are provisionally due at the next
+review (an explicit simplifying assumption). Actual future dates/quantities
+are used only by settlement. Supplier outcomes enter training only after receipt.
+The older `rolling_evaluate` helper does not implement this separation and its
+saved reports must not be treated as this corrected causal experiment.
+
+### Two service formulations, separately reported
+
+For product j and earliest controllable period t0, the existing floor constrains
+expected unmet units over t >= t0 to at most (1-alpha_j) times expected demand
+over that window. This is **not** whole-window realized fill, cycle service,
+OTIF, or a probability guarantee. t0 uses the shortest scenario arrival, so
+slow scenarios can still have unavoidable early shortages.
+
+`solve_service_target` replaces shortage cost with zero inside the objective
+and imposes operator-specified per-product floors. Holding must be positive.
+External settlement still charges shortage margin. It minimizes modeled
+carry/waste/recourse, not all-in procurement cash flows. Infeasible targets are
+reported without floor relaxation.
+
+With `per_period=True`, `service_floor_each_period` additionally enforces:
+
+`E[u[j,t]] <= (1-alpha[j]) E[d[j,t]]` for each t >= t0 with positive demand.
+
+This stops the plan concentrating its entire multi-period service allowance
+in the executable prefix. It is stricter, can be infeasible, and still does
+not guarantee service on a realized path. Both formulations remain optional.
+
+The frontier returns every target, feasibility, schedule, expected unit fill,
+average inventory value and dominance flag. Realized curves require held-out
+replay; do not substitute the planning curve for a customer claim.
+
+### Selection corrections
+
+Inner demand/fill/lead estimates use pre-inner-origin data only. No dated
+supplier history means abstention. Event offsets are rebased to the inner
+origin. Opening inventory is standardized to one inner-training mean week,
+with a training-mean lead pipeline—not inferred from today's inventory.
+Capacity/prices/rules are assumed known inputs; real pilots need as-of versions.
+
+Selection and separate confirmation require complete folds, a one-sided
+relative-cost lower bound above threshold, service difference above negative
+tolerance, worst-fold regret within budget, and no fallback/relaxed solve.
+The selected live schedule must be finite, nonnegative and usable without
+relaxation. Otherwise return incumbent. The experimental state bypass requires
+`allow_state_evidence=True`; default False.
+
+Block bootstrap uses b = max(1, min(configured block, floor(n/2))). A block
+covering the whole sample would create a degenerate interval, particularly on
+two holdouts. Small-n and distribution-shift limitations remain; no claim of
+universal or nominally calibrated future safety is made.
+
+### Reporting economics
+
+Common replay cost is holding + missed contribution + disposal + SLA penalty.
+The audit's shelf-stable, no-spot configuration leaves disposal/SLA zero. Its
+COGS and unit margins are common across sources. Inventory-value reduction is
+not itself recurring profit. Annual recurring carry benefit requires an
+avoidable annual carry rate times sustained inventory release, without double
+counting financing. Terminal cash/salvage, alternate-source landed costs and
+OTIF are outside this experiment. See `docs/remodel/ECONOMICS_AND_PILOT.md`.

@@ -16,8 +16,8 @@ HOW A CANDIDATE DISPLACES THE INCUMBENT
   2. Every candidate and the incumbent are settled on the same truth with
      the same settlement, capacity binding all of them alike.
   3. delta_cost = incumbent_cost - candidate_cost per fold (positive =
-     candidate better), with a block bootstrap over folds (they overlap,
-     so an iid bootstrap would be too narrow).
+     candidate better), with a block bootstrap over folds (adjacent
+     outcomes can be dependent even though their truth windows do not overlap).
   4. A candidate wins only if ALL of: its conservative one-sided lower
      bound on relative improvement exceeds the configured threshold
      service is non-inferior within the tolerance
@@ -47,13 +47,13 @@ import numpy as np
 
 from backtesting.counterfactual import (
     FoldInputs, FoldTruth, _mean, policy_deterministic_sp, policy_order_up_to,
-    policy_stochastic_sp, settle,
+    policy_stochastic_sp, policy_service_target, settle,
 )
 from backtesting.incumbent import IncumbentPolicy, configured_incumbent
 
 INCUMBENT = "incumbent"
 COMPLEXITY = {"incumbent": 0, "order_up_to": 1, "deterministic_sp": 2, "anchored_sp": 3, "adaptive_sp": 3,
-              "stochastic_sp": 4, "dro": 5}
+              "service_target": 3, "stochastic_sp": 4, "dro": 5}
 
 
 @dataclass
@@ -70,15 +70,20 @@ class SafeSelectionConfig:
     n_boot: int = 1000
     n_scen: int = 30
     prefer_simpler_within: float = 0.01  # ties within this relative margin go to the simpler policy
+    allow_state_evidence: bool = False  # experimental bypass; never a default no-harm recommendation
 
     def __post_init__(self) -> None:
-        if self.n_folds < 2 or self.holdout < 1:
+        if self.n_folds < 2 or self.holdout < 1 or self.n_holdout_folds < 2:
             raise ValueError("need at least 2 folds of at least 1 period")
+        for k in ("n_folds", "n_holdout_folds", "holdout", "min_history", "block_length", "n_boot", "n_scen"):
+            v = getattr(self, k)
+            if isinstance(v, bool) or not isinstance(v, int) or v < 1:
+                raise ValueError(f"{k} must be a positive integer")
         if not 0.5 <= self.confidence < 1.0:
             raise ValueError("confidence must be in [0.5, 1)")
         for k in ("min_rel_improvement", "service_tolerance", "max_regret_share", "prefer_simpler_within"):
-            if getattr(self, k) < 0:
-                raise ValueError(f"{k} must be >= 0")
+            if not math.isfinite(getattr(self, k)) or getattr(self, k) < 0:
+                raise ValueError(f"{k} must be finite and >= 0")
 
 
 @dataclass
@@ -94,6 +99,8 @@ class CandidateEvidence:
     gates: dict = field(default_factory=dict)
     passed: bool = False
     holdout_delta_rel: float | None = None
+    holdout_gates: dict = field(default_factory=dict)
+    holdout_stats: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -114,6 +121,7 @@ class SafeDecision:
                 "warnings": self.warnings,
                 "candidates": {k: {"n_folds": v.n_folds, "stats": v.stats, "gates": v.gates,
                                    "passed": v.passed, "holdout_delta_rel": v.holdout_delta_rel,
+                                   "holdout_gates": v.holdout_gates, "holdout_stats": v.holdout_stats,
                                    "solves_usable": v.solves_usable, "fallbacks": v.fallbacks}
                                for k, v in self.evidence.items()}}
 
@@ -138,12 +146,17 @@ def inner_folds(fi: FoldInputs, n_folds: int, holdout: int, offset: int = 0) -> 
                    if n_hist + start + t < n_hist}
         sups = set(fi.supplier_of.values())
         ev_train = {s_: {p: v for p, v in fi.supply_events.get(s_, {}).items() if p < start} for s_ in sups}
-        train_fill = {s_: [v[0] for p, v in sorted(ev_train[s_].items())] or list(fi.train_fill.get(s_, [0.95]))
+        # An undated aggregate can contain the very holdout being evaluated.
+        # No pre-origin supplier record means no defensible fold.
+        if any(not ev_train[s_] for s_ in sups):
+            continue
+        train_fill = {s_: [v[0] for p, v in sorted(ev_train[s_].items())] for s_ in sups}
+        inner_lead = {s_: max(0, int(round(_mean([v[1] for v in ev_train[s_].values()]))))
                       for s_ in sups}
         truth_f, truth_l, replayed, carried = {}, {}, 0, 0
         for s_ in sups:
-            last_f = _mean(train_fill[s_]) or 1.0
-            last_l = int(fi.lead_of[s_])
+            last_f = _mean(train_fill[s_])
+            last_l = inner_lead[s_]
             for t in range(holdout):
                 ev = fi.supply_events.get(s_, {}).get(start + t)
                 if ev is not None:
@@ -154,17 +167,21 @@ def inner_folds(fi: FoldInputs, n_folds: int, holdout: int, offset: int = 0) -> 
                 truth_f[(s_, t)] = last_f
                 truth_l[(s_, t)] = max(last_l, 0)
         mean_dem = {j: _mean(train[j]) for j in fi.products}
-        cover = {j: (fi.opening.get(j, 0.0) / max(_mean(fi.train_demand[j]), 1e-9)) for j in fi.products}
-        opening = {j: mean_dem[j] * cover[j] for j in fi.products}
-        pipeline = {(j, t): mean_dem[j] for j in fi.products for t in range(int(fi.lead_of[fi.supplier_of[j]]))}
+        # State-standardized replay, not a claimed reconstruction of historical
+        # stock. Current stock and full-window mean must not leak backwards.
+        opening = {j: mean_dem[j] for j in fi.products}
+        pipeline = {(j, t): mean_dem[j] for j in fi.products
+                    for t in range(inner_lead[fi.supplier_of[j]])}
         inner = FoldInputs(origin=fi.origin + start, horizon=holdout, products=fi.products,
-                           supplier_of=fi.supplier_of, lead_of=fi.lead_of, train_demand=train,
+                           supplier_of=fi.supplier_of, lead_of=inner_lead, train_demand=train,
                            train_fill=train_fill, unit_cost=fi.unit_cost, margin=fi.margin,
                            capacity=fi.capacity, opening=opening, pipeline=pipeline, policy=fi.policy,
-                           promo_multiplier={}, supply_events=ev_train, incumbent=fi.incumbent,
+                           promo_multiplier={}, supply_events={s_: {p - start: v for p, v in es.items()}
+                                                               for s_, es in ev_train.items()}, incumbent=fi.incumbent,
                            route_of=fi.route_of, provenance=fi.provenance)
         folds.append((inner, FoldTruth(demand=truth_d, fill=truth_f, lead=truth_l),
-                      {"start": start, "replayed_supply_events": replayed, "carried_forward": carried}))
+                      {"start": start, "replayed_supply_events": replayed, "carried_forward": carried,
+                       "state_basis": "standardized one-week opening plus mean lead pipeline"}))
     return folds
 
 
@@ -175,7 +192,10 @@ def _block_bootstrap_lower(xs: list, confidence: float, block: int, n_boot: int,
         return float("nan")
     if n == 1:
         return float(x[0])
-    b = max(1, min(block, n))
+    # A block spanning the entire sample always returns the sample mean,
+    # fabricating a zero-width interval (notably on two confirmation folds).
+    # Require at least two resampled blocks. Small samples remain weak evidence.
+    b = max(1, min(block, n // 2))
     means = np.empty(n_boot)
     for i in range(n_boot):
         starts = rng.integers(0, n - b + 1, size=int(math.ceil(n / b)))
@@ -209,6 +229,8 @@ def run_candidate(name: str, fi: FoldInputs, warehouse_cap, rng, n_scen: int,
         return policy_deterministic_sp(fi, warehouse_cap, rng)
     if name == "stochastic_sp":
         return policy_stochastic_sp(fi, warehouse_cap, rng, n_scen)
+    if name == "service_target":
+        return policy_service_target(fi, warehouse_cap, rng, n_scen)
     if extra and name in extra:
         return extra[name](fi, warehouse_cap, rng, n_scen)
     raise ValueError(f"unknown candidate {name}")
@@ -313,12 +335,12 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
     # state itself is the evidence here: run the state-conditioned candidate
     # with a HARD regret budget relative to the incumbent under the
     # conditioned scenarios, and accept it only if that budget held.
-    if (posture is not None and "adaptive_sp" in (extra_candidates or {})
+    if (cfg.allow_state_evidence and posture is not None and "adaptive_sp" in (extra_candidates or {})
             and float(getattr(posture, "demand_severity", 0.0)) >= 0.5
             and float(getattr(posture, "demand_shift_fresh_share", 0.0)) >= 0.3):
         sched, m = run_candidate("adaptive_sp", fi, warehouse_cap, rng, cfg.n_scen, extra_candidates)
         share = float(getattr(posture, "demand_shift_fresh_share", 0.0))
-        if sched is not None and not m.get("budget_relaxed") and m.get("usable", True):
+        if sched is not None and _usable_candidate(sched, m):
             return SafeDecision(
                 mode_run="adaptive_sp", schedule=sched,
                 reason=(f"state-evidence selection: a demand level shift within the last 12 periods covers "
@@ -332,7 +354,7 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
                         "falling through to the backtest gate")
     sel_folds = inner_folds(fi, cfg.n_folds, cfg.holdout, offset=cfg.n_holdout_folds * cfg.holdout)
     hold_folds = inner_folds(fi, cfg.n_holdout_folds, cfg.holdout, offset=0)
-    if len(sel_folds) < 2:
+    if len(sel_folds) < cfg.n_folds or len(hold_folds) < cfg.n_holdout_folds:
         return decide_incumbent(f"only {len(sel_folds)} usable inner fold(s); incumbent retained")
     if not candidates and not extra_candidates:
         return decide_incumbent("the current posture admits no candidate beyond the incumbent")
@@ -351,11 +373,9 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
             results = _run_candidates(names, inner, warehouse_cap, rng, cfg.n_scen, extra_candidates, workers)
             for n in names:
                 sched, m = results[n]
-                if sched is None:
+                if not _usable_candidate(sched, m):
                     per[n]["fallback"] += 1
                     continue
-                if m.get("floor_relaxed") or m.get("budget_relaxed"):
-                    per[n]["fallback"] += 1
                 per[n]["usable"] += 1
                 c = settle(sched, inner, truth, warehouse_cap)
                 per[n]["delta"].append((b.total - c.total) / b.total if b.total > 0 else 0.0)
@@ -373,7 +393,7 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
         if ev.stats:
             svc_min = min(d["svc"]) if d["svc"] else 0.0
             ev.gates = {
-                "enough_folds": ev.n_folds >= 2,
+                "enough_folds": ev.n_folds == len(sel_folds),
                 "lower_bound_exceeds_threshold": ev.stats["lower_bound"] > cfg.min_rel_improvement,
                 "service_non_inferior": svc_min >= -cfg.service_tolerance,
                 "downside_within_budget": ev.stats["downside_regret"] <= cfg.max_regret_share,
@@ -398,13 +418,23 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
         hold = evaluate(hold_folds, [winner])
         hd = hold[winner]["delta"]
         evidence[winner].holdout_delta_rel = float(np.mean(hd)) if hd else None
-        if not hd or float(np.mean(hd)) <= 0.0:
+        hs = _stats(hd, cfg, rng)
+        evidence[winner].holdout_stats = hs
+        hg = {
+            "complete": len(hd) == len(hold_folds),
+            "no_fallbacks": hold[winner]["fallback"] == 0,
+            "lower_bound_exceeds_threshold": bool(hs) and hs["lower_bound"] > cfg.min_rel_improvement,
+            "service_non_inferior": bool(hold[winner]["svc"]) and min(hold[winner]["svc"]) >= -cfg.service_tolerance,
+            "downside_within_budget": bool(hs) and hs["downside_regret"] <= cfg.max_regret_share,
+        }
+        evidence[winner].holdout_gates = hg
+        if not all(hg.values()):
             return decide_incumbent(f"{winner} won the selection folds but did not beat the incumbent "
                                     f"on {len(hd)} held-out fold(s) (mean {evidence[winner].holdout_delta_rel}); "
                                     "incumbent retained", evidence)
 
     sched, meta = run_candidate(winner, fi, warehouse_cap, rng, cfg.n_scen, extra_candidates)
-    if sched is None:
+    if sched is None or not _usable_candidate(sched, meta):
         return decide_incumbent(f"{winner} was selected but its live solve was unusable ({meta.get('status')}); "
                                 "incumbent retained", evidence)
     lb = evidence[winner].stats["lower_bound"]
@@ -414,3 +444,11 @@ def safe_select(fi: FoldInputs, warehouse_cap, rng, cfg: SafeSelectionConfig | N
                                f"confirmed on held-out folds",
                         incumbent_label=label, evidence=evidence, gates_config=cfg.__dict__.copy(),
                         history_periods=n_hist, warnings=warnings, meta={**meta, **posture_meta})
+
+
+def _usable_candidate(schedule, meta: dict) -> bool:
+    """An empty valid schedule means order nothing; it is not solve failure."""
+    return (schedule is not None and meta.get("usable", True)
+            and meta.get("status", "heuristic") in ("optimal", "feasible", "heuristic")
+            and not any(meta.get(k) for k in ("floor_relaxed", "budget_relaxed", "trust_region_relaxed"))
+            and all(math.isfinite(float(q)) and q >= 0 for q in schedule.values()))

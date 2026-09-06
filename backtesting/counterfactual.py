@@ -136,12 +136,12 @@ def settle(schedule: dict, fi: FoldInputs, truth: FoldTruth,
         lag = int(truth.lead.get((sup, t), fi.lead_of.get(sup, 1)))
         f = float(truth.fill.get((sup, t), 1.0))
         at = t + lag
-        if at < fi.horizon:
-            arrivals[(sku, at)] = arrivals.get((sku, at), 0.0) + q * f
+        arrivals[(sku, at)] = arrivals.get((sku, at), 0.0) + q * f
     inv = dict(fi.opening)
     holding = shortage = disposal = sla = 0.0
     served = demanded = 0.0
     inv_sum = 0.0
+    inventory_value_periods = 0.0
     for t in range(fi.horizon):
         pending = {}
         stock_total = 0.0
@@ -173,11 +173,18 @@ def settle(schedule: dict, fi: FoldInputs, truth: FoldTruth,
             holding += left * fi.unit_cost[j] * carry
             inv[j] = left
             inv_sum += left
+            inventory_value_periods += left * fi.unit_cost[j]
     total = holding + shortage + disposal + sla
     return Settlement(total=total, holding=holding, shortage=shortage, disposal=disposal,
                       sla_penalty=sla, fill_rate=served / demanded if demanded else 1.0,
                       ending_inventory=sum(inv.values()),
-                      inventory_periods=inv_sum / max(fi.horizon, 1))
+                      inventory_periods=inv_sum / max(fi.horizon, 1),
+                      components={"inventory_by_product": dict(inv),
+                                  "pipeline_after_horizon": {(j, t - fi.horizon): q
+                                                             for (j, t), q in arrivals.items()
+                                                             if t >= fi.horizon},
+                                  "served_units": served, "demanded_units": demanded,
+                                  "average_inventory_value": inventory_value_periods / max(fi.horizon, 1)})
 
 
 # ── baseline policies ────────────────────────────────────────────────────────
@@ -292,6 +299,7 @@ def _optimizer_kwargs(fi: FoldInputs, warehouse_cap):
         holding_cost_by_product={j: fi.unit_cost[j] * cc.holding_rate_per_period for j in fi.products},
         decay_rate_by_product={j: fi.policy.decay_rate_per_period for j in fi.products},
         inventory_capacity_total=warehouse_cap,
+        pipeline_receipts=dict(fi.pipeline),
         pack_specs={j: fi.policy.pack_spec_for(j) for j in fi.products
                     if fi.policy.pack_spec_for(j).is_discrete} or None,
         service_floor_by_product=(
@@ -448,6 +456,19 @@ def policy_stochastic_sp(fi: FoldInputs, warehouse_cap, rng, n_scen=30) -> tuple
         r["warnings"] = list(r.get("warnings", [])) + ["service floor unattainable; solved without it"]
         r["floor_relaxed"] = True
     return ({k: v for k, v in r["x"].items() if v > 0} if r["usable"] else None), r
+
+
+def policy_service_target(fi: FoldInputs, warehouse_cap, rng, n_scen=30,
+                          per_period: bool = False) -> tuple[dict | None, dict]:
+    from optimization.service_frontier import solve_service_target
+    if fi.policy.service_target.metric != "unit_fill":
+        return None, {"status": "error", "warnings": ["service candidate requires unit_fill targets"]}
+    scen, leads, fills = _scenarios(fi, n_scen, rng)
+    r = solve_service_target(MultiPeriodStochasticLP(**_optimizer_kwargs(fi, warehouse_cap)),
+                             scen, _supply_df(fi), targets=fi.policy.service_floors(fi.products),
+                             lead_times=leads, yield_scenarios=fills, opening_inventory=fi.opening,
+                             per_period=per_period)
+    return (r["x"] if r["usable"] else None), r
 
 
 def _inner_fold(fi: FoldInputs, holdout: int) -> tuple[FoldInputs, FoldTruth]:

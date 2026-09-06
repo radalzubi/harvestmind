@@ -285,7 +285,8 @@ def test_state_evidence_selection_needs_a_fresh_demand_shift():
     post = SimpleNamespace(demand_severity=0.7, demand_shift_fresh_share=1.0, regret_budget_share=0.10,
                            min_rel_improvement=0.02, confidence=0.8, candidates=("order_up_to", "adaptive_sp"),
                            as_dict=lambda: {})
-    d = safe_select(FoldInputs(**kw), None, np.random.default_rng(0), SafeSelectionConfig(n_boot=50, n_scen=5),
+    d = safe_select(FoldInputs(**kw), None, np.random.default_rng(0),
+                    SafeSelectionConfig(n_boot=50, n_scen=5, allow_state_evidence=True),
                     posture=post, extra_candidates={"adaptive_sp": fake_adaptive})
     assert d.mode_run == "adaptive_sp" and "state-evidence" in d.reason and d.meta["selection_basis"] == "state"
     assert calls == [60]

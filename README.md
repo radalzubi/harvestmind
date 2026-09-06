@@ -6,9 +6,18 @@ get a dollar-quantified diagnostic, calibrated probabilistic forecasts, and a
 recommendation for how much to commit to each supplier and buyer *before*
 supply is confirmed.
 
-> Status: the engine is built and gate-tested, but every result so far comes
-> from a calibrated synthetic operator. No real operator's records have touched
-> any layer. See `docs/PILOT_READINESS.md`.
+> Status: evidence includes synthetic operators and simulated decisions driven
+> by public aggregate series. No real operator's records or realized customer
+> savings have validated the engine. See `docs/remodel/README.md` and the
+> historical `docs/PILOT_READINESS.md`.
+
+### Commercial evidence audit (September 2026)
+
+See [the commercial remodel and market verdict](docs/remodel/README.md) for
+the pipeline correction, stricter policy confirmation, service-target
+experiments, every synthetic run, competitor evidence and paid-pilot plan.
+These experiments are **not customer savings validation**. Retaining the
+incumbent is allowed; “no-harm” is not a future performance guarantee.
 
 ---
 

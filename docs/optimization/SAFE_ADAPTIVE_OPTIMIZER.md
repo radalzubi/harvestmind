@@ -2,6 +2,13 @@
 
 *Optimization that knows when not to optimize.*
 
+> September 2026 correction: the original implementation did not enforce all
+> these promises on confirmation/live solves. See
+> [the audit](../remodel/ROOT_CAUSE.md) and MATH_SPEC §28 for the corrected
+> gates, receipt-availability requirements and standardized inner inventory.
+> The state-evidence bypass defaults off. No finite historical gate guarantees
+> no future harm. The historical results below are not new customer validation.
+
 HarvestMind departs from what an operator already does only when there
 is statistically and economically credible evidence, on the operator's
 own history, that the departure improves the operator's objective. A

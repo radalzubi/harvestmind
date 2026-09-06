@@ -24,8 +24,9 @@ the mapping from orders to arrivals is a fixed linear operator.
 
 HONEST SCOPE. This is two-stage, not multistage: the whole schedule is
 committed up front rather than re-decided each period as information
-arrives. That understates the value of flexibility, so treat its output as
-a lower bound on what a perfectly adaptive planner could achieve.
+arrives. There is no universal out-of-sample bound: restricting purchasing
+adaptivity can increase cost, while scenario-wise recourse can have more
+information than a causal operating policy. Evaluate through causal replay.
 """
 
 from __future__ import annotations
@@ -65,6 +66,10 @@ class MultiPeriodStochasticLP:
     # A's existing behaviour is unchanged.
     inventory_capacity_total: float | None = None
     inventory_capacity_by_product: dict | None = None
+    # Confirmed receipts already in transit, in DELIVERED units, by (product,
+    # relative arrival period). They are exogenous to the new order schedule;
+    # never apply the new supplier fill multiplier to these a second time.
+    pipeline_receipts: dict | None = None
     # Discrete ordering. product_id -> domain.uom.PackSpec. A product with a
     # spec is ordered in whole lots (cases, layers or pallets) with an
     # optional minimum order; products without one stay continuous. Any
@@ -76,6 +81,10 @@ class MultiPeriodStochasticLP:
     # semantics as the single-period model. A floor the capacity cannot
     # meet makes the model infeasible, which run_solver reports as such.
     service_floor_by_product: dict | None = None
+    # Optional stricter scope: expected fill in EACH controllable period.
+    # Prevents a rolling controller from spending its entire multi-period
+    # shortage allowance in the executable prefix at every new review.
+    service_floor_each_period: bool = False
     # ── Safe / baseline-anchored formulation ─────────────────────────────
     # A FIXED schedule turns the model into a recourse evaluation of that
     # schedule (used for EEV, baseline costs, and scoring any policy on the
@@ -169,6 +178,12 @@ class MultiPeriodStochasticLP:
         lt = lead_times or {}
         ys = yield_scenarios or {}
         inv0 = opening_inventory or {}
+        pipeline = self.pipeline_receipts or {}
+        for (j, t), quantity in pipeline.items():
+            if j not in products or isinstance(t, bool) or not isinstance(t, (int, np.integer)) or t < 0:
+                raise ValueError("pipeline receipt requires a known product and nonnegative integer period")
+            if not np.isfinite(quantity) or quantity < 0:
+                raise ValueError("pipeline receipt quantity must be finite and nonnegative")
 
         cw = self.waste_cost_by_product or {}
         cu = self.unmet_cost_by_product or {}
@@ -394,7 +409,7 @@ class MultiPeriodStochasticLP:
         def balance(mm, j, t, w):
             prev = mm.inv[j, t - 1, w] if t > 0 else float(inv0.get(j, 0.0))
             served = d.get((w, j, t), 0.0) - mm.u[j, t, w]
-            return (mm.inv[j, t, w] == prev + arrivals(mm, j, t, w)
+            return (mm.inv[j, t, w] == prev + float(pipeline.get((j, t), 0.0)) + arrivals(mm, j, t, w)
                     + mm.s[j, t, w] + transfers_net(mm, j, t, w)
                     - served - mm.wst[j, t, w])
 
@@ -481,6 +496,14 @@ class MultiPeriodStochasticLP:
                 return exp_unmet <= (1.0 - floors[j]) * exp_dem
 
             m.service_floor = pyo.Constraint(m.JF, rule=service_floor)
+            if self.service_floor_each_period:
+                def period_service_floor(mm, j, t):
+                    exp_dem = sum(weights[w] * d.get((w, j, t), 0.0) for w in mm.W)
+                    if t < first_reach[j] or exp_dem <= 0:
+                        return pyo.Constraint.Skip
+                    return sum(weights[w] * mm.u[j, t, w] for w in mm.W) <= (1.0 - floors[j]) * exp_dem
+
+                m.period_service_floor = pyo.Constraint(m.JF, m.T, rule=period_service_floor)
 
         icp = self.inventory_capacity_by_product or {}
         if icp:
