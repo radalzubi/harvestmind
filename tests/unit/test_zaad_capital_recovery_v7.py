@@ -282,20 +282,22 @@ def test_the_working_capital_fields_are_absent_when_v7_is_off():
 
 # selector
 
-def test_equal_priority_reallocation_is_allowed_and_robbing_a_higher_priority_is_not():
+def test_equal_priority_reallocation_stays_refused_under_v7():
+    """The v7 proposal to allow it was measured on development7 and rejected; the rule is
+    unchanged, and this pins that so it is not quietly reintroduced."""
     req = _two_branches()
     def rows(north, south):
         return [{"usable": True, "economic_cost": 0., "trace": [{"inventory_value": 0.}],
                  "service_by_period": [{"service": "retail_A", "demand": 100., "served": 100. * north},
                                        {"service": "retail_A_south", "demand": 100., "served": 100. * south}]}]
     before, swap = rows(.95, .85), rows(.85, .95)
-    assert _priority_consistent(req, before, swap) is True
-    v6 = _with(req, protection_v7=False)
-    assert _priority_consistent(v6, before, swap) is False
+    assert _priority_consistent(req, before, swap) is False
+    assert _priority_consistent(_with(req, protection_v7=False), before, swap) is False
     data = req.model_dump(mode="json")
-    data["customers"][0]["priority"] = 5.                 # north is strictly more important
+    data["customers"][0]["priority"] = 1.                 # south outranks north
+    data["customers"][1]["priority"] = 5.
     ranked = Request.model_validate(data)
-    assert _priority_consistent(ranked, before, swap) is False
+    assert _priority_consistent(ranked, before, swap) is True       # lowering a lower rank for a higher one
 
 
 def test_the_capital_tie_break_never_accepts_a_plan_that_misses_a_target():

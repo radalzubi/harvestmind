@@ -190,13 +190,16 @@ def _priority_consistent(req: Request, before: list[dict], after: list[dict]) ->
     """A recovery may lower a service only to raise a strictly higher-priority one. Any service
     that falls by more than the tolerance without such a beneficiary is a hidden sacrifice.
 
-    v7: two customers of the *same* priority have no strictly higher beneficiary between them, so
-    the strict rule forbade every reallocation across equal-ranked branches - a leaner plan that
-    moved four service points from one branch to its equally ranked neighbour was recorded as a
-    hidden sacrifice even when the priority-weighted total was unchanged and the plan was cheaper.
-    Under v7 an equal-priority beneficiary counts; robbing a higher-priority customer to serve a
-    lower-priority one is still refused. Every caller pairs this with an aggregate weighted-
-    shortfall condition, so the total can never quietly get worse."""
+    Allowing an *equal*-priority beneficiary was proposed for v7 and rejected on development7. The
+    reasoning was that two branches of the same customer priority have no strictly higher
+    beneficiary between them, so the strict rule forbids every reallocation across equal-ranked
+    branches - and one such rejection (cell 72 review 6) was blocking a plan 38 units leaner and
+    134 cheaper under a stress carrying zero evidential credibility. Measured over the whole
+    replay it was worse on both axes: service .949 against .971 and mean inventory value 234.7
+    against 161.7, with the V7_DISABLED ablation attributing the entire movement to this rule
+    alone. Tightening it to require the weighted total not to rise at all recovered almost none of
+    it (.952 / 230.6). A lateral shuffle between equals buys nothing the operator asked for and
+    costs the rolling plan its continuity, so the strict rule stands."""
     if not before or not after or len(before) != len(after):
         return False
     priorities = {c.id: c.priority for c in req.customers}
@@ -212,11 +215,7 @@ def _priority_consistent(req: Request, before: list[dict], after: list[dict]) ->
             improved.add(service.id)
     best_improved = max((priorities[s.customer] for s in req.services if s.id in improved), default=None)
     for service in req.services:
-        if service.id not in worsened:
-            continue
-        if best_improved is None:
-            return False
-        if priorities[service.customer] > best_improved if _v7(req, "reallocation") else priorities[service.customer] >= best_improved:
+        if service.id in worsened and (best_improved is None or priorities[service.customer] >= best_improved):
             return False
     return True
 
