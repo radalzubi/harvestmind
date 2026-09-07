@@ -164,9 +164,43 @@ pile-up. A second guard came out of cell 76: in recovery mode the stress-hedged 
 was buying 48–51 units per review into a network that can move 24, so the recovery ranking now
 takes the least inventory among candidates within the material shortfall gap.
 
-### 2.5 Run C (`dev6_c.jsonl`, frozen engine)
+### 2.5 Run C (`dev6_c.jsonl`: all 97 cells, placement in the proxy, restricted continuation)
 
-_All 97 cells × base_stock, echelon_base_stock, gated_v5, gated on the final engine._
+92 cell×seed pairs paired (V5 and V6 both complete); 5 V6 rows **ABSTAIN** (cells 83–87, the
+26-review two-branch cells) and 3 echelon comparator time-outs, all kept visible.
+
+| Method | Rows | Median service | Mean | p10 | Meeting target | Median inventory | Quiet median | Two-branch median | Median cost |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| base_stock | 92 | .898 | .854 | .610 | 28% | 1.42 | 1.71 | 2.34 | 2232 |
+| echelon_base_stock | 92 | .920 | .873 | .623 | 33% | 1.36 | 1.65 | 1.98 | 2226 |
+| gated_v5 | 92 | .933 | .895 | .693 | 43% | 1.85 | 1.82 | 2.19 | 2079 |
+| gated (V6, run C) | 92 | **.957** | **.909** | .687 | **52%** | **1.77** | **1.59** | **1.98** | **2062** |
+
+Network groups (median service / inventory): central + two branches V6 **.946 / 1.98** against V5
+.895 / 2.19, echelon comparator .925 / 1.98, base stock .894 / 2.34; two-branch independent .947,
+correlated .945, slow or constrained transfer .876 (V5 .832), central shortage .959 (V5 .895);
+central + one branch .901 / 2.47 (V5 .877 / 2.29). Network breaches (decomposition, V6 against V5):
+20 against 29; "inventory at wrong echelon" as primary cause 5 against 11. Recovery on 28
+activated long-horizon pairs: returned to LEAN 50% (V5 43%), residual temporary protection at
+review 20 4.0 units (V5 8.9), but median excess units at the end 30.9 (V5 14.5): the branch base
+stock the proxy now keeps counts as stock above the lean baseline.
+
+Two defects found in run C and fixed before run D:
+
+- **ABSTAIN on the 26-review two-branch cells.** Pinning transfer targets for every period made the
+  proxy MILP time out (5 s cap, gap .91 on cell 83 review 0); with transfers pinned for the first
+  four periods only the same solve is optimal in .5 s. Period 0 is what executes.
+- **The continuation still deferred buying on closure and severe cells.** Ablation on cells 91
+  (.649 vs V5 .802) and 49 (.653 vs .727): removing the continuation alone restores V5's figures
+  exactly; the excess penalty and the exit rules change nothing on them. Even restricted to end
+  stock and committed orders, valuing post-horizon demand let the planner run stock down to the
+  horizon and buy later, which is the wrong side of a closure. The rule is now opt-in
+  (`Request.terminal_continuation`, default off) and stays in the code with its test as the
+  investigated, adverse treatment of the horizon artifact.
+
+### 2.6 Run D (`dev6_d_gated.jsonl`: V6 rerun on the frozen engine, comparators from run C)
+
+_Filled in below._
 
 ## 3. Central-plus-branch failure decomposition
 

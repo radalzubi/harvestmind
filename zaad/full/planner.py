@@ -523,8 +523,8 @@ def plan(req: Request) -> dict:
                 # the best, take the one carrying the least inventory. A stress-hedged recovery plan that
                 # buys more than the network can move earns no shortfall it can deliver.
                 best_gap = min(r["weighted_service_shortfall"] for r in usable)
-                band = [r for r in usable if r["weighted_service_shortfall"] <= best_gap + material_shortfall_gap(req)]
-                best_candidate = min(band, key=lambda r: (burden(r["candidate"]), r["weighted_service_shortfall"], r["cost_mean"], list(candidates).index(r["candidate"])))
+                recovery_band = [r for r in usable if r["weighted_service_shortfall"] <= best_gap + material_shortfall_gap(req)]
+                best_candidate = min(recovery_band, key=lambda r: (burden(r["candidate"]), r["weighted_service_shortfall"], r["cost_mean"], list(candidates).index(r["candidate"])))
             else:
                 best_candidate = min(usable, key=lambda r: (r["weighted_service_shortfall"], r["cost_mean"], list(candidates).index(r["candidate"])))
             chosen = best_candidate["candidate"]
