@@ -288,3 +288,42 @@ the correct output is to retain the incumbent with a reason code. Reason codes:
 - Loosening validation settings to improve reported runtime.
 - Ranking candidates on cost differences smaller than the solver's own optimality gap.
 - Describing synthetic benchmark results as customer results.
+
+## 9. Attribution standard (Part C progress)
+
+Unexplained inventory is not an acceptable category. The V7 decomposition left 12.0% of units
+unit-weighted (3.5% median per cell) with no operational reason.
+
+Locating the residue rather than guessing at it found two causes, both defects in the attribution
+rather than real excess:
+
+1. **The decomposition disagreed with the engine.** It recomputed protection from the fitted
+   standard deviation, while the engine sizes protection from its own echelon partition — and on
+   intermittent demand the engine works from an occurrence/size decomposition that is far wider
+   than the raw fitted sd. The attribution therefore under-claimed and dumped the difference into
+   `unexplained`. The largest single residue was cell 35's branch: 109.9 units on hand against a
+   45.6-unit local-service claim. Reading the claims straight off the protection row's echelon
+   partition makes attribution and recommendation agree by construction.
+2. **Inherited stock had no category.** Opening position is now tracked through the replay per
+   SKU/location, capped at what is physically present, drawn down by served demand before purchased
+   units, and surfaced as `inherited_excess` — units from the opening position still on hand after
+   every operating obligation is met.
+
+Measured on six diagnostic cells, seed 38001, from the first fix alone:
+
+| | before | after |
+| --- | --- | --- |
+| unexplained, unit-weighted | 8.0% | **2.4%** |
+| at echelon-origin locations | 8.5% | **0.0%** |
+| at service locations | 7.7% | 3.9% |
+
+The residue that remains is concentrated in one place and has a known cause. On cell 35 at reviews
+6 and 8 the branch holds 84–110 units while `demand_cycle` claims **zero**, because cycle stock is
+claimed as `mean demand × window` and the fitted mean of an intermittent series collapses toward
+zero after a run of empty periods — while the branch is quite correctly still holding stock for the
+next spike.
+
+**That is the honest open item: the mean is the wrong basis for cycle stock on intermittent
+demand.** The fix is to claim cycle stock from the same occurrence/size model the engine already
+uses for spread, and it is not yet done. It is recorded here rather than papered over by widening
+some other category to absorb it.
