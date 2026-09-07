@@ -1,0 +1,163 @@
+{
+ "cycle": "v7 capital efficiency and recovery",
+ "starting_commit": "4b7eac9defd5d4ee0b0745bc8cb5444f88646df9",
+ "starting_branch_base": "claude/zaad-meio-recovery-v6 (PR #36, V6 verdict NEEDS FURTHER MULTI-ECHELON / RECOVERY ENGINEERING)",
+ "v6_validation_reference": {
+  "median_service": 0.953,
+  "avoidable_breaches": 23,
+  "p10_service": 0.708,
+  "total_inventory_periods": 1.67,
+  "quiet_inventory_periods": 1.6,
+  "network_breaches": 45,
+  "recovery_to_lean_fraction": 0.48,
+  "source": "docs/zaad_full/evidence/v6/val6.jsonl (seeds 35001, 35002)"
+ },
+ "pre_tuning_source_hash": "cfcfb90bc495f60dfd6b287084a82725c11eb7ed995198acb3e9c66c886a91dd",
+ "pre_tuning_source_hash_scope": "sha256 over sorted zaad/full/*.py then scripts/run_zaad_full_benchmark.py",
+ "recorded_at": "2026-09-07T15:00:00Z",
+ "seeds": {
+  "development7": [
+   36001
+  ],
+  "validation7": [
+   37001,
+   37002
+  ]
+ },
+ "holdout4": {
+  "seeds": [
+   31001,
+   31002
+  ],
+  "status": "FROZEN, UNRUN, unchanged; run only if validation7 clearly qualifies and only on a later explicit instruction"
+ },
+ "consumed_never_tuned_against": {
+  "development": [
+   14001
+  ],
+  "validation": [
+   15001,
+   15002
+  ],
+  "final": [
+   22001,
+   22002,
+   22003,
+   22004,
+   22005
+  ],
+  "development2": [
+   23001
+  ],
+  "validation2": [
+   24001,
+   24002
+  ],
+  "holdout2": [
+   25001,
+   25002
+  ],
+  "development3": [
+   26001
+  ],
+  "validation3": [
+   27001,
+   27002
+  ],
+  "holdout3": [
+   28001,
+   28002
+  ],
+  "development4": [
+   29001
+  ],
+  "validation4": [
+   30001,
+   30002
+  ],
+  "development5": [
+   32001
+  ],
+  "validation5": [
+   33001,
+   33002
+  ],
+  "development6": [
+   34001
+  ],
+  "validation6": [
+   35001,
+   35002
+  ]
+ },
+ "split_overlap_check": "development7 (36001) and validation7 (37001, 37002) do not appear in any earlier development/validation/final/holdout split above, nor in holdout4",
+ "matrix": {
+  "name": "v7",
+  "definition": "every v6 cell unchanged (ids 0-96), then the v7 capital/recovery cells appended with new ids",
+  "v7_additions": {
+   "fast_arc_pooling": "central_two_branches with transfer lead 0 (same review), 1 and 2, at full and constrained capacity, with independent and correlated branch demand, and with central stock shared by both branches or short",
+   "recovery_A_supplier_delay": "stable -> supplier lead deterioration -> recovery -> long stable tail, 30 reviews",
+   "recovery_B_route_closure": "stable -> route closure with alternate -> reopening -> stable tail, 30 reviews",
+   "recovery_C_promotion": "promotion -> end -> stable tail, 28 reviews",
+   "recovery_D_surge": "demand surge -> normalization, 28 reviews",
+   "recovery_E_decline": "demand decline -> new lower stable level, 30 reviews (single and two-branch)",
+   "recovery_F_network": "central/branch disruption -> pooled recovery, 30 reviews",
+   "recovery_G_false_signal": "one false risk signal -> return to lean, 26 reviews"
+  },
+  "horizons": "26-32 reviews on the recovery cells; the v6 cells keep their own horizons unchanged"
+ },
+ "methods": [
+  "base_stock",
+  "echelon_base_stock",
+  "gated_pr24",
+  "gated_pr30",
+  "gated_v4",
+  "gated_v5",
+  "gated_v6",
+  "gated",
+  "stochastic",
+  "robust (validation7, where the solver completes; timeout rows kept visible)"
+ ],
+ "comparator_profiles": {
+  "gated_pr24": "frozen PR24 profile",
+  "gated_pr30": "reliability profile, decay off, v5/v6/v7 off",
+  "gated_v4": "v5, v6 and v7 rules off",
+  "gated_v5": "V5 engine (v6 and v7 rules off)",
+  "gated_v6": "V6 engine (v7 rules off) - the direct predecessor",
+  "gated": "V7 engine",
+  "base_stock": "projected base-stock proxy, unchanged",
+  "echelon_base_stock": "independent MEIO-style echelon base stock, unchanged"
+ },
+ "targets": {
+  "service": "median >= ~.94; avoidable breaches <= V6 (23); p10 no material regression below .708; central+branch gains preserved near V6 (.936 / .952)",
+  "inventory": "total inventory materially below V6 1.67 periods; quiet inventory materially below 1.60; demand-decrease network inventory clearly lower; duplicated_buffer_units quantified against a V5/V6 baseline and reduced",
+  "recovery": "more than 60% of temporary-risk long-horizon cases return to LEAN (V6: 48%); median reviews-to-LEAN improved; stale temporary protection at 5/10/15 reviews clearly lower",
+  "procurement": "premature_purchase_units and cash_days_advanced materially lower than V6 with no service degradation attributable to delay",
+  "network": "central+branch median service near V6; fast-arc networks hold less total network inventory than slow-arc ones unless a physical or service constraint explains it",
+  "cost": "no material economic regression against V6"
+ },
+ "intended_analyses": [
+  "P0 inventory decomposition per SKU/location/review with a reconciliation identity to total inventory, in units and (where meaningful) periods of demand",
+  "P1 explicit duplicated-buffer detection with the contributing buffer pair and overlap by risk source, interval, obligation, echelon and transfer accessibility",
+  "P2 fast-arc pooling audit: local immediate stock versus pooled stock computed over time",
+  "P3 demand-decrease liquidation timing and excess half-life",
+  "P4 recovery as an explicit optimization objective with the full carrying/finance/expiry/amendment burden",
+  "P5 source-specific recovery confidence and evidence counts",
+  "P6 procurement timing: earliest/latest safe order date, early inventory days, cash days advanced",
+  "P7 marginal protection value of the last protection increment",
+  "P8 inventory burden as an explicit ranked criterion in the selector",
+  "P9 bounded terminal-value treatment, evaluated on development7 and left off unless it helps",
+  "P10 recovery benchmark scenarios A-G",
+  "per-cell adverse-case listing and solver/timeout status, with failed comparator rows retained"
+ ],
+ "rules": [
+  "iterate only on development7 (36001)",
+  "freeze the engine and record the SHA, config hash and seed manifest before validation7",
+  "run validation7 once; no behavioural change after validation7 results are viewed",
+  "a purely mechanical reporting/runtime defect may be corrected non-behaviourally, with the failed run preserved and the re-freeze documented",
+  "do not tune against holdout3, holdout4 or validation6; validation6 may be read only to identify already-known failure families",
+  "holdout4 stays frozen and unrun",
+  "keep every adverse result and every timeout row; do not drop failed comparator rows from summary tables",
+  "do not achieve lean inventory by weakening service, shrinking uncertainty, deleting adverse cells, changing comparators or exploiting the finite horizon"
+ ]
+}
