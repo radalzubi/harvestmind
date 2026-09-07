@@ -367,3 +367,15 @@ two-branch cells it applies to. A lateral shuffle between equals buys nothing th
 for and costs the rolling plan its continuity. The rule is removed and a regression test pins the
 strict behaviour.
 
+## 11. Terminal horizon (P9)
+
+Terminal continuation remains **off**. V6 established that both of its forms defer buying into
+closures and severe delays (cells 21, 49, 91) and made it opt-in and off by default; V7 did not
+re-enable it and did not find a variant that changes that finding. The `test_terminal_continuation_
+stays_off_by_default` regression pins the default.
+
+The shrinking-horizon artifact it was meant to address is a property of the benchmark, not the
+engine: the replay plans over `H` periods at review 0 and over `H - t` at review `t`, so late
+reviews genuinely have less future to act for. That is by design and is not corrected in the
+replay.
+
