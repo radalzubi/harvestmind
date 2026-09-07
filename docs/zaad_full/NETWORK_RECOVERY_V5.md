@@ -227,23 +227,156 @@ against V4 .802 (**not improved**); recovery to LEAN 35% (**not "mostly"**).
 
 ## 6. Validation5
 
-_Two fresh seeds (33001, 33002), 72 cells, methods base_stock / gated_pr24 / gated_pr30 / gated_v4 /
-gated. Filled in after the run._
+`docs/zaad_full/evidence/v5/val5.jsonl` (run 2 on freeze 2): 72 cells × seeds 33001 and 33002 ×
+7 methods = 1008 rows, no failures on the five core methods. `stochastic` timed out on 21 rows and
+`robust` on 44 (HiGHS time limit); their figures below are on their own completed rows and are
+not paired against the others where a row is missing. Summary: `val5.summary.json`.
+
+Validation5 is the pre-holdout selection run. Nothing was tuned on it.
 
 ## 7. Report by dimension
 
-_SERVICE / INVENTORY / ECONOMICS / NETWORK / RECOVERY tables from validation5._
+### SERVICE
+
+| Method | Median service | Mean service | p10 service | Cell×seed pairs meeting target | Median stockout periods | Avoidable breaches | Rows |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| base_stock | .900 | .840 | .588 | 34% | 3 | 39 | 144 |
+| stochastic | .919 | .841 | .608 | 31% | 3 | 45 | 130 |
+| robust | .959 | .887 | .646 | 56% | 1 | 13 | 106 |
+| gated_pr24 (PR24) | .899 | .846 | .639 | 31% | 3 | 42 | 144 |
+| gated_pr30 (PR30) | .931 | .862 | .614 | 43% | 2 | 24 | 144 |
+| gated_v4 (V4) | **.945** | .871 | .613 | 45% | 2 | 23 | 144 |
+| gated (V5) | .937 | **.883** | **.694** | 45% | 2 | 23 | 144 |
+
+Breach classes are identical for the five core methods except AVOIDABLE / MET (44 MODEL_FAILURE
+and 12 UNAVOIDABLE are scenario properties). Per seed: 33001 V5 .929 / V4 .933 / PR30 .937;
+33002 V5 .947 / V4 .949 / PR30 .912.
+
+V5 against V4, paired on 144 cell×seed pairs: service wins 24, losses 24, ties 96. The mean and
+the tenth percentile move up because the closure-recovery family moves up; the median moves down
+.008 because three quiet-adjacent cells give back a point or two of service above target and
+the severe family (cell 17, both seeds) gives back .07.
+
+### INVENTORY
+
+| Method | Median inventory (periods) | Mean inventory | Quiet-cell median (34 pairs) | Median purchase / demand | Median working capital |
+| --- | --- | --- | --- | --- | --- |
+| base_stock | 1.50 | 2.66 | .47 | .886 | 154 |
+| stochastic | 1.33 | 1.87 | .73 | .628 | 145 |
+| robust | 3.34 | 3.27 | 3.47 | .797 | 343 |
+| gated_pr24 (PR24) | 1.50 | 2.45 | .47 | .800 | 159 |
+| gated_pr30 (PR30) | 2.02 | 2.66 | .99 | .841 | 222 |
+| gated_v4 (V4) | 1.88 | 2.70 | .80 | .851 | 213 |
+| gated (V5) | 1.87 | 2.69 | .80 | .853 | 202 |
+
+Paired against V4: inventory lower on 69 pairs, higher on 36. Against PR30: lower on 82, higher
+on 60. The **quiet-cell inventory does not move** on validation5 (.80 for both V4 and V5,
+against PR30's .99 and PR24's .47): the burden ranking within the cost band changes the winner
+on development5's quiet cells but on the validation seeds the candidates inside the band carry
+the same stock. Working capital is 5% below V4 at the median.
+
+### ECONOMICS
+
+| Method | Median cost | Mean cost | Cost cheaper / dearer than V4 (pairs) | Service better / worse than V4 | Inventory lower / higher than V4 |
+| --- | --- | --- | --- | --- | --- |
+| base_stock | 1849 | 2077 | 35 / 108 | 42 / 88 | 94 / 45 |
+| stochastic | 1688 | 1864 | 68 / 55 | 32 / 93 | 103 / 27 |
+| robust | 1594 | 1734 | 42 / 58 | 55 / 29 | 39 / 67 |
+| gated_pr24 (PR24) | 1819 | 2030 | 52 / 92 | 38 / 92 | 99 / 43 |
+| gated_pr30 (PR30) | 1793 | 2011 | 78 / 64 | 69 / 45 | 58 / 83 |
+| gated_v4 (V4) | 1790 | 2004 | – | – | – |
+| gated (V5) | **1780** | **1977** | 72 / 44 | 24 / 24 | 69 / 36 |
+
+V5 is the cheapest gated planner at the median and the mean; robust is cheaper on its completed
+subset because its 44 time-outs are concentrated in the expensive long-horizon cells. Against
+PR30 (144 pairs, from `val5.summary.json`): cost wins 75 / losses 67, service wins 56 / losses 58.
+
+### NETWORK
+
+| Group | Pairs | PR24 service / inventory | PR30 | V4 | V5 |
+| --- | --- | --- | --- | --- | --- |
+| central + branches | 20 | .750 / 2.06 | .739 / 2.20 | .751 / 2.19 | **.756 / 2.11** |
+| two locations | 24 | .876 / 4.75 | .896 / 4.53 | **.951** / 4.12 | .948 / **4.06** |
+| transfer alternatives (all networks) | 30 | .947 / 4.12 | .920 / 3.90 | **.956** / 3.88 | .953 / **3.86** |
+| closure / deterioration recovery | 22 | .798 / 1.75 | .802 / 1.74 | .807 / 1.60 | **.835** / 1.95 |
+| severe / correlated supply | 20 | .642 / 0.90 | .646 / 1.10 | .649 / 1.10 | **.670** / 1.15 |
+| intermittent demand | 24 | .941 / 6.13 | .875 / 6.12 | .989 / 6.06 | **1.000 / 5.93** |
+
+Central-plus-branches moves from .751 to .756 with .08 periods less inventory: **not a material
+improvement**. The families the rules were built for move: closure / deterioration recovery
++.028 at the median (cells 52, 42, 21 and 49 gain .13 to .36 on both seeds), severe / correlated
++.021 at the median while cell 17 (severe, no alternate, near-zero stock) loses .07 on both seeds
+and cell 70 / 33002 loses .04. Intermittent cells sit at 5.9–6.1 periods for every gated method;
+that stock is inherited opening stock, not purchasing (purchase-to-demand on those cells is below
+1 for all methods), as in the V4 analysis.
+
+Cells that got worse than V4 by more than .02 (10 of 144 pairs): 17 (both seeds), 18 / 33001
+(partial supply, V5 holds .75 periods against V4's 2.03 and gives back .05), 68 / 33002, 70 /
+33002, 50 / 33002, 48 / 33001, 71 / 33001, 56 / 33001, 51 / 33002. Cells that got better by more
+than .02: 52 (both), 49 (both), 42 (both), 70 / 33001, 21 / 33001, plus 8 more.
+
+### RECOVERY (40 long-horizon cell×seed pairs with an activated driver)
+
+| Method | Returned to LEAN after the peak | Median reviews outside LEAN | Median excess units at the end |
+| --- | --- | --- | --- |
+| gated_pr24 (PR24) | 0 (0%) | 20 | 14.1 |
+| gated_pr30 (PR30) | 0 (0%) | 20 | 19.2 |
+| gated_v4 (V4) | 12 (30%) | 15 | 12.9 |
+| gated (V5) | 13 (32%) | 15 | 14.1 |
+
+Recovery reaches LEAN on a third of the disrupted long-horizon cells, the same as V4. Overdue
+orders now keep the supply state active while a backlog stands, which is correct while it
+stands, but the state only retires once the backlog has landed *and* six clean receipts follow
+(`RECENT_RECEIPTS`), so on a 20-review cell with a 6–7 review shock the return to LEAN lands in
+the last two or three reviews or not at all. Median excess units at the end are unchanged.
+
+### Against the cycle targets
+
+| Target | Validation5 | Met |
+| --- | --- | --- |
+| Median service ≈ .93 | .937 (V4 .945) | yes, below V4 |
+| Avoidable breaches no worse than PR30 | 23 vs 24 | yes |
+| Inventory materially below 1.79–1.81 | 1.87 (V4 1.88 on these seeds) | **no** |
+| Quiet-cell inventory materially below .70, toward .50–.60 | .80 (V4 .80) | **no** |
+| Central + branches improved | .756 vs .751 | **not materially** |
+| Recovery mostly reaching LEAN | 32% | **no** |
+| No pathological intermittent purchasing | purchase / demand < 1 on intermittent cells; inherited stock 5.9 periods | yes (purchasing), stock unchanged |
 
 ## 8. Tests
 
-`tests/unit/test_zaad_network_recovery_v5.py` (11 tests, 1 skip when the demo has no pipeline
-order): recency retirement and reaction, overdue-as-late (V5 only), overdue survival moves arrival
-mass outside the horizon (V5 only, fresh orders untouched), flexibility credit inside the window,
-echelon partition bound and non-negativity on four demo networks, transition sentences, rejection
+`tests/unit/test_zaad_network_recovery_v5.py` (16 tests, none skipped; every test constructs its
+own receipts and open orders): recency retirement and reaction, overdue-as-late (V5 only), overdue
+survival moves arrival mass outside the horizon (fresh orders untouched), recent fill run needs a
+run, open orders fill the way the source fills now, backlog-implied lead, flexibility credit only
+inside the window, echelon partition bound on four demo networks, transition sentences, rejection
 deltas on audited candidates, V5 burden ≤ V4 burden on a quiet cell, pooling follows the transfer
-lead, comparator reachability. Full ZAAD unit set: 207 passed, 2 skipped. `ruff` clean; `mypy`
-at the pre-existing 8 stub errors (the four V5-introduced errors were fixed).
+lead, additive cost band on negative costs (the validation5 run-1 crash), comparator
+reachability. Full ZAAD unit set: 212 passed, 1 skipped. `ruff` clean; `mypy` at the 8
+pre-existing stub errors.
 
 ## 9. Verdict
 
-_Exactly one of: READY FOR UNTOUCHED HOLDOUT4 · NEEDS FURTHER MULTI-ECHELON / RECOVERY ENGINEERING._
+**NEEDS FURTHER MULTI-ECHELON / RECOVERY ENGINEERING**
+
+Holdout4 (seeds 31001, 31002) remains frozen and **unrun**.
+
+What V5 established: the closure-recovery family was an engine failure (dead pipeline assumed to
+land next period; the risk state blind to open orders) and is now handled, with the gain
+reproduced on two fresh seeds; the mean and tenth-percentile service are the best of any gated
+planner at the lowest gated cost; the state machine, echelon accounting and rejection audit are
+in place and tested. What it did not establish: any material inventory reduction on validation
+(median −0.5%, quiet cells unchanged), a material central-plus-branches improvement, or recovery
+that mostly reaches LEAN. Three of the six targets are unmet, so the engine does not go to the
+untouched holdout.
+
+Where the next cycle should look, from the retained evidence: (1) quiet cells — the burden band
+is too narrow to change the winner on validation seeds; a marginal inventory value that prices
+protection against the lean baseline directly, rather than a cost band, is the missing piece;
+(2) severe supply with no alternate (cell 17) — the backlog rule delays the freshest order
+correctly but the planner has nothing to buy from, so the honest fix is earlier protection
+sizing from the first two late receipts, not later sourcing; (3) recovery — retire the supply
+driver on the first clean receipt after a backlog has landed instead of after six, and drain the
+temporary echelon through transfers before purchases resume; (4) the shrinking replay horizon
+interaction, which is a benchmark property and should be reported per cell (remaining horizon
+versus current lead) so late-review idleness is classified rather than counted against the
+engine.
