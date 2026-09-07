@@ -409,6 +409,10 @@ class Request(Record):
     # recovery excess penalty (orderly run-down of temporary protection), bounded terminal
     # continuation, procurement-timing audit. False reproduces the V5 engine exactly.
     protection_v6: bool = True
+    # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
+    # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
+    # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.
+    terminal_continuation: bool = False
     mode: Literal["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] = "LEAN"
     evidence_label: Literal["SYNTHETIC", "OPERATOR-SHADOW"]
 

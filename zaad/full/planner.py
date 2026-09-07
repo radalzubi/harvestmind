@@ -98,7 +98,9 @@ def targets(req: Request, buffer: float = 1.645) -> dict:
         # central location one transfer lead away from the demand it protects.
         from zaad.full.echelon import local_transfer_targets
         spread = {s.id: fits[s.id]["uncertainty"]["sd_effective"] for s in req.services}
-        orders.update(local_transfer_targets(req, fits, spread, purchases=orders))
+        # Only the first four periods are pinned: period 0 is what executes, the next three keep the
+        # branch base stock in the projection, and pinning every period made the proxy MILP time out.
+        orders.update({k: v for k, v in local_transfer_targets(req, fits, spread, purchases=orders).items() if k[2] <= 3})
     return orders
 
 
@@ -354,7 +356,7 @@ def v6_solve_terms(req: Request, fits: dict, protection: list[dict]) -> dict:
     terms: dict = {}
     if excess:
         terms["excess_penalty"] = excess
-    if continuation:
+    if continuation and req.terminal_continuation:
         terms["continuation"] = continuation
     return terms
 
