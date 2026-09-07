@@ -211,8 +211,19 @@ against V4 .802 (**not improved**); recovery to LEAN 35% (**not "mostly"**).
 
 ## 5. Freeze
 
-`docs/zaad_full/evidence/v5/DESIGN_FREEZE.json`: commit 1afdb67, `zaad/full` source hash
-fc851a49af34320d…, recorded before validation5 was launched. No engine change after this record.
+`docs/zaad_full/evidence/v5/DESIGN_FREEZE.json`.
+
+- **Freeze 1**: commit 1afdb67, `zaad/full` source hash fc851a49af34320d…, recorded before
+  validation5 was launched.
+- **Validation5 run 1 crashed** at 657 of 1008 rows (cell 46, seed 33002, gated): the V5
+  inventory-burden band was `cheapest × (1 + tol/5)`; with a negative hedged cost (closing assets
+  above spend) the band lies below the cheapest candidate and `min()` of an empty band raised.
+  The run is retained as `val5_run1_crashed.jsonl` and is **not** used for selection. On its 93
+  complete gated cell×seed pairs it read V5 .956 / V4 .961 median service, for the record.
+- **Crash-only fix**: the band is now `cheapest + tol/5 × max(|cheapest|, 1)` and falls back to
+  the feasible set if empty (identical behaviour for positive costs). Regression test added.
+- **Freeze 2**: the commit after the fix, recorded in the same file with the run-1 outcome;
+  validation5 rerun in full as `val5.jsonl`. No engine change after this record.
 
 ## 6. Validation5
 
