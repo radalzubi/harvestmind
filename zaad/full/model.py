@@ -40,7 +40,7 @@ class Linear:
         self.lo.append(lower)
         self.hi.append(upper)
 
-    def solve(self, seconds, objective=None, solver="highs"):
+    def solve(self, seconds, objective=None, solver="highs", mip_gap: float = 1e-6):
         rr, cc, vv = [], [], []
         for r, terms in enumerate(self.rows):
             for c, v in terms.items():
@@ -57,7 +57,7 @@ class Linear:
                       integrality=np.asarray(self.integer),
                       bounds=Bounds(self.lower, self.upper),
                       constraints=LinearConstraint(matrix, self.lo, self.hi),
-                      options={"time_limit": seconds, "mip_rel_gap": 1e-6})
+                      options={"time_limit": seconds, "mip_rel_gap": mip_gap})
         if result.x is not None:
             activity = matrix @ result.x
             residual = max(float(np.max(np.asarray(self.lo) - activity, initial=0)),
@@ -629,13 +629,13 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             for w, world in enumerate(worlds):
                 for t in range(H):
                     objective[unmet[service.id, t, w]] = world.weight * customers[service.customer].priority
-    result, residual = m.solve(req.max_solve_seconds, objective, req.solver)
+    result, residual = m.solve(req.max_solve_seconds, objective, req.solver, mip_gap=req.solver_mip_gap)
     if objective is not None and result.status == 0 and result.x is not None:
         optimum = float(np.dot(objective, result.x))
         m.row({i: float(v) for i, v in enumerate(objective) if v}, upper=optimum + 1e-7)
         remaining = req.max_solve_seconds - (time.monotonic() - started)
         if remaining > 0:
-            result, residual = m.solve(remaining, solver=req.solver)
+            result, residual = m.solve(remaining, solver=req.solver, mip_gap=req.solver_mip_gap)
     usable = result.status == 0 and result.x is not None and residual <= 1e-5
     elapsed = time.monotonic() - started
     gap = getattr(result, "mip_gap", None)

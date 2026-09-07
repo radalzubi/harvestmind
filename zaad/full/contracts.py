@@ -415,6 +415,12 @@ class Request(Record):
     # finite horizon cannot see, confirmed demand-decline liquidation, source-specific recovery
     # confidence and the procurement-timing preference. False reproduces the V6 engine exactly.
     protection_v7: bool = True
+    # Solver optimality gap for the MILP (v8). The engine has always asked HiGHS for 1e-6, which on
+    # a 30-review network cell is not reachable inside the wall-clock cap: six of ten candidate
+    # solves hit the cap and return whatever incumbent the solver happened to hold. A bounded gap
+    # is the honest setting for an operational recommendation; evidence runs may keep the strict
+    # one. Changing it changes which solution is returned, so it is recorded in the manifest.
+    solver_mip_gap: float = Field(default=1e-6, gt=0, le=.5)
     # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.
