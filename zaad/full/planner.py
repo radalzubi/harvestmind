@@ -301,6 +301,96 @@ def classify_service(req: Request, service, selected: float | None, best_joint: 
     return {"class": "DATA_INSUFFICIENCY", "reason": "the joint feasibility bound could not be evaluated"}
 
 
+def v6_solve_terms(req: Request, fits: dict, protection: list[dict]) -> dict:
+    """Per-SKU/location terms the v6 rules add to every candidate solve: an excess penalty where a
+    temporary risk driver has gone quiet (orderly run-down of temporary protection above the lean
+    baseline, charged at twice the holding rate) and a bounded terminal continuation (post-horizon
+    demand over one replenishment lead, from the fitted mean and the declared lead only)."""
+    skus = {s.id: s for s in req.skus}
+    locs = {location.id: location for location in req.locations}
+    direct = {(s.sku, s.destination): s for s in sorted(req.sources, key=lambda s: (s.unit_price + s.freight_per_unit + s.handling_per_unit, s.id))
+              if s.approved and s.compliance == "cleared"}
+    for source in sorted(req.sources, key=lambda s: (s.unit_price + s.freight_per_unit + s.handling_per_unit, s.id), reverse=True):
+        if source.approved and source.compliance == "cleared":
+            direct[source.sku, source.destination] = source
+    excess: dict[tuple[str, str], tuple[float, float]] = {}
+    continuation: dict[tuple[str, str], tuple[float, float]] = {}
+    for row in protection:
+        sku, location, state = row["sku"], row["location"], row["state"]
+        mu = row["mean_demand_per_period"]
+        quiet_with_excess = state["activity"] <= .05 and row["on_hand_units"] > state["lean_baseline_units"] + mu
+        if state["regime"] == "RECOVER" or (quiet_with_excess and state["incremental_protection_units"] <= 0.):
+            rate = skus[sku].asset_value * locs[location].holding_per_value_period * 2.
+            excess[sku, location] = (state["lean_baseline_units"] + mu, rate)
+        services = [s for s in req.services if s.sku == sku and s.location == location]
+        if not services or mu <= 0:
+            continue
+        buying = direct.get((sku, location))
+        if buying is not None:
+            lead = dates(req, buying, 0)[1]
+        else:
+            feeders = [a for a in req.transfers if a.approved and a.sku == sku and a.destination == location]
+            if not feeders:
+                continue
+            arc = min(feeders, key=lambda a: a.lead_periods)
+            upstream = direct.get((sku, arc.origin))
+            lead = arc.lead_periods + (dates(req, upstream, 0)[1] if upstream is not None else 0)
+        margin = max(0., min(s.selling_price for s in services) - skus[sku].terminal_value)
+        continuation[sku, location] = (mu * (lead + 1), margin)
+    terms: dict = {}
+    if excess:
+        terms["excess_penalty"] = excess
+    if continuation:
+        terms["continuation"] = continuation
+    return terms
+
+
+def procurement_timing(req: Request, fits: dict, solution: Solution | None) -> list[dict]:
+    """Timing audit (v6): for every planned purchase, the period it lands, the first period the
+    location would otherwise run short (deterministic fitted demand, opening stock, pipeline and
+    earlier arrivals), the periods it arrives early and the cash committed that early."""
+    if solution is None or not solution.purchases:
+        return []
+    sources = {s.id: s for s in req.sources}
+    position: dict[tuple[str, str], float] = {(s.id, location.id): sum(x.usable for x in req.stock if x.sku == s.id and x.location == location.id)
+                                              for s in req.skus for location in req.locations}
+    arrivals: dict[tuple[str, str, int], float] = {}
+    for po in req.pipeline:
+        source = sources[po.source]
+        due = next(o.due_in for o in po.options if o.action == "keep")
+        arrivals[source.sku, source.destination, due] = arrivals.get((source.sku, source.destination, due), 0.) + po.expected_accepted_remaining
+    for row in req.inbound_transfers:
+        arrivals[row.sku, row.destination, row.due_in] = arrivals.get((row.sku, row.destination, row.due_in), 0.) + row.accepted_quantity
+    for (arc_id, _, t), q in solution.transfers.items():
+        arc = next(a for a in req.transfers if a.id == arc_id)
+        arrivals[arc.sku, arc.destination, t + arc.lead_periods] = arrivals.get((arc.sku, arc.destination, t + arc.lead_periods), 0.) + q * (1 - arc.loss_fraction)
+        arrivals[arc.sku, arc.origin, t] = arrivals.get((arc.sku, arc.origin, t), 0.) - q
+    mu = {(s.sku, s.location): 0. for s in req.services}
+    for s in req.services:
+        mu[s.sku, s.location] += fits[s.id]["mean"]
+    planned = sorted(((source_id, t, q) for (source_id, t), q in solution.purchases.items() if q > 0), key=lambda x: dates(req, sources[x[0]], x[1])[1])
+    out = []
+    for source_id, t, q in planned:
+        source = sources[source_id]
+        key = (source.sku, source.destination)
+        arrival = dates(req, source, t)[1]
+        level, needed_by = position[key], None
+        for p in range(req.horizon + 1):
+            level += arrivals.get((*key, p), 0.)
+            level -= mu.get(key, 0.)
+            if level < 0 and p >= arrival:
+                needed_by = p
+                break
+        early = 0 if needed_by is None else max(0, needed_by - arrival)
+        if needed_by is None:
+            early = max(0, req.horizon - arrival)
+        landed = source.unit_price + source.freight_per_unit + source.handling_per_unit
+        out.append({"source": source_id, "period": t, "quantity": q, "arrival_period": arrival, "needed_by_period": needed_by,
+                    "early_periods": early, "cash_committed_early": q * landed * early})
+        arrivals[(*key, arrival)] = arrivals.get((*key, arrival), 0.) + q * source.fill_mean
+    return out
+
+
 def plan(req: Request) -> dict:
     reliability = req.engine_profile == "reliability"
     service_risk = "cvar" if reliability else "expected"
@@ -308,6 +398,7 @@ def plan(req: Request) -> dict:
     supply = supply_profiles(req)
     sources_by_id = {s.id: s for s in req.sources}
     protection = protection_profile(req, fits, supply)
+    v6 = v6_solve_terms(req, fits, protection) if req.protection_v6 else {}
     selection = draw(req, req.seed, req.scenarios)
     deterministic = draw(req, req.seed, 1, deterministic=True)
     baseline_targets = targets(req)
@@ -320,9 +411,9 @@ def plan(req: Request) -> dict:
         incumbent = solve(req, deterministic, fixed=declared)
         incumbent_label = "operator_declared"
     candidates = {"incumbent": incumbent, "base_stock": base,
-                  "deterministic_network": solve(req, deterministic, service_floor=True),
-                  "stochastic_network": solve(req, selection, service_floor=True),
-                  "cvar_network": solve(req, selection, service_floor=True, cvar_weight=.2)}
+                  "deterministic_network": solve(req, deterministic, service_floor=True, **v6),
+                  "stochastic_network": solve(req, selection, service_floor=True, **v6),
+                  "cvar_network": solve(req, selection, service_floor=True, cvar_weight=.2, **v6)}
     stress_worlds = []
     for i, stress in enumerate(req.stresses):
         stress_worlds += draw(req, req.seed + 100 + i, 1, stress)
@@ -340,13 +431,13 @@ def plan(req: Request) -> dict:
                     for s in req.services} if req.protection_decay else None)
     if reliability:
         # Quantile protection: the worst share of scenarios must meet the target too.
-        candidates["protected_network"] = solve(req, selection, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels)
+        candidates["protected_network"] = solve(req, selection, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, **v6)
         if hedged:
             # Hedged protection: the declared stress envelopes enter the solve at their probability
             # weight, so protection is sized by how credible and how costly the stress is.
-            candidates["hedged_network"] = solve(req, hedged, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels)
-    candidates["stress_network"] = solve(req, combined, service_floor=True, per_world_service=True)
-    recovery = solve(req, combined, service_first="all")
+            candidates["hedged_network"] = solve(req, hedged, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, **v6)
+    candidates["stress_network"] = solve(req, combined, service_floor=True, per_world_service=True, **v6)
+    recovery = solve(req, combined, service_first="all", **v6)
     if recovery.status == "OPTIMAL":
         candidates["joint_recovery"] = recovery
 
@@ -743,6 +834,13 @@ def plan(req: Request) -> dict:
             "approval_required": True, "executable_purchase_order": False,
             "forecasts": fits, "eta": eta, "service_frontier": frontier,
             "protection": protection, "false_protection": false_protection, "explain": explain, "protection_value": protection_value,
+            "network_service": [{"service": s.id, "location": s.location, "requested": s.target,
+                                 "jointly_feasible": _service_value(req, joint_rows, s) if joint_rows else None,
+                                 "expected_achieved": _service_value(req, final_rows, s) if final_rows else None,
+                                 "incumbent_achieved": _service_value(req, incumbent_rows, s) if incumbent_rows else None,
+                                 "selected_achieved": _service_value(req, candidate_rows, s) if (accepted and candidate_rows) else (_service_value(req, incumbent_rows, s) if incumbent_rows else None)}
+                                for s in req.services],
+            "procurement_timing": procurement_timing(req, fits, final) if req.protection_v6 else None,
             "supply_profiles": {k: profile_dict(v) for k, v in supply.items()},
             "alternatives": alternatives, "service_reliability": service_reliability,
             "selection_costs": {name: {"fitted": mean(r["economic_cost"] for r in rows) if rows and all(r["usable"] for r in rows) else None,

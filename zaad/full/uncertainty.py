@@ -194,6 +194,14 @@ class SupplyProfile:
     recent_partial_probability: float = 0.
     recent_records: int = 0
     recent_fill_mean: float = 1.      # mean accepted ratio over the recent window (declared mean when empty)
+    # Recovery exit evidence (v6): the trailing run of clean receipts, how many the last kind of
+    # trouble requires before the driver retires, whether an overdue order still stands, and when
+    # the last adverse evidence was seen.
+    recent_clean_run: int = 0
+    exit_receipts_needed: int = 6
+    backlog_open: bool = False
+    last_adverse_known_at: str | None = None
+    driver_kind: str | None = None    # "backlog" | "fill" | "lateness" | None
 
 
 def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], period_days: int = 7,
@@ -234,11 +242,29 @@ def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], per
     recent_ratios = [float(r.accepted_ratio) for r in recent if r.arrived and r.accepted_ratio is not None]
     recent_partial = float(np.mean(np.asarray(recent_ratios) < .9)) if recent_ratios else partial
     recent_fill = float(np.mean(recent_ratios)) if recent_ratios else fill_mean
+    # Exit evidence: walk back from the newest record until the first adverse one. A late-but-full
+    # receipt (route or transit trouble) needs three clean receipts to retire; a short receipt (fill
+    # deterioration) needs six; an overdue open order holds the driver active whatever the run says.
+    ordered = sorted(arrived + overdue, key=lambda r: r.known_at)
+    clean_run, needed, kind, last_adverse = 0, 3, None, None
+    for r in reversed(ordered):
+        is_late = r.elapsed_days > declared + slack
+        is_short = r.arrived and r.accepted_ratio is not None and r.accepted_ratio < .9
+        if not r.arrived:
+            kind, needed, last_adverse = "backlog", 6, r.known_at.isoformat()
+            break
+        if is_late or is_short:
+            kind, needed, last_adverse = ("fill" if is_short else "lateness"), (6 if is_short else 3), r.known_at.isoformat()
+            break
+        clean_run += 1
+    if kind is None and clean_run == len(ordered):
+        needed = 0
     return SupplyProfile(source.id, "observed" if observed else "declared", eta.records, eta.censored,
                          fill_mean, fill_sd, partial, ratios, declared, float(source.lead_sd_days), eta.support, eta.p50, p90,
                          float(min(1., late)), int(tail), eta.unresolved_mass,
                          recent_late_probability=recent_late, recent_partial_probability=recent_partial, recent_records=len(recent),
-                         recent_fill_mean=recent_fill)
+                         recent_fill_mean=recent_fill, recent_clean_run=clean_run, exit_receipts_needed=needed,
+                         backlog_open=bool(overdue), last_adverse_known_at=last_adverse, driver_kind=kind)
 
 
 def supply_profiles(req: Request) -> dict[str, SupplyProfile]:
@@ -317,7 +343,7 @@ def diversification(req: Request, sku: str, location: str, profile: str = "relia
             "scope": "capacity-weighted; sources sharing a supplier or any failure domain count as one"}
 
 
-def supply_state(profile: SupplyProfile, severity: float = 0., recency: bool = False) -> float:
+def supply_state(profile: SupplyProfile, severity: float = 0., recency: bool = False, exit_rules: bool = False) -> float:
     """How active the supply risk driver is, 0 to 1: lateness beyond the declared lead, a fill
     mean materially below full delivery, a wide fill spread, and licensed route signals. A
     source that delivers about 95% on time with a tight spread scores zero: that is normal
@@ -326,6 +352,11 @@ def supply_state(profile: SupplyProfile, severity: float = 0., recency: bool = F
     of after the whole history has been diluted."""
     shortfall = max(0., (.9 - profile.fill_mean) * 5.)
     spread = max(0., (profile.fill_sd - .05) * 10.)
+    if exit_rules and recency and profile.recent_records >= 3 and not profile.backlog_open \
+            and profile.recent_clean_run >= profile.exit_receipts_needed:
+        # Recovery exit (v6): the evidence the last kind of trouble required has arrived and no
+        # order is overdue, so the observed driver retires; only licensed route severity remains.
+        return float(min(1., severity))
     if recency and profile.recent_records >= 3:
         late = profile.recent_late_probability
         partial = profile.recent_partial_probability

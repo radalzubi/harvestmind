@@ -87,6 +87,7 @@ class Solution:
     residual: float | None
     warnings: list[str]
     protection_state: list[dict] | None = None
+    procurement_timing: list[dict] | None = None
 
 
 def compatible(req, service):
@@ -106,7 +107,16 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           fixed: Solution | None = None, disabled: frozenset[str] = frozenset(),
           targets: dict[tuple[str, int], float] | None = None,
           per_world_service: bool = False, service_risk: str = "expected",
-          service_risk_levels: dict[str, float] | None = None) -> Solution:
+          service_risk_levels: dict[str, float] | None = None,
+          excess_penalty: dict[tuple[str, str], tuple[float, float]] | None = None,
+          continuation: dict[tuple[str, str], tuple[float, float]] | None = None) -> Solution:
+    """excess_penalty (v6): {(sku, location): (baseline_units, cost_per_unit_period)} charges inventory
+    held above the lean baseline while a temporary risk driver is gone, so the plan runs temporary
+    protection down through demand rather than replenishing it. continuation (v6): {(sku, location):
+    (post_horizon_demand_units, margin_per_unit)} lets end-of-horizon stock and post-horizon arrivals
+    earn the service margin on demand expected during the next replenishment lead instead of only
+    salvage, so late-horizon decisions are not artificially idle. Both use information available
+    at the review only (fitted mean demand, declared lead)."""
     started = time.monotonic()
     if not worlds or abs(sum(w.weight for w in worlds) - 1) > 1e-8 or any(w.weight <= 0 for w in worlds):
         raise ValueError("positive scenario weights must sum to one")
@@ -132,6 +142,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
         for sku, _, _ in compatible(req, service):
             service_for_stock[sku, service.location].append(service)
     costs: list[dict[int, float]] = [defaultdict(float) for _ in worlds]
+    # Post-horizon supply per (sku, location): arrivals due at or after H and end-of-horizon stock (v6 continuation).
+    post: list[dict[tuple[str, str], dict[int, float]]] = [defaultdict(lambda: defaultdict(float)) for _ in worlds]
     payments: list[list[dict[int, float]]] = [[defaultdict(float) for _ in range(H)] for _ in worlds]
     arrivals: list[dict[tuple, dict[int, float]]] = [defaultdict(lambda: defaultdict(float)) for _ in worlds]
     outbound: dict[tuple, dict[int, float]] = defaultdict(lambda: defaultdict(float))
@@ -155,6 +167,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             arrivals[w][inbound.sku, inbound.destination, inbound.expires_in, inbound.due_in][q] += 1
             if inbound.due_in >= H:
                 costs[w][q] -= skus[inbound.sku].terminal_value
+                post[w][inbound.sku, inbound.destination][q] += 1.
     tail: list[dict[int, float]] = [defaultdict(float) for _ in worlds]
 
     def expense(index, amount, w, when):
@@ -229,6 +242,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 payments[w][t][q] += price * term.financing_fee_fraction
                 if due >= H:
                     costs[w][q] -= fill * skus[source.sku].terminal_value
+                    post[w][source.sku, source.destination][q] += fill
     for group in quote_groups.values():
         m.row({v: 1 for v in group}, upper=1)
     if req.engine_profile == "reliability" and req.order_smoothing > 0 and fixed is None:
@@ -279,6 +293,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 arrivals[w][source.sku, source.destination, expiry, due][q] += world.po_fill[order.id]
                 if due >= H:
                     costs[w][q] -= world.po_fill[order.id] * skus[source.sku].terminal_value
+                    post[w][source.sku, source.destination][q] += world.po_fill[order.id]
         m.row({q: 1 for q in quantities}, order.remaining, order.remaining)
         if switches:
             m.row({q: 1 for q in switches}, 1, 1)
@@ -315,6 +330,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     expense(q, arc.cost_per_unit, w, t)
                     if due >= H:
                         costs[w][q] -= (1 - arc.loss_fraction) * skus[arc.sku].terminal_value
+                        post[w][arc.sku, arc.destination][q] += 1 - arc.loss_fraction
             if ids:
                 m.row({q: 1 for q in ids}, upper=arc.capacity)
     # Executable transfers share observed opening inventory across all arcs.
@@ -346,6 +362,15 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         costs[w][index] += skus[sku].disposal_fee
                     if t == H - 1:
                         costs[w][index] -= skus[sku].terminal_value if expiry > H else 0.
+                        if expiry > H:
+                            post[w][sku, location][index] += 1.
+            if excess_penalty:
+                for (sku, location), (baseline, rate) in excess_penalty.items():
+                    held = stock_indices.get((sku, location, t, w), [])
+                    if held and rate > 0:
+                        excess = m.var(("excess", sku, location, t, w))
+                        m.row({**{i: 1. for i in held}, excess: -1.}, upper=max(0., baseline))
+                        costs[w][excess] += rate
             for service in req.services:
                 d = world.demand[service.id][t]
                 if d < 0 or not math.isfinite(d):
@@ -559,6 +584,14 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 for w, world in enumerate(worlds):
                     m.row({unmet[service.id, t, w]: 1 for t in range(H)},
                           upper=(1 - service.target) * sum(world.demand[service.id]))
+    if continuation:
+        for w in range(len(worlds)):
+            for (sku, location), (demand_units, margin) in continuation.items():
+                supply_terms = post[w].get((sku, location), {})
+                if demand_units > 0 and margin > 0 and supply_terms:
+                    served = m.var(("continuation", sku, location, w), upper=demand_units)
+                    m.row({**{q: -coef for q, coef in supply_terms.items()}, served: 1.}, upper=0)
+                    costs[w][served] -= margin
     for w, world in enumerate(worlds):
         for q, amount in costs[w].items():
             m.cost[q] += world.weight * amount
@@ -575,6 +608,14 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
         penalty = 1000 * max(s.selling_price + s.sla_per_unmet for s in req.services)
         for target_key, quantity in targets.items():
             plus, minus = m.var(("target_above", *target_key), cost=penalty), m.var(("target_below", *target_key), cost=penalty)
+            if len(target_key) == 3 and target_key[0] == "transfer":
+                # Transfer target (echelon base stock): the period's total across expiry cohorts.
+                _, arc_id, t_key = target_key
+                terms_ = {q: 1. for (a_id, _, t_) , q in tr.items() if a_id == arc_id and t_ == t_key}
+                if not terms_:
+                    continue
+                m.row({**terms_, plus: -1, minus: 1}, quantity, quantity)
+                continue
             m.row({x[target_key]: 1, plus: -1, minus: 1}, quantity, quantity)
     objective = None
     if service_first:

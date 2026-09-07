@@ -405,6 +405,10 @@ class Request(Record):
     # band are ranked by inventory burden, echelon accounting and transition reasons in the
     # report. False reproduces the v4 (PR 33) profile for paired comparison.
     protection_v5: bool = True
+    # v6 multi-echelon / recovery rules: duplicated-buffer detection, per-driver recovery exit,
+    # recovery excess penalty (orderly run-down of temporary protection), bounded terminal
+    # continuation, procurement-timing audit. False reproduces the V5 engine exactly.
+    protection_v6: bool = True
     mode: Literal["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] = "LEAN"
     evidence_label: Literal["SYNTHETIC", "OPERATOR-SHADOW"]
 

@@ -408,6 +408,33 @@ def truth_for(req, cell, seed):
                  {p.id: p.expected_accepted_remaining / p.remaining for p in req.pipeline})
 
 
+def v6_metrics(req, rows) -> dict:
+    """Multi-echelon / recovery metrics (v6) from the replay log: echelon accounting means, duplicated
+    buffer units, procurement timing, recovery exit, and a compact per-review network trace
+    (on hand per location, transfers, unmet, remaining planning horizon)."""
+    states = [p for r in rows for p in (r.get("protection") or [])]
+    echelon_keys = ("local_service_units", "pooled_network_units", "source_protection_units", "temporary_risk_units")
+    echelon = {k: float(np.mean([p["echelon"][k] for p in states if p.get("echelon")])) if any(p.get("echelon") for p in states) else None for k in echelon_keys}
+    duplicated = [p.get("duplicated_buffer_units", 0.) for p in states]
+    timing = [x for r in rows for x in (r.get("procurement_timing") or [])]
+    reviews_to_lean = [p["exit"]["reviews_remaining_until_lean_eligible"] for p in states if p.get("exit")]
+    trace = []
+    for n, r in enumerate(rows):
+        end = r["settlement"].get("end_stock") or []
+        on_hand = {}
+        for row in end:
+            on_hand[row["location"]] = on_hand.get(row["location"], 0.) + row["quantity"]
+        unmet = sum(s["demand"] - s["served"] for s in r["settlement"]["service_by_period"])
+        trace.append({"review": n, "on_hand": {k: round(v, 1) for k, v in on_hand.items()}, "transfer_spend": round(r["settlement"]["ledger"].get("transfer", 0.), 2),
+                      "unmet": round(unmet, 1), "remaining_horizon": req.horizon - n})
+    return {"echelon_mean": echelon, "duplicated_buffer_units_mean": float(np.mean(duplicated)) if duplicated else None,
+            "duplicated_buffer_reviews": int(sum(1 for d in duplicated if d > 0)),
+            "early_periods_mean": float(np.mean([x["early_periods"] for x in timing])) if timing else None,
+            "cash_committed_early_total": float(sum(x["cash_committed_early"] for x in timing)) if timing else None,
+            "reviews_to_lean_eligible_median": float(np.median(reviews_to_lean)) if reviews_to_lean else None,
+            "network_trace": trace}
+
+
 def task(args):
     cell, seed, method = args
     req = request_for(cell, seed)
@@ -429,6 +456,7 @@ def task(args):
             # Protection trajectory per review (gated methods): regime, activity, recommended and lean units, on hand.
             "protection_trajectory": [[{k: p[k] for k in ("regime", "activity", "protection_units", "lean_baseline_units", "on_hand_units", "periods_to_lean")}
                                        for p in (r.get("protection") or [])] for r in rows] if any(r.get("protection") for r in rows) else None,
+            **v6_metrics(req, rows),
             "change_origins": [r["forecast"]["retail_A"]["segment_origin"] for r in rows],
             "min_cash": min((x["cash"] for r in rows for x in r["settlement"]["trace"]), default=None),
             "max_debt": max((x["debt"] for r in rows for x in r["settlement"]["trace"]), default=None),

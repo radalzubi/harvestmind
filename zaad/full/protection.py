@@ -115,7 +115,7 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         # Risk state: how active each driver is, how resilient the SKU is, and the lean baseline
         # (demand-only protection at the fitted spread with every other driver calm).
         demand_score = max((demand_state(fits[s.id]["uncertainty"]) for s in services), default=0.) if reliability else 0.
-        supply_score = supply_state(profile, recency=req.protection_v5) if profile is not None else 0.
+        supply_score = supply_state(profile, recency=req.protection_v5, exit_rules=req.protection_v6) if profile is not None else 0.
         resilient = resilience(window, effective, substitute_cover, mu * window, alternate_inside) if eligible else 0.
         activity = protection_activity(demand_score, supply_score, resilient) if (reliability and req.protection_decay) else 1.
         # Lean baseline: protection with every active driver removed, i.e. the fitted demand spread
@@ -160,6 +160,22 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         if feeders:
             upstream_protection = sum(x.usable for x in req.stock if x.sku == sku and x.location in {a.origin for a in feeders})
         duplicated = bool(feeders and transfer_lead is not None and transfer_lead <= 2 and on_hand > local_units + mu and upstream_protection > pooled_units + mu)
+        # Duplicated buffer (v6): the same demand spread buffered at the branch and again upstream,
+        # counted only when the transfer can physically land inside the service window with enough
+        # capacity; otherwise the branch stock is local by necessity, not duplication.
+        transfer_capacity = max((a.capacity for a in feeders), default=0.)
+        # A fed branch has no direct source, so its replenishment window is the horizon; the service
+        # window that matters for pooling is the review cadence: pooled stock can stand in for
+        # branch stock only when the arc lands within two reviews (the same bound as the v4 flag).
+        inside_window = transfer_lead is not None and transfer_lead <= 2
+        duplicated_units = 0.
+        duplicated_explanation = ""
+        if req.protection_v6 and feeders and inside_window and transfer_capacity >= mu and on_hand > local_units and upstream_protection > pooled_units:
+            duplicated_units = max(0., min(on_hand - local_units, upstream_protection - pooled_units))
+            origin_ids = sorted({a.origin for a in feeders})
+            duplicated_explanation = (f"{duplicated_units:.0f} units buffer the same demand spread twice: {location} holds {on_hand:.0f} against a local need of "
+                                      f"{local_units:.0f} while {', '.join(origin_ids)} holds {upstream_protection:.0f} against a pooled need of {pooled_units:.0f}; "
+                                      f"the transfer lead of {transfer_lead} review(s) is inside the {window}-period service window with capacity {transfer_capacity:.0f} per period")
         # Regime with hysteresis: entering PROTECT needs a materially active driver; leaving needs
         # the driver to have gone quiet for two observations; RECOVER is the unwinding phase.
         if activity >= .3:
@@ -202,7 +218,15 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
             transition = f"PROTECT -> RECOVER: the risk driver has gone quiet (activity {activity:.2f}) and {max(0., on_hand - lean_baseline):.0f} units above the lean baseline remain to be consumed, transferred or left unreplenished"
         else:
             transition = "LEAN: no active driver; protection is the lean baseline" if activity <= .05 else "LEAN"
+        exit_info = {"active_risk_source": (primary.id if (primary is not None and profile is not None and supply_score >= demand_score and supply_score > .05) else ("demand" if demand_score > .05 else None)),
+                     "driver_kind": (profile.driver_kind if profile is not None else None),
+                     "last_evidence": (profile.last_adverse_known_at if profile is not None else None),
+                     "recovery_evidence_receipts": (profile.recent_clean_run if profile is not None else 0),
+                     "receipts_needed": (profile.exit_receipts_needed if profile is not None else 0),
+                     "backlog_open": bool(profile is not None and profile.backlog_open),
+                     "reviews_remaining_until_lean_eligible": (max(0, profile.exit_receipts_needed - profile.recent_clean_run) if (profile is not None and supply_score > .05) else periods_to_lean)}
         state = {"activity": activity, "demand_score": demand_score, "supply_score": supply_score, "resilience": resilient,
+                 "duplicated_buffer_units": duplicated_units, "duplicated_buffer_explanation": duplicated_explanation, "exit": exit_info,
                  "alternate_inside_window": alternate_inside, "echelon": echelon, "transition": transition,
                  "risk_active": activity > .05, "decaying": bool(decaying), "periods_to_lean": periods_to_lean,
                  "lean_baseline_units": lean_baseline, "incremental_protection_units": max(0., protection - lean_baseline),
