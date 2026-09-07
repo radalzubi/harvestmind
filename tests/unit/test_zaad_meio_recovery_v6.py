@@ -13,7 +13,6 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-import pytest
 
 from zaad.full.contracts import Request
 from zaad.full.demo import example
