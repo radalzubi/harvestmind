@@ -35,7 +35,9 @@ SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 
          # Calibrated-protection cycle (v4). holdout3 is consumed; holdout4 is frozen and unrun during development.
          "development4": [29001], "validation4": [30001, 30002], "holdout4": [31001, 31002],
          # Network/recovery cycle (v5). holdout4 stays frozen and unrun; v5 may only use these two splits.
-         "development5": [32001], "validation5": [33001, 33002]}
+         "development5": [32001], "validation5": [33001, 33002],
+         # Multi-echelon / recovery cycle (v6). holdout4 stays frozen and unrun; v6 may only use these two splits.
+         "development6": [34001], "validation6": [35001, 35002]}
 METHODS = ["base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated"]
 RELIABILITY_METHODS = ["base_stock", "stochastic", "robust", "protected", "gated_pr24", "gated_pr30", "gated"]
 INVENTORY = {"low": .5, "balanced": 2., "high": 4.}
@@ -75,6 +77,8 @@ def reliability_cells(random_cells: int = 30) -> list[dict]:
 
 V4_METHODS = ["base_stock", "stochastic", "robust", "gated_pr24", "gated_pr30", "gated"]
 V5_METHODS = ["base_stock", "gated_pr24", "gated_pr30", "gated_v4", "gated"]
+V6_METHODS = ["base_stock", "echelon_base_stock", "gated_pr24", "gated_pr30", "gated_v4", "gated_v5", "gated"]
+V6_NETWORKS = RELIABILITY_NETWORKS + ["central_two_branches"]
 V4_DEMANDS = RELIABILITY_DEMANDS + ["intermittent_spiky", "promotion_recovery", "surge_recovery"]
 V4_SUPPLIES = RELIABILITY_SUPPLIES + ["deterioration_recovery", "closure_recovery"]
 V4_ALTERNATIVES = ALTERNATIVES + ["transfer_constrained", "shared_route"]
@@ -131,11 +135,57 @@ def v4_cells(random_cells: int = 24) -> list[dict]:
     return [{"cell": i, **value} for i, value in enumerate(values)]
 
 
+def v6_cells() -> list[dict]:
+    """Multi-echelon / recovery matrix: every v4 cell unchanged (ids 0-71), then explicit cells on a
+    one-central / two-branch network (independent or correlated branch demand, transfer lead 1-3
+    reviews, constrained transfer capacity, branch-specific SLA, central stock sufficient or short)
+    and 26-review recovery scenarios (supplier delay, route closure with alternate, promotion end,
+    demand level up, demand level down, central shortage) so the unwind is observable."""
+    base = v4_cells()
+    for cell in base:
+        cell["matrix"] = "v6"
+    def two(demand="stable", supply="stable", alternative="none", target=.95, branch_sla=None, transfer_lead=1,
+            transfer_capacity=50., central_cover=2., correlation="independent", inventory="balanced", horizon=12):
+        return {"family": "reliability", "matrix": "v6", "target": target, "cover": INVENTORY[inventory], "inventory": inventory,
+                "demand": demand, "supply": supply, "network": "central_two_branches",
+                "suppliers": "independent" if alternative == "supplier" else "single", "alternative": alternative, "case": "normal",
+                "horizon": horizon, "branch_sla": target if branch_sla is None else branch_sla, "transfer_lead": transfer_lead,
+                "transfer_capacity": transfer_capacity, "central_cover": central_cover, "demand_correlation": correlation}
+    def one(demand="stable", supply="stable", alternative="none", network="single", target=.95, horizon=26, inventory="balanced"):
+        suppliers = "independent" if alternative == "supplier" else "single"
+        return {"family": "reliability", "matrix": "v6", "target": target, "cover": INVENTORY[inventory], "inventory": inventory,
+                "demand": demand, "supply": supply, "network": network, "suppliers": suppliers, "alternative": alternative,
+                "case": "normal", "horizon": horizon}
+    explicit = [
+        two(),                                                   # pooling baseline: independent branches, fast transfer
+        two(correlation="correlated"),                           # correlated branches: pooling is worth less
+        two(transfer_lead=2), two(transfer_lead=3),              # slow transfer: more must sit local
+        two(transfer_capacity=12.),                              # constrained transfer
+        two(target=.99, branch_sla=.9),                          # branch-specific SLA
+        two(target=.9, branch_sla=.9), two(target=.99, branch_sla=.99),
+        two(inventory="high"), two(inventory="low"),
+        two(central_cover=0., horizon=26),                       # central shortage -> transfer response -> recovery
+        two(supply="deterioration_recovery", horizon=26),
+        two(supply="closure_recovery", alternative="supplier", horizon=26),
+        two(demand="promotion_recovery", horizon=26),
+        two(demand="increase", horizon=26), two(demand="decrease", horizon=26),
+        two(demand="volatile"), two(demand="intermittent"),
+        one(supply="deterioration_recovery"),                    # normal -> supplier delay -> recovery -> long stable tail
+        one(supply="closure_recovery", alternative="supplier"),  # normal -> closure -> alternate -> primary restored -> quiet tail
+        one(demand="promotion_recovery"), one(demand="increase"), one(demand="decrease"),
+        one(supply="deterioration_recovery", network="central_branches"),
+        one(demand="temporary_spike", horizon=26),
+    ]
+    return base + [{"cell": len(base) + i, **value} for i, value in enumerate(explicit)]
+
+
 def cells(matrix="coverage"):
     if matrix == "reliability":
         return reliability_cells()
     if matrix == "v4":
         return v4_cells()
+    if matrix == "v6":
+        return v6_cells()
     values = []
     targets_ = [.9, .93, .95, .97, .98, .99, .995]
     stock = [.1, 1., 2., 4., 7.]
@@ -209,7 +259,23 @@ def request_for(cell, seed):
     network = cell["network"]
     if network == "single" and alternative in {"transfer", "transfer_constrained"}:
         network = "two_locations"
-    if network != "single":
+    if network == "central_two_branches":
+        # One central DC fed by the supplier(s); two branches each served only by transfer from it.
+        lead, capacity = int(cell.get("transfer_lead", 1)), float(cell.get("transfer_capacity", 50.))
+        data["locations"].append({**data["locations"][0], "id": "central", "kind": "central_dc", "holding_per_value_period": .003})
+        data["locations"].append({**data["locations"][0], "id": "branch_south"})
+        data["customers"].append({**data["customers"][0], "id": "customer_south"})
+        data["services"].append({**data["services"][0], "id": "retail_A_south", "location": "branch_south", "customer": "customer_south",
+                                 "target": float(cell.get("branch_sla", cell["target"]))})
+        data["stock"].append({**data["stock"][0], "id": "opening_south", "location": "branch_south"})
+        data["stock"].append({**data["stock"][0], "id": "central_pool", "location": "central", "quantity": float(cell.get("central_cover", 2.)) * 40.})
+        for branch in ("branch", "branch_south"):
+            data["transfers"].append({"id": f"central_{branch}", "known_at": data["as_of"], "sku": "A", "origin": "central", "destination": branch,
+                                      "lead_periods": lead, "capacity": capacity, "cost_per_unit": .2, "loss_fraction": .01, "approved": True})
+        for source in data["sources"]:
+            source["destination"] = "central"
+            source["route"][-1] = "central"
+    elif network != "single":
         data["locations"].append({**data["locations"][0], "id": "central", "kind": "central_dc", "holding_per_value_period": .003})
         data["stock"].append({**data["stock"][0], "id": "central_excess", "location": "central", "quantity": 80.})
         data["transfers"].append({"id": "central_branch", "known_at": data["as_of"], "sku": "A", "origin": "central", "destination": "branch",
@@ -226,7 +292,9 @@ def request_for(cell, seed):
             "customers": ["customer"], "channels": ["retail"], "input_per_output": 1., "penalty_per_output": .1,
             "service_equivalence": 1., "approved": True, "brand_approval_reference": "fixture", "cannibalization_assumption": "none"})
     if cell["family"] != "action":
-        data["stock"][0]["quantity"] = cell["cover"] * 20
+        for lot in data["stock"]:
+            if lot["id"] in {"opening", "opening_south"}:
+                lot["quantity"] = cell["cover"] * 20
     data["services"][0]["target"] = cell["target"]
     data["demand_adaptation"] = cell.get("adaptation", "symmetric")
     rng = np.random.default_rng(seed + 210000)
@@ -242,6 +310,13 @@ def request_for(cell, seed):
             if period == -30:
                 q = 20 * 12.
         history.append({"known_at": data["as_of"], "service": "retail_A", "period": period, "quantity": q})
+    if network == "central_two_branches":
+        south = np.random.default_rng(seed + 220000)
+        for period in range(-78, 0):
+            q = max(0., south.normal(20., 6. if cell["demand"] == "volatile" else 2))
+            if cell["demand"] == "intermittent":
+                q = q * 2 if south.random() < .5 else 0.
+            history.append({"known_at": data["as_of"], "service": "retail_A_south", "period": period, "quantity": q})
     data["history"] = history
     if cell["demand"] in {"promotion", "promotion_recovery"}:
         data["events"] = [{"id": "promotion", "known_at": data["as_of"], "service": "retail_A", "start": 3, "end": 5, "multiplier": 1.8, "label": "known promotion"}]
@@ -259,6 +334,11 @@ def truth_for(req, cell, seed):
     rng = np.random.default_rng(seed + 410000)
     H = req.horizon
     demand = []
+    # Second branch (v6): its own Poisson draws, or a shared multiplicative shock when the cell
+    # declares correlated branch demand, on the same level path as the first branch.
+    south_rng = np.random.default_rng(seed + 420000)
+    shared = rng.normal(size=H) if cell.get("demand_correlation") == "correlated" else None
+    demand_south = []
     for t in range(H):
         mu = 20 * (1 + .3 * np.sin(2 * np.pi * t / 26)) if cell["demand"] == "seasonal" else 20.
         if cell["demand"] == "promotion" and 3 <= t <= 5:
@@ -277,6 +357,8 @@ def truth_for(req, cell, seed):
             mu *= 1.8          # declared promotion, then a long normal tail
         if cell["demand"] == "surge_recovery" and 3 <= t <= 8:
             mu *= 1.8          # undeclared six-period surge, then normal
+        if shared is not None:
+            mu *= float(np.exp(.25 * shared[t] - .03))          # common shock on both branches
         if cell["demand"] == "volatile":
             q = float(rng.negative_binomial(4, 4 / (4 + mu)))   # mean mu, variance mu + mu^2/4
         else:
@@ -286,6 +368,12 @@ def truth_for(req, cell, seed):
         if cell["demand"] == "intermittent_spiky":
             q = 4 * q if rng.random() < .25 else 0.
         demand.append(q)
+        if any(s.id == "retail_A_south" for s in req.services):
+            mu_s = mu
+            qs = float(south_rng.negative_binomial(4, 4 / (4 + mu_s))) if cell["demand"] == "volatile" else float(south_rng.poisson(mu_s))
+            if cell["demand"] == "intermittent":
+                qs = 2 * qs if south_rng.random() < .5 else 0.
+            demand_south.append(qs)
     arrivals, fills = {}, {}
     kind = cell["case"]
     supply = cell["supply"]
@@ -312,7 +400,10 @@ def truth_for(req, cell, seed):
                 fill *= floor
                 lead += extra
             arrivals[source.id, t], fills[source.id, t] = t + lead, fill
-    return World(f"independent_truth:{seed}:{cell['cell']}", 1., {"retail_A": tuple(demand)}, arrivals, fills,
+    truth_demand = {"retail_A": tuple(demand)}
+    if demand_south:
+        truth_demand["retail_A_south"] = tuple(demand_south)
+    return World(f"independent_truth:{seed}:{cell['cell']}", 1., truth_demand, arrivals, fills,
                  {p.id: next(o.due_in for o in p.options if o.action == "keep") for p in req.pipeline},
                  {p.id: p.expected_accepted_remaining / p.remaining for p in req.pipeline})
 
@@ -403,7 +494,7 @@ def source_hash():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", choices=list(SEEDS), default="development")
-    parser.add_argument("--matrix", choices=["coverage", "full", "reliability", "v4"], default="coverage")
+    parser.add_argument("--matrix", choices=["coverage", "full", "reliability", "v4", "v6"], default="coverage")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--freeze", action="store_true")
@@ -447,6 +538,8 @@ def main():
     methods = args.methods or (RELIABILITY_METHODS if args.matrix == "reliability" else V4_METHODS if args.matrix == "v4" else METHODS)
     if args.split in {"development5", "validation5"} and not args.methods:
         methods = V5_METHODS
+    if args.split in {"development6", "validation6"} and not args.methods:
+        methods = V6_METHODS
     tasks = [(c, s, m) for c in selected for s in SEEDS[args.split] for m in methods]
     with args.output.open("x") as file, ProcessPoolExecutor(max_workers=args.workers) as pool:
         for i, row in enumerate(pool.map(task, tasks, chunksize=1)):
