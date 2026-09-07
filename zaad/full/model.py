@@ -89,6 +89,7 @@ class Solution:
     protection_state: list[dict] | None = None
     procurement_timing: list[dict] | None = None
     capital: dict | None = None
+    solve_quality: dict | None = None
 
 
 def compatible(req, service):

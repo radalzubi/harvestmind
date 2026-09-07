@@ -230,6 +230,38 @@ rather than proof bound.
 This is a correctness standard, not a performance one, and it takes precedence over every speed
 optimisation in the cycle.
 
+### 5.1 What the gate actually caught — and what it did not
+
+Implementing the gate and measuring it corrected the first reading above, and the correction is
+more important than the original claim.
+
+The wide gaps (0.89, 1.00) belong to solves that return a **non-`OPTIMAL`** status, and those
+candidates were *already* excluded from ranking in V6/V7, because `feasible` is built only from
+candidates that solved. At the default threshold of 0.02 the number of `OPTIMAL`-but-under-solved
+candidates on the measured cells is **zero**, and service and inventory are identical with the gate
+on and off (cell 0: 0.921 service, 0.43 inventory periods, both ways).
+
+**The gate is therefore currently a no-op on measured cells.** It is retained as a guard against a
+failure mode that would otherwise be silent, not presented as a fix that changed an outcome.
+
+The real exposure the profiling uncovered is different, and worse:
+
+| cell | horizon | candidate solves | solves at the wall cap | candidate slots lost to non-`OPTIMAL` |
+| --- | --- | --- | --- | --- |
+| 0 | 12 | 102 over 12 reviews | 0 | 13 |
+| 121 | 26 | 222 over 26 reviews | 35 | 64 |
+| 108 | 30 | ~300 over 30 reviews | 37 | **79** |
+
+On a 30-review cell, seventy-nine candidate slots simply vanish from the selector's choice set
+because their solve ran out of wall clock — and nothing in V6 or V7 reported it. **ZAAD is
+systematically choosing from a smaller candidate set on exactly the hardest cells, and silently.**
+
+That is a plausible mechanical explanation for the V7 adverse case (cell 108 held a full extra
+period of cover at identical service), and it is the finding V8 should act on: the remedy is more
+solve budget on large cells, smaller models, or an explicit confidence downgrade when the candidate
+set was truncated — not a gap threshold. The reporting added here is the prerequisite for choosing
+between those.
+
 ## 6. Baseline standard
 
 ZAAD is measured against competent policies, at minimum: reorder point with safety stock, periodic

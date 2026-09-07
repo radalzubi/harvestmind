@@ -67,6 +67,7 @@ def choose(req: Request, method: str) -> Solution:
                                      for p in report["protection"]]
         solution.procurement_timing = report.get("procurement_timing")
         solution.capital = report.get("capital")
+        solution.solve_quality = report.get("solve_quality")
         return solution
     deterministic = method in {"base_stock", "order_up_to", "deterministic", "frozen_forecast"}
     worlds = draw(req, req.seed, 1 if deterministic else req.scenarios, deterministic=deterministic,
@@ -154,7 +155,11 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
                             "warnings": solution.warnings, "settlement": outcome,
                             "protection": getattr(solution, "protection_state", None),
                             "procurement_timing": getattr(solution, "procurement_timing", None),
-                            "capital": getattr(solution, "capital", None)})
+                            "capital": getattr(solution, "capital", None),
+                            "solve_quality": getattr(solution, "solve_quality", None),
+                            "solver": {"status": solution.status, "seconds": solution.solve_seconds,
+                                       "gap": solution.gap, "variables": solution.variables,
+                                       "constraints": solution.constraints}})
         if t == reviews - 1:
             break
         now = req.as_of + timedelta(days=req.period_days)

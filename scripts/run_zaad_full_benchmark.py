@@ -8,10 +8,11 @@ Every failed solve, physical failure, loss, and parameter vector is retained.
 from __future__ import annotations
 
 import argparse
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import hashlib
 import itertools
 import json
+import os
 from pathlib import Path
 from statistics import median
 import sys
@@ -41,7 +42,10 @@ SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 
          "development6": [34001], "validation6": [35001, 35002],
          # Capital-efficiency / recovery cycle (v7). holdout4 stays frozen and unrun; v7 may only
          # use these two splits. No seed here appears in any split above.
-         "development7": [36001], "validation7": [37001, 37002]}
+         "development7": [36001], "validation7": [37001, 37002],
+         # Industry-standard cycle (v8). validation7 stays untouched and unused; holdout4 stays
+         # frozen. No seed here appears in any split above.
+         "development8": [38001], "validation8": [39001, 39002]}
 METHODS = ["base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated"]
 RELIABILITY_METHODS = ["base_stock", "stochastic", "robust", "protected", "gated_pr24", "gated_pr30", "gated"]
 INVENTORY = {"low": .5, "balanced": 2., "high": 4.}
@@ -537,9 +541,61 @@ def v7_metrics(req, rows) -> dict:
         "echelon_origin_rows": int(sum(1 for p in states if p.get("echelon_origin")))}
 
 
+def v8_solver_metrics(rows) -> dict:
+    """Solver profile per replay (v8). Reported so pathological cells are visible in the evidence
+    rather than only in wall time: how many candidate solves ran, how many stopped at the wall-clock
+    cap, the worst achieved optimality gap, and whether the selected plan was economically
+    comparable at all. None of this changes a decision; it describes one."""
+    per_review = [r.get("solve_quality") for r in rows if r.get("solve_quality")]
+    gaps, capped, solves, incomparable, not_optimal, selected_bad = [], 0, 0, 0, 0, 0
+    for quality in per_review:
+        for row in (quality.get("candidates") or {}).values():
+            solves += 1
+            gap, seconds = row.get("achieved_gap"), row.get("solve_seconds")
+            if isinstance(gap, (int, float)) and np.isfinite(gap):
+                gaps.append(float(gap))
+            if isinstance(seconds, (int, float)) and seconds >= 4.9:
+                capped += 1
+            if row.get("economically_comparable") is False:
+                # Two different exclusions, kept apart: a candidate the solver could not optimise
+                # inside its budget, and a candidate that is not a usable plan at all.
+                if row.get("status") == "OPTIMAL":
+                    incomparable += 1
+                else:
+                    not_optimal += 1
+        if quality.get("selected_is_comparable") is False:
+            selected_bad += 1
+    single = [r["solver"] for r in rows if r.get("solver")]
+    single_gaps = [x["gap"] for x in single if isinstance(x.get("gap"), (int, float)) and np.isfinite(x["gap"])]
+    return {
+        "solver_candidate_solves": solves or (len(single) or None),
+        "solver_solves_at_time_cap": capped or None,
+        "solver_worst_gap": (float(max(gaps)) if gaps else (float(max(single_gaps)) if single_gaps else None)),
+        "solver_median_gap": (float(np.median(gaps)) if gaps else (float(np.median(single_gaps)) if single_gaps else None)),
+        "solver_undersolved_candidates": incomparable or None,
+        "solver_non_optimal_candidates": not_optimal or None,
+        "solver_reviews_with_incomparable_selection": selected_bad or None,
+        "solver_reviews_profiled": len(per_review) or None,
+        # Gated methods synthesise their Solution in replay.choose, so the model size lives on the
+        # per-candidate rows rather than on the returned solution; report whichever is present and
+        # never emit a NaN, which the evidence writer rejects.
+        "solver_mean_variables": _mean_or_none([x["variables"] for x in single if x.get("variables")]
+                                               or [row.get("variables") for quality in per_review
+                                                   for row in (quality.get("candidates") or {}).values()])}
+
+
+def _mean_or_none(values):
+    usable = [float(v) for v in values if isinstance(v, (int, float)) and np.isfinite(v)]
+    return float(np.mean(usable)) if usable else None
+
+
 def task(args):
-    cell, seed, method = args
+    cell, seed, method = args[:3]
+    overrides = args[3] if len(args) > 3 else {}
     req = request_for(cell, seed)
+    if overrides:
+        # Solver settings are part of the cache key, so they must actually reach the request.
+        req = req.model_copy(update={k: v for k, v in overrides.items() if v is not None})
     truth = truth_for(req, cell, seed)
     started = time.monotonic()
     result = replay(req, truth, req.horizon, method)
@@ -560,6 +616,7 @@ def task(args):
                                        for p in (r.get("protection") or [])] for r in rows] if any(r.get("protection") for r in rows) else None,
             **v6_metrics(req, rows),
             **v7_metrics(req, rows),
+            **v8_solver_metrics(rows),
             "change_origins": [r["forecast"]["retail_A"]["segment_origin"] for r in rows],
             "min_cash": min((x["cash"] for r in rows for x in r["settlement"]["trace"]), default=None),
             "max_debt": max((x["debt"] for r in rows for x in r["settlement"]["trace"]), default=None),
@@ -622,6 +679,47 @@ def source_hash():
     return hashlib.sha256(b"".join(p.relative_to(ROOT).as_posix().encode() + p.read_bytes() for p in paths)).hexdigest()
 
 
+def task_key(cell, seed, method, source, solver) -> str:
+    """Exact-result cache key. Any difference that could change the row must change the key: the
+    engine source, the full cell definition, the seed, the method and the solver settings. A hit is
+    therefore a rerun of identical work, never a stale reuse across a behavioural change."""
+    payload = {"source_hash": source, "cell": cell, "seed": seed, "method": method, "solver": solver}
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()
+
+
+def load_cache(path: Path) -> dict:
+    if not path or not path.exists():
+        return {}
+    out = {}
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue                      # a torn final line from an interrupted run
+        if isinstance(entry, dict) and "key" in entry and "row" in entry:
+            out[entry["key"]] = entry["row"]
+    return out
+
+
+def completed_keys(path: Path) -> dict:
+    """Rows already written by an interrupted run of the same output file, by cache key."""
+    if not path.exists():
+        return {}
+    done = {}
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(row, dict) and row.get("task_key"):
+            done[row["task_key"]] = row
+    return done
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", choices=list(SEEDS), default="development")
@@ -638,6 +736,12 @@ def main():
     parser.add_argument("--supply", nargs="+", default=None, help="only cells with these supply patterns")
     parser.add_argument("--network", nargs="+", default=None, help="only cells with these networks")
     parser.add_argument("--cells", nargs="+", type=int, default=None, help="only these cell ids")
+    parser.add_argument("--cache", type=Path, default=None,
+                        help="exact-result cache file; a hit is reused only when engine source, cell, seed, method and solver settings all match")
+    parser.add_argument("--resume", action="store_true",
+                        help="continue an interrupted run of the same --output, skipping rows already written")
+    parser.add_argument("--mip-gap", type=float, default=None, help="override the solver optimality gap (recorded in the manifest)")
+    parser.add_argument("--comparable-gap", type=float, default=None, help="override the solve-quality comparability threshold")
     args = parser.parse_args()
     manifest = args.output.parent / "preregistered.json"
     configuration = {"source_hash": source_hash(), "seeds": SEEDS, "methods": METHODS,
@@ -655,8 +759,8 @@ def main():
         # configuration exactly, and no cell subset or limit may be applied.
         if args.limit or args.demand or args.family or args.target or args.supply or args.network or args.cells or not manifest.exists() or json.loads(manifest.read_text()) != configuration:
             raise SystemExit(f"{args.split} requires an exact frozen source/configuration, no filters and no run limit")
-    if args.output.exists():
-        raise SystemExit("Refusing to overwrite evidence")
+    if args.output.exists() and not args.resume:
+        raise SystemExit("Refusing to overwrite evidence (pass --resume to continue an interrupted run)")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     selected = configuration["cells"][:args.limit] if args.limit else configuration["cells"]
     if args.demand:
@@ -679,14 +783,46 @@ def main():
         methods = V6_METHODS
     if args.split in {"development7", "validation7"} and not args.methods:
         methods = V7_METHODS
-    tasks = [(c, s, m) for c in selected for s in SEEDS[args.split] for m in methods]
-    with args.output.open("x") as file, ProcessPoolExecutor(max_workers=args.workers) as pool:
-        for i, row in enumerate(pool.map(task, tasks, chunksize=1)):
+    solver_settings = {"mip_gap": args.mip_gap, "comparable_gap": args.comparable_gap,
+                       "max_solve_seconds": None, "workers": args.workers}
+    overrides = {"solver_mip_gap": args.mip_gap, "comparable_gap": args.comparable_gap}
+    overrides = {k: v for k, v in overrides.items() if v is not None}
+    tasks = [(c, s, m, overrides) for c in selected for s in SEEDS[args.split] for m in methods]
+    keys = [task_key(c, s, m, configuration["source_hash"], solver_settings) for c, s, m, _ in tasks]
+    cache = load_cache(args.cache)
+    done = completed_keys(args.output) if args.resume else {}
+    pending = [(i, t) for i, t in enumerate(tasks) if keys[i] not in done and keys[i] not in cache]
+    reused = len(tasks) - len(pending)
+    if reused:
+        print(f"reusing {reused} of {len(tasks)} rows "
+              f"({len(done)} already written, {sum(1 for i in range(len(tasks)) if keys[i] in cache and keys[i] not in done)} from cache)", flush=True)
+    # Out-of-order writes: a completed worker persists immediately instead of waiting for its turn
+    # in submission order, so an interrupted run loses only the work still in flight and the file
+    # never appears frozen behind one slow cell. Deterministic order is restored on read via
+    # task_index, which every row carries.
+    with args.output.open("a" if args.resume else "x") as file, ProcessPoolExecutor(max_workers=args.workers) as pool:
+        futures = {pool.submit(task, t): i for i, t in pending}
+        written = 0
+        for future in as_completed(futures):
+            index = futures[future]
+            row = {**future.result(), "task_index": index, "task_key": keys[index]}
             file.write(json.dumps(row, allow_nan=False) + "\n")
             file.flush()
-            if i % 25 == 0:
-                print(f"{i+1}/{len(tasks)} rows; {row['status']}", flush=True)
-    rows = [json.loads(line) for line in args.output.read_text().splitlines()]
+            os.fsync(file.fileno())
+            if args.cache:
+                args.cache.parent.mkdir(parents=True, exist_ok=True)
+                with args.cache.open("a") as store:
+                    store.write(json.dumps({"key": keys[index], "row": row}, allow_nan=False) + "\n")
+            written += 1
+            if written % 25 == 1 or written == len(pending):
+                print(f"{written}/{len(pending)} solved ({reused} reused); cell {row['cell']} {row['method']} {row['status']}", flush=True)
+        for i, t in enumerate(tasks):
+            if keys[i] in cache and keys[i] not in done:
+                file.write(json.dumps({**cache[keys[i]], "task_index": i, "task_key": keys[i], "from_cache": True},
+                                      allow_nan=False) + "\n")
+        file.flush()
+    rows = [json.loads(line) for line in args.output.read_text().splitlines() if line.strip()]
+    rows.sort(key=lambda r: r.get("task_index", 0))          # deterministic final ordering
     summary = {}
     for method in methods:
         runs = [r for r in rows if r["method"] == method]
