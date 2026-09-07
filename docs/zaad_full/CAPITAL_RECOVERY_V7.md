@@ -180,3 +180,80 @@ proxy, the `base_stock` and `echelon_base_stock` comparators, and the frozen hol
 Terminal continuation (P9) remains **off**. V6 found that both of its forms deferred buying into
 closures and severe delays; V7 did not re-enable it and re-tests it as an ablation only.
 
+## 3. The inventory decomposition (P0)
+
+Every unit on hand at every review of the development7 fixture, assigned to exactly one reason by
+the waterfall. Shares are unit-weighted across the 33-cell fixture on the V7 engine.
+
+| reason | share of units held |
+| --- | --- |
+| pooled network stock | 37.6% |
+| demand cycle stock | 34.4% |
+| local service stock | 13.5% |
+| **unexplained** | **11.0%** |
+| source lead protection | 1.4% |
+| active disruption protection | 1.2% |
+| stale protection | 0.8% |
+| MOQ / pack rounding | 0.0% |
+| early-order inventory | 0.0% |
+| transfer positioning | 0.0% |
+
+Median unexplained share per cell: **0.042**. Median stale-protection share per cell: **0.0008**.
+The identity holds exactly on every row (`capital_reconciles` is true for every method, including
+the comparators).
+
+This is the central result of the cycle, and it reframes the V6 verdict.
+
+**The capital V6 was holding is not, in the main, stale protection or duplicated buffers.** It is
+cycle stock and pooled network stock: the demand a location must cover between replenishments, and
+the demand a central DC must cover for the branches it feeds over its own supplier lead. Together
+those two categories are 72% of every unit held. Protection whose risk driver has expired is 0.8%.
+Pack rounding, early ordering and transfer positioning are indistinguishable from zero.
+
+Two consequences follow, and neither was visible before the decomposition existed:
+
+1. A large inventory reduction cannot come from unwinding protection, because there is very little
+   protection to unwind. It can only come from lowering cycle or pooled stock, and those are set by
+   the replenishment window and the service target. Lowering them *is* weakening service.
+2. The V6 headline "quiet inventory 1.60 periods" is dominated by intermittent-demand network
+   cells, where periods-of-demand divides by a mean that describes nothing. On the development7
+   fixture the quiet cells sit at 1.07 periods for V7 and 1.08 for V6 — and the independent
+   echelon base-stock comparator sits *higher*, at 1.18, for the same service. On the cells where
+   the unit is meaningful, ZAAD is already at or below an independent MEIO policy.
+
+## 4. Duplicated buffers (P1)
+
+The explicit pairwise detector fires on the two-branch fixture cells when both echelons sit above
+their own needs and the arc can carry the overlap in time (`test_duplication_names_the_pair_and_
+the_arc_that_makes_it_real`), and correctly does not fire on a three-review arc from the same
+stock. On the development7 fixture the *median* detected overlap on the running engine is **0.0
+units**: the two-branch cells reach a state where the branch is at or below its local need, so
+there is no second buffer to double-count.
+
+The honest reading is that duplicated buffers were a smaller problem than V6 assumed. V6 could not
+say so because it had no origin-side need to compare against — the origin had no protection row.
+
+## 5. Fast-arc pooling (P2)
+
+The period-by-period split behaves exactly as the theory requires, and the benchmark confirms the
+arc lead is what decides it:
+
+| arc | cells | service | inventory periods | pooled units | local immediate units |
+| --- | --- | --- | --- | --- | --- |
+| lead 1, capacity 50 | 6 | 0.955 | 2.40 | 19.5 | 24.3 |
+| lead 1, capacity 15 | 1 | 0.809 | 1.10 | 14.9 | 28.2 |
+| lead 2, capacity 50 | 1 | 0.946 | 1.36 | 0.0 | 44.8 |
+| lead 3, capacity 50 | 1 | 0.851 | 1.64 | 0.0 | 43.8 |
+| lead 3, capacity 15 | 1 | 0.726 | 0.90 | 0.0 | 43.8 |
+
+A one-review arc pools about 44% of the branch's window demand; a two- or three-review arc pools
+none of it, because on a two-period origin window nothing the branch needs arrives in time. That
+is the correct multi-echelon answer and it is now computed rather than approximated by a static
+credit.
+
+What it does **not** show is a fast arc producing a leaner network: the lead-1 cells carry *more*
+inventory than the lead-2 and lead-3 cells. That comparison is confounded — the slower-arc cells
+also deliver much worse service (0.851 and 0.726 against 0.955), so they are not leaner by choice
+but starved. The pooling target is therefore **not met**, and the fixture cannot separate the two
+effects at this size.
+
