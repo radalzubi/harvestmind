@@ -93,7 +93,19 @@ def decompose(req: Request, fits: dict, protection: list[dict], *,
         # intermittent demand the engine sizes protection from the occurrence/size decomposition,
         # which is far wider than the raw fitted sd, so the decomposition under-claimed and dumped
         # the difference into `unexplained` (cell 35 branch: 45.6 claimed against 109.9 on hand).
-        cycle = mu * max(1., window)
+        # Cycle stock over the replenishment window. On intermittent demand the fitted mean is the
+        # wrong basis: after a run of empty periods it collapses toward zero while the location is
+        # quite correctly still holding stock for the next spike, and the difference landed in
+        # `unexplained` (cell 35's branch held 84-110 units while this claimed nothing). The
+        # occurrence/size model the engine already uses for spread gives the demand actually
+        # expected over the window, so the claim follows the same view of demand the plan does.
+        expected_per_period = mu
+        for service_row in services:
+            sparse = (fits[service_row.id].get("uncertainty") or {}).get("intermittent")
+            if sparse:
+                expected_per_period += max(0., sparse["occurrence"] * sparse["size_mean_capped"]
+                                           - fits[service_row.id]["mean"])
+        cycle = expected_per_period * max(1., window)
         echelon = (state["state"].get("echelon") or {}) if state else {}
         if echelon:
             local = float(echelon.get("local_service_units") or 0.)

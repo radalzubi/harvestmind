@@ -90,6 +90,16 @@ class Solution:
     procurement_timing: list[dict] | None = None
     capital: dict | None = None
     solve_quality: dict | None = None
+    # Solve telemetry (v8). `status` is one of OPTIMAL, FEASIBLE_TIME_LIMIT, INFEASIBLE,
+    # NO_FEASIBLE_SOLUTION or ERROR. A FEASIBLE_TIME_LIMIT solution is a real, usable plan whose
+    # optimality was never proved; it is never labelled optimal and never silently discarded.
+    best_bound: float | None = None
+    nodes: int | None = None
+
+    @property
+    def usable_plan(self) -> bool:
+        """Does this solution carry actions that may be acted on, subject to physical validation?"""
+        return self.status in ("OPTIMAL", "FEASIBLE_TIME_LIMIT")
 
 
 def compatible(req, service):
@@ -637,12 +647,31 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
         remaining = req.max_solve_seconds - (time.monotonic() - started)
         if remaining > 0:
             result, residual = m.solve(remaining, solver=req.solver, mip_gap=req.solver_mip_gap)
-    usable = result.status == 0 and result.x is not None and residual <= 1e-5
+    # Solve states (v8). scipy's milp reports status 1 for "iteration or time limit reached", and in
+    # that case `result.x` frequently holds a genuine feasible incumbent. V7 threw that away and
+    # returned an empty plan, so on long cells whole candidate classes silently vanished from the
+    # selector's choice set - 79 candidate slots on one 30-review cell. A feasible-but-unproved plan
+    # is now returned as FEASIBLE_TIME_LIMIT, with its bound and gap, for the caller to validate
+    # physically and weigh according to its solve quality. It is never called OPTIMAL.
     elapsed = time.monotonic() - started
     gap = getattr(result, "mip_gap", None)
-    if not usable:
-        return Solution({1: "TIME_LIMIT", 2: "INFEASIBLE", 3: "UNBOUNDED"}.get(result.status, "SOLVER_ERROR"), {}, {}, {}, {}, None, [], elapsed,
-                        len(m.names), len(m.rows), gap, residual if math.isfinite(residual) else None, [str(result.message)])
+    bound = getattr(result, "mip_dual_bound", None)
+    nodes = getattr(result, "mip_node_count", None)
+    physically_usable = result.x is not None and residual <= 1e-5
+    if result.status == 0 and physically_usable:
+        state = "OPTIMAL"
+    elif result.status == 1 and physically_usable:
+        state = "FEASIBLE_TIME_LIMIT"
+    elif result.status == 2:
+        state = "INFEASIBLE"
+    elif result.status == 1:
+        state = "NO_FEASIBLE_SOLUTION"
+    else:
+        state = "ERROR"
+    if not physically_usable:
+        return Solution(state, {}, {}, {}, {}, None, [], elapsed,
+                        len(m.names), len(m.rows), gap, residual if math.isfinite(residual) else None, [str(result.message)],
+                        best_bound=bound, nodes=nodes)
     values = result.x
     service_result = {}
     for service in req.services:
@@ -652,9 +681,11 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     economic = constant + sum(world.weight * sum(values[q] * v for q, v in costs[w].items()) for w, world in enumerate(worlds))
     pack_of = {source.id: source_pack(source) for source in req.sources}
     po_pack = {order.id: pack_of[order.source] for order in req.pipeline}
-    return Solution("OPTIMAL", {k: float(max(0, values[q])) for k, q in x.items() if not is_dust(values[q], pack_of[k[0]])},
+    return Solution(state, {k: float(max(0, values[q])) for k, q in x.items() if not is_dust(values[q], pack_of[k[0]])},
                     {k: float(max(0, values[q])) for k, q in tr.items() if not is_dust(values[q])},
                     {k: float(max(0, values[q])) for k, q in po.items() if not is_dust(values[q], po_pack[k[0]])},
                     service_result, float(economic),
                     [{"period": t, "scenario": w, "cash": float(values[cash[t, w]]), "debt": float(values[debt[t, w]])} for w in range(len(worlds)) for t in range(H)],
-                    elapsed, len(m.names), len(m.rows), gap, residual, [])
+                    elapsed, len(m.names), len(m.rows), gap, residual,
+                    ([] if state == "OPTIMAL" else [f"{state}: feasible plan returned without a proof of optimality"]),
+                    best_bound=bound, nodes=nodes)

@@ -433,6 +433,12 @@ class Request(Record):
     # the only place that knows a lot's provenance. Empty in a single-shot request, where every unit
     # is by definition inherited from the operator's current position.
     inherited_on_hand: dict[str, float] = Field(default_factory=dict)
+    # Adaptive escalation (v8). Off reproduces the V7 architecture exactly: every candidate policy
+    # is solved for every review regardless of whether it could change the decision. On, a cheap
+    # deterministic screen classifies the operating state, a minimum safe candidate set for that
+    # state is solved first, and the optional planners run only when materiality or uncertainty
+    # warrants the compute. The screen never prunes on a heuristic score alone.
+    adaptive_escalation: bool = True
     # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.

@@ -24,6 +24,7 @@ from zaad.full.contracts import Request
 from zaad.full.eta import conditional_eta
 from zaad.full.model import Solution, solve
 from zaad.full.protection import protection_profile
+from zaad.full.screen import MINIMUM_SAFE, screen
 from zaad.full.settlement import PhysicalViolation, settle
 from zaad.full.uncertainty import profile_dict, stress_credibility, supply_profiles
 from zaad.full.worlds import dates, draw, forecast_all
@@ -492,10 +493,37 @@ def plan(req: Request) -> dict:
                            transfers={}, amendments={(p.id, next(o.id for o in p.options if o.action == "keep")): p.remaining for p in req.pipeline})
         incumbent = solve(req, deterministic, fixed=declared)
         incumbent_label = "operator_declared"
-    candidates = {"incumbent": incumbent, "base_stock": base,
-                  "deterministic_network": solve(req, deterministic, service_floor=True, **v6),
-                  "stochastic_network": solve(req, selection, service_floor=True, **v6),
-                  "cvar_network": solve(req, selection, service_floor=True, cvar_weight=.2, **v6)}
+    # Adaptive escalation (v8): classify the review first, then solve only the candidate classes
+    # that could change the decision for that state. The incumbent and the base-stock proxy are
+    # always present - they are the comparison ZAAD exists to make and cost one deterministic solve
+    # each. With escalation off, every class is requested and the architecture is V7's.
+    # The incumbent is screened on the scenario worlds, not on the single mean-demand world. On the
+    # deterministic world an incumbent almost always looks adequate, which made the screen return
+    # NO_ACTION on eight of eight diagnostic cells and abstain where V7 correctly acted. Settlement
+    # is not a solve, so this costs no MILP.
+    incumbent_screen_rows = evaluate(req, incumbent, selection) if incumbent.usable_plan else []
+    screen_result = (screen(req, fits, protection, incumbent_screen_rows) if req.adaptive_escalation
+                     else {"state": "ESCALATE_UNKNOWN", "reasons": ["adaptive escalation disabled"],
+                           "minimum_safe_candidates": list(MINIMUM_SAFE["ESCALATE_UNKNOWN"]),
+                           "optional_candidates": [], "units_above_lean_base_stock": None,
+                           "periods_above_lean_base_stock": None,
+                           "incumbent_feasible_and_meeting_service": None, "scope": "escalation disabled"})
+    requested = list(screen_result["minimum_safe_candidates"]) + list(screen_result["optional_candidates"])
+    compute = {"screen_state": screen_result["state"], "requested": list(requested), "solved": [], "skipped": []}
+
+    def wanted(name: str) -> bool:
+        if name in requested:
+            return True
+        compute["skipped"].append(name)
+        return False
+
+    candidates = {"incumbent": incumbent, "base_stock": base}
+    if wanted("deterministic_network"):
+        candidates["deterministic_network"] = solve(req, deterministic, service_floor=True, **v6)
+    if wanted("stochastic_network"):
+        candidates["stochastic_network"] = solve(req, selection, service_floor=True, **v6)
+    if wanted("cvar_network"):
+        candidates["cvar_network"] = solve(req, selection, service_floor=True, cvar_weight=.2, **v6)
     stress_worlds = []
     for i, stress in enumerate(req.stresses):
         stress_worlds += draw(req, req.seed + 100 + i, 1, stress)
@@ -511,29 +539,47 @@ def plan(req: Request) -> dict:
     activity = {(row["sku"], row["location"]): row["state"]["activity"] for row in protection}
     risk_levels = ({s.id: (req.service_risk_level * activity.get((s.sku, s.location), 1.) if activity.get((s.sku, s.location), 1.) > .05 else 0.)
                     for s in req.services} if req.protection_decay else None)
-    if reliability:
+    if reliability and wanted("protected_network"):
         # Quantile protection: the worst share of scenarios must meet the target too.
         candidates["protected_network"] = solve(req, selection, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, **v6)
-        if hedged:
-            # Hedged protection: the declared stress envelopes enter the solve at their probability
-            # weight, so protection is sized by how credible and how costly the stress is.
-            candidates["hedged_network"] = solve(req, hedged, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, **v6)
-    candidates["stress_network"] = solve(req, combined, service_floor=True, per_world_service=True, **v6)
-    recovery = solve(req, combined, service_first="all", **v6)
-    if recovery.status == "OPTIMAL":
+    if reliability and hedged and wanted("hedged_network"):
+        # Hedged protection: the declared stress envelopes enter the solve at their probability
+        # weight, so protection is sized by how credible and how costly the stress is.
+        candidates["hedged_network"] = solve(req, hedged, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, **v6)
+    if wanted("stress_network"):
+        candidates["stress_network"] = solve(req, combined, service_floor=True, per_world_service=True, **v6)
+    recovery = (solve(req, combined, service_first="all", **v6) if wanted("joint_recovery")
+                else Solution("NOT_REQUESTED", {}, {}, {}, {}, None, [], 0., 0, 0, None, None, []))
+    if recovery.usable_plan:
         candidates["joint_recovery"] = recovery
     # Joint fitted frontier (v6): the best jointly achievable network service on the fitted worlds
     # alone, sharing central stock across branches. The recovery candidate above hedges the declared
     # stress at equal weight, so its fitted-world service understates what the network can do.
     joint_fitted_rows: list[dict] = []
-    if req.protection_v6:
+    if req.protection_v6 and (not req.adaptive_escalation or screen_result["state"] in ("NETWORK_ALLOCATION", "ESCALATE_UNKNOWN")):
         joint_fitted = solve(req, selection, service_first="all", **v6)
-        if joint_fitted.status == "OPTIMAL":
+        if joint_fitted.usable_plan:
             joint_fitted_rows = evaluate(req, joint_fitted, selection)
 
-    selection_rows = {name: evaluate(req, candidate, selection) for name, candidate in candidates.items() if candidate.status == "OPTIMAL"}
+    selection_rows = {name: evaluate(req, candidate, selection) for name, candidate in candidates.items() if candidate.usable_plan}
+    # Escalation on demand (v8): the feasibility frontier is only expensive when it is not needed.
+    # If nothing in the minimum safe set meets every requested service target, the joint solve is
+    # precisely the evidence required to say whether the miss was avoidable, so it is built now
+    # regardless of the screen's classification. Part I asks for the frontier where service is at
+    # risk and not otherwise.
+    if req.adaptive_escalation and "joint_recovery" not in candidates:
+        if not any(service_ok(req, rows) for rows in selection_rows.values()):
+            compute["escalated"] = compute.get("escalated", []) + ["joint_recovery: no candidate met every service target"]
+            recovery = solve(req, combined, service_first="all", **v6)
+            if recovery.usable_plan:
+                candidates["joint_recovery"] = recovery
+                selection_rows["joint_recovery"] = evaluate(req, recovery, selection)
+            if not joint_fitted_rows:
+                joint_fitted = solve(req, selection, service_first="all", **v6)
+                if joint_fitted.usable_plan:
+                    joint_fitted_rows = evaluate(req, joint_fitted, selection)
     stress_rows = {name: evaluate(req, candidate, stress_worlds) for name, candidate in candidates.items()
-                   if candidate.status == "OPTIMAL" and stress_weight > 0}
+                   if candidate.usable_plan and stress_weight > 0}
     feasible = [name for name, rows in selection_rows.items() if service_ok(req, rows)]
 
     def hedged_cost(name: str) -> float:
@@ -555,6 +601,26 @@ def plan(req: Request) -> dict:
     recovery_mode = not target_jointly_feasible
     recovery_ranking: list[dict] = []
 
+    def solve_quality_label(name: str) -> str:
+        """HIGH / MEDIUM / LOW for a candidate's solution (v8).
+
+        HIGH   proved optimal, or a gap far below the economic differences being weighed.
+        MEDIUM feasible without proof, but the remaining gap is small enough that the plan's own
+               objective is close to the best achievable one.
+        LOW    feasible without proof and the gap is wide: the plan is physically usable and may be
+               the best available, but its modelled economics carry real uncertainty.
+        Thresholds come from `comparable_gap`, the same declared setting the comparability gate
+        uses, rather than from separate constants."""
+        candidate = candidates.get(name)
+        if candidate is None or not candidate.usable_plan:
+            return "NONE"
+        if candidate.status == "OPTIMAL":
+            return "HIGH"
+        gap = candidate.gap
+        if gap is None or not math.isfinite(gap):
+            return "LOW"
+        return "MEDIUM" if gap <= req.comparable_gap else "LOW"
+
     def well_solved(name: str) -> bool:
         """Is this candidate's solution good enough to be compared on economics? (v8)
 
@@ -564,8 +630,13 @@ def plan(req: Request) -> dict:
         0.89 on a 20-review cell and 1.00 on a 30-review cell, while the selector discriminates on
         cost differences of tens of units and accepts on a bootstrapped benefit of 1e-6."""
         candidate = candidates.get(name)
-        if candidate is None or candidate.status != "OPTIMAL":
+        if candidate is None or not candidate.usable_plan:
             return False
+        if candidate.status != "OPTIMAL":
+            # Feasible without proof: comparable on economics only while the unproved part of the
+            # objective is smaller than the differences the selector is weighing.
+            gap = candidate.gap
+            return bool(gap is not None and math.isfinite(gap) and gap <= req.comparable_gap)
         gap = candidate.gap
         return gap is None or not math.isfinite(gap) or gap <= req.comparable_gap
 
@@ -630,7 +701,7 @@ def plan(req: Request) -> dict:
             chosen = min(band, key=lambda name: (burden(name), hedged_cost(name), list(candidates).index(name)))
         else:
             chosen = min(feasible, key=lambda name: (hedged_cost(name), list(candidates).index(name)))
-    elif incumbent.status == "OPTIMAL":
+    elif incumbent.usable_plan:
         # Impossible SLA: rank every usable candidate by priority-weighted shortfall (cost breaks ties)
         # and take the best one only if it beats the incumbent by a material margin.
         incumbent_selection = selection_rows.get("incumbent", evaluate(req, incumbent, selection))
@@ -659,8 +730,8 @@ def plan(req: Request) -> dict:
         chosen = "incumbent"
 
     confirmation = draw(req, req.seed + 10000, req.scenarios)
-    incumbent_rows = evaluate(req, incumbent, confirmation) if incumbent.status == "OPTIMAL" else []
-    candidate_rows = evaluate(req, candidates[chosen], confirmation) if candidates[chosen].status == "OPTIMAL" else []
+    incumbent_rows = evaluate(req, incumbent, confirmation) if incumbent.usable_plan else []
+    candidate_rows = evaluate(req, candidates[chosen], confirmation) if candidates[chosen].usable_plan else []
     reasons, stress_report = [], []
     benefit_lower = None
     blocking: dict = {"downside": False, "stress": False, "reasons": []}
@@ -670,7 +741,9 @@ def plan(req: Request) -> dict:
     # incumbent that fails the same stress. Under the reliability profile the stress gate then
     # asks for "not worse than the incumbent": physically usable, inside the cost cap, no larger
     # weighted shortfall and priority consistent.
-    stress_targets_feasible = candidates["stress_network"].status == "OPTIMAL"   # reported; the gate prefers strict, then not-worse
+    # Reported; the gate prefers strict, then not-worse. None when the screen did not request the
+    # per-world stress solve for this state, which is not the same as "infeasible".
+    stress_targets_feasible = (candidates["stress_network"].usable_plan if "stress_network" in candidates else None)
 
     def _hedged_downside(before, after) -> bool:
         """Cost cap with the declared stress at its evidence weight: a plan that is much cheaper
@@ -799,8 +872,8 @@ def plan(req: Request) -> dict:
 
     for i, stress in enumerate(req.stresses):
         adversaries = draw(req, req.seed + 30000 + i, req.scenarios, stress)
-        before = evaluate(req, incumbent, adversaries) if incumbent.status == "OPTIMAL" else []
-        after = evaluate(req, candidates[chosen], adversaries) if candidates[chosen].status == "OPTIMAL" else []
+        before = evaluate(req, incumbent, adversaries) if incumbent.usable_plan else []
+        after = evaluate(req, candidates[chosen], adversaries) if candidates[chosen].usable_plan else []
         physically_ok = bool(after) and all(r["usable"] for r in after)
         downside_ok = physically_ok and bool(before) and all(r["usable"] for r in before)
         if downside_ok:
@@ -842,7 +915,7 @@ def plan(req: Request) -> dict:
             checks: list[dict[str, Any]] = []
             for i, stress in enumerate(req.stresses):
                 worlds = draw(req, req.seed + 30000 + i, req.scenarios, stress)
-                before = evaluate(req, incumbent, worlds) if incumbent.status == "OPTIMAL" else []
+                before = evaluate(req, incumbent, worlds) if incumbent.usable_plan else []
                 after = evaluate(req, candidates[alternative], worlds)
                 usable_after = bool(after) and all(r["usable"] for r in after)
                 valid = usable_after and bool(before) and all(r["usable"] for r in before)
@@ -905,7 +978,7 @@ def plan(req: Request) -> dict:
 
     eta = {p.id: asdict(conditional_eta(req.shipment_history, p.source, max(0, (req.as_of - p.placed_at).days), p.stage, p.carrier)) for p in req.pipeline}
     fingerprint = hashlib.sha256(req.model_dump_json().encode()).hexdigest()
-    recovery_rows = evaluate(req, recovery, confirmation) if recovery.status == "OPTIMAL" else []
+    recovery_rows = evaluate(req, recovery, confirmation) if recovery.usable_plan else []
     final_rows = evaluate(req, final, confirmation) if final is not None else []
 
     # Service reliability, tracked separately from economics.
@@ -963,11 +1036,19 @@ def plan(req: Request) -> dict:
                            "classes": {label: sum(row["classification"]["class"] == label for row in per_service)
                                        for label in ("MET", "UNAVOIDABLE", "AVOIDABLE", "ECONOMIC_TRADEOFF", "DATA_INSUFFICIENCY")}}
 
-    alternatives = {}
+    alternatives: dict[str, Any] = {"scope": "not evaluated: the screen did not require an alternates comparison for this state",
+                                    "transfers": None, "substitutions": None, "alternate_sources": None,
+                                    "reference_candidate": None}
     if reliability:
-        reference_name = "protected_network" if candidates.get("protected_network") is not None and candidates["protected_network"].status == "OPTIMAL" else "stochastic_network"
-        alternatives = alternative_value(req, candidates[reference_name], selection, selection_rows.get(reference_name, []), service_risk, risk_levels)
-        alternatives["reference_candidate"] = reference_name
+        # The alternates valuation explains which lanes, substitutes and second sources earned their
+        # place. It needs a reference plan, not a particular one, so it falls back through whatever
+        # the screen did build rather than disappearing when the expensive candidates were skipped.
+        reference_name = next((n for n in ("protected_network", "stochastic_network", "cvar_network",
+                                           "deterministic_network", "incumbent")
+                               if candidates.get(n) is not None and candidates[n].usable_plan), None)
+        if reference_name is not None:
+            alternatives = alternative_value(req, candidates[reference_name], selection, selection_rows.get(reference_name, []), service_risk, risk_levels)
+            alternatives["reference_candidate"] = reference_name
 
     # Marginal value of the chosen plan's protection against the leanest feasible candidate on
     # the selection worlds: extra inventory carried versus shortage exposure avoided, fitted and
@@ -1045,13 +1126,30 @@ def plan(req: Request) -> dict:
                                  "selected_achieved": _service_value(req, candidate_rows, s) if (accepted and candidate_rows) else (_service_value(req, incumbent_rows, s) if incumbent_rows else None)}
                                 for s in req.services],
             "procurement_timing": procurement_timing(req, fits, final) if req.protection_v6 else None,
+            "orchestration": {
+                **screen_result,
+                "candidate_classes_requested": compute["requested"],
+                "candidate_classes_skipped": sorted(set(compute["skipped"])),
+                "candidates_built": sorted(n for n in candidates if n not in ("incumbent", "base_stock")),
+                "milps_attempted": sum(1 for c in candidates.values() if c.solve_seconds),
+                "milps_optimal": sum(1 for c in candidates.values() if c.status == "OPTIMAL"),
+                "milps_feasible_time_limited": sum(1 for c in candidates.values() if c.status == "FEASIBLE_TIME_LIMIT"),
+                "milps_no_feasible_solution": sum(1 for c in candidates.values() if c.status == "NO_FEASIBLE_SOLUTION"),
+                "milps_infeasible": sum(1 for c in candidates.values() if c.status == "INFEASIBLE"),
+                "solver_seconds_total": sum(c.solve_seconds or 0. for c in candidates.values()),
+                "adaptive_escalation": req.adaptive_escalation},
             "solve_quality": {
                 "comparable_gap_threshold": req.comparable_gap, "requested_mip_gap": req.solver_mip_gap,
                 "max_solve_seconds": req.max_solve_seconds,
-                "candidates": {name: {"status": c.status, "achieved_gap": c.gap, "solve_seconds": c.solve_seconds,
+                "candidates": {name: {"status": c.status, "achieved_gap": c.gap, "best_bound": c.best_bound,
+                                      "nodes": c.nodes, "solve_seconds": c.solve_seconds,
                                       "variables": c.variables, "constraints": c.constraints,
+                                      "quality": solve_quality_label(name),
+                                      "physically_validated": bool(selection_rows.get(name) and all(r["usable"] for r in selection_rows[name])),
                                       "economically_comparable": well_solved(name)}
                                for name, c in candidates.items()},
+                "feasible_time_limited_admitted": sorted(n for n, c in candidates.items()
+                                                         if c.status == "FEASIBLE_TIME_LIMIT" and selection_rows.get(n)),
                 "selected_is_comparable": well_solved(chosen) if chosen in candidates else None,
                 "scope": "a candidate whose achieved optimality gap exceeds the threshold is a feasible point the solver did not optimise; it is excluded from cost ranking and cost-based acceptance"},
             "capital": ({"decomposition": capital_decompose(req, fits, protection, inherited=req.inherited_on_hand or None),
@@ -1081,7 +1179,7 @@ def plan(req: Request) -> dict:
             "recovery_guidance": {"status": recovery.status, "actions": action_rows(recovery),
                                   "projected_unit_fill": recovery.projected_service,
                                   "weighted_service_shortfall": weighted_shortfall(req, recovery_rows),
-                                  "warning": "Best priority-weighted modeled service with minimum-cost tie-break; approval still depends on independent and stress confirmation."} if recovery.status == "OPTIMAL" else None,
+                                  "warning": "Best priority-weighted modeled service with minimum-cost tie-break; approval still depends on independent and stress confirmation."} if recovery.usable_plan else None,
             "candidates": {name: {"status": c.status, "solve_seconds": c.solve_seconds, "variables": c.variables,
                 "constraints": c.constraints, "gap": c.gap, "residual": c.residual,
                 "selection": summarize(selection_rows.get(name, []))} for name, c in candidates.items()},
