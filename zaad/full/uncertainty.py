@@ -139,6 +139,7 @@ def demand_uncertainty(fit: dict, y: np.ndarray, decay: bool = True) -> dict:
         pre_mean = float(np.mean(y[:origin]))
         downward = float(fit["mean"]) < pre_mean
     if origin > 0 and n < YOUNG_REGIME:
+        assert pre_mean is not None
         regime = abs(float(fit["mean"]) - pre_mean) * (1. - n / YOUNG_REGIME)
         # Bounded mixture after a drop: the chance the old, higher level still holds, fading to
         # zero as the regime ages. After a rise the shortage side is the expensive one, so the

@@ -571,16 +571,6 @@ def plan(req: Request) -> dict:
             return False
         return held_after <= held_before * (1 - req.downside_cost_tolerance)
 
-    def priority_service(rows: list[dict]) -> float:
-        """Priority-weighted achieved service over a row set; -inf when the plan is unusable."""
-        if not rows or any(not r["usable"] for r in rows):
-            return float("-inf")
-        priorities = {c.id: c.priority for c in req.customers}
-        total = sum(priorities[s.customer] for s in req.services)
-        got = [(priorities[s.customer], _service_value(req, rows, s)) for s in req.services]
-        got = [(w, v) for w, v in got if v is not None]
-        return sum(w * v for w, v in got) / total if got and total else float("-inf")
-
     def earliness(name: str) -> float:
         """Working capital committed ahead of the latest safe order date, in unit-periods."""
         solution = candidates.get(name)

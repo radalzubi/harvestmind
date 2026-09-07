@@ -379,3 +379,155 @@ engine: the replay plans over `H` periods at review 0 and over `H - t` at review
 reviews genuinely have less future to act for. That is by design and is not corrected in the
 replay.
 
+## 12. Development7
+
+Focused fixture, 33 of the 124 v7 cells, seed 36001, three methods, 99 replays, every row complete
+except one comparator time-out which is kept visible. Full tables:
+`docs/zaad_full/evidence/v7/dev7_e.tables.md`; rows: `dev7_e.jsonl`.
+
+The cell set is the diagnostic set — every family the retention audit and the validation6 reading
+implicated (network, intermittent, decline, promotion, supply recovery), the v7 fast-arc pooling
+cells, the recovery scenarios A–G, and the stable single-location baselines that catch a service
+regression.
+
+| | V7 | V6 | echelon base stock |
+| --- | --- | --- | --- |
+| median service | **0.960** | 0.955 | 0.924 |
+| p10 service | 0.796 | 0.797 | 0.726 |
+| service breaches | **15** | 16 | 19 |
+| median inventory periods | 1.71 | **1.67** | 1.21 |
+| quiet-cell inventory periods | 1.07 | 1.08 | 1.18 |
+| median cost | **2780** | 2847 | 2854 |
+| complete / time-out | 33 / 0 | 33 / 0 | 32 / 1 |
+
+Paired over all 33 cells: service **+0.003**, inventory **−0.08 periods**, cost **−17.9**, breaches
+**15 against 16**. Cell 121 (false signal, 26 reviews) is the one breach V7 fixes; no cell breaches
+under V7 that did not breach under V6.
+
+Network cells (18 of the 33): median service **0.970 against 0.959**, breaches 6 against 6,
+inventory 2.42 against 2.42. The V6 network gain is preserved and extended.
+
+The distribution is the point. Ten cells move materially leaner — cell 20 (−1.12 periods), 15
+(−0.94), 89 and 107 (−0.61 each), 16 (−0.40), 121 (−0.34) — thirteen do not move at all, and five
+move fatter. Mean and median disagree in sign because a handful of cells carry the whole effect.
+**Median inventory is 1.71 against V6's 1.67: the headline inventory target is not met.**
+
+### 12.1 Attribution
+
+`V7_DISABLED` ablations on single cells attribute the movement rule by rule. On cell 1 disabling
+the ranking rule alone reproduces gated_v6 exactly (mean inventory value 60.3, service .968); the
+capital tie-break, symmetric confirmation and the allowance change move nothing there. The ranking
+band is therefore responsible for essentially all of the inventory released on single-location
+cells. The transfer replenishment window and the echelon-origin row account for the network cells
+(89 and 107, −0.61 periods at +0.022 service).
+
+## 13. Adverse cells
+
+Retained in full; none is excluded from any table above.
+
+| cell | scenario | Δ service | Δ inventory | note |
+| --- | --- | --- | --- | --- |
+| 108 | stable / deterioration_recovery / single, 30 reviews | −0.000 | **+1.00 periods** | the worst regression in the cycle: identical service (0.869) for a full extra period of cover. The 30-review horizon is new in v7 and the wider ranking band selects a different candidate early that the replay never unwinds. |
+| 57 | intermittent_spiky / closure_recovery / central DC, 20 reviews | +0.000 | +0.33 | already at 1.000 service against a 0.9 target; the extra stock buys nothing |
+| 98 | stable / stable / two branches, 12 reviews | +0.000 | +0.22 | as above at 0.977 against 0.95 |
+| 0 | stable / stable / single, 12 reviews | **−0.004** | −0.14 | both engines breach the 0.95 target (0.923 against 0.927); V7 is leaner and marginally worse |
+| 90 | stable / deterioration_recovery / single, 26 reviews | −0.002 | −0.09 | both breach; within tolerance |
+
+Cell 108 is the one that should govern the next cycle: a 30-review supply-recovery scenario where
+V7 holds a full extra period of cover for no service at all.
+
+## 14. Runtime and solver status
+
+| method | median replay | max replay | total |
+| --- | --- | --- | --- |
+| gated (V7) | 112.4 s | 684.5 s | 110.9 min |
+| gated_v6 | 112.4 s | 680.0 s | 111.3 min |
+| echelon_base_stock | 0.9 s | 21.0 s | 1.9 min |
+
+V7 adds no measurable solve time over V6: the added work is diagnosis (the decomposition, the
+duplication detector, the pooling split, the timing audit), which is arithmetic on the request, not
+extra MILP solves. The `earliness` tie-break does call `procurement_timing` per candidate, and it
+is not visible in the runtime.
+
+One comparator row timed out — `echelon_base_stock` on cell 117 (decline, two branches, three-review
+arc, 30 reviews) at the 5-second per-solve cap. It is kept in every table with its status.
+
+## 15. What was not run, and the recommendation on holdout4
+
+**Not run, and this matters for how much weight the numbers above can carry:**
+
+- The **full development7** matrix (124 cells) was not run. The evidence is a 33-cell focused
+  fixture chosen for diagnosis, which the workflow calls for during iteration but which is not the
+  full split.
+- **Validation7 was not run.** The engine was never frozen against it, and no validation7 seed
+  (37001, 37002) has been touched.
+- **Holdout4 (31001, 31002) remains frozen and unrun**, as it has since it was created.
+
+At roughly 110 minutes of wall clock per 33-cell three-method fixture, the full development7 is
+about six hours and validation7 across the full comparator list about thirty. That is the reason
+these steps are outstanding; it is not a judgement that they are unnecessary.
+
+**Holdout4 is not justified.** Validation7 is the gate before it and has not run; and on the
+development7 evidence V7 would not qualify for validation7 either, because the inventory targets —
+the entire point of the cycle — are not met.
+
+## 16. Verdict
+
+1. **Did V7 preserve V6 service?** Yes, and slightly improved it. Median 0.960 against 0.955, p10
+   0.796 against 0.797, 15 breaches against 16, one breach fixed and none introduced. Network
+   median service 0.970 against 0.959.
+2. **Did total inventory materially fall?** **No.** Median 1.71 against 1.67 — marginally higher.
+   The mean is −0.08 periods, carried by six cells out of thirty-three.
+3. **Did quiet inventory materially fall?** **No.** 1.07 against 1.08 on this fixture. The V6
+   headline of 1.60 came from a mix dominated by intermittent-demand network cells, where
+   periods-of-demand divides by a mean that describes nothing; on the cells where the unit means
+   something, both engines already sit near 1.07 and the independent echelon comparator sits higher.
+4. **Did demand-decrease excess improve?** **Barely.** Cell 87 −0.05 periods, cell 116 −0.02, cell
+   117 +0.05, all at unchanged service. The decline detector fires correctly; there was little
+   left-over protection to liquidate, because the forecast had already followed the level down.
+5. **Were duplicated network buffers actually reduced?** **They were quantified and found to be
+   near zero.** The explicit pairwise detector fires on constructed fixtures but its median on the
+   running engine is 0.0 units. V6 could not establish this because its origin had no need to
+   compare against. This is an answer, not a reduction.
+6. **Did fast-arc pooling improve?** **Not demonstrated.** The local/pooled split is now computed
+   correctly period by period — a one-review arc pools 19.5 units, a two- or three-review arc pools
+   none — but the fast-arc cells do not carry less total network inventory, and the comparison is
+   confounded because the slow-arc cells also serve much worse.
+7. **Did recovery-to-LEAN exceed 60%?** It is **0.600 on this fixture, identical to V6.** The gate
+   is met on the number and not met as an improvement. Section 3 explains why: there is very little
+   temporary protection in the system to unwind.
+8. **Did procurement timing improve?** **No — it is now measured, not improved.** 937 premature
+   purchase units and 308 cash days advanced per replay; V6 reports neither because the measurement
+   did not exist. The later-commitment tie-break almost never binds, because inventory burden
+   separates the candidates first.
+9. **Did modelled cost remain acceptable?** Yes, and improved: median 2780 against 2847, paired
+   mean −17.9.
+10. **Is holdout4 justified?** **No.** See section 15.
+
+### `NEEDS FURTHER CAPITAL / RECOVERY ENGINEERING`
+
+The cycle's real product is the diagnosis, and it changes what the next one should attempt. V6's
+verdict assumed the remaining inventory was trapped protection. The decomposition shows it is not:
+72% of every unit held is cycle stock or pooled network stock, stale protection is 0.4%, and pack
+rounding, early ordering and transfer positioning are indistinguishable from zero. Only about 3.5%
+of units per cell have no operational reason at all.
+
+So the honest position after V7 is that **ZAAD is not obviously carrying unjustified working
+capital on the cells where the measurement is meaningful** — it sits at or below an independent
+echelon base-stock policy at materially better service — and a further large reduction cannot be
+found by unwinding protection. It would have to come from cycle or pooled stock, which is the
+service target and the replenishment window. Cutting those is weakening service, which this cycle
+is not permitted to do and should not do.
+
+Where V8 should look, on fresh splits:
+
+- **Cell 108 and its family.** A 30-review supply-recovery scenario where V7 holds a full extra
+  period of cover at identical service is a concrete, reproducible defect with a known cause
+  (an early candidate selection the replay never unwinds).
+- **The intermittent network cells.** Cells 35, 57, 89 and 107 carry 7–13 "periods" of cover. That
+  number is an artefact of dividing by a near-zero mean, and the right unit for sparse demand — and
+  the right protection model — is the open question those cells actually pose.
+- **The measurement, not the mechanism, for procurement timing.** 937 premature units per replay is
+  now visible and has never been optimised against. That is the largest unexploited lever the
+  cycle uncovered.
+- **The full development7 and validation7 runs**, which this cycle did not reach.
