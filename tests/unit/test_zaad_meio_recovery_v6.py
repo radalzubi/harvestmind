@@ -237,3 +237,30 @@ def test_two_identical_post_change_points_do_not_make_demand_certain():
     req = Request.model_validate(data)
     worlds = draw(req, 3, 6)
     assert len({round(w.demand["retail_A"][0]) for w in worlds}) > 1
+
+
+# placement in the operator proxy
+
+def test_v6_proxy_keeps_fed_branches_at_a_local_base_stock():
+    from zaad.full.planner import targets
+    req = _with(_two_branches(lead=1), engine_profile="reliability")
+    v6 = targets(req)
+    v5 = targets(_with(req, protection_v6=False))
+    assert not any(len(k) == 3 for k in v5)                      # V5 proxy leaves transfers to the deterministic solve
+    transfer_keys = [k for k in v6 if len(k) == 3 and k[0] == "transfer"]
+    assert transfer_keys and sum(v6[k] for k in transfer_keys) > 0
+    assert all(v6[k] <= 50. + 1e-9 for k in transfer_keys)
+    capped = targets(_with(_two_branches(lead=1, capacity=12.), engine_profile="reliability"))
+    assert all(capped[k] <= 12. + 1e-9 for k in capped if len(k) == 3)
+    # fed demand at the origin is capped by what the arc can carry: fewer purchases than on the open arc
+    open_buys = sum(v for k, v in v6.items() if len(k) == 2)
+    capped_buys = sum(v for k, v in capped.items() if len(k) == 2)
+    assert capped_buys <= open_buys + 1e-6
+
+
+def test_v6_proxy_plan_serves_both_branches_on_a_calm_network():
+    req = _with(_two_branches(lead=1), engine_profile="reliability")
+    from zaad.full.planner import targets
+    sol = solve(req, draw(req, 1, 1, deterministic=True), targets=targets(req))
+    assert sol.status == "OPTIMAL"
+    assert min(sol.projected_service.values()) >= .95 - 1e-6

@@ -118,9 +118,55 @@ joint-recovery solve, which hedges the declared stress at equal weight and there
 what the network can do on the fitted worlds; the frontier now comes from a service-first solve
 on the fitted worlds alone.
 
-### 2.3 Run B (network cells after the guard)
+### 2.3 Ablation of the run-A losses (one rule at a time, cells 21, 70, 68)
 
-_`dev6_b_network.jsonl`: the 29 central-plus-branch cells rerun._
+| Cell | V5 | V6 run A | without excess penalty | without exit rules | without continuation |
+| --- | --- | --- | --- | --- | --- |
+| 21 closure_recovery, no alternate | .704 / 133 | .600 / 37 | .600 / 37 | .600 / 37 | **.704 / 133** |
+| 70 severe, central+branch, transfer | .768 / 206 | .896 / 215 | .896 / 215 | .896 / 215 | **.768 / 206** |
+| 68 correlated, central+branch, shared route | .877 / 333 | .942 / 230 | – | – | **.877 / 333** |
+
+(service / mean inventory value). The excess penalty and the exit rules changed nothing on these
+cells; the terminal continuation alone produced both the losses and the gains. As first written it
+credited *new purchases landing after the horizon* at the service margin, so the planner learned to
+buy late for post-horizon demand: on the severe cell that timing happened to land after the shock
+(a gain), on the closure cell it deferred the only purchases that could have beaten the closure
+(a loss). That is the timing shift the absolute rule forbids when it weakens protection.
+
+**Change kept:** continuation demand may be served by stock held to the end of the horizon and by
+orders already committed (pipeline, transfers in flight), never by a plan to buy late. Re-ablated:
+cell 21 **.730** (above V5's .704, inventory 115), cell 70 **.896** (gain kept), cell 68 .874 (the
+late-buying gain given up, level with V5). The anti-idleness effect survives; the deferral does
+not.
+
+### 2.4 Run B (network cells after the spread guard): the guard was necessary, not sufficient
+
+`dev6_b_network.jsonl` (29 central-plus-branch cells, 4 methods, continuation still in its first
+form). The two-branch cells did not move: cell 72 stayed at .901 for base stock, V5 and V6 alike,
+while the echelon comparator reached .932 at **less** inventory (1.85 against 1.98 periods). The
+tie between ZAAD and base stock is the tell: ZAAD retained the projected base-stock proxy on every
+review, and the proxy's transfers are a just-in-time deterministic projection, so every safety unit
+the proxy buys sits at the central location one transfer lead away from the branch demand it is
+meant to protect. The candidates that would have moved it could not beat the proxy on the fitted
+worlds, whose spread is calibrated on the few observations available early in the replay. That is
+the multi-echelon placement defect this cycle exists for, and it is in the *placement policy*, not
+in the optimizer's network model.
+
+**Change kept (v6):** the projected operator policy keeps every transfer-fed branch at a local base
+stock over the transfer lead plus one review at the branch's own quantile (calibrated spread),
+refilled from the projected purchases, capped by arc capacity and by what the origin holds; fed
+demand counts at the origin only up to what the arc can carry per period. Local service units in
+the echelon accounting span the same window. Per-cell replays before run C: cell 72 (fast transfer)
+.901 → **.955** at 188 inventory value (from 223); cell 74 (two-review transfer) .882 → .915; cell
+76 (capacity 12 against demand 20 per branch) .741 → .687 with central stock 450 → 141: the
+capacity-constrained cell is structurally capped near .70 and the change stops the central
+pile-up. A second guard came out of cell 76: in recovery mode the stress-hedged joint-recovery plan
+was buying 48–51 units per review into a network that can move 24, so the recovery ranking now
+takes the least inventory among candidates within the material shortfall gap.
+
+### 2.5 Run C (`dev6_c.jsonl`, frozen engine)
+
+_All 97 cells × base_stock, echelon_base_stock, gated_v5, gated on the final engine._
 
 ## 3. Central-plus-branch failure decomposition
 
