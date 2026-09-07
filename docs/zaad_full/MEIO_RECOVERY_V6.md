@@ -76,7 +76,51 @@ terms; the forecast; the incumbent proxy (the operator's projected base stock).
 
 ## 2. Development6
 
-_Filled in from `evidence/v6/dev6_a.jsonl` (base_stock, echelon_base_stock, gated_v5, gated)._
+### 2.1 Run A (`dev6_a.jsonl`: 97 cells × base_stock, echelon_base_stock, gated_v5, gated)
+
+| Method | Rows | Median service | Mean | p10 | Meeting target | Median inventory | Quiet median | Two-branch median | Duplicated buffer (network cells) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| base_stock | 97 | .896 | .851 | .568 | 27% | 1.38 | 1.71 | 2.26 | – |
+| echelon_base_stock | 94 (3 time-outs) | .916 | .869 | .619 | 32% | 1.35 | 1.66 | 1.88 | – |
+| gated_v5 | 97 | .918 | .890 | .689 | 41% | 1.85 | 1.82 | 2.19 | 0.0 |
+| gated (V6, run A) | 97 | **.927** | .889 | .634 | **45%** | **1.72** | **1.58** | **1.97** | 4.7 |
+
+Recovery on the 33 long-horizon cells with an activated driver: V6 returns to LEAN on 20 (61%)
+against V5's 17 (52%); residual temporary protection at review 10 / 20 is 4.0 / 4.6 units
+against V5's 9.8 / 8.9; median excess units at the end 15.7 against 12.7 (worse). Cost: V6
+cheaper than V5 on 57 cells, dearer on 34; median cost 2146 against 2152.
+
+Adverse, retained: V6 is below V5 by more than .02 on ten cells, all in the closure / severe /
+correlated / deterioration families (91: .613 vs .791; 21: .600 vs .704; 49; 17; 20; 19 and 41;
+43; 95; 71), and on every one of them V6 carried **less** inventory (21: 0.40 vs 1.45 periods).
+That is the pattern the absolute rule forbids (leaner by weakening protection), so it was
+ablated rule by rule before anything else (§2.2). The p10 fell from .689 to .634 for the same
+reason.
+
+### 2.2 Two-branch cells: a forecast defect, not a placement defect
+
+Every planner breached most two-branch cells (median .880 at .95 targets; base stock .873, the
+echelon comparator .913). The per-review replay of cell 72 (stable demand, fast transfer,
+central 80 units) showed the south branch forecast at **mean 14.0, spread 0.0**: its first two
+observations were both 14 (against a history near 20), the change-point detector opened a
+two-point segment, and the segment's own standard deviation was zero. Every scenario then read
+14 for the south branch, the deterministic proxy transferred exactly enough for 14, the branch
+sold 20, and the selector saw no candidate that met the targets on those certain worlds
+(recovery mode, incumbent retained). The failure decomposition labelled these reviews
+"inventory at wrong echelon / selector retained plan", which is what they look like from the
+outside and not what they are.
+
+Fix (applies to every method, because it is a degenerate estimator and not a tuning): a young
+change-point segment's spread is bounded below by the pre-change spread fading with age,
+`sd ≥ sd_pre × √(1 − n/8)`, in both the fitted spread and the effective spread. A second finding
+from the same replay: the "jointly feasible" service reported to the operator came from the
+joint-recovery solve, which hedges the declared stress at equal weight and therefore understates
+what the network can do on the fitted worlds; the frontier now comes from a service-first solve
+on the fitted worlds alone.
+
+### 2.3 Run B (network cells after the guard)
+
+_`dev6_b_network.jsonl`: the 29 central-plus-branch cells rerun._
 
 ## 3. Central-plus-branch failure decomposition
 

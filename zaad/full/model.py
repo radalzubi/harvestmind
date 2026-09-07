@@ -242,7 +242,9 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 payments[w][t][q] += price * term.financing_fee_fraction
                 if due >= H:
                     costs[w][q] -= fill * skus[source.sku].terminal_value
-                    post[w][source.sku, source.destination][q] += fill
+                    # New purchases landing after the horizon earn salvage only: continuation demand
+                    # may be served by stock held to the end and by orders already committed, never
+                    # by a plan to buy late for it (that incentive deferred buying into a closure).
     for group in quote_groups.values():
         m.row({v: 1 for v in group}, upper=1)
     if req.engine_profile == "reliability" and req.order_smoothing > 0 and fixed is None:
