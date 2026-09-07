@@ -474,6 +474,48 @@ def procurement_timing(req: Request, fits: dict, solution: Solution | None) -> l
     return out
 
 
+def _completeness(req: Request, candidates: dict, selection_rows: dict, compute: dict) -> dict:
+    """Required/optional candidate accounting (v8, P0-B).
+
+    A required candidate is satisfied when it produced a usable plan - proved optimal, or feasible
+    without proof and physically valid on every scenario world. Anything else is starvation and is
+    reported with its reason. Optional candidates carry no such obligation."""
+    required, optional = compute["required"], compute["optional"]
+    omissions = list(compute["omissions"])
+
+    def satisfied(name: str) -> tuple[bool, str]:
+        candidate = candidates.get(name)
+        if candidate is None:
+            return False, "never built"
+        if not candidate.usable_plan:
+            return False, f"solver returned {candidate.status}"
+        rows = selection_rows.get(name)
+        if rows and not all(r["usable"] for r in rows):
+            return False, "physically invalid on at least one scenario world"
+        return True, candidate.status
+
+    done_required, starved_required = [], []
+    for name in required:
+        ok, why = satisfied(name)
+        (done_required if ok else starved_required).append(name)
+        if not ok:
+            omissions.append({"candidate": name, "outcome": "required_starved", "reason": why})
+    done_optional = [n for n in optional if satisfied(n)[0]]
+    return {
+        "required_candidate_count": len(required),
+        "required_candidate_completed": len(done_required),
+        "required_candidate_starved": len(starved_required),
+        "required_candidate_starvation_rate": (len(starved_required) / len(required)) if required else 0.,
+        "required_starved_names": starved_required,
+        "optional_candidate_count": len(optional),
+        "optional_candidate_completed": len(done_optional),
+        "optional_candidate_skipped": len([n for n in optional if n not in candidates]),
+        "physically_invalid_candidates": sorted(n for n, rows in selection_rows.items()
+                                                if rows and not all(r["usable"] for r in rows)),
+        "omissions": omissions,
+        "completeness_scope": "a required candidate is satisfied only by a usable plan that is physically valid on every scenario world; every omission carries a reason and none is silent"}
+
+
 def plan(req: Request) -> dict:
     reliability = req.engine_profile == "reliability"
     service_risk = "cvar" if reliability else "expected"
@@ -508,13 +550,22 @@ def plan(req: Request) -> dict:
                            "optional_candidates": [], "units_above_lean_base_stock": None,
                            "periods_above_lean_base_stock": None,
                            "incumbent_feasible_and_meeting_service": None, "scope": "escalation disabled"})
-    requested = list(screen_result["minimum_safe_candidates"]) + list(screen_result["optional_candidates"])
-    compute = {"screen_state": screen_result["state"], "requested": list(requested), "solved": [], "skipped": []}
+    required = list(screen_result["minimum_safe_candidates"])
+    optional = list(screen_result["optional_candidates"])
+    requested = required + optional
+    # Candidate completeness (v8, P0-B). The standard is not that every possible candidate solves;
+    # it is that every candidate the screen calls *operationally necessary* either solves, returns
+    # a physically valid time-limited plan, or fails with a logged reason. Optional candidates may
+    # be skipped. There is to be no silent starvation, so every omission is recorded here.
+    compute: dict[str, Any] = {"screen_state": screen_result["state"], "requested": list(requested),
+                               "required": required, "optional": optional, "skipped": [], "omissions": []}
 
     def wanted(name: str) -> bool:
         if name in requested:
             return True
         compute["skipped"].append(name)
+        compute["omissions"].append({"candidate": name, "outcome": "not_requested",
+                                     "reason": f"the {screen_result['state']} state does not require or offer this class"})
         return False
 
     candidates = {"incumbent": incumbent, "base_stock": base}
@@ -1128,6 +1179,7 @@ def plan(req: Request) -> dict:
             "procurement_timing": procurement_timing(req, fits, final) if req.protection_v6 else None,
             "orchestration": {
                 **screen_result,
+                **_completeness(req, candidates, selection_rows, compute),
                 "candidate_classes_requested": compute["requested"],
                 "candidate_classes_skipped": sorted(set(compute["skipped"])),
                 "candidates_built": sorted(n for n in candidates if n not in ("incumbent", "base_stock")),

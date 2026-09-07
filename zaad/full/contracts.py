@@ -439,6 +439,19 @@ class Request(Record):
     # state is solved first, and the optional planners run only when materiality or uncertainty
     # warrants the compute. The screen never prunes on a heuristic score alone.
     adaptive_escalation: bool = True
+    # Solve budget scaling (v8). The 5-second per-solve cap is not a considered figure - it is a
+    # historical default - and measurement shows it lands in the worst possible place. On these
+    # models HiGHS returns nothing at all until branching completes and then returns a proved
+    # optimum: cell 72 needs 5.4 s, cell 21 needs 10.1 s and cell 108 needs 38.0 s, and below those
+    # thresholds every one of them yields NO_FEASIBLE_SOLUTION. A flat 5 s therefore buys nothing
+    # on exactly the cells that matter. The budget is scaled by model size instead, which the
+    # measured solve times track closely, and the compute is paid for by the candidates adaptive
+    # escalation no longer builds. Set to 1.0 to reproduce the flat cap.
+    adaptive_solve_budget: bool = False
+    # Margin over the fitted size curve. The worst measured case needed 38.0 s against a fitted
+    # 31.25 s, a ratio of 1.22, so 1.3 is the smallest round margin that covers every cell measured.
+    solve_budget_margin: float = Field(default=1.3, ge=1., le=5.)
+    solve_budget_ceiling_seconds: float = Field(default=90., gt=0)
     # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.

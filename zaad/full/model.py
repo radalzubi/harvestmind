@@ -114,6 +114,30 @@ def compatible(req, service):
     return rows
 
 
+def solve_budget(req: Request) -> float:
+    """Per-solve wall-clock budget (v8).
+
+    Measured time-to-proof on this model class, seed 38001, stochastic_network solve:
+
+        H=12 single location          under 1 s
+        H=12 central + two branches   5.4 s
+        H=20 single location         10.1 s
+        H=30 single location         38.0 s
+
+    and below each threshold the solver returns NO_FEASIBLE_SOLUTION rather than a usable
+    incumbent - there is no "good plan early, proof later" region to exploit. Solve time tracks
+    the square of the horizon with a factor for network breadth, which is what this reproduces.
+    `adaptive_solve_budget=False` keeps the flat historical cap so V7 behaviour is reproducible.
+    """
+    if not req.adaptive_solve_budget:
+        return req.max_solve_seconds
+    locations = max(1, len({(a.sku, a.destination) for a in req.transfers if a.approved})
+                    + len({(s.sku, s.destination) for s in req.sources if s.approved}))
+    breadth = 1. + .6 * (locations - 1)
+    scaled = req.max_solve_seconds * (req.horizon / 12.) ** 2 * breadth * req.solve_budget_margin
+    return float(min(req.solve_budget_ceiling_seconds, max(req.max_solve_seconds, scaled)))
+
+
 def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           service_first: str | None = None, cvar_weight: float = 0.,
           fixed: Solution | None = None, disabled: frozenset[str] = frozenset(),
@@ -640,11 +664,12 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             for w, world in enumerate(worlds):
                 for t in range(H):
                     objective[unmet[service.id, t, w]] = world.weight * customers[service.customer].priority
-    result, residual = m.solve(req.max_solve_seconds, objective, req.solver, mip_gap=req.solver_mip_gap)
+    budget = solve_budget(req)
+    result, residual = m.solve(budget, objective, req.solver, mip_gap=req.solver_mip_gap)
     if objective is not None and result.status == 0 and result.x is not None:
         optimum = float(np.dot(objective, result.x))
         m.row({i: float(v) for i, v in enumerate(objective) if v}, upper=optimum + 1e-7)
-        remaining = req.max_solve_seconds - (time.monotonic() - started)
+        remaining = budget - (time.monotonic() - started)
         if remaining > 0:
             result, residual = m.solve(remaining, solver=req.solver, mip_gap=req.solver_mip_gap)
     # Solve states (v8). scipy's milp reports status 1 for "iteration or time limit reached", and in
