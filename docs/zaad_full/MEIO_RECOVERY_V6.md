@@ -198,9 +198,36 @@ Two defects found in run C and fixed before run D:
   (`Request.terminal_continuation`, default off) and stays in the code with its test as the
   investigated, adverse treatment of the horizon artifact.
 
-### 2.6 Run D (`dev6_d_gated.jsonl`: V6 rerun on the frozen engine, comparators from run C)
+### 2.6 Run D (`dev6_d_gated.jsonl` merged with run C comparators as `dev6_final.jsonl`)
 
-_Filled in below._
+V6 rerun with the continuation off and the proxy transfers pinned for the first periods; the
+comparators are unchanged from run C. 96 pairs; one V6 ABSTAIN remained (cell 85, 26-review
+two-branch promotion: the proxy solve sat at the 5-second cap with four pinned periods), which is
+why the pinned window was reduced to two periods before the freeze (cell 85 then completes at
+.908; cells 72 and 74 hold at .955 and .942).
+
+| Method | Rows | Median service | Mean | p10 | Meeting target | Median inventory | Quiet median | Two-branch median | Median cost | Mean cost |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| base_stock | 96 | .896 | .851 | .568 | 27% | 1.37 | 1.71 | 2.19 | 2373 | 2628 |
+| echelon_base_stock | 94 | .917 | .869 | .619 | 32% | 1.34 | 1.65 | 1.85 | 2320 | 2481 |
+| gated_v5 | 96 | .923 | .891 | .689 | 42% | 1.82 | 1.82 | 2.11 | 2138 | 2526 |
+| gated (V6) | 96 | **.949** | **.907** | **.704** | **47%** | 1.78 | 1.76 | 2.22 | 2138 | **2484** |
+
+Paired V6 against V5: service better on 24 cells, worse on 3 (76 capacity-constrained, 71, and one
+within .02); inventory lower on 14, higher on 20; cost cheaper on 6, dearer on 29 (median equal).
+Network: central + two branches **.940 / 2.22** (V5 .887 / 2.11; echelon comparator .918 / 1.85),
+independent branches .936, correlated .940, slow or constrained transfer .876 (V5 .832), central
+shortage .963 (V5 .895); central + one branch .872 / 2.27 (V5 .877 / 2.29, flat). Network breaches
+23 against 29; "inventory at wrong echelon" as the primary cause 4 against 11. Recovery on 32
+activated long-horizon pairs: returned to LEAN 17 (53%) against 16 (50%); median first LEAN after
+the peak review 15 against 18; residual temporary protection at 10 / 20 reviews 7.8 / 8.9, the
+same as V5.
+
+Read plainly: on development6 the placement rule fixed the two-branch family (+.05 median service
+at +5% inventory on those cells, and above the independent echelon comparator on service though
+not on inventory), recovery moved a little, and overall and quiet inventory did **not** fall
+(−2% and −3%). Cells where V6 carries less stock and loses service: none beyond the structurally
+capped cell 76.
 
 ## 3. Central-plus-branch failure decomposition
 
