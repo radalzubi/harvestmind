@@ -576,22 +576,23 @@ def plan(req: Request) -> dict:
 
     if feasible:
         if req.protection_v7:
-            # Minimum useful protection (v7). V5 ranked feasible candidates by inventory only inside
-            # a band of one fifth of the downside tolerance on cost, which is about one per cent -
-            # so protection that cost a little more than that was never questioned however little
-            # service it bought. The question P7 actually asks is whether the last units of
-            # protection change service, so the band is service equivalence: among feasible
-            # candidates whose priority-weighted service, fitted and under the declared stress, is
-            # within the operator's own service tolerance of the best available, and whose hedged
-            # cost is inside the operator's own downside tolerance of the cheapest, take the leanest.
-            # Ties on inventory then go to the plan that commits cash latest.
+            # Minimum useful protection (v7). Every candidate in `feasible` already meets every
+            # requested service target on the selection worlds, so service above the target is not
+            # a reason to prefer one over another - it is exactly the protection P7 asks about.
+            # What the last units of protection have to earn is *stress* service, so that is the
+            # only service condition here: a candidate qualifies when its priority-weighted service
+            # under the declared stress is within the operator's own service tolerance of the best
+            # available. V5 then ranked by inventory only inside a cost band of one fifth of the
+            # downside tolerance, about one per cent; V7 uses the operator's declared downside
+            # tolerance itself, and breaks ties on inventory toward the plan that commits cash
+            # latest. Ranking by fitted service instead was tried on development7 and rejected: it
+            # selected the highest-service candidate, which is the fattest, and raised quiet-cell
+            # inventory from 0.86 to 2.21 periods (evidence/v7/dev7_b_service_band_partial.jsonl).
             cheapest = min(hedged_cost(n) for n in feasible)
-            best_fitted = max(priority_service(selection_rows[n]) for n in feasible)
             best_stressed = max((priority_service(stress_rows[n]) for n in feasible if n in stress_rows), default=None)
             equivalent = [n for n in feasible
-                          if priority_service(selection_rows[n]) >= best_fitted - req.service_tolerance
-                          and (best_stressed is None or n not in stress_rows
-                               or priority_service(stress_rows[n]) >= best_stressed - req.service_tolerance)
+                          if (best_stressed is None or n not in stress_rows
+                              or priority_service(stress_rows[n]) >= best_stressed - req.service_tolerance)
                           and hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9]
             band = equivalent or list(feasible)
             chosen = min(band, key=lambda name: (burden(name), earliness(name), hedged_cost(name), list(candidates).index(name)))
@@ -742,7 +743,10 @@ def plan(req: Request) -> dict:
             not_worse = (weighted_shortfall(req, candidate_rows) <= weighted_shortfall(req, incumbent_rows) + material_shortfall_gap(req)
                          and _priority_consistent(req, incumbent_rows, candidate_rows)
                          and _within_downside(req, incumbent_rows, candidate_rows))
-            worth_it = materially_leaner(incumbent_rows, candidate_rows) or _hedged_downside(incumbent_rows, candidate_rows)
+            cheaper = (mean(r["economic_cost"] for r in candidate_rows)
+                       <= mean(r["economic_cost"] for r in incumbent_rows)
+                       - req.downside_cost_tolerance * max(abs(mean(r["economic_cost"] for r in incumbent_rows)), 1.))
+            worth_it = materially_leaner(incumbent_rows, candidate_rows) or cheaper
             if not_worse and worth_it:
                 accepted, symmetric = True, True
                 reasons.append("Incumbent misses a requested service target under independent confirmation and no candidate reaches it either; "
