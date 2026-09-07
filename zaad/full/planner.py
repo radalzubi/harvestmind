@@ -29,6 +29,15 @@ from zaad.full.uncertainty import profile_dict, stress_credibility, supply_profi
 from zaad.full.worlds import dates, draw, forecast_all
 
 
+# Ablation switch for the v7 sub-rules, used by the development harness to attribute a measured
+# movement to the rule that caused it. Empty in every normal run; nothing reads it in production.
+V7_DISABLED: frozenset[str] = frozenset()
+
+
+def _v7(req: Request, rule: str) -> bool:
+    return req.protection_v7 and rule not in V7_DISABLED
+
+
 def targets(req: Request, buffer: float = 1.645) -> dict:
     """Projected base-stock proxy. Under the reliability profile the buffer is the per-SKU/location
     protection quantile with calibrated demand spread, level error and lead-time spread; the
@@ -207,7 +216,7 @@ def _priority_consistent(req: Request, before: list[dict], after: list[dict]) ->
             continue
         if best_improved is None:
             return False
-        if priorities[service.customer] > best_improved if req.protection_v7 else priorities[service.customer] >= best_improved:
+        if priorities[service.customer] > best_improved if _v7(req, "reallocation") else priorities[service.customer] >= best_improved:
             return False
     return True
 
@@ -354,20 +363,25 @@ def v6_solve_terms(req: Request, fits: dict, protection: list[dict]) -> dict:
     for row in protection:
         sku, location, state = row["sku"], row["location"], row["state"]
         mu = row["mean_demand_per_period"]
-        # Allowance: the stock a lean policy would hold here. V6 charged everything above the lean
-        # safety baseline plus one period of demand, which ignores the replenishment window - a
-        # location that can only be refilled every second period legitimately carries two periods
-        # of cycle stock, and an echelon origin carries its branches' cycle stock as well. V7 uses
-        # the lean base stock: mean demand over the replenishment window plus the lean baseline.
-        window = row["replenishment_periods"] if req.protection_v7 else 1
-        allowance = state["lean_baseline_units"] + mu * max(1., window)
+        # Allowance: the stock a lean policy would *hold on average*, because the charge is levied
+        # on end-of-period inventory in every period. A lean policy orders up to
+        # `lean_baseline + mu * window` and draws down between receipts, so its average on-hand is
+        # `lean_baseline + mu * window / 2`. V6 charged everything above `lean_baseline + mu`,
+        # which is that formula at the two-period window every single-location cell happens to
+        # have, and which had no meaning at all for an echelon origin (it had no row). Charging
+        # against the *peak* base stock instead was measured on development7 and rejected: the
+        # charge stopped biting and inventory rose from 0.65 to 1.98 periods on cell 1 and from
+        # 1.07 to 2.75 on cell 2, both of which already met their target
+        # (evidence/v7/dev7_c_peak_allowance_partial.jsonl).
+        window = row["replenishment_periods"] if _v7(req, "allowance") else 2
+        allowance = state["lean_baseline_units"] + mu * max(1., window) / 2.
         quiet_with_excess = state["activity"] <= .05 and row["on_hand_units"] > allowance
         if state["regime"] == "RECOVER" or (quiet_with_excess and state["incremental_protection_units"] <= 0.):
             # Carrying burden of protection whose reason has expired: storage and handling at twice
             # the holding rate, plus the financing cost of the capital the stock ties up. The
             # financing term is the operator's own declared interest rate, not a new coefficient.
             rate = skus[sku].asset_value * locs[location].holding_per_value_period * 2.
-            if req.protection_v7:
+            if _v7(req, "allowance"):
                 rate += skus[sku].asset_value * req.liquidity.interest_per_period
             excess[sku, location] = (allowance, rate)
         services = [s for s in req.services if s.sku == sku and s.location == location]
@@ -575,26 +589,28 @@ def plan(req: Request) -> dict:
         return float(sum(x.get("cash_days_advanced", 0.) * x["quantity"] for x in rows)) if rows else 0.
 
     if feasible:
-        if req.protection_v7:
+        if _v7(req, "rank"):
             # Minimum useful protection (v7). Every candidate in `feasible` already meets every
-            # requested service target on the selection worlds, so service above the target is not
-            # a reason to prefer one over another - it is exactly the protection P7 asks about.
-            # What the last units of protection have to earn is *stress* service, so that is the
-            # only service condition here: a candidate qualifies when its priority-weighted service
-            # under the declared stress is within the operator's own service tolerance of the best
-            # available. V5 then ranked by inventory only inside a cost band of one fifth of the
-            # downside tolerance, about one per cent; V7 uses the operator's declared downside
-            # tolerance itself, and breaks ties on inventory toward the plan that commits cash
-            # latest. Ranking by fitted service instead was tried on development7 and rejected: it
-            # selected the highest-service candidate, which is the fattest, and raised quiet-cell
-            # inventory from 0.86 to 2.21 periods (evidence/v7/dev7_b_service_band_partial.jsonl).
+            # requested service target on the selection worlds, so service above the target buys
+            # nothing that was asked for - it is exactly the protection P7 exists to question.
+            # V5 ranked these by inventory only inside a cost band of one fifth of the downside
+            # tolerance, about one per cent of modelled cost, which is far too narrow to reach any
+            # plan that carries less: a leaner plan that risks a little more lost margin lands
+            # outside it immediately. V7 uses the operator's own declared downside tolerance as the
+            # band and takes the leanest inside it, breaking ties toward the plan that commits cash
+            # latest. Whether the leanest plan is safe enough against a real disruption is decided
+            # downstream, where the stress gate compares it with the incumbent and the alternatives
+            # loop falls back to the next candidate if it fails.
+            #
+            # Two narrower bands were measured on development7 and rejected, both because they
+            # anchor on the *best* candidate and so ratchet to the fattest one: a band on fitted
+            # priority-weighted service (evidence/v7/dev7_b_service_band_partial.jsonl, quiet-cell
+            # inventory 0.86 -> 2.21 periods) and a band on stress priority-weighted service
+            # (evidence/v7/dev7_c_peak_allowance_partial.jsonl, cell 1 mean inventory value
+            # 60.3 -> 183.5 by selecting the lexicographic service-first plan in half the reviews).
             cheapest = min(hedged_cost(n) for n in feasible)
-            best_stressed = max((priority_service(stress_rows[n]) for n in feasible if n in stress_rows), default=None)
-            equivalent = [n for n in feasible
-                          if (best_stressed is None or n not in stress_rows
-                              or priority_service(stress_rows[n]) >= best_stressed - req.service_tolerance)
-                          and hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9]
-            band = equivalent or list(feasible)
+            band = [n for n in feasible
+                    if hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9] or list(feasible)
             chosen = min(band, key=lambda name: (burden(name), earliness(name), hedged_cost(name), list(candidates).index(name)))
         elif req.protection_v5:
             # Marginal value (v5): estimated costs are noisy; among feasible candidates whose hedged
@@ -704,7 +720,7 @@ def plan(req: Request) -> dict:
         # more expensive, and carries materially less inventory, that is a real benefit the horizon
         # cannot see. It is a tie-break, never a licence to trade service for leanness: every
         # service and stress gate above still has to pass.
-        if reliability and req.protection_v7:
+        if reliability and _v7(req, "tiebreak"):
             band = req.downside_cost_tolerance / 5. * max(abs(mean(r["economic_cost"] for r in rows_before if r["usable"])), 1.)
             if lower >= -band and materially_leaner(rows_before, rows_after):
                 return True, lower, "capital"
@@ -730,7 +746,7 @@ def plan(req: Request) -> dict:
     else:
         accepted = chosen != "incumbent" and service_ok(req, candidate_rows) and bool(incumbent_rows) and all(r["usable"] for r in incumbent_rows)
         symmetric = False
-        if (not accepted and req.protection_v7 and reliability and chosen != "incumbent" and not incumbent_meets
+        if (not accepted and _v7(req, "symmetric") and reliability and chosen != "incumbent" and not incumbent_meets
                 and bool(candidate_rows) and all(r["usable"] for r in candidate_rows)
                 and bool(incumbent_rows) and all(r["usable"] for r in incumbent_rows)):
             # Symmetric confirmation (v7). The absolute service gate is applied to the candidate but
