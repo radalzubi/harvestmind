@@ -1,0 +1,18 @@
+{
+ "design_frozen_commit": "c972c5d6b4f653c4b52740ea89593dd3b15bcc27",
+ "source_hash": "0739690bb2856a1b56611fd0a29ef0fe141f02ff1d2cd5eb020e357697fbcc2a",
+ "frozen_at": "2026-09-07T06:45:18Z",
+ "development_runs": [
+  "dev6_a.jsonl (4 methods; first v6 engine)",
+  "dev6_b_network.jsonl (29 network cells after the spread guard)",
+  "dev6_c.jsonl (4 methods; proxy placement, restricted continuation)",
+  "dev6_d_gated.jsonl (V6 rerun; continuation off, proxy transfers pinned 4 periods)",
+  "dev6_final.jsonl (run C comparators + run D V6)"
+ ],
+ "post_development_change": "proxy transfer pinning reduced from four periods to two after cell 85 (26-review two-branch promotion) ABSTAINed at the 5 s solve cap; spot-checked on cells 72, 74, 85 before freezing",
+ "engine_flags": {
+  "protection_v6": true,
+  "terminal_continuation": false
+ },
+ "rule": "validation6 is the pre-holdout selection run; no engine change after this record unless validation6 sends the cycle back to development; holdout4 stays unrun unless the verdict is READY FOR UNTOUCHED HOLDOUT4"
+}
