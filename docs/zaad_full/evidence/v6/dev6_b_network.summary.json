@@ -1,0 +1,42 @@
+{
+  "base_stock": {
+    "runs": 29,
+    "complete": 29,
+    "service_breaches": 27,
+    "paired_completes": 29,
+    "median_vs_base_stock_pct": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "cost_losses": 0
+  },
+  "echelon_base_stock": {
+    "runs": 29,
+    "complete": 26,
+    "service_breaches": 23,
+    "paired_completes": 26,
+    "median_vs_base_stock_pct": 3.1129996172197614,
+    "min": -4.890105475521584,
+    "max": 21.16972377049191,
+    "cost_losses": 5
+  },
+  "gated_v5": {
+    "runs": 29,
+    "complete": 29,
+    "service_breaches": 24,
+    "paired_completes": 29,
+    "median_vs_base_stock_pct": 1.6201410536004006,
+    "min": -19.05394046738435,
+    "max": 15.46523341406964,
+    "cost_losses": 3
+  },
+  "gated": {
+    "runs": 29,
+    "complete": 29,
+    "service_breaches": 25,
+    "paired_completes": 29,
+    "median_vs_base_stock_pct": 1.358803940530654,
+    "min": -0.9228710660897302,
+    "max": 12.199940179900864,
+    "cost_losses": 3
+  }
+}

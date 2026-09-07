@@ -1,0 +1,12 @@
+{
+  "gated": {
+    "runs": 97,
+    "complete": 96,
+    "service_breaches": 51,
+    "paired_completes": 0,
+    "median_vs_base_stock_pct": null,
+    "min": null,
+    "max": null,
+    "cost_losses": 0
+  }
+}
