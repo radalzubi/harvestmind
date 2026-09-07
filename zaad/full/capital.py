@@ -185,12 +185,15 @@ def duplication(req: Request, fits: dict, protection: list[dict]) -> list[dict]:
             source = _cheapest_source(req, sku, arc.origin)
             window = (dates(req, source, 0)[1] + 1) if source is not None else 1
             origin_need = (origin_mu + pooled_mu) * window + z * math.sqrt(pooled_var * window)
-            reachable = arc.capacity >= mu and arc.lead_periods * req.period_days >= 0
+            # Reachable: the arc must both carry a period of demand and land inside the interval
+            # the branch's own stock is there to cover. An arc slower than that cannot stand in for
+            # branch stock at all, however much the origin happens to be holding.
+            reachable = arc.capacity >= mu and arc.lead_periods <= max(1, window - 1)
             # Both surpluses must exist, and the arc must be able to carry the overlap inside the
             # interval the branch stock would otherwise cover.
             branch_surplus = max(0., branch_stock - local_need)
             origin_surplus = max(0., origin_stock - origin_need)
-            carriable = arc.capacity * max(1, window - arc.lead_periods)
+            carriable = arc.capacity * max(0, window - arc.lead_periods)
             overlap = min(branch_surplus, origin_surplus, carriable) if reachable else 0.
             risk_branch = (row["state"]["exit"]["active_risk_source"] or "demand_spread")
             risk_origin = ((origin_row["state"]["exit"]["active_risk_source"] if origin_row else None) or "demand_spread")

@@ -30,6 +30,12 @@ from zaad.full.uncertainty import (SupplyProfile, demand_state, diversification,
                                    resilience, supply_state, z_for)
 from zaad.full.worlds import dates
 
+# A detected level change is a confirmed decline once it has held for this many observations and
+# the new level is at or below this share of the old one. Below one observation is noise; the
+# change-point detector itself supplies the persistence, this is the corroboration on top of it.
+DECLINE_CONFIRMATION = 3
+DECLINE_RATIO = .85
+
 
 def _weighted_target(services, customers, fits) -> tuple[float, float, float]:
     """Priority- and demand-weighted target, the top target, and the top priority."""
@@ -164,7 +170,8 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         # Risk state: how active each driver is, how resilient the SKU is, and the lean baseline
         # (demand-only protection at the fitted spread with every other driver calm).
         demand_score = max((demand_state(fits[s.id]["uncertainty"]) for s in services), default=0.) if reliability else 0.
-        supply_score = supply_state(profile, recency=req.protection_v5, exit_rules=req.protection_v6) if profile is not None else 0.
+        supply_score = supply_state(profile, recency=req.protection_v5, exit_rules=req.protection_v6,
+                                    source_specific=req.protection_v7) if profile is not None else 0.
         resilient = resilience(window, effective, substitute_cover, mu * window, alternate_inside) if (eligible or refill_arc is not None) else 0.
         activity = protection_activity(demand_score, supply_score, resilient) if (reliability and req.protection_decay) else 1.
         # Lean baseline: protection with every active driver removed, i.e. the fitted demand spread
@@ -195,6 +202,19 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         if supply_score > 0 and profile is not None:
             # A clean run of receipts as long as the minimum record set retires the supply driver.
             supply_wait = 6 if profile.scope == "observed" else window
+            if req.protection_v7 and profile.scope == "observed":
+                # Source-specific: what this kind of trouble actually needs, less what has arrived.
+                supply_wait = max(0, profile.exit_receipts_needed - profile.recent_clean_run)
+        if req.protection_v7 and demand_wait > 0:
+            # A declared event that has ended retires its own demand protection at once, unless
+            # demand stayed up after it: the event is the reason, and the reason is over.
+            events = [e for e in req.events for s in services if e.service == s.id]
+            ended = [e for e in events if e.end < 0]
+            still_elevated = any(fits[s.id]["uncertainty"].get("pre_change_level") is not None
+                                 and fits[s.id]["mean"] > 1.15 * (fits[s.id]["uncertainty"]["pre_change_level"] or 0.)
+                                 for s in services)
+            if ended and not still_elevated and all(e.end < 0 for e in events):
+                demand_wait = 0
         periods_to_lean = max(demand_wait, supply_wait) if activity > .05 else 0
         recent_quiet = all((fits[s.id]["uncertainty"].get("last_outlier_age") is None or fits[s.id]["uncertainty"]["last_outlier_age"] >= 2)
                            for s in services) if reliability else True
@@ -225,9 +245,27 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
             duplicated_explanation = (f"{duplicated_units:.0f} units buffer the same demand spread twice: {location} holds {on_hand:.0f} against a local need of "
                                       f"{local_units:.0f} while {', '.join(origin_ids)} holds {upstream_protection:.0f} against a pooled need of {pooled_units:.0f}; "
                                       f"the transfer lead of {transfer_lead} review(s) is inside the {window}-period service window with capacity {transfer_capacity:.0f} per period")
+        # Confirmed demand decline (v7). One low observation is noise; a detected level change that
+        # has held for three observations and sits materially below the old level is a decline, and
+        # the stock bought for the old level is now excess. No forecast of further decline is made:
+        # the new level is the fitted level, and only what exceeds a lean base stock at that level
+        # is treated as liquidation stock.
+        declining, decline_ratio = False, None
+        if req.protection_v7 and reliability and mu > 0:
+            ratios = []
+            for s in services:
+                u = fits[s.id]["uncertainty"]
+                pre, age = u.get("pre_change_level"), u.get("regime_age")
+                if pre and pre > 0 and age is not None and age >= DECLINE_CONFIRMATION:
+                    ratios.append(fits[s.id]["mean"] / pre)
+            if ratios and len(ratios) == len(services) and max(ratios) <= DECLINE_RATIO:
+                declining, decline_ratio = True, float(max(ratios))
+        lean_base_stock = lean_baseline + mu * max(1., window)
         # Regime with hysteresis: entering PROTECT needs a materially active driver; leaving needs
         # the driver to have gone quiet for two observations; RECOVER is the unwinding phase.
-        if activity >= .3:
+        if declining and on_hand > lean_base_stock and activity < .3:
+            regime = "RECOVER"
+        elif activity >= .3:
             regime = "PROTECT"
         elif activity > .05 and decaying and on_hand > lean_baseline + mu:
             regime = "RECOVER"
@@ -245,6 +283,8 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
             flags.append("INTERMITTENT_TAIL_RISK")
         if duplicated:
             flags.append("DUPLICATED_NETWORK_BUFFER")
+        if declining:
+            flags.append("DEMAND_DECLINE_CONFIRMED")
         if regime == "RECOVER":
             flags.append("RECOVERY_IN_PROGRESS")
         # Echelon accounting (v5): every unit of recommended protection is local service stock,
@@ -263,6 +303,11 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
                 transition = f"LEAN -> PROTECT: supply risk active ({', '.join(d['reasons'][0] for d in active_drivers if d['driver'] == 'supply') or 'lateness or partial deliveries'})" + ("; no alternative can arrive inside the service window" if resilient < .5 else "")
             else:
                 transition = "LEAN -> PROTECT: demand risk active (" + ", ".join(r for d in active_drivers if d["driver"] == "demand" for r in d["reasons"]) + ")"
+        elif regime == "RECOVER" and declining:
+            transition = (f"LEAN -> RECOVER: demand stepped down to {decline_ratio:.0%} of its previous level and has held there for "
+                          f"{min((fits[s.id]['uncertainty'].get('regime_age') or 0) for s in services)} observation(s); "
+                          f"{max(0., on_hand - lean_base_stock):.0f} units above a lean base stock at the new level are to be run down, "
+                          f"transferred, cancelled or left unreplenished")
         elif regime == "RECOVER":
             transition = f"PROTECT -> RECOVER: the risk driver has gone quiet (activity {activity:.2f}) and {max(0., on_hand - lean_baseline):.0f} units above the lean baseline remain to be consumed, transferred or left unreplenished"
         else:
@@ -273,8 +318,21 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
                      "recovery_evidence_receipts": (profile.recent_clean_run if profile is not None else 0),
                      "receipts_needed": (profile.exit_receipts_needed if profile is not None else 0),
                      "backlog_open": bool(profile is not None and profile.backlog_open),
-                     "reviews_remaining_until_lean_eligible": (max(0, profile.exit_receipts_needed - profile.recent_clean_run) if (profile is not None and supply_score > .05) else periods_to_lean)}
+                     "reviews_remaining_until_lean_eligible": (max(0, profile.exit_receipts_needed - profile.recent_clean_run) if (profile is not None and supply_score > .05) else periods_to_lean),
+                     "risk_recovery_confidence": (None if profile is None or profile.exit_receipts_needed == 0 else
+                                                  round(min(1., profile.recent_clean_run / profile.exit_receipts_needed), 3)),
+                     "recovery_evidence_count": (profile.recent_clean_run if profile is not None else 0),
+                     "reviews_to_exit_protect": periods_to_lean,
+                     "reason_not_lean": (
+                         "an open order is overdue and its arrival is still unresolved" if (profile is not None and profile.backlog_open) else
+                         f"{max(0, profile.exit_receipts_needed - profile.recent_clean_run)} more clean receipt(s) needed after {profile.driver_kind} trouble"
+                         if (profile is not None and supply_score > .05 and profile.driver_kind) else
+                         f"demand level change {demand_wait} review(s) from confirmation" if demand_score > .05 and demand_wait > 0 else
+                         "stock above the lean baseline is still being consumed" if regime == "RECOVER" else
+                         None if activity <= .05 else "an active risk driver has not yet gone quiet")}
         state = {"activity": activity, "demand_score": demand_score, "supply_score": supply_score, "resilience": resilient,
+                 "demand_decline_confirmed": declining, "demand_decline_ratio": decline_ratio,
+                 "lean_base_stock_units": lean_base_stock, "liquidation_units": (max(0., on_hand - lean_base_stock) if declining else 0.),
                  "duplicated_buffer_units": duplicated_units, "duplicated_buffer_explanation": duplicated_explanation, "exit": exit_info,
                  "alternate_inside_window": alternate_inside, "echelon": echelon, "transition": transition,
                  "risk_active": activity > .05, "decaying": bool(decaying), "periods_to_lean": periods_to_lean,

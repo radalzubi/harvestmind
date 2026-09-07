@@ -22,6 +22,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from zaad.full.capital import REASONS as CAPITAL_REASONS  # noqa: E402
 from zaad.full.contracts import Request  # noqa: E402
 from zaad.full.demo import example  # noqa: E402
 from zaad.full.replay import replay  # noqa: E402
@@ -41,8 +42,6 @@ SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 
          # Capital-efficiency / recovery cycle (v7). holdout4 stays frozen and unrun; v7 may only
          # use these two splits. No seed here appears in any split above.
          "development7": [36001], "validation7": [37001, 37002]}
-from zaad.full.capital import REASONS as CAPITAL_REASONS
-
 METHODS = ["base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated"]
 RELIABILITY_METHODS = ["base_stock", "stochastic", "robust", "protected", "gated_pr24", "gated_pr30", "gated"]
 INVENTORY = {"low": .5, "balanced": 2., "high": 4.}

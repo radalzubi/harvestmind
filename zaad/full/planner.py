@@ -179,7 +179,15 @@ def _recovery_not_worse(req: Request, before: list[dict], after: list[dict]) -> 
 
 def _priority_consistent(req: Request, before: list[dict], after: list[dict]) -> bool:
     """A recovery may lower a service only to raise a strictly higher-priority one. Any service
-    that falls by more than the tolerance without such a beneficiary is a hidden sacrifice."""
+    that falls by more than the tolerance without such a beneficiary is a hidden sacrifice.
+
+    v7: two customers of the *same* priority have no strictly higher beneficiary between them, so
+    the strict rule forbade every reallocation across equal-ranked branches - a leaner plan that
+    moved four service points from one branch to its equally ranked neighbour was recorded as a
+    hidden sacrifice even when the priority-weighted total was unchanged and the plan was cheaper.
+    Under v7 an equal-priority beneficiary counts; robbing a higher-priority customer to serve a
+    lower-priority one is still refused. Every caller pairs this with an aggregate weighted-
+    shortfall condition, so the total can never quietly get worse."""
     if not before or not after or len(before) != len(after):
         return False
     priorities = {c.id: c.priority for c in req.customers}
@@ -195,7 +203,11 @@ def _priority_consistent(req: Request, before: list[dict], after: list[dict]) ->
             improved.add(service.id)
     best_improved = max((priorities[s.customer] for s in req.services if s.id in improved), default=None)
     for service in req.services:
-        if service.id in worsened and (best_improved is None or priorities[service.customer] >= best_improved):
+        if service.id not in worsened:
+            continue
+        if best_improved is None:
+            return False
+        if priorities[service.customer] > best_improved if req.protection_v7 else priorities[service.customer] >= best_improved:
             return False
     return True
 
@@ -416,8 +428,8 @@ def procurement_timing(req: Request, fits: dict, solution: Solution | None) -> l
         if needed_by is None:
             early = max(0, req.horizon - arrival)
         landed = source.unit_price + source.freight_per_unit + source.handling_per_unit
-        row = {"source": source_id, "period": t, "quantity": q, "arrival_period": arrival, "needed_by_period": needed_by,
-               "early_periods": early, "cash_committed_early": q * landed * early}
+        entry: dict = {"source": source_id, "period": t, "quantity": q, "arrival_period": arrival, "needed_by_period": needed_by,
+                       "early_periods": early, "cash_committed_early": q * landed * early}
         if req.protection_v7:
             # Working-capital view (v7): the last review at which this order could still be placed
             # and land before the location runs short, how far ahead of that it actually was placed,
@@ -427,7 +439,7 @@ def procurement_timing(req: Request, fits: dict, solution: Solution | None) -> l
             terms = {x.id: x for x in req.terms}[source.terms]
             net = math.ceil(terms.net_days / req.period_days)
             trigger = {"order": t, "shipment": dates(req, source, t)[0], "arrival": arrival}[terms.balance_trigger]
-            row.update({
+            entry.update({
                 "earliest_feasible_period": 0, "selected_order_period": t, "latest_safe_order_period": latest_safe,
                 "latest_safe_order_date": (None if latest_safe is None else
                                            (req.as_of + timedelta(days=req.period_days * latest_safe)).isoformat()),
@@ -438,7 +450,7 @@ def procurement_timing(req: Request, fits: dict, solution: Solution | None) -> l
                 "premature_inventory_days": q * early * req.period_days,
                 "storage_days": early * req.period_days,
                 "service_slack_periods": (None if needed_by is None else needed_by - arrival)})
-        out.append(row)
+        out.append(entry)
         arrivals[(*key, arrival)] = arrivals.get((*key, arrival), 0.) + q * source.fill_mean
     return out
 
@@ -541,8 +553,44 @@ def plan(req: Request) -> dict:
             return False
         return held_after <= held_before * (1 - req.downside_cost_tolerance)
 
+    def priority_service(rows: list[dict]) -> float:
+        """Priority-weighted achieved service over a row set; -inf when the plan is unusable."""
+        if not rows or any(not r["usable"] for r in rows):
+            return float("-inf")
+        priorities = {c.id: c.priority for c in req.customers}
+        total = sum(priorities[s.customer] for s in req.services)
+        got = [(priorities[s.customer], _service_value(req, rows, s)) for s in req.services]
+        got = [(w, v) for w, v in got if v is not None]
+        return sum(w * v for w, v in got) / total if got and total else float("-inf")
+
+    def earliness(name: str) -> float:
+        """Working capital committed ahead of the latest safe order date, in unit-periods."""
+        solution = candidates.get(name)
+        rows = procurement_timing(req, fits, solution) if solution is not None else []
+        return float(sum(x.get("cash_days_advanced", 0.) * x["quantity"] for x in rows)) if rows else 0.
+
     if feasible:
-        if req.protection_v5:
+        if req.protection_v7:
+            # Minimum useful protection (v7). V5 ranked feasible candidates by inventory only inside
+            # a band of one fifth of the downside tolerance on cost, which is about one per cent -
+            # so protection that cost a little more than that was never questioned however little
+            # service it bought. The question P7 actually asks is whether the last units of
+            # protection change service, so the band is service equivalence: among feasible
+            # candidates whose priority-weighted service, fitted and under the declared stress, is
+            # within the operator's own service tolerance of the best available, and whose hedged
+            # cost is inside the operator's own downside tolerance of the cheapest, take the leanest.
+            # Ties on inventory then go to the plan that commits cash latest.
+            cheapest = min(hedged_cost(n) for n in feasible)
+            best_fitted = max(priority_service(selection_rows[n]) for n in feasible)
+            best_stressed = max((priority_service(stress_rows[n]) for n in feasible if n in stress_rows), default=None)
+            equivalent = [n for n in feasible
+                          if priority_service(selection_rows[n]) >= best_fitted - req.service_tolerance
+                          and (best_stressed is None or n not in stress_rows
+                               or priority_service(stress_rows[n]) >= best_stressed - req.service_tolerance)
+                          and hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9]
+            band = equivalent or list(feasible)
+            chosen = min(band, key=lambda name: (burden(name), earliness(name), hedged_cost(name), list(candidates).index(name)))
+        elif req.protection_v5:
             # Marginal value (v5): estimated costs are noisy; among feasible candidates whose hedged
             # cost lies within one downside-tolerance band of the cheapest, prefer the one that
             # carries the least inventory. Protection has to beat the lean plan by more than noise.
