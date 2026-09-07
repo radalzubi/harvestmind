@@ -55,7 +55,7 @@ export default async function ResourceArticle({ params }: { params: Promise<{ sl
               {related.map((r) => <li key={r.slug}><Link href={`/resources/${r.slug}`}>{r.heading}</Link></li>)}
             </ul>
             <p>
-              ZAAD applies these ideas to your own purchase orders, receipts and stock counts. <Link href="/product">See how it works</Link>,
+              ZAAD applies these ideas to your own purchase orders, receipts and stock counts. <Link href="/how-it-works">See how it works</Link>,
               browse the <Link href="/sectors">sectors it serves</Link>, or <Link href="/get-started">open a workspace</Link>.
             </p>
           </section>
