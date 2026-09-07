@@ -98,9 +98,10 @@ def targets(req: Request, buffer: float = 1.645) -> dict:
         # central location one transfer lead away from the demand it protects.
         from zaad.full.echelon import local_transfer_targets
         spread = {s.id: fits[s.id]["uncertainty"]["sd_effective"] for s in req.services}
-        # Only the first four periods are pinned: period 0 is what executes, the next three keep the
-        # branch base stock in the projection, and pinning every period made the proxy MILP time out.
-        orders.update({k: v for k, v in local_transfer_targets(req, fits, spread, purchases=orders).items() if k[2] <= 3})
+        # Only the first two periods are pinned: period 0 is what executes and period 1 keeps the next
+        # review's branch base stock in the projection. Pinning every period made the proxy MILP time
+        # out on 26-review two-branch cells, and four periods sat at the 5-second cap on one of them.
+        orders.update({k: v for k, v in local_transfer_targets(req, fits, spread, purchases=orders).items() if k[2] <= 1})
     return orders
 
 
