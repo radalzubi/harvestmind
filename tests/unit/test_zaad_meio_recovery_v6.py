@@ -216,3 +216,24 @@ def test_network_service_frontier_is_reported_per_service():
     assert set(rows) == {"retail_A", "retail_A_south"}
     for r in rows.values():
         assert r["requested"] in (.95,) and r["expected_achieved"] is not None
+
+
+# degenerate spread guard
+
+def test_two_identical_post_change_points_do_not_make_demand_certain():
+    import numpy as np
+    from zaad.full.forecast import estimate
+    from zaad.full.uncertainty import demand_uncertainty
+    rng = np.random.default_rng(6)
+    y = np.concatenate([rng.normal(20., 2., 78), [14., 14.]])
+    fit = estimate(y, 11., .05)
+    assert fit["segment_origin"] > 0 and fit["segment_count"] == 2
+    assert fit["sd"] > 0
+    for decay in (True, False):
+        u = demand_uncertainty(fit, y, decay=decay)
+        assert u["sd_effective"] > 1.
+    data = example("normal").model_dump(mode="json")
+    data["history"] = [{**h, "quantity": float(q)} for h, q in zip(data["history"], y[-52:])]
+    req = Request.model_validate(data)
+    worlds = draw(req, 3, 6)
+    assert len({round(w.demand["retail_A"][0]) for w in worlds}) > 1

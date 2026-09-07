@@ -1,6 +1,8 @@
 """Review-by-review causal demand adaptation and occurrence/size uncertainty."""
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 from zaad.forecast import point
@@ -107,7 +109,9 @@ def estimate(y: np.ndarray, shortage: float, holding: float, adaptive: bool = Tr
     return {"method": method, "mean": mean, "segment_origin": origin, "adaptation": mode if adaptive else "frozen",
             "history_count": len(y), "segment_count": len(segment),
             "zero_probability": 1 - probability, "decision_losses": scores,
-            "sd": float(np.std(segment)), "sizes": nonzero.tolist(),
+            # A young segment's own standard deviation is bounded below by the pre-change spread
+            # (fading as the segment grows) so a run of identical readings never reports certainty.
+            "sd": float(max(np.std(segment), (np.std(y[:origin]) if origin > 1 else 0.) * math.sqrt(max(0., 1. - len(segment) / 8.)))), "sizes": nonzero.tolist(),
             "interval_status": "empirical; no coverage guarantee after drift"}
 
 

@@ -440,6 +440,14 @@ def plan(req: Request) -> dict:
     recovery = solve(req, combined, service_first="all", **v6)
     if recovery.status == "OPTIMAL":
         candidates["joint_recovery"] = recovery
+    # Joint fitted frontier (v6): the best jointly achievable network service on the fitted worlds
+    # alone, sharing central stock across branches. The recovery candidate above hedges the declared
+    # stress at equal weight, so its fitted-world service understates what the network can do.
+    joint_fitted_rows: list[dict] = []
+    if req.protection_v6:
+        joint_fitted = solve(req, selection, service_first="all", **v6)
+        if joint_fitted.status == "OPTIMAL":
+            joint_fitted_rows = evaluate(req, joint_fitted, selection)
 
     selection_rows = {name: evaluate(req, candidate, selection) for name, candidate in candidates.items() if candidate.status == "OPTIMAL"}
     stress_rows = {name: evaluate(req, candidate, stress_worlds) for name, candidate in candidates.items()
@@ -835,7 +843,7 @@ def plan(req: Request) -> dict:
             "forecasts": fits, "eta": eta, "service_frontier": frontier,
             "protection": protection, "false_protection": false_protection, "explain": explain, "protection_value": protection_value,
             "network_service": [{"service": s.id, "location": s.location, "requested": s.target,
-                                 "jointly_feasible": _service_value(req, joint_rows, s) if joint_rows else None,
+                                 "jointly_feasible": (_service_value(req, joint_fitted_rows, s) if joint_fitted_rows else (_service_value(req, joint_rows, s) if joint_rows else None)),
                                  "expected_achieved": _service_value(req, final_rows, s) if final_rows else None,
                                  "incumbent_achieved": _service_value(req, incumbent_rows, s) if incumbent_rows else None,
                                  "selected_achieved": _service_value(req, candidate_rows, s) if (accepted and candidate_rows) else (_service_value(req, incumbent_rows, s) if incumbent_rows else None)}

@@ -154,6 +154,14 @@ def demand_uncertainty(fit: dict, y: np.ndarray, decay: bool = True) -> dict:
         level_total = math.sqrt(level_se ** 2 + regime ** 2)
         pre_weight = 0.
     sd_effective = max(float(fit["sd"]), calibration["residual_sd"])
+    if origin > 0 and n < YOUNG_REGIME:
+        # Degenerate-spread guard: two or three post-change points can be identical, which makes
+        # the segment's standard deviation zero and every scenario certain. The spread of a young
+        # regime is bounded below by the pre-change spread, fading as the regime ages, on both the
+        # calibrated and the PR30 path. (Found on the v6 two-branch cells: a branch whose first two
+        # observations both read 14 was planned as if demand could never be anything else.)
+        pre_sd = float(np.std(y[:origin])) if origin > 1 else float(np.std(y))
+        sd_effective = max(sd_effective, pre_sd * math.sqrt(1. - n / YOUNG_REGIME))
     intermittent = intermittent_profile(y, fit) if decay else None
     if intermittent is not None:
         # Sparse demand: the spread is the occurrence/size decomposition with a capped size tail,

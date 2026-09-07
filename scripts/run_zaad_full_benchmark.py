@@ -533,6 +533,8 @@ def main():
     parser.add_argument("--family", nargs="+", default=None, help="only cells of these families")
     parser.add_argument("--target", nargs="+", type=float, default=None, help="only cells with these service targets")
     parser.add_argument("--supply", nargs="+", default=None, help="only cells with these supply patterns")
+    parser.add_argument("--network", nargs="+", default=None, help="only cells with these networks")
+    parser.add_argument("--cells", nargs="+", type=int, default=None, help="only these cell ids")
     args = parser.parse_args()
     manifest = args.output.parent / "preregistered.json"
     configuration = {"source_hash": source_hash(), "seeds": SEEDS, "methods": METHODS,
@@ -548,7 +550,7 @@ def main():
     if args.split in {"final", "holdout3", "holdout4"}:
         # Frozen splits: the manifest written by --freeze must match the current source and
         # configuration exactly, and no cell subset or limit may be applied.
-        if args.limit or args.demand or args.family or args.target or args.supply or not manifest.exists() or json.loads(manifest.read_text()) != configuration:
+        if args.limit or args.demand or args.family or args.target or args.supply or args.network or args.cells or not manifest.exists() or json.loads(manifest.read_text()) != configuration:
             raise SystemExit(f"{args.split} requires an exact frozen source/configuration, no filters and no run limit")
     if args.output.exists():
         raise SystemExit("Refusing to overwrite evidence")
@@ -562,6 +564,10 @@ def main():
         selected = [c for c in selected if any(abs(c["target"] - t) < 1e-9 for t in args.target)]
     if args.supply:
         selected = [c for c in selected if c["supply"] in args.supply]
+    if args.network:
+        selected = [c for c in selected if c["network"] in args.network]
+    if args.cells:
+        selected = [c for c in selected if c["cell"] in args.cells]
     selected = [{**c, "adaptation": args.adaptation} for c in selected]
     methods = args.methods or (RELIABILITY_METHODS if args.matrix == "reliability" else V4_METHODS if args.matrix == "v4" else METHODS)
     if args.split in {"development5", "validation5"} and not args.methods:
