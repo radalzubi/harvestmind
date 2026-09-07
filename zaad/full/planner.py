@@ -363,7 +363,12 @@ def v6_solve_terms(req: Request, fits: dict, protection: list[dict]) -> dict:
         allowance = state["lean_baseline_units"] + mu * max(1., window)
         quiet_with_excess = state["activity"] <= .05 and row["on_hand_units"] > allowance
         if state["regime"] == "RECOVER" or (quiet_with_excess and state["incremental_protection_units"] <= 0.):
+            # Carrying burden of protection whose reason has expired: storage and handling at twice
+            # the holding rate, plus the financing cost of the capital the stock ties up. The
+            # financing term is the operator's own declared interest rate, not a new coefficient.
             rate = skus[sku].asset_value * locs[location].holding_per_value_period * 2.
+            if req.protection_v7:
+                rate += skus[sku].asset_value * req.liquidity.interest_per_period
             excess[sku, location] = (allowance, rate)
         services = [s for s in req.services if s.sku == sku and s.location == location]
         if not services or mu <= 0:

@@ -219,8 +219,8 @@ class SupplyProfile:
     clean_run_fill_mean: float = 1.
 
 
-def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], period_days: int = 7,
-                   overdue_as_late: bool = False) -> SupplyProfile:
+def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], period_days: int = 7,  # noqa: PLR0913
+                   overdue_as_late: bool = False, source_specific: bool = False) -> SupplyProfile:
     """Per source fill and lead distributions from its own censored history, else declared.
 
     "Late" means arriving more than half a planning period after the declared lead, since
@@ -277,11 +277,13 @@ def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], per
         is_late = r.elapsed_days > declared + slack
         is_short = r.arrived and r.accepted_ratio is not None and r.accepted_ratio < .9
         stopped = r.arrived and r.accepted_ratio is not None and r.accepted_ratio <= .05
-        very_late = r.elapsed_days > declared + slack + max(7, 2 * declared)
         if not r.arrived:
             kind, needed, last_adverse = "backlog", 6, r.known_at.isoformat()
             break
-        if stopped or (is_late and very_late):
+        if source_specific and stopped:
+            # Nothing was accepted at all: the route or the supplier stopped, rather than running
+            # late or short. Reopening is directly observable, so two corroborating receipts retire
+            # it - but only with capacity back, which supply_state checks on the clean run.
             kind, needed, last_adverse = "closure", 2, r.known_at.isoformat()
             break
         if is_late or is_short:
@@ -303,7 +305,8 @@ def supply_profile(source: Source, history: tuple[ShipmentObservation, ...], per
 
 
 def supply_profiles(req: Request) -> dict[str, SupplyProfile]:
-    return {s.id: supply_profile(s, req.shipment_history, req.period_days, overdue_as_late=req.protection_v5) for s in req.sources}
+    return {s.id: supply_profile(s, req.shipment_history, req.period_days, overdue_as_late=req.protection_v5,
+                                 source_specific=req.protection_v7) for s in req.sources}
 
 
 def recent_fill_run(profile: SupplyProfile) -> float | None:

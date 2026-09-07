@@ -17,14 +17,14 @@
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import pytest
 
 from zaad.full.capital import decompose, duplication, pooling_split
 from zaad.full.contracts import Request, ShipmentObservation
 from zaad.full.demo import example
-from zaad.full.planner import _priority_consistent, plan, procurement_timing, targets
+from zaad.full.planner import _priority_consistent, plan, targets
 from zaad.full.protection import DECLINE_CONFIRMATION, DECLINE_RATIO, protection_profile
 from zaad.full.replay import COMPARATOR_METHODS, V6_ENGINE_METHODS
 from zaad.full.uncertainty import supply_profile, supply_profiles, supply_state
@@ -220,8 +220,10 @@ def test_a_closure_retires_faster_than_a_fill_deterioration():
     req = example("normal")
     source = req.sources[0]
     clean = [(True, 1.)] * 4
-    closure = supply_profile(source, _history([(False, 0.)] + clean, req.as_of), req.period_days)
-    fill = supply_profile(source, _history([(True, .6)] + clean, req.as_of), req.period_days)
+    closure = supply_profile(source, _history([(False, 0.)] + clean, req.as_of), req.period_days, source_specific=True)
+    fill = supply_profile(source, _history([(True, .6)] + clean, req.as_of), req.period_days, source_specific=True)
+    v6 = supply_profile(source, _history([(False, 0.)] + clean, req.as_of), req.period_days)
+    assert v6.driver_kind == "fill" and v6.exit_receipts_needed == 6      # unchanged without v7
     assert closure.driver_kind == "closure" and closure.exit_receipts_needed == 2
     assert fill.driver_kind == "fill" and fill.exit_receipts_needed == 6
     assert closure.recent_clean_run >= closure.exit_receipts_needed
@@ -231,8 +233,8 @@ def test_a_closure_retires_faster_than_a_fill_deterioration():
 def test_a_reopened_route_only_retires_once_capacity_is_back():
     req = example("normal")
     source = req.sources[0]
-    restored = supply_profile(source, _history([(False, 0.)] + [(True, 1.)] * 4, req.as_of), req.period_days)
-    still_short = supply_profile(source, _history([(False, 0.)] + [(True, .5)] * 4, req.as_of), req.period_days)
+    restored = supply_profile(source, _history([(False, 0.)] + [(True, 1.)] * 4, req.as_of), req.period_days, source_specific=True)
+    still_short = supply_profile(source, _history([(False, 0.)] + [(True, .5)] * 4, req.as_of), req.period_days, source_specific=True)
     assert supply_state(restored, recency=True, exit_rules=True, source_specific=True) == 0.
     assert supply_state(still_short, recency=True, exit_rules=True, source_specific=True) > 0.
 
@@ -240,7 +242,7 @@ def test_a_reopened_route_only_retires_once_capacity_is_back():
 def test_a_false_signal_returns_to_lean_after_the_evidence_it_needs():
     req = example("normal")
     source = req.sources[0]
-    one_bad = supply_profile(source, _history([(False, 1.)] + [(True, 1.)] * 3, req.as_of, late_days=14), req.period_days)
+    one_bad = supply_profile(source, _history([(False, 1.)] + [(True, 1.)] * 3, req.as_of, late_days=14), req.period_days, source_specific=True)
     assert one_bad.driver_kind == "lateness" and one_bad.exit_receipts_needed == 3
     assert supply_state(one_bad, recency=True, exit_rules=True, source_specific=True) == 0.
 
@@ -251,7 +253,7 @@ def test_an_open_backlog_retires_nothing():
     rows = list(_history([(True, 1.)] * 6, req.as_of))
     rows.append(ShipmentObservation(id="open", known_at=req.as_of, source="main", elapsed_days=90,
                                     arrived=False, stage="in_transit", carrier="c"))
-    profile = supply_profile(source, tuple(rows), req.period_days, overdue_as_late=True)
+    profile = supply_profile(source, tuple(rows), req.period_days, overdue_as_late=True, source_specific=True)
     assert profile.backlog_open is True
     assert supply_state(profile, recency=True, exit_rules=True, source_specific=True) > 0.
 
