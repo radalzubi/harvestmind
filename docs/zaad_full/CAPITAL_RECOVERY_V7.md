@@ -257,3 +257,113 @@ also deliver much worse service (0.851 and 0.726 against 0.955), so they are not
 but starved. The pooling target is therefore **not met**, and the fixture cannot separate the two
 effects at this size.
 
+## 6. Demand decline (P3)
+
+The confirmed-decline state fires only on a detected level change that has held for three
+observations at or below 85% of the previous level, and never on a single low reading
+(`test_a_confirmed_decline_becomes_liquidation_and_one_low_reading_does_not`,
+`test_a_decline_is_never_confirmed_under_v6`). On the development7 decline cells it enters RECOVER
+while stock exceeds a lean base stock at the *new* level, and the excess charge then runs the
+surplus down through demand, transfers and cancellations rather than replenishing it. Nothing is
+disposed of and no further decline is forecast.
+
+The measured effect on cell 87 (decrease, two branches, 26 reviews) is small — 5.21 inventory
+periods against V6's 5.40, at identical service (1.000) — because the decomposition explains why:
+the stock on that cell is cycle and pooled stock at the *new* level, not protection left over from
+the old one. The forecast had already followed the level down; there was less to liquidate than
+the V6 verdict assumed.
+
+## 7. Recovery as an objective (P4) and recovery confidence (P5)
+
+The excess allowance is now the stock a lean policy holds *on average* — `lean_baseline + mu ×
+window / 2` — because the charge is levied on end-of-period inventory in every period. That
+reproduces V6's `lean_baseline + mu` exactly at the two-period window every single-location cell
+happens to have, generalises correctly to longer windows, and for the first time applies to
+echelon origins, which had no protection row at all under V6. The charge is twice the holding rate
+plus the operator's own declared financing rate.
+
+Charging against the *peak* base stock instead was measured on development7 and rejected: the
+charge stopped biting and inventory rose from 0.65 to 1.98 periods on cell 1 and from 1.07 to 2.75
+on cell 2, both of which already met their targets
+(`evidence/v7/dev7_c_peak_allowance_partial.jsonl`).
+
+Source-specific recovery confidence behaves as specified in the unit tests: a closure retires on
+two corroborating receipts against a fill deterioration's six, but only once the accepted ratio
+over the trailing clean run is back at the declared level; a reopened route whose capacity is still
+short does not retire; a single late-but-complete receipt retires after three; an open backlog
+retires nothing. `risk_recovery_confidence`, `recovery_evidence_count`, `reviews_to_exit_protect`
+and `reason_not_lean` are on every protection row.
+
+On the development7 long-horizon temporary-risk cells the share of reviews in LEAN is **0.600** for
+both V7 and V6 — already at the 60% gate, but *not a V7 gain*. The V6 headline of 48% came from the
+validation6 mix; on this fixture the two engines are indistinguishable on recovery, and the reason
+is section 3: there is very little temporary protection in the system to unwind.
+
+## 8. Procurement timing (P6)
+
+Every planned order now carries its earliest feasible, latest safe and selected order period, its
+cash-commitment and payment periods, the cash days advanced, the premature units and inventory
+days, and the service slack. On the development7 fixture the V7 engine reports a median of 937
+premature purchase units and 266 cash days advanced per replay; V6 reports neither, because the
+measurement did not exist.
+
+The plan that commits cash latest is preferred as a tie-break after inventory burden among
+candidates inside the cost band. This is a genuine tie-break and it moved nothing measurable on
+the fixture: inventory burden almost always separates the candidates first. **Procurement timing
+is measured but not yet improved**, and this is an unmet V7 target.
+
+## 9. Marginal protection (P7) and the selector (P8)
+
+The V5 rule ranked feasible candidates by inventory only inside a cost band of one fifth of the
+downside tolerance — about one per cent of modelled cost — which is far too narrow to reach a
+leaner plan, because a plan that carries less also risks a little more lost margin and lands
+outside the band immediately. V7 uses the operator's own declared downside tolerance as the band.
+That single change is responsible for essentially all of the inventory the cycle released on
+single-location cells (cell 20: 0.88 against 1.99 periods; cell 15: 2.10 against 3.05; cell 16:
+1.27 against 1.67), verified by the `V7_DISABLED` ablation, which reproduces V6 exactly when the
+rank rule alone is switched off.
+
+Two narrower bands were tried first and both failed for the same structural reason — they anchor
+on the *best* candidate's service, and since every candidate in `feasible` already meets every
+target, "within a tolerance of the best" admits only the plans nearest the maximum, which are the
+fattest, and "then take the leanest of those" ratchets upward:
+
+| band | development7 result | evidence |
+| --- | --- | --- |
+| best fitted priority-weighted service | quiet-cell inventory 0.86 → 2.21 periods | `dev7_b_service_band_partial.jsonl` |
+| best stress priority-weighted service | cell 1 mean inventory value 60.3 → 183.5, selecting the lexicographic service-first plan in half the reviews | `dev7_c_peak_allowance_partial.jsonl` |
+
+Both are recorded in the code beside the rule that replaced them.
+
+Symmetric confirmation and the capital tie-break are in place and correct by test, but the
+ablation shows neither moved the fixture measurably on its own. They matter where the incumbent is
+already failing and a materially leaner candidate exists — 17 such reviews in the 192-review
+retention audit — which is real but rare relative to the whole matrix.
+
+## 10. Equal-priority reallocation: proposed, measured, rejected
+
+The reasoning was sound and the measurement contradicted it, so the rule is not in V7. It is
+documented here and in `_priority_consistent` because the same reasoning will recur.
+
+`_priority_consistent` refuses any service that falls without a *strictly higher-priority*
+beneficiary. Two branches of equal customer priority have no strictly higher beneficiary between
+them, so no reallocation across equal-ranked branches is ever allowed. Development7 cell 72 review
+6 showed that rejecting a plan 38 units leaner and 134 cheaper, service-neutral on the confirmation
+draw, over a priority-weighted shortfall change of 0.004 under a stress carrying **zero** evidential
+credibility.
+
+Allowing an equal-priority beneficiary fixed that review and made the replay worse on both axes:
+
+| variant | cell 72 service | cell 72 mean inventory value |
+| --- | --- | --- |
+| V6 | 0.971 | 161.7 |
+| V7 with equal-priority reallocation | 0.949 | 234.7 |
+| the same, tightened to require the weighted total not to rise | 0.952 | 230.6 |
+| V7 without the rule | 0.971 | 171.4 |
+
+Across the 33-cell fixture the rule set containing it produced **19 service breaches against V6's
+16** with no inventory gain (1.70 against 1.67 periods), concentrated in exactly the stable
+two-branch cells it applies to. A lateral shuffle between equals buys nothing the operator asked
+for and costs the rolling plan its continuity. The rule is removed and a regression test pins the
+strict behaviour.
+
