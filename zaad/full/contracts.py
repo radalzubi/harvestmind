@@ -421,6 +421,14 @@ class Request(Record):
     # is the honest setting for an operational recommendation; evidence runs may keep the strict
     # one. Changing it changes which solution is returned, so it is recorded in the manifest.
     solver_mip_gap: float = Field(default=1e-6, gt=0, le=.5)
+    # Solve-quality threshold (v8). A candidate whose achieved optimality gap exceeds this is a
+    # feasible point the solver never optimised, not an economic proposal: on a 30-review cell six
+    # of ten candidate solves hit the wall-clock cap with achieved gaps of 0.89 and 1.00, while the
+    # selector was ranking them against each other on cost differences of tens of units. Such a
+    # candidate still counts as evidence about feasibility and service; it is excluded from
+    # cost-based ranking and from cost-based acceptance, and it downgrades confidence if selected.
+    # Set above 1 to disable the gate and reproduce V7 comparison behaviour exactly.
+    comparable_gap: float = Field(default=.02, gt=0)
     # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.

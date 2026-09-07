@@ -326,3 +326,30 @@ def test_every_comparator_method_turns_the_v7_rules_off():
 
 def test_terminal_continuation_stays_off_by_default():
     assert example("normal").terminal_continuation is False
+
+
+# v8 solve quality
+
+def test_a_candidate_the_solver_did_not_optimise_is_not_economically_comparable():
+    """A solve that stopped at the wall clock with a wide optimality gap is a feasible point, not an
+    economic proposal. It must be excluded from cost ranking, and the report must say so."""
+    from zaad.full.demo import example as _example
+    req = _example("normal")
+    report = plan(req)
+    quality = report["solve_quality"]
+    assert quality["comparable_gap_threshold"] == req.comparable_gap
+    assert quality["requested_mip_gap"] == req.solver_mip_gap
+    assert quality["candidates"], "every candidate carries its achieved gap and comparability"
+    for row in quality["candidates"].values():
+        assert "achieved_gap" in row and "economically_comparable" in row
+        if row["status"] == "OPTIMAL" and isinstance(row["achieved_gap"], float):
+            assert row["economically_comparable"] == (row["achieved_gap"] <= req.comparable_gap)
+    if report["status"] != "RETAIN_INCUMBENT":
+        assert quality["selected_is_comparable"] is not False or "solve quality" in " ".join(report["reasons"])
+
+
+def test_the_gate_can_be_disabled_to_reproduce_v7_comparison_behaviour():
+    from zaad.full.demo import example as _example
+    wide = _with(_example("normal"), comparable_gap=1.5)
+    quality = plan(wide)["solve_quality"]
+    assert all(r["economically_comparable"] for r in quality["candidates"].values() if r["status"] == "OPTIMAL")

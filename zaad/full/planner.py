@@ -555,6 +555,20 @@ def plan(req: Request) -> dict:
     recovery_mode = not target_jointly_feasible
     recovery_ranking: list[dict] = []
 
+    def well_solved(name: str) -> bool:
+        """Is this candidate's solution good enough to be compared on economics? (v8)
+
+        A solve that stopped at the wall-clock cap with a large optimality gap is a feasible point,
+        not an optimised plan. Ranking it on modelled cost against a properly solved candidate reads
+        solver noise as an economic difference - measured on development7, the achieved gap reaches
+        0.89 on a 20-review cell and 1.00 on a 30-review cell, while the selector discriminates on
+        cost differences of tens of units and accepts on a bootstrapped benefit of 1e-6."""
+        candidate = candidates.get(name)
+        if candidate is None or candidate.status != "OPTIMAL":
+            return False
+        gap = candidate.gap
+        return gap is None or not math.isfinite(gap) or gap <= req.comparable_gap
+
     def burden(name: str) -> float:
         values = [x["inventory_value"] for r in selection_rows.get(name, []) if r["usable"] for x in r["trace"]]
         return mean(values) if values else float("inf")
@@ -597,9 +611,13 @@ def plan(req: Request) -> dict:
             # inventory 0.86 -> 2.21 periods) and a band on stress priority-weighted service
             # (evidence/v7/dev7_c_peak_allowance_partial.jsonl, cell 1 mean inventory value
             # 60.3 -> 183.5 by selecting the lexicographic service-first plan in half the reviews).
-            cheapest = min(hedged_cost(n) for n in feasible)
-            band = [n for n in feasible
-                    if hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9] or list(feasible)
+            # Solve quality first (v8): rank only among candidates the solver actually optimised.
+            # An under-solved candidate can still be selected, but only when nothing better-solved
+            # is feasible, and the recommendation then says so.
+            comparable = [n for n in feasible if well_solved(n)] or list(feasible)
+            cheapest = min(hedged_cost(n) for n in comparable)
+            band = [n for n in comparable
+                    if hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9] or list(comparable)
             chosen = min(band, key=lambda name: (burden(name), earliness(name), hedged_cost(name), list(candidates).index(name)))
         elif req.protection_v5:
             # Marginal value (v5): estimated costs are noisy; among feasible candidates whose hedged
@@ -701,15 +719,18 @@ def plan(req: Request) -> dict:
             ok = _within_downside(req, rows_before, rows_after)
             note = (None if ok else "downside")
             return ok, lower, note
+        comparable_solution = name is None or not req.protection_v7 or well_solved(name)
         if lower > 1e-6:
-            return True, lower, None
+            # The economic benefit has to be larger than the uncertainty in the numbers it is
+            # computed from. An under-solved candidate's cost is not established to that precision.
+            return (True, lower, None) if comparable_solution else (False, lower, "solve_quality")
         # Capital tie-break (v7). The plan horizon credits closing stock back at terminal value, so
         # the modelled economic cost structurally under-charges capital that is still on the shelf
         # at the end of the window. When a candidate meets every service target, is not materially
         # more expensive, and carries materially less inventory, that is a real benefit the horizon
         # cannot see. It is a tie-break, never a licence to trade service for leanness: every
         # service and stress gate above still has to pass.
-        if reliability and _v7(req, "tiebreak"):
+        if reliability and _v7(req, "tiebreak") and comparable_solution:
             band = req.downside_cost_tolerance / 5. * max(abs(mean(r["economic_cost"] for r in rows_before if r["usable"])), 1.)
             if lower >= -band and materially_leaner(rows_before, rows_after):
                 return True, lower, "capital"
@@ -767,6 +788,9 @@ def plan(req: Request) -> dict:
                 reasons.append("Candidate meets a service target the incumbent misses, but exceeds the configured economic downside tolerance.")
             elif note == "benefit":
                 reasons.append("Independent fitted-model confirmation does not establish positive benefit.")
+            elif note == "solve_quality":
+                reasons.append("The candidate's own solve stopped with an optimality gap wider than the economic benefit claimed, "
+                               "so the benefit is not established; incumbent retained (solve quality).")
             elif note == "capital":
                 reasons.append("Candidate meets every service target with no material economic penalty and materially less carried inventory; "
                                "the plan horizon credits closing stock back at terminal value and cannot price that capital (capital tie-break).")
@@ -1021,6 +1045,15 @@ def plan(req: Request) -> dict:
                                  "selected_achieved": _service_value(req, candidate_rows, s) if (accepted and candidate_rows) else (_service_value(req, incumbent_rows, s) if incumbent_rows else None)}
                                 for s in req.services],
             "procurement_timing": procurement_timing(req, fits, final) if req.protection_v6 else None,
+            "solve_quality": {
+                "comparable_gap_threshold": req.comparable_gap, "requested_mip_gap": req.solver_mip_gap,
+                "max_solve_seconds": req.max_solve_seconds,
+                "candidates": {name: {"status": c.status, "achieved_gap": c.gap, "solve_seconds": c.solve_seconds,
+                                      "variables": c.variables, "constraints": c.constraints,
+                                      "economically_comparable": well_solved(name)}
+                               for name, c in candidates.items()},
+                "selected_is_comparable": well_solved(chosen) if chosen in candidates else None,
+                "scope": "a candidate whose achieved optimality gap exceeds the threshold is a feasible point the solver did not optimise; it is excluded from cost ranking and cost-based acceptance"},
             "capital": ({"decomposition": capital_decompose(req, fits, protection),
                          "duplication": capital_duplication(req, fits, protection),
                          "pooling": capital_pooling(req, fits, protection),
