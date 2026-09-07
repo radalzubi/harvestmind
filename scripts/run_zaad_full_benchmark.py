@@ -796,6 +796,19 @@ def main():
     if reused:
         print(f"reusing {reused} of {len(tasks)} rows "
               f"({len(done)} already written, {sum(1 for i in range(len(tasks)) if keys[i] in cache and keys[i] not in done)} from cache)", flush=True)
+    # Longest-processing-time-first submission. Scaling was measured on this branch (eight gated
+    # cells, seed 38001): 151 s at one worker, 64 s at three, 41 s at six, 35 s at twelve - still
+    # improving past six, so the MILP is effectively single-threaded here and nested parallelism is
+    # not the bottleneck. What binds instead is the longest single task, because once workers
+    # outnumber the long cells the wall clock floors at that task. Submitting the expensive cells
+    # first keeps them from starting last; cost is estimated from horizon and network size, never
+    # from a previous run's timing, so submission order stays deterministic.
+    def estimated_cost(entry):
+        cell = entry[1][0]
+        network = {"single": 1., "two_locations": 1.6, "central_branches": 1.8, "central_two_branches": 2.6}
+        gated = 1. if str(entry[1][2]).startswith("gated") else .15
+        return -(cell.get("horizon", 12) ** 1.5) * network.get(cell.get("network"), 1.) * gated
+    pending.sort(key=estimated_cost)
     # Out-of-order writes: a completed worker persists immediately instead of waiting for its turn
     # in submission order, so an interrupted run loses only the work still in flight and the file
     # never appears frozen behind one slow cell. Deterministic order is restored on read via

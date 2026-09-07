@@ -1,0 +1,156 @@
+{
+ "cycle": "v8 industry standard",
+ "starting_commit": "65d6d498f245cdd871e3f297e06567d57737e3ea",
+ "starting_branch_base": "claude/zaad-capital-recovery-v7 (PR #37, V7 verdict NEEDS FURTHER CAPITAL / RECOVERY ENGINEERING)",
+ "pre_tuning_source_hash": "351fa3850a6a5e98944a14008c3611f78bc18b882f8e4fd06190cea19624e885",
+ "pre_tuning_source_hash_scope": "sha256 over path+bytes of sorted zaad/full/*.py then scripts/run_zaad_full_benchmark.py",
+ "recorded_at": "2026-09-07T20:00:00Z",
+ "seeds": {
+  "development8": [
+   38001
+  ],
+  "validation8": [
+   39001,
+   39002
+  ]
+ },
+ "untouched": {
+  "validation7": {
+   "seeds": [
+    37001,
+    37002
+   ],
+   "status": "RESERVED, UNRUN, never used; v8 does not reuse it"
+  },
+  "holdout4": {
+   "seeds": [
+    31001,
+    31002
+   ],
+   "status": "FROZEN, UNRUN; run only on an explicit later instruction after validation8 passes"
+  }
+ },
+ "consumed_never_tuned_against": {
+  "development": [
+   14001
+  ],
+  "validation": [
+   15001,
+   15002
+  ],
+  "final": [
+   22001,
+   22002,
+   22003,
+   22004,
+   22005
+  ],
+  "development2": [
+   23001
+  ],
+  "validation2": [
+   24001,
+   24002
+  ],
+  "holdout2": [
+   25001,
+   25002
+  ],
+  "development3": [
+   26001
+  ],
+  "validation3": [
+   27001,
+   27002
+  ],
+  "holdout3": [
+   28001,
+   28002
+  ],
+  "development4": [
+   29001
+  ],
+  "validation4": [
+   30001,
+   30002
+  ],
+  "development5": [
+   32001
+  ],
+  "validation5": [
+   33001,
+   33002
+  ],
+  "development6": [
+   34001
+  ],
+  "validation6": [
+   35001,
+   35002
+  ],
+  "development7": [
+   36001
+  ]
+ },
+ "split_overlap_check": "development8 (38001) and validation8 (39001, 39002) appear in no earlier split, in validation7, or in holdout4",
+ "solver_settings": {
+  "max_solve_seconds": 5.0,
+  "solver_mip_gap": 1e-06,
+  "comparable_gap": 0.02,
+  "note": "solver_mip_gap stays at the historical 1e-6; the bounded-gap experiment was measured and rejected (decision-unstable on four of eight cells). comparable_gap is a new guard that is a no-op at this threshold on measured cells and is recorded so the setting is explicit."
+ },
+ "runner_settings": {
+  "writes": "out-of-order on completion, deterministic order restored via task_index",
+  "resume": "supported; rows carry task_key",
+  "cache": "exact-result, keyed on source hash + cell + seed + method + solver settings",
+  "scheduling": "longest-processing-time-first by horizon and network size, deterministic",
+  "workers": "measured scaling 1/3/6/12 workers = 151/64/41/35 s on eight gated cells; effectively single-threaded MILP, no nested-parallelism pathology"
+ },
+ "comparators": [
+  "base_stock",
+  "echelon_base_stock",
+  "gated_pr24",
+  "gated_pr30",
+  "gated_v4",
+  "gated_v5",
+  "gated_v6",
+  "gated_v7",
+  "gated",
+  "stochastic",
+  "robust (where the solver completes; timeout rows kept visible)"
+ ],
+ "graduation_gates": {
+  "reference": "docs/zaad_full/INDUSTRY_STANDARD_V8.md",
+  "normal_feasible": "median service >= .97 where physically achievable; near-zero avoidable breaches; no feasibility violations; segmented targets respected",
+  "constrained": "reported against the physically achievable frontier and a competent incumbent, with avoidable and unavoidable shortage separated",
+  "capital": "10-15% against a competent baseline where improvement is available; NO MATERIAL IMPROVEMENT AVAILABLE is a valid and preferred outcome elsewhere",
+  "cost": "no material modelled economic regression; one-time working-capital release never added to recurring saving",
+  "runtime": "SLOs in INDUSTRY_STANDARD_V8 section 4.1; report median, p90, p95, max and timeouts by planner type",
+  "solve_quality": "report achieved gap distribution and candidate slots lost to non-OPTIMAL status",
+  "explainability": "every selected action carries a reason code and supporting metrics",
+  "abstention": "the competent incumbent is retained where no material improvement exists"
+ },
+ "intended_analyses": [
+  "Part C: reduce the 12% unexplained inventory attribution toward zero with strict reconciliation tests",
+  "Part D: full inventory flow identity per SKU-location-review, separating optimizer-created from inherited stock",
+  "Part E: cycle stock economics - order quantity, cadence, MOQ, pack, freight breakpoints, ordering cost",
+  "Part F: pooled network stock - service-window pooling, correlation-aware risk pooling, fast-arc test",
+  "Part G: procurement timing against latest safe order date",
+  "Part H: service segmentation by customer, channel and SKU class",
+  "Part I: feasibility frontier, computed only where the standard solve is not obviously feasible",
+  "Part J: competent incumbent baselines",
+  "Part K/L: sector physics for fresh produce, meat/seafood and FMCG, with sector benchmark cells",
+  "Part M/N: action value, abstention reason codes and operator-facing explanations",
+  "Part O/P: data-quality diagnostics and confidence levels"
+ ],
+ "rules": [
+  "iterate only on development8 (38001)",
+  "freeze the engine and record SHA, config hash and manifest before validation8",
+  "run validation8 once; no behavioural change after its results are viewed",
+  "do not reuse validation7; do not touch holdout4",
+  "keep every adverse result, every timeout row and every rejected hypothesis",
+  "never loosen validation settings to improve reported runtime",
+  "never rank candidates on cost differences smaller than the solver's own optimality gap",
+  "no claim of industry proof from synthetic benchmarks"
+ ]
+}
