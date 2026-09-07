@@ -88,6 +88,7 @@ class Solution:
     warnings: list[str]
     protection_state: list[dict] | None = None
     procurement_timing: list[dict] | None = None
+    capital: dict | None = None
 
 
 def compatible(req, service):

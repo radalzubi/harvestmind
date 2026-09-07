@@ -409,6 +409,12 @@ class Request(Record):
     # recovery excess penalty (orderly run-down of temporary protection), bounded terminal
     # continuation, procurement-timing audit. False reproduces the V5 engine exactly.
     protection_v6: bool = True
+    # v7 capital-efficiency rules: protection state for transfer origins that carry no customers of
+    # their own (a central DC held half the network inventory outside the recovery machinery),
+    # symmetric confirmation when the incumbent itself misses a target, an inventory tie-break the
+    # finite horizon cannot see, confirmed demand-decline liquidation, source-specific recovery
+    # confidence and the procurement-timing preference. False reproduces the V6 engine exactly.
+    protection_v7: bool = True
     # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.

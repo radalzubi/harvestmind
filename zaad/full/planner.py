@@ -9,14 +9,17 @@ ranked; and protection is expected to disappear when the scenario spread tighten
 from __future__ import annotations
 
 from dataclasses import asdict, replace
+from datetime import timedelta
 import hashlib
 import json
+import math
 from statistics import mean
 from typing import Any
 
 import numpy as np
 
 from zaad.full import VERSION
+from zaad.full.capital import decompose as capital_decompose, duplication as capital_duplication, pooling_split as capital_pooling
 from zaad.full.contracts import Request
 from zaad.full.eta import conditional_eta
 from zaad.full.model import Solution, solve
@@ -32,7 +35,11 @@ def targets(req: Request, buffer: float = 1.645) -> dict:
     frozen profile keeps the universal 1.645 factor. A zero buffer stays zero in both."""
     fits = forecast_all(req)
     reliability = req.engine_profile == "reliability" and buffer > 0
-    profile = {(row["sku"], row["location"]): row for row in protection_profile(req, fits, supply_profiles(req))} if reliability else {}
+    # Echelon-origin rows (v7) are diagnosis and recovery state, not an operator policy: the
+    # projected base-stock proxy is the incumbent and the base_stock comparator, so it must keep
+    # buying exactly what it bought before V7 existed.
+    profile = ({(row["sku"], row["location"]): row for row in protection_profile(req, fits, supply_profiles(req))
+                if not row.get("echelon_origin")} if reliability else {})
     stock = {(s.id, location_key.id): sum(x.usable for x in req.stock if x.sku == s.id and x.location == location_key.id)
              for s in req.skus for location_key in req.locations}
     pending, orders = [], {}
@@ -335,10 +342,17 @@ def v6_solve_terms(req: Request, fits: dict, protection: list[dict]) -> dict:
     for row in protection:
         sku, location, state = row["sku"], row["location"], row["state"]
         mu = row["mean_demand_per_period"]
-        quiet_with_excess = state["activity"] <= .05 and row["on_hand_units"] > state["lean_baseline_units"] + mu
+        # Allowance: the stock a lean policy would hold here. V6 charged everything above the lean
+        # safety baseline plus one period of demand, which ignores the replenishment window - a
+        # location that can only be refilled every second period legitimately carries two periods
+        # of cycle stock, and an echelon origin carries its branches' cycle stock as well. V7 uses
+        # the lean base stock: mean demand over the replenishment window plus the lean baseline.
+        window = row["replenishment_periods"] if req.protection_v7 else 1
+        allowance = state["lean_baseline_units"] + mu * max(1., window)
+        quiet_with_excess = state["activity"] <= .05 and row["on_hand_units"] > allowance
         if state["regime"] == "RECOVER" or (quiet_with_excess and state["incremental_protection_units"] <= 0.):
             rate = skus[sku].asset_value * locs[location].holding_per_value_period * 2.
-            excess[sku, location] = (state["lean_baseline_units"] + mu, rate)
+            excess[sku, location] = (allowance, rate)
         services = [s for s in req.services if s.sku == sku and s.location == location]
         if not services or mu <= 0:
             continue
@@ -402,8 +416,29 @@ def procurement_timing(req: Request, fits: dict, solution: Solution | None) -> l
         if needed_by is None:
             early = max(0, req.horizon - arrival)
         landed = source.unit_price + source.freight_per_unit + source.handling_per_unit
-        out.append({"source": source_id, "period": t, "quantity": q, "arrival_period": arrival, "needed_by_period": needed_by,
-                    "early_periods": early, "cash_committed_early": q * landed * early})
+        row = {"source": source_id, "period": t, "quantity": q, "arrival_period": arrival, "needed_by_period": needed_by,
+               "early_periods": early, "cash_committed_early": q * landed * early}
+        if req.protection_v7:
+            # Working-capital view (v7): the last review at which this order could still be placed
+            # and land before the location runs short, how far ahead of that it actually was placed,
+            # and the cash and storage days that earliness costs.
+            lead = arrival - t
+            latest_safe = None if needed_by is None else max(0, needed_by - lead)
+            terms = {x.id: x for x in req.terms}[source.terms]
+            net = math.ceil(terms.net_days / req.period_days)
+            trigger = {"order": t, "shipment": dates(req, source, t)[0], "arrival": arrival}[terms.balance_trigger]
+            row.update({
+                "earliest_feasible_period": 0, "selected_order_period": t, "latest_safe_order_period": latest_safe,
+                "latest_safe_order_date": (None if latest_safe is None else
+                                           (req.as_of + timedelta(days=req.period_days * latest_safe)).isoformat()),
+                "periods_earlier_than_latest_safe": (0 if latest_safe is None else max(0, latest_safe - t)),
+                "cash_commitment_period": t, "payment_period": trigger + net,
+                "cash_days_advanced": (0. if latest_safe is None else max(0, latest_safe - t) * req.period_days),
+                "premature_units": (0. if latest_safe is None or latest_safe <= t else q),
+                "premature_inventory_days": q * early * req.period_days,
+                "storage_days": early * req.period_days,
+                "service_slack_periods": (None if needed_by is None else needed_by - arrival)})
+        out.append(row)
         arrivals[(*key, arrival)] = arrivals.get((*key, arrival), 0.) + q * source.fill_mean
     return out
 
@@ -493,6 +528,18 @@ def plan(req: Request) -> dict:
     def burden(name: str) -> float:
         values = [x["inventory_value"] for r in selection_rows.get(name, []) if r["usable"] for x in r["trace"]]
         return mean(values) if values else float("inf")
+
+    def rows_burden(rows: list[dict]) -> float:
+        values = [x["inventory_value"] for r in rows if r["usable"] for x in r["trace"]]
+        return mean(values) if values else float("inf")
+
+    def materially_leaner(before: list[dict], after: list[dict]) -> bool:
+        """Capital materiality (v7): the same relative band the operator already declares for
+        economic downside, applied to carried inventory value. No new tolerance is introduced."""
+        held_before, held_after = rows_burden(before), rows_burden(after)
+        if not math.isfinite(held_before) or not math.isfinite(held_after) or held_before <= 0:
+            return False
+        return held_after <= held_before * (1 - req.downside_cost_tolerance)
 
     if feasible:
         if req.protection_v5:
@@ -595,7 +642,19 @@ def plan(req: Request) -> dict:
             ok = _within_downside(req, rows_before, rows_after)
             note = (None if ok else "downside")
             return ok, lower, note
-        return lower > 1e-6, lower, (None if lower > 1e-6 else "benefit")
+        if lower > 1e-6:
+            return True, lower, None
+        # Capital tie-break (v7). The plan horizon credits closing stock back at terminal value, so
+        # the modelled economic cost structurally under-charges capital that is still on the shelf
+        # at the end of the window. When a candidate meets every service target, is not materially
+        # more expensive, and carries materially less inventory, that is a real benefit the horizon
+        # cannot see. It is a tie-break, never a licence to trade service for leanness: every
+        # service and stress gate above still has to pass.
+        if reliability and req.protection_v7:
+            band = req.downside_cost_tolerance / 5. * max(abs(mean(r["economic_cost"] for r in rows_before if r["usable"])), 1.)
+            if lower >= -band and materially_leaner(rows_before, rows_after):
+                return True, lower, "capital"
+        return False, lower, "benefit"
 
     if recovery_mode and chosen != "incumbent":
         # Independent confirmation of a recovery plan: physically usable on every world, a material
@@ -616,13 +675,39 @@ def plan(req: Request) -> dict:
         reasons.append("No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained.")
     else:
         accepted = chosen != "incumbent" and service_ok(req, candidate_rows) and bool(incumbent_rows) and all(r["usable"] for r in incumbent_rows)
-        if accepted:
+        symmetric = False
+        if (not accepted and req.protection_v7 and reliability and chosen != "incumbent" and not incumbent_meets
+                and bool(candidate_rows) and all(r["usable"] for r in candidate_rows)
+                and bool(incumbent_rows) and all(r["usable"] for r in incumbent_rows)):
+            # Symmetric confirmation (v7). The absolute service gate is applied to the candidate but
+            # never to the retained incumbent, so whenever the target is unreachable on the
+            # confirmation draw the selector keeps the incumbent's capital no matter how much
+            # leaner and cheaper every candidate is. When the incumbent itself misses a target the
+            # honest comparison is the one the recovery path already uses: no larger priority-
+            # weighted shortfall, priority consistent, inside the economic downside tolerance - and
+            # for V7 a material capital or cost benefit, so nothing changes without a reason.
+            not_worse = (weighted_shortfall(req, candidate_rows) <= weighted_shortfall(req, incumbent_rows) + material_shortfall_gap(req)
+                         and _priority_consistent(req, incumbent_rows, candidate_rows)
+                         and _within_downside(req, incumbent_rows, candidate_rows))
+            worth_it = materially_leaner(incumbent_rows, candidate_rows) or _hedged_downside(incumbent_rows, candidate_rows)
+            if not_worse and worth_it:
+                accepted, symmetric = True, True
+                reasons.append("Incumbent misses a requested service target under independent confirmation and no candidate reaches it either; "
+                               "the candidate carries no larger priority-weighted service shortfall, is priority consistent, is inside the "
+                               "economic downside tolerance and materially reduces carried inventory or cost (symmetric confirmation).")
+            elif not not_worse:
+                reasons.append("Neither the incumbent nor any candidate meets every requested service target under independent confirmation, "
+                               "and the candidate does not improve the priority-weighted shortfall; incumbent retained.")
+        if accepted and not symmetric:
             accepted, benefit_lower, note = confirm_service_first(incumbent_rows, candidate_rows, chosen)
             if note == "downside":
                 blocking["downside"] = True
                 reasons.append("Candidate meets a service target the incumbent misses, but exceeds the configured economic downside tolerance.")
             elif note == "benefit":
                 reasons.append("Independent fitted-model confirmation does not establish positive benefit.")
+            elif note == "capital":
+                reasons.append("Candidate meets every service target with no material economic penalty and materially less carried inventory; "
+                               "the plan horizon credits closing stock back at terminal value and cannot price that capital (capital tie-break).")
             elif reliability and not incumbent_meets:
                 reasons.append("Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the economic downside tolerance (service-first acceptance).")
 
@@ -874,6 +959,11 @@ def plan(req: Request) -> dict:
                                  "selected_achieved": _service_value(req, candidate_rows, s) if (accepted and candidate_rows) else (_service_value(req, incumbent_rows, s) if incumbent_rows else None)}
                                 for s in req.services],
             "procurement_timing": procurement_timing(req, fits, final) if req.protection_v6 else None,
+            "capital": ({"decomposition": capital_decompose(req, fits, protection),
+                         "duplication": capital_duplication(req, fits, protection),
+                         "pooling": capital_pooling(req, fits, protection),
+                         "scope": "reason categories partition the units on hand exactly; duplication and pooling are stated per arc"}
+                        if req.protection_v7 else None),
             "supply_profiles": {k: profile_dict(v) for k, v in supply.items()},
             "alternatives": alternatives, "service_reliability": service_reliability,
             "selection_costs": {name: {"fitted": mean(r["economic_cost"] for r in rows) if rows and all(r["usable"] for r in rows) else None,

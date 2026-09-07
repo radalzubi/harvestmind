@@ -46,12 +46,41 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
     sources = {s.id: s for s in req.sources}
     reliability = req.engine_profile == "reliability"
     pairs = sorted({(s.sku, s.location) for s in req.services})
+    # Echelon origins (v7): a central DC with no customers of its own never appeared here, so the
+    # location that carries most of the network's inventory had no lean baseline, no regime, no
+    # recovery exit and no excess charge. It is given a row whose service obligation is the demand
+    # of the branches it feeds, capped by what its arcs can actually carry. The row is marked
+    # `echelon_origin` and the projected base-stock proxy ignores it, so the incumbent and the
+    # base-stock comparator are unchanged.
+    direct = {(s.sku, s.destination) for s in req.sources if s.approved and s.compliance == "cleared"}
+    fed_from: dict[tuple[str, str], list] = {}
+    if req.protection_v7:
+        for arc in req.transfers:
+            if arc.approved and (arc.sku, arc.destination) not in direct and (arc.sku, arc.origin) in direct:
+                fed_from.setdefault((arc.sku, arc.origin), []).append(arc)
+        pairs = sorted(set(pairs) | set(fed_from))
     rows = []
     for sku, location in pairs:
         services = [s for s in req.services if s.sku == sku and s.location == location]
+        origin_arcs = fed_from.get((sku, location), [])
+        echelon_origin = bool(origin_arcs) and not services
+        if echelon_origin:
+            # The origin's obligation is its branches' demand, but only as much of it as the arcs
+            # can deliver: buying for demand a constrained arc cannot move only piles stock here.
+            services = []
+            for arc in origin_arcs:
+                services += [s for s in req.services if s.sku == sku and s.location == arc.destination]
+            services = sorted({s.id: s for s in services}.values(), key=lambda s: s.id)
+        if not services:
+            continue
         weighted_target, top_target, top_priority = _weighted_target(services, customers, fits)
         z = z_for(weighted_target)
         mu = sum(fits[s.id]["mean"] for s in services)
+        if echelon_origin:
+            for s in services:
+                capacity = max((a.capacity for a in origin_arcs if a.destination == s.location), default=float("inf"))
+                mu -= max(0., fits[s.id]["mean"] - capacity)
+            mu = max(mu, 0.)
         if reliability:
             sd = math.sqrt(sum(fits[s.id]["uncertainty"]["sd_effective"] ** 2 for s in services))
             level_se = math.sqrt(sum(fits[s.id]["uncertainty"]["level_se"] ** 2 for s in services))
@@ -63,11 +92,28 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         eligible = sorted((s for s in req.sources if s.sku == sku and s.destination == location
                            and s.approved and s.compliance == "cleared"),
                           key=lambda s: (s.unit_price + s.freight_per_unit + s.handling_per_unit, s.id))
+        # Replenishment arc (v7): a branch with no direct source but an approved inbound transfer from
+        # a stocked origin is refilled by that arc, not never. V6 gave it a replenishment window of
+        # the whole horizon, so a branch one review away from its central DC was protected as if it
+        # could never be restocked - the single largest source of local safety stock on fed branches.
+        # The supplier's own lead and fill risk is carried by the origin's row, not counted twice here.
+        refill_arc = None
+        if req.protection_v7 and not eligible and not echelon_origin:
+            for arc in sorted((a for a in req.transfers if a.approved and a.sku == sku and a.destination == location),
+                              key=lambda a: (a.lead_periods, -a.capacity, a.id)):
+                origin_stock = sum(x.usable for x in req.stock if x.sku == sku and x.location == arc.origin)
+                origin_buys = any(x.sku == sku and x.destination == arc.origin and x.approved and x.compliance == "cleared"
+                                  for x in req.sources)
+                if arc.capacity >= mu and (origin_buys or origin_stock > mu):
+                    refill_arc = arc
+                    break
         if eligible:
             leads = {s.id: dates(req, s, 0)[1] for s in eligible}
             replenishment = min(leads.values()) + 1     # review period plus the earliest receipt
             primary = eligible[0]
             profile = supply.get(primary.id)
+        elif refill_arc is not None:
+            replenishment, primary, profile = refill_arc.lead_periods + 1, None, None
         else:
             replenishment, primary, profile = req.horizon, None, None
         window = max(1, replenishment)
@@ -82,6 +128,9 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
             supply_scope = profile.scope
         elif primary is not None:
             lead_sd_periods, fill_sd, late_probability, supply_scope = primary.lead_sd_days / req.period_days, primary.fill_sd, 0., "declared"
+        elif refill_arc is not None:
+            # The arc's declared loss stands in for fill spread; the supplier tail belongs upstream.
+            lead_sd_periods, fill_sd, late_probability, supply_scope = 0., refill_arc.loss_fraction, 0., "transfer_arc"
         else:
             lead_sd_periods, fill_sd, late_probability, supply_scope = 0., 0., 0., "none"
         var_lead = (mu * lead_sd_periods) ** 2
@@ -116,7 +165,7 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         # (demand-only protection at the fitted spread with every other driver calm).
         demand_score = max((demand_state(fits[s.id]["uncertainty"]) for s in services), default=0.) if reliability else 0.
         supply_score = supply_state(profile, recency=req.protection_v5, exit_rules=req.protection_v6) if profile is not None else 0.
-        resilient = resilience(window, effective, substitute_cover, mu * window, alternate_inside) if eligible else 0.
+        resilient = resilience(window, effective, substitute_cover, mu * window, alternate_inside) if (eligible or refill_arc is not None) else 0.
         activity = protection_activity(demand_score, supply_score, resilient) if (reliability and req.protection_decay) else 1.
         # Lean baseline: protection with every active driver removed, i.e. the fitted demand spread
         # and the source's declared (not observed) lead and fill spread, nothing for calibration
@@ -243,12 +292,14 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         stance = "lean" if protection <= .25 * mu * window else "protect"
         if reliability and req.protection_decay and activity <= .05:
             stance = "lean"
-        if not eligible:
+        if not eligible and refill_arc is None:
             stance = "no_replenishment"
         rows.append({"sku": sku, "location": location, "services": [s.id for s in services],
+                     "echelon_origin": echelon_origin,
                      "weighted_target": weighted_target, "top_target": top_target, "top_priority": top_priority,
                      "quantile_z": z, "mean_demand_per_period": mu, "replenishment_periods": window,
                      "protection_units": protection, "protection_periods_of_demand": protection / mu if mu > 0 else None,
+                     "replenished_by_transfer_arc": (refill_arc.id if refill_arc is not None else None),
                      "on_hand_units": on_hand, "drivers_units": drivers,
                      "calibration_ratio": calibration, "supply_scope": supply_scope,
                      "late_probability": late_probability, "effective_independent_sources": effective,

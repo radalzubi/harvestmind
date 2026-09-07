@@ -37,7 +37,12 @@ SEEDS = {"development": [14001], "validation": [15001, 15002], "final": [22001, 
          # Network/recovery cycle (v5). holdout4 stays frozen and unrun; v5 may only use these two splits.
          "development5": [32001], "validation5": [33001, 33002],
          # Multi-echelon / recovery cycle (v6). holdout4 stays frozen and unrun; v6 may only use these two splits.
-         "development6": [34001], "validation6": [35001, 35002]}
+         "development6": [34001], "validation6": [35001, 35002],
+         # Capital-efficiency / recovery cycle (v7). holdout4 stays frozen and unrun; v7 may only
+         # use these two splits. No seed here appears in any split above.
+         "development7": [36001], "validation7": [37001, 37002]}
+from zaad.full.capital import REASONS as CAPITAL_REASONS
+
 METHODS = ["base_stock", "order_up_to", "deterministic", "stochastic", "robust", "frozen_forecast", "gated"]
 RELIABILITY_METHODS = ["base_stock", "stochastic", "robust", "protected", "gated_pr24", "gated_pr30", "gated"]
 INVENTORY = {"low": .5, "balanced": 2., "high": 4.}
@@ -78,6 +83,8 @@ def reliability_cells(random_cells: int = 30) -> list[dict]:
 V4_METHODS = ["base_stock", "stochastic", "robust", "gated_pr24", "gated_pr30", "gated"]
 V5_METHODS = ["base_stock", "gated_pr24", "gated_pr30", "gated_v4", "gated"]
 V6_METHODS = ["base_stock", "echelon_base_stock", "gated_pr24", "gated_pr30", "gated_v4", "gated_v5", "gated"]
+V7_METHODS = ["base_stock", "echelon_base_stock", "gated_pr24", "gated_pr30", "gated_v4", "gated_v5", "gated_v6", "gated"]
+V7_SUPPLIES = ["deterioration_recovery", "closure_recovery", "false_signal"]
 V6_NETWORKS = RELIABILITY_NETWORKS + ["central_two_branches"]
 V4_DEMANDS = RELIABILITY_DEMANDS + ["intermittent_spiky", "promotion_recovery", "surge_recovery"]
 V4_SUPPLIES = RELIABILITY_SUPPLIES + ["deterioration_recovery", "closure_recovery"]
@@ -179,6 +186,60 @@ def v6_cells() -> list[dict]:
     return base + [{"cell": len(base) + i, **value} for i, value in enumerate(explicit)]
 
 
+def v7_cells() -> list[dict]:
+    """Capital-efficiency / recovery matrix: every v6 cell unchanged (ids 0-96), then the v7 cells.
+
+    Fast-arc pooling cells vary the transfer lead and capacity on a one-central / two-branch network
+    so the pooling question is asked directly: with a one-review arc most of the branch buffer can
+    sit at the origin, with a three-review arc almost none of it can. (Transfer.lead_periods is at
+    least one review by contract, so a genuinely same-review arc cannot be expressed; the one-review
+    arc is the fastest the model allows and is used as the fast case.)
+
+    Recovery scenarios A-G run 26-32 reviews so the peak, the unwind and a long quiet tail are all
+    inside the window and the return to LEAN is observable rather than truncated.
+    """
+    base = v6_cells()
+    for cell in base:
+        cell["matrix"] = "v7"
+    def two(demand="stable", supply="stable", alternative="none", target=.95, branch_sla=None, transfer_lead=1,
+            transfer_capacity=50., central_cover=2., correlation="independent", inventory="balanced", horizon=12):
+        return {"family": "reliability", "matrix": "v7", "target": target, "cover": INVENTORY[inventory], "inventory": inventory,
+                "demand": demand, "supply": supply, "network": "central_two_branches",
+                "suppliers": "independent" if alternative == "supplier" else "single", "alternative": alternative, "case": "normal",
+                "horizon": horizon, "branch_sla": target if branch_sla is None else branch_sla, "transfer_lead": transfer_lead,
+                "transfer_capacity": transfer_capacity, "central_cover": central_cover, "demand_correlation": correlation}
+    def one(demand="stable", supply="stable", alternative="none", network="single", target=.95, horizon=30, inventory="balanced"):
+        return {"family": "reliability", "matrix": "v7", "target": target, "cover": INVENTORY[inventory], "inventory": inventory,
+                "demand": demand, "supply": supply, "network": network,
+                "suppliers": "independent" if alternative == "supplier" else "single", "alternative": alternative,
+                "case": "normal", "horizon": horizon}
+    explicit = [
+        # P2 fast-arc pooling: the same network at three arc speeds and two capacities.
+        two(transfer_lead=1, transfer_capacity=50.), two(transfer_lead=2, transfer_capacity=50.), two(transfer_lead=3, transfer_capacity=50.),
+        two(transfer_lead=1, transfer_capacity=15.), two(transfer_lead=3, transfer_capacity=15.),
+        two(transfer_lead=1, correlation="correlated"), two(transfer_lead=3, correlation="correlated"),
+        two(transfer_lead=1, central_cover=0.), two(transfer_lead=1, inventory="high"),
+        two(transfer_lead=1, demand="volatile"), two(transfer_lead=1, demand="intermittent"),
+        # A stable -> supplier delay -> recovery -> long stable tail
+        one(supply="deterioration_recovery", horizon=30), one(supply="deterioration_recovery", horizon=30, network="central_branches"),
+        # B route closure -> reopening -> stable tail
+        one(supply="closure_recovery", alternative="supplier", horizon=30), one(supply="closure_recovery", horizon=30),
+        # C promotion -> end -> stable tail
+        one(demand="promotion_recovery", horizon=28), two(demand="promotion_recovery", horizon=28),
+        # D demand surge -> normalization
+        one(demand="surge_recovery", horizon=28), one(demand="temporary_spike", horizon=28),
+        # E demand decline -> new lower stable level
+        one(demand="decrease", horizon=30), two(demand="decrease", horizon=30), two(demand="decrease", horizon=30, transfer_lead=3),
+        # F central/branch disruption -> pooled recovery
+        two(supply="closure_recovery", alternative="supplier", central_cover=0., horizon=30),
+        two(supply="deterioration_recovery", horizon=30),
+        # G one false risk signal -> return to lean
+        one(supply="false_signal", horizon=26), two(supply="false_signal", horizon=26),
+        one(supply="false_signal", horizon=26, network="central_branches"),
+    ]
+    return base + [{"cell": len(base) + i, **value} for i, value in enumerate(explicit)]
+
+
 def cells(matrix="coverage"):
     if matrix == "reliability":
         return reliability_cells()
@@ -186,6 +247,8 @@ def cells(matrix="coverage"):
         return v4_cells()
     if matrix == "v6":
         return v6_cells()
+    if matrix == "v7":
+        return v7_cells()
     values = []
     targets_ = [.9, .93, .95, .97, .98, .99, .995]
     stock = [.1, 1., 2., 4., 7.]
@@ -378,7 +441,7 @@ def truth_for(req, cell, seed):
     kind = cell["case"]
     supply = cell["supply"]
     reliability = cell["family"] == "reliability"
-    shock = (supply in {"severe", "partial", "correlated", "deterioration_recovery", "closure_recovery"}) if reliability else kind not in {"normal", "none", "false_alarm", "transfer", "substitution", "recovery", "cash"}
+    shock = (supply in {"severe", "partial", "correlated", "deterioration_recovery", "closure_recovery", "false_signal"}) if reliability else kind not in {"normal", "none", "false_alarm", "transfer", "substitution", "recovery", "cash"}
     recovery = cell.get("truth_recovery", 9 if kind == "delayed_recovery" else 7)
     extra = cell.get("truth_extra_lead", 6 if kind in {"severe", "shared_outage"} or supply == "severe" else (0 if supply == "partial" else 3))
     floor = cell.get("truth_fill", .5 if kind in {"severe", "supplier_outage"} or supply == "severe" else (.6 if supply == "partial" else .8))
@@ -388,6 +451,8 @@ def truth_for(req, cell, seed):
         recovery, extra, floor = 8, 2, .85      # late and short from period 1 to 7, then clean
     if reliability and supply == "closure_recovery":
         recovery, extra, floor = 6, 10, .0      # main route closed from period 1 to 5, then restored
+    if reliability and supply == "false_signal":
+        recovery, extra, floor = 2, 4, .6       # one late and short receipt at period 1, clean ever after
     shared = rng.normal(size=H)
     for source in req.sources:
         for t in range(H):
@@ -435,6 +500,44 @@ def v6_metrics(req, rows) -> dict:
             "network_trace": trace}
 
 
+def v7_metrics(req, rows) -> dict:
+    """Capital-efficiency metrics (v7). The reason categories partition on-hand exactly, so their
+    means sum to mean inventory; `duplicated_buffer_units_v7` is the explicit pairwise detector,
+    reported next to the v6 number rather than replacing it. Recovery is reported twice: over every
+    protection row, and over service-bearing rows only, so the figure stays comparable with V5/V6,
+    which had no echelon-origin rows at all."""
+    capital = [c for r in rows for c in ((r.get("capital") or {}).get("decomposition") or [])]
+    dup = [d for r in rows for d in ((r.get("capital") or {}).get("duplication") or [])]
+    pool = [x for r in rows for x in ((r.get("capital") or {}).get("pooling") or [])]
+    timing = [x for r in rows for x in (r.get("procurement_timing") or [])]
+    states = [p for r in rows for p in (r.get("protection") or [])]
+    service_states = [p for p in states if not p.get("echelon_origin")]
+    reasons = {}
+    if capital:
+        for key in CAPITAL_REASONS:
+            reasons[key] = float(np.mean([c["reason"].get(key, 0.) for c in capital]) * len({c["location"] for c in capital}))
+    def lean_share(rows_):
+        return (float(np.mean([p["regime"] == "LEAN" for p in rows_])) if rows_ else None)
+    return {
+        "capital_reason_units_mean": reasons or None,
+        "capital_unexplained_share": (float(np.sum([c["reason"]["unexplained"] for c in capital])
+                                            / max(1e-9, np.sum([c["on_hand_units"] for c in capital]))) if capital else None),
+        "capital_stale_protection_share": (float(np.sum([c["reason"]["stale_protection"] for c in capital])
+                                                 / max(1e-9, np.sum([c["on_hand_units"] for c in capital]))) if capital else None),
+        "capital_reconciles": (bool(all(c["reconciles"] for c in capital)) if capital else None),
+        "duplicated_buffer_units_v7_mean": (float(np.mean([d["duplicated_buffer_units"] for d in dup])) if dup else None),
+        "duplicated_buffer_arc_reviews_v7": int(sum(1 for d in dup if d["duplicated_buffer_units"] > 0)),
+        "pooling_local_immediate_mean": (float(np.mean([x["local_immediate_units"] for x in pool])) if pool else None),
+        "pooling_pooled_mean": (float(np.mean([x["pooled_units"] for x in pool])) if pool else None),
+        "pooling_excess_over_local_mean": (float(np.mean([x["excess_over_local_immediate"] for x in pool])) if pool else None),
+        "premature_purchase_units": (float(sum(x.get("premature_units", 0.) for x in timing)) if timing else None),
+        "premature_inventory_days": (float(sum(x.get("premature_inventory_days", 0.) for x in timing)) if timing else None),
+        "cash_days_advanced": (float(sum(x.get("cash_days_advanced", 0.) for x in timing)) if timing else None),
+        "lean_share_all_rows": lean_share(states),
+        "lean_share_service_rows": lean_share(service_states),
+        "echelon_origin_rows": int(sum(1 for p in states if p.get("echelon_origin")))}
+
+
 def task(args):
     cell, seed, method = args
     req = request_for(cell, seed)
@@ -457,6 +560,7 @@ def task(args):
             "protection_trajectory": [[{k: p[k] for k in ("regime", "activity", "protection_units", "lean_baseline_units", "on_hand_units", "periods_to_lean")}
                                        for p in (r.get("protection") or [])] for r in rows] if any(r.get("protection") for r in rows) else None,
             **v6_metrics(req, rows),
+            **v7_metrics(req, rows),
             "change_origins": [r["forecast"]["retail_A"]["segment_origin"] for r in rows],
             "min_cash": min((x["cash"] for r in rows for x in r["settlement"]["trace"]), default=None),
             "max_debt": max((x["debt"] for r in rows for x in r["settlement"]["trace"]), default=None),
@@ -522,7 +626,7 @@ def source_hash():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--split", choices=list(SEEDS), default="development")
-    parser.add_argument("--matrix", choices=["coverage", "full", "reliability", "v4", "v6"], default="coverage")
+    parser.add_argument("--matrix", choices=["coverage", "full", "reliability", "v4", "v6", "v7"], default="coverage")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--freeze", action="store_true")
@@ -574,6 +678,8 @@ def main():
         methods = V5_METHODS
     if args.split in {"development6", "validation6"} and not args.methods:
         methods = V6_METHODS
+    if args.split in {"development7", "validation7"} and not args.methods:
+        methods = V7_METHODS
     tasks = [(c, s, m) for c in selected for s in SEEDS[args.split] for m in methods]
     with args.output.open("x") as file, ProcessPoolExecutor(max_workers=args.workers) as pool:
         for i, row in enumerate(pool.map(task, tasks, chunksize=1)):
