@@ -252,3 +252,15 @@ def test_backlog_implied_lead_holds_younger_orders_behind_the_oldest_overdue_one
     assert w.po_due["po-young"] >= 2, w.po_due          # not "next period" while the backlog stands
     calm = draw(Request.model_validate({**req.model_dump(mode="json"), "pipeline": [young]}), 5, 1, deterministic=True)[0]
     assert calm.po_due["po-young"] <= w.po_due["po-young"]
+
+
+def test_cost_band_is_additive_on_absolute_cost_so_negative_costs_do_not_empty_it():
+    """Validation5 seed 33002 crashed the frozen engine: with a negative cheapest hedged cost the
+    multiplicative band `cheapest * (1 + tol/5)` lies below the cheapest candidate and min() of an
+    empty band raised. The band is now additive on |cost| and never empty."""
+    tol = .02
+    for cheapest, costs in [(-100., [-100., -99.9, -95.]), (100., [100., 100.3, 110.]), (0., [0., .001, 5.])]:
+        band = [c for c in costs if c <= cheapest + tol / 5. * max(abs(cheapest), 1.) + 1e-9] or costs
+        assert band and band[0] == cheapest
+        if cheapest == -100.:
+            assert -99.9 in band and -95. not in band

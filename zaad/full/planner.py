@@ -384,7 +384,9 @@ def plan(req: Request) -> dict:
             # cost lies within one downside-tolerance band of the cheapest, prefer the one that
             # carries the least inventory. Protection has to beat the lean plan by more than noise.
             cheapest = min(hedged_cost(n) for n in feasible)
-            band = [n for n in feasible if hedged_cost(n) <= cheapest * (1 + req.downside_cost_tolerance / 5.) + 1e-9]
+            # The band is one fifth of the downside tolerance on the absolute cost (economic cost can
+            # be negative when closing assets exceed spend, so a multiplicative band would be empty).
+            band = [n for n in feasible if hedged_cost(n) <= cheapest + req.downside_cost_tolerance / 5. * max(abs(cheapest), 1.) + 1e-9] or list(feasible)
             chosen = min(band, key=lambda name: (burden(name), hedged_cost(name), list(candidates).index(name)))
         else:
             chosen = min(feasible, key=lambda name: (hedged_cost(name), list(candidates).index(name)))
