@@ -117,7 +117,7 @@ def _central_branch(req: Request) -> Request:
 def test_central_plus_branch_proxy_orders_upstream_and_plan_meets_service():
     req = _central_branch(example("normal"))
     orders = targets(req)
-    assert sum(q for (source, t), q in orders.items() if t >= 2) > 0    # echelon proxy buys at central
+    assert sum(q for key, q in orders.items() if len(key) == 2 and key[1] >= 2) > 0    # echelon proxy buys at central (v6 adds transfer keys)
     frozen = targets(_with(req, engine_profile="pr24"))
     assert sum(frozen.values()) > 0
     report = plan(req)

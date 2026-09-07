@@ -26,6 +26,56 @@ from zaad.full.uncertainty import z_for
 from zaad.full.worlds import dates, forecast_all
 
 
+def local_transfer_targets(req: Request, fits: dict, spread: dict | None = None, purchases: dict | None = None) -> dict:
+    """Transfer targets that keep every transfer-fed branch at a local base stock: mean demand over
+    the transfer lead plus one review, plus the branch quantile times the spread over that window
+    (fitted spread, or the calibrated spread per service when `spread` is given). Central purchases
+    are left to the caller; transfers are capped by arc capacity and by what the origin holds."""
+    direct = {(s.sku, s.destination) for s in req.sources if s.approved and s.compliance == "cleared"}
+    feeders: dict[tuple[str, str], Transfer] = {}
+    for arc in sorted(req.transfers, key=lambda a: (a.lead_periods, -a.capacity, a.id)):
+        if arc.approved and (arc.sku, arc.destination) not in direct and (arc.sku, arc.origin) in direct:
+            feeders.setdefault((arc.sku, arc.destination), arc)
+    if not feeders:
+        return {}
+    stock = {(s.id, location.id): sum(x.usable for x in req.stock if x.sku == s.id and x.location == location.id)
+             for s in req.skus for location in req.locations}
+    sources = {s.id: s for s in req.sources}
+    pending: list[tuple[str, str, int, float]] = []
+    for po in req.pipeline:
+        source = sources[po.source]
+        pending.append((source.sku, source.destination, next(o.due_in for o in po.options if o.action == "keep"), po.expected_accepted_remaining))
+    for row in req.inbound_transfers:
+        pending.append((row.sku, row.destination, row.due_in, row.accepted_quantity))
+    for key, q in (purchases or {}).items():
+        # The caller's projected purchases refill the origin when they land.
+        if len(key) == 2 and q > 0:
+            source = sources[key[0]]
+            pending.append((source.sku, source.destination, dates(req, source, key[1])[1], q * source.fill_mean))
+    own = {(s.sku, s.location): [x for x in req.services if x.sku == s.sku and x.location == s.location] for s in req.services}
+    targets: dict = {}
+    for t in range(req.horizon):
+        for (sku, location) in stock:
+            stock[sku, location] += sum(q for k, loc, due, q in pending if k == sku and loc == location and due == t)
+        for (sku, dest), arc in feeders.items():
+            services = own.get((sku, dest), [])
+            mu = sum(fits[s.id]["mean"] for s in services)
+            var = sum((spread[s.id] if spread and s.id in spread else fits[s.id]["sd"]) ** 2 for s in services)
+            z = z_for(max((s.target for s in services), default=.95))
+            window = arc.lead_periods + 1
+            local_base = mu * window + z * math.sqrt(var * window)
+            in_flight = sum(q for k, loc, due, q in pending if k == sku and loc == dest and due > t)
+            need = max(0., local_base - stock[sku, dest] - in_flight)
+            q = max(0., min(need, arc.capacity, stock[sku, arc.origin]))
+            targets["transfer", arc.id, t] = q
+            stock[sku, arc.origin] -= q
+            pending.append((sku, dest, t + arc.lead_periods, q * (1 - arc.loss_fraction)))
+        # The origin is refilled by its own purchases in the caller's projection; here it only drains.
+        for (sku, location) in stock:
+            stock[sku, location] = max(0., stock[sku, location] - sum(fits[s.id]["mean"] for s in own.get((sku, location), [])))
+    return targets
+
+
 def echelon_targets(req: Request) -> dict:
     fits = forecast_all(req)
     direct = {(s.sku, s.destination) for s in req.sources if s.approved and s.compliance == "cleared"}

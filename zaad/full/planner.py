@@ -56,6 +56,12 @@ def targets(req: Request, buffer: float = 1.645) -> dict:
             fed = [s for (k, dest), origins in upstream.items() for s in req.services if k == sku and s.sku == sku and s.location == dest and location in origins]
             services = services + [s for s in fed if s not in services]
             mu = sum(fits[s.id]["mean"] for s in services)
+            if req.protection_v6:
+                # Fed demand counts at the origin only up to what the arc can carry per period;
+                # buying for demand a constrained arc cannot deliver only piles stock at the origin.
+                for s in fed:
+                    arc_capacity = max((a.capacity for a in req.transfers if a.approved and a.sku == sku and a.destination == s.location and a.origin == location), default=float("inf"))
+                    mu -= max(0., fits[s.id]["mean"] - arc_capacity)
             row = profile.get((sku, location))
             if row is not None:
                 z = row["quantile_z"]
@@ -85,6 +91,14 @@ def targets(req: Request, buffer: float = 1.645) -> dict:
     for source in req.sources:
         for t in range(req.horizon):
             orders.setdefault((source.id, t), 0.)
+    if req.protection_v6 and reliability:
+        # Placement (v6): the projected operator policy keeps every transfer-fed branch at a local
+        # base stock over the transfer lead plus one review at its own quantile, instead of leaving
+        # transfers to a just-in-time deterministic projection that parks every safety unit at the
+        # central location one transfer lead away from the demand it protects.
+        from zaad.full.echelon import local_transfer_targets
+        spread = {s.id: fits[s.id]["uncertainty"]["sd_effective"] for s in req.services}
+        orders.update(local_transfer_targets(req, fits, spread, purchases=orders))
     return orders
 
 
@@ -502,7 +516,15 @@ def plan(req: Request) -> dict:
                                      "materially_better_than_incumbent": _recovery_not_worse(req, incumbent_selection, rows)})
         usable = [r for r in recovery_ranking if r["weighted_service_shortfall"] is not None and r["materially_better_than_incumbent"]]
         if usable:
-            best_candidate = min(usable, key=lambda r: (r["weighted_service_shortfall"], r["cost_mean"], list(candidates).index(r["candidate"])))
+            if req.protection_v6:
+                # Recovery ranking (v6): among candidates whose shortfall is within the material gap of
+                # the best, take the one carrying the least inventory. A stress-hedged recovery plan that
+                # buys more than the network can move earns no shortfall it can deliver.
+                best_gap = min(r["weighted_service_shortfall"] for r in usable)
+                band = [r for r in usable if r["weighted_service_shortfall"] <= best_gap + material_shortfall_gap(req)]
+                best_candidate = min(band, key=lambda r: (burden(r["candidate"]), r["weighted_service_shortfall"], r["cost_mean"], list(candidates).index(r["candidate"])))
+            else:
+                best_candidate = min(usable, key=lambda r: (r["weighted_service_shortfall"], r["cost_mean"], list(candidates).index(r["candidate"])))
             chosen = best_candidate["candidate"]
         else:
             chosen = "incumbent"

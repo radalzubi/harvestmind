@@ -154,7 +154,7 @@ def protection_profile(req: Request, fits: dict, supply: dict[str, SupplyProfile
         # spread) versus what can pool upstream when a transfer arc feeds this location.
         feeders = [a for a in req.transfers if a.approved and a.sku == sku and a.destination == location]
         transfer_lead = min((a.lead_periods for a in feeders), default=None)
-        local_units = z * math.sqrt(max(1, transfer_lead)) * sd_fitted if transfer_lead is not None else protection
+        local_units = z * math.sqrt((transfer_lead + 1) if req.protection_v6 else max(1, transfer_lead)) * sd_fitted if transfer_lead is not None else protection
         pooled_units = max(0., protection - local_units) if transfer_lead is not None else 0.
         upstream_protection = 0.
         if feeders:
