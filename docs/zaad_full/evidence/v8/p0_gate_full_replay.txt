@@ -1,0 +1,75 @@
+cell   0 V7 wall=   19.6s svc=0.921 inv=   44.7 milps= 102 starved=  0 rescued=  0 {'ESCALATE_UNKNOWN': 12}
+cell   0 V8 wall=   11.0s svc=0.925 inv=   46.7 milps=  67 starved=  0 rescued=  0 {'NORMAL_REPLENISHMENT': 2, 'PROTECT': 3, 'RECOVER': 3, 'NO_ACTION': 4}
+cell   1 V7 wall=   21.9s svc=0.982 inv=   41.7 milps= 102 starved=  0 rescued=  0 {'ESCALATE_UNKNOWN': 12}
+cell   1 V8 wall=   11.5s svc=0.988 inv=   43.7 milps=  65 starved=  0 rescued=  0 {'NO_ACTION': 5, 'PROTECT': 3, 'RECOVER': 3, 'NORMAL_REPLENISHMENT': 1}
+cell   2 V7 wall=   22.3s svc=0.989 inv=   79.7 milps= 103 starved=  0 rescued=  0 {'ESCALATE_UNKNOWN': 12}
+cell   2 V8 wall=   17.2s svc=0.993 inv=   81.7 milps=  69 starved=  0 rescued=  0 {'CAPITAL_OPTIMIZATION': 1, 'PROTECT': 3, 'RECOVER': 3, 'NORMAL_REPLENISHMENT': 1, 'NO_ACTION': 4}
+cell  15 V7 wall=   13.0s svc=0.983 inv=  102.0 milps= 108 starved=  0 rescued=  0 {'ESCALATE_UNKNOWN': 12}
+cell  15 V8 wall=    4.6s svc=0.980 inv=   46.1 milps=  97 starved=  0 rescued=  0 {'PROTECT': 12}
+cell  16 V7 wall=    7.3s svc=0.972 inv=  212.2 milps= 108 starved=  0 rescued=  0 {'ESCALATE_UNKNOWN': 12}
+cell  16 V8 wall=    5.4s svc=0.972 inv=  134.5 milps=  98 starved=  0 rescued=  0 {'PROTECT': 12}
+cell  21 V7 wall=  126.1s svc=0.666 inv=  120.6 milps= 179 starved=  5 rescued=  9 {'ESCALATE_UNKNOWN': 20}
+cell  21 V8 wall=   84.6s svc=0.666 inv=   57.3 milps= 146 starved=  2 rescued=  7 {'NO_ACTION': 3, 'PROTECT': 15, 'NORMAL_REPLENISHMENT': 2}
+cell  20 V7 wall=  127.1s svc=0.827 inv=  187.0 milps= 180 starved=  5 rescued= 10 {'ESCALATE_UNKNOWN': 20}
+cell  20 V8 wall=   70.0s svc=0.827 inv=  184.9 milps= 160 starved=  2 rescued=  6 {'NO_ACTION': 1, 'PROTECT': 19}
+cell  90 V7 wall=  271.2s svc=0.863 inv=  211.7 milps= 234 starved= 19 rescued= 16 {'ESCALATE_UNKNOWN': 26}
+cell  90 V8 wall=  171.0s svc=0.863 inv=   87.5 milps= 173 starved= 15 rescued=  9 {'NO_ACTION': 4, 'PROTECT': 15, 'NORMAL_REPLENISHMENT': 7}
+cell 108 V7 wall=  379.3s svc=0.878 inv=  153.0 milps= 266 starved= 24 rescued= 21 {'ESCALATE_UNKNOWN': 30}
+cell 108 V8 wall=  258.6s svc=0.878 inv=  140.3 milps= 208 starved= 20 rescued= 14 {'NO_ACTION': 3, 'PROTECT': 18, 'CAPITAL_OPTIMIZATION': 3, 'NORMAL_REPLENISHMENT': 6}
+cell  96 V7 wall=  401.7s svc=0.940 inv=  146.8 milps= 213 starved= 19 rescued= 36 {'ESCALATE_UNKNOWN': 26}
+cell  96 V8 wall=  210.0s svc=0.940 inv=  128.4 milps= 124 starved= 13 rescued= 21 {'NO_ACTION': 12, 'PROTECT': 3, 'RECOVER': 2, 'NORMAL_REPLENISHMENT': 9}
+cell  35 V7 wall=   16.8s svc=0.924 inv=  559.3 milps= 108 starved=  0 rescued=  0 {'ESCALATE_UNKNOWN': 12}
+cell  35 V8 wall=    8.8s svc=0.924 inv=  587.0 milps=  63 starved=  0 rescued=  0 {'NORMAL_REPLENISHMENT': 9, 'CAPITAL_OPTIMIZATION': 2, 'NO_ACTION': 1}
+cell  72 V7 wall=  121.8s svc=0.970 inv=  184.5 milps= 102 starved=  2 rescued=  8 {'ESCALATE_UNKNOWN': 12}
+cell  72 V8 wall=   81.0s svc=0.970 inv=  184.5 milps=  79 starved=  0 rescued=  7 {'NO_ACTION': 1, 'PROTECT': 3, 'RECOVER': 4, 'NORMAL_REPLENISHMENT': 3, 'NETWORK_ALLOCATION': 1}
+cell  89 V7 wall=   31.5s svc=0.951 inv=  827.9 milps= 102 starved=  0 rescued=  0 {'ESCALATE_UNKNOWN': 12}
+cell  89 V8 wall=   21.6s svc=0.951 inv=  848.2 milps=  57 starved=  0 rescued=  0 {'NORMAL_REPLENISHMENT': 7, 'NO_ACTION': 4, 'CAPITAL_OPTIMIZATION': 1}
+cell  99 V7 wall=   19.0s svc=0.878 inv=  161.5 milps= 102 starved=  0 rescued=  0 {'ESCALATE_UNKNOWN': 12}
+cell  99 V8 wall=   17.6s svc=0.878 inv=  161.5 milps=  86 starved=  0 rescued=  0 {'NORMAL_REPLENISHMENT': 4, 'NETWORK_ALLOCATION': 2, 'PROTECT': 3, 'RECOVER': 3}
+cell  87 V7 wall=  569.0s svc=0.997 inv=  359.2 milps= 199 starved= 58 rescued=  5 {'ESCALATE_UNKNOWN': 26}
+cell  87 V8 wall=  550.4s svc=0.997 inv=  359.2 milps= 169 starved= 51 rescued=  7 {'NO_ACTION': 1, 'PROTECT': 3, 'RECOVER': 22}
+cell  88 V7 wall=  144.2s svc=0.941 inv=  283.6 milps= 102 starved=  0 rescued= 14 {'ESCALATE_UNKNOWN': 12}
+cell  88 V8 wall=  121.0s svc=0.941 inv=  283.6 milps=  85 starved=  0 rescued= 14 {'NORMAL_REPLENISHMENT': 4, 'PROTECT': 3, 'RECOVER': 5}
+
+=== P0 PERFORMANCE GATE ===
+          family mode    n   median      p90      p95      max
+      disruption   V7   44     0.32    10.18    10.40    30.43
+      disruption   V8   44     0.27    10.06    10.38    20.36
+        recovery   V7  128    10.39    30.85    31.34    33.10
+        recovery   V8  128     1.92    31.18    31.96    33.25
+  stable network   V7   60     1.54    20.35    21.85    24.43
+  stable network   V8   60     0.74    14.51    18.30    24.48
+   stable single   V7   36     0.43     5.72     7.31     8.63
+   stable single   V8   36     0.24     2.89     4.91     7.30
+
+overall median 1.75s -> 0.67s (2.6x)
+overall p90    28.87s -> 20.82s
+overall p95    30.85s -> 31.18s
+overall max    33.10s -> 33.25s
+
+MILPs attempted 2310 -> 1746
+starved (no feasible solution) 132 -> 103
+rescued (feasible time limited) 119 -> 85
+
+=== DECISION QUALITY ===
+ cell           family   svc V7   svc V8       d   inv V7   inv V8        d
+    0    stable single    0.921    0.925  +0.004     44.7     46.7     +2.0
+    1    stable single    0.982    0.988  +0.006     41.7     43.7     +2.0
+    2    stable single    0.989    0.993  +0.004     79.7     81.7     +2.0
+   15       disruption    0.983    0.980  -0.003    102.0     46.1    -56.0
+   16       disruption    0.972    0.972  +0.000    212.2    134.5    -77.7
+   21       disruption    0.666    0.666  +0.000    120.6     57.3    -63.2
+   20         recovery    0.827    0.827  +0.000    187.0    184.9     -2.1
+   90         recovery    0.863    0.863  +0.000    211.7     87.5   -124.2
+  108         recovery    0.878    0.878  +0.000    153.0    140.3    -12.6
+   96         recovery    0.940    0.940  +0.000    146.8    128.4    -18.3
+   35   stable network    0.924    0.924  +0.000    559.3    587.0    +27.7
+   72   stable network    0.970    0.970  +0.000    184.5    184.5     +0.0
+   89   stable network    0.951    0.951  +0.000    827.9    848.2    +20.3
+   99   stable network    0.878    0.878  +0.000    161.5    161.5     +0.0
+   87         recovery    0.997    0.997  +0.000    359.2    359.2     +0.0
+   88   stable network    0.941    0.941  +0.000    283.6    283.6     +0.0
+
+median service 0.941 -> 0.941 | median mean-inventory 173.0 -> 137.4
+
+[exited with code 0]

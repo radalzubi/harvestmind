@@ -1,0 +1,31 @@
+cell  15 V7_full          svc=0.983 tail=0.790 p10=1.000 breaches= 1 worst_unmet=   4.2 total_unmet=    4.2 inv=  102.0 cost=1677   13.0s
+cell  15 V8_escalated     svc=0.980 tail=0.790 p10=0.962 breaches= 1 worst_unmet=   4.2 total_unmet=    5.0 inv=   46.1 cost=1678    4.5s
+cell  15 V8_forced_hedge  svc=0.980 tail=0.790 p10=0.962 breaches= 1 worst_unmet=   4.2 total_unmet=    5.0 inv=   46.1 cost=1678    4.6s
+cell  16 V7_full          svc=0.972 tail=0.650 p10=1.000 breaches= 1 worst_unmet=   7.0 total_unmet=    7.0 inv=  212.2 cost=1521    7.3s
+cell  16 V8_escalated     svc=0.972 tail=0.650 p10=1.000 breaches= 1 worst_unmet=   7.0 total_unmet=    7.0 inv=  134.5 cost=1515    5.4s
+cell  16 V8_forced_hedge  svc=0.972 tail=0.650 p10=1.000 breaches= 1 worst_unmet=   7.0 total_unmet=    7.0 inv=  134.5 cost=1515    5.5s
+cell  20 V7_full          svc=0.827 tail=0.000 p10=0.204 breaches= 5 worst_unmet=  21.5 total_unmet=   66.8 inv=  187.0 cost=2601  127.3s
+cell  20 V8_escalated     svc=0.827 tail=0.000 p10=0.204 breaches= 5 worst_unmet=  21.5 total_unmet=   66.8 inv=  184.9 cost=2617   70.5s
+cell  20 V8_forced_hedge  svc=0.827 tail=0.000 p10=0.204 breaches= 5 worst_unmet=  21.5 total_unmet=   66.8 inv=  184.9 cost=2617   79.3s
+cell  21 V7_full          svc=0.666 tail=0.000 p10=0.000 breaches= 7 worst_unmet=  27.0 total_unmet=  129.2 inv=  120.6 cost=3127  125.0s
+cell  21 V8_escalated     svc=0.666 tail=0.000 p10=0.000 breaches= 7 worst_unmet=  27.0 total_unmet=  129.2 inv=   57.3 cost=3120   83.6s
+cell  21 V8_forced_hedge  svc=0.666 tail=0.000 p10=0.000 breaches= 7 worst_unmet=  27.0 total_unmet=  129.2 inv=   59.0 cost=3119   93.4s
+cell  90 V7_full          svc=0.863 tail=0.000 p10=0.220 breaches= 4 worst_unmet=  22.0 total_unmet=   70.1 inv=  211.7 cost=3316  269.8s
+cell  90 V8_escalated     svc=0.863 tail=0.000 p10=0.220 breaches= 4 worst_unmet=  22.0 total_unmet=   70.1 inv=   87.5 cost=3293  169.3s
+cell  90 V8_forced_hedge  svc=0.860 tail=0.000 p10=0.220 breaches= 5 worst_unmet=  22.0 total_unmet=   71.5 inv=   86.6 cost=3294  182.1s
+cell 108 V7_full          svc=0.878 tail=0.000 p10=0.221 breaches= 4 worst_unmet=  22.0 total_unmet=   69.9 inv=  153.0 cost=3680  376.7s
+cell 108 V8_escalated     svc=0.878 tail=0.000 p10=0.221 breaches= 4 worst_unmet=  22.0 total_unmet=   69.9 inv=  140.3 cost=3684  258.4s
+cell 108 V8_forced_hedge  svc=0.878 tail=0.000 p10=0.221 breaches= 4 worst_unmet=  22.0 total_unmet=   69.9 inv=  140.3 cost=3684  271.4s
+
+=== P0-C SUMMARY (target: does escalation hide service or tail risk?) ===
+                metric          V7_full     V8_escalated  V8_forced_hedge
+        median service            0.871            0.871            0.869
+   median tail service            0.000            0.000            0.000
+            median p10            0.220            0.220            0.220
+  total breach reviews           22.000           22.000           23.000
+     total unmet units          347.223          347.984          349.349
+    worst single unmet           27.000           27.000           27.000
+      median inventory          169.990          111.012          110.548
+    total wall seconds          919.045          591.717          636.297
+
+[exited with code 0]
