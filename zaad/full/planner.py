@@ -1054,7 +1054,7 @@ def plan(req: Request) -> dict:
                                for name, c in candidates.items()},
                 "selected_is_comparable": well_solved(chosen) if chosen in candidates else None,
                 "scope": "a candidate whose achieved optimality gap exceeds the threshold is a feasible point the solver did not optimise; it is excluded from cost ranking and cost-based acceptance"},
-            "capital": ({"decomposition": capital_decompose(req, fits, protection),
+            "capital": ({"decomposition": capital_decompose(req, fits, protection, inherited=req.inherited_on_hand or None),
                          "duplication": capital_duplication(req, fits, protection),
                          "pooling": capital_pooling(req, fits, protection),
                          "scope": "reason categories partition the units on hand exactly; duplication and pooling are stated per arc"}

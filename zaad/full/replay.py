@@ -67,6 +67,7 @@ def choose(req: Request, method: str) -> Solution:
                                      for p in report["protection"]]
         solution.procurement_timing = report.get("procurement_timing")
         solution.capital = report.get("capital")
+        solution.inherited_on_hand = None      # filled by replay, which alone knows the provenance
         solution.solve_quality = report.get("solve_quality")
         return solution
     deterministic = method in {"base_stock", "order_up_to", "deterministic", "frozen_forecast"}
@@ -94,6 +95,13 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
     reviews_log: list[dict] = []
     total_components: dict[str, float] = {}
     first_assets, last_assets = None, 0.
+    # Inherited stock, tracked through the replay (v8). Opening usable stock per SKU/location,
+    # drawn down first as demand is served, so at any review it is the part of what is on hand that
+    # the optimizer did not buy. Consumption is charged to inherited units before purchased ones,
+    # which is the FEFO-consistent reading for a position that starts older than anything bought.
+    inherited: dict[tuple[str, str], float] = {}
+    for lot in initial.stock:
+        inherited[lot.sku, lot.location] = inherited.get((lot.sku, lot.location), 0.) + lot.usable
     for t in range(reviews):
         # OBSERVE arrivals at the current origin BEFORE choosing any transfer/order.
         # Future receipts stay private; only now-arrived POs are materialized.
@@ -130,6 +138,13 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
                 state["sources"].append(fields)
             req = Request.model_validate(state)
         planning_req = req.model_copy(update={"history": initial.history}) if method == "frozen_forecast" else req
+        # Inherited stock cannot exceed what is physically present at this location now.
+        on_hand_now: dict[tuple[str, str], float] = {}
+        for lot in req.stock:
+            on_hand_now[lot.sku, lot.location] = on_hand_now.get((lot.sku, lot.location), 0.) + lot.usable
+        for key in list(inherited):
+            inherited[key] = min(inherited[key], on_hand_now.get(key, 0.))
+        planning_req = planning_req.model_copy(update={"inherited_on_hand": {f"{k[0]}|{k[1]}": v for k, v in inherited.items() if v > 1e-9}})
         solution = choose(planning_req, method)
         if solution.status != "OPTIMAL":
             return {"status": solution.status, "reviews": reviews_log, "failure": solution.warnings}
@@ -156,10 +171,20 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
                             "protection": getattr(solution, "protection_state", None),
                             "procurement_timing": getattr(solution, "procurement_timing", None),
                             "capital": getattr(solution, "capital", None),
+                            "inherited_on_hand": {f"{k[0]}|{k[1]}": v for k, v in inherited.items() if v > 1e-9},
                             "solve_quality": getattr(solution, "solve_quality", None),
                             "solver": {"status": solution.status, "seconds": solution.solve_seconds,
                                        "gap": solution.gap, "variables": solution.variables,
                                        "constraints": solution.constraints}})
+        # Draw inherited stock down by this review's consumption at each location, oldest first.
+        served_by_location: dict[tuple[str, str], float] = {}
+        for service in req.services:
+            served = sum(x["served"] for x in outcome["service_by_period"] if x["service"] == service.id)
+            key = (service.sku, service.location)
+            served_by_location[key] = served_by_location.get(key, 0.) + served
+        for key, used in served_by_location.items():
+            if key in inherited:
+                inherited[key] = max(0., inherited[key] - used)
         if t == reviews - 1:
             break
         now = req.as_of + timedelta(days=req.period_days)

@@ -429,6 +429,10 @@ class Request(Record):
     # cost-based ranking and from cost-based acceptance, and it downgrades confidence if selected.
     # Set above 1 to disable the gate and reproduce V7 comparison behaviour exactly.
     comparable_gap: float = Field(default=.02, gt=0)
+    # Inherited stock still on hand per "sku|location" (v8), supplied by the causal replay, which is
+    # the only place that knows a lot's provenance. Empty in a single-shot request, where every unit
+    # is by definition inherited from the operator's current position.
+    inherited_on_hand: dict[str, float] = Field(default_factory=dict)
     # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.

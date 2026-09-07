@@ -37,7 +37,8 @@ from zaad.full.worlds import dates
 
 # Reason categories in waterfall order. Every unit on hand is assigned to exactly one.
 REASONS = ("demand_cycle", "local_service", "source_lead", "pooled_network", "active_protection",
-           "moq_pack", "early_order", "transfer_positioning", "stale_protection", "unexplained")
+           "moq_pack", "early_order", "transfer_positioning", "stale_protection",
+           "inherited_excess", "unexplained")
 
 
 def _feeders(req: Request, sku: str, location: str) -> list:
@@ -66,6 +67,8 @@ def decompose(req: Request, fits: dict, protection: list[dict], *,
     lot; absent them the owner split degrades to purchased-or-inherited unknown and the early
     -order reason is skipped, and the reason waterfall is unaffected."""
     by_pair = {(row["sku"], row["location"]): row for row in protection}
+    if inherited is not None and inherited and isinstance(next(iter(inherited)), str):
+        inherited = {tuple(k.split("|", 1)): v for k, v in inherited.items()}   # request carries string keys
     rows: list[dict] = []
     pairs = sorted({(lot.sku, lot.location) for lot in req.stock}
                    | {(s.sku, s.location) for s in req.services}
@@ -84,20 +87,29 @@ def decompose(req: Request, fits: dict, protection: list[dict], *,
         source = _cheapest_source(req, sku, location)
         window = (dates(req, source, 0)[1] + 1) if source is not None else max(1, (transfer_lead or 0) + 1)
         # Named obligations, each the units that obligation alone would justify.
-        cycle = mu
-        if transfer_lead is not None and source is None:
-            local = z * sd * math.sqrt(transfer_lead + 1)
-            source_lead = 0.
+        #
+        # The protection terms are taken from the engine's own echelon partition rather than
+        # recomputed here. Recomputing them from the fitted standard deviation was a defect: on
+        # intermittent demand the engine sizes protection from the occurrence/size decomposition,
+        # which is far wider than the raw fitted sd, so the decomposition under-claimed and dumped
+        # the difference into `unexplained` (cell 35 branch: 45.6 claimed against 109.9 on hand).
+        cycle = mu * max(1., window)
+        echelon = (state["state"].get("echelon") or {}) if state else {}
+        if echelon:
+            local = float(echelon.get("local_service_units") or 0.)
+            pooled_claim = float(echelon.get("pooled_network_units") or 0.)
+            source_lead = float(echelon.get("source_protection_units") or 0.)
+        elif transfer_lead is not None and source is None:
+            local, pooled_claim, source_lead = z * sd * math.sqrt(transfer_lead + 1), 0., 0.
         else:
-            local = 0.
             declared_lead_sd = (source.lead_sd_days / req.period_days) if source is not None else 0.
             declared_fill_sd = source.fill_sd if source is not None else 0.
             demand_var = window * sd ** 2
             supply_var = (mu * declared_lead_sd) ** 2 + (mu * window * declared_fill_sd) ** 2
             local = z * math.sqrt(demand_var)
+            pooled_claim = 0.
             source_lead = z * (math.sqrt(demand_var + supply_var) - math.sqrt(demand_var))
-            cycle = mu * min(window, max(1., window))
-        pooled = 0.
+        pooled = pooled_claim
         fed = _fed_branches(req, sku, location)
         if fed:
             branch_mu = 0.
@@ -110,7 +122,7 @@ def decompose(req: Request, fits: dict, protection: list[dict], *,
             arc_lead = min((a.lead_periods for a in arcs), default=1)
             # Pooled cover for the branches this origin feeds: their demand over the origin's own
             # replenishment window, with the safety term pooled (root of the summed variances).
-            pooled = branch_mu * window + z * math.sqrt(branch_var * max(1, window - arc_lead))
+            pooled = max(pooled, branch_mu * window + z * math.sqrt(branch_var * max(1, window - arc_lead)))
         active = max(0., state["state"]["incremental_protection_units"]) if state and state["state"]["activity"] > .05 else 0.
         pack = 0.
         if source is not None:
@@ -121,9 +133,15 @@ def decompose(req: Request, fits: dict, protection: list[dict], *,
         if transfer_lead is not None and source is None:
             positioning = max(0., (transferred or {}).get((sku, location), 0.))
         stale = max(0., state["state"]["incremental_protection_units"]) if state and state["state"]["activity"] <= .05 else 0.
+        # Inherited excess (v8): units that came from the opening position and are still on hand
+        # after every operating obligation is met. The optimizer did not create them; naming them
+        # separately is the difference between "ZAAD is holding too much" and "ZAAD started with
+        # too much and is working it down".
+        inherited_here = (inherited or {}).get((sku, location))
         claims = {"demand_cycle": cycle, "local_service": local, "source_lead": source_lead,
                   "pooled_network": pooled, "active_protection": active, "moq_pack": pack,
-                  "early_order": early, "transfer_positioning": positioning, "stale_protection": stale}
+                  "early_order": early, "transfer_positioning": positioning, "stale_protection": stale,
+                  "inherited_excess": (min(on_hand, inherited_here) if inherited_here is not None else 0.)}
         # Waterfall: each reason takes what is left, in order, so the parts sum to the total exactly.
         remaining = on_hand
         reason: dict[str, float] = {}
