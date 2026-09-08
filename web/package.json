@@ -4,11 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack",
+    "build": "node scripts/vendor-maplibre-worker.mjs && next build --webpack",
     "start": "next start",
     "seo:check": "node scripts/seo-check.mjs",
     "postinstall": "node scripts/vendor-maplibre-worker.mjs",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "vendor:maplibre": "node scripts/vendor-maplibre-worker.mjs",
+    "lint": "eslint src/app/network src/components/network src/lib/network src/components/Shell.tsx src/components/Sidebar.tsx src/components/Topbar.tsx",
+    "lint:all": "eslint src",
+    "test": "tsx --test src/lib/network/__tests__/scenario.test.ts src/lib/network/__tests__/workspace-adapter.test.ts"
   },
   "dependencies": {
     "@deck.gl/core": "^9.4.0",
@@ -31,7 +35,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.4",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }

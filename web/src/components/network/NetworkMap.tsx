@@ -20,9 +20,25 @@ import { reduceMotionNow } from "@/lib/motion";
 import { INK, STATE_RGB, useTwin } from "./store";
 
 // MapLibre parses tiles in a web worker; serve it from a plain URL (vendored
-// at install time by scripts/vendor-maplibre-worker.mjs) rather than trusting
-// the bundler to expose a worker from inside node_modules.
-setWorkerUrl("/vendor/maplibre-gl-worker.mjs");
+// at install and build time by scripts/vendor-maplibre-worker.mjs) rather
+// than trusting the bundler to expose a worker from inside node_modules.
+const WORKER_URL = "/vendor/maplibre-gl-worker.mjs";
+setWorkerUrl(WORKER_URL);
+/** How long the basemap may take before the view says so instead of staying blank. */
+const LOAD_TIMEOUT_MS = 15000;
+
+/** Confirms the vendored worker is actually served as JavaScript before the map depends on it. */
+async function probeWorker(): Promise<string | null> {
+  try {
+    const r = await fetch(WORKER_URL, { method: "HEAD", cache: "no-store" });
+    if (!r.ok) return `worker script ${WORKER_URL} returned HTTP ${r.status}`;
+    const ct = r.headers.get("content-type") ?? "";
+    if (!/javascript|ecmascript/i.test(ct)) return `worker script ${WORKER_URL} is served as "${ct || "unknown"}", not JavaScript`;
+    return null;
+  } catch (e) {
+    return `worker script ${WORKER_URL} could not be fetched (${e instanceof Error ? e.message : String(e)})`;
+  }
+}
 
 const STYLE_URL = process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://tiles.openfreemap.org/styles/positron";
 const ACCENT: [number, number, number] = [14, 159, 110];
@@ -45,9 +61,23 @@ const overlaps = (a: Box, b: Box) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] &
 const sameSet = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((x) => b.has(x));
 
 export default function NetworkMap() {
-  const { model, state, related, scenario, select, hover } = useTwin();
+  const { model, state, related, scenario, select, hover, dispatch } = useTwin();
   const mapRef = useRef<MapRef>(null);
   const [styleError, setStyleError] = useState<string | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [slow, setSlow] = useState(false);
+  // fail loudly: a missing worker or a basemap that never loads is reported, never a blank map
+  useEffect(() => {
+    let alive = true;
+    probeWorker().then((err) => { if (alive && err) setMapError(err); });
+    return () => { alive = false; };
+  }, []);
+  useEffect(() => {
+    if (loaded) return;
+    const t = window.setTimeout(() => setSlow(true), LOAD_TIMEOUT_MS);
+    return () => window.clearTimeout(t);
+  }, [loaded]);
   const [hovering, setHovering] = useState(false);
   const [shown, setShown] = useState<{ nodes: Set<string>; labels: Set<string> }>({ nodes: new Set(), labels: new Set() });
   const sel = state.selection, hov = state.hover;
@@ -214,14 +244,25 @@ export default function NetworkMap() {
         ref={mapRef} mapStyle={STYLE_URL} reuseMaps
         initialViewState={initialBounds ? { bounds: initialBounds, fitBoundsOptions: { padding: 70, maxZoom: 9 } } : { longitude: 40, latitude: 25, zoom: 3 }}
         style={{ width: "100%", height: "100%" }} cursor={hovering ? "pointer" : "grab"}
-        onMove={onMove} onLoad={declutter} onError={(e) => setStyleError(e.error?.message ?? "basemap failed to load")}
+        onMove={onMove} onLoad={() => { setLoaded(true); declutter(); }} onError={(e) => setStyleError(e.error?.message ?? "basemap failed to load")}
         onClick={() => select(null)} attributionControl={{ compact: true }}
       >
         <NavigationControl position="top-left" showCompass={false} />
         <DeckOverlay layers={layers} onHover={onHover} getTooltip={getTooltip} pickingRadius={6} />
       </MapGL>
-      {styleError && <div className="twin-notice warn">Basemap tiles are unavailable ({styleError}); facilities and lanes still draw over a blank map.</div>}
-      {!styleError && noGeo > 0 && <div className="twin-notice">{noGeo} node{noGeo === 1 ? "" : "s"} without coordinates are shown only in the NETWORK view.</div>}
+      {(mapError || (styleError && !loaded)) && (
+        <div className="twin-maperror" role="alert">
+          <b>The map could not start.</b>
+          <div>{mapError ?? styleError}</div>
+          <div className="row" style={{ marginTop: 10 }}>
+            <button className="tbtn" onClick={() => dispatch({ type: "view", view: "network" })}>Open the NETWORK view</button>
+            <button className="tbtn ghost" onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        </div>
+      )}
+      {!mapError && !loaded && slow && !styleError && <div className="twin-notice warn">The basemap is taking longer than expected ({LOAD_TIMEOUT_MS / 1000}s). Lanes and facilities appear once it loads; the NETWORK view does not need it.</div>}
+      {!mapError && loaded && styleError && <div className="twin-notice warn">Some basemap tiles failed ({styleError}); facilities and lanes still draw.</div>}
+      {!mapError && !styleError && noGeo > 0 && <div className="twin-notice">{noGeo} node{noGeo === 1 ? "" : "s"} without coordinates are shown only in the NETWORK view.</div>}
     </>
   );
 }

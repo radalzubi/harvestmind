@@ -41,9 +41,10 @@ function SearchBox() {
   const label = (r: SelectionRef) => r.type === "node" ? model.nodes.find((n) => n.id === r.id) : model.edges.find((e) => e.id === r.id);
   const choose = (r: SelectionRef) => { select(r, true); setOpen(false); setQ(""); input.current?.blur(); };
   return (
-    <div className="twin-search" role="combobox" aria-expanded={open && hits.length > 0} aria-haspopup="listbox" aria-owns="twin-search-list">
+    <div className="twin-search">
       <Search size={14} className="ico" />
-      <input ref={input} value={q} placeholder="Search nodes, lanes, SKUs  ( / )" aria-label="Search the network" aria-autocomplete="list" aria-controls="twin-search-list"
+      <input ref={input} value={q} placeholder="Search nodes, lanes, SKUs  ( / )" aria-label="Search the network" role="combobox"
+        aria-expanded={open && hits.length > 0} aria-haspopup="listbox" aria-autocomplete="list" aria-controls="twin-search-list"
         onChange={(e) => { setQ(e.target.value); setOpen(true); setCursor(0); }} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 120)}
         onKeyDown={(e) => {
           if (e.key === "ArrowDown") { e.preventDefault(); setCursor((c) => Math.min(hits.length - 1, c + 1)); }
@@ -74,7 +75,7 @@ function Legend() {
 }
 
 function TwinInner() {
-  const { state, dispatch, load, select } = useTwin();
+  const { state, dispatch, load, select, engine } = useTwin();
   const view = VIEWS.find((v) => v.id === state.view) ?? VIEWS[0];
   const Stage = view.Component;
   return (
@@ -108,7 +109,12 @@ function TwinInner() {
       <div className={`twin-stage ${state.panelOpen ? "" : "no-panel"}`}>
         <div className="twin-canvas">
           <div className="twin-fill">{Stage ? <Stage /> : <Loading text="Globe view is not part of V1." />}</div>
-          {state.mode === "simulate" && <div className="twin-notice warn" style={{ bottom: "auto", top: 16, left: "50%", transform: "translateX(-50%)" }}>Simulation: an ephemeral scenario over the live picture. Nothing here changes your data.</div>}
+          {state.mode === "simulate" && (
+            <div className="twin-notice warn" style={{ bottom: "auto", top: 16, left: "50%", transform: "translateX(-50%)" }}>
+              Simulation: an ephemeral scenario over the live picture. Nothing here changes your data.
+              {engine.id === "illustrative" && <><br />Illustrative scenario result · development demo adapter, not the ZAAD optimizer.</>}
+            </div>
+          )}
           {load.source === "illustrative" && <div className="twin-notice illus">Illustrative development data{load.workspaceError ? ` · ${load.workspaceError}` : ""}</div>}
           <Legend />
         </div>

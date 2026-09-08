@@ -112,8 +112,7 @@ function Graph() {
   useEffect(() => {
     const el = document.querySelector(".twin-fill");
     if (!el || typeof ResizeObserver === "undefined") return;
-    let first = true;
-    const ro = new ResizeObserver(() => { if (first) { first = false; return; } rf.fitView({ padding: 0.18, duration: 0 }); });
+    const ro = new ResizeObserver(() => { rf.fitView({ padding: 0.18, duration: 0 }); });
     ro.observe(el);
     return () => ro.disconnect();
   }, [rf]);
@@ -145,7 +144,7 @@ function Graph() {
       onPaneClick={() => select(null)}
       onNodeMouseEnter={(_, n) => hover({ type: "node", id: n.id })} onNodeMouseLeave={() => hover(null)}
       onEdgeMouseEnter={(_, e) => hover({ type: "edge", id: e.id })} onEdgeMouseLeave={() => hover(null)}
-      fitView fitViewOptions={{ padding: 0.18 }} minZoom={0.25} maxZoom={2}
+      fitView fitViewOptions={{ padding: 0.18 }} minZoom={0.08} maxZoom={2}
       nodesDraggable={false} nodesConnectable={false} elementsSelectable panOnScroll zoomOnPinch selectionOnDrag={false}
       deleteKeyCode={null} multiSelectionKeyCode={null}
       onlyRenderVisibleElements

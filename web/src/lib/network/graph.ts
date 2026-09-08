@@ -90,13 +90,14 @@ export function searchModel(model: NetworkModel, q: string, limit = 8): Selectio
     }
     return best;
   };
+  // a hit on the name outranks a hit on a place, id or SKU; nodes win ties with lanes
   const hits: Array<{ ref: SelectionRef; s: number }> = [];
   for (const n of model.nodes) {
-    const s = score([n.name, n.id, n.subtitle ?? "", n.region ?? "", ...n.skus]);
-    if (s) hits.push({ ref: { type: "node", id: n.id }, s: s + 0.5 });
+    const s = Math.max(score([n.name]) * 1.5, score([n.id, n.subtitle ?? "", n.region ?? "", ...n.skus]));
+    if (s) hits.push({ ref: { type: "node", id: n.id }, s: s + 0.25 });
   }
   for (const e of model.edges) {
-    const s = score([e.name, e.id, ...e.skus]);
+    const s = Math.max(score([e.name]) * 1.5, score([e.id, ...e.skus]));
     if (s) hits.push({ ref: { type: "edge", id: e.id }, s });
   }
   return hits.sort((a, b) => b.s - a.s).slice(0, limit).map((h) => h.ref);

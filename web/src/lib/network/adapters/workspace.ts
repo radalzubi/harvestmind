@@ -12,36 +12,36 @@
  * No optimizer logic is reimplemented here; recommendations come only from a
  * plan the server built.
  */
-import { apiFetch, getMe } from "@/lib/api";
+import { apiFetch, getMe, type Me } from "@/lib/api";
 import { LANE_CATALOG, PORTS, REGION_AT, type LonLat } from "../geo";
 import type { NetworkEdge, NetworkModel, NetworkNode, NetworkRecommendation, OpenPO, RiskState, ZaadState } from "../model";
 import { riskLevel } from "../model";
 
 type Outlook = { risk: number; quality: number; reasons: string[]; missing: string[]; stale?: string[]; contrib?: Record<string, number> };
 type EntityState = { dominant: string; p_disruptive: number; stress: number; probabilities: Record<string, number>; reasons: string[]; change_points?: unknown[] };
-interface StateResponse {
+export interface StateResponse {
   as_of?: string;
-  mode: string;
-  portfolio: { probabilities: Record<string, number>; dominant: string; stress: number; reasons: string[]; data_quality: number };
-  posture: { commit_window: number; cvar_lambda: number; autonomy: number; scenario_width: number; candidates: string[] };
-  sku: Record<string, EntityState>;
-  supplier: Record<string, EntityState>;
-  outlooks: Record<string, Outlook>;
-  replan_triggers: string[];
+  mode?: string;
+  portfolio?: { probabilities: Record<string, number>; dominant: string; stress: number; reasons: string[]; data_quality: number };
+  posture?: { commit_window: number; cvar_lambda: number; autonomy: number; scenario_width: number; candidates: string[] };
+  sku?: Record<string, EntityState>;
+  supplier?: Record<string, EntityState>;
+  outlooks?: Record<string, Outlook>;
+  replan_triggers?: string[];
   plain?: { headline: string; lanes: Array<{ lane: string; sentence: string; reasons: string[]; missing: string[] }> };
   network?: {
-    products: string[];
-    supplier_of: Record<string, string>;
-    route_of: Record<string, string>;
-    lead_of: Record<string, number>;
-    opening: Record<string, number>;
-    pipeline: Record<string, number>;
-    unit_cost: Record<string, number>;
-    suppliers: Record<string, { name: string | null; route: string | null; origin_iso3: string | null; capacity_per_week: number | null }>;
+    products?: string[];
+    supplier_of?: Record<string, string>;
+    route_of?: Record<string, string>;
+    lead_of?: Record<string, number>;
+    opening?: Record<string, number>;
+    pipeline?: Record<string, number>;
+    unit_cost?: Record<string, number>;
+    suppliers?: Record<string, { name?: string | null; route?: string | null; origin_iso3?: string | null; capacity_per_week?: number | null }>;
   };
 }
-interface StatusResponse { tables: Record<string, number>; ready_to_plan: boolean; minimum_history_weeks: number }
-interface SupplyRisk { suppliers: Array<{ supplier_id: string; supplier_name: string; n_deliveries: number; posterior_mean: number; downside: number; spread: number; risk_level: string }> }
+export interface StatusResponse { tables: Record<string, number>; ready_to_plan?: boolean; minimum_history_weeks?: number }
+export interface SupplyRisk { suppliers: Array<{ supplier_id: string; supplier_name: string; n_deliveries: number; posterior_mean: number; downside: number; spread: number; risk_level: string }> }
 export interface PlanOrder { sku: string; supplier_id: string; week_offset: number; order_units: number; lots: number; lot_unit: string; explanation: string[]; purchase_value: { amount: string; currency: string } }
 export interface PlanResponse { run_id: string; mode_run: string; solver_status: string; warnings: string[]; orders: PlanOrder[] }
 
@@ -56,6 +56,13 @@ const risk = (score: number, reasons: string[], evidence: string[]): RiskState =
 const approx = (at: LonLat) => ({ lon: at[0], lat: at[1], precision: "approximate" as const });
 const stateOf = (e: EntityState | undefined): ZaadState => (e ? REGIME_STATE[e.dominant] ?? (e.p_disruptive >= 0.5 ? "ALLOCATE" : e.p_disruptive >= 0.25 ? "PROTECT" : "LEAN") : "LEAN");
 
+export interface WorkspaceInputs {
+  state: StateResponse;
+  status: StatusResponse | null;
+  me: Me | null;
+  supply: SupplyRisk | null;
+}
+
 export async function loadWorkspaceNetwork(): Promise<NetworkModel> {
   const [state, status, me, supply] = await Promise.all([
     apiFetch<StateResponse>("/fmcg/state"),
@@ -63,10 +70,17 @@ export async function loadWorkspaceNetwork(): Promise<NetworkModel> {
     getMe().catch(() => null),
     apiFetch<SupplyRisk>("/forecasts/supply").catch(() => null),
   ]);
+  return buildWorkspaceModel({ state, status, me, supply });
+}
+
+/** Pure: raw payloads in, NetworkModel out. Tolerates older servers and partial uploads. */
+export function buildWorkspaceModel({ state, status, me, supply }: WorkspaceInputs): NetworkModel {
   const net = state.network;
+  const portfolio = state.portfolio ?? { probabilities: {}, dominant: "NORMAL", stress: 0, reasons: [], data_quality: 0 };
+  const outlooks = state.outlooks ?? {};
   const notes: string[] = [];
   if (!net) notes.push("This server's /fmcg/state has no `network` block, so suppliers cannot be linked to lanes, SKUs or stock; upgrade the API to see those links.");
-  if (status) {
+  if (status?.tables) {
     const rows = Object.entries(status.tables).filter(([, n]) => n > 0).map(([t, n]) => `${t.replace("stg_fmcg_", "")} ${n.toLocaleString()} rows`);
     notes.push(rows.length ? `Loaded: ${rows.join(", ")}` : "No commercial tables loaded yet.");
     if (!status.tables.stg_fmcg_inventory) notes.push("No inventory snapshot uploaded: on-hand stock is not available.");
@@ -78,10 +92,12 @@ export async function loadWorkspaceNetwork(): Promise<NetworkModel> {
 
   const nodes: NetworkNode[] = [];
   const edges: NetworkEdge[] = [];
-  const skusOf = (sid: string) => net ? Object.entries(net.supplier_of).filter(([, s]) => s === sid).map(([j]) => j) : [];
-  const onHand = net ? Object.values(net.opening).reduce((a, b) => a + b, 0) : null;
-  const inbound = net ? Object.values(net.pipeline).reduce((a, b) => a + b, 0) : null;
-  const onHandValue = net ? Object.entries(net.opening).reduce((a, [j, q]) => a + q * (net.unit_cost[j] ?? 0), 0) : null;
+  const supplierOf = net?.supplier_of ?? {}, opening = net?.opening ?? {}, pipelineOf = net?.pipeline ?? {}, unitCost = net?.unit_cost ?? {};
+  const leadOf = net?.lead_of ?? {}, masters = net?.suppliers ?? {}, routeOf = net?.route_of ?? {};
+  const skusOf = (sid: string) => Object.entries(supplierOf).filter(([, s]) => s === sid).map(([j]) => j);
+  const onHand = net?.opening ? Object.values(opening).reduce((a, b) => a + b, 0) : null;
+  const inbound = net?.pipeline ? Object.values(pipelineOf).reduce((a, b) => a + b, 0) : null;
+  const onHandValue = net?.opening ? Object.entries(opening).reduce((a, [j, q]) => a + q * (unitCost[j] ?? 0), 0) : null;
 
   // the warehouse: one node for the whole commercial workspace
   const dcId = "dc_workspace";
@@ -91,7 +107,7 @@ export async function loadWorkspaceNetwork(): Promise<NetworkModel> {
     id: dcId, kind: "dc", name: me?.display_name || me?.name ? `${me?.display_name ?? me?.name} warehouse` : "Your warehouse",
     subtitle: region ? `Region ${region}` : "Region not set", region, geo: home ? approx(home) : null, importance: 1,
     state: state.mode === "PROTECTION" ? "PROTECT" : state.mode === "BALANCED" ? "PROTECT" : "LEAN",
-    risk: risk(state.portfolio.stress, state.portfolio.reasons.slice(0, 3), [`data quality ${state.portfolio.data_quality.toFixed(2)}`]),
+    risk: risk(portfolio.stress ?? 0, (portfolio.reasons ?? []).slice(0, 3), [`data quality ${(portfolio.data_quality ?? 0).toFixed(2)}`]),
     metrics: { onHandUnits: onHand, onHandValue, inboundUnits: inbound, serviceTarget: null, serviceProjected: null,
       shortages: stressedSkus.map((j) => ({ sku: j, units: 0, when: "regime at risk" })), excess: [], transferOpportunities: [], protection: { localUnits: null, pooledUnits: null } },
     skus: net?.products ?? skuStates.map(([j]) => j),
@@ -106,8 +122,8 @@ export async function loadWorkspaceNetwork(): Promise<NetworkModel> {
   // suppliers, from the state read; lane and SKU links from the network block
   const portNodes = new Set<string>();
   for (const [sid, es] of Object.entries(state.supplier ?? {})) {
-    const master = net?.suppliers[sid];
-    const route = master?.route ?? net?.route_of[sid] ?? null;
+    const master = masters[sid];
+    const route = master?.route ?? routeOf[sid] ?? null;
     const lane = route ? LANE_CATALOG[route] : undefined;
     const originIso = master?.origin_iso3 ? ISO3_TO_2[master.origin_iso3] ?? null : null;
     const origin = originIso ? REGION_AT[originIso] ?? null : null;
@@ -125,7 +141,7 @@ export async function loadWorkspaceNetwork(): Promise<NetworkModel> {
       risk: risk(Math.max(es.p_disruptive, es.stress * 0.8), es.reasons.slice(0, 3), [`${Object.keys(es.probabilities).length} regimes scored`, ...(fill ? [`${fill.n_deliveries} deliveries`] : [])]),
       metrics: {
         fill: fill ? { mean: fill.posterior_mean, p10: fill.downside, p90: null, n: fill.n_deliveries } : undefined,
-        leadDays: net && net.lead_of[sid] != null ? { mean: net.lead_of[sid] * 7, p10: null, p90: null, n: null } : undefined,
+        leadDays: leadOf[sid] != null ? { mean: leadOf[sid] * 7, p10: null, p90: null, n: null } : undefined,
         openPOs: [] as OpenPO[], sharedFailureDomains: lane ? lane.chokepoints.map((c) => c.replace(/_/g, " ")).concat(lane.port ? [PORTS[lane.port].name] : []) : [],
         capacityPerWeek: master?.capacity_per_week ?? null,
       },
@@ -136,7 +152,7 @@ export async function loadWorkspaceNetwork(): Promise<NetworkModel> {
       const pid = `port_${lane.port}`;
       if (!portNodes.has(pid)) {
         portNodes.add(pid);
-        const o = state.outlooks[route!];
+        const o = outlooks[route!];
         nodes.push({ id: pid, kind: "port", name: PORTS[lane.port].name, subtitle: "Entry port", region: PORTS[lane.port].country, geo: { lon: PORTS[lane.port].at[0], lat: PORTS[lane.port].at[1], precision: "exact" },
           importance: 0.9, state: o ? (o.risk >= 0.55 ? "ALLOCATE" : o.risk >= 0.3 ? "PROTECT" : "LEAN") : "LEAN",
           risk: o ? risk(o.risk, o.reasons.slice(0, 3), Object.keys(o.contrib ?? {})) : risk(0, [], []), metrics: { dwellDays: { mean: null, p10: null, p90: null, n: null }, congestion: null }, skus: [],
@@ -145,11 +161,11 @@ export async function loadWorkspaceNetwork(): Promise<NetworkModel> {
           leadDays: { normal: null, current: null, p90: null }, capacityPerWeek: null, transportCostPerUnit: null, state: "LEAN", risk: risk(0, [], []), skus: [], alternatives: [],
           missing: ["Inland leg not in the upload: lead time and cost unknown"] });
       }
-      const o = state.outlooks[route!];
+      const o = outlooks[route!];
       edges.push({
         id: `lane_${sid}_${route}`, kind: lane.kind, from: `sup_${sid}`, to: pid, name: `${master?.name || sid} → ${PORTS[lane.port].name} (${lane.name})`,
         path: [geo ? [geo.lon, geo.lat] : lane.path[0], ...lane.path],
-        leadDays: { normal: net && net.lead_of[sid] != null ? net.lead_of[sid] * 7 : null, current: null, p90: null },
+        leadDays: { normal: leadOf[sid] != null ? leadOf[sid] * 7 : null, current: null, p90: null },
         capacityPerWeek: master?.capacity_per_week ?? null, transportCostPerUnit: null,
         state: o ? (o.risk >= 0.55 ? "ALLOCATE" : o.risk >= 0.3 ? "PROTECT" : "LEAN") : "LEAN",
         risk: o ? risk(o.risk, o.reasons.slice(0, 4), Object.keys(o.contrib ?? {})) : risk(0, ["No lane outlook for this route"], []),
@@ -158,13 +174,13 @@ export async function loadWorkspaceNetwork(): Promise<NetworkModel> {
       });
     } else {
       edges.push({ id: `supply_${sid}`, kind: "supply", from: `sup_${sid}`, to: dcId, name: `${master?.name || sid} → warehouse`, path: null,
-        leadDays: { normal: net && net.lead_of[sid] != null ? net.lead_of[sid] * 7 : null, current: null, p90: null },
+        leadDays: { normal: leadOf[sid] != null ? leadOf[sid] * 7 : null, current: null, p90: null },
         capacityPerWeek: master?.capacity_per_week ?? null, transportCostPerUnit: null, state: stateOf(es), risk: risk(es.p_disruptive, es.reasons.slice(0, 3), []),
         skus, alternatives: [], missing: ["No route tag: drawn as a relationship, not a lane"] });
     }
   }
   // lanes with an outlook but no tagged supplier still deserve a place
-  for (const [route, o] of Object.entries(state.outlooks ?? {})) {
+  for (const [route, o] of Object.entries(outlooks)) {
     const lane = LANE_CATALOG[route];
     if (!lane || !lane.port || portNodes.has(`port_${lane.port}`)) continue;
     const pid = `port_${lane.port}`;
@@ -183,7 +199,7 @@ export async function loadWorkspaceNetwork(): Promise<NetworkModel> {
     provenance: "workspace",
     asOf: state.as_of ?? new Date().toISOString(),
     nodes, edges, shipments: [], recommendations: [],
-    notes: [...notes, "Shipment positions are not in the commercial upload.", `Engine mode: ${state.mode}; ${state.plain?.headline ?? ""}`.trim()],
+    notes: [...notes, "Shipment positions are not in the commercial upload.", `Engine mode: ${state.mode ?? "unknown"}; ${state.plain?.headline ?? ""}`.trim()],
   };
 }
 

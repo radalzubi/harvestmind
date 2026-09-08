@@ -66,6 +66,14 @@ def test_upload_plan_explain_audit(client, history):
     assert body["signal_sources"]["provenance"] in ("REAL_PUBLIC", None)
     # a route with no port signal is reported UNAVAILABLE, never assumed normal
     assert all(("available" in v) for v in body["signals"].values())
+    # the Network Twin's read-only links: every product to its supplier, stock as uploaded,
+    # and an honest empty where the upload had no supplier master or route tags
+    net = body["network"]
+    assert set(net["supplier_of"]) == set(body["sku"]) and set(net["supplier_of"].values()) <= set(body["supplier"])
+    assert set(net["lead_of"]) == set(body["supplier"]) and all(v >= 0 for v in net["lead_of"].values())
+    assert net["opening"] and set(net["opening"]) <= set(net["products"])
+    assert net["route_of"] == {} and net["suppliers"] == {}
+    assert set(net["unit_cost"]) == set(net["products"])
 
     # mode=safe reuses the diagnostic's gate verdict; without one it asks for it
     r = cl.post("/fmcg/plan?mode=safe&horizon_weeks=12&commit_window_weeks=4&train_weeks=40&scenarios=10", headers=h)

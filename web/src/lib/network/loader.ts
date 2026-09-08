@@ -32,14 +32,19 @@ export function useNetworkModel(): NetworkLoad {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    if (!getApiToken()) { setWorkspaceError("No workspace key: showing the illustrative network."); return; }
-    if (getSector() === "produce") { setWorkspaceError("The perishable workspace has no lane-tagged supplier upload yet; showing the illustrative network."); return; }
     let alive = true;
-    setLoading(true);
-    loadWorkspaceNetwork()
-      .then((m) => { if (!alive) return; setWorkspace(m); setWorkspaceError(null); setSourceState("workspace"); })
-      .catch((e) => { if (!alive) return; setWorkspace(null); setWorkspaceError(e instanceof Error ? e.message : String(e)); setSourceState("illustrative"); })
-      .finally(() => { if (alive) setLoading(false); });
+    // the key lives in sessionStorage, so the decision waits for the client; deferring it a tick
+    // also keeps the first paint identical on server and client
+    Promise.resolve().then(() => {
+      if (!alive) return;
+      if (!getApiToken()) { setWorkspaceError("No workspace key: showing the illustrative network."); return; }
+      if (getSector() === "produce") { setWorkspaceError("The perishable workspace has no lane-tagged supplier upload yet; showing the illustrative network."); return; }
+      setLoading(true);
+      loadWorkspaceNetwork()
+        .then((m) => { if (!alive) return; setWorkspace(m); setWorkspaceError(null); setSourceState("workspace"); })
+        .catch((e) => { if (!alive) return; setWorkspace(null); setWorkspaceError(e instanceof Error ? e.message : String(e)); setSourceState("illustrative"); })
+        .finally(() => { if (alive) setLoading(false); });
+    });
     return () => { alive = false; };
   }, [tick]);
 
