@@ -61,6 +61,46 @@ export const OVERRIDE_SPECS: OverrideSpec[] = [
 
 export const SPEC_BY_KIND = Object.fromEntries(OVERRIDE_SPECS.map((s) => [s.kind, s])) as Record<OverrideKind, OverrideSpec>;
 
+// ── Plain-language presets ────────────────────────────────────────────────────
+
+export type Severity = "mild" | "moderate" | "severe";
+export const SEVERITY_LABEL: Record<Severity, string> = { mild: "Mild", moderate: "Moderate", severe: "Severe" };
+
+export interface ScenarioPreset {
+  id: string;
+  label: string;
+  description: string;
+  appliesTo: (t: NetworkNode | NetworkEdge, type: "node" | "edge") => boolean;
+  /** Presets with a magnitude take a severity; the others are on/off. */
+  build: (targetId: string, type: "node" | "edge", severity: Severity) => Omit<ScenarioOverride, "id">[];
+  hasSeverity: boolean;
+}
+
+const sev = <T,>(s: Severity, mild: T, moderate: T, severe: T) => (s === "mild" ? mild : s === "severe" ? severe : moderate);
+
+export const PRESETS: ScenarioPreset[] = [
+  { id: "supplier_delayed", label: "Supplier delayed", description: "Every delivery from this supplier arrives late", appliesTo: isKind(["supplier"]), hasSeverity: true,
+    build: (id, type, s) => [{ kind: "lead_time_delay", targetType: type, targetId: id, value: sev(s, 3, 7, 14) }] },
+  { id: "supplier_short", label: "Deliveries falling short", description: "The supplier ships only part of what is ordered", appliesTo: isKind(["supplier"]), hasSeverity: true,
+    build: (id, type, s) => [{ kind: "supplier_fill", targetType: type, targetId: id, value: sev(s, 0.85, 0.7, 0.5) }] },
+  { id: "supplier_unavailable", label: "Supplier unavailable", description: "No deliveries until further notice", appliesTo: isKind(["supplier"]), hasSeverity: false,
+    build: (id, type) => [{ kind: "supplier_unavailable", targetType: type, targetId: id }] },
+  { id: "port_closed", label: "Port closed", description: "Nothing lands here", appliesTo: isKind(["port"]), hasSeverity: false,
+    build: (id, type) => [{ kind: "port_closure", targetType: type, targetId: id }] },
+  { id: "port_congested", label: "Port congested", description: "Containers wait longer to clear", appliesTo: isKind(["port"]), hasSeverity: true,
+    build: (id, type, s) => [{ kind: "lead_time_delay", targetType: type, targetId: id, value: sev(s, 2, 5, 10) }] },
+  { id: "route_disrupted", label: "Route disrupted", description: "Transit takes longer than usual", appliesTo: isEdge, hasSeverity: true,
+    build: (id, type, s) => [{ kind: "lead_time_delay", targetType: type, targetId: id, value: sev(s, 4, 10, 21) }] },
+  { id: "route_unavailable", label: "Route unavailable", description: "No flow on this lane", appliesTo: isEdge, hasSeverity: false,
+    build: (id, type) => [{ kind: "lane_unavailable", targetType: type, targetId: id }] },
+  { id: "freight_up", label: "Freight cost up", description: "Transport on this lane gets more expensive", appliesTo: isEdge, hasSeverity: true,
+    build: (id, type, s) => [{ kind: "freight_cost", targetType: type, targetId: id, value: sev(s, 1.25, 1.5, 2) }] },
+  { id: "demand_spike", label: "Demand spike", description: "Customers order more than usual", appliesTo: isKind(["dc", "branch", "customer"]), hasSeverity: true,
+    build: (id, type, s) => [{ kind: "demand_change", targetType: type, targetId: id, value: sev(s, 1.15, 1.3, 1.6) }] },
+  { id: "demand_drop", label: "Demand drop", description: "Customers order less than usual", appliesTo: isKind(["dc", "branch", "customer"]), hasSeverity: true,
+    build: (id, type, s) => [{ kind: "demand_change", targetType: type, targetId: id, value: sev(s, 0.85, 0.7, 0.5) }] },
+];
+
 export interface ScenarioMetrics {
   service: number | null;
   inventoryUnits: number | null;
@@ -193,7 +233,7 @@ export const illustrativeEngine: ScenarioEngine = {
         for (const id of [altEdge.id]) bump(edgeSev, id, 0, "Recommended alternative (simulated)", true);
         bump(nodeSev, altEdge.to, 0, "Recommended alternative entry (simulated)", true);
         recs.push({ id: `rec_${o.id}`, targetType: "edge", targetId: o.targetId, state: severity >= 0.6 ? "ALLOCATE" : "PROTECT", source: "illustrative",
-          action: `Route ${Math.round(Math.min(100, severity * 100))}% of ${target.name} volume via ${altEdge.name} (+${altEdge.leadDays.normal ?? "?"} d, about +$${extra.toFixed(2)}/unit) and hold protection at the DC.`,
+          action: `Route ${Math.round(Math.min(100, severity * 100))}% of ${target.name} volume via ${altEdge.name.replace(/ \(alternative\)$/i, "")} (${altEdge.leadDays.normal != null && (target as NetworkEdge).leadDays.normal != null ? `${altEdge.leadDays.normal - (target as NetworkEdge).leadDays.normal! >= 0 ? "+" : ""}${altEdge.leadDays.normal - (target as NetworkEdge).leadDays.normal!} days` : "transit time not known"}${extra > 0 ? `, about $${extra.toFixed(2)} more per unit` : ", no extra cost per unit"}) and hold protection at the DC.`,
           rationale: "The alternative avoids the disrupted failure domain; the DC is the cheapest place to carry the extra cover.",
           noAction: `About ${Math.round(lost).toLocaleString()} units short downstream over the next cycle; service on exposed accounts falls by roughly ${Math.round(severity * share * 14)} points.` });
       } else if (altNode) {
@@ -260,4 +300,26 @@ export const optimizerEngine: ScenarioEngine = {
 
 export function pickEngine(): ScenarioEngine {
   return optimizerEngine.available ? optimizerEngine : illustrativeEngine;
+}
+
+
+const money = (v: number) => `$${Math.round(v).toLocaleString("en-US")}`;
+const pct1 = (v: number) => `${(v * 100).toFixed(1)}%`;
+
+/** One sentence a person can act on, from the comparison alone. */
+export function summarizeResult(r: ScenarioResult): string | null {
+  const c = r.comparison;
+  if (!c) return null;
+  const cur = c.current, dn = c.doNothing, z = c.zaad;
+  const first: string[] = [];
+  if (cur.service != null && dn.service != null && dn.service < cur.service - 0.0005) first.push(`service falls from ${pct1(cur.service)} to ${pct1(dn.service)}`);
+  if (dn.shortageUnits) first.push(`about ${dn.shortageUnits.toLocaleString("en-US")} units go short`);
+  if (dn.expediteCost && !first.length) first.push(`costs rise by about ${money(dn.expediteCost)}`);
+  const second: string[] = [];
+  if (z.service != null && dn.service != null && z.service > dn.service + 0.0005) second.push(`holds service at ${pct1(z.service)}`);
+  if (z.shortageUnits != null && dn.shortageUnits != null && z.shortageUnits < dn.shortageUnits) second.push(`limits the shortage to about ${z.shortageUnits.toLocaleString("en-US")} units`);
+  const extra = (z.expediteCost ?? 0) - (cur.expediteCost ?? 0);
+  const tail = extra > 0 ? ` for about ${money(extra)} of extra cost` : "";
+  if (!first.length && !second.length) return "This change has no material effect on service or cost.";
+  return `${first.length ? `Without action, ${first.join(" and ")}.` : ""} ${second.length ? `ZAAD's response ${second.join(" and ")}${tail}.` : "ZAAD proposes no change."}`.trim();
 }

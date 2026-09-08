@@ -93,7 +93,6 @@ export default function NetworkMap() {
     if (!edge?.path || s.progress == null) return [];
     return [{ ...s, edge, at: pointAlong(edge.path, s.progress) }];
   }), [model.shipments, edgeById]);
-  const noGeo = model.nodes.length - geoNodes.length;
 
   const isSel = useCallback((type: "node" | "edge", id: string) => sel?.type === type && sel.id === id, [sel]);
   const isHov = useCallback((type: "node" | "edge", id: string) => hov?.type === type && hov.id === id, [hov]);
@@ -253,16 +252,16 @@ export default function NetworkMap() {
       {(mapError || (styleError && !loaded)) && (
         <div className="twin-maperror" role="alert">
           <b>The map could not start.</b>
-          <div>{mapError ?? styleError}</div>
+          <div>{mapError ? "The map engine could not be loaded on this connection." : "The base map could not be loaded."} Your facilities and lanes are still available in the Network view.</div>
           <div className="row" style={{ marginTop: 10 }}>
-            <button className="tbtn" onClick={() => dispatch({ type: "view", view: "network" })}>Open the NETWORK view</button>
-            <button className="tbtn ghost" onClick={() => window.location.reload()}>Retry</button>
+            <button className="tbtn primary" onClick={() => dispatch({ type: "view", view: "network" })}>Open the Network view</button>
+            <button className="tbtn ghost" onClick={() => window.location.reload()}>Try again</button>
           </div>
+          <details className="twin-maperror-detail"><summary>Technical detail</summary>{mapError ?? styleError}</details>
         </div>
       )}
-      {!mapError && !loaded && slow && !styleError && <div className="twin-notice warn">The basemap is taking longer than expected ({LOAD_TIMEOUT_MS / 1000}s). Lanes and facilities appear once it loads; the NETWORK view does not need it.</div>}
-      {!mapError && loaded && styleError && <div className="twin-notice warn">Some basemap tiles failed ({styleError}); facilities and lanes still draw.</div>}
-      {!mapError && !styleError && noGeo > 0 && <div className="twin-notice">{noGeo} node{noGeo === 1 ? "" : "s"} without coordinates are shown only in the NETWORK view.</div>}
+      {!mapError && !loaded && !styleError && <div className="twin-chip-float">{slow ? "The base map is slow to load; lanes and facilities are already shown." : "Loading map…"}</div>}
+      {!mapError && loaded && styleError && <div className="twin-chip-float">Part of the base map did not load; facilities and lanes are unaffected.</div>}
     </>
   );
 }

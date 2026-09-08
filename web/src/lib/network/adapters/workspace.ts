@@ -79,12 +79,12 @@ export function buildWorkspaceModel({ state, status, me, supply }: WorkspaceInpu
   const portfolio = state.portfolio ?? { probabilities: {}, dominant: "NORMAL", stress: 0, reasons: [], data_quality: 0 };
   const outlooks = state.outlooks ?? {};
   const notes: string[] = [];
-  if (!net) notes.push("This server's /fmcg/state has no `network` block, so suppliers cannot be linked to lanes, SKUs or stock; upgrade the API to see those links.");
+  if (!net) notes.push("Supplier-to-lane, SKU and stock links are not available from this server version.");
   if (status?.tables) {
     const rows = Object.entries(status.tables).filter(([, n]) => n > 0).map(([t, n]) => `${t.replace("stg_fmcg_", "")} ${n.toLocaleString()} rows`);
     notes.push(rows.length ? `Loaded: ${rows.join(", ")}` : "No commercial tables loaded yet.");
-    if (!status.tables.stg_fmcg_inventory) notes.push("No inventory snapshot uploaded: on-hand stock is not available.");
-    if (!status.tables.stg_fmcg_purchase_orders) notes.push("No purchase orders uploaded: open POs and inbound stock are not available.");
+    if (!status.tables.stg_fmcg_inventory) notes.push("Stock on hand is not available until an inventory snapshot is uploaded.");
+    if (!status.tables.stg_fmcg_purchase_orders) notes.push("Open orders and inbound stock are not available until purchase orders are uploaded.");
   }
   const region = me?.region?.toUpperCase() ?? "";
   const home = REGION_AT[region] ?? null;
@@ -112,10 +112,10 @@ export function buildWorkspaceModel({ state, status, me, supply }: WorkspaceInpu
       shortages: stressedSkus.map((j) => ({ sku: j, units: 0, when: "regime at risk" })), excess: [], transferOpportunities: [], protection: { localUnits: null, pooledUnits: null } },
     skus: net?.products ?? skuStates.map(([j]) => j),
     missing: [
-      ...(home ? [] : ["No coordinates: set a region on the workspace to place this on the map"]),
-      "Service target and projected service come from a built plan, not the state read",
-      ...(net ? [] : ["Stock and inbound units need the `network` block from /fmcg/state"]),
-      "Branches and customer groups are not modelled in the commercial upload (single warehouse)",
+      ...(home ? [] : ["Location has not been set for this warehouse, so it is not shown on the map"]),
+      "Service figures appear once a purchase plan has been built",
+      ...(net ? [] : ["Stock and inbound units are not available from this server version"]),
+      "Branches and customer groups are not part of the current upload",
     ],
   });
 
@@ -130,10 +130,10 @@ export function buildWorkspaceModel({ state, status, me, supply }: WorkspaceInpu
     const fill = fillById.get(sid);
     const skus = skusOf(sid);
     const missing: string[] = [];
-    if (!origin) missing.push("No origin country on the supplier row: placed by lane, not by location");
-    if (!fill) missing.push("No calibrated fill distribution (needs delivery history in /forecasts/supply)");
-    if (!route) missing.push("No route tag on the supplier row: lane and shared failure domains unknown");
-    if (!skus.length) missing.push("SKU assignment unavailable");
+    if (!origin) missing.push("Origin country has not been added for this supplier; it is placed by its route");
+    if (!fill) missing.push("Delivery reliability needs more delivery history before it can be shown");
+    if (!route) missing.push("Route information has not been added for this supplier");
+    if (!skus.length) missing.push("Which SKUs this supplier provides is not available");
     const geo = origin ? approx(origin) : lane ? approx(lane.path[0]) : null;
     nodes.push({
       id: `sup_${sid}`, kind: "supplier", name: master?.name || fill?.supplier_name || sid, subtitle: originIso ? `Origin ${originIso}` : route ? lane?.name : undefined,
@@ -156,10 +156,10 @@ export function buildWorkspaceModel({ state, status, me, supply }: WorkspaceInpu
         nodes.push({ id: pid, kind: "port", name: PORTS[lane.port].name, subtitle: "Entry port", region: PORTS[lane.port].country, geo: { lon: PORTS[lane.port].at[0], lat: PORTS[lane.port].at[1], precision: "exact" },
           importance: 0.9, state: o ? (o.risk >= 0.55 ? "ALLOCATE" : o.risk >= 0.3 ? "PROTECT" : "LEAN") : "LEAN",
           risk: o ? risk(o.risk, o.reasons.slice(0, 3), Object.keys(o.contrib ?? {})) : risk(0, [], []), metrics: { dwellDays: { mean: null, p10: null, p90: null, n: null }, congestion: null }, skus: [],
-          missing: o?.missing?.length ? [`No data yet from: ${o.missing.join(", ")}`] : undefined });
+          missing: o?.missing?.length ? ["Some shipping signals for this port are not available yet"] : undefined });
         edges.push({ id: `lane_${lane.port}_dc`, kind: "road", from: pid, to: dcId, name: `${PORTS[lane.port].name} → warehouse`, path: home ? [PORTS[lane.port].at, home] : null,
           leadDays: { normal: null, current: null, p90: null }, capacityPerWeek: null, transportCostPerUnit: null, state: "LEAN", risk: risk(0, [], []), skus: [], alternatives: [],
-          missing: ["Inland leg not in the upload: lead time and cost unknown"] });
+          missing: ["Inland transit time and cost have not been added"] });
       }
       const o = outlooks[route!];
       edges.push({
@@ -170,13 +170,13 @@ export function buildWorkspaceModel({ state, status, me, supply }: WorkspaceInpu
         state: o ? (o.risk >= 0.55 ? "ALLOCATE" : o.risk >= 0.3 ? "PROTECT" : "LEAN") : "LEAN",
         risk: o ? risk(o.risk, o.reasons.slice(0, 4), Object.keys(o.contrib ?? {})) : risk(0, ["No lane outlook for this route"], []),
         skus, alternatives: [], disruptionEvidence: o?.reasons ?? [],
-        missing: [...(o?.missing?.length ? [`No data yet from: ${o.missing.join(", ")}`] : []), "Current lead time needs receipts against open POs", "Transport cost not in the upload"],
+        missing: [...(o?.missing?.length ? ["Some shipping signals for this lane are not available yet"] : []), "Current transit time appears once receipts are recorded against open orders", "Transport cost has not been added"],
       });
     } else {
       edges.push({ id: `supply_${sid}`, kind: "supply", from: `sup_${sid}`, to: dcId, name: `${master?.name || sid} → warehouse`, path: null,
         leadDays: { normal: leadOf[sid] != null ? leadOf[sid] * 7 : null, current: null, p90: null },
         capacityPerWeek: master?.capacity_per_week ?? null, transportCostPerUnit: null, state: stateOf(es), risk: risk(es.p_disruptive, es.reasons.slice(0, 3), []),
-        skus, alternatives: [], missing: ["No route tag: drawn as a relationship, not a lane"] });
+        skus, alternatives: [], missing: ["Route information has not been added for this supplier, so this is shown as a relationship rather than a lane"] });
     }
   }
   // lanes with an outlook but no tagged supplier still deserve a place
@@ -187,7 +187,7 @@ export function buildWorkspaceModel({ state, status, me, supply }: WorkspaceInpu
     portNodes.add(pid);
     nodes.push({ id: pid, kind: "port", name: PORTS[lane.port].name, subtitle: lane.name, region: PORTS[lane.port].country, geo: { lon: PORTS[lane.port].at[0], lat: PORTS[lane.port].at[1], precision: "exact" },
       importance: 0.8, state: o.risk >= 0.55 ? "ALLOCATE" : o.risk >= 0.3 ? "PROTECT" : "LEAN", risk: risk(o.risk, o.reasons.slice(0, 3), Object.keys(o.contrib ?? {})),
-      metrics: {}, skus: [], missing: ["No supplier is tagged with this route yet"] });
+      metrics: {}, skus: [], missing: ["No supplier is assigned to this route yet"] });
     edges.push({ id: `lane_${route}`, kind: lane.kind, from: pid, to: dcId, name: `${lane.name} → warehouse`, path: home ? [...lane.path, home] : lane.path,
       leadDays: { normal: null, current: null, p90: null }, capacityPerWeek: null, transportCostPerUnit: null,
       state: o.risk >= 0.55 ? "ALLOCATE" : o.risk >= 0.3 ? "PROTECT" : "LEAN", risk: risk(o.risk, o.reasons.slice(0, 4), Object.keys(o.contrib ?? {})), skus: [], alternatives: [], disruptionEvidence: o.reasons });
@@ -199,7 +199,7 @@ export function buildWorkspaceModel({ state, status, me, supply }: WorkspaceInpu
     provenance: "workspace",
     asOf: state.as_of ?? new Date().toISOString(),
     nodes, edges, shipments: [], recommendations: [],
-    notes: [...notes, "Shipment positions are not in the commercial upload.", `Engine mode: ${state.mode ?? "unknown"}; ${state.plain?.headline ?? ""}`.trim()],
+    notes: [...notes, "Shipment positions are not part of the current upload.", (state.plain?.headline ?? "").trim()].filter(Boolean),
   };
 }
 

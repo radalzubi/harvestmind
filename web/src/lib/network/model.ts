@@ -159,9 +159,21 @@ export interface NetworkModel {
 
 export type SelectionRef = { type: "node" | "edge"; id: string };
 
+/** Plain words for each state; the optimizer's own names stay under Advanced. */
 export const STATE_LABEL: Record<ZaadState, string> = {
-  LEAN: "Lean", PROTECT: "Protect", ALLOCATE: "Allocate", RECOVER: "Recover",
+  LEAN: "Stable", PROTECT: "Risk rising", ALLOCATE: "Supply constrained", RECOVER: "Recovering",
 };
+export const STATE_TECHNICAL: Record<ZaadState, string> = { LEAN: "LEAN", PROTECT: "PROTECT", ALLOCATE: "ALLOCATE", RECOVER: "RECOVER" };
+export const STATE_SENTENCE: Record<ZaadState, string> = {
+  LEAN: "Supply is stable.",
+  PROTECT: "Risk is rising. ZAAD recommends targeted protection.",
+  ALLOCATE: "Supply is constrained. ZAAD is prioritising customers.",
+  RECOVER: "Supply is returning to normal.",
+};
+export const RISK_LABEL: Record<RiskLevel, string> = { low: "Normal", medium: "Watch", high: "Needs attention", critical: "Critical" };
+/** Above this score something is an exception worth the executive's eye. */
+export const ATTENTION_SCORE = 0.5;
+export const WATCH_SCORE = 0.25;
 
 export const KIND_LABEL: Record<NodeKind, string> = {
   supplier: "Supplier", port: "Port", dc: "Distribution centre", branch: "Branch", customer: "Customer",

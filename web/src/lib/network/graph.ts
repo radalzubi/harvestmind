@@ -76,28 +76,31 @@ export function buildIndex(model: NetworkModel): NetworkIndex {
   };
 }
 
-/** Case-insensitive search over names, ids, SKUs and regions; nodes first, then lanes. */
+/** Case-insensitive search over names, places, SKUs, open orders and shipment references. */
 export function searchModel(model: NetworkModel, q: string, limit = 8): SelectionRef[] {
   const needle = q.trim().toLowerCase();
   if (!needle) return [];
-  const score = (hay: string[]) => {
+  const score = (hay: string[], q = needle) => {
     let best = 0;
     for (const h of hay) {
       const s = h.toLowerCase();
-      if (s === needle) best = Math.max(best, 3);
-      else if (s.startsWith(needle)) best = Math.max(best, 2);
-      else if (s.includes(needle)) best = Math.max(best, 1);
+      if (s === q) best = Math.max(best, 3);
+      else if (s.startsWith(q)) best = Math.max(best, 2);
+      else if (s.includes(q)) best = Math.max(best, 1);
     }
     return best;
   };
   // a hit on the name outranks a hit on a place, id or SKU; nodes win ties with lanes
   const hits: Array<{ ref: SelectionRef; s: number }> = [];
+  const po = needle.replace(/^po[\s-]*/, "");
   for (const n of model.nodes) {
-    const s = Math.max(score([n.name]) * 1.5, score([n.id, n.subtitle ?? "", n.region ?? "", ...n.skus]));
+    const orders = (n.metrics.openPOs ?? []).flatMap((o) => [o.id, o.id.replace(/^PO-?/i, "")]);
+    const s = Math.max(score([n.name]) * 1.5, score([n.id, n.subtitle ?? "", n.region ?? "", ...n.skus]), po ? score(orders.map((o) => o.replace(/^PO-?/i, "")), po) * 1.5 : 0);
     if (s) hits.push({ ref: { type: "node", id: n.id }, s: s + 0.25 });
   }
   for (const e of model.edges) {
-    const s = Math.max(score([e.name]) * 1.5, score([e.id, ...e.skus]));
+    const refs = model.shipments.filter((sh) => sh.edgeId === e.id).flatMap((sh) => [sh.ref, ...sh.ref.split(/[\s·]+/)]);
+    const s = Math.max(score([e.name]) * 1.5, score([e.id, ...e.skus, ...refs]));
     if (s) hits.push({ ref: { type: "edge", id: e.id }, s });
   }
   return hits.sort((a, b) => b.s - a.s).slice(0, limit).map((h) => h.ref);

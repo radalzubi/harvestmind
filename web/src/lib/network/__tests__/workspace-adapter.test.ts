@@ -35,7 +35,7 @@ test("populated workspace: suppliers, lane, port and warehouse are linked and pr
   assert.equal(lane.to, "port_aqaba");
   assert.ok(lane.path && lane.path.length > 3);
   assert.equal(lane.state, "ALLOCATE");                     // outlook risk 0.6
-  assert.ok(lane.missing?.some((x) => x.includes("port:AQABA")));
+  assert.ok(lane.missing?.some((x) => /shipping signals/.test(x)));
   const dc = m.nodes.find((n) => n.id === "dc_workspace")!;
   assert.equal(dc.metrics.onHandUnits, 14);
   assert.equal(dc.metrics.inboundUnits, 7);
@@ -54,12 +54,12 @@ test("old server without the network block still renders and says what is missin
   assert.equal(m.nodes.filter((n) => n.kind === "supplier").length, 2);
   const s1 = m.nodes.find((n) => n.id === "sup_s1")!;
   assert.deepEqual(s1.skus, []);
-  assert.ok(s1.missing?.some((x) => /SKU assignment/.test(x)));
-  assert.ok(m.notes.some((n) => /no `network` block/.test(n)));
+  assert.ok(s1.missing?.some((x) => /Which SKUs/.test(x)));
+  assert.ok(m.notes.some((n) => /not available from this server version/.test(n)));
   const dc = m.nodes.find((n) => n.id === "dc_workspace")!;
   assert.equal(dc.metrics.onHandUnits, null);
   assert.equal(dc.geo, null);                               // no region known
-  assert.ok(dc.missing?.some((x) => /No coordinates/.test(x)));
+  assert.ok(dc.missing?.some((x) => /Location has not been set/.test(x)));
   // a lane with an outlook but no tagged supplier still appears, honestly labelled
   assert.ok(m.edges.some((e) => e.id === "lane_aqaba"));
 });
@@ -71,7 +71,7 @@ test("no route tags: suppliers attach to the warehouse as relationships, not lan
   assert.ok(m.edges.every((e) => e.path === null));
   assert.ok(!m.nodes.some((n) => n.kind === "port"));
   const s1 = m.nodes.find((n) => n.id === "sup_s1")!;
-  assert.ok(s1.missing?.some((x) => /No route tag/.test(x)));
+  assert.ok(s1.missing?.some((x) => /Route information has not been added/.test(x)));
 });
 
 test("incomplete supplier master and partial network block do not throw", () => {
@@ -97,4 +97,12 @@ test("calibrated fill enriches a supplier only when the id matches", () => {
   assert.equal(m.nodes.find((n) => n.id === "sup_s2")!.metrics.fill?.mean, 0.9);
   assert.equal(m.nodes.find((n) => n.id === "sup_s2")!.name, "Beta");
   assert.equal(m.nodes.find((n) => n.id === "sup_s1")!.metrics.fill, undefined);
+});
+
+test("missing-data copy is operational, never technical", () => {
+  const { network: _drop, ...older } = FULL;
+  void _drop;
+  const m = buildWorkspaceModel({ state: { ...older, outlooks: { aqaba: { ...FULL.outlooks!.aqaba, missing: ["port:AQABA", "chokepoint:suez"] } } }, status: { tables: {} }, me: null, supply: null });
+  const text = [...m.notes, ...m.nodes.flatMap((n) => n.missing ?? []), ...m.edges.flatMap((e) => e.missing ?? [])].join(" ");
+  for (const banned of ["/fmcg", "network block", "`", "route_of", "endpoint", "adapter", "API", "port:", "chokepoint:"]) assert.ok(!text.includes(banned), banned);
 });

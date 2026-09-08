@@ -1,27 +1,26 @@
 "use client";
 
 /**
- * Network Twin: the page shell, the control strip, the stage and the panel.
- * The shell renders at once; the graph and map libraries load lazily and
- * only for the view in use. GLOBE is a registered view with no component
- * yet, so adding one later is a dynamic import in VIEWS and nothing else.
+ * Network Twin: a calm shell. One status line answers "is anything wrong?",
+ * one switch chooses NETWORK or MAP, one search finds anything. Everything
+ * else appears on selection. The graph and map libraries load lazily and only
+ * for the view in use; MAP is never fetched until it is asked for.
  */
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, type ComponentType } from "react";
-import { Maximize2, PanelRightClose, PanelRightOpen, Search } from "lucide-react";
+import { Maximize2, Search, X } from "lucide-react";
 import { searchModel } from "@/lib/network/graph";
-import { EDGE_LABEL, KIND_LABEL, STATE_LABEL, type SelectionRef, type ZaadState } from "@/lib/network/model";
+import { EDGE_LABEL, KIND_LABEL, type SelectionRef } from "@/lib/network/model";
 import { IntelligencePanel } from "./IntelligencePanel";
 import { TwinProvider, useTwin, type View } from "./store";
 import "./network.css";
 
 const Loading = ({ text }: { text: string }) => <div className="twin-loading">{text}</div>;
 
-const VIEWS: Array<{ id: View; label: string; Component: ComponentType | null; title?: string }> = [
-  { id: "network", label: "NETWORK", Component: dynamic(() => import("./NetworkGraph"), { ssr: false, loading: () => <Loading text="Drawing the network…" /> }) },
-  { id: "map", label: "MAP", Component: dynamic(() => import("./NetworkMap"), { ssr: false, loading: () => <Loading text="Loading the map…" /> }) },
-  // A globe would be: dynamic(() => import("./NetworkGlobe"), { ssr: false }) reading the same store.
-  { id: "globe", label: "GLOBE", Component: null, title: "Globe view is planned; the architecture hook is in place" },
+const VIEWS: Array<{ id: View; label: string; Component: ComponentType | null }> = [
+  { id: "network", label: "Network", Component: dynamic(() => import("./NetworkGraph"), { ssr: false, loading: () => <Loading text="Drawing the network…" /> }) },
+  { id: "map", label: "Map", Component: dynamic(() => import("./NetworkMap"), { ssr: false, loading: () => <Loading text="Opening the map…" /> }) },
+  // A globe would be one more dynamic import reading the same store; it is not offered in V1.
 ];
 
 function SearchBox() {
@@ -43,7 +42,7 @@ function SearchBox() {
   return (
     <div className="twin-search">
       <Search size={14} className="ico" />
-      <input ref={input} value={q} placeholder="Search nodes, lanes, SKUs  ( / )" aria-label="Search the network" role="combobox"
+      <input ref={input} value={q} placeholder="Search suppliers, lanes, SKUs, orders" aria-label="Search the network" role="combobox"
         aria-expanded={open && hits.length > 0} aria-haspopup="listbox" aria-autocomplete="list" aria-controls="twin-search-list"
         onChange={(e) => { setQ(e.target.value); setOpen(true); setCursor(0); }} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 120)}
         onKeyDown={(e) => {
@@ -66,57 +65,53 @@ function SearchBox() {
   );
 }
 
-function Legend() {
+function StatusLine() {
+  const { status, state, dispatch, select } = useTwin();
+  const open = () => { select(null); dispatch({ type: "panel", open: !(state.panelOpen && !state.selection) }); };
   return (
-    <div className="twin-legend" aria-hidden>
-      {(["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] as ZaadState[]).map((s) => <span key={s} className={`st-${s}`}><i style={{ background: "var(--st)" }} />{STATE_LABEL[s]}</span>)}
-    </div>
+    <button className={`twin-status ${status.tone}`} onClick={open} aria-label={`${status.headline}. Show summary`}>
+      <i />
+      <span>{status.headline}</span>
+      {status.detail && <span className="detail">· {status.detail}</span>}
+    </button>
   );
 }
 
 function TwinInner() {
-  const { state, dispatch, load, select, engine } = useTwin();
+  const { state, dispatch, load, select, model } = useTwin();
   const view = VIEWS.find((v) => v.id === state.view) ?? VIEWS[0];
   const Stage = view.Component;
+  const simulating = state.mode === "simulate";
+  const subject = state.subject ? (state.subject.type === "node" ? model.nodes.find((n) => n.id === state.subject!.id)?.name : model.edges.find((e) => e.id === state.subject!.id)?.name) : null;
   return (
-    <div className="twin" onKeyDown={(e) => { if (e.key === "Escape" && !(e.target instanceof HTMLInputElement)) select(null); }}>
+    <div className={`twin ${simulating ? "simulating" : ""}`} onKeyDown={(e) => { if (e.key === "Escape" && !(e.target instanceof HTMLInputElement)) { select(null); dispatch({ type: "panel", open: false }); } }}>
       <div className="twin-bar" role="toolbar" aria-label="Network Twin controls">
-        <div className="twin-bar-title">
-          Network Twin
-          {load.source === "workspace" ? <span className="twin-chip ws sub">Workspace data</span> : <span className="twin-chip illus sub">Illustrative development data</span>}
-          {load.loading && <span className="twin-chip sub">Reading your workspace…</span>}
-        </div>
+        {simulating ? (
+          <div className="twin-simbadge">
+            <span className="twin-simbadge-label">Simulation</span>
+            {subject && <span className="twin-simbadge-subject">{subject}</span>}
+            <button className="tbtn small" onClick={() => dispatch({ type: "simulate:exit" })}><X size={13} /> Exit simulation</button>
+          </div>
+        ) : <StatusLine />}
         <div className="twin-seg" role="group" aria-label="View">
-          {VIEWS.map((v) => <button key={v.id} aria-pressed={state.view === v.id} disabled={!v.Component} title={v.title} onClick={() => dispatch({ type: "view", view: v.id })}>{v.label}</button>)}
-        </div>
-        <div className="twin-seg mode" role="group" aria-label="Mode">
-          <button data-mode="live" aria-pressed={state.mode === "live"} onClick={() => dispatch({ type: "mode", mode: "live" })}>LIVE</button>
-          <button data-mode="simulate" aria-pressed={state.mode === "simulate"} onClick={() => dispatch({ type: "mode", mode: "simulate" })}>SIMULATE</button>
+          {VIEWS.map((v) => <button key={v.id} aria-pressed={state.view === v.id} onClick={() => dispatch({ type: "view", view: v.id })}>{v.label}</button>)}
         </div>
         <div className="twin-bar-spacer" />
-        {load.workspaceError == null && load.source === "workspace" && (
-          <button className="twin-chip-btn" onClick={() => load.setSource("illustrative")}>Show illustrative network</button>
-        )}
-        {load.source === "illustrative" && !load.workspaceError && !load.loading && (
-          <button className="twin-chip-btn" onClick={() => load.setSource("workspace")}>Show workspace network</button>
-        )}
         <SearchBox />
-        <button className="twin-icon" title="Fit to network" aria-label="Fit to network" onClick={() => dispatch({ type: "fit" })}><Maximize2 size={14} /></button>
-        <button className="twin-icon" title={state.panelOpen ? "Hide panel" : "Show panel"} aria-label={state.panelOpen ? "Hide panel" : "Show panel"} onClick={() => dispatch({ type: "panel", open: !state.panelOpen })}>
-          {state.panelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
-        </button>
       </div>
       <div className={`twin-stage ${state.panelOpen ? "" : "no-panel"}`}>
         <div className="twin-canvas">
-          <div className="twin-fill">{Stage ? <Stage /> : <Loading text="Globe view is not part of V1." />}</div>
-          {state.mode === "simulate" && (
-            <div className="twin-notice warn" style={{ bottom: "auto", top: 16, left: "50%", transform: "translateX(-50%)" }}>
-              Simulation: an ephemeral scenario over the live picture. Nothing here changes your data.
-              {engine.id === "illustrative" && <><br />Illustrative scenario result · development demo adapter, not the ZAAD optimizer.</>}
-            </div>
-          )}
-          {load.source === "illustrative" && <div className="twin-notice illus">Illustrative development data{load.workspaceError ? ` · ${load.workspaceError}` : ""}</div>}
-          <Legend />
+          <div className="twin-fill">{Stage ? <Stage /> : <Loading text="This view is not available." />}</div>
+          <div className="twin-float">
+            <button className="twin-icon" title="Fit to network" aria-label="Fit to network" onClick={() => dispatch({ type: "fit" })}><Maximize2 size={14} /></button>
+          </div>
+          <div className="twin-source">
+            {load.source === "illustrative" ? (
+              <>Illustrative development data{load.workspaceError == null && !load.loading ? <> · <button onClick={() => load.setSource("workspace")}>use my workspace</button></> : null}</>
+            ) : (
+              <>Your workspace data · <button onClick={() => load.setSource("illustrative")}>view the illustrative network</button></>
+            )}
+          </div>
         </div>
         {state.panelOpen && <IntelligencePanel />}
       </div>

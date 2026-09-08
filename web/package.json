@@ -12,7 +12,7 @@
     "vendor:maplibre": "node scripts/vendor-maplibre-worker.mjs",
     "lint": "eslint src/app/network src/components/network src/lib/network src/components/Shell.tsx src/components/Sidebar.tsx src/components/Topbar.tsx",
     "lint:all": "eslint src",
-    "test": "tsx --test src/lib/network/__tests__/scenario.test.ts src/lib/network/__tests__/workspace-adapter.test.ts"
+    "test": "tsx --test src/lib/network/__tests__/scenario.test.ts src/lib/network/__tests__/workspace-adapter.test.ts src/lib/network/__tests__/attention.test.ts"
   },
   "dependencies": {
     "@deck.gl/core": "^9.4.0",
