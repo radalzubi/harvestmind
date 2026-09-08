@@ -471,7 +471,11 @@ class Request(Record):
     # physical validation and the gap policy are unchanged. Small models are not seeded.
     warm_start: bool = True
     warm_start_min_variables: int = Field(default=3000, ge=0)
-    warm_start_completion_seconds: float = Field(default=15., gt=0)
+    warm_start_completion_seconds: float = Field(default=30., gt=0)
+    # Share of the solve budget the completion may spend. The completion is itself the search for
+    # a first incumbent, so when the formulation has to repair the seed it is the best use of the
+    # budget; it stops at its first feasible point and the main solve continues from there.
+    warm_start_completion_share: float = Field(default=.6, gt=0., le=1.)
     # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.

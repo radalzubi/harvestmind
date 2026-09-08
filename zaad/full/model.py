@@ -79,7 +79,7 @@ class Linear:
             residual = math.inf
         return result, residual
 
-    def _highspy_solve(self, matrix, cost, seconds, mip_gap, seed=None):
+    def _highspy_solve(self, matrix, cost, seconds, mip_gap, seed=None, first_feasible: bool = False):
         """The same model through highspy. Returns an object with scipy-milp-shaped attributes
         (x, fun, status, message, mip_gap, mip_dual_bound, mip_node_count) plus HiGHS's own
         residuals and whether a starting solution was supplied and accepted."""
@@ -89,6 +89,9 @@ class Linear:
         h.setOptionValue("output_flag", False)
         h.setOptionValue("time_limit", float(max(seconds, 1e-3)))
         h.setOptionValue("mip_rel_gap", float(mip_gap))
+        if first_feasible:
+            # a completion needs one feasible point, not a proof: stop at the first incumbent
+            h.setOptionValue("mip_max_improving_sols", 1)
         lp = highspy.HighsLp()
         lp.num_col_, lp.num_row_ = len(self.names), len(self.rows)
         lp.col_cost_ = np.asarray(cost, dtype=float)
@@ -138,29 +141,35 @@ class Linear:
             seed_accepted=(seed is not None and has_x and fun is not None and seed_objective is not None
                            and fun <= seed_objective + 1e-6 * max(1., abs(seed_objective))))
 
-    def complete(self, controls: dict, seconds: float) -> dict:
-        """Complete a partial seed (v8, P0-W3): pin the given columns to their values inside this
-        model's own bounds and solve the remaining problem, so every other variable is derived by
-        the formulation itself rather than invented. Returns the full vector when the pinned
-        values are feasible for this formulation, and the reason when they are not."""
+    def complete(self, controls: dict, seconds: float, mode: str = "equal") -> dict:
+        """Complete a partial seed (v8, P0-W3): pin the given columns inside this model's own
+        bounds and solve the remaining problem, so every other variable is derived by the
+        formulation itself rather than invented. mode="equal" pins each control to its value;
+        mode="floor" pins it as a lower bound - the add-only repair: everything the seed plan
+        does is kept and the formulation may add supply on top where its own floors need it.
+        Returns the full vector when the pinned values are feasible for this formulation, and
+        the reason when they are not."""
         started = time.monotonic()
         for i, v in controls.items():
             if v < self.lower[i] - 1e-9 or v > self.upper[i] + 1e-9:
                 return {"accepted": False, "reason": f"seed value {v:.6g} outside bounds [{self.lower[i]:.6g}, {self.upper[i]:.6g}] of {self.names[i]}",
-                        "completion_seconds": 0., "completion_status": "bounds"}
+                        "completion_seconds": 0., "completion_status": "bounds", "mode": mode}
         saved = (list(self.lower), list(self.upper))
         try:
             for i, v in controls.items():
-                self.lower[i] = self.upper[i] = max(v, 0.) if abs(v) < 1e-9 else v
-            result = self._highspy_solve(self.matrix(), self.cost, seconds, 1e-4)
+                value = max(v, 0.) if abs(v) < 1e-9 else v
+                self.lower[i] = value
+                if mode == "equal":
+                    self.upper[i] = value
+            result = self._highspy_solve(self.matrix(), self.cost, seconds, 1e-4, first_feasible=True)
         finally:
             self.lower, self.upper = saved
         elapsed = time.monotonic() - started
         if result.x is None:
-            return {"accepted": False, "reason": f"pinned controls are not feasible for this formulation within {seconds:.0f} s ({result.message})",
-                    "completion_seconds": elapsed, "completion_status": result.message}
-        return {"accepted": True, "reason": "completed by the formulation", "completion_seconds": elapsed,
-                "completion_status": result.message, "x": result.x}
+            return {"accepted": False, "reason": f"{mode}-pinned controls are not feasible for this formulation within {seconds:.0f} s ({result.message})",
+                    "completion_seconds": elapsed, "completion_status": result.message, "mode": mode}
+        return {"accepted": True, "reason": f"completed by the formulation ({mode} pins)", "completion_seconds": elapsed,
+                "completion_status": result.message, "mode": mode, "x": result.x}
 
 
 @dataclass
@@ -249,10 +258,21 @@ def warm_start_vector(m: Linear, seed: Solution, seconds: float) -> tuple[dict, 
         else:
             continue
         controls[i] = 0. if abs(v) < 1e-9 else float(v)
+    # Cascade: the plan itself first; if this formulation proves that infeasible (its floors need
+    # more supply than the plan carries), the add-only repair - the plan's orders as lower bounds,
+    # the formulation adding what it must. Both completions are real feasible plans of THIS
+    # candidate; a seed that fails both is rejected with the reason.
     done = m.complete(controls, seconds)
+    attempts = [dict(done, x=None) if "x" in done else done]
+    remaining = seconds - done["completion_seconds"]
+    if not done["accepted"] and "kInfeasible" in str(done.get("completion_status")) and remaining > 0.5:
+        floor_controls = {i: v for i, v in controls.items() if m.names[i][0] == "purchase" and v > 0}
+        done = m.complete(floor_controls, remaining, mode="floor")
+        attempts.append(dict(done, x=None) if "x" in done else done)
     telemetry = {"supplied": True, "source": seed.status, "controls_seeded": len(controls),
-                 "accepted": done["accepted"], "reason": done["reason"],
-                 "completion_seconds": done["completion_seconds"], "completion_status": done["completion_status"]}
+                 "accepted": done["accepted"], "reason": done["reason"], "mode": done.get("mode"),
+                 "completion_seconds": sum(a["completion_seconds"] for a in attempts),
+                 "completion_status": done["completion_status"], "attempts": [{k: v for k, v in a.items() if k != "x"} for a in attempts]}
     return telemetry, done.get("x")
 
 
@@ -794,7 +814,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     seed_x = None
     if (seed is not None and req.warm_start and seed.usable_plan
             and len(m.names) >= req.warm_start_min_variables):
-        warm, seed_x = warm_start_vector(m, seed, min(req.warm_start_completion_seconds, .3 * budget))
+        warm, seed_x = warm_start_vector(m, seed, min(req.warm_start_completion_seconds, req.warm_start_completion_share * budget))
         budget = max(1., budget - warm["completion_seconds"])
     solver_name = "highspy" if (seed_x is not None or req.solver == "highspy") else req.solver
     result, residual = m.solve(budget, objective, solver_name, mip_gap=req.solver_mip_gap, seed=seed_x)

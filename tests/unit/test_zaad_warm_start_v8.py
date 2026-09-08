@@ -84,3 +84,20 @@ def test_solve_state_mapping_from_highspy_statuses():
     m.row({x: 1}, lower=2.)                   # infeasible
     result, residual = m.solve(5., solver="highspy")
     assert result.status == 2 and result.x is None and residual == float("inf")
+
+
+def test_add_only_repair_seeds_a_floor_the_plan_does_not_meet():
+    """A plan that buys too little for this candidate's floor is infeasible as an equality seed;
+    the add-only repair keeps its orders as lower bounds and lets the formulation add the rest."""
+    m = Linear()
+    x = m.var(("purchase", "s1", 0), cost=1., upper=5, integer=True)
+    y = m.var(("purchase", "s1", 1), cost=1., upper=5, integer=True)
+    m.row({x: 1, y: 1}, lower=4.)                               # the candidate's floor needs 4 units
+    plan = Solution("OPTIMAL", {("s1", 0): 1., ("s1", 1): 0.}, {}, {}, {}, None, [], 0., 2, 1, None, 0., [])
+    telemetry, x0 = warm_start_vector(m, plan, 5.)
+    assert telemetry["accepted"] and telemetry["mode"] == "floor"
+    assert telemetry["attempts"][0]["completion_status"].endswith("kInfeasible")   # equality was honestly infeasible
+    assert x0[0] >= 1. - 1e-9 and x0[0] + x0[1] >= 4. - 1e-9                       # kept the order, added supply
+    # the repaired vector is a genuine feasible start the solver accepts
+    result, residual = m.solve(5., solver="highspy", seed=x0)
+    assert result.seed_accepted and result.status == 0 and residual <= 1e-9
