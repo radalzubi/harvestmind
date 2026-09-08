@@ -1,0 +1,66 @@
+=== review 1 budget=40.0s wall=161.2s state=PROTECT selected=projected_base_stock_proxy
+  stochastic_network     status=NO_FEASIBLE_SOLUTION secs=40.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=40.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  cvar_network           status=NO_FEASIBLE_SOLUTION secs=40.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=40.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  protected_network      status=NO_FEASIBLE_SOLUTION secs=40.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=40.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  hedged_network         status=NO_FEASIBLE_SOLUTION secs=40.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=40.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  stress_network         status=INFEASIBLE           secs=0.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=2 elapsed=0.1s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+=== review 1 budget=80.0s wall=321.1s state=PROTECT selected=projected_base_stock_proxy
+  stochastic_network     status=NO_FEASIBLE_SOLUTION secs=80.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=80.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  cvar_network           status=NO_FEASIBLE_SOLUTION secs=80.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=80.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  protected_network      status=NO_FEASIBLE_SOLUTION secs=80.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=80.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  hedged_network         status=NO_FEASIBLE_SOLUTION secs=80.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=80.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  stress_network         status=INFEASIBLE           secs=0.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=2 elapsed=0.1s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+=== review 1 budget=160.0s wall=641.1s state=PROTECT selected=projected_base_stock_proxy
+  stochastic_network     status=NO_FEASIBLE_SOLUTION secs=160.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=160.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  cvar_network           status=NO_FEASIBLE_SOLUTION secs=160.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=160.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  protected_network      status=NO_FEASIBLE_SOLUTION secs=160.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=160.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  hedged_network         status=NO_FEASIBLE_SOLUTION secs=160.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=160.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  stress_network         status=INFEASIBLE           secs=0.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=2 elapsed=0.1s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+=== review 4 budget=40.0s wall=160.8s state=PROTECT selected=projected_base_stock_proxy
+  stochastic_network     status=FEASIBLE_TIME_LIMIT  secs=40.0 gap=0.034939557384147245 bound=2616.3778260224285 nodes=1646 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=40.0s residual=1.1823431123048067e-11 int_viol=1.176836406102666e-14 bound_viol=1.176836406102666e-14 frac_ints>1e-6=0 >1e-9=0 fun=2711.102549111414 gap=0.034939557384147245 n
+  cvar_network           status=FEASIBLE_TIME_LIMIT  secs=40.1 gap=0.04679762995379426 bound=3169.5479470784653 nodes=637 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=40.0s residual=5.066169705969514e-12 int_viol=8.881784197001252e-16 bound_viol=1.7763568394002505e-15 frac_ints>1e-6=0 >1e-9=0 fun=3325.157434223358 gap=0.04679762995379426 no
+  protected_network      status=NO_FEASIBLE_SOLUTION secs=40.0 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=40.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  hedged_network         status=NO_FEASIBLE_SOLUTION secs=40.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=40.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  stress_network         status=INFEASIBLE           secs=0.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=2 elapsed=0.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+=== review 4 budget=80.0s wall=320.8s state=PROTECT selected=projected_base_stock_proxy
+  stochastic_network     status=FEASIBLE_TIME_LIMIT  secs=80.0 gap=0.030041680917141534 bound=2616.3778260224285 nodes=4689 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=80.0s residual=4.028777311759768e-12 int_viol=8.881784197001252e-16 bound_viol=8.75211561249305e-14 frac_ints>1e-6=0 >1e-9=0 fun=2697.4126357267987 gap=0.030041680917141534 no
+  cvar_network           status=FEASIBLE_TIME_LIMIT  secs=80.0 gap=0.04679762995204579 bound=3169.5479470842793 nodes=2888 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=80.0s residual=5.066169705969514e-12 int_viol=8.881784197001252e-16 bound_viol=1.7763568394002505e-15 frac_ints>1e-6=0 >1e-9=0 fun=3325.157434223358 gap=0.04679762995204579 no
+  protected_network      status=NO_FEASIBLE_SOLUTION secs=80.0 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=80.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  hedged_network         status=NO_FEASIBLE_SOLUTION secs=80.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=80.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  stress_network         status=INFEASIBLE           secs=0.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=2 elapsed=0.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+=== review 4 budget=160.0s wall=597.6s state=PROTECT selected=projected_base_stock_proxy
+  stochastic_network     status=FEASIBLE_TIME_LIMIT  secs=160.1 gap=0.019074131234955865 bound=2616.3778260224285 nodes=17428 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=160.0s residual=9.617906471248716e-11 int_viol=9.614531393253856e-14 bound_viol=7.851497230149107e-13 frac_ints>1e-6=0 >1e-9=0 fun=2667.2533667772145 gap=0.019074131234955865 
+  cvar_network           status=FEASIBLE_TIME_LIMIT  secs=160.1 gap=0.04205084907956133 bound=3169.5479470842793 nodes=10815 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=160.0s residual=3.247180302423658e-12 int_viol=6.661338147750939e-16 bound_viol=1.0325074129013956e-14 frac_ints>1e-6=0 >1e-9=0 fun=3308.6807833576986 gap=0.04205084907956133 
+  hedged_network         status=NO_FEASIBLE_SOLUTION secs=160.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=160.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  stress_network         status=INFEASIBLE           secs=0.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=2 elapsed=0.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+
+[exited with code 0]

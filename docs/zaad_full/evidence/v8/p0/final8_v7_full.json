@@ -1151,5 +1151,378 @@
     "latency": 0.018220916856080294
    }
   ]
+ },
+ "108": {
+  "service": 0.8783565629444118,
+  "tail": 0.0,
+  "p10": 0.22059065024599678,
+  "breach_reviews": 4,
+  "worst_unmet": 22.0,
+  "total_unmet": 69.9449763069632,
+  "inventory": 154.82819742520596,
+  "cost": 3683.244208220541,
+  "wall": 1690.7114691659808,
+  "reviews": 30,
+  "required_requested": 210,
+  "required_completed": 154,
+  "required_starved": 15,
+  "required_infeasible": 41,
+  "required_starved_names": {
+   "cvar_network": 4,
+   "hedged_network": 6,
+   "stochastic_network": 1,
+   "protected_network": 3,
+   "joint_recovery": 1
+  },
+  "optional_requested": 0,
+  "optional_completed": 0,
+  "optional_skipped": 0,
+  "not_applicable": 0,
+  "milps_attempted": 269,
+  "ftl_valid": 23,
+  "ftl_invalid": 0,
+  "no_incumbent": 14,
+  "physical_invalid": 0,
+  "joint_built": 29,
+  "joint_chosen": 5,
+  "joint_required": 30,
+  "lat_p50": 7.939214374870062,
+  "lat_p90": 199.32946299994364,
+  "lat_p95": 213.86947754072025,
+  "lat_max": 239.77593316603452,
+  "states": {
+   "ESCALATE_UNKNOWN": 30
+  },
+  "chosen": {
+   "deterministic_network": 6,
+   "projected_base_stock_proxy": 9,
+   "stochastic_network": 4,
+   "cvar_network": 6,
+   "joint_recovery": 5
+  },
+  "per_review": [
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "cvar_network",
+     "hedged_network"
+    ],
+    "latency": 239.77593316603452
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "hedged_network"
+    ],
+    "latency": 229.00726970797405
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.24112212567028757,
+    "unmet": 12.900923863605112,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "cvar_network",
+     "protected_network",
+     "hedged_network"
+    ],
+    "latency": 213.86947754072025
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.0,
+    "unmet": 14.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "hedged_network"
+    ],
+    "latency": 199.32946299994364
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "cvar_network",
+     "protected_network",
+     "hedged_network"
+    ],
+    "latency": 184.05236845789477
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "hedged_network"
+    ],
+    "latency": 170.14602216612548
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.22059065024599678,
+    "unmet": 21.044052443358087,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 115.02785879233852
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "deterministic_network",
+    "service": 0.0,
+    "unmet": 22.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 35.26142720878124
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 50.674307166133076
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 74.12179624987766
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 26.64387037511915
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 65.84149825014174
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 25.897069207858294
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "joint_recovery"
+    ],
+    "latency": 22.083623874932528
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 7.939214374870062
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 15.525793083943427
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 3.4670444997027516
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 5.216297916602343
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 3.933283499907702
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.6604519169777632
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.4263686672784388
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.4706761250272393
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.1621889160014689
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.4826564588584006
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.2689125407487154
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.12687062518671155
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.11580879101529717
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.06727766711264849
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.04611595766618848
+   },
+   {
+    "state": "ESCALATE_UNKNOWN",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.01915916707366705
+   }
+  ]
  }
 }

@@ -1138,5 +1138,366 @@
     "latency": 0.016836500260978937
    }
   ]
+ },
+ "108": {
+  "service": 0.8783565629444118,
+  "tail": 0.0,
+  "p10": 0.22059065024599678,
+  "breach_reviews": 4,
+  "worst_unmet": 22.0,
+  "total_unmet": 69.9449763069632,
+  "inventory": 153.54218074847546,
+  "cost": 3689.8121793342234,
+  "wall": 1249.2675706245936,
+  "reviews": 30,
+  "required_requested": 105,
+  "required_completed": 96,
+  "required_starved": 5,
+  "required_infeasible": 4,
+  "required_starved_names": {
+   "stochastic_network": 1,
+   "protected_network": 3,
+   "joint_recovery": 1
+  },
+  "optional_requested": 56,
+  "optional_completed": 26,
+  "optional_skipped": 0,
+  "not_applicable": 0,
+  "milps_attempted": 220,
+  "ftl_valid": 25,
+  "ftl_invalid": 0,
+  "no_incumbent": 12,
+  "physical_invalid": 0,
+  "joint_built": 29,
+  "joint_chosen": 7,
+  "joint_required": 30,
+  "lat_p50": 4.952830375172198,
+  "lat_p90": 153.39485970931128,
+  "lat_p95": 166.43234504200518,
+  "lat_max": 191.08087620791048,
+  "states": {
+   "NO_ACTION": 4,
+   "PROTECT": 15,
+   "CAPITAL_OPTIMIZATION": 4,
+   "NORMAL_REPLENISHMENT": 7
+  },
+  "chosen": {
+   "deterministic_network": 5,
+   "projected_base_stock_proxy": 9,
+   "joint_recovery": 7,
+   "stochastic_network": 3,
+   "cvar_network": 6
+  },
+  "per_review": [
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 41.971288917120546
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "stochastic_network",
+     "protected_network"
+    ],
+    "latency": 191.08087620791048
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.24112212567028757,
+    "unmet": 12.900923863605112,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "protected_network"
+    ],
+    "latency": 178.4940231665969
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.0,
+    "unmet": 14.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 166.43234504200518
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "protected_network"
+    ],
+    "latency": 153.39485970931128
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 141.8393293339759
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.22059065024599678,
+    "unmet": 21.044052443358087,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 88.87765520857647
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 0.0,
+    "unmet": 22.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 24.304579499643296
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 50.004361249972135
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 51.99379845801741
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 20.30984045797959
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 62.382791000418365
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 23.87724704062566
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": "REQUIRED",
+    "starved": [
+     "joint_recovery"
+    ],
+    "latency": 26.336242416873574
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 4.952830375172198
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 13.85415166663006
+   },
+   {
+    "state": "CAPITAL_OPTIMIZATION",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 1.778085165657103
+   },
+   {
+    "state": "CAPITAL_OPTIMIZATION",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 4.1868494166992605
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 1.5497896666638553
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.33212145837023854
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.21481983410194516
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.36002916703000665
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.0956775420345366
+   },
+   {
+    "state": "CAPITAL_OPTIMIZATION",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.19600062491372228
+   },
+   {
+    "state": "CAPITAL_OPTIMIZATION",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.1463019996881485
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.09040783392265439
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.0653362087905407
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.05582325020805001
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.022578958421945572
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.01668366603553295
+   }
+  ]
  }
 }
