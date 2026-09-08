@@ -447,7 +447,7 @@ class Request(Record):
     # the selection worlds is at least `joint_recovery_deficit` below any target. "deficit_cover":
     # additionally REQUIRED when a served location holds under half a period of demand while a
     # supply or inbound driver is active.
-    joint_recovery_rule: Literal["v8", "deficit", "deficit_cover"] = "v8"
+    joint_recovery_rule: Literal["v8", "deficit", "deficit_cover"] = "deficit"
     joint_recovery_deficit: float = Field(default=.2, ge=0., le=1.)
     # Solve budget scaling (v8). The 5-second per-solve cap is not a considered figure - it is a
     # historical default - and measurement shows it lands in the worst possible place. On these
@@ -457,7 +457,7 @@ class Request(Record):
     # on exactly the cells that matter. The budget is scaled by model size instead, which the
     # measured solve times track closely, and the compute is paid for by the candidates adaptive
     # escalation no longer builds. Set to 1.0 to reproduce the flat cap.
-    adaptive_solve_budget: bool = False
+    adaptive_solve_budget: bool = True
     # Margin over the fitted size curve. The worst measured case needed 38.0 s against a fitted
     # 31.25 s, a ratio of 1.22, so 1.3 is the smallest round margin that covers every cell measured.
     solve_budget_margin: float = Field(default=1.3, ge=1., le=5.)

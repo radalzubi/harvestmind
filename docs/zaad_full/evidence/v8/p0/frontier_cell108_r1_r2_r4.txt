@@ -1,0 +1,26 @@
+frontier8 fixed
+=== review 1 state=PROTECT wall=153s selected=projected_base_stock_proxy target_vector_feasible=True recovery_mode=False
+   service retail_A     target=0.950 jointly_feasible=None incumbent=0.9574466887342582 expected=0.9574466887342582
+   stochastic_network     NO_FEASIBLE_SOLUTION secs=38.0 gap=None valid=False
+   cvar_network           NO_FEASIBLE_SOLUTION secs=38.1 gap=None valid=False
+   protected_network      NO_FEASIBLE_SOLUTION secs=38.0 gap=None valid=False
+   hedged_network         NO_FEASIBLE_SOLUTION secs=38.0 gap=None valid=False
+   stress_network         INFEASIBLE           secs=0.1 gap=None valid=False
+   outcomes: {'stochastic_network': 'NO_INCUMBENT', 'protected_network': 'NO_INCUMBENT', 'hedged_network': 'NO_INCUMBENT', 'stress_network': 'INFEASIBLE', 'cvar_network': 'NO_INCUMBENT'}
+=== review 2 state=PROTECT wall=143s selected=projected_base_stock_proxy target_vector_feasible=True recovery_mode=False
+   service retail_A     target=0.950 jointly_feasible=None incumbent=0.9458007664590141 expected=0.9458007664590141
+   stochastic_network     FEASIBLE_TIME_LIMIT  secs=35.5 gap=0.01712442826435627 valid=True
+   cvar_network           NO_FEASIBLE_SOLUTION secs=35.4 gap=None valid=False
+   protected_network      NO_FEASIBLE_SOLUTION secs=35.4 gap=None valid=False
+   hedged_network         NO_FEASIBLE_SOLUTION secs=35.5 gap=None valid=False
+   stress_network         INFEASIBLE           secs=0.1 gap=None valid=False
+   outcomes: {'stochastic_network': 'PHYSICALLY_VALID_FTL', 'protected_network': 'NO_INCUMBENT', 'hedged_network': 'NO_INCUMBENT', 'stress_network': 'INFEASIBLE', 'cvar_network': 'NO_INCUMBENT'}
+=== review 4 state=PROTECT wall=123s selected=projected_base_stock_proxy target_vector_feasible=True recovery_mode=False
+   service retail_A     target=0.950 jointly_feasible=None incumbent=0.9520917640870578 expected=0.9520917640870578
+   stochastic_network     FEASIBLE_TIME_LIMIT  secs=30.6 gap=0.03597084525490749 valid=True
+   cvar_network           NO_FEASIBLE_SOLUTION secs=30.6 gap=None valid=False
+   protected_network      NO_FEASIBLE_SOLUTION secs=30.6 gap=None valid=False
+   hedged_network         NO_FEASIBLE_SOLUTION secs=30.6 gap=None valid=False
+   stress_network         INFEASIBLE           secs=0.1 gap=None valid=False
+   outcomes: {'stochastic_network': 'PHYSICALLY_VALID_FTL', 'protected_network': 'NO_INCUMBENT', 'hedged_network': 'NO_INCUMBENT', 'stress_network': 'INFEASIBLE', 'cvar_network': 'NO_INCUMBENT'}
+

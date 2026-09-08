@@ -1,0 +1,656 @@
+[
+ {
+  "state": "NO_ACTION",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 40.0,
+    "mu": 20.652462637497226,
+    "window": 2,
+    "activity": 0.0,
+    "supply": 0.0,
+    "demand": 0.0,
+    "regime": "LEAN",
+    "drivers": [],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 45.37973122023731,
+    "lean_baseline": 4.0748059452428596
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9941582391466687
+  },
+  "selected": "deterministic_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 23.953888212037782,
+    "mu": 23.755264587870066,
+    "window": 2,
+    "activity": 0.5625,
+    "supply": 0.0,
+    "demand": 0.75,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand"
+    ],
+    "flags": [
+     "INSUFFICIENT_CALIBRATION"
+    ],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 55.09869746026402,
+    "lean_baseline": 7.588168284523891
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9760912686626128
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 3.953888212037782,
+    "mu": 22.503509725246712,
+    "window": 2,
+    "activity": 0.46875,
+    "supply": 0.0,
+    "demand": 0.625,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand"
+    ],
+    "flags": [
+     "INSUFFICIENT_CALIBRATION"
+    ],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 52.45584002704351,
+    "lean_baseline": 7.448820576550086
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.8635883894647205
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": true,
+  "service": 0.23258165953163423,
+  "unmet": 13.046111787962218
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 0,
+    "mu": 21.127632293935033,
+    "window": 2,
+    "activity": 0.375,
+    "supply": 0.0,
+    "demand": 0.5,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 50.76501963898428,
+    "lean_baseline": 8.50975505111421
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.8747211418254144
+  },
+  "selected": "joint_recovery",
+  "joint_built": true,
+  "service": 0.0,
+  "unmet": 14.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 0,
+    "mu": 17.321321475344845,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.375,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand",
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 44.73496745302602,
+    "lean_baseline": 10.092324502336332
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9048223774247763
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": true,
+  "service": 0.0,
+  "unmet": 19.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 0,
+    "mu": 19.19673020030653,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.25,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand",
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 47.633475807978165,
+    "lean_baseline": 9.240015407365105
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.7333729196147022
+  },
+  "selected": "joint_recovery",
+  "joint_built": true,
+  "service": 0.0,
+  "unmet": 20.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 0,
+    "mu": 19.64436131082002,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.125,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand",
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 47.854404027884556,
+    "lean_baseline": 8.565681406244511
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.6339924711885733
+  },
+  "selected": "joint_recovery",
+  "joint_built": true,
+  "service": 0.0,
+  "unmet": 27.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 26.68510699786978,
+    "mu": 20.56381614696752,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply",
+     "inbound_eta"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 50.94156995060123,
+    "lean_baseline": 9.813937656666193
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.5825538255202919
+  },
+  "selected": "stochastic_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 28.71567800544304,
+    "mu": 20.723392130637794,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply",
+     "inbound_eta"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 50.761943414011476,
+    "lean_baseline": 9.315159152735886
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.5016587391219192
+  },
+  "selected": "cvar_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 35.37153020401958,
+    "mu": 20.351052917574016,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply",
+     "inbound_eta"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 49.91494815713509,
+    "lean_baseline": 9.212842321987061
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.457371795411474
+  },
+  "selected": "cvar_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 38.3113220392064,
+    "mu": 20.864593561430922,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply",
+     "inbound_eta"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 51.29445811031353,
+    "lean_baseline": 9.565270987451683
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.534363610987695
+  },
+  "selected": "protected_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 45.52149713932809,
+    "mu": 22.743667641629163,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply",
+     "inbound_eta"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 55.736382594986196,
+    "lean_baseline": 10.249047311727868
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.40396743511278455
+  },
+  "selected": "protected_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 50.95980690990082,
+    "mu": 20.79493411330333,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply",
+     "inbound_eta"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 66.3445564444809,
+    "lean_baseline": 24.754688217874246
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9488989682263259
+  },
+  "selected": "stochastic_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 37.95980690990082,
+    "mu": 19.235947290642667,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply",
+     "inbound_eta"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 66.71707117821694,
+    "lean_baseline": 28.2451765969316
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.5997276746192437
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 21.95980690990082,
+    "mu": 18.588757832514133,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply",
+     "inbound_eta"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 66.90332815743726,
+    "lean_baseline": 29.72581249240899
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.5229163805338798
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 8.428854880774285,
+    "mu": 19.384615384615383,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply",
+     "inbound_eta"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 68.68616682585234,
+    "lean_baseline": 29.91693605662157
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.5226928281956663
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": true,
+  "service": 0.4013740419416326,
+  "unmet": 12.571145119225715
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 22.913290900673452,
+    "mu": 19.692307692307693,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 70.52491416242371,
+    "lean_baseline": 31.140298777808322
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.6777479995745864
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": true,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "NO_ACTION",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 45.81229734603674,
+    "mu": 19.615384615384617,
+    "window": 2,
+    "activity": 0.0,
+    "supply": 0.0,
+    "demand": 0.0,
+    "regime": "LEAN",
+    "drivers": [],
+    "flags": [
+     "FALSE_PROTECTION_RISK"
+    ],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 69.7722361039863,
+    "lean_baseline": 30.54146687321707
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.989884904857936
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "NORMAL_REPLENISHMENT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 34.43733765351968,
+    "mu": 19.692307692307693,
+    "window": 2,
+    "activity": 0.0,
+    "supply": 0.0,
+    "demand": 0.0,
+    "regime": "LEAN",
+    "drivers": [],
+    "flags": [
+     "FALSE_PROTECTION_RISK"
+    ],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 69.32124936861248,
+    "lean_baseline": 29.93663398399709
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9546378579262549
+  },
+  "selected": "cvar_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "NO_ACTION",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 26.741545756181004,
+    "mu": 19.46153846153846,
+    "window": 2,
+    "activity": 0.0,
+    "supply": 0.0,
+    "demand": 0.0,
+    "regime": "LEAN",
+    "drivers": [],
+    "flags": [
+     "FALSE_PROTECTION_RISK"
+    ],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 67.93777870676932,
+    "lean_baseline": 29.014701783692406
+   }
+  ],
+  "inc_service": {
+   "retail_A": 1.0
+  },
+  "selected": "deterministic_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ }
+]

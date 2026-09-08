@@ -1,0 +1,396 @@
+[
+ {
+  "state": "PROTECT",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 40.0,
+    "mu": 20.652462637497226,
+    "window": 2,
+    "activity": 0.4125000000000002,
+    "supply": 0.5500000000000003,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 48.06394401012213,
+    "lean_baseline": 6.759018735127677
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9839390641364071
+  },
+  "selected": "protected_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 15.794740641520876,
+    "mu": 23.755264587870066,
+    "window": 2,
+    "activity": 0.5625,
+    "supply": 0.5491505675483008,
+    "demand": 0.75,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand",
+     "supply"
+    ],
+    "flags": [
+     "INSUFFICIENT_CALIBRATION"
+    ],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 57.31129233959676,
+    "lean_baseline": 9.800763163856631
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.894563125781959
+  },
+  "selected": "protected_network",
+  "joint_built": false,
+  "service": 0.7897370320760438,
+  "unmet": 4.205259358479124
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 30.588115774187386,
+    "mu": 22.503509725246712,
+    "window": 2,
+    "activity": 0.46875,
+    "supply": 0.584109254781495,
+    "demand": 0.625,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand",
+     "supply"
+    ],
+    "flags": [
+     "INSUFFICIENT_CALIBRATION"
+    ],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 54.49446734636999,
+    "lean_baseline": 9.487447895876564
+   }
+  ],
+  "inc_service": {
+   "retail_A": 1.0
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 39.4208436558697,
+    "mu": 21.127632293935033,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.5,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand",
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 52.396752066948224,
+    "lean_baseline": 10.141487479078158
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9572130847417651
+  },
+  "selected": "cvar_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 38.23864473292295,
+    "mu": 17.321321475344845,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.375,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand",
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 45.70206624113104,
+    "lean_baseline": 11.05942329044135
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9615558777776158
+  },
+  "selected": "cvar_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 19.238644732922953,
+    "mu": 19.19673020030653,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.25,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand",
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 48.905505281343736,
+    "lean_baseline": 10.51204488073068
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.8847931176809749
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": false,
+  "service": 0.9619322366461477,
+  "unmet": 0.7613552670770467
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 28.73444399393278,
+    "mu": 19.64436131082002,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.125,
+    "regime": "PROTECT",
+    "drivers": [
+     "demand",
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 49.27278520992995,
+    "lean_baseline": 9.984062588289909
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9776164994608405
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 22.88684915332224,
+    "mu": 20.56381614696752,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 52.314435072910335,
+    "lean_baseline": 11.186802778975299
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9348977555432901
+  },
+  "selected": "cvar_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 37.9121555877507,
+    "mu": 20.723392130637794,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 52.219554212696096,
+    "lean_baseline": 10.772769951420507
+   }
+  ],
+  "inc_service": {
+   "retail_A": 1.0
+  },
+  "selected": "deterministic_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 32.28928646051263,
+    "mu": 20.351052917574016,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 51.610131434202145,
+    "lean_baseline": 10.908025599054112
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9921999160857748
+  },
+  "selected": "stochastic_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": true,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 29.91737198103204,
+    "mu": 20.864593561430922,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 52.99500627219052,
+    "lean_baseline": 11.265819149328674
+   }
+  ],
+  "inc_service": {
+   "retail_A": 1.0
+  },
+  "selected": "stress_network",
+  "joint_built": false,
+  "service": 1.0,
+  "unmet": 0.0
+ },
+ {
+  "state": "PROTECT",
+  "incumbent_ok": false,
+  "rows": [
+   {
+    "sku": "A",
+    "location": "branch",
+    "on_hand": 20.552964575394423,
+    "mu": 22.743667641629163,
+    "window": 2,
+    "activity": 0.75,
+    "supply": 1.0,
+    "demand": 0.0,
+    "regime": "PROTECT",
+    "drivers": [
+     "supply"
+    ],
+    "flags": [],
+    "remaining_until_lean": null,
+    "recovery_receipts": null,
+    "lean_base": 57.47317441945651,
+    "lean_baseline": 11.985839136198184
+   }
+  ],
+  "inc_service": {
+   "retail_A": 0.9484522996352366
+  },
+  "selected": "projected_base_stock_proxy",
+  "joint_built": true,
+  "service": 1.0,
+  "unmet": 0.0
+ }
+]

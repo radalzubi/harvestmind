@@ -1,0 +1,4062 @@
+{
+ "cell": 20,
+ "arm": "V8_escalated",
+ "wall": 168.22647033259273,
+ "service": null,
+ "cost": 2631.082575043285,
+ "reviews": [
+  {
+   "review": 0,
+   "latency": 0.4750215420499444,
+   "state": "NO_ACTION",
+   "reasons": [
+    "the incumbent plan is physically usable, meets every requested service target, carries no active risk driver and holds no materially avoidable inventory"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 1,
+   "required_done": 1,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 0,
+   "optional_done": 0,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "stochastic_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "cvar_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "protected_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "hedged_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "stress_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 2081.8939880547778,
+     "nodes": 1,
+     "solve_seconds": 0.11015133420005441,
+     "variables": 1418,
+     "constraints": 1438,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 2081.8939880547778,
+     "nodes": 1,
+     "solve_seconds": 0.11015133420005441,
+     "variables": 1418,
+     "constraints": 1438,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 1.112899081806015e-16,
+     "best_bound": 2043.0754159150672,
+     "nodes": 1,
+     "solve_seconds": 0.04707083338871598,
+     "variables": 1378,
+     "constraints": 1419,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "deterministic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 2291.139756914005,
+     "hedged": 2315.2877906454537
+    },
+    "base_stock": {
+     "fitted": 2291.139756914005,
+     "hedged": 2315.2877906454537
+    },
+    "deterministic_network": {
+     "fitted": 2279.3187404352907,
+     "hedged": 2303.301784059931
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 65.0,
+   "warnings": [
+    "PENDING_REVIEW",
+    "deterministic_network",
+    "mode=LEAN"
+   ]
+  },
+  {
+   "review": 1,
+   "latency": 66.16547612519935,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: demand"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "PHYSICALLY_VALID_FTL",
+     "reason": "feasible, unproved, physically valid"
+    },
+    "protected_network": {
+     "outcome": "PHYSICALLY_VALID_FTL",
+     "reason": "feasible, unproved, physically valid"
+    },
+    "hedged_network": {
+     "outcome": "NO_INCUMBENT",
+     "reason": "no feasible incumbent inside the solve budget"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "PHYSICALLY_VALID_FTL",
+     "reason": "feasible, unproved, physically valid"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 1,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 2406.32291020258,
+     "nodes": 1,
+     "solve_seconds": 0.07490962464362383,
+     "variables": 1347,
+     "constraints": 1366,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 2406.32291020258,
+     "nodes": 1,
+     "solve_seconds": 0.07490962464362383,
+     "variables": 1347,
+     "constraints": 1366,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 2338.285338948026,
+     "nodes": 1,
+     "solve_seconds": 0.0628981669433415,
+     "variables": 1309,
+     "constraints": 1348,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "FEASIBLE_TIME_LIMIT",
+     "achieved_gap": 0.029143646848545847,
+     "best_bound": 2393.9104046440034,
+     "nodes": 1010,
+     "solve_seconds": 16.340057833120227,
+     "variables": 3817,
+     "constraints": 3930,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "cvar_network": {
+     "status": "FEASIBLE_TIME_LIMIT",
+     "achieved_gap": 0.03941359746359451,
+     "best_bound": 2897.4864982168338,
+     "nodes": 521,
+     "solve_seconds": 16.376184707973152,
+     "variables": 3821,
+     "constraints": 3933,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "protected_network": {
+     "status": "FEASIBLE_TIME_LIMIT",
+     "achieved_gap": 0.026887995259665065,
+     "best_bound": 2393.9104046444404,
+     "nodes": 150,
+     "solve_seconds": 16.36686983378604,
+     "variables": 3821,
+     "constraints": 3934,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "hedged_network": {
+     "status": "NO_FEASIBLE_SOLUTION",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 16.41597441677004,
+     "variables": 5076,
+     "constraints": 5226,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.20292212488129735,
+     "variables": 5071,
+     "constraints": 5225,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    }
+   },
+   "selected": "projected_base_stock_proxy",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 2590.766585668558,
+     "hedged": 2602.40109705848
+    },
+    "base_stock": {
+     "fitted": 2590.766585668558,
+     "hedged": 2602.40109705848
+    },
+    "deterministic_network": {
+     "fitted": 2595.643431066748,
+     "hedged": 2607.1440152443406
+    },
+    "stochastic_network": {
+     "fitted": 2570.6277198582184,
+     "hedged": 2583.603418754154
+    },
+    "cvar_network": {
+     "fitted": 2588.3233000085734,
+     "hedged": 2600.717370824521
+    },
+    "protected_network": {
+     "fitted": 2553.4077567298227,
+     "hedged": 2567.5506225986305
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 19.76944106018891,
+   "warnings": [
+    "RETAIN_INCUMBENT",
+    "projected_base_stock_proxy",
+    "mode=PROTECT",
+    "Neither the incumbent nor any candidate meets every requested service target under independent confirmation, and the candidate does not improve the priority-weighted shortfall; incumbent retained.",
+    "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+   ]
+  },
+  {
+   "review": 2,
+   "latency": 30.2910097502172,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: demand"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "protected_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "hedged_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    }
+   },
+   "required": 3,
+   "required_done": 1,
+   "required_starved": 0,
+   "required_infeasible": 2,
+   "optional": 3,
+   "optional_done": 0,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    },
+    {
+     "candidate": "stochastic_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    },
+    {
+     "candidate": "protected_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 2189.2074960084356,
+     "nodes": 1,
+     "solve_seconds": 0.20796737493947148,
+     "variables": 1170,
+     "constraints": 1189,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 2189.2074960084356,
+     "nodes": 1,
+     "solve_seconds": 0.20796737493947148,
+     "variables": 1170,
+     "constraints": 1189,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 2092.204710466441,
+     "nodes": 1,
+     "solve_seconds": 0.10829016705974936,
+     "variables": 1134,
+     "constraints": 1172,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.043464625254273415,
+     "variables": 3294,
+     "constraints": 3402,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "cvar_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.0398625829257071,
+     "variables": 3298,
+     "constraints": 3405,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "protected_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.064409458078444,
+     "variables": 3298,
+     "constraints": 3406,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.07177362497895956,
+     "variables": 4379,
+     "constraints": 4522,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.061027499847114086,
+     "variables": 4374,
+     "constraints": 4521,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "joint_recovery": {
+     "status": "FEASIBLE_TIME_LIMIT",
+     "achieved_gap": 0.5892020792870056,
+     "best_bound": 39.949688144219124,
+     "nodes": 853,
+     "solve_seconds": 14.706961459014565,
+     "variables": 4374,
+     "constraints": 4516,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": false
+    }
+   },
+   "selected": "projected_base_stock_proxy",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 2671.581505384262,
+     "hedged": 2671.58389530606
+    },
+    "base_stock": {
+     "fitted": 2671.581505384262,
+     "hedged": 2671.58389530606
+    },
+    "deterministic_network": {
+     "fitted": 2724.596929796174,
+     "hedged": 2722.214058403363
+    },
+    "joint_recovery": {
+     "fitted": 2818.4305955531727,
+     "hedged": 2811.498755845767
+    }
+   },
+   "service": 0.23258165953163423,
+   "unmet": 13.046111787962218,
+   "inventory": 0.0,
+   "warnings": [
+    "RETAIN_INCUMBENT",
+    "projected_base_stock_proxy",
+    "mode=ALLOCATE",
+    "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained.",
+    "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+    "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery instead of requiring an impossible SLA."
+   ]
+  },
+  {
+   "review": 3,
+   "latency": 26.94142737518996,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: demand"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stochastic_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "protected_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "hedged_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    }
+   },
+   "required": 3,
+   "required_done": 0,
+   "required_starved": 0,
+   "required_infeasible": 3,
+   "optional": 3,
+   "optional_done": 0,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    },
+    {
+     "candidate": "deterministic_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    },
+    {
+     "candidate": "stochastic_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    },
+    {
+     "candidate": "protected_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1884.3015725087064,
+     "nodes": 41,
+     "solve_seconds": 0.3207640419714153,
+     "variables": 1005,
+     "constraints": 1024,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1884.3015725087064,
+     "nodes": 41,
+     "solve_seconds": 0.3207640419714153,
+     "variables": 1005,
+     "constraints": 1024,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.0094546671025455,
+     "variables": 971,
+     "constraints": 1008,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stochastic_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.04121820814907551,
+     "variables": 2960,
+     "constraints": 3063,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "cvar_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.04509054170921445,
+     "variables": 2964,
+     "constraints": 3066,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "protected_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.031393792014569044,
+     "variables": 2964,
+     "constraints": 3067,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.055780124850571156,
+     "variables": 3934,
+     "constraints": 4070,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.06597854197025299,
+     "variables": 3929,
+     "constraints": 4069,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "joint_recovery": {
+     "status": "FEASIBLE_TIME_LIMIT",
+     "achieved_gap": 0.19214398725735396,
+     "best_bound": 44.52775042611183,
+     "nodes": 1342,
+     "solve_seconds": 13.125014541205019,
+     "variables": 3929,
+     "constraints": 4064,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": false
+    }
+   },
+   "selected": "joint_recovery",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 2139.2062232522258,
+     "hedged": 2161.9080948110995
+    },
+    "base_stock": {
+     "fitted": 2139.2062232522258,
+     "hedged": 2161.9080948110995
+    },
+    "joint_recovery": {
+     "fitted": 2015.6897704256555,
+     "hedged": 2040.1004394558563
+    }
+   },
+   "service": 0.0,
+   "unmet": 14.0,
+   "inventory": 0.0,
+   "warnings": [
+    "PENDING_REVIEW",
+    "joint_recovery",
+    "mode=ALLOCATE",
+    "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery instead of requiring an impossible SLA."
+   ]
+  },
+  {
+   "review": 4,
+   "latency": 27.09249391593039,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: demand, supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "PHYSICALLY_VALID_FTL",
+     "reason": "feasible, unproved, physically valid"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 2,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1409.0836141454447,
+     "nodes": 1,
+     "solve_seconds": 0.08203470939770341,
+     "variables": 946,
+     "constraints": 964,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1409.0836141454447,
+     "nodes": 1,
+     "solve_seconds": 0.08203470939770341,
+     "variables": 946,
+     "constraints": 964,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1337.8580775709102,
+     "nodes": 1,
+     "solve_seconds": 0.04376795794814825,
+     "variables": 914,
+     "constraints": 949,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1416.1203650727755,
+     "nodes": 103,
+     "solve_seconds": 3.08797754207626,
+     "variables": 2786,
+     "constraints": 2883,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1703.179657046717,
+     "nodes": 527,
+     "solve_seconds": 10.82069058297202,
+     "variables": 2790,
+     "constraints": 2886,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1416.1203650727755,
+     "nodes": 1,
+     "solve_seconds": 1.222757417242974,
+     "variables": 2790,
+     "constraints": 2887,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "FEASIBLE_TIME_LIMIT",
+     "achieved_gap": 0.003772145090144114,
+     "best_bound": 1531.1359748670193,
+     "nodes": 467,
+     "solve_seconds": 11.582758707925677,
+     "variables": 3703,
+     "constraints": 3831,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.05293274996802211,
+     "variables": 3698,
+     "constraints": 3830,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    }
+   },
+   "selected": "cvar_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 1667.2541998875392,
+     "hedged": 1800.676999393164
+    },
+    "base_stock": {
+     "fitted": 1667.2541998875392,
+     "hedged": 1800.676999393164
+    },
+    "deterministic_network": {
+     "fitted": 1633.91602861825,
+     "hedged": 1775.7010545940134
+    },
+    "stochastic_network": {
+     "fitted": 1569.050248508983,
+     "hedged": 1725.3452910384487
+    },
+    "cvar_network": {
+     "fitted": 1569.194292678279,
+     "hedged": 1724.1643453942086
+    },
+    "protected_network": {
+     "fitted": 1569.0502485089833,
+     "hedged": 1725.345291038449
+    },
+    "hedged_network": {
+     "fitted": 1582.024396537176,
+     "hedged": 1683.0948641540926
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 63.208558201163,
+   "warnings": [
+    "PENDING_REVIEW",
+    "cvar_network",
+    "mode=PROTECT",
+    "Incumbent misses a requested service target under independent confirmation and no candidate reaches it either; the candidate carries no larger priority-weighted service shortfall, is priority consistent, is inside the economic downside tolerance and materially reduces carried inventory or cost (symmetric confirmation)."
+   ]
+  },
+  {
+   "review": 5,
+   "latency": 7.3416772917844355,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: demand, supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 1,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 5.179065245560487e-13,
+     "best_bound": 1582.683478790041,
+     "nodes": 1,
+     "solve_seconds": 0.11285395827144384,
+     "variables": 887,
+     "constraints": 904,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 5.179065245560487e-13,
+     "best_bound": 1582.683478790041,
+     "nodes": 1,
+     "solve_seconds": 0.11285395827144384,
+     "variables": 887,
+     "constraints": 904,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1489.9956354386925,
+     "nodes": 1,
+     "solve_seconds": 0.024626083206385374,
+     "variables": 857,
+     "constraints": 890,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1719.5877852583112,
+     "nodes": 235,
+     "solve_seconds": 4.037845750339329,
+     "variables": 2612,
+     "constraints": 2703,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 2073.0081917225134,
+     "nodes": 1,
+     "solve_seconds": 0.8254076661542058,
+     "variables": 2616,
+     "constraints": 2706,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1719.5877852583105,
+     "nodes": 42,
+     "solve_seconds": 2.108741291798651,
+     "variables": 2616,
+     "constraints": 2707,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.06125374976545572,
+     "variables": 3472,
+     "constraints": 3592,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.050863458309322596,
+     "variables": 3467,
+     "constraints": 3591,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    }
+   },
+   "selected": "projected_base_stock_proxy",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 2032.86478026072,
+     "hedged": 2180.2220799508
+    },
+    "base_stock": {
+     "fitted": 2032.86478026072,
+     "hedged": 2180.2220799508
+    },
+    "deterministic_network": {
+     "fitted": 1962.6877459582342,
+     "hedged": 2123.1998931175763
+    },
+    "stochastic_network": {
+     "fitted": 1816.3471213652433,
+     "hedged": 2000.4385620253522
+    },
+    "cvar_network": {
+     "fitted": 1816.803132307785,
+     "hedged": 1987.6635899975458
+    },
+    "protected_network": {
+     "fitted": 1816.347121365243,
+     "hedged": 2000.438562025352
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 24.471321243377943,
+   "warnings": [
+    "RETAIN_INCUMBENT",
+    "projected_base_stock_proxy",
+    "mode=PROTECT",
+    "Candidate meets a service target the incumbent misses, but exceeds the configured economic downside tolerance."
+   ]
+  },
+  {
+   "review": 6,
+   "latency": 4.019923249725252,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: demand, inbound_eta, supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stochastic_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "protected_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "hedged_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    }
+   },
+   "required": 3,
+   "required_done": 0,
+   "required_starved": 0,
+   "required_infeasible": 3,
+   "optional": 3,
+   "optional_done": 0,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    },
+    {
+     "candidate": "deterministic_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    },
+    {
+     "candidate": "stochastic_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    },
+    {
+     "candidate": "protected_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1901.7580671362293,
+     "nodes": 1,
+     "solve_seconds": 0.05245679197832942,
+     "variables": 870,
+     "constraints": 886,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1901.7580671362293,
+     "nodes": 1,
+     "solve_seconds": 0.05245679197832942,
+     "variables": 870,
+     "constraints": 886,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.005212083924561739,
+     "variables": 842,
+     "constraints": 873,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stochastic_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.016602915711700916,
+     "variables": 2438,
+     "constraints": 2523,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "cvar_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.03361508436501026,
+     "variables": 2442,
+     "constraints": 2526,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "protected_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.01457629119977355,
+     "variables": 2442,
+     "constraints": 2527,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.019045041874051094,
+     "variables": 3241,
+     "constraints": 3353,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.026746083982288837,
+     "variables": 3236,
+     "constraints": 3352,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1780.1138912358483,
+     "nodes": 416,
+     "solve_seconds": 3.4328224579803646,
+     "variables": 3236,
+     "constraints": 3348,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "joint_recovery",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 1838.6876326454194,
+     "hedged": 2014.170596001181
+    },
+    "base_stock": {
+     "fitted": 1838.6876326454194,
+     "hedged": 2014.170596001181
+    },
+    "joint_recovery": {
+     "fitted": 1625.852536525003,
+     "hedged": 1784.5720239345721
+    }
+   },
+   "service": 0.5091534750433264,
+   "unmet": 13.252856173830187,
+   "inventory": 0.0,
+   "warnings": [
+    "PENDING_REVIEW",
+    "joint_recovery",
+    "mode=ALLOCATE",
+    "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery instead of requiring an impossible SLA."
+   ]
+  },
+  {
+   "review": 7,
+   "latency": 2.965179666876793,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: inbound_eta, supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stochastic_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "protected_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "hedged_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    }
+   },
+   "required": 3,
+   "required_done": 0,
+   "required_starved": 0,
+   "required_infeasible": 3,
+   "optional": 3,
+   "optional_done": 0,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    },
+    {
+     "candidate": "deterministic_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    },
+    {
+     "candidate": "stochastic_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    },
+    {
+     "candidate": "protected_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1832.9126395018127,
+     "nodes": 1,
+     "solve_seconds": 0.029344458132982254,
+     "variables": 730,
+     "constraints": 745,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1832.9126395018127,
+     "nodes": 1,
+     "solve_seconds": 0.029344458132982254,
+     "variables": 730,
+     "constraints": 745,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.003950667101889849,
+     "variables": 704,
+     "constraints": 733,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stochastic_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.03125554230064154,
+     "variables": 2030,
+     "constraints": 2109,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "cvar_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.016703790985047817,
+     "variables": 2034,
+     "constraints": 2112,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "protected_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.026214000303298235,
+     "variables": 2034,
+     "constraints": 2113,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.014381999615579844,
+     "variables": 2698,
+     "constraints": 2802,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.014733167365193367,
+     "variables": 2693,
+     "constraints": 2801,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1751.1694574180215,
+     "nodes": 307,
+     "solve_seconds": 1.7987002907320857,
+     "variables": 2693,
+     "constraints": 2797,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "projected_base_stock_proxy",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 1671.2268803733168,
+     "hedged": 1925.9451441959948
+    },
+    "base_stock": {
+     "fitted": 1671.2268803733168,
+     "hedged": 1925.9451441959948
+    },
+    "joint_recovery": {
+     "fitted": 1498.3899144348284,
+     "hedged": 1728.7867954094736
+    }
+   },
+   "service": 0.39066082984670136,
+   "unmet": 13.40546174337257,
+   "inventory": 0.0,
+   "warnings": [
+    "RETAIN_INCUMBENT",
+    "projected_base_stock_proxy",
+    "mode=ALLOCATE",
+    "Recovery candidate does not materially improve weighted service shortfall versus the incumbent under independent confirmation.",
+    "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery instead of requiring an impossible SLA."
+   ]
+  },
+  {
+   "review": 8,
+   "latency": 1.0522367907688022,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: inbound_eta, supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stochastic_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "protected_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "hedged_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    }
+   },
+   "required": 3,
+   "required_done": 0,
+   "required_starved": 0,
+   "required_infeasible": 3,
+   "optional": 3,
+   "optional_done": 0,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    },
+    {
+     "candidate": "deterministic_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    },
+    {
+     "candidate": "stochastic_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    },
+    {
+     "candidate": "protected_network",
+     "outcome": "required_infeasible",
+     "reason": "the model has no solution under these constraints"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1702.933514702318,
+     "nodes": 1,
+     "solve_seconds": 0.03521633381024003,
+     "variables": 638,
+     "constraints": 652,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1702.933514702318,
+     "nodes": 1,
+     "solve_seconds": 0.03521633381024003,
+     "variables": 638,
+     "constraints": 652,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.003458500374108553,
+     "variables": 614,
+     "constraints": 641,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stochastic_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.013466750271618366,
+     "variables": 1766,
+     "constraints": 1839,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "cvar_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.011872540693730116,
+     "variables": 1770,
+     "constraints": 1842,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "protected_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.026233999989926815,
+     "variables": 1770,
+     "constraints": 1843,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.02679583290591836,
+     "variables": 2491,
+     "constraints": 2587,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.039766957983374596,
+     "variables": 2486,
+     "constraints": 2586,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1600.6074947149707,
+     "nodes": 31,
+     "solve_seconds": 0.5350379575975239,
+     "variables": 2486,
+     "constraints": 2582,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "joint_recovery",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 1529.3274361784574,
+     "hedged": 1743.995590616723
+    },
+    "base_stock": {
+     "fitted": 1529.3274361784574,
+     "hedged": 1743.995590616723
+    },
+    "joint_recovery": {
+     "fitted": 1378.035274810294,
+     "hedged": 1568.1669181707052
+    }
+   },
+   "service": 0.21572170477759092,
+   "unmet": 13.332731018780954,
+   "inventory": 0.0,
+   "warnings": [
+    "PENDING_REVIEW",
+    "joint_recovery",
+    "mode=ALLOCATE",
+    "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery instead of requiring an impossible SLA."
+   ]
+  },
+  {
+   "review": 9,
+   "latency": 0.40115154115483165,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: inbound_eta, supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 1,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1315.989152205077,
+     "nodes": 1,
+     "solve_seconds": 0.02327733300626278,
+     "variables": 517,
+     "constraints": 529,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1315.989152205077,
+     "nodes": 1,
+     "solve_seconds": 0.02327733300626278,
+     "variables": 517,
+     "constraints": 529,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 994.6639359896091,
+     "nodes": 1,
+     "solve_seconds": 0.044013707898557186,
+     "variables": 495,
+     "constraints": 519,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1122.4882422143846,
+     "nodes": 1,
+     "solve_seconds": 0.06843441678211093,
+     "variables": 1419,
+     "constraints": 1485,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1380.8496582067626,
+     "nodes": 1,
+     "solve_seconds": 0.07640975015237927,
+     "variables": 1423,
+     "constraints": 1488,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1122.829420574371,
+     "nodes": 1,
+     "solve_seconds": 0.07594616711139679,
+     "variables": 1423,
+     "constraints": 1489,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.03281029174104333,
+     "variables": 2018,
+     "constraints": 2105,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.028249832801520824,
+     "variables": 2013,
+     "constraints": 2104,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    }
+   },
+   "selected": "stochastic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 1550.5682733500744,
+     "hedged": 1845.5845527763367
+    },
+    "base_stock": {
+     "fitted": 1550.5682733500744,
+     "hedged": 1845.5845527763367
+    },
+    "deterministic_network": {
+     "fitted": 1357.4016662221786,
+     "hedged": 1652.247695034373
+    },
+    "stochastic_network": {
+     "fitted": 1322.185970138719,
+     "hedged": 1595.5359832416784
+    },
+    "cvar_network": {
+     "fitted": 1323.6065857029928,
+     "hedged": 1619.833590728469
+    },
+    "protected_network": {
+     "fitted": 1322.5271484987056,
+     "hedged": 1601.3713535434085
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 97.30613459710486,
+   "warnings": [
+    "PENDING_REVIEW",
+    "stochastic_network",
+    "mode=PROTECT",
+    "Incumbent misses a requested service target under independent confirmation and no candidate reaches it either; the candidate carries no larger priority-weighted service shortfall, is priority consistent, is inside the economic downside tolerance and materially reduces carried inventory or cost (symmetric confirmation)."
+   ]
+  },
+  {
+   "review": 10,
+   "latency": 0.3601511660963297,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 1,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 996.7810564641493,
+     "nodes": 1,
+     "solve_seconds": 0.036180708557367325,
+     "variables": 438,
+     "constraints": 448,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 996.7810564641493,
+     "nodes": 1,
+     "solve_seconds": 0.036180708557367325,
+     "variables": 438,
+     "constraints": 448,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 1.6268326318166764e-16,
+     "best_bound": 698.8231948277461,
+     "nodes": 1,
+     "solve_seconds": 0.021587791852653027,
+     "variables": 418,
+     "constraints": 439,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 667.8255251464109,
+     "nodes": 1,
+     "solve_seconds": 0.04782091686502099,
+     "variables": 1378,
+     "constraints": 1437,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 803.8844850850605,
+     "nodes": 1,
+     "solve_seconds": 0.06561608286574483,
+     "variables": 1382,
+     "constraints": 1440,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 667.8255251464109,
+     "nodes": 1,
+     "solve_seconds": 0.06616145791485906,
+     "variables": 1382,
+     "constraints": 1441,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.026468832977116108,
+     "variables": 1953,
+     "constraints": 2031,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.020569041837006807,
+     "variables": 1948,
+     "constraints": 2030,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    }
+   },
+   "selected": "deterministic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 1442.2608523104673,
+     "hedged": 1636.9070733033445
+    },
+    "base_stock": {
+     "fitted": 1442.2608523104673,
+     "hedged": 1636.9070733033445
+    },
+    "deterministic_network": {
+     "fitted": 1221.3792486110733,
+     "hedged": 1425.9031265717592
+    },
+    "stochastic_network": {
+     "fitted": 1151.9115783996124,
+     "hedged": 1362.43350865281
+    },
+    "cvar_network": {
+     "fitted": 1151.9115783996124,
+     "hedged": 1362.43350865281
+    },
+    "protected_network": {
+     "fitted": 1151.9115783996126,
+     "hedged": 1362.43350865281
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 365.99352707121807,
+   "warnings": [
+    "PENDING_REVIEW",
+    "deterministic_network",
+    "mode=PROTECT",
+    "Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the economic downside tolerance (service-first acceptance)."
+   ]
+  },
+  {
+   "review": 11,
+   "latency": 0.24165787501260638,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 1,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1172.6687030013982,
+     "nodes": 1,
+     "solve_seconds": 0.016254957765340805,
+     "variables": 367,
+     "constraints": 376,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1172.6687030013982,
+     "nodes": 1,
+     "solve_seconds": 0.016254957765340805,
+     "variables": 367,
+     "constraints": 376,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 1.3664425392687586e-16,
+     "best_bound": 831.9913531267451,
+     "nodes": 1,
+     "solve_seconds": 0.009208499919623137,
+     "variables": 349,
+     "constraints": 368,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 952.9814666378802,
+     "nodes": 1,
+     "solve_seconds": 0.07959895906969905,
+     "variables": 916,
+     "constraints": 969,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 1156.1167593504094,
+     "nodes": 1,
+     "solve_seconds": 0.021861915942281485,
+     "variables": 920,
+     "constraints": 972,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 952.9814666378802,
+     "nodes": 1,
+     "solve_seconds": 0.02765520801767707,
+     "variables": 920,
+     "constraints": 973,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.013367499690502882,
+     "variables": 1542,
+     "constraints": 1612,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.017935125157237053,
+     "variables": 1537,
+     "constraints": 1611,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    }
+   },
+   "selected": "stochastic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 1679.5235588613493,
+     "hedged": 1889.9655929345035
+    },
+    "base_stock": {
+     "fitted": 1679.5235588613493,
+     "hedged": 1889.9655929345035
+    },
+    "deterministic_network": {
+     "fitted": 1428.1321701951001,
+     "hedged": 1637.7333418923502
+    },
+    "stochastic_network": {
+     "fitted": 1304.967376361572,
+     "hedged": 1523.4315295423683
+    },
+    "cvar_network": {
+     "fitted": 1304.967376361572,
+     "hedged": 1523.4315295423685
+    },
+    "protected_network": {
+     "fitted": 1304.967376361572,
+     "hedged": 1523.4315295423683
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 310.2821609691418,
+   "warnings": [
+    "PENDING_REVIEW",
+    "stochastic_network",
+    "mode=PROTECT",
+    "Incumbent misses a requested service target under independent confirmation and no candidate reaches it either; the candidate carries no larger priority-weighted service shortfall, is priority consistent, is inside the economic downside tolerance and materially reduces carried inventory or cost (symmetric confirmation)."
+   ]
+  },
+  {
+   "review": 12,
+   "latency": 0.2904858342371881,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "stress_network": {
+     "outcome": "INFEASIBLE",
+     "reason": "the model has no solution under these constraints"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 1,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 966.2671288070832,
+     "nodes": 1,
+     "solve_seconds": 0.04338658368214965,
+     "variables": 302,
+     "constraints": 310,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 966.2671288070832,
+     "nodes": 1,
+     "solve_seconds": 0.04338658368214965,
+     "variables": 302,
+     "constraints": 310,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 670.2773333612071,
+     "nodes": 1,
+     "solve_seconds": 0.009480457752943039,
+     "variables": 286,
+     "constraints": 303,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 687.0738430612867,
+     "nodes": 1,
+     "solve_seconds": 0.0746965417638421,
+     "variables": 886,
+     "constraints": 933,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 842.7644593210497,
+     "nodes": 1,
+     "solve_seconds": 0.02899879217147827,
+     "variables": 890,
+     "constraints": 936,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 687.0738430612863,
+     "nodes": 1,
+     "solve_seconds": 0.04571954207494855,
+     "variables": 890,
+     "constraints": 937,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.025412583258002996,
+     "variables": 1371,
+     "constraints": 1433,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "achieved_gap": null,
+     "best_bound": null,
+     "nodes": null,
+     "solve_seconds": 0.014076208230108023,
+     "variables": 1366,
+     "constraints": 1432,
+     "physically_validated": false,
+     "physical_failures": [],
+     "economically_comparable": false
+    }
+   },
+   "selected": "protected_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 1173.9380320311027,
+     "hedged": 1347.1915289101157
+    },
+    "base_stock": {
+     "fitted": 1173.9380320311027,
+     "hedged": 1347.1915289101157
+    },
+    "deterministic_network": {
+     "fitted": 1019.2997408355241,
+     "hedged": 1184.2782807097026
+    },
+    "stochastic_network": {
+     "fitted": 983.7517206752669,
+     "hedged": 1110.43631350854
+    },
+    "cvar_network": {
+     "fitted": 983.192477425937,
+     "hedged": 1109.6521999617576
+    },
+    "protected_network": {
+     "fitted": 983.751720675267,
+     "hedged": 1110.4363135085403
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 245.2821609691418,
+   "warnings": [
+    "PENDING_REVIEW",
+    "protected_network",
+    "mode=PROTECT",
+    "Incumbent misses a requested service target under independent confirmation and no candidate reaches it either; the candidate carries no larger priority-weighted service shortfall, is priority consistent, is inside the economic downside tolerance and materially reduces carried inventory or cost (symmetric confirmation)."
+   ]
+  },
+  {
+   "review": 13,
+   "latency": 0.18416304234415293,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stress_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 3,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 39.86179639830222,
+     "nodes": 1,
+     "solve_seconds": 0.0034215841442346573,
+     "variables": 264,
+     "constraints": 271,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 39.86179639830222,
+     "nodes": 1,
+     "solve_seconds": 0.0034215841442346573,
+     "variables": 264,
+     "constraints": 271,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -14.096665458342562,
+     "nodes": 0,
+     "solve_seconds": 0.008870167192071676,
+     "variables": 250,
+     "constraints": 265,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 45.40989719762701,
+     "nodes": 1,
+     "solve_seconds": 0.0255944998934865,
+     "variables": 775,
+     "constraints": 816,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 66.43799630953293,
+     "nodes": 1,
+     "solve_seconds": 0.02212699968367815,
+     "variables": 779,
+     "constraints": 819,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 45.40989719762701,
+     "nodes": 1,
+     "solve_seconds": 0.012685874942690134,
+     "variables": 779,
+     "constraints": 820,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 51.986313997915985,
+     "nodes": 1,
+     "solve_seconds": 0.047970791812986135,
+     "variables": 1284,
+     "constraints": 1338,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stress_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 2.6979183030656896e-16,
+     "best_bound": 52.6734063779988,
+     "nodes": 1,
+     "solve_seconds": 0.02528008259832859,
+     "variables": 1279,
+     "constraints": 1337,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "deterministic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 810.123885820089,
+     "hedged": 823.8499175545712
+    },
+    "base_stock": {
+     "fitted": 810.123885820089,
+     "hedged": 823.8499175545712
+    },
+    "deterministic_network": {
+     "fitted": 772.489785845371,
+     "hedged": 777.7716114609007
+    },
+    "stochastic_network": {
+     "fitted": 763.9931422335462,
+     "hedged": 779.6523777341346
+    },
+    "cvar_network": {
+     "fitted": 763.9931422335462,
+     "hedged": 779.6523777341346
+    },
+    "protected_network": {
+     "fitted": 763.9931422335462,
+     "hedged": 779.6523777341346
+    },
+    "hedged_network": {
+     "fitted": 768.6507387972646,
+     "hedged": 771.3991083175961
+    },
+    "stress_network": {
+     "fitted": 768.6507387972646,
+     "hedged": 771.3991083175961
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 640.2367991636131,
+   "warnings": [
+    "PENDING_REVIEW",
+    "deterministic_network",
+    "mode=PROTECT"
+   ]
+  },
+  {
+   "review": 14,
+   "latency": 0.14234458282589912,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stress_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 3,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -9.988184885842102,
+     "nodes": 1,
+     "solve_seconds": 0.0026774578727781773,
+     "variables": 208,
+     "constraints": 214,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -9.988184885842102,
+     "nodes": 1,
+     "solve_seconds": 0.0026774578727781773,
+     "variables": 208,
+     "constraints": 214,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -47.16323912487433,
+     "nodes": 0,
+     "solve_seconds": 0.003528917208313942,
+     "variables": 196,
+     "constraints": 209,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -48.86753883162779,
+     "nodes": 1,
+     "solve_seconds": 0.020994917023926973,
+     "variables": 664,
+     "constraints": 699,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -41.539003042616,
+     "nodes": 1,
+     "solve_seconds": 0.021096667274832726,
+     "variables": 668,
+     "constraints": 702,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -48.86753883162779,
+     "nodes": 1,
+     "solve_seconds": 0.021021499764174223,
+     "variables": 668,
+     "constraints": 703,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -49.08082907469174,
+     "nodes": 1,
+     "solve_seconds": 0.019157791044563055,
+     "variables": 1029,
+     "constraints": 1075,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stress_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -49.41484828514393,
+     "nodes": 1,
+     "solve_seconds": 0.011667374987155199,
+     "variables": 1024,
+     "constraints": 1074,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "deterministic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 624.7291780186415,
+     "hedged": 627.6433388807905
+    },
+    "base_stock": {
+     "fitted": 624.7291780186415,
+     "hedged": 627.6433388807905
+    },
+    "deterministic_network": {
+     "fitted": 592.4920469307301,
+     "hedged": 591.1559700889213
+    },
+    "stochastic_network": {
+     "fitted": 590.9529455377599,
+     "hedged": 592.3119962800578
+    },
+    "cvar_network": {
+     "fitted": 590.6038946698909,
+     "hedged": 591.6730814192499
+    },
+    "protected_network": {
+     "fitted": 590.9529455377599,
+     "hedged": 592.3119962800578
+    },
+    "hedged_network": {
+     "fitted": 592.4920469307301,
+     "hedged": 591.1559700889213
+    },
+    "stress_network": {
+     "fitted": 592.4920469307301,
+     "hedged": 591.1559700889213
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 540.2367991636131,
+   "warnings": [
+    "PENDING_REVIEW",
+    "deterministic_network",
+    "mode=PROTECT"
+   ]
+  },
+  {
+   "review": 15,
+   "latency": 0.04645399982109666,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stress_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 3,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 16.94333633239537,
+     "nodes": 1,
+     "solve_seconds": 0.0024079172872006893,
+     "variables": 158,
+     "constraints": 163,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 16.94333633239537,
+     "nodes": 1,
+     "solve_seconds": 0.0024079172872006893,
+     "variables": 158,
+     "constraints": 163,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -32.02375321886374,
+     "nodes": 0,
+     "solve_seconds": 0.0015757088549435139,
+     "variables": 148,
+     "constraints": 159,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -38.22843580777476,
+     "nodes": 0,
+     "solve_seconds": 0.004071958363056183,
+     "variables": 508,
+     "constraints": 537,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -40.67304254157117,
+     "nodes": 0,
+     "solve_seconds": 0.004149666987359524,
+     "variables": 512,
+     "constraints": 540,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -38.22843580777476,
+     "nodes": 0,
+     "solve_seconds": 0.004101041238754988,
+     "variables": 512,
+     "constraints": 541,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -41.12453197999197,
+     "nodes": 0,
+     "solve_seconds": 0.006203541997820139,
+     "variables": 858,
+     "constraints": 896,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stress_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -41.84855602304628,
+     "nodes": 0,
+     "solve_seconds": 0.005771249998360872,
+     "variables": 853,
+     "constraints": 895,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "deterministic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 546.3823075916968,
+     "hedged": 548.9709525773961
+    },
+    "base_stock": {
+     "fitted": 546.3823075916968,
+     "hedged": 548.9709525773961
+    },
+    "deterministic_network": {
+     "fitted": 502.0083633558383,
+     "hedged": 499.1122671836211
+    },
+    "stochastic_network": {
+     "fitted": 502.0083633558383,
+     "hedged": 499.1122671836211
+    },
+    "cvar_network": {
+     "fitted": 502.0083633558383,
+     "hedged": 499.1122671836211
+    },
+    "protected_network": {
+     "fitted": 502.0083633558383,
+     "hedged": 499.1122671836211
+    },
+    "hedged_network": {
+     "fitted": 502.0083633558383,
+     "hedged": 499.1122671836211
+    },
+    "stress_network": {
+     "fitted": 502.0083633558383,
+     "hedged": 499.1122671836211
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 435.2367991636131,
+   "warnings": [
+    "PENDING_REVIEW",
+    "deterministic_network",
+    "mode=PROTECT"
+   ]
+  },
+  {
+   "review": 16,
+   "latency": 0.05496620899066329,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stress_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 3,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 29.95840701154587,
+     "nodes": 1,
+     "solve_seconds": 0.0020419172942638397,
+     "variables": 90,
+     "constraints": 94,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 29.95840701154587,
+     "nodes": 1,
+     "solve_seconds": 0.0020419172942638397,
+     "variables": 90,
+     "constraints": 94,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -25.549198133576684,
+     "nodes": 0,
+     "solve_seconds": 0.0010826252400875092,
+     "variables": 82,
+     "constraints": 91,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -36.48183339533451,
+     "nodes": 0,
+     "solve_seconds": 0.0020737498998641968,
+     "variables": 298,
+     "constraints": 321,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -40.76556978610035,
+     "nodes": 0,
+     "solve_seconds": 0.0020368751138448715,
+     "variables": 302,
+     "constraints": 324,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -36.48183339533451,
+     "nodes": 0,
+     "solve_seconds": 0.015323916915804148,
+     "variables": 302,
+     "constraints": 325,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -33.542920661409426,
+     "nodes": 0,
+     "solve_seconds": 0.003896665759384632,
+     "variables": 543,
+     "constraints": 573,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stress_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -32.80819247792815,
+     "nodes": 0,
+     "solve_seconds": 0.003476541955024004,
+     "variables": 538,
+     "constraints": 572,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "deterministic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 452.01611458444364,
+     "hedged": 460.5547572632901
+    },
+    "base_stock": {
+     "fitted": 452.01611458444364,
+     "hedged": 460.5547572632901
+    },
+    "deterministic_network": {
+     "fitted": 398.7549657682786,
+     "hedged": 401.69387850220375
+    },
+    "stochastic_network": {
+     "fitted": 398.7549657682786,
+     "hedged": 401.69387850220375
+    },
+    "cvar_network": {
+     "fitted": 398.7549657682786,
+     "hedged": 401.69387850220375
+    },
+    "protected_network": {
+     "fitted": 398.7549657682786,
+     "hedged": 401.69387850220375
+    },
+    "hedged_network": {
+     "fitted": 398.7549657682786,
+     "hedged": 401.69387850220375
+    },
+    "stress_network": {
+     "fitted": 398.7549657682786,
+     "hedged": 401.69387850220375
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 370.2367991636131,
+   "warnings": [
+    "PENDING_REVIEW",
+    "deterministic_network",
+    "mode=PROTECT"
+   ]
+  },
+  {
+   "review": 17,
+   "latency": 0.04851625021547079,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stress_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 3,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -14.960719555804275,
+     "nodes": 1,
+     "solve_seconds": 0.0015079169534146786,
+     "variables": 58,
+     "constraints": 61,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -14.960719555804275,
+     "nodes": 1,
+     "solve_seconds": 0.0015079169534146786,
+     "variables": 58,
+     "constraints": 61,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -55.5823353559821,
+     "nodes": 0,
+     "solve_seconds": 0.0008068745955824852,
+     "variables": 52,
+     "constraints": 59,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -77.75338074931943,
+     "nodes": 0,
+     "solve_seconds": 0.001456666737794876,
+     "variables": 196,
+     "constraints": 213,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -85.86595063398129,
+     "nodes": 0,
+     "solve_seconds": 0.001423708163201809,
+     "variables": 200,
+     "constraints": 216,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -77.75338074931943,
+     "nodes": 0,
+     "solve_seconds": 0.0013566669076681137,
+     "variables": 200,
+     "constraints": 217,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -66.55509536503219,
+     "nodes": 0,
+     "solve_seconds": 0.00209950003772974,
+     "variables": 336,
+     "constraints": 358,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stress_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -63.75552401896037,
+     "nodes": 0,
+     "solve_seconds": 0.0020932499319314957,
+     "variables": 331,
+     "constraints": 357,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "deterministic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 324.0409561227915,
+     "hedged": 340.8409645082934
+    },
+    "base_stock": {
+     "fitted": 324.0409561227915,
+     "hedged": 340.8409645082934
+    },
+    "deterministic_network": {
+     "fitted": 292.4834184142937,
+     "hedged": 303.68170379858094
+    },
+    "stochastic_network": {
+     "fitted": 292.4834184142937,
+     "hedged": 303.68170379858094
+    },
+    "cvar_network": {
+     "fitted": 292.4834184142937,
+     "hedged": 303.68170379858094
+    },
+    "protected_network": {
+     "fitted": 292.4834184142937,
+     "hedged": 303.68170379858094
+    },
+    "hedged_network": {
+     "fitted": 292.4834184142937,
+     "hedged": 303.68170379858094
+    },
+    "stress_network": {
+     "fitted": 292.4834184142937,
+     "hedged": 303.68170379858094
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 270.2367991636131,
+   "warnings": [
+    "PENDING_REVIEW",
+    "deterministic_network",
+    "mode=PROTECT"
+   ]
+  },
+  {
+   "review": 18,
+   "latency": 0.025447665713727474,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stress_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 3,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -14.30147476181579,
+     "nodes": 1,
+     "solve_seconds": 0.001192708034068346,
+     "variables": 32,
+     "constraints": 34,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -14.30147476181579,
+     "nodes": 1,
+     "solve_seconds": 0.001192708034068346,
+     "variables": 32,
+     "constraints": 34,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -56.20008796300283,
+     "nodes": 0,
+     "solve_seconds": 0.0005736248567700386,
+     "variables": 28,
+     "constraints": 33,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -44.85662611484761,
+     "nodes": 0,
+     "solve_seconds": 0.0009814579971134663,
+     "variables": 112,
+     "constraints": 123,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -52.22081352225525,
+     "nodes": 0,
+     "solve_seconds": 0.0009694998152554035,
+     "variables": 116,
+     "constraints": 126,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -44.85662611484761,
+     "nodes": 0,
+     "solve_seconds": 0.0011622090823948383,
+     "variables": 116,
+     "constraints": 127,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -44.92694173175835,
+     "nodes": 0,
+     "solve_seconds": 0.0015994170680642128,
+     "variables": 201,
+     "constraints": 215,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stress_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -44.94452063598603,
+     "nodes": 0,
+     "solve_seconds": 0.001399042084813118,
+     "variables": 196,
+     "constraints": 214,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "deterministic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 263.68286122247366,
+     "hedged": 268.24543227323664
+    },
+    "base_stock": {
+     "fitted": 263.68286122247366,
+     "hedged": 268.24543227323664
+    },
+    "deterministic_network": {
+     "fitted": 225.3801730487655,
+     "hedged": 225.30985743185477
+    },
+    "stochastic_network": {
+     "fitted": 225.3801730487655,
+     "hedged": 225.30985743185477
+    },
+    "cvar_network": {
+     "fitted": 225.3801730487655,
+     "hedged": 225.30985743185477
+    },
+    "protected_network": {
+     "fitted": 225.3801730487655,
+     "hedged": 225.30985743185477
+    },
+    "hedged_network": {
+     "fitted": 225.3801730487655,
+     "hedged": 225.30985743185477
+    },
+    "stress_network": {
+     "fitted": 225.3801730487655,
+     "hedged": 225.30985743185477
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 185.2367991636131,
+   "warnings": [
+    "PENDING_REVIEW",
+    "deterministic_network",
+    "mode=PROTECT"
+   ]
+  },
+  {
+   "review": 19,
+   "latency": 0.02171191619709134,
+   "state": "PROTECT",
+   "reasons": [
+    "a risk driver is materially active: supply"
+   ],
+   "escalated": null,
+   "requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network",
+    "cvar_network"
+   ],
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "protected_network": "REQUIRED",
+    "hedged_network": "OPTIONAL",
+    "stress_network": "OPTIONAL",
+    "cvar_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "protected_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "hedged_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stress_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cvar_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required": 3,
+   "required_done": 3,
+   "required_starved": 0,
+   "required_infeasible": 0,
+   "optional": 3,
+   "optional_done": 3,
+   "optional_skipped": 0,
+   "not_applicable": 0,
+   "omissions": [
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the PROTECT state does not require or offer this class"
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -37.45718934471683,
+     "nodes": 1,
+     "solve_seconds": 0.006346249952912331,
+     "variables": 12,
+     "constraints": 13,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -37.45718934471683,
+     "nodes": 1,
+     "solve_seconds": 0.006346249952912331,
+     "variables": 12,
+     "constraints": 13,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -69.46399441617743,
+     "nodes": 0,
+     "solve_seconds": 0.0005047917366027832,
+     "variables": 10,
+     "constraints": 13,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -67.03321275845437,
+     "nodes": 0,
+     "solve_seconds": 0.0005972920916974545,
+     "variables": 37,
+     "constraints": 42,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -79.18856512048933,
+     "nodes": 0,
+     "solve_seconds": 0.0005874591879546642,
+     "variables": 41,
+     "constraints": 45,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -67.03321275845437,
+     "nodes": 0,
+     "solve_seconds": 0.0005660001188516617,
+     "variables": 41,
+     "constraints": 46,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "hedged_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -72.95857624175507,
+     "nodes": 0,
+     "solve_seconds": 0.0006964169442653656,
+     "variables": 66,
+     "constraints": 72,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    },
+    "stress_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": -74.43991711258025,
+     "nodes": 0,
+     "solve_seconds": 0.0006628329865634441,
+     "variables": 61,
+     "constraints": 71,
+     "physically_validated": true,
+     "physical_failures": [],
+     "economically_comparable": true
+    }
+   },
+   "selected": "deterministic_network",
+   "selection_costs": {
+    "incumbent": {
+     "fitted": 147.7187218523014,
+     "hedged": 145.1740880712984
+    },
+    "base_stock": {
+     "fitted": 147.7187218523014,
+     "hedged": 145.1740880712984
+    },
+    "deterministic_network": {
+     "fitted": 118.20358640515876,
+     "hedged": 112.27822292185806
+    },
+    "stochastic_network": {
+     "fitted": 118.20358640515876,
+     "hedged": 112.27822292185806
+    },
+    "cvar_network": {
+     "fitted": 118.20358640515876,
+     "hedged": 112.27822292185806
+    },
+    "protected_network": {
+     "fitted": 118.20358640515876,
+     "hedged": 112.27822292185806
+    },
+    "hedged_network": {
+     "fitted": 118.20358640515876,
+     "hedged": 112.27822292185806
+    },
+    "stress_network": {
+     "fitted": 118.20358640515876,
+     "hedged": 112.27822292185806
+    }
+   },
+   "service": 1.0,
+   "unmet": 0.0,
+   "inventory": 100.2367991636131,
+   "warnings": [
+    "PENDING_REVIEW",
+    "deterministic_network",
+    "mode=PROTECT"
+   ]
+  }
+ ]
+}
