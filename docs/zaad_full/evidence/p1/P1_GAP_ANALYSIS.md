@@ -56,3 +56,23 @@ Units: quantities in SKU units; packs/cases/pallets as integer multipliers of un
 ## Runtime estimate
 
 P1 fixtures are single-location, one to three SKUs, H=12, 3 scenarios: 1-15 s per review. 20 fixtures x 6 policies x 12 reviews ~ 1,400 solves, ~40-60 minutes single-process; well under the 8-hour limit. Unit tests seconds. No benchmark near the limit is planned; the six-cell P0 set is not re-run by P1.
+
+## Amendment (after Phase 9, recorded rather than rewritten)
+
+The audit above said `order_smoothing` (.02) was "a small declared term, not a buffer". That was
+wrong. Measured on the P1 fixtures it is a material shadow cost: 2% of landed unit cost per unit of
+period-to-period change in each source's order quantity, charged in the model objective only and
+never in the settlement ledger. On a $5 item a 1,000-unit consolidated order pays about $200 of
+phantom cost (the ramp up and the ramp down), the size of an undeclared fixed order cost, and the
+model answers by spreading purchases evenly and buying early (see the `smooth_up`/`smooth_down`
+columns; fixture reproduction in `tests/unit/test_zaad_p1_economics.py::test_timing_tiebreak_...`).
+With explicit order-level economics it double-counts lumpiness. The P1 fixtures set
+`order_smoothing=0` explicitly (a request setting, documented in `zaad/full/fixtures_p1.py`); the
+P0 product default (.02) is untouched, an ablation arm keeps it on, and revisiting the default is
+the recommended next step, not executed here.
+
+A second timing property surfaced by the same investigation: with no declared cost of capital and
+a small holding rate the model is indifferent between committing cash now or later and HiGHS
+returns whichever it finds first. `timing_tiebreak` (1e-4 of unit price per period of earliness,
+objective only, never settled) breaks the tie toward later commitment; it is two orders of magnitude
+below the smallest materiality the selector acts on.

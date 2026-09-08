@@ -438,6 +438,9 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 net = math.ceil(term.net_days / req.period_days)
                 # Total contract invoice is cost regardless of whether payment is beyond horizon.
                 costs[w][q] += landed + price * term.financing_fee_fraction
+                # Timing tie-break (P1): a purchase committed earlier carries a token objective
+                # penalty so that, when nothing else separates two timings, the later one wins.
+                costs[w][q] += req.timing_tiebreak * price * (H - 1 - t)
                 payments[w][t][q] += price * term.deposit_fraction
                 payment_t = trigger + net
                 if payment_t < H:

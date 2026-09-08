@@ -26,7 +26,7 @@ def p1_request(*, horizon: int = 12, period_days: int = 7, demand: float = 100.,
                capacity_volume: float = 1e6, opening_cash: float = 1e6, credit_limit: float = 1e6, receivables_per_period: float = 0.,
                supplier_terms: dict[str, Any] | None = None, pipeline: list[dict] | None = None,
                incumbent_orders: list[dict] | None = None, target: float = .95, seed: int = 41001, scenarios: int = 3,
-               max_solve_seconds: float = 15., stresses: str = "none", incumbent_rule: str | None = None,
+               max_solve_seconds: float = 15., stresses: str = "none", incumbent_rule: str | None = None, order_smoothing: float = 0.,
                extra: dict[str, Any] | None = None) -> Request:
     known = {"known_at": NOW - timedelta(days=1)}
     H = horizon
@@ -69,6 +69,12 @@ def p1_request(*, horizon: int = 12, period_days: int = 7, demand: float = 100.,
                      "late": [{"name": "one_week_late", "fill_multiplier": 1., "extra_lead_days": 7, "demand_multiplier": 1., "recovery_period": H, "shared_failure": True}],
                      "severe": [{"name": "late", "fill_multiplier": .9, "extra_lead_days": 7, "demand_multiplier": 1.05, "recovery_period": H, "shared_failure": True}]}[stresses],
         "incumbent_rule": incumbent_rule,
+        # P1 fixtures switch the V6 order-smoothing proxy off (P0 default 0.02 of landed cost per
+        # unit of period-to-period change in purchase quantity, never settled in the ledger). With
+        # explicit order-level economics the proxy double-counts lumpiness and, at 2% of landed
+        # cost, acts as an undeclared fixed order cost that fights consolidation. The product
+        # default is untouched; the ablation arm keeps it on to show the effect.
+        "order_smoothing": order_smoothing,
         "seed": seed, "scenarios": scenarios, "max_solve_seconds": max_solve_seconds, "downside_cost_tolerance": .05, "service_tolerance": .01,
         "evidence_label": "SYNTHETIC",
         "economics_provenance": {"location.branch.holding_per_value_period": "CONFIGURED_ASSUMPTION",

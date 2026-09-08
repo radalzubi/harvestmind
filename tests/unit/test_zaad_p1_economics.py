@@ -291,3 +291,17 @@ def test_cash_aware_baselines_never_exceed_declared_cash_and_credit():
     req = p1_request(opening_cash=1500., credit_limit=1500., receivables_per_period=450., supplier_terms={"fixed_order_cost": 100.})
     for rule in ("economic_lot", "periodic:2", "reorder_point", "replace_sold"):
         settle(req, baseline_plan(req, rule), world(req), steps=1)
+
+
+def test_timing_tiebreak_prefers_later_commitment_when_the_economics_are_indifferent():
+    # No holding, no cost of capital, no order-level costs: buying at period 0 and at period 3 for
+    # demand in period 4 cost the same; the tie-break must pick the later order.
+    req = p1_request(holding_per_year=0., opening_units=400., demand=100.)
+    sol = solve(req, [world(req)], service_floor=True)
+    first = min(t for (_, t), q in sol.purchases.items() if q > 1e-6)
+    assert first >= 2, sol.purchases
+    off = req.model_copy(update={"timing_tiebreak": 0.})
+    assert solve(off, [world(off)], service_floor=True).status == "OPTIMAL"
+    # the tie-break never reaches the ledger
+    r = settle(req, sol, world(req))
+    assert "timing" not in r["ledger"] and abs(r["ledger_residual"]) < 1e-6

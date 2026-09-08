@@ -433,6 +433,12 @@ class Request(Record):
     # not a worsening (the operator asked for the target; service above it is protection nobody
     # asked for). "incumbent": the V7/P0 rule, any fall beyond the tolerance is a worsening.
     service_gate_basis: Literal["target", "incumbent"] = "target"
+    # Timing tie-break (P1): when the economics are indifferent between committing cash now or
+    # later (no cost of capital declared, negligible holding), prefer later. Expressed as a
+    # fraction of the unit price per period of earliness added to the model objective only; it is
+    # not an economic cost, never enters the settlement ledger, and at its default it is two
+    # orders of magnitude below the smallest materiality the selector acts on.
+    timing_tiebreak: float = Field(default=1e-4, ge=0, le=1e-2)
     service_tolerance: float = Field(ge=0, le=.1)
     force_unit_fills: bool = False
     # How review-by-review demand refits treat a detected level change. "symmetric" is the frozen

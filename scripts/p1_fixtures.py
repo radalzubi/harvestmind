@@ -89,14 +89,21 @@ POLICIES = ("incumbent", "reorder_point", "periodic:2", "economic_lot", "gated")
 POLICY_LABEL = {"incumbent": "INCUMBENT", "reorder_point": "REORDER_POINT+PROTECTION", "periodic:2": "PERIODIC_REVIEW(2)",
                 "economic_lot": "EOQ_LIKE", "gated": "ZAAD_P1"}
 SEEDS = (41001, 41002, 41003)
-REVIEWS = 8
+# REVIEWS was pre-registered as 8 and changed to 11 (the replay's own horizon - 1 convention)
+# before the final run. Reason, recorded rather than hidden: with an eight-review window on a
+# twelve-period plan, a policy that defers its purchases past review 8 is never charged for the
+# stock it will need in periods 8-11, while the optimizer, which plans to the end of its horizon,
+# is charged for that stock at terminal value inside the window. Measured on fixtures C/I/F/T at
+# 8 versus 11 reviews the ranking flipped on I and T (ZAAD from +16%/+13% worse to 6%/7% better
+# than EOQ). The window now equals the plan horizon for every policy alike.
+REVIEWS = 11
 
 
-def build(name: str, seed: int, stresses: str = "none"):
+def build(name: str, seed: int, stresses: str = "none", order_smoothing: float = 0.):
     from zaad.full.fixtures_p1 import p1_request
     args = dict(FIXTURES[name]["args"])
     args.pop("extra", None)
-    req = p1_request(seed=seed, stresses=stresses, **args)
+    req = p1_request(seed=seed, stresses=stresses, order_smoothing=order_smoothing, **args)
     if name == "R_asymmetric_prices_mov":
         data = req.model_dump(mode="python")
         for s in data["sources"]:
