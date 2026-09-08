@@ -40,7 +40,7 @@ class Linear:
         self.lo.append(lower)
         self.hi.append(upper)
 
-    def solve(self, seconds, objective=None, solver="highs", mip_gap: float = 1e-6):
+    def matrix(self):
         rr, cc, vv = [], [], []
         for r, terms in enumerate(self.rows):
             for c, v in terms.items():
@@ -48,8 +48,17 @@ class Linear:
                     rr.append(r)
                     cc.append(c)
                     vv.append(v)
-        matrix = coo_matrix((vv, (rr, cc)), shape=(len(self.rows), len(self.names))).tocsc()
-        if solver != "highs":
+        return coo_matrix((vv, (rr, cc)), shape=(len(self.rows), len(self.names))).tocsc()
+
+    def solve(self, seconds, objective=None, solver="highs", mip_gap: float = 1e-6, seed=None):
+        """Solve with scipy's bundled HiGHS (the frozen path) or, when `seed` is given or
+        solver == "highspy", through highspy on the identical cost / bounds / integrality /
+        constraint arrays, so a known feasible vector can be handed to HiGHS as its starting
+        incumbent (v8, P0-W2). Warm starting changes the search only, never the problem."""
+        matrix = self.matrix()
+        if solver == "highspy" or seed is not None:
+            result = self._highspy_solve(matrix, self.cost if objective is None else objective, seconds, mip_gap, seed)
+        elif solver != "highs":
             from zaad.full.solvers import pyomo_solve
             result = pyomo_solve(self, seconds, objective, solver)
         else:
@@ -69,6 +78,89 @@ class Linear:
         else:
             residual = math.inf
         return result, residual
+
+    def _highspy_solve(self, matrix, cost, seconds, mip_gap, seed=None):
+        """The same model through highspy. Returns an object with scipy-milp-shaped attributes
+        (x, fun, status, message, mip_gap, mip_dual_bound, mip_node_count) plus HiGHS's own
+        residuals and whether a starting solution was supplied and accepted."""
+        import highspy
+        from types import SimpleNamespace
+        h = highspy.Highs()
+        h.setOptionValue("output_flag", False)
+        h.setOptionValue("time_limit", float(max(seconds, 1e-3)))
+        h.setOptionValue("mip_rel_gap", float(mip_gap))
+        lp = highspy.HighsLp()
+        lp.num_col_, lp.num_row_ = len(self.names), len(self.rows)
+        lp.col_cost_ = np.asarray(cost, dtype=float)
+        lp.col_lower_ = np.asarray(self.lower, dtype=float)
+        lp.col_upper_ = np.asarray(self.upper, dtype=float)
+        lp.row_lower_ = np.asarray(self.lo, dtype=float)
+        lp.row_upper_ = np.asarray(self.hi, dtype=float)
+        lp.a_matrix_.format_ = highspy.MatrixFormat.kColwise
+        lp.a_matrix_.start_ = np.asarray(matrix.indptr, dtype=np.int32)
+        lp.a_matrix_.index_ = np.asarray(matrix.indices, dtype=np.int32)
+        lp.a_matrix_.value_ = np.asarray(matrix.data, dtype=float)
+        lp.integrality_ = [highspy.HighsVarType.kInteger if i else highspy.HighsVarType.kContinuous for i in self.integer]
+        h.passModel(lp)
+        seed_status = None
+        seed_objective = None
+        if seed is not None:
+            start = highspy.HighsSolution()
+            start.col_value = np.asarray(seed, dtype=float)
+            seed_status = str(h.setSolution(start))
+            seed_objective = float(np.dot(np.asarray(cost, dtype=float), np.asarray(seed, dtype=float)))
+        h.run()
+        model_status = h.getModelStatus()
+        info = h.getInfo()
+        has_x = int(info.primal_solution_status) == int(highspy.kSolutionStatusFeasible)
+        x = np.asarray(h.getSolution().col_value, dtype=float) if has_x else None
+        S = highspy.HighsModelStatus
+        if model_status == S.kOptimal:
+            status = 0
+        elif model_status in (S.kTimeLimit, S.kIterationLimit, S.kSolutionLimit, S.kInterrupt, S.kHighsInterrupt):
+            status = 1
+        elif model_status == S.kInfeasible:
+            status = 2
+        elif model_status in (S.kUnbounded, S.kUnboundedOrInfeasible):
+            status = 3
+        else:
+            status = 4
+        fun = float(info.objective_function_value) if has_x else None
+        return SimpleNamespace(
+            x=x, fun=fun, status=status, message=f"highspy {model_status}",
+            mip_gap=float(info.mip_gap) if has_x and math.isfinite(info.mip_gap) else None,
+            mip_dual_bound=float(info.mip_dual_bound) if math.isfinite(info.mip_dual_bound) else None,
+            mip_node_count=int(info.mip_node_count),
+            max_integrality_violation=float(info.max_integrality_violation) if has_x else None,
+            max_primal_infeasibility=float(info.max_primal_infeasibility) if has_x else None,
+            seed_status=seed_status, seed_objective=seed_objective,
+            # HiGHS held at least the seed as an incumbent when it ends with a solution no worse than it
+            seed_accepted=(seed is not None and has_x and fun is not None and seed_objective is not None
+                           and fun <= seed_objective + 1e-6 * max(1., abs(seed_objective))))
+
+    def complete(self, controls: dict, seconds: float) -> dict:
+        """Complete a partial seed (v8, P0-W3): pin the given columns to their values inside this
+        model's own bounds and solve the remaining problem, so every other variable is derived by
+        the formulation itself rather than invented. Returns the full vector when the pinned
+        values are feasible for this formulation, and the reason when they are not."""
+        started = time.monotonic()
+        for i, v in controls.items():
+            if v < self.lower[i] - 1e-9 or v > self.upper[i] + 1e-9:
+                return {"accepted": False, "reason": f"seed value {v:.6g} outside bounds [{self.lower[i]:.6g}, {self.upper[i]:.6g}] of {self.names[i]}",
+                        "completion_seconds": 0., "completion_status": "bounds"}
+        saved = (list(self.lower), list(self.upper))
+        try:
+            for i, v in controls.items():
+                self.lower[i] = self.upper[i] = max(v, 0.) if abs(v) < 1e-9 else v
+            result = self._highspy_solve(self.matrix(), self.cost, seconds, 1e-4)
+        finally:
+            self.lower, self.upper = saved
+        elapsed = time.monotonic() - started
+        if result.x is None:
+            return {"accepted": False, "reason": f"pinned controls are not feasible for this formulation within {seconds:.0f} s ({result.message})",
+                    "completion_seconds": elapsed, "completion_status": result.message}
+        return {"accepted": True, "reason": "completed by the formulation", "completion_seconds": elapsed,
+                "completion_status": result.message, "x": result.x}
 
 
 @dataclass
@@ -95,6 +187,9 @@ class Solution:
     # optimality was never proved; it is never labelled optimal and never silently discarded.
     best_bound: float | None = None
     nodes: int | None = None
+    # Warm start telemetry (v8, P0-W4): whether a starting incumbent was supplied, whether the
+    # formulation accepted it, and whether the solver improved on it or returned it.
+    warm_start: dict | None = None
 
     @property
     def usable_plan(self) -> bool:
@@ -138,6 +233,29 @@ def solve_budget(req: Request) -> float:
     return float(min(req.solve_budget_ceiling_seconds, max(req.max_solve_seconds, scaled)))
 
 
+def warm_start_vector(m: Linear, seed: Solution, seconds: float) -> tuple[dict, np.ndarray | None]:
+    """Map a known feasible plan's controls - purchases, PO amendments, transfers - onto this
+    model's columns by name, and let the model complete the rest (v8, P0-W3). Nothing that is
+    not legitimately known is invented: every other variable comes from the formulation."""
+    controls: dict[int, float] = {}
+    for i, name in enumerate(m.names):
+        kind = name[0]
+        if kind == "purchase":
+            v = seed.purchases.get((name[1], name[2]), 0.)
+        elif kind == "amend":
+            v = seed.amendments.get((name[1], name[2]), 0.)
+        elif kind == "transfer":
+            v = seed.transfers.get((name[1], name[2], name[3]), 0.)
+        else:
+            continue
+        controls[i] = 0. if abs(v) < 1e-9 else float(v)
+    done = m.complete(controls, seconds)
+    telemetry = {"supplied": True, "source": seed.status, "controls_seeded": len(controls),
+                 "accepted": done["accepted"], "reason": done["reason"],
+                 "completion_seconds": done["completion_seconds"], "completion_status": done["completion_status"]}
+    return telemetry, done.get("x")
+
+
 def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           service_first: str | None = None, cvar_weight: float = 0.,
           fixed: Solution | None = None, disabled: frozenset[str] = frozenset(),
@@ -145,7 +263,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           per_world_service: bool = False, service_risk: str = "expected",
           service_risk_levels: dict[str, float] | None = None,
           excess_penalty: dict[tuple[str, str], tuple[float, float]] | None = None,
-          continuation: dict[tuple[str, str], tuple[float, float]] | None = None) -> Solution:
+          continuation: dict[tuple[str, str], tuple[float, float]] | None = None,
+          seed: Solution | None = None) -> Solution:
     """excess_penalty (v6): {(sku, location): (baseline_units, cost_per_unit_period)} charges inventory
     held above the lean baseline while a temporary risk driver is gone, so the plan runs temporary
     protection down through demand rather than replenishing it. continuation (v6): {(sku, location):
@@ -665,13 +784,33 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 for t in range(H):
                     objective[unmet[service.id, t, w]] = world.weight * customers[service.customer].priority
     budget = solve_budget(req)
-    result, residual = m.solve(budget, objective, req.solver, mip_gap=req.solver_mip_gap)
+    # Warm start (v8, P0-W2/W3). A known feasible plan - the incumbent - seeds the solver's search
+    # on large models where HiGHS's own heuristics fail to find any incumbent inside the budget.
+    # The seed is the plan's controls mapped by column name into THIS formulation and completed by
+    # this formulation's own constraints; a plan that does not satisfy this candidate's floors or
+    # packs is rejected here, never labelled feasible. The completion time counts against the
+    # budget. The optimisation problem is unchanged; only the starting point is.
+    warm: dict | None = None
+    seed_x = None
+    if (seed is not None and req.warm_start and seed.usable_plan
+            and len(m.names) >= req.warm_start_min_variables):
+        warm, seed_x = warm_start_vector(m, seed, min(req.warm_start_completion_seconds, .3 * budget))
+        budget = max(1., budget - warm["completion_seconds"])
+    solver_name = "highspy" if (seed_x is not None or req.solver == "highspy") else req.solver
+    result, residual = m.solve(budget, objective, solver_name, mip_gap=req.solver_mip_gap, seed=seed_x)
+    if warm is not None:
+        warm.update(seed_status=getattr(result, "seed_status", None),
+                    seed_objective=getattr(result, "seed_objective", None),
+                    solver_accepted=bool(getattr(result, "seed_accepted", False)),
+                    phase1_objective=result.fun, phase1_status=int(result.status))
     if objective is not None and result.status == 0 and result.x is not None:
         optimum = float(np.dot(objective, result.x))
         m.row({i: float(v) for i, v in enumerate(objective) if v}, upper=optimum + 1e-7)
         remaining = budget - (time.monotonic() - started)
         if remaining > 0:
-            result, residual = m.solve(remaining, solver=req.solver, mip_gap=req.solver_mip_gap)
+            # the phase-one optimum satisfies the new row exactly, so it seeds phase two
+            result, residual = m.solve(remaining, solver=solver_name, mip_gap=req.solver_mip_gap,
+                                       seed=(result.x if solver_name == "highspy" else None))
     # Solve states (v8). scipy's milp reports status 1 for "iteration or time limit reached", and in
     # that case `result.x` frequently holds a genuine feasible incumbent. V7 threw that away and
     # returned an empty plan, so on long cells whole candidate classes silently vanished from the
@@ -683,6 +822,25 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     bound = getattr(result, "mip_dual_bound", None)
     nodes = getattr(result, "mip_node_count", None)
     physically_usable = result.x is not None and residual <= 1e-5
+    if warm is not None:
+        seed_objective = warm.get("seed_objective")
+        final = result.fun
+        if not warm["accepted"]:
+            outcome = "rejected"
+        elif result.x is None:
+            outcome = "no_incumbent_despite_seed"
+        elif not physically_usable:
+            outcome = "final_invalid"
+        elif seed_objective is not None and final is not None and objective is None and final < seed_objective - 1e-6 * max(1., abs(seed_objective)):
+            outcome = "improved"
+        elif objective is not None:
+            outcome = "improved" if warm.get("solver_accepted") else "retained_or_replaced"
+        else:
+            outcome = "retained"
+        warm.update(outcome=outcome, final_objective=final, model_variables=len(m.names), solve_seconds=time.monotonic() - started,
+                    highs_integrality_violation=getattr(result, "max_integrality_violation", None),
+                    highs_primal_infeasibility=getattr(result, "max_primal_infeasibility", None))
+        warm.pop("x", None)
     if result.status == 0 and physically_usable:
         state = "OPTIMAL"
     elif result.status == 1 and physically_usable:
@@ -696,7 +854,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     if not physically_usable:
         return Solution(state, {}, {}, {}, {}, None, [], elapsed,
                         len(m.names), len(m.rows), gap, residual if math.isfinite(residual) else None, [str(result.message)],
-                        best_bound=bound, nodes=nodes)
+                        best_bound=bound, nodes=nodes, warm_start=warm)
     values = result.x
     service_result = {}
     for service in req.services:
@@ -713,4 +871,4 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     [{"period": t, "scenario": w, "cash": float(values[cash[t, w]]), "debt": float(values[debt[t, w]])} for w in range(len(worlds)) for t in range(H)],
                     elapsed, len(m.names), len(m.rows), gap, residual,
                     ([] if state == "OPTIMAL" else [f"{state}: feasible plan returned without a proof of optimality"]),
-                    best_bound=bound, nodes=nodes)
+                    best_bound=bound, nodes=nodes, warm_start=warm)

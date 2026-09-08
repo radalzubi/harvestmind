@@ -362,7 +362,7 @@ class Request(Record):
     seed: int = Field(ge=0)
     scenarios: int = Field(ge=1, le=32)
     max_solve_seconds: float = Field(gt=0, le=120)
-    solver: Literal["highs", "cbc", "glpk", "gurobi", "cplex"] = "highs"
+    solver: Literal["highs", "highspy", "cbc", "glpk", "gurobi", "cplex"] = "highs"
     downside_cost_tolerance: float = Field(ge=0, le=1)
     service_tolerance: float = Field(ge=0, le=.1)
     force_unit_fills: bool = False
@@ -462,6 +462,16 @@ class Request(Record):
     # 31.25 s, a ratio of 1.22, so 1.3 is the smallest round margin that covers every cell measured.
     solve_budget_margin: float = Field(default=1.3, ge=1., le=5.)
     solve_budget_ceiling_seconds: float = Field(default=90., gt=0)
+    # Warm start (v8, P0-W). On the largest models HiGHS finds no incumbent at all inside the
+    # budget - cell 108 review 1 returns nothing at 40, 80 or 160 s - although the incumbent plan
+    # itself meets the service target, so a feasible point is known. The incumbent's controls are
+    # mapped into each candidate's own formulation, completed by that formulation's constraints
+    # (a plan that fails a candidate's floors or packs is rejected, never asserted feasible) and
+    # handed to HiGHS through highspy as the starting incumbent. Search only; the problem, the
+    # physical validation and the gap policy are unchanged. Small models are not seeded.
+    warm_start: bool = True
+    warm_start_min_variables: int = Field(default=3000, ge=0)
+    warm_start_completion_seconds: float = Field(default=15., gt=0)
     # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.

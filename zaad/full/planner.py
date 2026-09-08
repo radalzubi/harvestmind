@@ -629,11 +629,11 @@ def plan(req: Request) -> dict:
 
     candidates = {"incumbent": incumbent, "base_stock": base}
     if wanted("deterministic_network"):
-        candidates["deterministic_network"] = solve(req, deterministic, service_floor=True, **v6)
+        candidates["deterministic_network"] = solve(req, deterministic, service_floor=True, seed=incumbent, **v6)
     if wanted("stochastic_network"):
-        candidates["stochastic_network"] = solve(req, selection, service_floor=True, **v6)
+        candidates["stochastic_network"] = solve(req, selection, service_floor=True, seed=incumbent, **v6)
     if wanted("cvar_network"):
-        candidates["cvar_network"] = solve(req, selection, service_floor=True, cvar_weight=.2, **v6)
+        candidates["cvar_network"] = solve(req, selection, service_floor=True, cvar_weight=.2, seed=incumbent, **v6)
     # Quantile level per service from its SKU/location risk state: calm and resilient means the
     # expected floor only (lean); an active driver restores the full quantile protection.
     activity = {(row["sku"], row["location"]): row["state"]["activity"] for row in protection}
@@ -641,14 +641,14 @@ def plan(req: Request) -> dict:
                     for s in req.services} if req.protection_decay else None)
     if wanted("protected_network"):
         # Quantile protection: the worst share of scenarios must meet the target too.
-        candidates["protected_network"] = solve(req, selection, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, **v6)
+        candidates["protected_network"] = solve(req, selection, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, seed=incumbent, **v6)
     if wanted("hedged_network"):
         # Hedged protection: the declared stress envelopes enter the solve at their probability
         # weight, so protection is sized by how credible and how costly the stress is.
-        candidates["hedged_network"] = solve(req, hedged, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, **v6)
+        candidates["hedged_network"] = solve(req, hedged, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, seed=incumbent, **v6)
     if wanted("stress_network"):
-        candidates["stress_network"] = solve(req, combined, service_floor=True, per_world_service=True, **v6)
-    recovery = (solve(req, combined, service_first="all", **v6) if wanted("joint_recovery")
+        candidates["stress_network"] = solve(req, combined, service_floor=True, per_world_service=True, seed=incumbent, **v6)
+    recovery = (solve(req, combined, service_first="all", seed=incumbent, **v6) if wanted("joint_recovery")
                 else Solution("NOT_REQUESTED", {}, {}, {}, {}, None, [], 0., 0, 0, None, None, []))
     if recovery.status != "NOT_REQUESTED":
         compute["attempts"]["joint_recovery"] = recovery
@@ -659,7 +659,7 @@ def plan(req: Request) -> dict:
     # stress at equal weight, so its fitted-world service understates what the network can do.
     joint_fitted_rows: list[dict] = []
     if req.protection_v6 and (not req.adaptive_escalation or screen_result["state"] in ("NETWORK_ALLOCATION", "ESCALATE_UNKNOWN")):
-        joint_fitted = solve(req, selection, service_first="all", **v6)
+        joint_fitted = solve(req, selection, service_first="all", seed=incumbent, **v6)
         if joint_fitted.usable_plan:
             joint_fitted_rows = evaluate(req, joint_fitted, selection)
 
@@ -672,13 +672,13 @@ def plan(req: Request) -> dict:
     if req.adaptive_escalation and "joint_recovery" not in candidates:
         if not any(service_ok(req, rows) for rows in selection_rows.values()):
             compute["escalated"] = compute.get("escalated", []) + ["joint_recovery: no candidate met every service target"]
-            recovery = solve(req, combined, service_first="all", **v6)
+            recovery = solve(req, combined, service_first="all", seed=incumbent, **v6)
             compute["attempts"]["joint_recovery"] = recovery
             if recovery.usable_plan:
                 candidates["joint_recovery"] = recovery
                 selection_rows["joint_recovery"] = evaluate(req, recovery, selection)
             if not joint_fitted_rows:
-                joint_fitted = solve(req, selection, service_first="all", **v6)
+                joint_fitted = solve(req, selection, service_first="all", seed=incumbent, **v6)
                 if joint_fitted.usable_plan:
                     joint_fitted_rows = evaluate(req, joint_fitted, selection)
     stress_rows = {name: evaluate(req, candidate, stress_worlds) for name, candidate in candidates.items()
@@ -1251,6 +1251,7 @@ def plan(req: Request) -> dict:
                                       "quality": solve_quality_label(name),
                                       "physically_validated": bool(selection_rows.get(name) and all(r["usable"] for r in selection_rows[name])),
                                       "physical_failures": sorted({r["reason"] for r in selection_rows.get(name, []) if not r["usable"]}),
+                                      "warm_start": c.warm_start,
                                       "economically_comparable": well_solved(name)}
                                for name, c in candidates.items()},
                 "feasible_time_limited_admitted": sorted(n for n, c in candidates.items()
