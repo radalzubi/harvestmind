@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 /** Workspace and operational routes are never indexed, whatever robots.txt says. */
 const PRIVATE = ["upload", "inventory", "atp", "backtest", "data-quality", "forecasts", "loss", "overview", "partners",
-  "performance", "recommendations", "reports", "supply-risk", "traceability", "access", "admin", "welcome", "state", "fmcg", "zaad", "api"];
+  "performance", "recommendations", "reports", "supply-risk", "traceability", "access", "admin", "welcome", "state", "fmcg", "zaad", "api", "network"];
 
 const nextConfig: NextConfig = {
   output: "standalone",

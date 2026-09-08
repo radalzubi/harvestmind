@@ -317,7 +317,15 @@ def build_inputs(conn, *, horizon: int, train_weeks: int, service_level: float,
                     supply_events=supply_events, incumbent=incumbent, route_of=route_of,
                     lead_cv_prior=lead_cv_prior,
                     provenance=provenance)
+    supplier_master = {str(r.supplier_id): {
+        "name": (str(r.supplier_name) if isinstance(getattr(r, "supplier_name", None), str) and r.supplier_name else None),
+        "route": route_of.get(str(r.supplier_id)),
+        "origin_iso3": origin_iso.get(str(r.supplier_id)),
+        "capacity_per_week": (float(r.capacity_per_week) if getattr(r, "capacity_per_week", None) is not None
+                              and not pd.isna(r.capacity_per_week) else None)}
+        for r in sup_master.itertuples()} if len(sup_master) else {}
     report = {"provenance": provenance, "warnings": warnings, "unknown_margin_skus": unknown_margin,
+              "supplier_master": supplier_master,
               "carrying_cost": comps.breakdown("week"),
               "carrying_cost_sensitivity": sensitivity_grid(comps, "week"),
               "incumbent": incumbent.label, "incumbent_notes": incumbent.notes[:5],
@@ -401,7 +409,28 @@ def state(
            "replan_triggers": _replan_triggers(est),
            "classification": "state estimate from operator history and public logistics signals; not a forecast"}
     out["plain"] = explain_state(out)
+    out["network"] = _network_block(fi, report)
     return out
+
+
+def _network_block(fi, report: dict) -> dict:
+    """The links the Network Twin draws: which supplier feeds which SKU over
+    which lane, and where stock sits today. A read of the inputs already
+    assembled for the state estimate; nothing here is a decision."""
+    pipeline: dict = {}
+    for (j, _t), q in (fi.pipeline or {}).items():
+        pipeline[j] = pipeline.get(j, 0.0) + float(q)
+    return {
+        "products": list(fi.products),
+        "supplier_of": {j: str(s) for j, s in fi.supplier_of.items()},
+        "route_of": dict(fi.route_of or {}),
+        "lead_of": {str(s): float(v) for s, v in fi.lead_of.items()},
+        "opening": {j: float(q) for j, q in (fi.opening or {}).items()},
+        "pipeline": pipeline,
+        "unit_cost": {j: float(c) for j, c in fi.unit_cost.items()},
+        "suppliers": report.get("supplier_master", {}),
+        "scope": "links and stock positions as read from the upload; lead_of is mean weeks per supplier",
+    }
 
 
 

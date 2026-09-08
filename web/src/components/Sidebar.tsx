@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import {
   LayoutDashboard, UploadCloud, Database, Users, Package, Activity, ShieldCheck, FileText,
-  TrendingUp, Truck, ListChecks, FlaskConical, Boxes, Rocket, Radar, KeyRound,
+  TrendingUp, Truck, ListChecks, FlaskConical, Boxes, Rocket, Radar, KeyRound, Waypoints,
 } from "lucide-react";
 import { familyOf, getApiToken, getMe, getSector, setSector, type Sector } from "@/lib/api";
 import { Logo } from "@/components/site/Logo";
@@ -17,7 +17,7 @@ type Section = { label?: string; items: NavItem[] };
 const COMMERCIAL: Section[] = [
   { items: [{ href: "/start", label: "Start", Icon: Rocket }] },
   { label: "Data", items: [{ href: "/upload", label: "Upload", Icon: UploadCloud }, { href: "/data-quality", label: "Data quality", Icon: Database }] },
-  { label: "Decide", items: [{ href: "/fmcg", label: "Purchase plan", Icon: Boxes }, { href: "/state", label: "State and lanes", Icon: Radar }] },
+  { label: "Decide", items: [{ href: "/fmcg", label: "Purchase plan", Icon: Boxes }, { href: "/state", label: "State and lanes", Icon: Radar }, { href: "/network", label: "Network Twin", Icon: Waypoints }] },
   { label: "Export", items: [{ href: "/reports", label: "Reports", Icon: FileText }] },
 ];
 
@@ -29,7 +29,8 @@ const PRODUCE: Section[] = [
     { href: "/traceability", label: "Traceability", Icon: ShieldCheck }, { href: "/partners", label: "Partners", Icon: Users }] },
   { label: "Planning", items: [
     { href: "/forecasts", label: "Demand forecast", Icon: TrendingUp }, { href: "/supply-risk", label: "Supply risk", Icon: Truck },
-    { href: "/recommendations", label: "Recommendations", Icon: ListChecks }, { href: "/backtest", label: "Benchmark", Icon: FlaskConical }] },
+    { href: "/recommendations", label: "Recommendations", Icon: ListChecks }, { href: "/network", label: "Network Twin", Icon: Waypoints },
+    { href: "/backtest", label: "Benchmark", Icon: FlaskConical }] },
   { label: "Export", items: [{ href: "/reports", label: "Reports", Icon: FileText }] },
 ];
 

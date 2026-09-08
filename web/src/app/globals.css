@@ -219,6 +219,19 @@ button { font-family: inherit; }
 .rail-user-name { font-size: 13px; font-weight: 500; color: var(--ink-900); line-height: 1.2; }
 .rail-user-org { font-size: 11.5px; color: var(--ink-500); }
 
+
+/* ── Narrow screens: the rail keeps its icons and drops its words ── */
+@media (max-width: 860px) {
+  .app { grid-template-columns: 56px 1fr; }
+  .rail-brand { padding: 0 15px; }
+  .rail-section { padding: 8px 10px 0; }
+  .rail-section-label, .rail-link > span { display: none; }
+  .rail-link { justify-content: center; padding: 0; }
+  .rail-footer { padding: 10px; }
+  .topbar { padding: 0 16px; }
+  .page { padding: 20px 16px 60px; }
+}
+
 /* ── Topbar ───────────────────────────────────────── */
 .main {
   min-width: 0;
