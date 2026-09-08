@@ -267,7 +267,7 @@ def alternative_value(req: Request, reference: Solution, worlds: list, reference
     removed, compared on the selection worlds. Extra cost against expected and worst-world
     shortage avoided; nothing is assumed, every number comes from a solve and a settlement."""
     result: dict = {}
-    if reference.status != "OPTIMAL":
+    if not reference.usable_plan:
         return result
     eligible = [s for s in req.sources if s.approved and s.compliance == "cleared"]
     pairs = {(s.sku, s.destination) for s in eligible}
@@ -281,7 +281,7 @@ def alternative_value(req: Request, reference: Solution, worlds: list, reference
             continue
         restricted = solve(req, worlds, service_floor=True, service_risk=service_risk, disabled=frozenset({name}), service_risk_levels=risk_levels)
         entry: dict = {"option": name, "status": restricted.status}
-        if restricted.status != "OPTIMAL":
+        if not restricted.usable_plan:
             entry["sentence"] = f"Without the approved {name} the service targets cannot be met on the selection worlds; the option is structurally necessary."
             entry["verdict"] = "necessary"
             result[name] = entry
@@ -474,46 +474,81 @@ def procurement_timing(req: Request, fits: dict, solution: Solution | None) -> l
     return out
 
 
+STARVED_OUTCOMES = ("NO_INCUMBENT", "TIME_LIMIT_NO_USABLE_PLAN", "OPTIMAL_PHYSICALLY_INVALID", "ERROR", "SKIPPED")
+
+
+def candidate_outcome(name: str, candidates: dict, selection_rows: dict, compute: dict) -> tuple[str, str]:
+    """One outcome per candidate class, from what actually happened to it (v8, P0-B fix).
+
+    SOLVED                     proved optimal and physically valid on every scenario world
+    PHYSICALLY_VALID_FTL       feasible without proof of optimality, physically valid everywhere
+    INFEASIBLE                 the model has no solution: a definitive answer, not starvation
+    NO_INCUMBENT               the solver found nothing usable inside its budget
+    TIME_LIMIT_NO_USABLE_PLAN  a time-limited incumbent that failed physical validation
+    OPTIMAL_PHYSICALLY_INVALID an optimal solve that failed physical validation (model/settlement disagree)
+    ERROR                      the solver failed
+    SKIPPED                    never attempted
+    NOT_APPLICABLE             the class cannot exist under this review's state"""
+    if name in compute["not_applicable"]:
+        return "NOT_APPLICABLE", next(o["reason"] for o in compute["omissions"] if o["candidate"] == name and o["outcome"] == "not_applicable")
+    candidate = candidates.get(name) or compute["attempts"].get(name)
+    if candidate is None:
+        return "SKIPPED", "never attempted"
+    rows = selection_rows.get(name)
+    failures = [r["reason"] for r in rows if not r["usable"]] if rows else []
+    if candidate.status == "OPTIMAL":
+        return ("OPTIMAL_PHYSICALLY_INVALID", "; ".join(sorted(set(failures)))) if failures else ("SOLVED", "optimal")
+    if candidate.status == "FEASIBLE_TIME_LIMIT":
+        return ("TIME_LIMIT_NO_USABLE_PLAN", "; ".join(sorted(set(failures)))) if failures else ("PHYSICALLY_VALID_FTL", "feasible, unproved, physically valid")
+    if candidate.status == "INFEASIBLE":
+        return "INFEASIBLE", "the model has no solution under these constraints"
+    if candidate.status == "NO_FEASIBLE_SOLUTION":
+        return "NO_INCUMBENT", "no feasible incumbent inside the solve budget"
+    return "ERROR", f"solver returned {candidate.status}"
+
+
 def _completeness(req: Request, candidates: dict, selection_rows: dict, compute: dict) -> dict:
-    """Required/optional candidate accounting (v8, P0-B).
+    """Required / optional / not-applicable candidate accounting (v8, P0-B, corrected).
 
-    A required candidate is satisfied when it produced a usable plan - proved optimal, or feasible
-    without proof and physically valid on every scenario world. Anything else is starvation and is
-    reported with its reason. Optional candidates carry no such obligation."""
-    required, optional = compute["required"], compute["optional"]
+    Every candidate class the screen names is classified exactly once as REQUIRED, OPTIONAL or
+    NOT_APPLICABLE, and carries exactly one outcome. Required starvation is a required class whose
+    outcome is NO_INCUMBENT, TIME_LIMIT_NO_USABLE_PLAN, OPTIMAL_PHYSICALLY_INVALID, ERROR or
+    SKIPPED. INFEASIBLE is a definitive answer and is reported separately, never as starvation.
+    NOT_APPLICABLE and skipped OPTIONAL classes are never starvation. Nothing disappears silently."""
+    required = [n for n in compute["required"] if n not in compute["not_applicable"]]
+    optional = [n for n in compute["optional"] if n not in compute["not_applicable"]]
+    outcomes = {n: candidate_outcome(n, candidates, selection_rows, compute) for n in compute["required"] + compute["optional"]}
     omissions = list(compute["omissions"])
-
-    def satisfied(name: str) -> tuple[bool, str]:
-        candidate = candidates.get(name)
-        if candidate is None:
-            return False, "never built"
-        if not candidate.usable_plan:
-            return False, f"solver returned {candidate.status}"
-        rows = selection_rows.get(name)
-        if rows and not all(r["usable"] for r in rows):
-            return False, "physically invalid on at least one scenario world"
-        return True, candidate.status
-
-    done_required, starved_required = [], []
-    for name in required:
-        ok, why = satisfied(name)
-        (done_required if ok else starved_required).append(name)
-        if not ok:
-            omissions.append({"candidate": name, "outcome": "required_starved", "reason": why})
-    done_optional = [n for n in optional if satisfied(n)[0]]
+    starved = [n for n in required if outcomes[n][0] in STARVED_OUTCOMES]
+    infeasible = [n for n in required if outcomes[n][0] == "INFEASIBLE"]
+    done_required = [n for n in required if outcomes[n][0] in ("SOLVED", "PHYSICALLY_VALID_FTL")]
+    done_optional = [n for n in optional if outcomes[n][0] in ("SOLVED", "PHYSICALLY_VALID_FTL")]
+    skipped_optional = [n for n in optional if outcomes[n][0] == "SKIPPED"]
+    for n in starved:
+        omissions.append({"candidate": n, "outcome": "required_starved", "reason": f"{outcomes[n][0]}: {outcomes[n][1]}"})
+    for n in infeasible:
+        omissions.append({"candidate": n, "outcome": "required_infeasible", "reason": outcomes[n][1]})
     return {
+        "classification": {**{n: "REQUIRED" for n in required}, **{n: "OPTIONAL" for n in optional},
+                           **{n: "NOT_APPLICABLE" for n in compute["not_applicable"]}},
+        "outcomes": {n: {"outcome": o, "reason": why} for n, (o, why) in outcomes.items()},
         "required_candidate_count": len(required),
         "required_candidate_completed": len(done_required),
-        "required_candidate_starved": len(starved_required),
-        "required_candidate_starvation_rate": (len(starved_required) / len(required)) if required else 0.,
-        "required_starved_names": starved_required,
+        "required_candidate_starved": len(starved),
+        "required_candidate_infeasible": len(infeasible),
+        "required_candidate_starvation_rate": (len(starved) / len(required)) if required else 0.,
+        "required_starved_names": starved,
         "optional_candidate_count": len(optional),
         "optional_candidate_completed": len(done_optional),
-        "optional_candidate_skipped": len([n for n in optional if n not in candidates]),
+        "optional_candidate_skipped": len(skipped_optional),
+        "not_applicable_count": len(compute["not_applicable"]),
         "physically_invalid_candidates": sorted(n for n, rows in selection_rows.items()
                                                 if rows and not all(r["usable"] for r in rows)),
         "omissions": omissions,
-        "completeness_scope": "a required candidate is satisfied only by a usable plan that is physically valid on every scenario world; every omission carries a reason and none is silent"}
+        "completeness_scope": ("a required class is complete only with a usable plan that is physically valid on every "
+                               "scenario world; INFEASIBLE is a definitive answer reported apart from starvation; "
+                               "NOT_APPLICABLE classes cannot exist under the review's state and are never starvation; "
+                               "every omission carries a reason and none is silent")}
 
 
 def plan(req: Request) -> dict:
@@ -558,23 +593,8 @@ def plan(req: Request) -> dict:
     # a physically valid time-limited plan, or fails with a logged reason. Optional candidates may
     # be skipped. There is to be no silent starvation, so every omission is recorded here.
     compute: dict[str, Any] = {"screen_state": screen_result["state"], "requested": list(requested),
-                               "required": required, "optional": optional, "skipped": [], "omissions": []}
-
-    def wanted(name: str) -> bool:
-        if name in requested:
-            return True
-        compute["skipped"].append(name)
-        compute["omissions"].append({"candidate": name, "outcome": "not_requested",
-                                     "reason": f"the {screen_result['state']} state does not require or offer this class"})
-        return False
-
-    candidates = {"incumbent": incumbent, "base_stock": base}
-    if wanted("deterministic_network"):
-        candidates["deterministic_network"] = solve(req, deterministic, service_floor=True, **v6)
-    if wanted("stochastic_network"):
-        candidates["stochastic_network"] = solve(req, selection, service_floor=True, **v6)
-    if wanted("cvar_network"):
-        candidates["cvar_network"] = solve(req, selection, service_floor=True, cvar_weight=.2, **v6)
+                               "required": required, "optional": optional, "skipped": [], "not_applicable": [],
+                               "omissions": [], "attempts": {}}
     stress_worlds = []
     for i, stress in enumerate(req.stresses):
         stress_worlds += draw(req, req.seed + 100 + i, 1, stress)
@@ -585,15 +605,44 @@ def plan(req: Request) -> dict:
     if stress_worlds and stress_weight > 0:
         hedged = ([replace(w, weight=(1 - stress_weight) / len(selection)) for w in selection]
                   + [replace(w, weight=stress_weight / len(stress_worlds)) for w in stress_worlds])
+    # Applicability (v8, P0-B fix). A conditional class that cannot exist under the current state -
+    # hedged and stress protection without a declared stress, quantile protection outside the
+    # reliability profile - is NOT_APPLICABLE, which is neither a skip nor starvation.
+    applicability = {
+        "hedged_network": (bool(hedged), "no credible stress to hedge: hedged protection does not exist for this review"),
+        "stress_network": (bool(stress_worlds), "no declared stress: stress protection does not exist for this review"),
+        "protected_network": (reliability, "quantile protection only exists in the reliability profile"),
+    }
+
+    def wanted(name: str) -> bool:
+        if name not in requested:
+            compute["skipped"].append(name)
+            compute["omissions"].append({"candidate": name, "outcome": "not_requested",
+                                         "reason": f"the {screen_result['state']} state does not require or offer this class"})
+            return False
+        ok, why = applicability.get(name, (True, ""))
+        if not ok:
+            compute["not_applicable"].append(name)
+            compute["omissions"].append({"candidate": name, "outcome": "not_applicable", "reason": why})
+            return False
+        return True
+
+    candidates = {"incumbent": incumbent, "base_stock": base}
+    if wanted("deterministic_network"):
+        candidates["deterministic_network"] = solve(req, deterministic, service_floor=True, **v6)
+    if wanted("stochastic_network"):
+        candidates["stochastic_network"] = solve(req, selection, service_floor=True, **v6)
+    if wanted("cvar_network"):
+        candidates["cvar_network"] = solve(req, selection, service_floor=True, cvar_weight=.2, **v6)
     # Quantile level per service from its SKU/location risk state: calm and resilient means the
     # expected floor only (lean); an active driver restores the full quantile protection.
     activity = {(row["sku"], row["location"]): row["state"]["activity"] for row in protection}
     risk_levels = ({s.id: (req.service_risk_level * activity.get((s.sku, s.location), 1.) if activity.get((s.sku, s.location), 1.) > .05 else 0.)
                     for s in req.services} if req.protection_decay else None)
-    if reliability and wanted("protected_network"):
+    if wanted("protected_network"):
         # Quantile protection: the worst share of scenarios must meet the target too.
         candidates["protected_network"] = solve(req, selection, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, **v6)
-    if reliability and hedged and wanted("hedged_network"):
+    if wanted("hedged_network"):
         # Hedged protection: the declared stress envelopes enter the solve at their probability
         # weight, so protection is sized by how credible and how costly the stress is.
         candidates["hedged_network"] = solve(req, hedged, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, **v6)
@@ -601,6 +650,8 @@ def plan(req: Request) -> dict:
         candidates["stress_network"] = solve(req, combined, service_floor=True, per_world_service=True, **v6)
     recovery = (solve(req, combined, service_first="all", **v6) if wanted("joint_recovery")
                 else Solution("NOT_REQUESTED", {}, {}, {}, {}, None, [], 0., 0, 0, None, None, []))
+    if recovery.status != "NOT_REQUESTED":
+        compute["attempts"]["joint_recovery"] = recovery
     if recovery.usable_plan:
         candidates["joint_recovery"] = recovery
     # Joint fitted frontier (v6): the best jointly achievable network service on the fitted worlds
@@ -622,6 +673,7 @@ def plan(req: Request) -> dict:
         if not any(service_ok(req, rows) for rows in selection_rows.values()):
             compute["escalated"] = compute.get("escalated", []) + ["joint_recovery: no candidate met every service target"]
             recovery = solve(req, combined, service_first="all", **v6)
+            compute["attempts"]["joint_recovery"] = recovery
             if recovery.usable_plan:
                 candidates["joint_recovery"] = recovery
                 selection_rows["joint_recovery"] = evaluate(req, recovery, selection)
@@ -1009,7 +1061,7 @@ def plan(req: Request) -> dict:
 
     status = "PENDING_REVIEW" if accepted else "RETAIN_INCUMBENT"
     final: Solution | None = candidates[chosen] if accepted else incumbent
-    if incumbent.status != "OPTIMAL":
+    if not incumbent.usable_plan:
         status, final = "ABSTAIN", None
         reasons.append("Incumbent itself has no verified feasible projection; no executable fallback is fabricated.")
     if recovery_mode:
@@ -1198,6 +1250,7 @@ def plan(req: Request) -> dict:
                                       "variables": c.variables, "constraints": c.constraints,
                                       "quality": solve_quality_label(name),
                                       "physically_validated": bool(selection_rows.get(name) and all(r["usable"] for r in selection_rows[name])),
+                                      "physical_failures": sorted({r["reason"] for r in selection_rows.get(name, []) if not r["usable"]}),
                                       "economically_comparable": well_solved(name)}
                                for name, c in candidates.items()},
                 "feasible_time_limited_admitted": sorted(n for n, c in candidates.items()

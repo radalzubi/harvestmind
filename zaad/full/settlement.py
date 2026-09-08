@@ -29,7 +29,10 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
     receipt that landed later in this world than in the planning worlds. Period zero stays
     strict, and nothing is ever clipped upward.
     """
-    if plan.status != "OPTIMAL":
+    # A plan is settled on what it does, not on whether the solver proved it optimal. A
+    # FEASIBLE_TIME_LIMIT plan is a real incumbent and must pass every physical check below like any
+    # other; the status gate that lived here rejected it before any of them ran (P0-D1).
+    if not plan.usable_plan:
         raise PhysicalViolation("unusable solve is not a zero-order plan")
     guidance_truncated = 0.
     skus = {s.id: s for s in req.skus}

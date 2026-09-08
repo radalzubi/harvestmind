@@ -146,7 +146,7 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
             inherited[key] = min(inherited[key], on_hand_now.get(key, 0.))
         planning_req = planning_req.model_copy(update={"inherited_on_hand": {f"{k[0]}|{k[1]}": v for k, v in inherited.items() if v > 1e-9}})
         solution = choose(planning_req, method)
-        if solution.status != "OPTIMAL":
+        if not solution.usable_plan:
             return {"status": solution.status, "reviews": reviews_log, "failure": solution.warnings}
         H = req.horizon
         # The current review's exogenous truth is not supplied to choose().

@@ -94,29 +94,44 @@ def screen(req: Request, fits: dict, protection: list[dict], incumbent_rows: lis
             for service in req.services
             for value in [_service(incumbent_rows, service.id)])
         incumbent_ok = bool(usable and meets)
+    # Projected service deficit of the current plan: how far below its target the incumbent lands
+    # on the selection worlds (0 when it meets them or its outcome is unknown).
+    deficit = 0.
+    if incumbent_rows and all(r["usable"] for r in incumbent_rows):
+        deficit = max((service.target - value for service in req.services
+                       for value in [_service(incumbent_rows, service.id)] if value is not None), default=0.)
+    supply_driver = any(d["driver"] in ("supply", "inbound_eta") for r in rows for d in r["state"]["active_drivers"])
+    thin_cover = any(r["mean_demand_per_period"] > 0 and r["on_hand_units"] < .5 * r["mean_demand_per_period"] for r in rows)
+    joint_required = False
+    if req.joint_recovery_rule in ("deficit", "deficit_cover") and deficit >= req.joint_recovery_deficit:
+        joint_required = True
+        reasons.append(f"the current plan is projected to miss a service target by {deficit:.2f}: the service-first joint plan is required")
+    if req.joint_recovery_rule == "deficit_cover" and supply_driver and thin_cover:
+        joint_required = True
+        reasons.append("a served location holds under half a period of demand while a supply driver is active: the service-first joint plan is required")
 
     if incumbent_ok and not active and not material_excess and not scarcity and not declining:
         reasons.append("the incumbent plan is physically usable, meets every requested service target, "
                        "carries no active risk driver and holds no materially avoidable inventory")
-        return _state("NO_ACTION", reasons, above_lean, demand_total, incumbent_ok)
+        return _state("NO_ACTION", reasons, above_lean, demand_total, incumbent_ok, joint_required, deficit)
     if scarcity:
-        return _state("NETWORK_ALLOCATION", reasons, above_lean, demand_total, incumbent_ok)
+        return _state("NETWORK_ALLOCATION", reasons, above_lean, demand_total, incumbent_ok, joint_required, deficit)
     if any(r["state"]["activity"] >= .3 for r in rows):
         reasons.append("a risk driver is materially active: " + ", ".join(
             sorted({d["driver"] for r in rows for d in r["state"]["active_drivers"]})))
-        return _state("PROTECT", reasons, above_lean, demand_total, incumbent_ok)
+        return _state("PROTECT", reasons, above_lean, demand_total, incumbent_ok, joint_required, deficit)
     if recovering or declining:
         reasons.append("temporary protection or confirmed demand decline is being unwound at "
                        + ", ".join(sorted({r["location"] for r in (recovering + declining)})))
-        return _state("RECOVER", reasons, above_lean, demand_total, incumbent_ok)
+        return _state("RECOVER", reasons, above_lean, demand_total, incumbent_ok, joint_required, deficit)
     if material_excess:
         reasons.append(f"{above_lean:.0f} units sit above a lean base stock against {demand_total:.0f} per period of demand")
-        return _state("CAPITAL_OPTIMIZATION", reasons, above_lean, demand_total, incumbent_ok)
+        return _state("CAPITAL_OPTIMIZATION", reasons, above_lean, demand_total, incumbent_ok, joint_required, deficit)
     if incumbent_ok is None:
         reasons.append("the incumbent's outcome is not yet known, so nothing is skipped")
-        return _state("ESCALATE_UNKNOWN", reasons, above_lean, demand_total, incumbent_ok)
+        return _state("ESCALATE_UNKNOWN", reasons, above_lean, demand_total, incumbent_ok, joint_required, deficit)
     reasons.append("ordinary replenishment: no active driver, no scarcity, no material excess")
-    return _state("NORMAL_REPLENISHMENT", reasons, above_lean, demand_total, incumbent_ok)
+    return _state("NORMAL_REPLENISHMENT", reasons, above_lean, demand_total, incumbent_ok, joint_required, deficit)
 
 
 def _service(rows: list[dict], service_id: str) -> float | None:
@@ -125,9 +140,14 @@ def _service(rows: list[dict], service_id: str) -> float | None:
     return (served / demand) if demand else 1.
 
 
-def _state(name: str, reasons: list[str], above_lean: float, demand: float, incumbent_ok: bool | None) -> dict:
+def _state(name: str, reasons: list[str], above_lean: float, demand: float, incumbent_ok: bool | None,
+           joint_required: bool = False, deficit: float = 0.) -> dict:
+    minimum = list(MINIMUM_SAFE[name]); optional = list(OPTIONAL[name])
+    if joint_required and "joint_recovery" not in minimum:
+        minimum.append("joint_recovery"); optional = [c for c in optional if c != "joint_recovery"]
     return {"state": name, "reasons": reasons,
-            "minimum_safe_candidates": list(MINIMUM_SAFE[name]), "optional_candidates": list(OPTIONAL[name]),
+            "minimum_safe_candidates": minimum, "optional_candidates": optional,
+            "incumbent_service_deficit": deficit, "joint_recovery_required_by_rule": joint_required,
             "units_above_lean_base_stock": above_lean,
             "periods_above_lean_base_stock": (above_lean / demand) if demand > 0 else None,
             "incumbent_feasible_and_meeting_service": incumbent_ok,

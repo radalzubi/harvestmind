@@ -439,6 +439,16 @@ class Request(Record):
     # state is solved first, and the optional planners run only when materiality or uncertainty
     # warrants the compute. The screen never prunes on a heuristic score alone.
     adaptive_escalation: bool = True
+    # joint_recovery requiredness (v8, P0-E). The service-first joint plan is load-bearing only when
+    # the current plan is projected to miss service materially; measured on the P0 set, the closure
+    # cell whose service collapsed without it showed incumbent deficits of 0.27-0.55 while cells
+    # where it changed nothing stayed inside 0.11. "v8": on-demand only (built when no candidate
+    # meets every target). "deficit": also REQUIRED whenever the incumbent's projected service on
+    # the selection worlds is at least `joint_recovery_deficit` below any target. "deficit_cover":
+    # additionally REQUIRED when a served location holds under half a period of demand while a
+    # supply or inbound driver is active.
+    joint_recovery_rule: Literal["v8", "deficit", "deficit_cover"] = "v8"
+    joint_recovery_deficit: float = Field(default=.2, ge=0., le=1.)
     # Solve budget scaling (v8). The 5-second per-solve cap is not a considered figure - it is a
     # historical default - and measurement shows it lands in the worst possible place. On these
     # models HiGHS returns nothing at all until branching completes and then returns a proved
