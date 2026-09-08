@@ -137,9 +137,15 @@ def evaluate(req, solution, worlds):
     return rows
 
 
+# Diagnostic switches (P1 cell-90 investigation); shipped behaviour is both True.
+WEIGHTED_STATS = True     # False: selector statistics ignore scenario weights
+BAND_GUARD = True         # False: the band's shortage-exposure guard is off
+TRACE: dict | None = None  # when a dict, plan() records its selection internals into it
+
+
 def _weights(rows: list[dict]) -> list[float]:
     """Scenario weights of evaluation rows, normalised. Rows without a weight are equal."""
-    raw = [float(r.get("weight", 1.)) for r in rows]
+    raw = [float(r.get("weight", 1.)) for r in rows] if WEIGHTED_STATS else [1.] * len(rows)
     total = sum(raw)
     return [x / total for x in raw] if total > 0 else [1. / len(rows)] * len(rows)
 
@@ -879,7 +885,7 @@ def plan(req: Request) -> dict:
             # protection and paid the resulting shortage was preferred as "leanest" whenever the
             # shortage it accepted cost less than the band width, which on a purchase-dominated
             # cost is far more than protection costs to carry.
-            floor_exposure = (_shortage_exposure(selection_rows[cheapest_name])[0] or 0.) if lean_review else float("inf")
+            floor_exposure = (_shortage_exposure(selection_rows[cheapest_name])[0] or 0.) if (lean_review and BAND_GUARD) else float("inf")
             band = [n for n in comparable
                     if hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9
                     and (_shortage_exposure(selection_rows[n])[0] or 0.) <= floor_exposure + 1e-9] or [cheapest_name]
@@ -923,6 +929,23 @@ def plan(req: Request) -> dict:
     else:
         chosen = "incumbent"
 
+    if TRACE is not None:
+        TRACE.clear()
+        TRACE.update({
+            "state": screen_result["state"], "lean_profile": lean_profile, "lean_review": lean_review,
+            "worlds": [{"name": w.name, "weight": w.weight, "demand": {k: list(v) for k, v in w.demand.items()},
+                        "fills": {f"{k[0]}:{k[1]}": v for k, v in w.fills.items() if k[1] < 4}, "arrival": {f"{k[0]}:{k[1]}": v for k, v in w.arrival.items() if k[1] < 4}} for w in selection],
+            "candidates": {name: {"status": c.status, "p0_purchases": {k[0]: q for k, q in c.purchases.items() if k[1] == 0},
+                                  "purchases": {f"{k[0]}:{k[1]}": q for k, q in c.purchases.items() if q > 1e-9},
+                                  "cost_by_world": [r["economic_cost"] if r["usable"] else None for r in selection_rows.get(name, [])],
+                                  "service_by_world": [(_service_value(req, [r], req.services[0]) if r["usable"] else None) for r in selection_rows.get(name, [])],
+                                  "service_stat": _service_value(req, selection_rows.get(name, []), req.services[0]) if selection_rows.get(name) else None,
+                                  "hedged_cost": (hedged_cost(name) if name in selection_rows else None),
+                                  "exposure": (_shortage_exposure(selection_rows[name])[0] if name in selection_rows else None),
+                                  "burden": (burden(name) if name in selection_rows else None),
+                                  "well_solved": well_solved(name), "feasible": name in feasible}
+                           for name, c in candidates.items()},
+            "feasible": list(feasible), "chosen": chosen, "recovery_mode": recovery_mode})
     confirmation = draw(req_draw, req.seed + 10000, req.scenarios)
     incumbent_rows = evaluate(req, incumbent, confirmation) if incumbent.usable_plan else []
     candidate_rows = evaluate(req, candidates[chosen], confirmation) if candidates[chosen].usable_plan else []
@@ -1167,6 +1190,10 @@ def plan(req: Request) -> dict:
         reasons.append(NO_MATERIAL_IMPROVEMENT + ": " + materiality_result["reason"])
     status = "PENDING_REVIEW" if accepted else "RETAIN_INCUMBENT"
     final: Solution | None = candidates[chosen] if accepted else incumbent
+    if TRACE is not None:
+        TRACE.update({"accepted": bool(accepted), "status": status, "reasons": list(reasons),
+                      "final_p0_purchases": {k[0]: q for k, q in (final.purchases.items() if final else []) if k[1] == 0},
+                      "candidate_gates": {k: v.get("reason") for k, v in candidate_gates.items()}})
     if not incumbent.usable_plan:
         status, final = "ABSTAIN", None
         reasons.append("Incumbent itself has no verified feasible projection; no executable fallback is fabricated.")

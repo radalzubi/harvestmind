@@ -37,20 +37,39 @@ ARMS = {
     "final": {},
     "final_incgate": {"service_gate_basis": "incumbent"},   # P1 representation + band guard, P0 gate
     # representation + guard alone: P0 gate, no tie-break, materiality gate off
-    "representation_only": {"service_gate_basis": "incumbent", "timing_tiebreak": 0.,
+    "representation_only": {"service_gate_basis": "incumbent", "timing_tiebreak": 0., "stratified_scenarios": True,
                             "materiality_cost_fraction": 0., "materiality_inventory_fraction": 0., "materiality_service": 0.},
+    # Objective 2: materiality gate and tie-break, separately and together, at product defaults otherwise
+    "neither": {},
+    "materiality_only": {"materiality_cost_fraction": .01, "materiality_inventory_fraction": .05, "materiality_service": .005},
+    "tiebreak_only": {"timing_tiebreak": 1e-4},
+    "both": {"materiality_cost_fraction": .01, "materiality_inventory_fraction": .05, "materiality_service": .005, "timing_tiebreak": 1e-4},
+    # Objective 1: cell-90 mechanism arms (one switch each, on top of representation_only)
+    "c90_strat_noguard": {"stratified_scenarios": True, "_switch": ("planner.BAND_GUARD", False)},
+    "c90_guard_only": {"stratified_scenarios": False},
+    "c90_strat_equal_weights": {"stratified_scenarios": True, "_switch": ("worlds.STRATIFY_WEIGHTS", False)},
+    "c90_strat_unweighted_stats": {"stratified_scenarios": True, "_switch": ("planner.WEIGHTED_STATS", False)},
+    "c90_strat_body_iid": {"stratified_scenarios": True, "_switch": ("worlds.STRATIFY_BODY", False)},
+    "c90_strat_decoupled": {"stratified_scenarios": True, "_switch": ("worlds.STRATIFY_DECOUPLED_RNG", True)},
 }
 
 
 def main():
     arm = sys.argv[1]
     cells = [int(x) for x in sys.argv[2:]] or [15, 16, 20, 21, 90, 108]
+    settings = dict(ARMS[arm])
+    switch = settings.pop("_switch", None)
+    if switch is not None:
+        import zaad.full.worlds as W
+        module, name = switch[0].split(".")
+        setattr({"planner": P, "worlds": W}[module], name, switch[1])
+        print(f"switch {switch[0]} = {switch[1]}", flush=True)
     orig_plan = P.plan
     out = {}
     for cid in cells:
         cell = next(c for c in B.cells("v7") if c["cell"] == cid)
         req = B.request_for(cell, 38001).model_copy(update={"adaptive_escalation": True, "adaptive_solve_budget": True,
-                                                            "joint_recovery_rule": "deficit", **ARMS[arm]})
+                                                            "joint_recovery_rule": "deficit", **settings})
         truth = B.truth_for(req, cell, 38001)
         reps = []
 

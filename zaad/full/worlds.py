@@ -89,6 +89,17 @@ def forecast_all(req: Request, adaptive: bool = True) -> dict:
     return result
 
 
+# Diagnostic switches (P1 cell-90 investigation). Shipped behaviour is both True; an isolating arm
+# flips one at a time. STRATIFY_BODY False draws the body worlds over the whole unit interval
+# (tail world still added); STRATIFY_WEIGHTS False gives every world weight 1/count.
+STRATIFY_BODY = True
+STRATIFY_WEIGHTS = True
+# When True the stratified uniforms come from a generator of their own (seeded from the draw seed),
+# so the supply shocks drawn after demand are the same stream as an unstratified draw. Diagnostic
+# default False reproduces the coupled behaviour under investigation.
+STRATIFY_DECOUPLED_RNG = False
+
+
 def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
          deterministic: bool = False, adaptive: bool = True) -> list[World]:
     rng = np.random.default_rng(seed)
@@ -103,14 +114,20 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
     # target, the others the body below it, each weighted by its stratum's probability mass.
     stratified = bool(req.stratified_scenarios) and count >= 2 and not deterministic
     q_tail = min((s.target for s in req.services), default=.95) if stratified else None
-    weights = ([q_tail / (count - 1)] * (count - 1) + [1. - q_tail]) if stratified else [1. / count] * count
+    weights = ([q_tail / (count - 1)] * (count - 1) + [1. - q_tail]) if (stratified and STRATIFY_WEIGHTS) else [1. / count] * count
+    rng_strata = np.random.default_rng(seed + 7_000_003) if (stratified and STRATIFY_DECOUPLED_RNG) else rng
     for w in range(count):
         demand, arrival, fills, po_due, po_fill = {}, {}, {}, {}, {}
         for service in req.services:
             f = fits[service.id]
             if stratified:
-                lo, hi = (q_tail, 1.) if w == count - 1 else (0., q_tail)
-                d = sample(f, rng, req.horizon, u=lo + rng.random(req.horizon) * (hi - lo))
+                lo, hi = (q_tail, 1.) if w == count - 1 else ((0., q_tail) if STRATIFY_BODY else (0., 1.))
+                d = sample(f, rng, req.horizon, u=lo + rng_strata.random(req.horizon) * (hi - lo))
+                if rng_strata is rng:
+                    pass
+                elif not deterministic:
+                    # keep the main stream aligned with an unstratified draw: consume what sample() would have
+                    rng.choice(np.asarray(f["sizes"]) if len(f["sizes"]) else np.zeros(1), req.horizon); rng.random(req.horizon)
             else:
                 d = np.full(req.horizon, f["mean"]) if deterministic else sample(f, rng, req.horizon)
             if reliability and req.protection_decay and not deterministic and f.get("uncertainty", {}).get("intermittent"):
@@ -145,8 +162,14 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                     # The tail world is the tail of the per-period noise at the fitted level; the
                     # level uncertainty and the young-regime mixture stay with the body worlds, so
                     # the tail never compounds a high level with high noise into a path no fitted
-                    # world could produce.
-                    pass
+                    # world could produce. With decoupled strata the level draws are still consumed
+                    # (and discarded) so the supply stream that follows matches an unstratified draw.
+                    if STRATIFY_DECOUPLED_RNG:
+                        if u.get("pre_change_level") is not None and u.get("pre_change_weight", 0.) > 0:
+                            if not (float(rng.random()) < u["pre_change_weight"]):
+                                rng.normal()
+                        else:
+                            rng.normal()
                 elif u.get("pre_change_level") is not None and u.get("pre_change_weight", 0.) > 0 and float(rng.random()) < u["pre_change_weight"]:
                     d = d * max(0., u["pre_change_level"] / f["mean"])
                 else:
