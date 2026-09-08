@@ -295,12 +295,58 @@ class OpenPO(Dated):
         return self
 
 
+Provenance = Literal["CUSTOMER_PROVIDED", "INFERRED_FROM_HISTORY", "CONFIGURED_ASSUMPTION", "NOT_AVAILABLE"]
+
+
+class FreightTier(Record):
+    """One step of a stepped shipment tariff: a fixed charge for any load up to `up_to_pallets`."""
+    up_to_pallets: float = Field(gt=0)
+    charge: float = Field(ge=0)
+
+
+class SupplierTerms(Dated):
+    """Commercial terms that live at the supplier order, not the SKU line (P1).
+
+    A supplier order in one period is every purchase line placed with that supplier in that period.
+    The minimum order value, the fixed order cost and the receipt fee are charged once per order;
+    freight tiers and per-pallet charges price the shipment as a whole. Units per pallet come from
+    `units_per_pallet[sku]`, falling back to the source's `pallet_multiple`; a supplier with a pallet
+    -priced tariff and an SKU whose pallet size is unknown gets no pallet economics (the mechanism is
+    disabled and recorded), never an invented figure. `provenance` says where each figure came from."""
+    id: str
+    supplier: str
+    minimum_order_value: float = Field(default=0., ge=0)
+    fixed_order_cost: float = Field(default=0., ge=0)
+    receiving_fee_per_receipt: float = Field(default=0., ge=0)
+    receiving_per_pallet: float = Field(default=0., ge=0)
+    units_per_pallet: dict[str, float] = {}
+    freight_tiers: tuple[FreightTier, ...] = ()
+    freight_per_pallet: float = Field(default=0., ge=0)
+    max_pallets: float | None = Field(default=None, gt=0)
+    provenance: dict[str, Provenance] = {}
+
+    @model_validator(mode="after")
+    def tariff_shape(self):
+        caps = [tier.up_to_pallets for tier in self.freight_tiers]
+        if caps != sorted(caps) or len(set(caps)) != len(caps):
+            raise ValueError("freight tiers must have strictly ascending pallet caps")
+        if any(v <= 0 for v in self.units_per_pallet.values()):
+            raise ValueError("units per pallet must be positive")
+        if self.max_pallets is not None and caps and self.max_pallets < caps[-1]:
+            raise ValueError("maximum shipment is below the top freight tier")
+        return self
+
+
 class Liquidity(Dated):
     opening_cash: float
     minimum_cash: float
     credit_limit: float = Field(ge=0)
     opening_debt: float = Field(ge=0)
     interest_per_period: float = Field(ge=0, le=1)
+    # Opportunity cost of the operator's own cash deployed in inventory, per period (P1). Charged on
+    # cash below the opening balance; drawn debt pays `interest_per_period` instead, so the two never
+    # meet on the same dollar. Zero disables working-capital timing economics.
+    cost_of_capital_per_period: float = Field(default=0., ge=0, le=1)
     known_receivables: tuple[float, ...]
     other_payments: tuple[float, ...]
 
@@ -357,6 +403,11 @@ class Request(Record):
     pipeline: tuple[OpenPO, ...]
     inbound_transfers: tuple[InboundTransfer, ...] = ()
     incumbent_orders: tuple[IncumbentOrder, ...] = ()
+    supplier_terms: tuple[SupplierTerms, ...] = ()
+    # Where each economic input came from, keyed like "source.main.freight_per_unit" or
+    # "location.branch.holding_per_value_period" (P1). Absent keys are reported as
+    # CONFIGURED_ASSUMPTION when the figure is non-zero and NOT_AVAILABLE when it is zero.
+    economics_provenance: dict[str, Provenance] = {}
     liquidity: Liquidity
     stresses: tuple[Stress, ...] = Field(min_length=1, max_length=12)
     seed: int = Field(ge=0)
@@ -364,6 +415,15 @@ class Request(Record):
     max_solve_seconds: float = Field(gt=0, le=120)
     solver: Literal["highs", "highspy", "cbc", "glpk", "gurobi", "cplex"] = "highs"
     downside_cost_tolerance: float = Field(ge=0, le=1)
+    # Materiality for abstention (P1): a candidate that changes total modelled cost by less than
+    # `materiality_cost_fraction`, carried inventory by less than `materiality_inventory_fraction`
+    # and service by less than `materiality_service` is NO MATERIAL IMPROVEMENT, whatever its sign.
+    materiality_cost_fraction: float = Field(default=.01, ge=0, le=1)
+    materiality_inventory_fraction: float = Field(default=.05, ge=0, le=1)
+    materiality_service: float = Field(default=.005, ge=0, le=.1)
+    # Explicit cadence candidates (P1): purchases restricted to every 1, 2 or 4 periods, and to the
+    # supplier's open order days, compared on total modelled cost against the free schedule.
+    cadence_candidates: bool = True
     service_tolerance: float = Field(ge=0, le=.1)
     force_unit_fills: bool = False
     # How review-by-review demand refits treat a detected level change. "symmetric" is the frozen
@@ -526,6 +586,10 @@ class Request(Record):
             require(s.unit_price * terms[s.terms].fx_rate_to_currency >= sk[s.sku].terminal_value)
         for r in self.resources:
             require(len(r.capacity_by_period) >= self.horizon)
+        suppliers = {s.supplier for s in self.sources}
+        require(len({st.supplier for st in self.supplier_terms}) == len(self.supplier_terms))
+        for st in self.supplier_terms:
+            require(st.supplier in suppliers and all(k in sk for k in st.units_per_pallet))
         for row in self.stock:
             require(row.sku in sk and row.location in loc)
         for row in self.inbound_transfers:

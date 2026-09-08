@@ -16,7 +16,7 @@ import numpy as np
 from scipy.optimize import Bounds, LinearConstraint, milp
 from scipy.sparse import coo_matrix
 
-from zaad.full.contracts import Request
+from zaad.full.contracts import Request, SupplierTerms
 from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
 
@@ -242,6 +242,33 @@ def solve_budget(req: Request) -> float:
     return float(min(req.solve_budget_ceiling_seconds, max(req.max_solve_seconds, scaled)))
 
 
+def supplier_orders(req: Request) -> list[tuple[str, list, "SupplierTerms"]]:
+    """(supplier, its sources, its terms) for every supplier that carries order-level economics (P1)."""
+    by_supplier: dict[str, list] = defaultdict(list)
+    for source in req.sources:
+        by_supplier[source.supplier].append(source)
+    out = []
+    for st in req.supplier_terms:
+        if (st.minimum_order_value or st.fixed_order_cost or st.receiving_fee_per_receipt or st.receiving_per_pallet
+                or st.freight_tiers or st.freight_per_pallet or st.max_pallets is not None):
+            out.append((st.supplier, by_supplier.get(st.supplier, []), st))
+    return out
+
+
+def pallet_units(st, srcs) -> dict[str, float] | None:
+    """Units per pallet per source for the shipment tariff, or None when any line's pallet size is
+    unknown - pallet economics are then disabled for that supplier rather than guessed (P1)."""
+    if not (st.freight_tiers or st.freight_per_pallet or st.receiving_per_pallet or st.max_pallets is not None):
+        return None
+    upp = {}
+    for s in srcs:
+        units = st.units_per_pallet.get(s.sku) or (s.pallet_multiple if s.pallet_multiple > 0 else 0.)
+        if units <= 0:
+            return None
+        upp[s.id] = float(units)
+    return upp
+
+
 def warm_start_vector(m: Linear, seed: Solution, seconds: float) -> tuple[dict, np.ndarray | None]:
     """Map a known feasible plan's controls - purchases, PO amendments, transfers - onto this
     model's columns by name, and let the model complete the rest (v8, P0-W3). Nothing that is
@@ -284,7 +311,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           service_risk_levels: dict[str, float] | None = None,
           excess_penalty: dict[tuple[str, str], tuple[float, float]] | None = None,
           continuation: dict[tuple[str, str], tuple[float, float]] | None = None,
-          seed: Solution | None = None) -> Solution:
+          seed: Solution | None = None,
+          allowed_periods: frozenset[int] | None = None) -> Solution:
     """excess_penalty (v6): {(sku, location): (baseline_units, cost_per_unit_period)} charges inventory
     held above the lean baseline while a temporary risk driver is gone, so the plan runs temporary
     protection down through demand rather than replenishing it. continuation (v6): {(sku, location):
@@ -375,6 +403,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             if "alternates" in disabled and primary_id.get((source.sku, source.destination)) != source.id:
                 eligible = False
             cap = min(source.maximum, source.capacity_by_period[t]) if eligible else 0.
+            if allowed_periods is not None and t not in allowed_periods:
+                cap = 0.   # cadence candidate (P1): no order is placed outside the cadence
             q = m.var(("purchase", source.id, t), upper=cap)
             x[source.id, t] = q
             multiple = source.multiple if "continuous" not in disabled else max(source.multiple, 10.)
@@ -422,6 +452,48 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     # by a plan to buy late for it (that incentive deferred buying into a closure).
     for group in quote_groups.values():
         m.row({v: 1 for v in group}, upper=1)
+    # Supplier-order economics (P1). One order per supplier and period: minimum order value across
+    # its lines, a fixed order cost charged once, a receipt fee charged once on arrival, and the
+    # shipment priced as a whole - integer pallets, a stepped tariff (exactly one tier when an
+    # order exists), per-pallet freight and receiving. The same rows are re-checked in settlement.
+    for supplier, srcs, st in supplier_orders(req):
+        upp = pallet_units(st, srcs)
+        for t in range(H):
+            caps = {s.id: min(s.maximum, s.capacity_by_period[t]) for s in srcs}
+            if allowed_periods is not None and t not in allowed_periods:
+                caps = {k: 0. for k in caps}
+            order = m.var(("order", supplier, t), upper=1, integer=True)
+            for s in srcs:
+                m.row({x[s.id, t]: 1, order: -caps[s.id]}, upper=0)
+            if st.minimum_order_value:
+                m.row({**{x[s.id, t]: s.unit_price * terms[s.terms].fx_rate_to_currency for s in srcs}, order: -st.minimum_order_value}, lower=0)
+            departure = min(dates(req, s, t)[0] for s in srcs)
+            for w, world in enumerate(worlds):
+                arrival = min(world.arrival[s.id, t] for s in srcs)
+                if st.fixed_order_cost:
+                    expense(order, st.fixed_order_cost, w, t)
+                if st.receiving_fee_per_receipt:
+                    expense(order, st.receiving_fee_per_receipt, w, arrival)
+            if upp is None:
+                continue
+            pallets = m.var(("pallets", supplier, t), upper=math.ceil(sum(caps[s.id] / upp[s.id] for s in srcs)) + 1, integer=True)
+            m.row({pallets: 1, **{x[s.id, t]: -1. / upp[s.id] for s in srcs}}, lower=0)
+            top = st.max_pallets if st.max_pallets is not None else (st.freight_tiers[-1].up_to_pallets if st.freight_tiers else None)
+            if top is not None:
+                m.row({pallets: 1, order: -top}, upper=0)
+            if st.freight_tiers:
+                tiers = [m.var(("freight_tier", supplier, t, k), upper=1, integer=True) for k in range(len(st.freight_tiers))]
+                m.row({**{v: 1 for v in tiers}, order: -1}, 0, 0)
+                m.row({pallets: 1, **{v: -tier.up_to_pallets for v, tier in zip(tiers, st.freight_tiers)}}, upper=0)
+            for w, world in enumerate(worlds):
+                arrival = min(world.arrival[s.id, t] for s in srcs)
+                if st.freight_tiers:
+                    for v, tier in zip(tiers, st.freight_tiers):
+                        expense(v, tier.charge, w, departure)
+                if st.freight_per_pallet:
+                    expense(pallets, st.freight_per_pallet, w, departure)
+                if st.receiving_per_pallet:
+                    expense(pallets, st.receiving_per_pallet, w, arrival)
     if req.engine_profile == "reliability" and req.order_smoothing > 0 and fixed is None:
         # Stability: |x_t - x_{t-1}| per source charged at a small fraction of landed cost.
         for source in req.sources:
@@ -658,6 +730,10 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             c = m.var(("cash", t, w), lower=liquidity.minimum_cash)
             b = m.var(("debt", t, w), upper=liquidity.credit_limit)
             cash[t, w], debt[t, w] = c, b
+            # Working capital (P1): the operator's own cash below its opening balance earns the
+            # cost of capital elsewhere; charging -rate x cash is that charge up to a constant
+            # shared by every candidate. Drawn debt pays interest instead (never both).
+            costs[w][c] -= liquidity.cost_of_capital_per_period
             row = defaultdict(float, {c: 1, b: -1})
             prior_cash, prior_debt = cash.get((t - 1, w)), debt.get((t - 1, w))
             rhs = liquidity.known_receivables[t] - liquidity.other_payments[t]

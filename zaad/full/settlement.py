@@ -13,6 +13,7 @@ from zaad.full.contracts import Request
 from zaad.full.model import Solution, compatible
 from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
+from zaad.full.model import pallet_units, supplier_orders
 
 
 class PhysicalViolation(ValueError):
@@ -48,6 +49,7 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
     stock: dict[tuple[str, str, int], float] = defaultdict(float)
     locked: dict[str, float] = defaultdict(float)
     ledger: dict[str, float] = defaultdict(float)
+    shipments: list[dict] = []
     pending, trace = [], []
     payments: dict[int, float] = defaultdict(float)
     lc = []
@@ -154,6 +156,39 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             lc.append((due, q * price * term.letter_of_credit_fraction))
             quantity = q * world.fills[source.id, t]
             pending.append((source.sku, source.destination, due + skus[source.sku].shelf_life, due, quantity, "external"))
+        # Supplier-order economics (P1): the same rows the model carries, re-derived from the plan.
+        for supplier, srcs, st in supplier_orders(req):
+            lines = [(s, plan.purchases.get((s.id, t), 0.)) for s in srcs]
+            lines = [(s, q) for s, q in lines if not is_dust(q, source_pack(s))]
+            if not lines:
+                continue
+            value = sum(q * s.unit_price * terms[s.terms].fx_rate_to_currency for s, q in lines)
+            if st.minimum_order_value and value < st.minimum_order_value - 1e-6:
+                raise PhysicalViolation("supplier minimum order value")
+            departure = min(dates(req, s, t)[0] for s, _ in lines)
+            arrival = min(world.arrival[s.id, t] for s, _ in lines)
+            ledger["ordering"] += st.fixed_order_cost
+            payments[t] += st.fixed_order_cost
+            ledger["receiving"] += st.receiving_fee_per_receipt
+            payments[arrival] += st.receiving_fee_per_receipt
+            shipment = {"period": t, "supplier": supplier, "order_value": value, "lines": [(s.id, q) for s, q in lines]}
+            upp = pallet_units(st, srcs)
+            if upp is not None:                      # pallet economics only when every line has a pallet size
+                load = sum(q / upp[s.id] for s, q in lines)
+                pallets = math.ceil(load - 1e-9)
+                top = st.max_pallets if st.max_pallets is not None else (st.freight_tiers[-1].up_to_pallets if st.freight_tiers else None)
+                if top is not None and pallets > top + 1e-9:
+                    raise PhysicalViolation("shipment exceeds the supplier's maximum load")
+                if st.freight_tiers:
+                    tier = next(tier for tier in st.freight_tiers if pallets <= tier.up_to_pallets + 1e-9)
+                    ledger["freight"] += tier.charge
+                    payments[departure] += tier.charge
+                ledger["freight"] += pallets * st.freight_per_pallet
+                payments[departure] += pallets * st.freight_per_pallet
+                ledger["receiving"] += pallets * st.receiving_per_pallet
+                payments[arrival] += pallets * st.receiving_per_pallet
+                shipment.update(pallets=pallets, load_pallets=load)
+            shipments.append(shipment)
         for capacity_resource in req.resources:
             if usage[capacity_resource.id] > capacity_resource.capacity_by_period[t] + 1e-5:
                 raise PhysicalViolation("shared supplier/route capacity breach")
@@ -212,6 +247,8 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
         interest = debt * req.liquidity.interest_per_period
         ledger["financing"] += interest
         cash += req.liquidity.known_receivables[t] - req.liquidity.other_payments[t] - payments[t] - interest
+        # Working capital (P1): own cash below the opening balance earns the cost of capital elsewhere.
+        ledger["working_capital"] += req.liquidity.cost_of_capital_per_period * (req.liquidity.opening_cash - cash)
         reserve = sum(value for due, value in lc if due > t)
         required = req.liquidity.minimum_cash + reserve
         borrow = max(0., required - cash)
@@ -294,6 +331,7 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             "order_metrics": order_metrics, "orders": orders_summary,
             "substituted": dict(substitute_total), "trace": trace, "service_by_period": service_by_period,
             "conservation_residual": conservation, "ledger_residual": total_cost - sum(ledger.values()),
+            "shipments": shipments,
             "unpaid_contractual_payments": terminal_liability,
             "terminal_liability_reserve": terminal_liability, "terminal_financing_headroom": terminal_headroom,
             "end_stock": [{"sku": s, "location": location_key, "expiry": e, "quantity": q} for (s, location_key, e), q in stock.items()],
