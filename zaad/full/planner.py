@@ -22,7 +22,8 @@ from zaad.full import VERSION
 from zaad.full.capital import decompose as capital_decompose, duplication as capital_duplication, pooling_split as capital_pooling
 from zaad.full.contracts import Request
 from zaad.full.eta import conditional_eta
-from zaad.full.model import Solution, solve
+from zaad.full.economics import NO_MATERIAL_IMPROVEMENT, economics_block, materiality
+from zaad.full.model import Solution, solve, supplier_orders
 from zaad.full.protection import protection_profile
 from zaad.full.screen import MINIMUM_SAFE, screen
 from zaad.full.settlement import PhysicalViolation, settle
@@ -570,6 +571,14 @@ def plan(req: Request) -> dict:
                            transfers={}, amendments={(p.id, next(o.id for o in p.options if o.action == "keep")): p.remaining for p in req.pipeline})
         incumbent = solve(req, deterministic, fixed=declared)
         incumbent_label = "operator_declared"
+    elif req.incumbent_rule:
+        # Declared operator rule (P1): the rule's own projection from this snapshot is the
+        # incumbent, so ZAAD is compared against the policy the buyer actually runs.
+        from zaad.full.policies import baseline_plan
+        rule_plan = baseline_plan(req, req.incumbent_rule)
+        declared = replace(base, status="OPTIMAL", purchases=dict(rule_plan.purchases), transfers={}, amendments=dict(rule_plan.amendments))
+        incumbent = solve(req, deterministic, fixed=declared)
+        incumbent_label = "operator_rule:" + req.incumbent_rule
     # Adaptive escalation (v8): classify the review first, then solve only the candidate classes
     # that could change the decision for that state. The incumbent and the base-stock proxy are
     # always present - they are the comparison ZAAD exists to make and cost one deterministic solve
@@ -587,6 +596,16 @@ def plan(req: Request) -> dict:
                            "incumbent_feasible_and_meeting_service": None, "scope": "escalation disabled"})
     required = list(screen_result["minimum_safe_candidates"])
     optional = list(screen_result["optional_candidates"])
+    # Cadence candidates (P1). When a supplier carries order-level economics (fixed order cost, MOV,
+    # freight tariff) the review may be better served by ordering every k periods than by the
+    # per-period cadence the incumbent runs. They are optional classes: skipping one is never
+    # starvation, and each is the same joint economic solve with the order calendar masked.
+    cadence_masks: dict[str, frozenset[int]] = {}
+    if req.cadence_candidates and supplier_orders(req):
+        for k in (2, 4):
+            if k < req.horizon:
+                cadence_masks[f"cadence_{k}_network"] = frozenset(range(0, req.horizon, k))
+        optional += list(cadence_masks)
     requested = required + optional
     # Candidate completeness (v8, P0-B). The standard is not that every possible candidate solves;
     # it is that every candidate the screen calls *operationally necessary* either solves, returns
@@ -648,6 +667,9 @@ def plan(req: Request) -> dict:
         candidates["hedged_network"] = solve(req, hedged, service_floor=True, service_risk="cvar", service_risk_levels=risk_levels, seed=incumbent, **v6)
     if wanted("stress_network"):
         candidates["stress_network"] = solve(req, combined, service_floor=True, per_world_service=True, seed=incumbent, **v6)
+    for name, mask in cadence_masks.items():
+        if wanted(name):
+            candidates[name] = solve(req, selection, service_floor=True, allowed_periods=mask, **v6)
     recovery = (solve(req, combined, service_first="all", seed=incumbent, **v6) if wanted("joint_recovery")
                 else Solution("NOT_REQUESTED", {}, {}, {}, {}, None, [], 0., 0, 0, None, None, []))
     if recovery.status != "NOT_REQUESTED":
@@ -1059,6 +1081,16 @@ def plan(req: Request) -> dict:
         blocking["reasons"].append("operator incumbent missing")
         reasons.append("Operator incumbent is missing; a synthetic proxy is not evidence against the customer's policy.")
 
+    # Materiality (P1). A candidate that passed every gate is still not worth an intervention
+    # when it moves cost, carried inventory and worst service by less than the declared
+    # materiality: the recommendation is then NO MATERIAL IMPROVEMENT AVAILABLE and the
+    # incumbent stands. The thresholds are the request's own, never a constant.
+    materiality_result = (materiality(req, incumbent_rows, candidate_rows)
+                          if chosen != "incumbent" and incumbent_rows and candidate_rows else None)
+    if accepted and materiality_result is not None and materiality_result["material"] is False:
+        accepted = False
+        blocking["reasons"].append("immaterial")
+        reasons.append(NO_MATERIAL_IMPROVEMENT + ": " + materiality_result["reason"])
     status = "PENDING_REVIEW" if accepted else "RETAIN_INCUMBENT"
     final: Solution | None = candidates[chosen] if accepted else incumbent
     if not incumbent.usable_plan:
@@ -1229,6 +1261,9 @@ def plan(req: Request) -> dict:
                                  "selected_achieved": _service_value(req, candidate_rows, s) if (accepted and candidate_rows) else (_service_value(req, incumbent_rows, s) if incumbent_rows else None)}
                                 for s in req.services],
             "procurement_timing": procurement_timing(req, fits, final) if req.protection_v6 else None,
+            "economics": economics_block(req, fits, protection, incumbent=incumbent if incumbent.usable_plan else None, final=final,
+                                         incumbent_rows=incumbent_rows, final_rows=final_rows, accepted=bool(accepted), chosen=chosen,
+                                         materiality_result=materiality_result),
             "orchestration": {
                 **screen_result,
                 **_completeness(req, candidates, selection_rows, compute),

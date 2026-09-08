@@ -403,6 +403,10 @@ class Request(Record):
     pipeline: tuple[OpenPO, ...]
     inbound_transfers: tuple[InboundTransfer, ...] = ()
     incumbent_orders: tuple[IncumbentOrder, ...] = ()
+    # Declared operator purchasing rule (P1): "replace_sold", "periodic:k", "reorder_point" or
+    # "economic_lot". When set and no dated incumbent orders are declared, the rule's projection
+    # from the current snapshot is the incumbent at every review.
+    incumbent_rule: str | None = None
     supplier_terms: tuple[SupplierTerms, ...] = ()
     # Where each economic input came from, keyed like "source.main.freight_per_unit" or
     # "location.branch.holding_per_value_period" (P1). Absent keys are reported as
@@ -615,6 +619,10 @@ class Request(Record):
         for row in self.incumbent_orders:
             require(row.source in src and row.period < self.horizon)
         require(len({(r.source, r.period) for r in self.incumbent_orders}) == len(self.incumbent_orders))
+        if self.incumbent_rule is not None:
+            kind, _, arg = self.incumbent_rule.partition(":")
+            require(kind in {"replace_sold", "periodic", "reorder_point", "economic_lot"})
+            require(kind != "periodic" or (arg.isdigit() and int(arg) >= 1))
         for po in self.pipeline:
             require(po.source in src and po.remaining > 0)
             for option in po.options:

@@ -247,8 +247,6 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
         interest = debt * req.liquidity.interest_per_period
         ledger["financing"] += interest
         cash += req.liquidity.known_receivables[t] - req.liquidity.other_payments[t] - payments[t] - interest
-        # Working capital (P1): own cash below the opening balance earns the cost of capital elsewhere.
-        ledger["working_capital"] += req.liquidity.cost_of_capital_per_period * (req.liquidity.opening_cash - cash)
         reserve = sum(value for due, value in lc if due > t)
         required = req.liquidity.minimum_cash + reserve
         borrow = max(0., required - cash)
@@ -259,6 +257,10 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
         repay = min(debt, max(0., cash - required))
         cash -= repay
         debt -= repay
+        # Working capital (P1): own cash deployed below the opening balance earns the cost of
+        # capital elsewhere. Charged after borrowing, so the part financed by drawn credit carries
+        # interest above and never a second capital charge; idle cash above opening earns nothing.
+        ledger["working_capital"] += req.liquidity.cost_of_capital_per_period * max(0., req.liquidity.opening_cash - cash)
         trace.append({"period": t, "inventory_value": sum(q * skus[s].asset_value for (s, _, _), q in stock.items()),
                       "cash": cash, "debt": debt, "payments": payments[t], "lc_reserve": reserve,
                       "pending_units": sum(p[4] for p in pending), "expired_units": expired_units})

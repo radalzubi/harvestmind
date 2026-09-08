@@ -23,10 +23,11 @@ def p1_request(*, horizon: int = 12, period_days: int = 7, demand: float = 100.,
                lead_days: int = 7, order_weekdays: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6), ship_weekdays: tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6),
                holding_per_year: float = .15, cost_of_capital_per_year: float = 0., interest_per_year: float = .10,
                deposit_fraction: float = 0., balance_trigger: str = "arrival", net_days: int = 0,
-               capacity_volume: float = 1e6, opening_cash: float = 1e6, credit_limit: float = 1e6,
+               capacity_volume: float = 1e6, opening_cash: float = 1e6, credit_limit: float = 1e6, receivables_per_period: float = 0.,
                supplier_terms: dict[str, Any] | None = None, pipeline: list[dict] | None = None,
                incumbent_orders: list[dict] | None = None, target: float = .95, seed: int = 41001, scenarios: int = 3,
-               max_solve_seconds: float = 15., extra: dict[str, Any] | None = None) -> Request:
+               max_solve_seconds: float = 15., stresses: str = "none", incumbent_rule: str | None = None,
+               extra: dict[str, Any] | None = None) -> Request:
     known = {"known_at": NOW - timedelta(days=1)}
     H = horizon
     sources, skus_rows, services, history, stock = [], [], [], [], []
@@ -59,8 +60,15 @@ def p1_request(*, horizon: int = 12, period_days: int = 7, demand: float = 100.,
         "liquidity": {**known, "opening_cash": opening_cash, "minimum_cash": 0., "credit_limit": credit_limit, "opening_debt": 0.,
                       "interest_per_period": annual_to_period(interest_per_year, period_days),
                       "cost_of_capital_per_period": annual_to_period(cost_of_capital_per_year, period_days),
-                      "known_receivables": [0.] * H, "other_payments": [0.] * H},
-        "stresses": [{"name": "late", "fill_multiplier": .9, "extra_lead_days": 7, "demand_multiplier": 1.05, "recovery_period": H, "shared_failure": True}],
+                      "known_receivables": [receivables_per_period] * H, "other_payments": [0.] * H},
+        # A declared stress is mandatory on every request. P1 is cycle-stock economics, not
+        # disruption physics, so the default declared stress is nil (the fitted world itself): the
+        # P0 stress gate then runs but cannot dominate the economics. "late" declares a one-week
+        # delay with full fill for the sensitivity arm; "severe" is the P0-style envelope.
+        "stresses": {"none": [{"name": "nil", "fill_multiplier": 1., "extra_lead_days": 0, "demand_multiplier": 1., "recovery_period": H, "shared_failure": True}],
+                     "late": [{"name": "one_week_late", "fill_multiplier": 1., "extra_lead_days": 7, "demand_multiplier": 1., "recovery_period": H, "shared_failure": True}],
+                     "severe": [{"name": "late", "fill_multiplier": .9, "extra_lead_days": 7, "demand_multiplier": 1.05, "recovery_period": H, "shared_failure": True}]}[stresses],
+        "incumbent_rule": incumbent_rule,
         "seed": seed, "scenarios": scenarios, "max_solve_seconds": max_solve_seconds, "downside_cost_tolerance": .05, "service_tolerance": .01,
         "evidence_label": "SYNTHETIC",
         "economics_provenance": {"location.branch.holding_per_value_period": "CONFIGURED_ASSUMPTION",

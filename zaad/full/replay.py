@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import timedelta
+import time
 import numpy as np
 
 from zaad.full.contracts import Request
@@ -42,6 +43,13 @@ def choose(req: Request, method: str) -> Solution:
         req = req.model_copy(update={"protection_v6": False})
     if method in COMPARATOR_METHODS and req.protection_v7:
         req = req.model_copy(update={"protection_v7": False})
+    if method == "incumbent" or method.startswith(("replace_sold", "periodic", "reorder_point", "economic_lot")):
+        # P1 comparators and declared operator rules, projected over the horizon; lot-aware.
+        from zaad.full.policies import baseline_plan
+        rule = req.incumbent_rule if method == "incumbent" else method
+        if rule is None:
+            raise ValueError("the incumbent method needs a declared incumbent_rule on the request")
+        return baseline_plan(req, rule)
     if method == "echelon_base_stock":
         # Independent MEIO-style comparator: echelon base stock projected through the common model.
         from zaad.full.echelon import echelon_targets
@@ -145,7 +153,18 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
         for key in list(inherited):
             inherited[key] = min(inherited[key], on_hand_now.get(key, 0.))
         planning_req = planning_req.model_copy(update={"inherited_on_hand": {f"{k[0]}|{k[1]}": v for k, v in inherited.items() if v > 1e-9}})
+        if req.incumbent_rule and not planning_req.incumbent_orders:
+            # The operator's declared rule is the incumbent at every review (P1): what the rule
+            # would buy from this snapshot, so ZAAD is always compared against the real policy.
+            from zaad.full.policies import baseline_plan
+            declared = baseline_plan(planning_req, req.incumbent_rule)
+            from zaad.full.contracts import IncumbentOrder
+            planning_req = planning_req.model_copy(update={"incumbent_orders": tuple(
+                IncumbentOrder(known_at=planning_req.as_of, source=sid, period=t, quantity=q)
+                for (sid, t), q in declared.purchases.items() if q > 0 and t < planning_req.horizon)})
+        wall_started = time.perf_counter()
         solution = choose(planning_req, method)
+        wall_seconds = time.perf_counter() - wall_started
         if not solution.usable_plan:
             return {"status": solution.status, "reviews": reviews_log, "failure": solution.warnings}
         H = req.horizon
@@ -173,6 +192,7 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
                             "capital": getattr(solution, "capital", None),
                             "inherited_on_hand": {f"{k[0]}|{k[1]}": v for k, v in inherited.items() if v > 1e-9},
                             "solve_quality": getattr(solution, "solve_quality", None),
+                            "wall_seconds": wall_seconds,
                             "solver": {"status": solution.status, "seconds": solution.solve_seconds,
                                        "gap": solution.gap, "variables": solution.variables,
                                        "constraints": solution.constraints}})
