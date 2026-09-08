@@ -75,6 +75,11 @@ def p1_request(*, horizon: int = 12, period_days: int = 7, demand: float = 100.,
         # cost, acts as an undeclared fixed order cost that fights consolidation. The product
         # default is untouched; the ablation arm keeps it on to show the effect.
         "order_smoothing": order_smoothing,
+        # P1 fixture settings for the two opt-in defaults (see contracts): materiality thresholds
+        # and the timing tie-break are declared here, not inherited.
+        "materiality_cost_fraction": .01, "materiality_inventory_fraction": .05, "materiality_service": .005,
+        "timing_tiebreak": 1e-4,
+        "stratified_scenarios": True,
         "seed": seed, "scenarios": scenarios, "max_solve_seconds": max_solve_seconds, "downside_cost_tolerance": .05, "service_tolerance": .01,
         "evidence_label": "SYNTHETIC",
         "economics_provenance": {"location.branch.holding_per_value_period": "CONFIGURED_ASSUMPTION",

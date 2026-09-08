@@ -597,7 +597,14 @@ def plan(req: Request) -> dict:
     sources_by_id = {s.id: s for s in req.sources}
     protection = protection_profile(req, fits, supply)
     v6 = v6_solve_terms(req, fits, protection) if req.protection_v6 else {}
-    selection = draw(req, req.seed, req.scenarios)
+    # P1 closure: the target-stratified scenario representation is the routine-demand-noise view
+    # for a lean review. Where any risk driver is active, P0's own downside machinery (quantile
+    # floors, hedged and stress candidates, recovery rules) is the representation, and the iid
+    # worlds it was validated on are kept: measured on the P0 six-cell set the stratified worlds
+    # applied under PROTECT lost service on cells 20 and 21.
+    lean_profile = all(float(row["state"]["activity"]) <= .05 for row in protection)
+    req_draw = req if (lean_profile or not req.stratified_scenarios) else req.model_copy(update={"stratified_scenarios": False})
+    selection = draw(req_draw, req.seed, req.scenarios)
     deterministic = draw(req, req.seed, 1, deterministic=True)
     baseline_targets = targets(req)
     base = solve(req, deterministic, targets=baseline_targets)
@@ -872,7 +879,7 @@ def plan(req: Request) -> dict:
             # protection and paid the resulting shortage was preferred as "leanest" whenever the
             # shortage it accepted cost less than the band width, which on a purchase-dominated
             # cost is far more than protection costs to carry.
-            floor_exposure = _shortage_exposure(selection_rows[cheapest_name])[0] or 0.
+            floor_exposure = (_shortage_exposure(selection_rows[cheapest_name])[0] or 0.) if lean_review else float("inf")
             band = [n for n in comparable
                     if hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9
                     and (_shortage_exposure(selection_rows[n])[0] or 0.) <= floor_exposure + 1e-9] or [cheapest_name]
@@ -916,7 +923,7 @@ def plan(req: Request) -> dict:
     else:
         chosen = "incumbent"
 
-    confirmation = draw(req, req.seed + 10000, req.scenarios)
+    confirmation = draw(req_draw, req.seed + 10000, req.scenarios)
     incumbent_rows = evaluate(req, incumbent, confirmation) if incumbent.usable_plan else []
     candidate_rows = evaluate(req, candidates[chosen], confirmation) if candidates[chosen].usable_plan else []
     reasons, stress_report = [], []
@@ -1062,7 +1069,7 @@ def plan(req: Request) -> dict:
                 reasons.append("Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the economic downside tolerance (service-first acceptance).")
 
     for i, stress in enumerate(req.stresses):
-        adversaries = draw(req, req.seed + 30000 + i, req.scenarios, stress)
+        adversaries = draw(req_draw, req.seed + 30000 + i, req.scenarios, stress)
         before = evaluate(req, incumbent, adversaries) if incumbent.usable_plan else []
         after = evaluate(req, candidates[chosen], adversaries) if candidates[chosen].usable_plan else []
         physically_ok = bool(after) and all(r["usable"] for r in after)
@@ -1105,7 +1112,7 @@ def plan(req: Request) -> dict:
                 passes, lower, _ = confirm_service_first(incumbent_rows, rows, alternative)
             checks: list[dict[str, Any]] = []
             for i, stress in enumerate(req.stresses):
-                worlds = draw(req, req.seed + 30000 + i, req.scenarios, stress)
+                worlds = draw(req_draw, req.seed + 30000 + i, req.scenarios, stress)
                 before = evaluate(req, incumbent, worlds) if incumbent.usable_plan else []
                 after = evaluate(req, candidates[alternative], worlds)
                 usable_after = bool(after) and all(r["usable"] for r in after)
@@ -1153,7 +1160,8 @@ def plan(req: Request) -> dict:
     # incumbent stands. The thresholds are the request's own, never a constant.
     materiality_result = (materiality(req, incumbent_rows, candidate_rows)
                           if chosen != "incumbent" and incumbent_rows and candidate_rows else None)
-    if accepted and materiality_result is not None and materiality_result["material"] is False:
+    materiality_configured = max(req.materiality_cost_fraction, req.materiality_inventory_fraction, req.materiality_service) > 0
+    if accepted and materiality_configured and materiality_result is not None and materiality_result["material"] is False:
         accepted = False
         blocking["reasons"].append("immaterial")
         reasons.append(NO_MATERIAL_IMPROVEMENT + ": " + materiality_result["reason"])

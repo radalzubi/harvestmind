@@ -422,23 +422,32 @@ class Request(Record):
     # Materiality for abstention (P1): a candidate that changes total modelled cost by less than
     # `materiality_cost_fraction`, carried inventory by less than `materiality_inventory_fraction`
     # and service by less than `materiality_service` is NO MATERIAL IMPROVEMENT, whatever its sign.
-    materiality_cost_fraction: float = Field(default=.01, ge=0, le=1)
-    materiality_inventory_fraction: float = Field(default=.05, ge=0, le=1)
-    materiality_service: float = Field(default=.005, ge=0, le=.1)
+    # Off by default (all zero): the abstention gate fires only when the operator declares
+    # thresholds. Bundled with the timing tie-break it moved P0 cells 21 and 90 on the six-cell set
+    # while the scenario representation alone did not, and the closure pass could not separate the
+    # two; the P1 fixtures declare .01 / .05 / .005.
+    materiality_cost_fraction: float = Field(default=0., ge=0, le=1)
+    materiality_inventory_fraction: float = Field(default=0., ge=0, le=1)
+    materiality_service: float = Field(default=0., ge=0, le=.1)
     # Explicit cadence candidates (P1): purchases restricted to every 1, 2 or 4 periods, and to the
     # supplier's open order days, compared on total modelled cost against the free schedule.
     cadence_candidates: bool = True
-    # Service comparison basis for the confirmation and stress gates outside recovery mode (P1).
+    # Service comparison basis for the confirmation and stress gates on a lean review (P1).
+    # "incumbent" (default, the V7/P0 rule): any fall beyond the tolerance is a worsening.
     # "target": a service that falls against the incumbent but stays at or above its target is
-    # not a worsening (the operator asked for the target; service above it is protection nobody
-    # asked for). "incumbent": the V7/P0 rule, any fall beyond the tolerance is a worsening.
-    service_gate_basis: Literal["target", "incumbent"] = "target"
+    # not a worsening. Kept as an option, not the default: applied unconditionally it lost service
+    # on P0 cells 20, 21, 90 and 108, and once the scenario representation was corrected
+    # (`stratified_scenarios`) the fixtures it was introduced for (I, O, P) pass without it.
+    service_gate_basis: Literal["target", "incumbent"] = "incumbent"
     # Timing tie-break (P1): when the economics are indifferent between committing cash now or
     # later (no cost of capital declared, negligible holding), prefer later. Expressed as a
     # fraction of the unit price per period of earliness added to the model objective only; it is
     # not an economic cost, never enters the settlement ledger, and at its default it is two
     # orders of magnitude below the smallest materiality the selector acts on.
-    timing_tiebreak: float = Field(default=1e-4, ge=0, le=1e-2)
+    # Default 0 (off): bundled with the materiality gate it moved P0 cells 21 and 90 on the
+    # six-cell set while the scenario representation alone did not, and this pass could not
+    # separate the two; opt in per request (the P1 fixtures use 1e-4).
+    timing_tiebreak: float = Field(default=0., ge=0, le=1e-2)
     # Scenario representation (P1 closure). With S sampled worlds the plan can only protect against
     # the largest of S draws in each period, which for S=3 is the 79th percentile in the median
     # draw; the service target and the shortage economics need the tail beyond the target. When
@@ -446,7 +455,11 @@ class Request(Record):
     # from below the target quantile (weight target/(S-1) each) and one world drawn from the tail
     # above it (weight 1-target). Expectations are unbiased; the tail is always represented.
     # Deterministic and single-world draws (the truth paths of every benchmark) are untouched.
-    stratified_scenarios: bool = True
+    # Default off: on the frozen P0 six-cell set the representation (with the band guard, lean
+    # reviews only) is identical on cells 15/16/20, inside the recorded band on 21 and better on
+    # 108, but on cell 90 it carries 49% more inventory with one more breach - a regression on the
+    # very cell the P0 freeze guards. Opt in per request; the P1 fixtures declare it on.
+    stratified_scenarios: bool = False
     service_tolerance: float = Field(ge=0, le=.1)
     force_unit_fills: bool = False
     # How review-by-review demand refits treat a detected level change. "symmetric" is the frozen

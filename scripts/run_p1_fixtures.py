@@ -16,13 +16,13 @@ from statistics import mean
 from scripts.p1_fixtures import FIXTURES, POLICIES, REVIEWS, SEEDS, build
 
 STRESS_ARM = "none"
-GATE_ARM = "target"
+GATE_ARM = "default"
 SMOOTHING_ARM = 0.
 
 
 def _build(name: str, seed: int):
     req = build(name, seed, stresses=STRESS_ARM, order_smoothing=SMOOTHING_ARM)
-    return req if GATE_ARM == "target" else req.model_copy(update={"service_gate_basis": GATE_ARM})
+    return req if GATE_ARM == "default" else req.model_copy(update={"service_gate_basis": GATE_ARM})
 from zaad.full.economics import COMPONENTS, cost_breakdown, order_waterfall
 from zaad.full.replay import replay
 from zaad.full.tolerance import is_dust
@@ -194,12 +194,12 @@ def main():
     ap.add_argument("--policies", default=",".join(POLICIES))
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--stress", default="none", choices=("none", "late", "severe"))
-    ap.add_argument("--gate", default="target", choices=("target", "incumbent"))
+    ap.add_argument("--gate", default="default", choices=("default", "target", "incumbent"))
     ap.add_argument("--smoothing", type=float, default=0.)
     a = ap.parse_args()
     global STRESS_ARM, GATE_ARM, SMOOTHING_ARM
     STRESS_ARM, GATE_ARM, SMOOTHING_ARM = a.stress, a.gate, a.smoothing
-    arm = a.stress + ("" if a.gate == "target" else "_gate_" + a.gate) + ("" if a.smoothing == 0 else f"_smoothing_{a.smoothing:g}")
+    arm = a.stress + ("" if a.gate == "default" else "_gate_" + a.gate) + ("" if a.smoothing == 0 else f"_smoothing_{a.smoothing:g}")
     names = [n for n in a.fixtures.split(",") if n] or list(FIXTURES)
     policies = [p for p in a.policies.split(",") if p]
     jobs = [(n, p, s) for n in names for p in policies for s in SEEDS]

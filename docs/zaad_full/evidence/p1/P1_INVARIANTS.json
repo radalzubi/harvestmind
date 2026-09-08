@@ -2,7 +2,7 @@
  {
   "fixture": "A_no_terms_good_incumbent",
   "seed": 41001,
-  "status": "PENDING_REVIEW",
+  "status": "RETAIN_INCUMBENT",
   "checks": {
    "components_reconcile": true,
    "attribution_partitions": true,
@@ -19,9 +19,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 49 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 1 is service protection (LEAN); the order is 14 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
+   "Order 62 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 14 is service protection (LEAN); the order is 1 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +0.23%, inventory -28.58%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": null
  },
  {
   "fixture": "A_no_terms_good_incumbent",
@@ -45,7 +45,7 @@
   "explanations": [
    "Order 62 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 14 is service protection (LEAN); the order is 1 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +0.88%, inventory -30.19%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": null
  },
  {
   "fixture": "A_no_terms_good_incumbent",
@@ -69,7 +69,7 @@
   "explanations": [
    "Order 62 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 14 is service protection (LEAN); the order is 1 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +1.43%, inventory -19.73%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": null
  },
  {
   "fixture": "B_fixed_order_cost_replace_sold",
@@ -91,9 +91,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 1058 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 996 extends cover by about 10.1 periods, avoiding about 10.1 orders ($2,516 in order-level costs) against about $72 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+   "Order 1101 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1038 extends cover by about 10.5 periods, avoiding about 10.5 orders ($2,624 in order-level costs) against about $78 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -31.29%, inventory +752.55%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -30.14%, inventory +1108.60%, worst service +0.009 against the incumbent; improvement exceeds the declared materiality on cost, service"
  },
  {
   "fixture": "B_fixed_order_cost_replace_sold",
@@ -115,9 +115,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 1053 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 991 extends cover by about 10.0 periods, avoiding about 10.0 orders ($2,503 in order-level costs) against about $71 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+   "Order 1079 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1017 extends cover by about 10.3 periods, avoiding about 10.3 orders ($2,569 in order-level costs) against about $75 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -28.81%, inventory +1151.13%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -30.02%, inventory +982.35%, worst service -0.018 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "B_fixed_order_cost_replace_sold",
@@ -141,12 +141,12 @@
   "explanations": [
    "Order 1058 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 996 extends cover by about 10.1 periods, avoiding about 10.1 orders ($2,516 in order-level costs) against about $72 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -29.24%, inventory +1304.74%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -29.82%, inventory +959.14%, worst service -0.025 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "C_moq_four_weeks",
   "seed": 41001,
-  "status": "PENDING_REVIEW",
+  "status": "RETAIN_INCUMBENT",
   "checks": {
    "components_reconcile": true,
    "attribution_partitions": true,
@@ -163,9 +163,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 453 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 337 is the top-up to the supplier's minimum order; 53 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off."
+   "Order 400 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 337 is the top-up to the supplier's minimum order. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -41.71%, inventory -86.39%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -39.40%, inventory -87.19%, worst service -0.045 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "C_moq_four_weeks",
@@ -189,12 +189,12 @@
   "explanations": [
    "Order 453 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 337 is the top-up to the supplier's minimum order; 53 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -39.41%, inventory -87.21%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -40.10%, inventory -86.84%, worst service -0.048 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "C_moq_four_weeks",
   "seed": 41003,
-  "status": "PENDING_REVIEW",
+  "status": "RETAIN_INCUMBENT",
   "checks": {
    "components_reconcile": true,
    "attribution_partitions": true,
@@ -211,14 +211,14 @@
   },
   "pass": true,
   "explanations": [
-   "Order 453 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 337 is the top-up to the supplier's minimum order; 53 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off."
+   "Order 400 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 337 is the top-up to the supplier's minimum order. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -38.60%, inventory -87.23%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -40.27%, inventory -86.77%, worst service -0.049 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "D_case_multiple",
   "seed": 41001,
-  "status": "PENDING_REVIEW",
+  "status": "RETAIN_INCUMBENT",
   "checks": {
    "components_reconcile": true,
    "attribution_partitions": true,
@@ -235,14 +235,14 @@
   },
   "pass": true,
   "explanations": [
-   "Order 48 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 0 is service protection (LEAN); the order is 15 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
+   "Order 96 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 33 is case rounding. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -0.88%, inventory -31.00%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": null
  },
  {
   "fixture": "D_case_multiple",
   "seed": 41002,
-  "status": "PENDING_REVIEW",
+  "status": "RETAIN_INCUMBENT",
   "checks": {
    "components_reconcile": true,
    "attribution_partitions": true,
@@ -259,9 +259,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 48 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 0 is service protection (LEAN); the order is 15 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
+   "Order 96 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 33 is case rounding. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -0.10%, inventory -33.23%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": null
  },
  {
   "fixture": "D_case_multiple",
@@ -285,7 +285,7 @@
   "explanations": [
    "Order 96 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 33 is case rounding. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +1.75%, inventory -39.02%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost +0.69%, inventory -27.85%, worst service -0.033 against the incumbent; improvement exceeds the declared materiality on inventory"
  },
  {
   "fixture": "E_pallet_multiple",
@@ -309,7 +309,7 @@
   "explanations": [
    "Order 200 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 137 is pallet rounding. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": null
+  "materiality": "cost -0.08%, inventory +133.50%, worst service +0.005 against the incumbent; improvement exceeds the declared materiality on service"
  },
  {
   "fixture": "E_pallet_multiple",
@@ -333,7 +333,7 @@
   "explanations": [
    "Order 200 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 137 is pallet rounding. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": null
+  "materiality": "cost -0.24%, inventory +97.81%, worst service +0.004 against the incumbent; no axis improves by more than the declared materiality"
  },
  {
   "fixture": "E_pallet_multiple",
@@ -357,7 +357,7 @@
   "explanations": [
    "Order 200 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 137 is pallet rounding. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": null
+  "materiality": "cost -0.12%, inventory +64.29%, worst service +0.009 against the incumbent; improvement exceeds the declared materiality on service"
  },
  {
   "fixture": "F_mov_two_skus",
@@ -379,15 +379,15 @@
   },
   "pass": true,
   "explanations": [
-   "Order 251 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 87 lifts the supplier order to its minimum order value; 101 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off.",
-   "Order 251 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 87 lifts the supplier order to its minimum order value; 101 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off."
+   "Order 346 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 284 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off.",
+   "Order 365 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 302 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -18.21%, inventory -88.73%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -16.96%, inventory -61.60%, worst service -0.034 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "F_mov_two_skus",
   "seed": 41002,
-  "status": "PENDING_REVIEW",
+  "status": "RETAIN_INCUMBENT",
   "checks": {
    "components_reconcile": true,
    "attribution_partitions": true,
@@ -404,15 +404,15 @@
   },
   "pass": true,
   "explanations": [
-   "Order 251 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 87 lifts the supplier order to its minimum order value; 101 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off.",
-   "Order 251 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 87 lifts the supplier order to its minimum order value; 101 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off."
+   "Order 301 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 238 lifts the supplier order to its minimum order value. Usable on hand 150 and inbound 0 were netted off.",
+   "Order 99 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 36 lifts the supplier order to its minimum order value. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -18.23%, inventory -87.71%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -19.09%, inventory -59.57%, worst service -0.019 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "F_mov_two_skus",
   "seed": 41003,
-  "status": "PENDING_REVIEW",
+  "status": "RETAIN_INCUMBENT",
   "checks": {
    "components_reconcile": true,
    "attribution_partitions": true,
@@ -429,10 +429,10 @@
   },
   "pass": true,
   "explanations": [
-   "Order 251 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 87 lifts the supplier order to its minimum order value; 101 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off.",
-   "Order 251 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 87 lifts the supplier order to its minimum order value; 101 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off."
+   "Order 301 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 238 lifts the supplier order to its minimum order value. Usable on hand 150 and inbound 0 were netted off.",
+   "Order 99 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 36 lifts the supplier order to its minimum order value. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -18.43%, inventory -88.43%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -18.98%, inventory -60.17%, worst service -0.020 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "G_freight_tiers",
@@ -457,12 +457,12 @@
    "Order 64 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off.",
    "Order 64 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +0.43%, inventory -54.82%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost +0.21%, inventory -55.20%, worst service -0.011 against the incumbent; improvement exceeds the declared materiality on inventory"
  },
  {
   "fixture": "G_freight_tiers",
   "seed": 41002,
-  "status": "PENDING_REVIEW",
+  "status": "RETAIN_INCUMBENT",
   "checks": {
    "components_reconcile": true,
    "attribution_partitions": true,
@@ -479,10 +479,10 @@
   },
   "pass": true,
   "explanations": [
-   "Order 64 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off.",
-   "Order 64 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
+   "Order 99 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 19 completes the pallet load or the freight tier the order lands on; 17 extends cover by about 0.2 periods, avoiding about 0.2 orders ($17 in order-level costs) against about $0 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off.",
+   "Order 99 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 19 completes the pallet load or the freight tier the order lands on; 17 extends cover by about 0.2 periods, avoiding about 0.2 orders ($17 in order-level costs) against about $0 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +0.29%, inventory -42.23%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost -36.28%, inventory +681.78%, worst service -0.029 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "G_freight_tiers",
@@ -504,10 +504,10 @@
   },
   "pass": true,
   "explanations": [
-   "Order 64 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off.",
-   "Order 64 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
+   "Order 664 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 252 completes the pallet load or the freight tier the order lands on; 350 extends cover by about 3.5 periods, avoiding about 3.5 orders ($353 in order-level costs) against about $9 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off.",
+   "Order 1077 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 664 completes the pallet load or the freight tier the order lands on; 351 extends cover by about 3.5 periods, avoiding about 3.5 orders ($354 in order-level costs) against about $9 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +0.08%, inventory -53.13%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost -35.81%, inventory +855.92%, worst service -0.024 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "H_per_pallet_freight",
@@ -529,9 +529,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 58 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 10 is service protection (LEAN); the order is 4 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
+   "Order 200 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 137 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -8.40%, inventory -20.12%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -7.71%, inventory +571.65%, worst service +0.023 against the incumbent; improvement exceeds the declared materiality on cost, service"
  },
  {
   "fixture": "H_per_pallet_freight",
@@ -553,9 +553,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 58 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 10 is service protection (LEAN); the order is 4 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
+   "Order 167 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 104 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -7.51%, inventory -20.45%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -8.16%, inventory +264.72%, worst service -0.004 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "H_per_pallet_freight",
@@ -577,9 +577,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 58 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 10 is service protection (LEAN); the order is 4 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
+   "Order 166 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 103 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -7.18%, inventory -18.82%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -8.16%, inventory +252.52%, worst service -0.016 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "I_max_pallets_ftl_cap",
@@ -601,9 +601,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 408 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 346 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
+   "Order 450 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 387 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -42.63%, inventory +475.79%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -41.93%, inventory +1132.06%, worst service +0.024 against the incumbent; improvement exceeds the declared materiality on cost, service"
  },
  {
   "fixture": "I_max_pallets_ftl_cap",
@@ -625,9 +625,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 151 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 89 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
+   "Order 175 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 112 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -41.26%, inventory +796.93%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -42.25%, inventory +742.62%, worst service +0.001 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "I_max_pallets_ftl_cap",
@@ -649,9 +649,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 408 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 346 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
+   "Order 404 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 341 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -41.69%, inventory +1316.97%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -41.96%, inventory +702.07%, worst service -0.015 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "J_net60_cost_of_capital",
@@ -673,9 +673,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 1058 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 996 extends cover by about 10.1 periods, avoiding about 10.1 orders ($1,510 in order-level costs) against about $130 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+   "Order 1101 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1038 extends cover by about 10.5 periods, avoiding about 10.5 orders ($1,575 in order-level costs) against about $141 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -19.16%, inventory +1431.66%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -18.28%, inventory +2709.64%, worst service +0.022 against the incumbent; improvement exceeds the declared materiality on cost, service"
  },
  {
   "fixture": "J_net60_cost_of_capital",
@@ -697,9 +697,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 1053 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 991 extends cover by about 10.0 periods, avoiding about 10.0 orders ($1,502 in order-level costs) against about $128 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+   "Order 1079 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1017 extends cover by about 10.3 periods, avoiding about 10.3 orders ($1,542 in order-level costs) against about $135 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -17.43%, inventory +2548.12%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -18.35%, inventory +2097.90%, worst service -0.005 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "J_net60_cost_of_capital",
@@ -721,9 +721,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 1058 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 996 extends cover by about 10.1 periods, avoiding about 10.1 orders ($1,510 in order-level costs) against about $130 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+   "Order 1055 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 992 extends cover by about 10.0 periods, avoiding about 10.0 orders ($1,504 in order-level costs) against about $129 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -17.88%, inventory +3936.00%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -17.99%, inventory +2029.14%, worst service -0.015 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "K_deposit_early_cash",
@@ -745,9 +745,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 1058 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 996 extends cover by about 10.1 periods, avoiding about 10.1 orders ($1,510 in order-level costs) against about $130 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+   "Order 1101 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1038 extends cover by about 10.5 periods, avoiding about 10.5 orders ($1,575 in order-level costs) against about $141 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -18.43%, inventory +1431.66%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -17.52%, inventory +2709.64%, worst service +0.022 against the incumbent; improvement exceeds the declared materiality on cost, service"
  },
  {
   "fixture": "K_deposit_early_cash",
@@ -769,9 +769,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 1053 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 991 extends cover by about 10.0 periods, avoiding about 10.0 orders ($1,502 in order-level costs) against about $128 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+   "Order 1079 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1017 extends cover by about 10.3 periods, avoiding about 10.3 orders ($1,542 in order-level costs) against about $135 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -16.75%, inventory +2548.12%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -17.62%, inventory +2097.90%, worst service -0.005 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "K_deposit_early_cash",
@@ -793,13 +793,61 @@
   },
   "pass": true,
   "explanations": [
-   "Order 1058 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 996 extends cover by about 10.1 periods, avoiding about 10.1 orders ($1,510 in order-level costs) against about $130 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+   "Order 1055 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 992 extends cover by about 10.0 periods, avoiding about 10.0 orders ($1,504 in order-level costs) against about $129 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -17.20%, inventory +3936.00%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -17.30%, inventory +2029.14%, worst service -0.015 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "L_high_holding_rate",
   "seed": 41001,
+  "status": "PENDING_REVIEW",
+  "checks": {
+   "components_reconcile": true,
+   "attribution_partitions": true,
+   "attribution_nonnegative": true,
+   "mov_and_load_respected": true,
+   "incumbent_costs_nonnegative": true,
+   "selected_costs_nonnegative": true,
+   "provenance_closed_set": true,
+   "no_customer_provided_in_fixtures": true,
+   "no_unmapped_ledger_keys": true,
+   "materiality_verdict_closed": true,
+   "recommendation_matches_status": true,
+   "timing_agrees_with_waterfall": true
+  },
+  "pass": true,
+  "explanations": [
+   "Order 1101 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1038 extends cover by about 10.5 periods, avoiding about 10.5 orders ($1,575 in order-level costs) against about $157 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+  ],
+  "materiality": "cost -20.01%, inventory +1108.60%, worst service +0.009 against the incumbent; improvement exceeds the declared materiality on cost, service"
+ },
+ {
+  "fixture": "L_high_holding_rate",
+  "seed": 41002,
+  "status": "PENDING_REVIEW",
+  "checks": {
+   "components_reconcile": true,
+   "attribution_partitions": true,
+   "attribution_nonnegative": true,
+   "mov_and_load_respected": true,
+   "incumbent_costs_nonnegative": true,
+   "selected_costs_nonnegative": true,
+   "provenance_closed_set": true,
+   "no_customer_provided_in_fixtures": true,
+   "no_unmapped_ledger_keys": true,
+   "materiality_verdict_closed": true,
+   "recommendation_matches_status": true,
+   "timing_agrees_with_waterfall": true
+  },
+  "pass": true,
+  "explanations": [
+   "Order 1079 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 1017 extends cover by about 10.3 periods, avoiding about 10.3 orders ($1,542 in order-level costs) against about $150 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+  ],
+  "materiality": "cost -19.86%, inventory +982.35%, worst service -0.018 against the incumbent; improvement exceeds the declared materiality on cost"
+ },
+ {
+  "fixture": "L_high_holding_rate",
+  "seed": 41003,
   "status": "PENDING_REVIEW",
   "checks": {
    "components_reconcile": true,
@@ -819,55 +867,7 @@
   "explanations": [
    "Order 1058 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 996 extends cover by about 10.1 periods, avoiding about 10.1 orders ($1,510 in order-level costs) against about $144 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -21.13%, inventory +752.55%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
- },
- {
-  "fixture": "L_high_holding_rate",
-  "seed": 41002,
-  "status": "PENDING_REVIEW",
-  "checks": {
-   "components_reconcile": true,
-   "attribution_partitions": true,
-   "attribution_nonnegative": true,
-   "mov_and_load_respected": true,
-   "incumbent_costs_nonnegative": true,
-   "selected_costs_nonnegative": true,
-   "provenance_closed_set": true,
-   "no_customer_provided_in_fixtures": true,
-   "no_unmapped_ledger_keys": true,
-   "materiality_verdict_closed": true,
-   "recommendation_matches_status": true,
-   "timing_agrees_with_waterfall": true
-  },
-  "pass": true,
-  "explanations": [
-   "Order 1053 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 991 extends cover by about 10.0 periods, avoiding about 10.0 orders ($1,502 in order-level costs) against about $143 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
-  ],
-  "materiality": "cost -18.48%, inventory +1151.13%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
- },
- {
-  "fixture": "L_high_holding_rate",
-  "seed": 41003,
-  "status": "PENDING_REVIEW",
-  "checks": {
-   "components_reconcile": true,
-   "attribution_partitions": true,
-   "attribution_nonnegative": true,
-   "mov_and_load_respected": true,
-   "incumbent_costs_nonnegative": true,
-   "selected_costs_nonnegative": true,
-   "provenance_closed_set": true,
-   "no_customer_provided_in_fixtures": true,
-   "no_unmapped_ledger_keys": true,
-   "materiality_verdict_closed": true,
-   "recommendation_matches_status": true,
-   "timing_agrees_with_waterfall": true
-  },
-  "pass": true,
-  "explanations": [
-   "Order 1058 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 996 extends cover by about 10.1 periods, avoiding about 10.1 orders ($1,510 in order-level costs) against about $144 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
-  ],
-  "materiality": "cost -19.12%, inventory +1304.74%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -19.66%, inventory +959.14%, worst service -0.025 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "M_order_calendar_wednesday",
@@ -889,14 +889,14 @@
   },
   "pass": true,
   "explanations": [
-   "Order 168 units of A from supplier at review 0 (arrives period 2): 48 covers demand before it lands in period 2; 99 covers demand from arrival until the next realistic replenishment (period 3); 19 is service protection (LEAN); 3 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off."
+   "Order 112 units of A from supplier at review 0 (arrives period 2): 48 covers demand before it lands in period 2; 64 covers demand from arrival until the next realistic replenishment (period 3); the order is 54 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +0.87%, inventory -43.29%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost -2.06%, inventory -16.48%, worst service -0.025 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "M_order_calendar_wednesday",
   "seed": 41002,
-  "status": "RETAIN_INCUMBENT",
+  "status": "PENDING_REVIEW",
   "checks": {
    "components_reconcile": true,
    "attribution_partitions": true,
@@ -913,9 +913,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 164 units of A from supplier at review 0 (arrives period 2): 48 covers demand before it lands in period 2; 99 covers demand from arrival until the next realistic replenishment (period 3); 17 is service protection (LEAN); the order is 1 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
+   "Order 112 units of A from supplier at review 0 (arrives period 2): 48 covers demand before it lands in period 2; 64 covers demand from arrival until the next realistic replenishment (period 3); the order is 53 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -0.36%, inventory -82.37%, worst service -0.020 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost -1.78%, inventory -28.29%, worst service -0.038 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "M_order_calendar_wednesday",
@@ -939,7 +939,7 @@
   "explanations": [
    "Order 164 units of A from supplier at review 0 (arrives period 2): 48 covers demand before it lands in period 2; 99 covers demand from arrival until the next realistic replenishment (period 3); 17 is service protection (LEAN); the order is 1 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +0.24%, inventory -45.71%, worst service -0.024 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost -1.58%, inventory -55.36%, worst service -0.047 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "N_long_lead_21_days",
@@ -963,7 +963,7 @@
   "explanations": [
    "Order 47 units of A from supplier at review 0 (arrives period 3): 46 covers demand from arrival until the next realistic replenishment (period 4); 1 is service protection (LEAN); the order is 21 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 350 and inbound 0 were netted off."
   ],
-  "materiality": "cost -1.62%, inventory -16.74%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -0.10%, inventory -16.74%, worst service -0.014 against the incumbent; improvement exceeds the declared materiality on inventory"
  },
  {
   "fixture": "N_long_lead_21_days",
@@ -987,7 +987,7 @@
   "explanations": [
    "Order 47 units of A from supplier at review 0 (arrives period 3): 46 covers demand from arrival until the next realistic replenishment (period 4); 1 is service protection (LEAN); the order is 21 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 350 and inbound 0 were netted off."
   ],
-  "materiality": "cost -0.41%, inventory -11.59%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost -0.78%, inventory -15.11%, worst service -0.014 against the incumbent; improvement exceeds the declared materiality on inventory"
  },
  {
   "fixture": "N_long_lead_21_days",
@@ -1011,7 +1011,7 @@
   "explanations": [
    "Order 47 units of A from supplier at review 0 (arrives period 3): 46 covers demand from arrival until the next realistic replenishment (period 4); 1 is service protection (LEAN); the order is 21 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 350 and inbound 0 were netted off."
   ],
-  "materiality": "cost +0.24%, inventory -5.77%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost -0.82%, inventory -15.27%, worst service -0.014 against the incumbent; improvement exceeds the declared materiality on inventory"
  },
  {
   "fixture": "O_low_opening_stock",
@@ -1105,7 +1105,7 @@
   },
   "pass": true,
   "explanations": [],
-  "materiality": "cost -10.34%, inventory -71.87%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -8.97%, inventory -64.59%, worst service -0.010 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "P_high_opening_stock",
@@ -1127,7 +1127,7 @@
   },
   "pass": true,
   "explanations": [],
-  "materiality": "cost -7.44%, inventory -73.21%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -8.81%, inventory -65.29%, worst service -0.036 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "P_high_opening_stock",
@@ -1149,7 +1149,7 @@
   },
   "pass": true,
   "explanations": [],
-  "materiality": "cost -6.48%, inventory -73.34%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -8.18%, inventory -59.81%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
  },
  {
   "fixture": "Q_volatile_demand_high_target",
@@ -1173,7 +1173,7 @@
   "explanations": [
    "Order 112 units of A from supplier at review 0 (arrives period 1): 41 covers demand from arrival until the next realistic replenishment (period 2); 71 is service protection (LEAN); the order is 2 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": null
+  "materiality": "cost +1.18%, inventory +116.31%, worst service +0.053 against the incumbent; improvement exceeds the declared materiality on service"
  },
  {
   "fixture": "Q_volatile_demand_high_target",
@@ -1197,7 +1197,7 @@
   "explanations": [
    "Order 112 units of A from supplier at review 0 (arrives period 1): 41 covers demand from arrival until the next realistic replenishment (period 2); 71 is service protection (LEAN); the order is 2 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +4.86%, inventory -50.31%, worst service -0.054 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost +0.14%, inventory +28.22%, worst service -0.002 against the incumbent; no axis improves by more than the declared materiality"
  },
  {
   "fixture": "Q_volatile_demand_high_target",
@@ -1221,36 +1221,11 @@
   "explanations": [
    "Order 112 units of A from supplier at review 0 (arrives period 1): 41 covers demand from arrival until the next realistic replenishment (period 2); 71 is service protection (LEAN); the order is 2 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": null
+  "materiality": "cost +1.79%, inventory -7.07%, worst service -0.041 against the incumbent; improvement exceeds the declared materiality on inventory"
  },
  {
   "fixture": "R_asymmetric_prices_mov",
   "seed": 41001,
-  "status": "PENDING_REVIEW",
-  "checks": {
-   "components_reconcile": true,
-   "attribution_partitions": true,
-   "attribution_nonnegative": true,
-   "mov_and_load_respected": true,
-   "incumbent_costs_nonnegative": true,
-   "selected_costs_nonnegative": true,
-   "provenance_closed_set": true,
-   "no_customer_provided_in_fixtures": true,
-   "no_unmapped_ledger_keys": true,
-   "materiality_verdict_closed": true,
-   "recommendation_matches_status": true,
-   "timing_agrees_with_waterfall": true
-  },
-  "pass": true,
-  "explanations": [
-   "Order 161 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 98 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off.",
-   "Order 160 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 97 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 150 and inbound 0 were netted off."
-  ],
-  "materiality": "cost -1.14%, inventory +852.97%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
- },
- {
-  "fixture": "R_asymmetric_prices_mov",
-  "seed": 41002,
   "status": "RETAIN_INCUMBENT",
   "checks": {
    "components_reconcile": true,
@@ -1271,11 +1246,11 @@
    "Order 62 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 14 is service protection (LEAN); the order is 1 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off.",
    "Order 62 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 14 is service protection (LEAN); the order is 1 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +0.74%, inventory -32.29%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": null
  },
  {
   "fixture": "R_asymmetric_prices_mov",
-  "seed": 41003,
+  "seed": 41002,
   "status": "PENDING_REVIEW",
   "checks": {
    "components_reconcile": true,
@@ -1296,7 +1271,32 @@
    "Order 49 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 1 is service protection (LEAN); the order is 14 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off.",
    "Order 55 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 7 is service protection (LEAN); the order is 8 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost +0.47%, inventory -38.34%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  "materiality": "cost +0.04%, inventory -33.19%, worst service -0.009 against the incumbent; improvement exceeds the declared materiality on inventory"
+ },
+ {
+  "fixture": "R_asymmetric_prices_mov",
+  "seed": 41003,
+  "status": "RETAIN_INCUMBENT",
+  "checks": {
+   "components_reconcile": true,
+   "attribution_partitions": true,
+   "attribution_nonnegative": true,
+   "mov_and_load_respected": true,
+   "incumbent_costs_nonnegative": true,
+   "selected_costs_nonnegative": true,
+   "provenance_closed_set": true,
+   "no_customer_provided_in_fixtures": true,
+   "no_unmapped_ledger_keys": true,
+   "materiality_verdict_closed": true,
+   "recommendation_matches_status": true,
+   "timing_agrees_with_waterfall": true
+  },
+  "pass": true,
+  "explanations": [
+   "Order 62 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 14 is service protection (LEAN); the order is 1 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off.",
+   "Order 62 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 14 is service protection (LEAN); the order is 1 below the arithmetic need, which the joint solve accepts within the service floor. Usable on hand 150 and inbound 0 were netted off."
+  ],
+  "materiality": "cost +1.83%, inventory +9.32%, worst service +0.002 against the incumbent; no axis improves by more than the declared materiality"
  },
  {
   "fixture": "S_cash_constrained",
@@ -1320,7 +1320,7 @@
   "explanations": [
    "Order 554 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 491 extends cover by about 5.0 periods, avoiding about 5.0 orders ($496 in order-level costs) against about $18 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -12.51%, inventory +629.64%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -12.21%, inventory +1114.07%, worst service -0.016 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "S_cash_constrained",
@@ -1342,9 +1342,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 547 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 484 extends cover by about 4.9 periods, avoiding about 4.9 orders ($489 in order-level costs) against about $17 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+   "Order 361 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 298 extends cover by about 3.0 periods, avoiding about 3.0 orders ($301 in order-level costs) against about $6 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -10.31%, inventory +1116.76%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -12.18%, inventory +1012.46%, worst service +0.002 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "S_cash_constrained",
@@ -1366,9 +1366,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 554 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 491 extends cover by about 5.0 periods, avoiding about 5.0 orders ($496 in order-level costs) against about $18 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
+   "Order 561 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 498 extends cover by about 5.0 periods, avoiding about 5.0 orders ($504 in order-level costs) against about $18 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -10.23%, inventory +1771.14%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+  "materiality": "cost -11.62%, inventory +908.48%, worst service -0.016 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "T_combined_realistic",
@@ -1390,15 +1390,15 @@
   },
   "pass": true,
   "explanations": [
-   "Order 168 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 60 lifts the supplier order to its minimum order value; 36 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off.",
-   "Order 168 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 60 lifts the supplier order to its minimum order value; 36 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
+   "Order 888 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 450 completes the pallet load or the freight tier the order lands on; 366 extends cover by about 3.7 periods, avoiding about 3.7 orders ($832 in order-level costs) against about $18 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off.",
+   "Order 864 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 426 completes the pallet load or the freight tier the order lands on; 366 extends cover by about 3.7 periods, avoiding about 3.7 orders ($832 in order-level costs) against about $18 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -42.06%, inventory -9.71%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -42.15%, inventory -2.82%, worst service -0.045 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "T_combined_realistic",
   "seed": 41002,
-  "status": "PENDING_REVIEW",
+  "status": "RETAIN_INCUMBENT",
   "checks": {
    "components_reconcile": true,
    "attribution_partitions": true,
@@ -1415,10 +1415,10 @@
   },
   "pass": true,
   "explanations": [
-   "Order 168 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 60 lifts the supplier order to its minimum order value; 36 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off.",
-   "Order 168 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 60 lifts the supplier order to its minimum order value; 36 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
+   "Order 192 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 108 lifts the supplier order to its minimum order value; 12 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off.",
+   "Order 120 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 36 lifts the supplier order to its minimum order value; 12 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -41.96%, inventory -10.18%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -42.40%, inventory +6.92%, worst service -0.050 against the incumbent; improvement exceeds the declared materiality on cost"
  },
  {
   "fixture": "T_combined_realistic",
@@ -1440,9 +1440,9 @@
   },
   "pass": true,
   "explanations": [
-   "Order 168 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 60 lifts the supplier order to its minimum order value; 36 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off.",
-   "Order 168 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 60 lifts the supplier order to its minimum order value; 36 completes the pallet load or the freight tier the order lands on. Usable on hand 150 and inbound 0 were netted off."
+   "Order 864 units of A from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 409 completes the pallet load or the freight tier the order lands on; 383 extends cover by about 3.9 periods, avoiding about 3.9 orders ($872 in order-level costs) against about $20 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off.",
+   "Order 912 units of B from supplier at review 0 (arrives period 1): 48 covers demand from arrival until the next realistic replenishment (period 2); 15 is service protection (LEAN); 9 is case rounding; 456 completes the pallet load or the freight tier the order lands on; 384 extends cover by about 3.9 periods, avoiding about 3.9 orders ($873 in order-level costs) against about $20 of extra carrying and capital. Usable on hand 150 and inbound 0 were netted off."
   ],
-  "materiality": "cost -42.37%, inventory -9.81%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+  "materiality": "cost -42.21%, inventory +0.64%, worst service -0.041 against the incumbent; improvement exceeds the declared materiality on cost"
  }
 ]

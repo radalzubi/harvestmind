@@ -266,14 +266,15 @@ def test_baselines_are_lot_aware_and_periodic_review_keeps_its_cadence():
 
 def test_service_gate_basis_target_keeps_the_strict_rule_below_target_and_in_recovery():
     from zaad.full.planner import _priority_consistent
-    req = p1_request()                     # target .95, tolerance .01
+    req = p1_request(extra={"service_gate_basis": "target"})     # target .95, tolerance .01; the option, not the default
     def rows(v):
         return [{"usable": True, "service": {"svc_A": v}, "economic_cost": 0.,
                  "service_by_period": [{"service": "svc_A", "period": 0, "demand": 100., "served": 100. * v}]}]
     # a fall from 1.0 to .97 stays above target: not a worsening under the target basis, one under the incumbent basis
     assert _priority_consistent(req, rows(1.), rows(.97), floor_at_target=True)
     assert not _priority_consistent(req, rows(1.), rows(.97))
-    strict = req.model_copy(update={"service_gate_basis": "incumbent"})
+    strict = p1_request()                                          # the default is the P0 rule
+    assert strict.service_gate_basis == "incumbent"
     assert not _priority_consistent(strict, rows(1.), rows(.97), floor_at_target=True)
     # a fall below the target is a worsening under both
     assert not _priority_consistent(req, rows(1.), rows(.93), floor_at_target=True)

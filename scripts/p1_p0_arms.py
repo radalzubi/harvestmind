@@ -35,6 +35,10 @@ ARMS = {
     "both": {"service_gate_basis": "target", "order_smoothing": .02, "timing_tiebreak": 0.,
              "materiality_cost_fraction": 0., "materiality_inventory_fraction": 0., "materiality_service": 0.},
     "final": {},
+    "final_incgate": {"service_gate_basis": "incumbent"},   # P1 representation + band guard, P0 gate
+    # representation + guard alone: P0 gate, no tie-break, materiality gate off
+    "representation_only": {"service_gate_basis": "incumbent", "timing_tiebreak": 0.,
+                            "materiality_cost_fraction": 0., "materiality_inventory_fraction": 0., "materiality_service": 0.},
 }
 
 
