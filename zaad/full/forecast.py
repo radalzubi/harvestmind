@@ -115,11 +115,23 @@ def estimate(y: np.ndarray, shortage: float, holding: float, adaptive: bool = Tr
             "interval_status": "empirical; no coverage guarantee after drift"}
 
 
-def sample(fit: dict, rng: np.random.Generator, horizon: int) -> np.ndarray:
+def sample(fit: dict, rng: np.random.Generator, horizon: int, u: np.ndarray | None = None) -> np.ndarray:
+    """One demand path. Without `u`: the bootstrap draw used since v1 (unchanged, so every
+    truth path drawn by seed stays identical). With `u` (one uniform per period, P1): the same
+    mixture distribution through its quantile function - zeros occupy the bottom of the unit
+    interval, then the empirical size quantiles - so a stratified caller can place a period in
+    the body or the tail of the fitted distribution deliberately."""
     sizes = np.asarray(fit["sizes"])
     if not len(sizes) or fit["mean"] == 0:
         return np.zeros(horizon)
     occurrence = 1 - fit["zero_probability"]
+    scale = fit["mean"] / (occurrence * np.mean(sizes))
+    if u is not None:
+        u = np.asarray(u, dtype=float)
+        zero = 1. - occurrence
+        inner = np.clip((u - zero) / max(occurrence, 1e-12), 0., 1.)
+        values = np.quantile(np.sort(sizes), inner, method="inverted_cdf") * scale
+        return np.where(u < zero, 0., values)
     # Scaling nonzero size preserves estimated unconditional mean AND exact zeros.
-    values = rng.choice(sizes, horizon) * fit["mean"] / (occurrence * np.mean(sizes))
+    values = rng.choice(sizes, horizon) * scale
     return np.where(rng.random(horizon) < occurrence, values, 0.)

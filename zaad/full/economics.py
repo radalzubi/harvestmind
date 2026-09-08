@@ -83,7 +83,9 @@ def mean_breakdown(rows: list[dict]) -> dict[str, float] | None:
     if not usable or len(usable) != len(rows):
         return None
     parts = [cost_breakdown(r["ledger"]) for r in usable]
-    return {name: mean(p[name] for p in parts) for name in (*COMPONENTS, "TOTAL", "OPERATING_TOTAL")}
+    weights = [float(r.get("weight", 1.)) for r in usable]
+    total = sum(weights) or 1.
+    return {name: sum(w * p[name] for w, p in zip(weights, parts)) / total for name in (*COMPONENTS, "TOTAL", "OPERATING_TOTAL")}
 
 
 # ---------------------------------------------------------------- order construction waterfall
@@ -353,8 +355,10 @@ def materiality(req: Request, incumbent_rows: list[dict], candidate_rows: list[d
         return {"material": None, "verdict": "NOT_COMPARABLE", "reason": "a plan was not settleable on every confirmation world"}
     scale = max(abs(ib["TOTAL"]), 1.)
     cost_delta = (cb["TOTAL"] - ib["TOTAL"]) / scale
-    inv_i = mean(x["inventory_value"] for r in incumbent_rows for x in r["trace"])
-    inv_c = mean(x["inventory_value"] for r in candidate_rows for x in r["trace"])
+    def carried(rows):
+        weights = [float(r.get("weight", 1.)) for r in rows]
+        return sum(w * mean(x["inventory_value"] for x in r["trace"]) for w, r in zip(weights, rows)) / (sum(weights) or 1.)
+    inv_i, inv_c = carried(incumbent_rows), carried(candidate_rows)
     inv_delta = (inv_c - inv_i) / max(inv_i, 1.)
     s_i, s_c = _service_min(req, incumbent_rows), _service_min(req, candidate_rows)
     service_delta = (s_c - s_i) if s_i is not None and s_c is not None else 0.
@@ -442,6 +446,11 @@ def missing_data_fallbacks(req: Request) -> list[str]:
 
 # ---------------------------------------------------------------- report block
 
+def _weighted(rows: list[dict], value) -> float:
+    weights = [float(r.get("weight", 1.)) for r in rows]
+    return sum(w * value(r) for w, r in zip(weights, rows)) / (sum(weights) or 1.)
+
+
 def economics_block(req: Request, fits: dict, protection: list[dict], *, incumbent: Solution | None, final: Solution | None,
                     incumbent_rows: list[dict], final_rows: list[dict], accepted: bool, chosen: str,
                     materiality_result: dict | None) -> dict[str, Any]:
@@ -451,8 +460,8 @@ def economics_block(req: Request, fits: dict, protection: list[dict], *, incumbe
     return {
         "scope": "confirmation worlds; components reconcile to the settlement's economic cost; attribution partitions each order exactly",
         "incumbent_costs": inc, "selected_costs": fin,
-        "incumbent_working_capital": (mean(working_capital(req, r)["cash_deployed_mean"] for r in incumbent_rows if r.get("usable")) if incumbent_rows and all(r.get("usable") for r in incumbent_rows) else None),
-        "selected_working_capital": (mean(working_capital(req, r)["cash_deployed_mean"] for r in final_rows if r.get("usable")) if final_rows and all(r.get("usable") for r in final_rows) else None),
+        "incumbent_working_capital": (_weighted(incumbent_rows, lambda r: working_capital(req, r)["cash_deployed_mean"]) if incumbent_rows and all(r.get("usable") for r in incumbent_rows) else None),
+        "selected_working_capital": (_weighted(final_rows, lambda r: working_capital(req, r)["cash_deployed_mean"]) if final_rows and all(r.get("usable") for r in final_rows) else None),
         "reconciled": all(r["reconciled"] for r in recon) if recon else None,
         "unmapped_ledger_keys": sorted({k for r in recon for k in r["unmapped_ledger_keys"]}),
         "orders": order_waterfall(req, fits, protection, final),

@@ -218,6 +218,20 @@ def compatible(req, service):
     return rows
 
 
+def explicit_order_economics(req: Request) -> bool:
+    """Does the request declare order-level economics that price lumpiness themselves: supplier
+    terms (fixed order cost, MOV, receiving, freight tariff) or a per-line fixed order fee?"""
+    return bool(req.supplier_terms) or any(s.fixed_order_fee > 0 for s in req.sources)
+
+
+def effective_smoothing(req: Request) -> float:
+    """Order-smoothing charge actually applied (P1 closure). The V6 smoothing term is a proxy for
+    unmodelled order costs; once explicit order economics are declared the proxy would double-
+    count lumpiness and act as an undeclared fixed order cost (about 2% of landed cost per unit of
+    change), so it is switched off. Without explicit economics the P0 default stands unchanged."""
+    return 0. if explicit_order_economics(req) else req.order_smoothing
+
+
 def solve_budget(req: Request) -> float:
     """Per-solve wall-clock budget (v8).
 
@@ -442,7 +456,9 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 # Timing tie-break (P1): a purchase committed earlier carries a token objective
                 # penalty so that, when nothing else separates two timings, the later one wins.
                 # It goes to the solver objective only, never to the plan's projected economics.
-                tiebreak[w][q] += req.timing_tiebreak * price * (H - 1 - t)
+                # Scaled by the horizon so its total can never exceed `timing_tiebreak` times the
+                # plan's purchase value (1e-4 of spend at the default), whatever the horizon.
+                tiebreak[w][q] += req.timing_tiebreak * price * (H - 1 - t) / max(1, H - 1)
                 payments[w][t][q] += price * term.deposit_fraction
                 payment_t = trigger + net
                 if payment_t < H:
@@ -499,12 +515,12 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     expense(pallets, st.freight_per_pallet, w, departure)
                 if st.receiving_per_pallet:
                     expense(pallets, st.receiving_per_pallet, w, arrival)
-    if req.engine_profile == "reliability" and req.order_smoothing > 0 and fixed is None:
+    if req.engine_profile == "reliability" and effective_smoothing(req) > 0 and fixed is None:
         # Stability: |x_t - x_{t-1}| per source charged at a small fraction of landed cost.
         for source in req.sources:
             term = terms[source.terms]
             landed = source.unit_price * term.fx_rate_to_currency + source.freight_per_unit + source.handling_per_unit
-            charge = req.order_smoothing * landed
+            charge = effective_smoothing(req) * landed
             for t in range(1, H):
                 up = m.var(("smooth_up", source.id, t), cost=charge)
                 down = m.var(("smooth_down", source.id, t), cost=charge)

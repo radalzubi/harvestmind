@@ -439,6 +439,14 @@ class Request(Record):
     # not an economic cost, never enters the settlement ledger, and at its default it is two
     # orders of magnitude below the smallest materiality the selector acts on.
     timing_tiebreak: float = Field(default=1e-4, ge=0, le=1e-2)
+    # Scenario representation (P1 closure). With S sampled worlds the plan can only protect against
+    # the largest of S draws in each period, which for S=3 is the 79th percentile in the median
+    # draw; the service target and the shortage economics need the tail beyond the target. When
+    # on, the S worlds are a stratified sample of the same fitted distribution: S-1 worlds drawn
+    # from below the target quantile (weight target/(S-1) each) and one world drawn from the tail
+    # above it (weight 1-target). Expectations are unbiased; the tail is always represented.
+    # Deterministic and single-world draws (the truth paths of every benchmark) are untouched.
+    stratified_scenarios: bool = True
     service_tolerance: float = Field(ge=0, le=.1)
     force_unit_fills: bool = False
     # How review-by-review demand refits treat a detected level change. "symmetric" is the frozen

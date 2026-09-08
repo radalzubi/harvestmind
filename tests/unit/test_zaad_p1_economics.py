@@ -3,6 +3,8 @@ cost component reconciling, and no behaviour change when the new terms are absen
 from __future__ import annotations
 
 import math
+from statistics import mean
+
 import pytest
 from pydantic import ValidationError
 
@@ -305,3 +307,100 @@ def test_timing_tiebreak_prefers_later_commitment_when_the_economics_are_indiffe
     # the tie-break never reaches the ledger
     r = settle(req, sol, world(req))
     assert "timing" not in r["ledger"] and abs(r["ledger_residual"]) < 1e-6
+
+
+# ---------------------------------------------------------------- closure pass
+
+from zaad.full.model import effective_smoothing, explicit_order_economics
+
+
+def test_stratified_scenarios_represent_the_tail_at_its_mass_and_leave_the_truth_untouched():
+    req = p1_request()
+    ws = draw(req, req.seed, 3)
+    assert abs(sum(w.weight for w in ws) - 1.) < 1e-12
+    assert ws[-1].name.endswith(":tail") and abs(ws[-1].weight - (1 - req.services[0].target)) < 1e-12
+    body = [w for w in ws[:-1]]
+    assert all(abs(w.weight - req.services[0].target / 2) < 1e-12 for w in body)
+    # the tail world is the tail of the per-period noise at the fitted level: above the fitted
+    # mean in every period and above every body world on average (body worlds carry the level
+    # shock, the tail world deliberately does not)
+    fits = forecast_all(req)
+    assert all(x >= fits["svc_A"]["mean"] - 1e-9 for x in ws[-1].demand["svc_A"])
+    assert mean(ws[-1].demand["svc_A"]) >= max(mean(w.demand["svc_A"]) for w in body)
+    # single-world and deterministic draws (the truth paths) are identical with the flag on or off
+    off = req.model_copy(update={"stratified_scenarios": False})
+    for count, det in ((1, False), (1, True)):
+        a, b = draw(req, req.seed + 10000, count, deterministic=det)[0], draw(off, req.seed + 10000, count, deterministic=det)[0]
+        assert a.demand == b.demand and a.fills == b.fills and a.arrival == b.arrival and a.weight == b.weight == 1.
+
+
+def test_weighted_selector_statistics_reduce_to_plain_means_under_equal_weights():
+    from zaad.full.planner import _service_value, _wmean
+    req = p1_request()
+    rows = [{"usable": True, "weight": 1 / 3, "economic_cost": c, "service_by_period": [{"service": "svc_A", "demand": 100., "served": s}]}
+            for c, s in ((10., 90.), (20., 100.), (30., 95.))]
+    assert _wmean([r["economic_cost"] for r in rows], rows) == 20.
+    assert abs(_service_value(req, rows, req.services[0]) - 285. / 300.) < 1e-12
+    rows[2]["weight"] = .05
+    rows[0]["weight"] = rows[1]["weight"] = .475
+    assert abs(_wmean([r["economic_cost"] for r in rows], rows) - (.475 * 10 + .475 * 20 + .05 * 30)) < 1e-12
+    assert abs(_service_value(req, rows, req.services[0]) - (.475 * 90 + .475 * 100 + .05 * 95) / 100.) < 1e-12
+
+
+def test_smoothing_is_off_when_explicit_order_economics_exist_and_unchanged_otherwise():
+    plain = p1_request(extra={"order_smoothing": .02})
+    assert not explicit_order_economics(plain) and effective_smoothing(plain) == .02
+    with_terms = p1_request(supplier_terms={"fixed_order_cost": 100.}, extra={"order_smoothing": .02})
+    assert explicit_order_economics(with_terms) and effective_smoothing(with_terms) == 0.
+    with_fee = p1_request(fixed_order_fee=25., extra={"order_smoothing": .02})
+    assert effective_smoothing(with_fee) == 0.
+    # and the model builds no smoothing columns when the charge is off
+    from zaad.full import model as M
+    seen = {}
+    orig = M.Linear.solve
+    def spy(self, *a, **k):
+        seen["names"] = list(self.names)
+        return orig(self, *a, **k)
+    M.Linear.solve = spy
+    try:
+        solve(with_terms, [world(with_terms)], service_floor=True)
+        assert not any(n[0] in ("smooth_up", "smooth_down") for n in seen["names"])
+        solve(plain, [world(plain)], service_floor=True)
+        assert any(n[0] == "smooth_up" for n in seen["names"])
+    finally:
+        M.Linear.solve = orig
+
+
+def test_timing_tiebreak_total_is_bounded_by_its_coefficient_times_purchase_value():
+    from zaad.full import model as M
+    for horizon in (12, 30):
+        req = p1_request(horizon=horizon, holding_per_year=0., opening_units=100.)
+        w = world(req)
+        seen = {}
+        orig = M.Linear.solve
+        def spy(self, *a, **k):
+            res, resid = orig(self, *a, **k)
+            seen["x"], seen["cost"], seen["names"] = res.x, self.cost, list(self.names)
+            return res, resid
+        M.Linear.solve = spy
+        try:
+            sol = solve(req, [w], service_floor=True)
+        finally:
+            M.Linear.solve = orig
+        purchase_value = sum(q * req.sources[0].unit_price for q in sol.purchases.values())
+        # the tie-break is the only objective term on purchase columns beyond the landed cost
+        landed = req.sources[0].unit_price + req.sources[0].freight_per_unit + req.sources[0].handling_per_unit
+        tiebreak_total = sum((c - landed) * x for n, c, x in zip(seen["names"], seen["cost"], seen["x"]) if n[0] == "purchase" and x > 1e-9)
+        assert 0 <= tiebreak_total <= req.timing_tiebreak * purchase_value + 1e-6, (horizon, tiebreak_total, purchase_value)
+
+
+def test_stratified_worlds_make_the_plan_carry_attributable_protection():
+    # Fixture P's steady state: with the tail represented the plan holds protection that the
+    # waterfall attributes as SERVICE_PROTECTION rather than ordering below the arithmetic need.
+    req = p1_request(opening_units=100., demand=100.)
+    fits = forecast_all(req)
+    prot = protection_profile(req, fits, supply_profiles(req))
+    sol = solve(req, draw(req, req.seed, req.scenarios), service_floor=True)
+    rows = order_waterfall(req, fits, prot, sol)
+    assert rows and rows[0]["attribution"]["SERVICE_PROTECTION"] > 0
+    assert rows[0]["under_need_units"] < rows[0]["justified_protection_units"]

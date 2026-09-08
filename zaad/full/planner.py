@@ -131,10 +131,32 @@ def evaluate(req, solution, worlds):
     for world in worlds:
         try:
             result = settle(req, solution, world, future_guidance=True)
-            rows.append({"world": world.name, "usable": True, **result})
+            rows.append({"world": world.name, "weight": world.weight, "usable": True, **result})
         except PhysicalViolation as exc:
-            rows.append({"world": world.name, "usable": False, "reason": str(exc)})
+            rows.append({"world": world.name, "weight": world.weight, "usable": False, "reason": str(exc)})
     return rows
+
+
+def _weights(rows: list[dict]) -> list[float]:
+    """Scenario weights of evaluation rows, normalised. Rows without a weight are equal."""
+    raw = [float(r.get("weight", 1.)) for r in rows]
+    total = sum(raw)
+    return [x / total for x in raw] if total > 0 else [1. / len(rows)] * len(rows)
+
+
+def _equal_weights(rows: list[dict]) -> bool:
+    w = _weights(rows)
+    return not w or max(w) - min(w) <= 1e-12
+
+
+def _wmean(values, rows: list[dict]) -> float:
+    """Mean of `values` (one per row) under the rows' scenario weights (P1 closure). With equal
+    weights this is the plain mean, computed the same way as before, so every equal-weight path
+    is bit-for-bit unchanged."""
+    values = list(values)
+    if _equal_weights(rows):
+        return mean(values)
+    return float(sum(w * v for w, v in zip(_weights(rows), values)))
 
 
 def _service_value(req: Request, rows: list[dict], service) -> float | None:
@@ -144,9 +166,14 @@ def _service_value(req: Request, rows: list[dict], service) -> float | None:
         values = [r["order_metrics"][service.id].get(service.metric) for r in rows]
         if any(v is None for v in values):
             return None
-        return mean(values)
-    demand = sum(x["demand"] for r in rows for x in r["service_by_period"] if x["service"] == service.id)
-    served = sum(x["served"] for r in rows for x in r["service_by_period"] if x["service"] == service.id)
+        return _wmean(values, rows)
+    if _equal_weights(rows):
+        demand = sum(x["demand"] for r in rows for x in r["service_by_period"] if x["service"] == service.id)
+        served = sum(x["served"] for r in rows for x in r["service_by_period"] if x["service"] == service.id)
+        return served / demand if demand else 1.0
+    weights = _weights(rows)
+    demand = sum(w * x["demand"] for w, r in zip(weights, rows) for x in r["service_by_period"] if x["service"] == service.id)
+    served = sum(w * x["served"] for w, r in zip(weights, rows) for x in r["service_by_period"] if x["service"] == service.id)
     return served / demand if demand else 1.0
 
 
@@ -246,7 +273,7 @@ def _within_downside(req: Request, before: list[dict], after: list[dict]) -> boo
 def summarize(rows):
     valid = [r for r in rows if r["usable"]]
     return {"runs": len(rows), "physical_failures": len(rows) - len(valid),
-            "cost_mean": mean(r["economic_cost"] for r in valid) if valid else None,
+            "cost_mean": _wmean((r["economic_cost"] for r in valid), valid) if valid else None,
             "cost_min": min((r["economic_cost"] for r in valid), default=None),
             "cost_max": max((r["economic_cost"] for r in valid), default=None),
             "weighted_service_shortfall": None,
@@ -267,8 +294,9 @@ def action_rows(solution):
 
 def _shortage_exposure(rows: list[dict]) -> tuple[float | None, float | None]:
     """Mean and worst modeled shortage exposure (lost contribution plus SLA) across usable worlds."""
-    values = [r["ledger"].get("lost_sales_opportunity", 0.) + r["ledger"].get("sla", 0.) for r in rows if r["usable"]]
-    return (mean(values), max(values)) if values else (None, None)
+    usable = [r for r in rows if r["usable"]]
+    values = [r["ledger"].get("lost_sales_opportunity", 0.) + r["ledger"].get("sla", 0.) for r in usable]
+    return (_wmean(values, usable), max(values)) if values else (None, None)
 
 
 def alternative_value(req: Request, reference: Solution, worlds: list, reference_rows: list[dict], service_risk: str,
@@ -284,7 +312,7 @@ def alternative_value(req: Request, reference: Solution, worlds: list, reference
     structure = {"alternates": any(sum(1 for s in eligible if (s.sku, s.destination) == pair) > 1 for pair in pairs),
                  "transfers": any(a.approved for a in req.transfers),
                  "substitutions": any(r.approved for r in req.substitutions)}
-    ref_cost = mean(r["economic_cost"] for r in reference_rows if r["usable"]) if any(r["usable"] for r in reference_rows) else None
+    ref_cost = _wmean((r["economic_cost"] for r in reference_rows if r["usable"]), [r for r in reference_rows if r["usable"]]) if any(r["usable"] for r in reference_rows) else None
     ref_mean_short, ref_worst_short = _shortage_exposure(reference_rows)
     for name, present in structure.items():
         if not present:
@@ -297,7 +325,7 @@ def alternative_value(req: Request, reference: Solution, worlds: list, reference
             result[name] = entry
             continue
         rows = evaluate(req, restricted, worlds)
-        cost = mean(r["economic_cost"] for r in rows if r["usable"]) if any(r["usable"] for r in rows) else None
+        cost = _wmean((r["economic_cost"] for r in rows if r["usable"]), [r for r in rows if r["usable"]]) if any(r["usable"] for r in rows) else None
         mean_short, worst_short = _shortage_exposure(rows)
         if ref_cost is None or cost is None or mean_short is None or ref_mean_short is None:
             entry["verdict"] = "unevaluable"
@@ -603,6 +631,15 @@ def plan(req: Request) -> dict:
                            "optional_candidates": [], "units_above_lean_base_stock": None,
                            "periods_above_lean_base_stock": None,
                            "incumbent_feasible_and_meeting_service": None, "scope": "escalation disabled"})
+    # Service gate basis for this review (P1 closure). The target basis applies only to a lean
+    # review: a calm screen state with no active risk driver on any SKU/location. Under PROTECT,
+    # RECOVER, NETWORK_ALLOCATION or ESCALATE_UNKNOWN, or with any active driver, the V7 rule
+    # (no worse than the incumbent) stands: measured on the P0 six-cell set the unconditional
+    # target basis lost service on cells 20, 21, 90 and 108 in PROTECT reviews.
+    lean_review = (screen_result["state"] in ("NO_ACTION", "NORMAL_REPLENISHMENT", "CAPITAL_OPTIMIZATION")
+                   and all(float(row["state"]["activity"]) <= .05 for row in protection))
+    gate_basis = "target" if (req.service_gate_basis == "target" and lean_review) else "incumbent"
+    req_gate = req if gate_basis == req.service_gate_basis else req.model_copy(update={"service_gate_basis": gate_basis})
     required = list(screen_result["minimum_safe_candidates"])
     optional = list(screen_result["optional_candidates"])
     # Cadence candidates (P1). When a supplier carries order-level economics (fixed order cost, MOV,
@@ -626,12 +663,16 @@ def plan(req: Request) -> dict:
     stress_worlds = []
     for i, stress in enumerate(req.stresses):
         stress_worlds += draw(req, req.seed + 100 + i, 1, stress)
-    combined = [replace(w, weight=1 / (len(selection) + len(stress_worlds))) for w in selection + stress_worlds]
+    # Combined and hedged sets keep each world's relative weight inside its group (P1 closure);
+    # with equal-weight selection worlds this is exactly the former 1/n and stress share.
+    sel_total = sum(w.weight for w in selection) or 1.
+    combined = ([replace(w, weight=w.weight / sel_total * len(selection) / (len(selection) + len(stress_worlds))) for w in selection]
+                + [replace(w, weight=1 / (len(selection) + len(stress_worlds))) for w in stress_worlds])
     credibility: dict[str, Any] = stress_credibility(req, supply) if reliability else {"credibility": 0., "effective_stress_weight": 0., "drivers": {}}
     stress_weight: float = float(credibility["effective_stress_weight"]) if reliability else 0.
     hedged: list = []
     if stress_worlds and stress_weight > 0:
-        hedged = ([replace(w, weight=(1 - stress_weight) / len(selection)) for w in selection]
+        hedged = ([replace(w, weight=(1 - stress_weight) * w.weight / sel_total) for w in selection]
                   + [replace(w, weight=stress_weight / len(stress_worlds)) for w in stress_worlds])
     # Applicability (v8, P0-B fix). A conditional class that cannot exist under the current state -
     # hedged and stress protection without a declared stress, quantile protection outside the
@@ -721,13 +762,13 @@ def plan(req: Request) -> dict:
         rows = selection_rows[name]
         if not rows or any(not r["usable"] for r in rows):
             return float("inf")
-        fitted = mean(r["economic_cost"] for r in rows)
+        fitted = _wmean((r["economic_cost"] for r in rows), rows)
         if stress_weight <= 0 or name not in stress_rows:
             return fitted
         stressed = [r["economic_cost"] for r in stress_rows[name] if r["usable"]]
         if not stressed or len(stressed) < len(stress_rows[name]):
             return float("inf")   # physically unusable under a declared stress is not a cheaper plan
-        return (1 - stress_weight) * fitted + stress_weight * mean(stressed)
+        return (1 - stress_weight) * fitted + stress_weight * _wmean(stressed, stress_rows[name])
     joint_rows = selection_rows.get("joint_recovery", [])
     # The target vector is jointly feasible when ANY candidate meets every service on the selection
     # worlds; the joint recovery solve is one more way to show it, not the only one.
@@ -774,13 +815,16 @@ def plan(req: Request) -> dict:
         gap = candidate.gap
         return gap is None or not math.isfinite(gap) or gap <= req.comparable_gap
 
-    def burden(name: str) -> float:
-        values = [x["inventory_value"] for r in selection_rows.get(name, []) if r["usable"] for x in r["trace"]]
-        return mean(values) if values else float("inf")
-
     def rows_burden(rows: list[dict]) -> float:
-        values = [x["inventory_value"] for r in rows if r["usable"] for x in r["trace"]]
-        return mean(values) if values else float("inf")
+        usable = [r for r in rows if r["usable"] and r["trace"]]
+        if not usable:
+            return float("inf")
+        if _equal_weights(usable) and len({len(r["trace"]) for r in usable}) == 1:
+            return mean(x["inventory_value"] for r in usable for x in r["trace"])
+        return _wmean((mean(x["inventory_value"] for x in r["trace"]) for r in usable), usable)
+
+    def burden(name: str) -> float:
+        return rows_burden(selection_rows.get(name, []))
 
     def materially_leaner(before: list[dict], after: list[dict]) -> bool:
         """Capital materiality (v7): the same relative band the operator already declares for
@@ -820,9 +864,18 @@ def plan(req: Request) -> dict:
             # An under-solved candidate can still be selected, but only when nothing better-solved
             # is feasible, and the recommendation then says so.
             comparable = [n for n in feasible if well_solved(n)] or list(feasible)
-            cheapest = min(hedged_cost(n) for n in comparable)
+            cheapest_name = min(comparable, key=lambda n: (hedged_cost(n), list(candidates).index(n)))
+            cheapest = hedged_cost(cheapest_name)
+            # Leanness may not be bought with service (P1 closure): inside the cost band the
+            # leanest plan wins only among plans whose expected shortage exposure on the selection
+            # worlds is no larger than the cheapest plan's. Before this, a plan that carried no
+            # protection and paid the resulting shortage was preferred as "leanest" whenever the
+            # shortage it accepted cost less than the band width, which on a purchase-dominated
+            # cost is far more than protection costs to carry.
+            floor_exposure = _shortage_exposure(selection_rows[cheapest_name])[0] or 0.
             band = [n for n in comparable
-                    if hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9] or list(comparable)
+                    if hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9
+                    and (_shortage_exposure(selection_rows[n])[0] or 0.) <= floor_exposure + 1e-9] or [cheapest_name]
             chosen = min(band, key=lambda name: (burden(name), earliness(name), hedged_cost(name), list(candidates).index(name)))
         elif req.protection_v5:
             # Marginal value (v5): estimated costs are noisy; among feasible candidates whose hedged
@@ -844,7 +897,7 @@ def plan(req: Request) -> dict:
                 continue
             gap = weighted_shortfall(req, rows)
             recovery_ranking.append({"candidate": name, "weighted_service_shortfall": gap if np.isfinite(gap) else None,
-                                     "cost_mean": mean(r["economic_cost"] for r in rows if r["usable"]) if any(r["usable"] for r in rows) else None,
+                                     "cost_mean": _wmean((r["economic_cost"] for r in rows if r["usable"]), [r for r in rows if r["usable"]]) if any(r["usable"] for r in rows) else None,
                                      "materially_better_than_incumbent": _recovery_not_worse(req, incumbent_selection, rows)})
         usable = [r for r in recovery_ranking if r["weighted_service_shortfall"] is not None and r["materially_better_than_incumbent"]]
         if usable:
@@ -885,9 +938,9 @@ def plan(req: Request) -> dict:
         credible stress counts in proportion."""
         if not before or not after or len(before) != len(after) or any(not r["usable"] for r in before + after):
             return False
-        fitted_gap = mean(b["economic_cost"] for b in candidate_rows) - mean(a["economic_cost"] for a in incumbent_rows) if candidate_rows and incumbent_rows and all(r["usable"] for r in candidate_rows + incumbent_rows) else 0.
-        stress_gap = mean(b["economic_cost"] - a["economic_cost"] for a, b in zip(before, after))
-        scale = max(abs(mean(a["economic_cost"] for a in before)), 1.)
+        fitted_gap = _wmean((b["economic_cost"] for b in candidate_rows), candidate_rows) - _wmean((a["economic_cost"] for a in incumbent_rows), incumbent_rows) if candidate_rows and incumbent_rows and all(r["usable"] for r in candidate_rows + incumbent_rows) else 0.
+        stress_gap = _wmean((b["economic_cost"] - a["economic_cost"] for a, b in zip(before, after)), before)
+        scale = max(abs(_wmean((a["economic_cost"] for a in before), before)), 1.)
         return (1 - stress_weight) * fitted_gap + stress_weight * stress_gap <= req.downside_cost_tolerance * scale
 
     def stress_gate(before, after, physically_ok, downside_ok, service_under_stress) -> tuple[bool, str]:
@@ -905,7 +958,7 @@ def plan(req: Request) -> dict:
         if reliability:
             not_worse = (physically_ok and bool(before) and all(r["usable"] for r in before)
                          and weighted_shortfall(req, after) <= weighted_shortfall(req, before) + material_shortfall_gap(req)
-                         and _priority_consistent(req, before, after, floor_at_target=True) and _hedged_downside(before, after))
+                         and _priority_consistent(req_gate, before, after, floor_at_target=True) and _hedged_downside(before, after))
             return not_worse, ("not_worse" if not_worse else "rejected")
         return False, "rejected"
 
@@ -916,12 +969,16 @@ def plan(req: Request) -> dict:
         expensive stress outcome shows a positive benefit."""
         difference = np.asarray([a["economic_cost"] - b["economic_cost"] for a, b in zip(rows_before, rows_after)])
         rng = np.random.default_rng(req.seed + 20000)
-        lower = float(np.quantile(np.mean(rng.choice(difference, (500, len(difference))), axis=1), .1))
+        if _equal_weights(rows_before):
+            lower = float(np.quantile(np.mean(rng.choice(difference, (500, len(difference))), axis=1), .1))
+        else:
+            # Weighted bootstrap (P1 closure): worlds are resampled at their scenario weights.
+            lower = float(np.quantile(np.mean(rng.choice(difference, (500, len(difference)), p=_weights(rows_before)), axis=1), .1))
         if stress_weight > 0 and name is not None and name in stress_rows and "incumbent" in stress_rows:
             before_s = [r["economic_cost"] for r in stress_rows["incumbent"] if r["usable"]]
             after_s = [r["economic_cost"] for r in stress_rows[name] if r["usable"]]
             if before_s and after_s and len(before_s) == len(after_s):
-                lower = (1 - stress_weight) * lower + stress_weight * float(np.mean(np.asarray(before_s) - np.asarray(after_s)))
+                lower = (1 - stress_weight) * lower + stress_weight * _wmean(np.asarray(before_s) - np.asarray(after_s), [r for r in stress_rows["incumbent"] if r["usable"]])
         if reliability and not service_ok(req, rows_before):
             ok = _within_downside(req, rows_before, rows_after)
             note = (None if ok else "downside")
@@ -938,7 +995,7 @@ def plan(req: Request) -> dict:
         # cannot see. It is a tie-break, never a licence to trade service for leanness: every
         # service and stress gate above still has to pass.
         if reliability and _v7(req, "tiebreak") and comparable_solution:
-            band = req.downside_cost_tolerance / 5. * max(abs(mean(r["economic_cost"] for r in rows_before if r["usable"])), 1.)
+            band = req.downside_cost_tolerance / 5. * max(abs(_wmean((r["economic_cost"] for r in rows_before if r["usable"]), [r for r in rows_before if r["usable"]])), 1.)
             if lower >= -band and materially_leaner(rows_before, rows_after):
                 return True, lower, "capital"
         return False, lower, "benefit"
@@ -974,11 +1031,11 @@ def plan(req: Request) -> dict:
             # weighted shortfall, priority consistent, inside the economic downside tolerance - and
             # for V7 a material capital or cost benefit, so nothing changes without a reason.
             not_worse = (weighted_shortfall(req, candidate_rows) <= weighted_shortfall(req, incumbent_rows) + material_shortfall_gap(req)
-                         and _priority_consistent(req, incumbent_rows, candidate_rows, floor_at_target=True)
+                         and _priority_consistent(req_gate, incumbent_rows, candidate_rows, floor_at_target=True)
                          and _within_downside(req, incumbent_rows, candidate_rows))
-            cheaper = (mean(r["economic_cost"] for r in candidate_rows)
-                       <= mean(r["economic_cost"] for r in incumbent_rows)
-                       - req.downside_cost_tolerance * max(abs(mean(r["economic_cost"] for r in incumbent_rows)), 1.))
+            cheaper = (_wmean((r["economic_cost"] for r in candidate_rows), candidate_rows)
+                       <= _wmean((r["economic_cost"] for r in incumbent_rows), incumbent_rows)
+                       - req.downside_cost_tolerance * max(abs(_wmean((r["economic_cost"] for r in incumbent_rows), incumbent_rows)), 1.))
             worth_it = materially_leaner(incumbent_rows, candidate_rows) or cheaper
             if not_worse and worth_it:
                 accepted, symmetric = True, True
@@ -1016,7 +1073,7 @@ def plan(req: Request) -> dict:
                 if b["economic_cost"] - a["economic_cost"] > req.downside_cost_tolerance * scale:
                     downside_ok = False
                 for s in req.services:
-                    if a["service"][s.id] is not None and b["service"][s.id] is not None and b["service"][s.id] < _floor(req, a["service"][s.id], s) - req.service_tolerance:
+                    if a["service"][s.id] is not None and b["service"][s.id] is not None and b["service"][s.id] < _floor(req_gate, a["service"][s.id], s) - req.service_tolerance:
                         downside_ok = False
         service_under_stress = service_ok(req, after)
         # Under stress a recovery plan must stay usable, within the cost cap, materially better on
@@ -1059,7 +1116,7 @@ def plan(req: Request) -> dict:
                             valid = False
                         for service in req.services:
                             sa, sb = a["service"][service.id], b["service"][service.id]
-                            if sa is not None and sb is not None and sb < _floor(req, sa, service) - req.service_tolerance:
+                            if sa is not None and sb is not None and sb < _floor(req_gate, sa, service) - req.service_tolerance:
                                 valid = False
                 valid, gate_mode = stress_gate(before, after, usable_after, valid, service_ok(req, after))
                 passes &= valid
@@ -1068,7 +1125,7 @@ def plan(req: Request) -> dict:
                                "candidate": {**summarize(after), "service": {s.id: _service_value(req, after, s) for s in req.services}}})
             candidate_gates[alternative] = {"accepted": bool(passes), "stress": checks,
                                             "deltas": {"service": {s.id: ((_service_value(req, rows, s) or 0.) - (_service_value(req, incumbent_rows, s) or 0.)) for s in req.services},
-                                                       "cost_fitted": (mean(r["economic_cost"] for r in rows if r["usable"]) - mean(r["economic_cost"] for r in incumbent_rows if r["usable"])) if any(r["usable"] for r in rows) and any(r["usable"] for r in incumbent_rows) else None,
+                                                       "cost_fitted": (_wmean((r["economic_cost"] for r in rows if r["usable"]), [r for r in rows if r["usable"]]) - _wmean((r["economic_cost"] for r in incumbent_rows if r["usable"]), [r for r in incumbent_rows if r["usable"]])) if any(r["usable"] for r in rows) and any(r["usable"] for r in incumbent_rows) else None,
                                                        "inventory": burden(alternative) - burden("incumbent") if burden("incumbent") != float("inf") else None,
                                                        "stress_service": {s.id: (c["candidate"].get("service", {}).get(s.id), c["incumbent"].get("service", {}).get(s.id)) for c in checks for s in req.services}},
                                             "reason": ("accepted" if passes else
@@ -1198,8 +1255,8 @@ def plan(req: Request) -> dict:
     # the selection worlds: extra inventory carried versus shortage exposure avoided, fitted and
     # under the declared stress at its evidence weight.
     def mean_inventory(rows):
-        values = [x["inventory_value"] for r in rows if r["usable"] for x in r["trace"]]
-        return mean(values) if values else None
+        value = rows_burden(rows)
+        return None if value == float("inf") else value
     protection_value = None
     if feasible:
         leanest = min(feasible, key=lambda n: (mean_inventory(selection_rows[n]) or float("inf"), list(candidates).index(n)))
@@ -1309,7 +1366,7 @@ def plan(req: Request) -> dict:
                         if req.protection_v7 else None),
             "supply_profiles": {k: profile_dict(v) for k, v in supply.items()},
             "alternatives": alternatives, "service_reliability": service_reliability,
-            "selection_costs": {name: {"fitted": mean(r["economic_cost"] for r in rows) if rows and all(r["usable"] for r in rows) else None,
+            "selection_costs": {name: {"fitted": _wmean((r["economic_cost"] for r in rows), rows) if rows and all(r["usable"] for r in rows) else None,
                                        "hedged": hedged_cost(name) if np.isfinite(hedged_cost(name)) else None}
                                 for name, rows in selection_rows.items()},
             "stress_weight": stress_weight, "stress_credibility": credibility, "stress_targets_feasible": stress_targets_feasible,

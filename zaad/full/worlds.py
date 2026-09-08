@@ -99,11 +99,20 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
     reliability = req.engine_profile == "reliability"
     supply = supply_profiles(req) if reliability else {}
     worlds = []
+    # Target-stratified worlds (P1 closure): the last world is the tail beyond the lowest service
+    # target, the others the body below it, each weighted by its stratum's probability mass.
+    stratified = bool(req.stratified_scenarios) and count >= 2 and not deterministic
+    q_tail = min((s.target for s in req.services), default=.95) if stratified else None
+    weights = ([q_tail / (count - 1)] * (count - 1) + [1. - q_tail]) if stratified else [1. / count] * count
     for w in range(count):
         demand, arrival, fills, po_due, po_fill = {}, {}, {}, {}, {}
         for service in req.services:
             f = fits[service.id]
-            d = np.full(req.horizon, f["mean"]) if deterministic else sample(f, rng, req.horizon)
+            if stratified:
+                lo, hi = (q_tail, 1.) if w == count - 1 else (0., q_tail)
+                d = sample(f, rng, req.horizon, u=lo + rng.random(req.horizon) * (hi - lo))
+            else:
+                d = np.full(req.horizon, f["mean"]) if deterministic else sample(f, rng, req.horizon)
             if reliability and req.protection_decay and not deterministic and f.get("uncertainty", {}).get("intermittent"):
                 # Sparse demand: Bernoulli occurrence at the observed rate, positive size resampled
                 # from history with the size tail capped, mean preserved. Zero runs are realistic
@@ -132,7 +141,13 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                 # worlds keep the old level instead (bounded mixture), so a drop does not fabricate
                 # demand above the old level and a rise does not fabricate demand below it.
                 u = f["uncertainty"]
-                if u.get("pre_change_level") is not None and u.get("pre_change_weight", 0.) > 0 and float(rng.random()) < u["pre_change_weight"]:
+                if stratified and w == count - 1:
+                    # The tail world is the tail of the per-period noise at the fitted level; the
+                    # level uncertainty and the young-regime mixture stay with the body worlds, so
+                    # the tail never compounds a high level with high noise into a path no fitted
+                    # world could produce.
+                    pass
+                elif u.get("pre_change_level") is not None and u.get("pre_change_weight", 0.) > 0 and float(rng.random()) < u["pre_change_weight"]:
                     d = d * max(0., u["pre_change_level"] / f["mean"])
                 else:
                     d = d * max(0., 1. + float(rng.normal()) * u["level_se"] / f["mean"])
@@ -247,6 +262,6 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                 po_fill[po.id] *= stress.fill_multiplier
             if req.force_unit_fills:
                 po_fill[po.id] = 1.
-        worlds.append(World(f"{stress.name if stress else 'fitted'}:{seed}:{w}", 1 / count,
-                            demand, arrival, fills, po_due, po_fill))
+        label = f"{stress.name if stress else 'fitted'}:{seed}:{w}" + (":tail" if stratified and w == count - 1 else "")
+        worlds.append(World(label, weights[w], demand, arrival, fills, po_due, po_fill))
     return worlds
