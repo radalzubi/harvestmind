@@ -16,19 +16,21 @@ from statistics import mean
 from scripts.p1_fixtures import FIXTURES, POLICIES, REVIEWS, SEEDS, build
 
 STRESS_ARM = "none"
+GATE_ARM = "target"
 
 
 def _build(name: str, seed: int):
-    return build(name, seed, stresses=STRESS_ARM)
+    req = build(name, seed, stresses=STRESS_ARM)
+    return req if GATE_ARM == "target" else req.model_copy(update={"service_gate_basis": GATE_ARM})
 from zaad.full.economics import COMPONENTS, cost_breakdown, order_waterfall
 from zaad.full.replay import replay
 from zaad.full.tolerance import is_dust
 from zaad.full.worlds import draw, forecast_all
 
 
-def _init(stress: str) -> None:
-    global STRESS_ARM
-    STRESS_ARM = stress
+def _init(stress: str, gate: str) -> None:
+    global STRESS_ARM, GATE_ARM
+    STRESS_ARM, GATE_ARM = stress, gate
 
 
 def run_cell(name: str, policy: str, seed: int) -> dict:
@@ -191,9 +193,11 @@ def main():
     ap.add_argument("--policies", default=",".join(POLICIES))
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--stress", default="none", choices=("none", "late", "severe"))
+    ap.add_argument("--gate", default="target", choices=("target", "incumbent"))
     a = ap.parse_args()
-    global STRESS_ARM
-    STRESS_ARM = a.stress
+    global STRESS_ARM, GATE_ARM
+    STRESS_ARM, GATE_ARM = a.stress, a.gate
+    arm = a.stress + ("" if a.gate == "target" else "_gate_" + a.gate)
     names = [n for n in a.fixtures.split(",") if n] or list(FIXTURES)
     policies = [p for p in a.policies.split(",") if p]
     jobs = [(n, p, s) for n in names for p in policies for s in SEEDS]
@@ -201,7 +205,7 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     cells = []
     started = time.time()
-    with ProcessPoolExecutor(a.workers, initializer=_init, initargs=(a.stress,)) as pool, out.open("w") as f:
+    with ProcessPoolExecutor(a.workers, initializer=_init, initargs=(a.stress, a.gate)) as pool, out.open("w") as f:
         for cell in pool.map(run_cell, *zip(*jobs)):
             cells.append(cell)
             f.write(json.dumps(cell, allow_nan=False, default=float) + "\n")
@@ -211,13 +215,13 @@ def main():
     results = check(cells)
     walls = sorted(w for c in cells if c["policy"] == "gated" and c["status"] == "COMPLETE" for w in c.get("wall_seconds_per_review", []))
     runtime = ({"reviews": len(walls), "p50": walls[len(walls) // 2], "p90": walls[int(.9 * len(walls))], "p95": walls[min(len(walls) - 1, int(.95 * len(walls)))],
-                "max": walls[-1], "total_seconds": time.time() - started, "stress_arm": a.stress} if walls else {"reviews": 0})
-    (out.parent / f"P1_RUNTIME_{a.stress}.json").write_text(json.dumps(runtime, indent=1))
-    (out.parent / f"P1_RESULT_TABLE_{a.stress}.md").write_text(f"# P1 fixtures A-T: result table (declared stress: {a.stress})\n\nMeans over seeds "
+                "max": walls[-1], "total_seconds": time.time() - started, "stress_arm": a.stress, "gate_arm": a.gate} if walls else {"reviews": 0})
+    (out.parent / f"P1_RUNTIME_{arm}.json").write_text(json.dumps(runtime, indent=1))
+    (out.parent / f"P1_RESULT_TABLE_{arm}.md").write_text(f"# P1 fixtures A-T: result table (declared stress: {a.stress}; service gate basis: {a.gate})\n\nMeans over seeds "
         f"{list(SEEDS)}, {REVIEWS} rolling reviews each, weekly periods, twelve-period horizon. Costs are the settlement's economic "
         "cost components (INVENTORY_VALUE_CHANGE is opening stock at asset value less closing stock at terminal value), so TOTAL MODELED "
         "COST reconciles to the settlement exactly. Deltas are against the INCUMBENT row of the same fixture.\n\n" + table(cells) + "\n")
-    (out.parent / f"P1_EXPECTATIONS_{a.stress}.json").write_text(json.dumps(results, indent=1, default=float))
+    (out.parent / f"P1_EXPECTATIONS_{arm}.json").write_text(json.dumps(results, indent=1, default=float))
     print(json.dumps({"cells": len(cells), "complete": sum(c["status"] == "COMPLETE" for c in cells),
                       "fixtures_passing": sum(r["pass"] for r in results), "fixtures": len(results),
                       "runtime": runtime, "seconds": time.time() - started}, indent=1))

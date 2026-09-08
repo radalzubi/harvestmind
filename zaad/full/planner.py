@@ -188,9 +188,18 @@ def _recovery_not_worse(req: Request, before: list[dict], after: list[dict]) -> 
     return bool(np.isfinite(after_gap)) and after_gap + material_shortfall_gap(req) <= before_gap
 
 
-def _priority_consistent(req: Request, before: list[dict], after: list[dict]) -> bool:
+def _floor(req: Request, a: float, service) -> float:
+    """The level a candidate's service is compared against (P1). Under the "target" basis a service
+    that stays at or above its target has not worsened, however far it sits below an incumbent
+    that over-serves; under the "incumbent" basis (V7/P0) the incumbent's own level is the bar."""
+    return min(a, service.target) if req.service_gate_basis == "target" else a
+
+
+def _priority_consistent(req: Request, before: list[dict], after: list[dict], floor_at_target: bool = False) -> bool:
     """A recovery may lower a service only to raise a strictly higher-priority one. Any service
     that falls by more than the tolerance without such a beneficiary is a hidden sacrifice.
+    With `floor_at_target` (P1, outside recovery mode) a fall that stays at or above the target is
+    not a sacrifice: see `_floor`.
 
     Allowing an *equal*-priority beneficiary was proposed for v7 and rejected on development7. The
     reasoning was that two branches of the same customer priority have no strictly higher
@@ -211,7 +220,7 @@ def _priority_consistent(req: Request, before: list[dict], after: list[dict]) ->
         b = _service_value(req, after, service)
         if a is None or b is None:
             continue
-        if b < a - req.service_tolerance:
+        if b < (_floor(req, a, service) if floor_at_target else a) - req.service_tolerance:
             worsened.add(service.id)
         elif b > a + req.service_tolerance:
             improved.add(service.id)
@@ -896,7 +905,7 @@ def plan(req: Request) -> dict:
         if reliability:
             not_worse = (physically_ok and bool(before) and all(r["usable"] for r in before)
                          and weighted_shortfall(req, after) <= weighted_shortfall(req, before) + material_shortfall_gap(req)
-                         and _priority_consistent(req, before, after) and _hedged_downside(before, after))
+                         and _priority_consistent(req, before, after, floor_at_target=True) and _hedged_downside(before, after))
             return not_worse, ("not_worse" if not_worse else "rejected")
         return False, "rejected"
 
@@ -965,7 +974,7 @@ def plan(req: Request) -> dict:
             # weighted shortfall, priority consistent, inside the economic downside tolerance - and
             # for V7 a material capital or cost benefit, so nothing changes without a reason.
             not_worse = (weighted_shortfall(req, candidate_rows) <= weighted_shortfall(req, incumbent_rows) + material_shortfall_gap(req)
-                         and _priority_consistent(req, incumbent_rows, candidate_rows)
+                         and _priority_consistent(req, incumbent_rows, candidate_rows, floor_at_target=True)
                          and _within_downside(req, incumbent_rows, candidate_rows))
             cheaper = (mean(r["economic_cost"] for r in candidate_rows)
                        <= mean(r["economic_cost"] for r in incumbent_rows)
@@ -1007,7 +1016,7 @@ def plan(req: Request) -> dict:
                 if b["economic_cost"] - a["economic_cost"] > req.downside_cost_tolerance * scale:
                     downside_ok = False
                 for s in req.services:
-                    if a["service"][s.id] is not None and b["service"][s.id] is not None and b["service"][s.id] < a["service"][s.id] - req.service_tolerance:
+                    if a["service"][s.id] is not None and b["service"][s.id] is not None and b["service"][s.id] < _floor(req, a["service"][s.id], s) - req.service_tolerance:
                         downside_ok = False
         service_under_stress = service_ok(req, after)
         # Under stress a recovery plan must stay usable, within the cost cap, materially better on
@@ -1050,7 +1059,7 @@ def plan(req: Request) -> dict:
                             valid = False
                         for service in req.services:
                             sa, sb = a["service"][service.id], b["service"][service.id]
-                            if sa is not None and sb is not None and sb < sa - req.service_tolerance:
+                            if sa is not None and sb is not None and sb < _floor(req, sa, service) - req.service_tolerance:
                                 valid = False
                 valid, gate_mode = stress_gate(before, after, usable_after, valid, service_ok(req, after))
                 passes &= valid

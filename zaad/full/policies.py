@@ -83,6 +83,31 @@ def apply_load_cap(req: Request, purchases: dict[tuple[str, int], float]) -> Non
                 purchases[smallest.id, t] = 0.
 
 
+def apply_cash_cap(req: Request, purchases: dict[tuple[str, int], float]) -> None:
+    """Keep each period's cumulative purchase value inside the cash the request declares: opening
+    cash plus dated receivables less other payments to date, plus the credit limit. A buyer who
+    cannot pay for a full lot orders what can be paid for and reorders when cash allows."""
+    terms = {x.id: x for x in req.terms}
+    sources = {s.id: s for s in req.sources}
+    available = req.liquidity.opening_cash - req.liquidity.opening_debt + req.liquidity.credit_limit - req.liquidity.minimum_cash
+    for t in range(req.horizon):
+        available += req.liquidity.known_receivables[t] - req.liquidity.other_payments[t]
+        lines = [(sid, q) for (sid, k), q in purchases.items() if k == t and q > 0]
+        value = sum(q * sources[sid].unit_price * terms[sources[sid].terms].fx_rate_to_currency for sid, q in lines)
+        if value <= available + 1e-9:
+            available -= value
+            continue
+        scale = max(0., available) / value if value > 0 else 0.
+        for sid, q in lines:
+            src = sources[sid]
+            capped = q * scale
+            pack = max(src.multiple, src.case_multiple, src.pallet_multiple, src.transport_multiple)
+            if pack > 0:
+                capped = math.floor(capped / pack + 1e-9) * pack
+            purchases[sid, t] = capped if capped >= src.minimum else 0.
+        available -= sum(q * sources[sid].unit_price * terms[sources[sid].terms].fx_rate_to_currency for (sid, k), q in purchases.items() if k == t)
+
+
 def _keep_amendments(req: Request) -> dict[tuple[str, str], float]:
     return {(p.id, next(o.id for o in p.options if o.action == "keep")): p.remaining for p in req.pipeline}
 
@@ -179,5 +204,6 @@ def baseline_plan(req: Request, rule: str) -> Solution:
             level -= mu
     apply_mov(req, purchases)
     apply_load_cap(req, purchases)
+    apply_cash_cap(req, purchases)
     purchases = {k: v for k, v in purchases.items() if v > 0}
     return Solution("OPTIMAL", purchases, {}, _keep_amendments(req), {}, None, [], 0., 0, 0, None, 0., [f"baseline:{rule}"])

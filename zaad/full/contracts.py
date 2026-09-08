@@ -428,6 +428,11 @@ class Request(Record):
     # Explicit cadence candidates (P1): purchases restricted to every 1, 2 or 4 periods, and to the
     # supplier's open order days, compared on total modelled cost against the free schedule.
     cadence_candidates: bool = True
+    # Service comparison basis for the confirmation and stress gates outside recovery mode (P1).
+    # "target": a service that falls against the incumbent but stays at or above its target is
+    # not a worsening (the operator asked for the target; service above it is protection nobody
+    # asked for). "incumbent": the V7/P0 rule, any fall beyond the tolerance is a worsening.
+    service_gate_basis: Literal["target", "incumbent"] = "target"
     service_tolerance: float = Field(ge=0, le=.1)
     force_unit_fills: bool = False
     # How review-by-review demand refits treat a detected level change. "symmetric" is the frozen

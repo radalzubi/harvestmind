@@ -95,7 +95,7 @@ def choose(req: Request, method: str) -> Solution:
     return result
 
 
-def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
+def replay(initial: Request, truth: World, reviews: int, method: str, keep_requests: list | None = None) -> dict:
     if reviews > initial.horizon:
         raise ValueError("truth horizon shorter than replay")
     req = initial
@@ -162,6 +162,8 @@ def replay(initial: Request, truth: World, reviews: int, method: str) -> dict:
             planning_req = planning_req.model_copy(update={"incumbent_orders": tuple(
                 IncumbentOrder(known_at=planning_req.as_of, source=sid, period=t, quantity=q)
                 for (sid, t), q in declared.purchases.items() if q > 0 and t < planning_req.horizon)})
+        if keep_requests is not None:
+            keep_requests.append(planning_req)      # diagnostics only: the exact snapshot each review planned on
         wall_started = time.perf_counter()
         solution = choose(planning_req, method)
         wall_seconds = time.perf_counter() - wall_started

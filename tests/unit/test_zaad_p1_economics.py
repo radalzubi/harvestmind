@@ -260,3 +260,34 @@ def test_baselines_are_lot_aware_and_periodic_review_keeps_its_cadence():
     periodic = baseline_plan(p1_request(opening_units=0.), "periodic:2")
     periods = sorted({t for (_, t) in periodic.purchases})
     assert periods and all((b - a) % 2 == 0 for a, b in zip(periods, periods[1:]))
+
+
+def test_service_gate_basis_target_keeps_the_strict_rule_below_target_and_in_recovery():
+    from zaad.full.planner import _priority_consistent
+    req = p1_request()                     # target .95, tolerance .01
+    def rows(v):
+        return [{"usable": True, "service": {"svc_A": v}, "economic_cost": 0.,
+                 "service_by_period": [{"service": "svc_A", "period": 0, "demand": 100., "served": 100. * v}]}]
+    # a fall from 1.0 to .97 stays above target: not a worsening under the target basis, one under the incumbent basis
+    assert _priority_consistent(req, rows(1.), rows(.97), floor_at_target=True)
+    assert not _priority_consistent(req, rows(1.), rows(.97))
+    strict = req.model_copy(update={"service_gate_basis": "incumbent"})
+    assert not _priority_consistent(strict, rows(1.), rows(.97), floor_at_target=True)
+    # a fall below the target is a worsening under both
+    assert not _priority_consistent(req, rows(1.), rows(.93), floor_at_target=True)
+    # below-target incumbent: any further fall is a worsening
+    assert not _priority_consistent(req, rows(.92), rows(.90), floor_at_target=True)
+
+
+def test_terminal_financing_tail_counts_declared_receivables_like_the_model_does():
+    req = p1_request(opening_cash=600., credit_limit=0., receivables_per_period=450.)
+    w = world(req)
+    sol = solve(req, [w], service_floor=True)
+    assert sol.status == "OPTIMAL"
+    settle(req, sol, w, steps=1)            # the model financed it on declared receivables; settlement must agree
+
+
+def test_cash_aware_baselines_never_exceed_declared_cash_and_credit():
+    req = p1_request(opening_cash=1500., credit_limit=1500., receivables_per_period=450., supplier_terms={"fixed_order_cost": 100.})
+    for rule in ("economic_lot", "periodic:2", "reorder_point", "replace_sold"):
+        settle(req, baseline_plan(req, rule), world(req), steps=1)

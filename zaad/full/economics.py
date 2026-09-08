@@ -329,6 +329,8 @@ def supplier_order_view(req: Request, solution: Solution | None, period: int | N
 # ---------------------------------------------------------------- materiality / abstention
 
 def _service_min(req: Request, rows: list[dict]) -> float | None:
+    """Worst service across worlds and services, counted only up to each service's target: service
+    above what the operator asked for is not an improvement that can justify an intervention."""
     values = []
     for r in rows:
         if not r.get("usable"):
@@ -336,7 +338,7 @@ def _service_min(req: Request, rows: list[dict]) -> float | None:
         for s in req.services:
             v = r["service"].get(s.id)
             if v is not None:
-                values.append(v)
+                values.append(min(v, s.target) - s.target)
     return min(values) if values else None
 
 
@@ -452,6 +454,7 @@ def economics_block(req: Request, fits: dict, protection: list[dict], *, incumbe
         "incumbent_working_capital": (mean(working_capital(req, r)["cash_deployed_mean"] for r in incumbent_rows if r.get("usable")) if incumbent_rows and all(r.get("usable") for r in incumbent_rows) else None),
         "selected_working_capital": (mean(working_capital(req, r)["cash_deployed_mean"] for r in final_rows if r.get("usable")) if final_rows and all(r.get("usable") for r in final_rows) else None),
         "reconciled": all(r["reconciled"] for r in recon) if recon else None,
+        "unmapped_ledger_keys": sorted({k for r in recon for k in r["unmapped_ledger_keys"]}),
         "orders": order_waterfall(req, fits, protection, final),
         "incumbent_orders": order_waterfall(req, fits, protection, incumbent),
         "supplier_orders": supplier_order_view(req, final),

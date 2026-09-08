@@ -265,9 +265,12 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
                       "cash": cash, "debt": debt, "payments": payments[t], "lc_reserve": reserve,
                       "pending_units": sum(p[4] for p in pending), "expired_units": expired_units})
     # Financial tail: every payment this plan committed after the horizon must be financeable from
-    # closing cash above the floor plus unused credit. Forecast receipts are not counted.
+    # closing cash above the floor plus unused credit. Forecast receipts are not counted; dated
+    # known receivables and other payments declared inside the request horizon are (P1): they are
+    # the same declared cash flows the model's own liquidity rows use, so model and settlement agree.
     terminal_liability = sum(v for due, v in payments.items() if due >= end)
-    terminal_headroom = (cash - req.liquidity.minimum_cash) + (req.liquidity.credit_limit - debt)
+    declared_tail = sum(req.liquidity.known_receivables[k] - req.liquidity.other_payments[k] for k in range(end, req.horizon))
+    terminal_headroom = (cash - req.liquidity.minimum_cash) + (req.liquidity.credit_limit - debt) + declared_tail
     if terminal_liability > terminal_headroom + 1e-5:
         raise PhysicalViolation(f"post-horizon obligations {terminal_liability:.2f} exceed terminal financing headroom {terminal_headroom:.2f}")
     closing_units = sum(stock.values()) + sum(p[4] for p in pending if p[5] == "transfer")
