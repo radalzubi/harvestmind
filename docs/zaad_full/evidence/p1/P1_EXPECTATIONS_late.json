@@ -1,0 +1,666 @@
+[
+ {
+  "fixture": "A_no_terms_good_incumbent",
+  "expectation": {
+   "best_policy_in": [
+    "reorder_point",
+    "gated",
+    "periodic:2",
+    "economic_lot"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "no",
+   "categories": [
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 5823.78941203459,
+   "reorder_point": 5823.78941203459,
+   "periodic:2": 5946.342131808709,
+   "economic_lot": 5823.78941203459,
+   "gated": 5823.78941203459
+  },
+  "why": "with no order-level economics a reorder-point rule is already near the optimum; ZAAD should mostly say NO MATERIAL IMPROVEMENT"
+ },
+ {
+  "fixture": "B_fixed_order_cost_replace_sold",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "economic_lot",
+    "periodic:2",
+    "reorder_point"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "yes",
+   "categories": [
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 8528.416806336027,
+   "reorder_point": 8573.78941203459,
+   "periodic:2": 7446.342131808709,
+   "economic_lot": 6994.579332509747,
+   "gated": 6322.049314055149
+  },
+  "why": "a $250 order cost makes weekly re-buying expensive; ZAAD should order less often than the incumbent"
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "reorder_point",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "yes",
+   "categories": [
+    "MOQ"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 9594.769132046677,
+   "reorder_point": 5897.561375712098,
+   "periodic:2": 6198.589241938536,
+   "economic_lot": 5897.561375712098,
+   "gated": 6013.8690487300255
+  },
+  "why": "a 400-unit MOQ against 100/week demand forces lumpy orders; the top-up must be attributed to MOQ"
+ },
+ {
+  "fixture": "D_case_multiple",
+  "expectation": {
+   "best_policy_in": [
+    "reorder_point",
+    "gated",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "CASE_ROUNDING"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 5806.723198692627,
+   "reorder_point": 5806.723198692627,
+   "periodic:2": 5916.36490692313,
+   "economic_lot": 5806.723198692627,
+   "gated": 5753.925746903325
+  },
+  "why": "case rounding is a small, visible cost; attribution must show it and nothing should be invented beyond it"
+ },
+ {
+  "fixture": "E_pallet_multiple",
+  "expectation": {
+   "best_policy_in": [
+    "reorder_point",
+    "gated",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "PALLET_ROUNDING"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 6239.090907858648,
+   "reorder_point": 6239.090907858648,
+   "periodic:2": 6431.578458390556,
+   "economic_lot": 6239.090907858648,
+   "gated": 6239.090907858648
+  },
+  "why": "full-pallet ordering at two weeks of demand per pallet; attribution must show PALLET_ROUNDING"
+ },
+ {
+  "fixture": "F_mov_two_skus",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "reorder_point",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "yes",
+   "categories": [
+    "MOV"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 14039.699603057285,
+   "reorder_point": 11816.195532667805,
+   "periodic:2": 11766.459047002287,
+   "economic_lot": 11816.195532667805,
+   "gated": 11938.269906042451
+  },
+  "why": "a $2,000 MOV against $1,000/week of combined demand forces coordination across the two SKUs"
+ },
+ {
+  "fixture": "G_freight_tiers",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "economic_lot",
+    "periodic:2",
+    "reorder_point"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "yes",
+   "categories": [
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 21399.87506778055,
+   "reorder_point": 21487.901619810178,
+   "periodic:2": 18098.1291639413,
+   "economic_lot": 16719.810772951074,
+   "gated": 14986.512400179985
+  },
+  "why": "stepped freight makes a 4-pallet load cost the same as a 1-pallet load; consolidation should win"
+ },
+ {
+  "fixture": "H_per_pallet_freight",
+  "expectation": {
+   "best_policy_in": [
+    "reorder_point",
+    "gated",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 6883.78941203459,
+   "reorder_point": 6883.78941203459,
+   "periodic:2": 6826.342131808709,
+   "economic_lot": 6883.78941203459,
+   "gated": 6593.82375894502
+  },
+  "why": "linear per-pallet freight gives no consolidation incentive beyond filling the last pallet"
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "reorder_point",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": false,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": false,
+  "costs": {
+   "incumbent": 16273.789412034588,
+   "reorder_point": 16273.789412034588,
+   "periodic:2": 12446.34213180871,
+   "economic_lot": 9814.06085597697,
+   "gated": 10179.25344665872
+  },
+  "why": "a 9-pallet cap (450 units) bounds every shipment; no plan may exceed it"
+ },
+ {
+  "fixture": "J_net60_cost_of_capital",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "reorder_point",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 7478.353230355117,
+   "reorder_point": 7478.353230355117,
+   "periodic:2": 6850.3550203397845,
+   "economic_lot": 6869.524399290591,
+   "gated": 6073.78123397347
+  },
+  "why": "net-60 terms mean stock is sold before it is paid for; financing cost must be lower than fixture K"
+ },
+ {
+  "fixture": "K_deposit_early_cash",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "reorder_point",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 7490.103808914896,
+   "reorder_point": 7490.103808914896,
+   "periodic:2": 6862.160526856723,
+   "economic_lot": 6877.830784656575,
+   "gated": 6074.153889360715
+  },
+  "why": "cash at order with a 12% cost of capital penalises early and large orders; financing must exceed fixture J"
+ },
+ {
+  "fixture": "L_high_holding_rate",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "reorder_point",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 7434.010468630667,
+   "reorder_point": 7476.220933991011,
+   "periodic:2": 6855.883980395938,
+   "economic_lot": 7223.165307446651,
+   "gated": 6149.663378943644
+  },
+  "why": "a 30%/yr holding rate should pull the lot size down relative to fixture B"
+ },
+ {
+  "fixture": "M_order_calendar_wednesday",
+  "expectation": {
+   "best_policy_in": [
+    "reorder_point",
+    "gated",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 6255.865641662887,
+   "reorder_point": 6255.865641662887,
+   "periodic:2": 6361.403882722162,
+   "economic_lot": 6255.865641662887,
+   "gated": 6154.672111896789
+  },
+  "why": "Wednesday-only ordering with weekday shipping shifts every arrival; the timing audit must reflect the calendar, not the period grid"
+ },
+ {
+  "fixture": "N_long_lead_21_days",
+  "expectation": {
+   "best_policy_in": [
+    "reorder_point",
+    "gated",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "LEAD_TIME_EXPOSURE",
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": false,
+   "attribution_partitions": true
+  },
+  "pass": false,
+  "costs": {
+   "incumbent": 5937.425767758522,
+   "reorder_point": 5937.425767758522,
+   "periodic:2": 5942.45176765354,
+   "economic_lot": 5937.425767758522,
+   "gated": 5901.297744831455
+  },
+  "why": "three weeks of lead time makes lead-time exposure the dominant reason to order"
+ },
+ {
+  "fixture": "O_low_opening_stock",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "reorder_point",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "LEAD_TIME_EXPOSURE",
+    "DEMAND_CYCLE"
+   ],
+   "service_floor": 0.8
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": false,
+   "all_policies_completed": true,
+   "service_floor": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": false,
+  "costs": {
+   "incumbent": 6521.187932948979,
+   "reorder_point": 6398.775494402654,
+   "periodic:2": 6521.187932948979,
+   "economic_lot": 6398.775494402654,
+   "gated": 6540.799408189593
+  },
+  "why": "with a week of demand on hand and a one-week lead, an early stockout is unavoidable for every policy; ZAAD must not pretend otherwise"
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "reorder_point",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "yes",
+   "categories": []
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": false,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": false,
+  "costs": {
+   "incumbent": 6282.326151538248,
+   "reorder_point": 5786.383280027695,
+   "periodic:2": 5906.558925077478,
+   "economic_lot": 5786.383280027695,
+   "gated": 5783.403034145155
+  },
+  "why": "six weeks of stock on hand: ordering nothing for several reviews is the right answer and the replace-sold incumbent is wrong"
+ },
+ {
+  "fixture": "Q_volatile_demand_high_target",
+  "expectation": {
+   "best_policy_in": [
+    "reorder_point",
+    "gated",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.03,
+   "action": "either",
+   "categories": [
+    "SERVICE_PROTECTION",
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 5970.6880417713255,
+   "reorder_point": 5970.6880417713255,
+   "periodic:2": 6093.579610686804,
+   "economic_lot": 5970.6880417713255,
+   "gated": 5970.991448082945
+  },
+  "why": "volatile demand at a 98% target needs visible service protection in the attribution"
+ },
+ {
+  "fixture": "R_asymmetric_prices_mov",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "reorder_point",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "either",
+   "categories": [
+    "MOV"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": false,
+   "attribution_partitions": true
+  },
+  "pass": false,
+  "costs": {
+   "incumbent": 63447.84980509118,
+   "reorder_point": 63447.84980509118,
+   "periodic:2": 64628.17576406005,
+   "economic_lot": 63447.84980509118,
+   "gated": 63420.1762588472
+  },
+  "why": "with B ten times the price of A, the MOV top-up should land on the line that is cheaper to hold (A)"
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "reorder_point",
+    "economic_lot",
+    "periodic:2"
+   ],
+   "zaad_not_worse": 0.03,
+   "action": "either",
+   "categories": [
+    "DEMAND_CYCLE"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 6923.78941203459,
+   "reorder_point": 6923.78941203459,
+   "periodic:2": 6546.342131808709,
+   "economic_lot": 6234.473244132313,
+   "gated": 6147.337957215769
+  },
+  "why": "cash and credit together cover three weeks of purchases; financing must be visible and no plan may breach the credit limit"
+ },
+ {
+  "fixture": "T_combined_realistic",
+  "expectation": {
+   "best_policy_in": [
+    "gated",
+    "economic_lot",
+    "periodic:2",
+    "reorder_point"
+   ],
+   "zaad_not_worse": 0.02,
+   "action": "yes",
+   "categories": [
+    "DEMAND_CYCLE",
+    "CASE_ROUNDING"
+   ]
+  },
+  "checks": {
+   "best_policy_in": true,
+   "zaad_not_worse": true,
+   "all_policies_completed": true,
+   "action": true,
+   "categories": true,
+   "attribution_partitions": true
+  },
+  "pass": true,
+  "costs": {
+   "incumbent": 24255.01182794904,
+   "reorder_point": 20123.010045957,
+   "periodic:2": 18998.150036084917,
+   "economic_lot": 17593.193371636866,
+   "gated": 15213.802491885772
+  },
+  "why": "every mechanism at once; ZAAD must reconcile and explain each order and beat weekly re-buying"
+ }
+]
