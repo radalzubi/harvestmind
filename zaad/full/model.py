@@ -345,6 +345,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
         for sku, _, _ in compatible(req, service):
             service_for_stock[sku, service.location].append(service)
     costs: list[dict[int, float]] = [defaultdict(float) for _ in worlds]
+    tiebreak: list[dict[int, float]] = [defaultdict(float) for _ in worlds]   # objective only (P1)
     # Post-horizon supply per (sku, location): arrivals due at or after H and end-of-horizon stock (v6 continuation).
     post: list[dict[tuple[str, str], dict[int, float]]] = [defaultdict(lambda: defaultdict(float)) for _ in worlds]
     payments: list[list[dict[int, float]]] = [[defaultdict(float) for _ in range(H)] for _ in worlds]
@@ -440,7 +441,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 costs[w][q] += landed + price * term.financing_fee_fraction
                 # Timing tie-break (P1): a purchase committed earlier carries a token objective
                 # penalty so that, when nothing else separates two timings, the later one wins.
-                costs[w][q] += req.timing_tiebreak * price * (H - 1 - t)
+                # It goes to the solver objective only, never to the plan's projected economics.
+                tiebreak[w][q] += req.timing_tiebreak * price * (H - 1 - t)
                 payments[w][t][q] += price * term.deposit_fraction
                 payment_t = trigger + net
                 if payment_t < H:
@@ -850,6 +852,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     costs[w][served] -= margin
     for w, world in enumerate(worlds):
         for q, amount in costs[w].items():
+            m.cost[q] += world.weight * amount
+        for q, amount in tiebreak[w].items():
             m.cost[q] += world.weight * amount
     if cvar_weight:
         threshold = m.var(("cvar_threshold",), cost=cvar_weight, lower=-np.inf)
