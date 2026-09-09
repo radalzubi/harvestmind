@@ -14,11 +14,12 @@ from zaad.full.replay import replay  # noqa: E402
 from scripts.p1_p0_arms import ARMS  # noqa: E402
 
 arm = sys.argv[1]
+CELL = int(sys.argv[2]) if len(sys.argv) > 2 else 90
 settings = dict(ARMS[arm]); switch = settings.pop("_switch", None)
 if switch is not None:
     import zaad.full.worlds as W
     module, name = switch[0].split("."); setattr({"planner": P, "worlds": W}[module], name, switch[1])
-cell = next(c for c in B.cells("v7") if c["cell"] == 90)
+cell = next(c for c in B.cells("v7") if c["cell"] == CELL)
 req = B.request_for(cell, 38001).model_copy(update={"adaptive_escalation": True, "adaptive_solve_budget": True, "joint_recovery_rule": "deficit", **settings})
 truth = B.truth_for(req, cell, 38001)
 traces = []
@@ -41,5 +42,5 @@ for t, r in zip(traces, res["reviews"]):
     t["settlement"] = {"unmet": sum(x["demand"] - x["served"] for x in st["service_by_period"]), "demand": sum(x["demand"] for x in st["service_by_period"]),
                        "end_stock": sum(x["quantity"] for x in st["end_stock"]), "received": st.get("received_units"), "cost": st["economic_cost"]}
     t["truth_demand"] = None
-json.dump({"arm": arm, "reviews": traces, "economic_cost": res["economic_cost"]}, open(f"docs/zaad_full/evidence/p1/closure/cell90_trace_{arm}.json", "w"), indent=1, default=float)
+json.dump({"arm": arm, "cell": CELL, "reviews": traces, "economic_cost": res["economic_cost"]}, open(f"docs/zaad_full/evidence/p1/closure/cell{CELL}_trace_{arm}.json" if CELL != 90 else f"docs/zaad_full/evidence/p1/closure/cell90_trace_{arm}.json", "w"), indent=1, default=float)
 print(arm, "reviews", len(traces), "cost", round(res["economic_cost"]))

@@ -1265,3 +1265,110 @@ because it fired on P0 cells 20 and 21.
 Best next intervention (not executed): understand why lean-review protection on cells 20 and 21
 changes the path into their disruption reviews (a state-sequence question in P0's screen, not an
 economics question), and decide the benchmark's terminal valuation, which is what holds C.
+
+
+# CANDIDATE-COMPARABILITY PASS (2026-09-09, sixth pass on this close-out; from dca4820)
+
+**Verdict: P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.** The common ex-ante valuation was built,
+validated and applied to every generated candidate at every review of the fixtures with all plans
+held fixed. On fixture P it agrees with the selector at every decisive review: the deterministic
+plan is the best plan the screen generated there. Selection is not P's defect; the candidate set
+is. No selector change was made.
+
+## G1. Lock
+
+Started from dca4820: clean tree, no jobs; P +2.040868% at product defaults; six P0 cells
+reproduced (D4, arm `neither`); `analytic_shortage` default off; materiality base reverted;
+fixtures, tolerance, seeds unchanged; Validation7/8, holdout4 uninspected.
+
+## G2. Common valuation architecture (`zaad/full/valuation.py`, read-only)
+
+`common_candidate_value(req, solution, fits)` values a fixed plan (its purchase, transfer and
+amendment controls) under one lens shared by every candidate: the fitted predictive demand
+distribution of every service (the zero probability, bootstrap atoms, calibration widening,
+outlier cap and event multipliers the sampler uses, from `shortage.demand_atoms`), the review's
+mean supply path (declared lead and mean fill), the declared shortage, SLA, carrying, purchase,
+freight, receiving, financing and terminal economics, over the plan's own horizon. The
+demand-independent components come from the mean-path settlement of the plan; the
+demand-dependent ones (carrying, shortage, terminal credit on stock still on hand) are replaced by
+exact expectations under the mixture obtained by propagating the on-hand distribution period by
+period on a unit grid, I_t = max(0, I_t-1 + arrivals_t - D_t), lost sales, the demand of every
+service at a location convolved atom by atom. The grid is the only approximation (error bounded by
+one unit per period). It mutates nothing: not quantities, timings, feasibility, the solver, the
+settlement or the ledger (`test_valuation_mutates_nothing`). Candidate-generation objectives,
+this comparison value and the realised ledger are three separate things and stay separate.
+
+Validation. Hand-calculable propagation; deterministic demand reproduces the mean-path settlement
+to the grid; against a 300-world sampled expectation the value agrees within 1% and ranks
+identically; expected shortage falls with added units and is zero with ample stock; components
+reconcile to the total (`tests/unit/test_zaad_valuation.py`, 6 tests). At P seed 41001 review 8
+against 400 worlds, component by component: deterministic 2,109 vs 2,118; base stock 2,189 vs
+2,196; deterministic + 10 units 2,081 vs 2,089; reorder-point action 2,086 vs 2,092. Runtime:
+6.0 ms per candidate valuation at p50, 14.7 ms p95, 20.1 ms max (414 valuations).
+
+## G3. P: every generated candidate at every decisive review (`closure/common_valuation_diag.json`)
+
+| seed | review | state | candidates: period-0 order, sampled 3-world cost, common value, E[shortage units] | selector chose | common best | agreement |
+|---|---|---|---|---|---|---|
+
+
+At every NO_ACTION review, on all three seeds, the common valuation's best candidate is the one
+the selector chose. The base-stock proxy over-buys inside the shrinking horizon (at review 8 it
+orders 124 then keeps ordering, 115 units more than the deterministic plan over four periods, so
+its expected shortage saving of $66 costs $146 net of the terminal credit); the incumbent is
+worst. The plans that beat the deterministic plan in expectation (about +10 units at period 0:
+common 2,081, 400 worlds 2,089) are not in the candidate set. Disagreements occur only in the
+three stock-rundown reviews (CAPITAL_OPTIMIZATION, every candidate orders zero at period 0, gaps
+$5-97 between zero-order plans) and change no order.
+
+**Answer to the Stage 3 question: no. Common valuation does not reverse P's ranking, because at
+the decisive reviews there is no better generated plan to rank first.** The F1/F2 counterfactuals
+(+0.23%) improved P by excluding the deterministic plan, which made the over-buying base-stock
+proxy win and carry protection forward across reviews; F7 (-0.58%) improved it by forcing the
+stochastic class, which the NO_ACTION state does not request. Both change the candidate set, not
+the comparison.
+
+## G4. Cross-fixture disagreement table (seed 41001, 11 reviews each; `closure/common_valuation_diag_fixtures.json`)
+
+Common valuation disagrees with the selector's sampled choice on 15 of 77 reviews across C, O, I, A, G, Q, T:
+
+| fixture | review | state | selector chose (status) | common best | common gap $ | candidates (p0 units / common / sampled) |
+|---|---|---|---|---|---|---|
+| C | 1 | CAPITAL_OPTIMIZATION | stochastic_network (PENDING_REVIEW) | cvar_network | 6.2 | incumb:400/9836/9865 base_s:0/10272/10234 determ:0/5602/5663 stocha:0/5603/5591 cvar_n:0/5597/5594 protec:0/5603/5591 joint_:0/5597/5594 |
+| O | 3 | NORMAL_REPLENISHMENT | base_stock (PENDING_REVIEW) | deterministic_network | 55.1 | incumb:0/5521/5416 base_s:108/4741/4653 determ:94/4686/4567 stocha:96/4700/4530 cvar_n:96/4700/4530 |
+| O | 5 | NORMAL_REPLENISHMENT | stochastic_network (PENDING_REVIEW) | deterministic_network | 3.7 | incumb:0/4442/4421 base_s:105/3697/3677 determ:90/3637/3609 stocha:293/3641/3552 cvar_n:293/3641/3552 |
+| I | 2 | CAPITAL_OPTIMIZATION | cvar_network (PENDING_REVIEW) | joint_recovery | 37.6 | incumb:0/11739/11656 base_s:0/12794/12717 determ:0/7341/7200 stocha:0/7343/7196 cvar_n:0/7349/7198 protec:0/7343/7196 cadenc:399/7376/7203 cadenc:156/7346/7210 joint_:0/7311/7225 |
+| I | 3 | NO_ACTION | cadence_2_network (PENDING_REVIEW) | cadence_4_network | 37.3 | incumb:0/11283/11177 base_s:0/12337/12237 determ:0/6882/6733 cadenc:0/6903/6728 cadenc:428/6866/6754 |
+| A | 2 | NO_ACTION | deterministic_network (RETAIN_INCUMBENT) | incumbent | 51.1 | incumb:95/5099/5023 base_s:97/5204/5135 determ:83/5150/5014 |
+| A | 8 | NO_ACTION | deterministic_network (RETAIN_INCUMBENT) | incumbent | 25.4 | incumb:109/2017/1990 base_s:111/2125/2100 determ:97/2043/1983 |
+| A | 9 | NO_ACTION | deterministic_network (RETAIN_INCUMBENT) | incumbent | 22.7 | incumb:101/1513/1477 base_s:103/1620/1588 determ:89/1535/1477 |
+| G | 0 | NO_ACTION | cadence_4_network (PENDING_REVIEW) | cadence_2_network | 8.5 | incumb:198/23176/23135 base_s:127/23208/23170 determ:0/14706/14571 cadenc:2000/14649/14514 cadenc:2000/14657/14514 |
+| Q | 0 | NORMAL_REPLENISHMENT | cvar_network (RETAIN_INCUMBENT) | incumbent | 186.2 | incumb:112/6049/6244 base_s:116/6150/6345 determ:42/6296/6661 stocha:33/6235/6115 cvar_n:33/6235/6115 |
+| Q | 1 | NORMAL_REPLENISHMENT | stochastic_network (RETAIN_INCUMBENT) | cvar_network | 10.6 | incumb:96/5614/5760 base_s:100/5715/5859 determ:26/5851/5867 stocha:165/5686/5571 cvar_n:165/5675/5572 |
+| Q | 2 | NO_ACTION | deterministic_network (RETAIN_INCUMBENT) | incumbent | 230.1 | incumb:74/5121/4873 base_s:76/5224/4984 determ:3/5351/4808 |
+| Q | 8 | NO_ACTION | deterministic_network (RETAIN_INCUMBENT) | incumbent | 119.5 | incumb:126/1965/1895 base_s:130/2068/2000 determ:56/2085/1865 |
+| T | 0 | NO_ACTION | cadence_2_network (PENDING_REVIEW) | cadence_4_network | 15.0 | incumb:312/26498/26444 base_s:0/25871/25760 determ:336/15250/15105 cadenc:336/15214/15065 cadenc:1776/15199/15154 |
+| T | 1 | NO_ACTION | cadence_2_network (PENDING_REVIEW) | deterministic_network | 55.9 | incumb:312/24486/24547 base_s:0/23033/23091 determ:0/13145/13319 cadenc:1872/13201/13318 cadenc:1872/13201/13318 |
+
+Reading. The disagreements are of three kinds. (i) Cadence or joint-recovery alternatives worth
+$4-56 in expectation (C, I, G, T, O): immaterial and inside the existing band. (ii) Lean
+deterministic plans that the sampled comparison rates cheapest and the common lens rates worse
+than the incumbent (A reviews 2/8/9 by $23-51; Q reviews 2/8 by $120-230, where the deterministic
+plan orders 3 and 56 units against an incumbent ordering 74 and 126): the F4 pattern, a lean plan
+looking cheap on three worlds. In every one of those reviews the existing gates retained the
+incumbent anyway (status RETAIN), so the sampled comparison's bias was caught downstream. (iii)
+None on P's decisive reviews. So the sampled comparison does carry the bias the hypothesis
+describes, it is real on A and Q, it is already contained by the gates there, and it is not what
+decides P.
+
+## G5. Selector defect, stated precisely
+
+Of the possibilities listed: the candidate cost values do contain different risk representations
+(a mean-world plan's cost on three sampled worlds is an unbiased but high-variance estimate of a
+tail cost it never planned for), and the exposure floor is self-referential (the cheapest
+candidate sets the floor, and on P the cheapest is the lean plan). Neither is what P turns on. P
+turns on the candidate set: in the NO_ACTION state the screen requests only the deterministic
+mean-world class, whose objective holds no protection; the only protected alternative is the
+base-stock proxy, whose order-up-to rule over-buys inside the shrinking horizon; the stochastic
+class, which sizes protection from the sampled spread and wins when forced (F7), is not
+requested. That is candidate-set architecture, and the brief's failure branch names it.
