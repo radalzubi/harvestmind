@@ -20,6 +20,7 @@ GATE_ARM = "default"
 SMOOTHING_ARM = 0.
 SCENARIOS_ARM = 0     # 0 = the fixture's own scenario count; >0 is a diagnostic override (world-count trade-off)
 PRODUCT_DEFAULTS = False
+TERMINAL_ARM = "salvage"   # "salvage": realised ledger (declared terminal_value); "continuation": plus the finite-horizon continuation adjustment
 
 
 def _build(name: str, seed: int):
@@ -38,9 +39,9 @@ from zaad.full.tolerance import is_dust
 from zaad.full.worlds import draw, forecast_all
 
 
-def _init(stress: str, gate: str, smoothing: float, scenarios: int = 0, product_defaults: bool = False) -> None:
-    global STRESS_ARM, GATE_ARM, SMOOTHING_ARM, SCENARIOS_ARM, PRODUCT_DEFAULTS
-    STRESS_ARM, GATE_ARM, SMOOTHING_ARM, SCENARIOS_ARM, PRODUCT_DEFAULTS = stress, gate, smoothing, scenarios, product_defaults
+def _init(stress: str, gate: str, smoothing: float, scenarios: int = 0, product_defaults: bool = False, terminal: str = "salvage") -> None:
+    global STRESS_ARM, GATE_ARM, SMOOTHING_ARM, SCENARIOS_ARM, PRODUCT_DEFAULTS, TERMINAL_ARM
+    STRESS_ARM, GATE_ARM, SMOOTHING_ARM, SCENARIOS_ARM, PRODUCT_DEFAULTS, TERMINAL_ARM = stress, gate, smoothing, scenarios, product_defaults, terminal
 
 
 def run_cell(name: str, policy: str, seed: int) -> dict:
@@ -65,7 +66,11 @@ def run_cell(name: str, policy: str, seed: int) -> dict:
     per_review_service = []
     solver_seconds = []
     retained_reasons: list[str] = []
+    owners, states, p1_added, milps = [], [], 0, 0
     for row in out["reviews"]:
+        orch = row.get("orchestration") or {}
+        owners.append(orch.get("planner_owner")); states.append(orch.get("state"))
+        p1_added += len(orch.get("p1_classes_added") or []); milps += orch.get("milps_attempted") or 0
         st = row["settlement"]
         s_ = d_ = 0.
         for x in st["service_by_period"]:
@@ -114,10 +119,12 @@ def run_cell(name: str, policy: str, seed: int) -> dict:
         "service": served / demand if demand else None, "breaches": breaches, "unmet_units": demand - served, "worst_shortfall": worst,
         "avg_inventory_units": mean(inventory_units), "avg_inventory_value": mean(inventory_value),
         "order_count": order_lines, "avg_order_size": order_units / order_lines if order_lines else 0.,
-        "components": components, "total_modeled_cost": out["economic_cost"], "ledger": out["ledger"],
+        "components": components, "total_modeled_cost": (out["economic_cost_continuation"] if TERMINAL_ARM == "continuation" else out["economic_cost"]),
+        "total_realized_cost": out["economic_cost"], "total_continuation_cost": out["economic_cost_continuation"],
+        "terminal_continuation": {k: v for k, v in out["terminal_continuation"].items() if k != "detail"}, "terminal_evaluation": TERMINAL_ARM, "ledger": out["ledger"],
         "working_capital": mean(cash_deployed), "actions": actions, "abstentions": abstentions,
         "categories": sorted(categories), "wall_seconds_per_review": solver_seconds, "per_review_service": per_review_service,
-        "review_outcomes": retained_reasons})
+        "review_outcomes": retained_reasons, "planner_owners": owners, "screen_states": states, "p1_classes_added": p1_added, "milps_attempted": milps})
     return cell
 
 
@@ -206,12 +213,15 @@ def main():
     ap.add_argument("--gate", default="default", choices=("default", "target", "incumbent"))
     ap.add_argument("--smoothing", type=float, default=0.)
     ap.add_argument("--product-defaults", action="store_true", help="drop the declared P1 fixture settings (stratified worlds, tie-break) and run at product defaults")
+    ap.add_argument("--terminal", default="salvage", choices=("salvage", "continuation"), help="parity evaluation of residual stock: realised salvage ledger, or with the finite-horizon continuation adjustment")
     a = ap.parse_args()
+    global TERMINAL_ARM
+    TERMINAL_ARM = a.terminal
     global STRESS_ARM, GATE_ARM, SMOOTHING_ARM
     STRESS_ARM, GATE_ARM, SMOOTHING_ARM = a.stress, a.gate, a.smoothing
     global PRODUCT_DEFAULTS
     PRODUCT_DEFAULTS = a.product_defaults
-    arm = a.stress + ("" if a.gate == "default" else "_gate_" + a.gate) + ("" if a.smoothing == 0 else f"_smoothing_{a.smoothing:g}") + ("_product_defaults" if a.product_defaults else "")
+    arm = a.stress + ("" if a.gate == "default" else "_gate_" + a.gate) + ("" if a.smoothing == 0 else f"_smoothing_{a.smoothing:g}") + ("_product_defaults" if a.product_defaults else "") + ("" if a.terminal == "salvage" else "_terminal_" + a.terminal)
     names = [n for n in a.fixtures.split(",") if n] or list(FIXTURES)
     policies = [p for p in a.policies.split(",") if p]
     jobs = [(n, p, s) for n in names for p in policies for s in SEEDS]
@@ -219,7 +229,7 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     cells = []
     started = time.time()
-    with ProcessPoolExecutor(a.workers, initializer=_init, initargs=(a.stress, a.gate, a.smoothing, 0, a.product_defaults)) as pool, out.open("w") as f:
+    with ProcessPoolExecutor(a.workers, initializer=_init, initargs=(a.stress, a.gate, a.smoothing, 0, a.product_defaults, a.terminal)) as pool, out.open("w") as f:
         for cell in pool.map(run_cell, *zip(*jobs)):
             cells.append(cell)
             f.write(json.dumps(cell, allow_nan=False, default=float) + "\n")

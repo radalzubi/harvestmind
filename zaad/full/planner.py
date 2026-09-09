@@ -24,6 +24,7 @@ from zaad.full.contracts import Request
 from zaad.full.eta import conditional_eta
 from zaad.full.economics import NO_MATERIAL_IMPROVEMENT, economics_block, materiality
 from zaad.full.model import Solution, solve, supplier_orders
+from zaad.full.ownership import PROTECTION_RECOVERY, PURCHASING_ECONOMICS, planner_owner, purchasing_candidates
 from zaad.full.protection import protection_profile
 from zaad.full.screen import MINIMUM_SAFE, screen
 from zaad.full.settlement import PhysicalViolation, settle
@@ -656,6 +657,14 @@ def plan(req: Request) -> dict:
     req_gate = req if gate_basis == req.service_gate_basis else req.model_copy(update={"service_gate_basis": gate_basis})
     required = list(screen_result["minimum_safe_candidates"])
     optional = list(screen_result["optional_candidates"])
+    # Planner ownership (P1 planner-boundary pass): decided here, before any candidate is assembled,
+    # from semantic state only. A P0-owned review continues on the frozen path with the frozen sets;
+    # a P1-owned review uses the purchasing frontier (the NO_ACTION set gains the scenario plan).
+    ownership = (planner_owner(req, protection, screen_result) if req.planner_ownership
+                 else {"owner": PROTECTION_RECOVERY, "reasons": ["planner ownership routing is off: frozen path"], "scope": "routing off"})
+    p1_added: list[str] = []
+    if ownership["owner"] == PURCHASING_ECONOMICS:
+        required, optional, p1_added = purchasing_candidates(screen_result["state"], required, optional)
     # Cadence candidates (P1). When a supplier carries order-level economics (fixed order cost, MOV,
     # freight tariff) the review may be better served by ordering every k periods than by the
     # per-period cadence the incumbent runs. They are optional classes: skipping one is never
@@ -1378,6 +1387,8 @@ def plan(req: Request) -> dict:
                 **screen_result,
                 **_completeness(req, candidates, selection_rows, compute),
                 "candidate_classes_requested": compute["requested"],
+                "planner_owner": ownership["owner"], "ownership_reasons": ownership["reasons"],
+                "p1_classes_added": list(p1_added),
                 "candidate_classes_skipped": sorted(set(compute["skipped"])),
                 "candidates_built": sorted(n for n in candidates if n not in ("incumbent", "base_stock")),
                 "milps_attempted": sum(1 for c in candidates.values() if c.solve_seconds),

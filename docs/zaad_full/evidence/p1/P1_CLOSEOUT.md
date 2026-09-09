@@ -1776,3 +1776,239 @@ uncommitted alongside it.
 Product defaults unchanged from `4f6aedc`. **P1 REMAINS OPEN.** P2 not started (`claude/zaad-meio-p2`
 does not exist). Validation7, Validation8, holdout4 untouched. Network Twin, PR #38, PR #39, frontend,
 Vercel, production, other worktrees untouched.
+
+---
+
+# Pass I: planner-boundary architecture (purchasing economics against frozen protection / recovery), 2026-09-09
+
+## I1. Clean baseline restored (stage 1)
+
+The rejected escalation experiment was archived as evidence (`closure/archive_pass_h/`: the diff, the
+two diagnostic scripts and the 15 tests as text) and its policy code, request field and script flags
+were reverted to `4f6aedc`. The targeted lock was reproduced cell for cell (`closure/baseline_restored.json`
+against `closure/lock_4f6aedc.json`: 120 cells, maximum absolute difference 0.0). The unit suite on that
+baseline: 1461 passed, 2 skipped. Evidence commit `dfd1d30`.
+
+Correction to the P0 record: the six-cell arm `neither` recorded on 2026-09-08 23:12 and used in passes
+E-H as "product defaults" for cells 20 and 21 (service .884 / .746) was taken while the later-reverted
+materiality-base experiment was live (it retains the incumbent at review 0 where the shipped code
+accepts the mean-world plan). The clean reference recorded in this pass on code byte-identical to
+`4f6aedc` (`closure/p0_arm_clean_reference.json`) gives cell 20 service .894, unmet 40.9, cost 2502 and
+cell 21 service .760, unmet 93.0, cost 3331; cells 15, 16, 90 and 108 are identical to the record. The
+pass-H first-divergence trace of cell 20 (`cell20_trace_p0_defaults.json`, cost 2502) was already
+against the correct baseline, so its mechanism stands; the escalation arm's cell 20 (.837) is worse
+against the true baseline by more than pass H stated. The clean reference is the P0 reference from here.
+
+## I2. Ownership inputs, responsibilities, pre-registered rule (stages 2-6)
+
+Recorded before any run in `P1_PLANNER_OWNERSHIP.md` (sections 2-6). In one line: a review is owned by
+the P0 protection / recovery planner when the request declares a non-identity stress envelope, when
+adaptive escalation is off, when the screen state is not calm, when any SKU/location has an active or
+decaying driver, a non-LEAN regime, a confirmed decline or the FALSE_PROTECTION_RISK flag, or when the
+screen reports a recovery obligation; otherwise by the P1 purchasing planner. On risk-state fields
+alone review 0 of cell 20 and review 4 of P are the same state (LEAN, activity 0, credibility floored at
+.10 for both); the one operator-supplied, review-0-available difference is the declared envelope
+(`operator_adverse`: fill x0.7, +28 days, demand x1.1 against `nil`), which condition 1 uses. Fixture
+truth (the supply state that starts at review 1) is never read. No per-unit inventory provenance exists;
+the regime and the flag are the model's own account of protection under management, and the limitation
+(protection stock already returned to LEAN unflagged reads as cycle stock) is recorded.
+
+## I3. Router (stages 7-9)
+
+`zaad/full/ownership.py`: `planner_owner(req, protection_rows, screen_result)` returns
+`PURCHASING_ECONOMICS` or `PROTECTION_RECOVERY` with every reason; `purchasing_candidates` adds the
+scenario plan to the NO_ACTION set and nothing else. In `plan()` the router runs after the screen and
+before candidate assembly; under P0 ownership the frozen sets and path are untouched; the report carries
+`orchestration.planner_owner`, `ownership_reasons` and `p1_classes_added`; the replay log records the
+owner per review. `Request.planner_ownership` (default True) exists for evidence arms only. Selector,
+gates, materiality, recovery, candidate mathematics, terminal economics and every P0 threshold are
+unchanged. P1 matrix: NO_ACTION -> deterministic + stochastic; NORMAL_REPLENISHMENT and
+CAPITAL_OPTIMIZATION unchanged.
+
+Router tests (`tests/unit/test_zaad_planner_ownership.py`, 14): the twelve required cases (calm explicit
+purchasing economics -> P1; active disruption -> P0; recovery deficit -> P0; inherited protection unwind
+-> P0; FALSE_PROTECTION_RISK -> P0; ordinary calm cycle inventory -> P1; legacy full-set path -> P0;
+declared mandate available now -> P0; future truth cannot influence the router (the same cell-20 request
+with the identity envelope routes to P1; seeds change nothing); a P1 candidate cannot alter a P0-owned
+review (cell 20 review 0 bit-identical in requested set, built set, every candidate's plan, band inputs,
+choice, materiality); P0 ownership adds zero classes and zero MILPs; P1 candidates bit-identical to the
+screen-requested classes) plus two structural tests. All pass.
+
+## I4. P0 six-cell gate: decision-level bit-identity (stage 11; `scripts/p1_ownership_compare.py`)
+
+Arm `router` (product defaults, router on) against `clean_reference`, per review: screen state,
+requested set, built set, selected candidate, status, period-0 order, recovery admission, feasible set,
+chosen candidate, materiality verdict.
+
+| cell | reviews | owner (every review) | P1 classes added | decision-identical reviews | service | unmet | breaches | cost | required starvation |
+|---|---|---|---|---|---|---|---|---|---|
+| 15 | 12 | PROTECTION_RECOVERY | 0 | 12 / 12 | .980 = .980 | 5.0 = 5.0 | 1 = 1 | 1678 = 1678 | 0 |
+| 16 | 12 | PROTECTION_RECOVERY | 0 | 12 / 12 | .972 = .972 | 7.0 = 7.0 | 1 = 1 | 1515 = 1515 | 0 |
+| 20 | 20 | PROTECTION_RECOVERY | 0 | 20 / 20 | .894 = .894 | 40.9 = 40.9 | 3 = 3 | 2502 = 2502 | 0 |
+| 21 | 20 | PROTECTION_RECOVERY | 0 | 20 / 20 | .760 = .760 | 93.0 = 93.0 | 5 = 5 | 3331 = 3331 | 0 |
+| 90 | 26 | PROTECTION_RECOVERY | 0 | first run 5 / 26; rerun 26 / 26 | first run .859, rerun .863 = .863 | 71.9 / 70.1 = 70.1 | 5 / 4 = 4 | 3351 / 3317 = 3317 | 0 |
+| 108 | 30 | PROTECTION_RECOVERY | 0 | 30 / 30 | .884 = .884 | 66.9 = 66.9 | 5 = 5 | 3665 = 3665 | 0 |
+
+Cell 90, first router run: identical requested set, built set, worlds, choice, status and period-0
+order at review 4, but the hedged candidate (a `FEASIBLE_TIME_LIMIT` solve, latency 70 s against 78 s
+in the reference) returned no usable plan and dropped out of the feasible set; the path then diverged
+from review 5. A rerun of the router arm on cell 90 alone (`p0_arm_router_rerun.json`) reproduces the
+clean reference on all 26 reviews (cost 3317, service .863), as does a rerun of the clean code itself
+(`p0_arm_clean_reference_rerun.json`, 26 / 26). Classification: frozen numerical variability of a
+wall-clock-limited solve with identical inputs, not a router effect. With the rerun, the P0-owned path
+is decision-identical on 120 / 120 reviews; the router added zero classes and zero solves on every one.
+
+Cell 20 review 0 (the pass-H failure point): owner PROTECTION_RECOVERY by the declared mandate;
+requested set `deterministic_network` only; the mean-world plan (11.3 units) accepted exactly as in the
+reference. On review-0 information the assignment is semantically right: the operator has declared the
+envelope the disruption will draw from; nothing else about the state says calm-or-not, and nothing
+about the truth is read.
+
+## I5. Targeted fixtures under the router (stage 12-13; `closure/router_targeted.json`, product defaults, realised ledger)
+
+| fixture | lock | router | service | unmet | inventory | actions / 33 | abstentions | owner P1 / P0 reviews | P1 classes added | MILPs | wall |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| P | +2.04% FAIL | **+0.29% PASS** | .990 | 10.7 | 179 | 32 | 0 | 32 / 1 | 22 | 163 | 7 s |
+| C | +0.27% | **+3.61% FAIL** | 1.000 | 0 | 282 | 30 | 0 | 33 / 0 | 12 | 195 | 6 s |
+| O | +0.77% | +0.46% | .920 | 87.9 | 69 | 29 | 0 | 23 / 10 | 22 | 150 | 6 s |
+| I | +0.53% | +0.53% | 1.000 | 0 | 258 | 19 | 3 | 33 / 0 | 15 | 240 | 25 s |
+| A | +0.09% | +0.43% | .989 | 12.7 | 15 | 6 | 3 | 33 / 0 | 32 | 133 | 4 s |
+| G | -8.21% | -10.01% | 1.000 | .6 | 867 | 32 | 0 | 33 / 0 | 11 | 252 | 16 s |
+| Q | +0.01% | +0.85% | .980 | 22.5 | 62 | 3 | 0 | 26 / 7 | 23 | 144 | 5 s |
+| T | -13.04% | -11.47% | 1.000 | 0 | 806 | 30 | 0 | 33 / 0 | 10 | 255 | 22 s |
+
+P: the router's actions are bit-identical to the pass-H escalation arm on all three seeds (5573.09 /
+5876.96 / 5959.05), so its varied-truth robustness (H8: better on 17-18 of 20 truths at every request
+seed, six to eight standard errors) carries over without a rerun. The scenario plan is available at
+every P1-owned NO_ACTION review, bit-identical to the forced class (test 12), no analytic-shortage
+surrogate, no buffer. A keeps its abstention (3 NO MATERIAL IMPROVEMENT verdicts; 6 of 33 actions).
+O and I inside 2%. G and T improve or stay far ahead; Q moves from +0.01% to +0.85%, inside tolerance
+and neutral on varied truths (H8). C fails at +3.61% with exactly the H6 / H7 mechanism (the router's C
+plans equal the escalation arm's: 5761 / 6255 / 6316).
+
+## I6. Terminal continuation valuation (stage 15; `zaad/full/terminal.py`, evaluation only)
+
+Conditions for the optional stage held: the boundary is P0-safe (I4), P passes, O / I / A / G / Q / T
+are safe, C is the only substantive blocker and reproduces the proven terminal mechanism. The module
+values residual stock beyond the window from the last review's fitted demand and the declared economics
+only: units become available at arrival (on hand at once, in transit at their due period), are consumed
+in availability-then-expiry order at the fitted mean rate, and each unit is worth the purchase it avoids
+(`asset_value`) less carrying and cost of capital until its consumption, floored at salvage, capped at
+unit value, salvage when it would expire first or when demand is zero. No fixture constant, no cap, no
+policy term. The settlement ledger is untouched: the replay reports `terminal_continuation` and
+`economic_cost_continuation` beside the realised `economic_cost`. Nine tests
+(`tests/unit/test_zaad_terminal.py`): zero demand -> salvage only; consumption next period -> nearly
+the unit value; slower consumption and a cost of capital reduce the value monotonically, never below
+salvage; expiry before consumption -> salvage; in-transit timing matters; a 400-unit lot straddling the
+window has no cliff; the derived value of fixture C's residual agrees with twelve further truth periods
+consumed empirically within 1% of the residual's value; lengthening the window by one review moves the
+continuation-valued cost by about one period of operating cost and less erratically than the salvage
+ledger; the ledger is not falsified.
+
+## I7. Full A-T under the router (stage 16; `fixtures_product_defaults_terminal_continuation.jsonl`, both evaluations stored; `scripts/p1_dual_terminal_table.py`)
+
+Fixture definitions, seeds, tolerance and the N / R proven-invalid classification unchanged. Every cell
+COMPLETE; attribution partitions reconcile on 60 / 60 ZAAD cells; invariants 720 / 720 on 60 fixture
+seeds (`P1_INVARIANTS.json`).
+
+| fixture | realised ledger (declared salvage) | continuation evaluation | service | owner P1 / P0 | actions | abstentions |
+|---|---|---|---|---|---|---|
+| A | +0.43% | +0.46% | .989 | 33 / 0 | 6 | 3 |
+| B | -10.70% | -1.06% | 1.000 | 33 / 0 | 33 | 0 |
+| C | **+3.61% FAIL** | +0.77% | 1.000 | 33 / 0 | 30 | 0 |
+| D | -0.58% | +0.17% | .998 | 33 / 0 | 12 | 3 |
+| E | -0.00% | +0.00% | 1.000 | 33 / 0 | 1 | 1 |
+| F | +0.24% | +0.28% | .998 | 33 / 0 | 27 | 0 |
+| G | -10.01% | -0.41% | 1.000 | 33 / 0 | 32 | 0 |
+| H | -3.73% | -2.29% | .999 | 33 / 0 | 27 | 1 |
+| I | +0.53% | **+3.05% FAIL** | 1.000 | 33 / 0 | 19 | 3 |
+| J | -11.06% | -3.52% | 1.000 | 33 / 0 | 10 | 6 |
+| K | -11.20% | -3.64% | 1.000 | 33 / 0 | 10 | 6 |
+| L | -10.16% | -4.74% | 1.000 | 33 / 0 | 33 | 0 |
+| M | -0.54% | +0.44% | .950 | 12 / 21 | 23 | 0 |
+| N | -0.71% (categories: proven invalid) | +0.42% (same) | .988 | 30 / 3 | 26 | 1 |
+| O | +0.46% | +0.44% | .920 | 23 / 10 | 29 | 0 |
+| P | +0.29% | +0.39% | .990 | 32 / 1 | 32 | 0 |
+| Q | +0.85% | +1.08% | .980 | 26 / 7 | 3 | 0 |
+| R | -0.05% (categories: proven invalid) | -0.04% (same) | .992 | 33 / 0 | 3 | 3 |
+| S | +0.26% | **+3.59% FAIL** | 1.000 | 33 / 0 | 27 | 2 |
+| T | -11.47% | -4.21% | 1.000 | 33 / 0 | 30 | 0 |
+| **raw** | **17 / 20** | **16 / 20** | | | | |
+| **valid (N, R excluded)** | **17 / 18: C fails** | **16 / 18: I, S fail** | | | | |
+
+Ownership over the 660 ZAAD reviews: 619 P1-owned, 41 P0-owned (M 21: order-calendar reviews with an
+active supply driver; O 10, Q 7, N 3, P 1: reviews with an active demand or supply driver). Runtime
+(660 reviews, 4 workers): p50 .13 s, p90 1.16 s, p95 2.5 s, max 33 s, total 94 s against the lock's
+.10 / .76 / 1.41 / 16.6 / 81 s: the added scenario solve at P1-owned NO_ACTION reviews costs about a
+sixth more wall time.
+
+The continuation evaluation closes C (+0.77%) and opens I (+3.05%) and S (+3.59%): on both, the
+EOQ-style baseline ends the window holding a full late load (341-404 units on I, 292-356 on S) that the
+realised ledger credits at the declared 80% salvage and the continuation lens credits at 98-99% of
+unit value; ZAAD ends with 106-139 units. The residual sensitivity is symmetric: whichever terminal
+rule is declared, some lot-cycle fixture ends the twelve-week window one lot apart from its baseline
+and the gap is decided by the terminal rule, not by the policies. Neither evaluation passes C, I and S
+together at the declared window.
+
+## I8. Horizon-extension diagnostic (not the declared evaluation; `scripts/p1_horizon_extension_diag.py`, `closure/horizon_extension_diag.json`)
+
+The same fixtures built with a 24-period horizon (23 reviews), every other field as declared, all five
+policies, three seeds, both evaluations:
+
+| fixture | realised ledger, 24 periods | continuation, 24 periods | reading |
+|---|---|---|---|
+| C | +0.26% (seeds -0.55 / +1.25 / +0.09) | +0.30% | the two rules converge; the declared +3.61% is the window, as pass H said |
+| P | +0.62% | +0.50% | robust under both rules and both windows |
+| I | +4.54% (seeds +11.04 / +1.21 / +1.37) | +5.68% (+11.13 / +2.97 / +2.93) | the two rules agree that ZAAD is dearer than the full-load EOQ baseline; on seed 41001 the gap is 11% with equal residuals (137 against 138 units), a within-window freight / lot-sizing difference the twelve-week salvage haircut on the baseline's late load had masked |
+| S | +3.48% on seed 41001; seeds 41002 / 41003 ABSTAIN (incumbent unfinanceable at the longer horizon: the fixture's receivables and credit are sized for its declared window) | +3.54% | not a valid extension for S; one seed suggests the same masking as I |
+
+Reading: the terminal sensitivity is a benchmark-window property (a twelve-week window on four-week
+lots ends one lot apart), and lengthening the window resolves C and P but not I. I therefore carries a
+real P1 economics question under a freight cap (full-load consolidation against ZAAD's smaller, more
+frequent loads) that the declared window did not measure. It is recorded here and not chased in this
+pass.
+
+## I9. Freeze gate
+
+| # | condition | result |
+|---|---|---|
+| 1 | planner ownership semantic and pre-registered | yes (`P1_PLANNER_OWNERSHIP.md`, rule unchanged after the runs) |
+| 2 | no fixture / cell / seed routing | yes (the rule reads declared stress, screen state, risk state, recovery rule) |
+| 3 | no future-truth leakage | yes (test 9; the declared envelope is a request input; the truth's supply state is never read) |
+| 4 | P0-owned path frozen and isolated | yes (zero classes added on every P0-owned review; tests 10-11) |
+| 5 | P0 six-cell gate | decision-identical 120 / 120 (cell 90 after a rerun; frozen numerical variability of a time-limited solve recorded) |
+| 6 | required starvation zero | yes on all six cells |
+| 7 | P <= 2% | yes: +0.29% (robust, H8) |
+| 8 | C <= 2% | **no under the declared realised ledger (+3.61%); yes under the continuation evaluation (+0.77%) and at a doubled window (+0.26%)** |
+| 9 | O <= 2% | yes: +0.46% |
+| 10 | I <= 2% | yes under the declared ledger (+0.53%); **no under the continuation evaluation (+3.05%) and at a doubled window (+4.54%)** |
+| 11 | A abstention safe | yes: 3 NO MATERIAL IMPROVEMENT verdicts, 6 of 33 actions, +0.43% |
+| 12 | G / Q / T safe | yes: G -10.0%, T -11.5%, Q +0.85% (inside tolerance, neutral on varied truths) |
+| 13 | valid A-T fixtures pass | 17 / 18 under the declared ledger (C), 16 / 18 under continuation (I, S) |
+| 14 | N / R honest | proven-invalid classification preserved, both fail on `categories` as recorded |
+| 15 | no hidden safety buffer | none added |
+| 16 | stochastic candidate mathematics unchanged | unchanged (bit-identity tests) |
+| 17 | selector not benchmark-tuned | unchanged |
+| 18 | terminal economics general and principled if changed | the continuation valuation is general, tested and evaluation-only; it is NOT adopted as the declared evaluation because it moves I and S out as it moves C in |
+| 19 | attribution reconciles | 60 / 60 |
+| 20 | tests | 1484 passed, 2 skipped (1461 baseline + 14 router + 9 terminal) |
+| 21 | invariants | 720 / 720 |
+| 22 | runtime | p50 .13 s, p95 2.5 s, max 33 s, 94 s for 660 reviews |
+| 23 | Validation7 / 8 / holdout4 untouched | yes |
+| 24 | unrelated work untouched | yes (Network Twin, PR #38, PR #39, frontend, Vercel, production, other worktrees) |
+
+**Verdict: P1 CORE ARCHITECTURE PASS — TERMINAL/HORIZON ECONOMICS REMAINS OPEN.** Not frozen. The
+exact remaining blocker: the declared twelve-week window ends one lot cycle apart from the baselines on
+C, I and S, so their parity is decided by the terminal rule; the realised ledger fails C, the
+principled continuation evaluation fails I and S, and a doubled window clears C and P but shows I
+dearer than its full-load baseline under either rule. The decision needed next is a benchmark one
+(window and terminal evaluation design, then a look at I's lot sizing under a freight cap), not an
+optimizer patch. P2 NOT STARTED — P1 FREEZE GATE NOT MET.
+
+## I10. Defaults and state after this pass
+
+Product defaults: `planner_ownership=True` (the router) is the one behavioural change from `4f6aedc`;
+under a declared non-identity stress envelope, or any risk activity, every review runs the frozen P0
+path. `stratified_scenarios`, `analytic_shortage`, `timing_tiebreak` remain opt-in. The continuation
+valuation is reported by every replay beside the realised cost and used by no gate. Validation7,
+Validation8, holdout4 uninspected. `claude/zaad-meio-p2` does not exist.

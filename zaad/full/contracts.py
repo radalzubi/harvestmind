@@ -462,6 +462,14 @@ class Request(Record):
     # (+2.04% -> +0.10%) but on the frozen P0 six-cell set, lean reviews only, it moved cells 20,
     # 21 and 90 outside their recorded bands (P1 close-out, final economic closure).
     analytic_shortage: bool = False
+    # Planner ownership routing (P1 planner-boundary pass, `zaad/full/ownership.py`). Each review is
+    # owned either by the P1 purchasing planner (normal purchasing economics: the calm screen states
+    # with no declared protection mandate, no active or decaying driver, no recovery obligation) or by
+    # the frozen P0 protection / recovery planner (everything else, on the unchanged frozen path).
+    # Under P1 ownership the NO_ACTION review requests the scenario (stochastic) plan alongside the
+    # mean-world plan; under P0 ownership nothing changes. False restores the pre-router behaviour
+    # for evidence arms only.
+    planner_ownership: bool = True
     service_tolerance: float = Field(ge=0, le=.1)
     force_unit_fills: bool = False
     # How review-by-review demand refits treat a detected level change. "symmetric" is the frozen

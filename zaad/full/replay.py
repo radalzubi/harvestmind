@@ -77,6 +77,9 @@ def choose(req: Request, method: str) -> Solution:
         solution.capital = report.get("capital")
         solution.inherited_on_hand = None      # filled by replay, which alone knows the provenance
         solution.solve_quality = report.get("solve_quality")
+        orch = report.get("orchestration") or {}
+        solution.orchestration = {k: orch.get(k) for k in ("state", "planner_owner", "p1_classes_added", "candidate_classes_requested",
+                                                            "candidates_built", "milps_attempted", "required_candidate_starved")}
         return solution
     deterministic = method in {"base_stock", "order_up_to", "deterministic", "frozen_forecast"}
     worlds = draw(req, req.seed, 1 if deterministic else req.scenarios, deterministic=deterministic,
@@ -194,6 +197,7 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
                             "capital": getattr(solution, "capital", None),
                             "inherited_on_hand": {f"{k[0]}|{k[1]}": v for k, v in inherited.items() if v > 1e-9},
                             "solve_quality": getattr(solution, "solve_quality", None),
+                            "orchestration": getattr(solution, "orchestration", None),
                             "wall_seconds": wall_seconds,
                             "solver": {"status": solution.status, "seconds": solution.solve_seconds,
                                        "gap": solution.gap, "variables": solution.variables,
@@ -304,6 +308,13 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
         req = Request.model_validate(data)
     total_components["opening_assets"] = first_assets or 0.
     total_components["closing_assets"] = last_assets
+    # Finite-horizon continuation value of the residual stock (evaluation only, `terminal.py`): the
+    # ledger above keeps the declared salvage credit; this reports what the stock is worth beyond the
+    # window and the adjustment, so a window ending inside a lot cycle can be read either way.
+    from zaad.full.terminal import continuation_value
+    last = reviews_log[-1]["settlement"] if reviews_log else {"end_stock": [], "pending": []}
+    terminal = continuation_value(req, last.get("end_stock", []), last.get("pending", []), forecast_all(req))
     return {"status": "COMPLETE", "method": method, "reviews": reviews_log, "ledger": total_components,
             "economic_cost": sum(total_components.values()), "information_boundary": "new demand/supply evidence enters after observation only",
+            "terminal_continuation": terminal, "economic_cost_continuation": sum(total_components.values()) + terminal["adjustment"],
             "horizon_note": "shrinking replay horizon; production replanning accepts a fresh full-horizon operator snapshot"}

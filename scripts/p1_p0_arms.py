@@ -47,6 +47,11 @@ ARMS = {
     # per-period LHS sampler (P1 final closure): the representation arm above is rerun under it as "lhs"
     "lhs": {"stratified_scenarios": True},
     "analytic_shortage": {"analytic_shortage": True},
+    # planner-boundary pass: the clean baseline (product defaults) recorded at decision level, and the router arm
+    "clean_reference": {},
+    "clean_reference_rerun": {},   # same code as clean_reference: measures run-to-run variability of time-limited solves
+    "router": {},
+    "router_rerun": {},   # same code as router: run-to-run variability of the time-limited solves
 }
 
 
@@ -71,7 +76,12 @@ def main():
 
         def timed(r):
             t0 = time.perf_counter()
+            P.TRACE = {}
             rep = orig_plan(r)
+            trace = dict(P.TRACE); P.TRACE = None
+            rep["_decision"] = {"chosen": trace.get("chosen"), "feasible": trace.get("feasible"), "recovery_mode": trace.get("recovery_mode"),
+                                "lean_review": trace.get("lean_review"), "gates": trace.get("candidate_gates"),
+                                "final_p0": trace.get("final_p0_purchases"), "worlds": [w["name"] for w in trace.get("worlds", [])]}
             reps.append((time.perf_counter() - t0, rep))
             return rep
         P.plan = timed
@@ -109,12 +119,17 @@ def main():
             "joint_built": sum(1 for x in o if "joint_recovery" in x["candidates_built"]),
             "joint_chosen": sum(1 for _, rep in reps if rep.get("selected_policy") == "joint_recovery"),
             "states": dict(collections.Counter(x["state"] for x in o)),
+            "owners": dict(collections.Counter(x.get("planner_owner") or "?" for x in o)),
+            "p1_classes_added": sum(len(x.get("p1_classes_added") or []) for x in o),
             "chosen": dict(collections.Counter(rep.get("selected_policy") or "?" for _, rep in reps)),
             "statuses": dict(collections.Counter(rep.get("status") for _, rep in reps)),
             "abstentions": sum(1 for _, rep in reps if any("NO MATERIAL IMPROVEMENT" in str(x) for x in rep.get("reasons", []))),
             "lat_p50": qt(.5), "lat_p90": qt(.9), "lat_p95": qt(.95), "lat_max": lat[-1] if lat else 0.,
             "per_review": [{"state": x["state"], "selected": rep.get("selected_policy"), "status": rep.get("status"), "service": p, "unmet": u,
-                            "joint_class": (x.get("classification") or {}).get("joint_recovery"), "starved": x["required_starved_names"], "latency": t}
+                            "joint_class": (x.get("classification") or {}).get("joint_recovery"), "starved": x["required_starved_names"], "latency": t,
+                            "owner": x.get("planner_owner"), "requested": x.get("candidate_classes_requested"), "built": x.get("candidates_built"),
+                            "p1_classes_added": x.get("p1_classes_added"), "materiality": (rep.get("economics") or {}).get("materiality"),
+                            "reasons": [str(r)[:120] for r in rep.get("reasons", [])], **rep["_decision"]}
                            for (t, rep), x, p, u in zip(reps, o, per, unmet)],
         }
         out[cid] = row
@@ -122,6 +137,7 @@ def main():
               f"unmet={row['total_unmet']:6.1f} worst={row['worst_unmet']:5.1f} inv={row['inventory']:6.1f} cost={round(row['cost'] or 0)} "
               f"req={row['required_completed']}/{row['required_requested']} starved={row['required_starved']} infeas={row['required_infeasible']} "
               f"joint={row['joint_required']}req/{row['joint_built']}built/{row['joint_chosen']}chosen abst={row['abstentions']} "
+              f"owners={row['owners']} p1_added={row['p1_classes_added']} "
               f"lat p50={row['lat_p50']:.2f} p90={row['lat_p90']:.1f} p95={row['lat_p95']:.1f} max={row['lat_max']:.1f} wall={wall:.0f}s", flush=True)
         json.dump(out, open(f"docs/zaad_full/evidence/p1/closure/p0_arm_{arm}.json", "w"), indent=1, default=float)
 
