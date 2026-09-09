@@ -7,19 +7,23 @@ from statistics import mean
 from scripts.p1_fixtures import FIXTURES, POLICIES, SEEDS
 from scripts.run_p1_fixtures import run_cell, check
 
-TARGET = ["C_moq_four_weeks", "O_low_opening_stock", "P_high_opening_stock",
+TARGET = ["C_moq_four_weeks", "O_low_opening_stock", "P_high_opening_stock", "I_max_pallets_ftl_cap",
           "T_combined_realistic", "A_no_terms_good_incumbent", "G_freight_tiers", "Q_volatile_demand_high_target"]
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--tag", default="targeted"); ap.add_argument("--workers", type=int, default=3)
+    ap.add_argument("--scenarios", type=int, default=0, help="diagnostic world-count override (0 = fixture's own)")
+    ap.add_argument("--fixtures", default="")
     a = ap.parse_args()
-    jobs = [(n, p, s) for n in TARGET for p in POLICIES for s in SEEDS]
+    import scripts.run_p1_fixtures as R
+    names = [n for n in a.fixtures.split(",") if n] or TARGET
+    jobs = [(n, p, s) for n in names for p in POLICIES for s in SEEDS]
     t0 = time.time(); cells = []
-    with ProcessPoolExecutor(a.workers) as pool:
+    with ProcessPoolExecutor(a.workers, initializer=R._init, initargs=("none", "default", 0., a.scenarios)) as pool:
         for c in pool.map(run_cell, *zip(*jobs)):
             cells.append(c)
     json.dump(cells, open(f"docs/zaad_full/evidence/p1/closure/{a.tag}.json", "w"), indent=1, default=float)
-    results = [r for r in check(cells) if r["fixture"] in TARGET]
+    results = [r for r in check(cells) if r["fixture"] in names]
     for r in results:
         c = r["costs"]; bb = min(v for k, v in c.items() if k != "gated")
         g = [x for x in cells if x["fixture"] == r["fixture"] and x["policy"] == "gated"]

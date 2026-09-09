@@ -44,14 +44,8 @@ ARMS = {
     "materiality_only": {"materiality_cost_fraction": .01, "materiality_inventory_fraction": .05, "materiality_service": .005},
     "tiebreak_only": {"timing_tiebreak": 1e-4},
     "both": {"materiality_cost_fraction": .01, "materiality_inventory_fraction": .05, "materiality_service": .005, "timing_tiebreak": 1e-4},
-    # Objective 1: cell-90 mechanism arms (one switch each, on top of representation_only)
-    "c90_strat_noguard": {"stratified_scenarios": True, "_switch": ("planner.BAND_GUARD", False)},
-    "c90_guard_only": {"stratified_scenarios": False},
-    "c90_strat_equal_weights": {"stratified_scenarios": True, "_switch": ("worlds.STRATIFY_WEIGHTS", False)},
-    "c90_strat_unweighted_stats": {"stratified_scenarios": True, "_switch": ("planner.WEIGHTED_STATS", False)},
-    "c90_strat_body_iid": {"stratified_scenarios": True, "_switch": ("worlds.STRATIFY_BODY", False)},
-    "c90_strat_decoupled": {"stratified_scenarios": True, "_switch": ("worlds.STRATIFY_DECOUPLED_RNG", True)},
-    "c90_strat_coupled": {"stratified_scenarios": True, "_switch": ("worlds.STRATIFY_DECOUPLED_RNG", False)},
+    # per-period LHS sampler (P1 final closure): the representation arm above is rerun under it as "lhs"
+    "lhs": {"stratified_scenarios": True},
 }
 
 

@@ -18,20 +18,29 @@ from scripts.p1_fixtures import FIXTURES, POLICIES, REVIEWS, SEEDS, build
 STRESS_ARM = "none"
 GATE_ARM = "default"
 SMOOTHING_ARM = 0.
+SCENARIOS_ARM = 0     # 0 = the fixture's own scenario count; >0 is a diagnostic override (world-count trade-off)
+PRODUCT_DEFAULTS = False
 
 
 def _build(name: str, seed: int):
     req = build(name, seed, stresses=STRESS_ARM, order_smoothing=SMOOTHING_ARM)
-    return req if GATE_ARM == "default" else req.model_copy(update={"service_gate_basis": GATE_ARM})
+    if GATE_ARM != "default":
+        req = req.model_copy(update={"service_gate_basis": GATE_ARM})
+    if SCENARIOS_ARM > 0:
+        req = req.model_copy(update={"scenarios": SCENARIOS_ARM})
+    if PRODUCT_DEFAULTS:
+        from zaad.full.contracts import Request
+        req = req.model_copy(update={k: Request.model_fields[k].default for k in ("stratified_scenarios", "timing_tiebreak")})
+    return req
 from zaad.full.economics import COMPONENTS, cost_breakdown, order_waterfall
 from zaad.full.replay import replay
 from zaad.full.tolerance import is_dust
 from zaad.full.worlds import draw, forecast_all
 
 
-def _init(stress: str, gate: str, smoothing: float) -> None:
-    global STRESS_ARM, GATE_ARM, SMOOTHING_ARM
-    STRESS_ARM, GATE_ARM, SMOOTHING_ARM = stress, gate, smoothing
+def _init(stress: str, gate: str, smoothing: float, scenarios: int = 0, product_defaults: bool = False) -> None:
+    global STRESS_ARM, GATE_ARM, SMOOTHING_ARM, SCENARIOS_ARM, PRODUCT_DEFAULTS
+    STRESS_ARM, GATE_ARM, SMOOTHING_ARM, SCENARIOS_ARM, PRODUCT_DEFAULTS = stress, gate, smoothing, scenarios, product_defaults
 
 
 def run_cell(name: str, policy: str, seed: int) -> dict:
@@ -196,10 +205,13 @@ def main():
     ap.add_argument("--stress", default="none", choices=("none", "late", "severe"))
     ap.add_argument("--gate", default="default", choices=("default", "target", "incumbent"))
     ap.add_argument("--smoothing", type=float, default=0.)
+    ap.add_argument("--product-defaults", action="store_true", help="drop the declared P1 fixture settings (stratified worlds, tie-break) and run at product defaults")
     a = ap.parse_args()
     global STRESS_ARM, GATE_ARM, SMOOTHING_ARM
     STRESS_ARM, GATE_ARM, SMOOTHING_ARM = a.stress, a.gate, a.smoothing
-    arm = a.stress + ("" if a.gate == "default" else "_gate_" + a.gate) + ("" if a.smoothing == 0 else f"_smoothing_{a.smoothing:g}")
+    global PRODUCT_DEFAULTS
+    PRODUCT_DEFAULTS = a.product_defaults
+    arm = a.stress + ("" if a.gate == "default" else "_gate_" + a.gate) + ("" if a.smoothing == 0 else f"_smoothing_{a.smoothing:g}") + ("_product_defaults" if a.product_defaults else "")
     names = [n for n in a.fixtures.split(",") if n] or list(FIXTURES)
     policies = [p for p in a.policies.split(",") if p]
     jobs = [(n, p, s) for n in names for p in policies for s in SEEDS]
@@ -207,7 +219,7 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     cells = []
     started = time.time()
-    with ProcessPoolExecutor(a.workers, initializer=_init, initargs=(a.stress, a.gate, a.smoothing)) as pool, out.open("w") as f:
+    with ProcessPoolExecutor(a.workers, initializer=_init, initargs=(a.stress, a.gate, a.smoothing, 0, a.product_defaults)) as pool, out.open("w") as f:
         for cell in pool.map(run_cell, *zip(*jobs)):
             cells.append(cell)
             f.write(json.dumps(cell, allow_nan=False, default=float) + "\n")

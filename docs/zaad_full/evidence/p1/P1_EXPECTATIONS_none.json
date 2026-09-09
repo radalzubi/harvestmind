@@ -28,7 +28,7 @@
    "reorder_point": 5823.78941203459,
    "periodic:2": 5946.342131808709,
    "economic_lot": 5823.78941203459,
-   "gated": 5824.847582270195
+   "gated": 5823.78941203459
   },
   "why": "with no order-level economics a reorder-point rule is already near the optimum; ZAAD should mostly say NO MATERIAL IMPROVEMENT"
  },
@@ -61,7 +61,7 @@
    "reorder_point": 8573.78941203459,
    "periodic:2": 7446.342131808709,
    "economic_lot": 6994.579332509747,
-   "gated": 6236.214575553737
+   "gated": 6265.039986562842
   },
   "why": "a $250 order cost makes weekly re-buying expensive; ZAAD should order less often than the incumbent"
  },
@@ -82,19 +82,19 @@
   },
   "checks": {
    "best_policy_in": true,
-   "zaad_not_worse": true,
+   "zaad_not_worse": false,
    "all_policies_completed": true,
    "action": true,
    "categories": true,
    "attribution_partitions": true
   },
-  "pass": true,
+  "pass": false,
   "costs": {
    "incumbent": 9594.769132046677,
    "reorder_point": 5897.561375712098,
    "periodic:2": 6198.589241938536,
    "economic_lot": 5897.561375712098,
-   "gated": 5959.281775885196
+   "gated": 6149.3541072095195
   },
   "why": "a 400-unit MOQ against 100/week demand forces lumpy orders; the top-up must be attributed to MOQ"
  },
@@ -127,7 +127,7 @@
    "reorder_point": 5806.723198692626,
    "periodic:2": 5916.36490692313,
    "economic_lot": 5806.723198692626,
-   "gated": 5777.0276203172425
+   "gated": 5761.668341461348
   },
   "why": "case rounding is a small, visible cost; attribution must show it and nothing should be invented beyond it"
  },
@@ -193,7 +193,7 @@
    "reorder_point": 11816.195532667805,
    "periodic:2": 11766.459047002287,
    "economic_lot": 11816.195532667805,
-   "gated": 11802.538492763417
+   "gated": 11864.798061342864
   },
   "why": "a $2,000 MOV against $1,000/week of combined demand forces coordination across the two SKUs"
  },
@@ -226,7 +226,7 @@
    "reorder_point": 21487.901619810178,
    "periodic:2": 18098.129163941296,
    "economic_lot": 16719.810772951074,
-   "gated": 15924.914100434335
+   "gated": 15408.848427083622
   },
   "why": "stepped freight makes a 4-pallet load cost the same as a 1-pallet load; consolidation should win"
  },
@@ -259,7 +259,7 @@
    "reorder_point": 6883.78941203459,
    "periodic:2": 6826.342131808709,
    "economic_lot": 6883.78941203459,
-   "gated": 6577.366932783866
+   "gated": 6512.984025549337
   },
   "why": "linear per-pallet freight gives no consolidation incentive beyond filling the last pallet"
  },
@@ -280,19 +280,19 @@
   },
   "checks": {
    "best_policy_in": true,
-   "zaad_not_worse": false,
+   "zaad_not_worse": true,
    "all_policies_completed": true,
    "action": true,
    "categories": true,
    "attribution_partitions": true
   },
-  "pass": false,
+  "pass": true,
   "costs": {
    "incumbent": 16273.789412034588,
    "reorder_point": 16273.789412034588,
    "periodic:2": 12446.34213180871,
    "economic_lot": 9814.06085597697,
-   "gated": 10205.622469456925
+   "gated": 9856.141070152285
   },
   "why": "a 9-pallet cap (450 units) bounds every shipment; no plan may exceed it"
  },
@@ -325,7 +325,7 @@
    "reorder_point": 7478.353230355117,
    "periodic:2": 6850.3550203397845,
    "economic_lot": 6869.524399290591,
-   "gated": 6076.660450862001
+   "gated": 6086.345932117359
   },
   "why": "net-60 terms mean stock is sold before it is paid for; financing cost must be lower than fixture K"
  },
@@ -358,7 +358,7 @@
    "reorder_point": 7490.103808914896,
    "periodic:2": 6862.160526856723,
    "economic_lot": 6877.830784656575,
-   "gated": 6077.056450365654
+   "gated": 6086.543621240026
   },
   "why": "cash at order with a 12% cost of capital penalises early and large orders; financing must exceed fixture J"
  },
@@ -391,7 +391,7 @@
    "reorder_point": 7476.220933991011,
    "periodic:2": 6855.883980395938,
    "economic_lot": 7223.16530744665,
-   "gated": 6147.86475048515
+   "gated": 6180.414516933315
   },
   "why": "a 30%/yr holding rate should pull the lot size down relative to fixture B"
  },
@@ -424,7 +424,7 @@
    "reorder_point": 6255.865641662887,
    "periodic:2": 6361.403882722162,
    "economic_lot": 6255.865641662887,
-   "gated": 6275.715245600024
+   "gated": 6188.354170706237
   },
   "why": "Wednesday-only ordering with weekday shipping shifts every arrival; the timing audit must reflect the calendar, not the period grid"
  },
@@ -458,7 +458,7 @@
    "reorder_point": 5937.425767758522,
    "periodic:2": 5942.451767653541,
    "economic_lot": 5937.425767758522,
-   "gated": 6040.819838910408
+   "gated": 5982.370757993847
   },
   "why": "three weeks of lead time makes lead-time exposure the dominant reason to order"
  },
@@ -494,7 +494,7 @@
    "reorder_point": 6398.775494402654,
    "periodic:2": 6521.187932948978,
    "economic_lot": 6398.775494402654,
-   "gated": 6481.183169478342
+   "gated": 6463.616851457236
   },
   "why": "with a week of demand on hand and a one-week lead, an early stockout is unavoidable for every policy; ZAAD must not pretend otherwise"
  },
@@ -513,19 +513,19 @@
   },
   "checks": {
    "best_policy_in": true,
-   "zaad_not_worse": true,
+   "zaad_not_worse": false,
    "all_policies_completed": true,
    "action": true,
    "categories": true,
    "attribution_partitions": true
   },
-  "pass": true,
+  "pass": false,
   "costs": {
    "incumbent": 6282.326151538248,
    "reorder_point": 5786.383280027695,
    "periodic:2": 5906.558925077478,
    "economic_lot": 5786.383280027695,
-   "gated": 5796.767332123656
+   "gated": 5924.183349573131
   },
   "why": "six weeks of stock on hand: ordering nothing for several reviews is the right answer and the replace-sold incumbent is wrong"
  },
@@ -559,7 +559,7 @@
    "reorder_point": 5970.688041771326,
    "periodic:2": 6093.579610686805,
    "economic_lot": 5970.688041771326,
-   "gated": 5994.2075486054855
+   "gated": 5961.918320518728
   },
   "why": "volatile demand at a 98% target needs visible service protection in the attribution"
  },
@@ -592,7 +592,7 @@
    "reorder_point": 63447.84980509118,
    "periodic:2": 64628.17576406005,
    "economic_lot": 63447.84980509118,
-   "gated": 63412.80994438039
+   "gated": 63447.84980509118
   },
   "why": "with B ten times the price of A, the MOV top-up should land on the line that is cheaper to hold (A)"
  },
@@ -625,7 +625,7 @@
    "reorder_point": 6923.78941203459,
    "periodic:2": 6546.342131808709,
    "economic_lot": 6234.473244132313,
-   "gated": 6117.32766428325
+   "gated": 6182.775549036151
   },
   "why": "cash and credit together cover three weeks of purchases; financing must be visible and no plan may breach the credit limit"
  },
@@ -659,7 +659,7 @@
    "reorder_point": 20123.010045957,
    "periodic:2": 18998.150036084917,
    "economic_lot": 17593.193371636866,
-   "gated": 15678.904408843324
+   "gated": 14917.724826726606
   },
   "why": "every mechanism at once; ZAAD must reconcile and explain each order and beat weekly re-buying"
  }

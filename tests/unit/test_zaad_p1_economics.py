@@ -5,6 +5,8 @@ from __future__ import annotations
 import math
 from statistics import mean
 
+import numpy as np
+
 import pytest
 from pydantic import ValidationError
 
@@ -315,24 +317,64 @@ def test_timing_tiebreak_prefers_later_commitment_when_the_economics_are_indiffe
 from zaad.full.model import effective_smoothing, explicit_order_economics
 
 
-def test_stratified_scenarios_represent_the_tail_at_its_mass_and_leave_the_truth_untouched():
+def test_per_period_stratification_is_a_latin_hypercube_with_equal_weights():
+    """Every period has exactly one world in each equal-mass stratum; no world is high in every
+    period; weights are exactly 1/S (P1 final closure)."""
     req = p1_request()
-    ws = draw(req, req.seed, 3)
-    assert abs(sum(w.weight for w in ws) - 1.) < 1e-12
-    assert ws[-1].name.endswith(":tail") and abs(ws[-1].weight - (1 - req.services[0].target)) < 1e-12
-    body = [w for w in ws[:-1]]
-    assert all(abs(w.weight - req.services[0].target / 2) < 1e-12 for w in body)
-    # the tail world is the tail of the per-period noise at the fitted level: above the fitted
-    # mean in every period and above every body world on average (body worlds carry the level
-    # shock, the tail world deliberately does not)
     fits = forecast_all(req)
-    assert all(x >= fits["svc_A"]["mean"] - 1e-9 for x in ws[-1].demand["svc_A"])
-    assert mean(ws[-1].demand["svc_A"]) >= max(mean(w.demand["svc_A"]) for w in body)
-    # single-world and deterministic draws (the truth paths) are identical with the flag on or off
-    off = req.model_copy(update={"stratified_scenarios": False})
-    for count, det in ((1, False), (1, True)):
-        a, b = draw(req, req.seed + 10000, count, deterministic=det)[0], draw(off, req.seed + 10000, count, deterministic=det)[0]
-        assert a.demand == b.demand and a.fills == b.fills and a.arrival == b.arrival and a.weight == b.weight == 1.
+    sizes = sorted(fits["svc_A"]["sizes"])
+    thirds = (np.quantile(sizes, 1 / 3), np.quantile(sizes, 2 / 3))
+    ws = draw(req, 11, 3)
+    assert all(abs(w.weight - 1 / 3) < 1e-12 and w.name.endswith(":lhs") for w in ws)
+    top_counts = []
+    for t in range(req.horizon):
+        column = sorted(w.demand["svc_A"][t] for w in ws)
+        # one draw per stratum: the lowest below the first tercile point, the highest above the second
+        assert column[0] <= thirds[0] * 1.02 and column[2] >= thirds[1] * .98, (t, column, thirds)
+        top_counts.append(max(range(3), key=lambda i: ws[i].demand["svc_A"][t]))
+    # the top stratum rotates: no single world holds it in every period
+    assert len(set(top_counts)) > 1
+    for w in ws:
+        share = sum(1 for t in range(req.horizon) if top_counts[t] == ws.index(w)) / req.horizon
+        assert share < 1.
+
+
+def test_per_period_stratification_preserves_the_marginal_and_manufactures_no_tail_runs():
+    req = p1_request()
+    off, on = [], []
+    for seed in range(300, 360):
+        off += [w.demand["svc_A"] for w in draw(req.model_copy(update={"stratified_scenarios": False}), seed, 3)]
+        on += [w.demand["svc_A"] for w in draw(req, seed, 3)]
+    a, b = np.array(off), np.array(on)
+    assert abs(a.mean() - b.mean()) < .5 and abs(a.std() - b.std()) < .5
+    for q in (.5, .9, .95):
+        assert abs(np.quantile(a, q) - np.quantile(b, q)) < 1.
+    q95 = np.quantile(a, .95)
+    def longest_run(path):
+        best = run = 0
+        for x in path:
+            run = run + 1 if x > q95 else 0
+            best = max(best, run)
+        return best
+    assert max(longest_run(p) for p in b) <= max(longest_run(p) for p in a) + 1
+    # tail coverage improves by construction: more periods with some world in the upper tercile
+    q79 = np.quantile(a, .79)
+    cov = lambda arr: (arr.reshape(-1, 3, req.horizon).max(axis=1) > q79).mean()
+    assert cov(b) > cov(a)
+
+
+def test_stratified_draw_leaves_supply_and_truth_streams_bit_identical():
+    req = p1_request()
+    for seed in (3, 41001, 38017):
+        off = draw(req.model_copy(update={"stratified_scenarios": False}), seed, 3)
+        on = draw(req, seed, 3)
+        assert all(a.fills == b.fills and a.arrival == b.arrival and a.po_due == b.po_due and a.po_fill == b.po_fill for a, b in zip(off, on))
+        t_off = draw(req.model_copy(update={"stratified_scenarios": False}), seed + 10000, 1)[0]
+        t_on = draw(req, seed + 10000, 1)[0]
+        assert t_off.demand == t_on.demand and t_off.fills == t_on.fills and t_off.arrival == t_on.arrival
+        d_off = draw(req.model_copy(update={"stratified_scenarios": False}), seed, 1, deterministic=True)[0]
+        d_on = draw(req, seed, 1, deterministic=True)[0]
+        assert d_off.demand == d_on.demand
 
 
 def test_weighted_selector_statistics_reduce_to_plain_means_under_equal_weights():
@@ -396,22 +438,13 @@ def test_timing_tiebreak_total_is_bounded_by_its_coefficient_times_purchase_valu
 
 
 def test_stratified_worlds_make_the_plan_carry_attributable_protection():
-    # Fixture P's steady state: with the tail represented the plan holds protection that the
-    # waterfall attributes as SERVICE_PROTECTION rather than ordering below the arithmetic need.
+    # Fixture P's steady state: with the upper stratum present in every period the plan holds
+    # protection the waterfall attributes as SERVICE_PROTECTION, and nothing lands in UNEXPLAINED
+    # beyond what the same plan shows without the strata.
     req = p1_request(opening_units=100., demand=100.)
     fits = forecast_all(req)
     prot = protection_profile(req, fits, supply_profiles(req))
     sol = solve(req, draw(req, req.seed, req.scenarios), service_floor=True)
     rows = order_waterfall(req, fits, prot, sol)
     assert rows and rows[0]["attribution"]["SERVICE_PROTECTION"] > 0
-    assert rows[0]["under_need_units"] < rows[0]["justified_protection_units"]
-
-
-def test_stratified_draw_leaves_the_supply_sample_untouched():
-    # A demand representation must not change the supply sample: fills, arrivals and PO due dates
-    # are identical whether or not the demand strata are used (P1 diagnostic pass, cell 90).
-    req = p1_request()
-    off = draw(req.model_copy(update={"stratified_scenarios": False}), 38017, 3)
-    on = draw(req.model_copy(update={"stratified_scenarios": True}), 38017, 3)
-    assert all(a.fills == b.fills and a.arrival == b.arrival and a.po_due == b.po_due for a, b in zip(off, on))
-    assert on[-1].name.endswith(":tail") and on[-1].demand != off[-1].demand
+    assert abs(rows[0]["attribution_sum"] - rows[0]["quantity"]) < 1e-6

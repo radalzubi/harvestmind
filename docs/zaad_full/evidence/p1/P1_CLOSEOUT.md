@@ -1,6 +1,6 @@
 # P1 CYCLE-STOCK ECONOMICS — CLOSE-OUT
 
-> **Current verdict (closure pass, 2026-09-08): P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.** See "CLOSURE PASS" below; the first pass's verdict and evidence are kept above it as the record they were.
+> **Current verdict (final scenario-representation closure, 2026-09-08): P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.** See the FINAL SCENARIO-REPRESENTATION CLOSURE section; earlier passes are kept as the record they were.
 
 **Verdict: P1 CYCLE-STOCK ECONOMICS — FAIL ON FIXTURE PARITY (C, O, P); MECHANISMS COMPLETE AND RECONCILED; NOT FROZEN.**
 
@@ -774,3 +774,202 @@ cell 90 through a fixed tail path whose correction is designed but not built.
 ten-period tail path (cell 90's inventory) and the .05 weight in the selector statistics (cell
 90's breach, fixture I's retentions), then the same isolating arms again. Separately, a benchmark
 decision on terminal valuation (D5).
+
+
+# FINAL SCENARIO-REPRESENTATION CLOSURE (2026-09-08, fourth pass on this close-out; from 70511be)
+
+**Verdict: P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.** The per-period equal-weight sampler is
+statistically clean, preserves every random stream, removes the cell-90 pathology and brings I and
+O inside the gate, but it does not bring P (and, at S=3, C) inside it, and no unbiased equal-weight
+representation with three worlds can: the expected number of tail draws per period is 3 x .05 =
+.15. It is rejected as the closure fix and kept only as the opt-in representation (it replaces the
+fixed-tail construction, which is removed). Nothing else was changed; no tolerance, fixture,
+expectation, seed, baseline or terminal valuation moved.
+
+## E1. Sampler architecture (`worlds.draw`, `stratified_scenarios`)
+
+Per-period Latin hypercube with equal weights. For every service and period an independent random
+permutation assigns the S worlds to S equal-mass strata of the fitted demand distribution and each
+world draws uniformly inside its stratum (through the mixture quantile function of `sample`). So
+every period has exactly one world in each stratum (the upper stratum is present in every period),
+no world is high in every period, the permutations are independent across periods (no temporal
+dependence is introduced), the per-period marginal is the fitted distribution exactly, and the
+worlds carry weight 1/S. The strata uniforms are read from the main stream and the generator state
+is restored, after which the stream is consumed exactly as an unstratified draw consumes it.
+
+Differences from the fixed-tail stratification of the closure pass: no world is a fixed tail path
+(that path was a ten-period run of 95th-percentile weeks with fitted probability of order .05^10
+carrying weight .05, and it drove cell 90's capacity-cap buy); no .05 weight enters the selector
+(that weight admitted a plan with .677 tail service and caused cell 90's extra breach); and the
+supply stream is untouched (the first implementation shifted it).
+
+## E2. Statistical validation (`scripts/p1_sampler_validation.py`, `closure/sampler_validation.json`; 400 seeds x 3 worlds x 12 periods per sampler, fitted reference 1,000 single-world draws)
+
+| statistic | fitted | iid 3 worlds | per-period LHS 3 worlds |
+|---|---|---|---|
+| mean | 98.87 | 98.95 | 98.89 |
+| sd | 6.04 | 6.10 | 6.09 |
+| q50 | 98.74 | 98.99 | 98.92 |
+| q79 | 104.66 | 104.88 | 104.81 |
+| q90 | 107.30 | 107.39 | 107.26 |
+| q95 | 108.62 | 108.73 | 108.67 |
+| q99 | 110.00 | 110.01 | 109.99 |
+| tail frequency above fitted q95 | .050 by definition | 0.055 | 0.052 |
+| lag-1 autocorrelation within a world | -0.110 | -0.097 | -0.100 |
+| longest tail run (periods above fitted q95) | - | 3 | 3 |
+| tail runs of 3+ per world | - | 0.006 | 0.005 |
+| periods with some world above fitted q79 | - | 0.523 | 0.651 |
+| periods with some world above fitted q90 | - | 0.280 | 0.293 |
+| world weights | - | 1/3 | [0.333333] |
+
+No bias in mean, spread or quantiles; tail frequency at the fitted 5%; the negative lag-1
+autocorrelation is a property of the bootstrap history and is the same in the fitted and iid
+draws; tail runs are the iid ones (no manufactured persistence); coverage of the upper tercile
+rises from 52% to 65% of periods by construction, coverage of the top decile barely moves (28% to
+29%), which is the limit of three equal-weight worlds.
+
+## E3. Random-stream preservation
+
+Supply fills, arrival periods, PO due dates and PO fills are bit-identical with and without the
+strata on 50 seeds of the fixture and on cell 90's request; single-world truth paths and
+deterministic draws are bit-identical (`test_stratified_draw_leaves_supply_and_truth_streams_bit_identical`,
+`sampler_validation.json`: supply_streams_identical_50_seeds true, truth_paths_identical_50_seeds true).
+
+## E4. Cell 90, three arms (same seed, solver settings, supply and truth paths, gates and selector; P0 defaults otherwise)
+
+| arm | service | breaches | unmet | inventory | cost | starved | joint req/built/chosen |
+|---|---|---|---|---|---|---|---|
+| ARM 0 frozen P0 representation | 0.863 | 4 | 70.1 | 94.4 | 3315 | 0 | 1/3/1 |
+| ARM 1 fixed-tail stratification (closure pass) | 0.858 | 5 | 72.6 | 140.4 | 3388 | 0 | 2/6/0 |
+| ARM 2 per-period equal-weight LHS | 0.863 | 4 | 70.1 | 128.8 | 3367 | 0 | 0/6/2 |
+
+ARM 2 is identical to P0 on service, breaches, unmet and starvation. The review-16 pathology is
+gone: reviews 0-16 are identical to P0 (the fixed-tail arm diverged at 16 with the 100-unit cap
+buy). First divergence is review 18, a recovery-mode review in both arms (every candidate
+infeasible, 33 on hand): both propose joint recovery (P0 73 units, ARM 2 81 units); P0's
+confirmation rejects it as not a material shortfall improvement, ARM 2's confirmation accepts it.
+That is P0's own recovery rule on a statistically equivalent sample; the order is attributed 6
+DEMAND_CYCLE / 53 SERVICE_PROTECTION / 23 OTHER_EXPLAINED, the resulting stock is read as
+CAPITAL_OPTIMIZATION for three reviews and the difference decays by review 24 (34 vs 35 on hand).
+Inventory 128.8 sits above the frozen band's top (94.2 warm, 124.1 pre-warm) by 4%, below the
+fixed-tail arms' 140-150. Scenario services of the chosen plan on ARM 2's worlds at review 18: 1.0
+/ 1.0 / .758 (P0's: 1.0 / 1.0 / .772).
+
+## E5. Targeted check (`closure/targeted_lhs.json`)
+
+| fixture | ZAAD vs best baseline | service | breaches | unmet | inventory | result |
+|---|---|---|---|---|---|---|
+| C | +4.27% | 1.000 | 0.3 | 5.9 | 239 | FAIL |
+| O | +1.01% | .916 | 2.3 | 93.3 | 54 | pass |
+| P | +2.38% | .977 | 2.3 | 25.8 | 145 | FAIL |
+| I | +0.43% | 1.000 | 0.0 | 0.0 | 244 | pass |
+| T (strong win) | -15.2% | 1.000 | 0 | 0 | 858 | control |
+| A (abstention) | +0.00% | .992 | 1.0 | 9.2 | 15 | control, 0 interventions |
+| G (freight) | -7.8% | 1.000 | 0 | 0 | 822 | control |
+| Q (protection) | -0.15% | .988 | 1.0 | 13.9 | 63 | control |
+
+P's numbers (service .977, breaches 2.3, unmet 25.8) are the iid P0 numbers exactly: on P the
+decisive candidate is the deterministic mean-world plan, which no sampler touches, and the LHS
+worlds do not make the stochastic candidate cheaper by enough to displace it inside the cost band.
+
+World-count trade-off, diagnostic only (fixture scenario counts unchanged in the record):
+
+| S | C | O | P | I | targeted wall time |
+|---|---|---|---|---|---|
+| 3 (fixture) | +4.27% | +1.01% | +2.38% | +0.43% | 35 s |
+| 6 | +1.30% | +0.96% | +2.31% | +0.47% | 48 s |
+| 10 | +0.62% | +0.78% | +2.15% | +3.73% | 134 s |
+
+More worlds close C but never P, and at S=10 lose I again at four times the runtime.
+
+## E6. P0 six-cell regression
+
+Not run for the LHS sampler beyond cell 90: the targeted check failed (step F), and the protocol
+requires it to pass first. The product-default six-cell record stands (D4, arm `neither`).
+
+## E7. Full A-T
+
+Declared fixture settings (LHS on, tie-break 1e-4), `P1_RESULT_TABLE_none.md`: **16 / 20**.
+
+| fixture | best baseline | ZAAD P1 | delta | checks |
+|---|---|---|---|---|
+| A_no_terms_good_incumbent | 5,824 (incumbent) | 5,824 | +0.00% | PASS |
+| B_fixed_order_cost_replace_sold | 6,995 (economic_lot) | 6,265 | -10.43% | PASS |
+| C_moq_four_weeks | 5,898 (reorder_point) | 6,149 | +4.27% | FAIL: zaad_not_worse |
+| D_case_multiple | 5,807 (incumbent) | 5,762 | -0.78% | PASS |
+| E_pallet_multiple | 6,239 (incumbent) | 6,239 | +0.00% | PASS |
+| F_mov_two_skus | 11,766 (periodic:2) | 11,865 | +0.84% | PASS |
+| G_freight_tiers | 16,720 (economic_lot) | 15,409 | -7.84% | PASS |
+| H_per_pallet_freight | 6,826 (periodic:2) | 6,513 | -4.59% | PASS |
+| I_max_pallets_ftl_cap | 9,814 (economic_lot) | 9,856 | +0.43% | PASS |
+| J_net60_cost_of_capital | 6,850 (periodic:2) | 6,086 | -11.15% | PASS |
+| K_deposit_early_cash | 6,862 (periodic:2) | 6,087 | -11.30% | PASS |
+| L_high_holding_rate | 6,856 (periodic:2) | 6,180 | -9.85% | PASS |
+| M_order_calendar_wednesday | 6,256 (incumbent) | 6,188 | -1.08% | PASS |
+| N_long_lead_21_days | 5,937 (incumbent) | 5,982 | +0.76% | FAIL: categories |
+| O_low_opening_stock | 6,399 (reorder_point) | 6,464 | +1.01% | PASS |
+| P_high_opening_stock | 5,786 (reorder_point) | 5,924 | +2.38% | FAIL: zaad_not_worse |
+| Q_volatile_demand_high_target | 5,971 (incumbent) | 5,962 | -0.15% | PASS |
+| R_asymmetric_prices_mov | 63,448 (incumbent) | 63,448 | +0.00% | FAIL: categories |
+| S_cash_constrained | 6,234 (economic_lot) | 6,183 | -0.83% | PASS |
+| T_combined_realistic | 17,593 (economic_lot) | 14,918 | -15.21% | PASS |
+
+Product defaults (iid worlds, no tie-break, incumbent gate, guard on lean reviews, materiality
+gate), `P1_RESULT_TABLE_none_product_defaults.md`: **17 / 20**.
+
+| fixture | best baseline | ZAAD P1 | delta | checks |
+|---|---|---|---|---|
+| A_no_terms_good_incumbent | 5,824 (incumbent) | 5,829 | +0.09% | PASS |
+| B_fixed_order_cost_replace_sold | 6,995 (economic_lot) | 6,341 | -9.35% | PASS |
+| C_moq_four_weeks | 5,898 (reorder_point) | 5,914 | +0.27% | PASS |
+| D_case_multiple | 5,807 (incumbent) | 5,773 | -0.58% | PASS |
+| E_pallet_multiple | 6,239 (incumbent) | 6,239 | -0.00% | PASS |
+| F_mov_two_skus | 11,766 (periodic:2) | 11,746 | -0.17% | PASS |
+| G_freight_tiers | 16,720 (economic_lot) | 15,346 | -8.21% | PASS |
+| H_per_pallet_freight | 6,826 (periodic:2) | 6,551 | -4.04% | PASS |
+| I_max_pallets_ftl_cap | 9,814 (economic_lot) | 9,866 | +0.53% | PASS |
+| J_net60_cost_of_capital | 6,850 (periodic:2) | 6,093 | -11.06% | PASS |
+| K_deposit_early_cash | 6,862 (periodic:2) | 6,093 | -11.20% | PASS |
+| L_high_holding_rate | 6,856 (periodic:2) | 6,221 | -9.26% | PASS |
+| M_order_calendar_wednesday | 6,256 (incumbent) | 6,209 | -0.76% | PASS |
+| N_long_lead_21_days | 5,937 (incumbent) | 5,940 | +0.05% | FAIL: categories |
+| O_low_opening_stock | 6,399 (reorder_point) | 6,448 | +0.77% | PASS |
+| P_high_opening_stock | 5,786 (reorder_point) | 5,904 | +2.04% | FAIL: zaad_not_worse |
+| Q_volatile_demand_high_target | 5,971 (incumbent) | 5,971 | +0.01% | PASS |
+| R_asymmetric_prices_mov | 63,448 (incumbent) | 63,425 | -0.04% | FAIL: categories |
+| S_cash_constrained | 6,234 (economic_lot) | 6,250 | +0.25% | PASS |
+| T_combined_realistic | 17,593 (economic_lot) | 15,300 | -13.04% | PASS |
+
+Interpretation: C, O, I pass under product defaults; P is outside the gate by 0.04 points, an
+evaluation-window and sampling case, not a policy failure (service .977 above the .95 target, no
+hidden buffer); C under the LHS sampler is the MOQ lot-timing artefact of D5 on a different
+sample; N and R are the attribution expectations proven invalid (C7), unchanged by any sampler.
+
+## E8. N / R, attribution, starvation, runtime, tests, invariants
+
+N and R: unchanged; both proven invalid by the fixtures' arithmetic (C7); the new sampler does not
+alter that. Attribution: every order partitions exactly on every gated cell of both records
+(residual zero); cell 90's largest unexplained amount under ARM 2 is 23 units in one recovery-mode
+order. Required starvation: zero on cell 90 under all three arms and on all six cells under product
+defaults. Runtime, declared settings: p50 0.10 s, p95 1.48 s, max 12.5 s per
+review (product defaults p50 0.11 s, p95 1.46 s); the sampler adds no worlds and no
+measurable cost. Tests: 1438 passed, 2 skipped (three LHS tests replace the fixed-tail tests; the
+diagnostic switches and their tests are gone). Invariants: 60 / 60.
+
+## E9. Defaulting scope
+
+Outcome 4 of the brief: not safe as a closure default. `stratified_scenarios` stays opt-in with
+the LHS construction (the fixed-tail construction is removed); the P1 fixtures keep declaring it.
+The materiality gate stays default, smoothing conditional, tie-break opt-in, service gate on the
+incumbent basis.
+
+## E10. Exact reason P1 remains open
+
+Freeze gate items 1 (C/O/P/I) and 3/10 by consequence. Under product defaults P fails by 0.04
+points; under the declared LHS setting C and P fail. The only representation that met C/O/P/I was
+the weighted fixed-tail world, which the cell-90 evidence rejects. With three equal-weight worlds
+the tail above the target can appear in at most about 15% of periods, so the remaining gap on P
+is not reachable by an unbiased equal-weight sampler at this world count; it would need either a
+deliberately weighted tail (rejected), an analytic expected-shortage term in the objective (a
+different design, not built), or a cost-of-capital-free fixture economics that makes P's protection
+worth more than the cost band tolerates (a fixture change, refused).

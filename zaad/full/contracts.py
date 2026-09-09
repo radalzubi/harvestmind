@@ -448,17 +448,13 @@ class Request(Record):
     # with no usable plan once the ties are broken differently); starvation must stay zero, so it
     # remains opt-in (the P1 fixtures use 1e-4).
     timing_tiebreak: float = Field(default=0., ge=0, le=1e-2)
-    # Scenario representation (P1 closure). With S sampled worlds the plan can only protect against
-    # the largest of S draws in each period, which for S=3 is the 79th percentile in the median
-    # draw; the service target and the shortage economics need the tail beyond the target. When
-    # on, the S worlds are a stratified sample of the same fitted distribution: S-1 worlds drawn
-    # from below the target quantile (weight target/(S-1) each) and one world drawn from the tail
-    # above it (weight 1-target). Expectations are unbiased; the tail is always represented.
-    # Deterministic and single-world draws (the truth paths of every benchmark) are untouched.
-    # Default off: on the frozen P0 six-cell set the representation (with the band guard, lean
-    # reviews only) is identical on cells 15/16/20, inside the recorded band on 21 and better on
-    # 108, but on cell 90 it carries 49% more inventory with one more breach - a regression on the
-    # very cell the P0 freeze guards. Opt in per request; the P1 fixtures declare it on.
+    # Scenario representation (P1 final closure). With S iid sampled worlds the plan can only
+    # protect against the largest of S draws in each period (about the 79th percentile for S=3 in
+    # the median draw). When on, the S worlds are a per-period Latin hypercube of the same fitted
+    # distribution: every period has exactly one world in each of S equal-mass strata, worlds carry
+    # equal weight, no world is high in every period and no temporal dependence is introduced.
+    # Supply, PO and truth draws are bit-identical with or without it. Default and scope are set
+    # by the P0 six-cell and fixture evidence recorded in the P1 close-out.
     stratified_scenarios: bool = False
     service_tolerance: float = Field(ge=0, le=.1)
     force_unit_fills: bool = False

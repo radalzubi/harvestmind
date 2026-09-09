@@ -89,18 +89,6 @@ def forecast_all(req: Request, adaptive: bool = True) -> dict:
     return result
 
 
-# Diagnostic switches (P1 cell-90 investigation). Shipped behaviour is both True; an isolating arm
-# flips one at a time. STRATIFY_BODY False draws the body worlds over the whole unit interval
-# (tail world still added); STRATIFY_WEIGHTS False gives every world weight 1/count.
-STRATIFY_BODY = True
-STRATIFY_WEIGHTS = True
-# When True (shipped) a stratified draw consumes the random stream exactly as an unstratified draw
-# does, so every supply shock, PO due date and level draw is the same sample whether or not the
-# demand strata are used: a demand representation must not change the supply sample. False is the
-# coupled behaviour of the first closure pass, kept only to reproduce its cell-90 arms.
-STRATIFY_DECOUPLED_RNG = True
-
-
 def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
          deterministic: bool = False, adaptive: bool = True) -> list[World]:
     rng = np.random.default_rng(seed)
@@ -111,29 +99,32 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
     reliability = req.engine_profile == "reliability"
     supply = supply_profiles(req) if reliability else {}
     worlds = []
-    # Target-stratified worlds (P1 closure): the last world is the tail beyond the lowest service
-    # target, the others the body below it, each weighted by its stratum's probability mass.
+    # Per-period stratified worlds (P1 final closure). For every service and period an independent
+    # random permutation assigns the `count` worlds to `count` equal-mass strata of the fitted
+    # demand distribution and each world draws uniformly inside its stratum (a Latin hypercube per
+    # period). Every period therefore has exactly one world in each stratum, so the upper stratum
+    # is present in every period; no world is high in every period, no temporal dependence is
+    # introduced (the permutations are independent across periods), the per-period marginal is the
+    # fitted distribution exactly, and the worlds carry equal weight. The strata uniforms are read
+    # from the main stream and the generator state is restored, after which the stream is consumed
+    # exactly as an unstratified draw consumes it, so every supply shock, PO due date, level draw
+    # and truth path is bit-identical with or without the strata.
     stratified = bool(req.stratified_scenarios) and count >= 2 and not deterministic
-    q_tail = min((s.target for s in req.services), default=.95) if stratified else None
-    weights = ([q_tail / (count - 1)] * (count - 1) + [1. - q_tail]) if (stratified and STRATIFY_WEIGHTS) else [1. / count] * count
-    rng_strata = rng
+    weights = [1. / count] * count
+    strata_u: dict[str, np.ndarray] = {}
+    if stratified:
+        saved = rng.bit_generator.state
+        for service in req.services:
+            perms = np.stack([rng.permutation(count) for _ in range(req.horizon)], axis=1)   # count x horizon
+            strata_u[service.id] = (perms + rng.random((count, req.horizon))) / count
+        rng.bit_generator.state = saved
     for w in range(count):
         demand, arrival, fills, po_due, po_fill = {}, {}, {}, {}, {}
         for service in req.services:
             f = fits[service.id]
             if stratified:
-                lo, hi = (q_tail, 1.) if w == count - 1 else ((0., q_tail) if STRATIFY_BODY else (0., 1.))
-                if STRATIFY_DECOUPLED_RNG:
-                    # The strata uniforms are read from the stream, the stream is restored and then
-                    # consumed exactly as an unstratified draw consumes it, so every supply shock
-                    # drawn afterwards matches the unstratified draw.
-                    saved = rng.bit_generator.state
-                    u_strata = lo + rng.random(req.horizon) * (hi - lo)
-                    rng.bit_generator.state = saved
-                    sample(f, rng, req.horizon)      # consume as the unstratified path would
-                    d = sample(f, rng, req.horizon, u=u_strata)
-                else:
-                    d = sample(f, rng, req.horizon, u=lo + rng_strata.random(req.horizon) * (hi - lo))
+                sample(f, rng, req.horizon)      # consume the stream exactly as the unstratified path
+                d = sample(f, rng, req.horizon, u=strata_u[service.id][w])
             else:
                 d = np.full(req.horizon, f["mean"]) if deterministic else sample(f, rng, req.horizon)
             if reliability and req.protection_decay and not deterministic and f.get("uncertainty", {}).get("intermittent"):
@@ -164,19 +155,7 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                 # worlds keep the old level instead (bounded mixture), so a drop does not fabricate
                 # demand above the old level and a rise does not fabricate demand below it.
                 u = f["uncertainty"]
-                if stratified and w == count - 1:
-                    # The tail world is the tail of the per-period noise at the fitted level; the
-                    # level uncertainty and the young-regime mixture stay with the body worlds, so
-                    # the tail never compounds a high level with high noise into a path no fitted
-                    # world could produce. With decoupled strata the level draws are still consumed
-                    # (and discarded) so the supply stream that follows matches an unstratified draw.
-                    if STRATIFY_DECOUPLED_RNG:
-                        if u.get("pre_change_level") is not None and u.get("pre_change_weight", 0.) > 0:
-                            if not (float(rng.random()) < u["pre_change_weight"]):
-                                rng.normal()
-                        else:
-                            rng.normal()
-                elif u.get("pre_change_level") is not None and u.get("pre_change_weight", 0.) > 0 and float(rng.random()) < u["pre_change_weight"]:
+                if u.get("pre_change_level") is not None and u.get("pre_change_weight", 0.) > 0 and float(rng.random()) < u["pre_change_weight"]:
                     d = d * max(0., u["pre_change_level"] / f["mean"])
                 else:
                     d = d * max(0., 1. + float(rng.normal()) * u["level_se"] / f["mean"])
@@ -291,6 +270,6 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                 po_fill[po.id] *= stress.fill_multiplier
             if req.force_unit_fills:
                 po_fill[po.id] = 1.
-        label = f"{stress.name if stress else 'fitted'}:{seed}:{w}" + (":tail" if stratified and w == count - 1 else "")
+        label = f"{stress.name if stress else 'fitted'}:{seed}:{w}" + (":lhs" if stratified else "")
         worlds.append(World(label, weights[w], demand, arrival, fills, po_due, po_fill))
     return worlds
