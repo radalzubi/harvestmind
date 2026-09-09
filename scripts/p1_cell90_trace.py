@@ -31,6 +31,9 @@ def traced(r):
     t["on_hand"] = sum(x.usable for x in r.stock)
     t["pipeline"] = [(p.id, p.expected_accepted_remaining, next(o.due_in for o in p.options if o.action == "keep")) for p in r.pipeline]
     t["protection"] = [{"regime": row["state"]["regime"], "activity": row["state"]["activity"], "protection_units": row["protection_units"], "lean": row["state"]["lean_baseline_units"]} for row in rep["protection"]]
+    t["orchestration"] = {k: rep["orchestration"].get(k) for k in ("planner_owner", "ownership_reasons", "p1_classes_added", "candidate_classes_requested", "candidates_built", "reasons")}
+    t["selected_policy"] = rep.get("selected_policy")
+    t["risk_drivers"] = [{"sku": row["sku"], "location": row["location"], "drivers": row["state"].get("active_drivers"), "flags": row["state"].get("flags"), "regime": row["state"]["regime"]} for row in rep["protection"]]
     t["economics_orders"] = [{"q": o["quantity"], "attribution": o["attribution"], "need": o["economic_need"]} for o in rep["economics"]["orders"]]
     traces.append(t)
     return rep

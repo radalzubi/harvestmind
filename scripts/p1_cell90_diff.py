@@ -4,7 +4,8 @@ from __future__ import annotations
 import json, sys
 P = "docs/zaad_full/evidence/p1/closure"
 a_name, b_name = sys.argv[1], sys.argv[2]
-A = json.load(open(f"{P}/cell90_trace_{a_name}.json")); B = json.load(open(f"{P}/cell90_trace_{b_name}.json"))
+CELL = sys.argv[3] if len(sys.argv) > 3 else "90"
+A = json.load(open(f"{P}/cell{CELL}_trace_{a_name}.json")); B = json.load(open(f"{P}/cell{CELL}_trace_{b_name}.json"))
 print(f"A={a_name} cost {A['economic_cost']:.0f} | B={b_name} cost {B['economic_cost']:.0f}")
 first = None
 for i, (x, y) in enumerate(zip(A["reviews"], B["reviews"])):

@@ -1423,3 +1423,356 @@ holdout4 uninspected; Network Twin, PR #38, PR #39, frontend, Vercel, production
 untouched. P2 not started.
 
 **Verdict: P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.**
+
+---
+
+# Pass H: candidate-set completeness -> escalation failure diagnostic (2026-09-09)
+
+**Code status: an UNCOMMITTED experimental request mode (`no_action_escalation`, default off) sits on top
+of `4f6aedc`. It is not an accepted product change. It failed the P0 six-cell freeze gate (cell 20) and
+fixture C.** This section records the complete evidence and the architectural classification. No policy
+was changed after the failure; no selector, materiality, sampler, stochastic-candidate or terminal
+economics were modified; full A-T was not rerun; P2 not started.
+
+## H1. Lock, request matrix, and what was built
+
+Lock at `4f6aedc`, product defaults (`closure/lock_4f6aedc.json`): P +2.04% FAIL, C +0.27%, O +0.77%,
+I +0.53%, A +0.09% (2 actions / 33), G -8.21%, Q +0.01%, T -13.04%. Six P0 cells reproduced by arm
+`neither` (D4).
+
+Candidate-request matrix (`zaad/full/screen.py`, unchanged):
+
+| screen state | minimum safe (required) | optional |
+|---|---|---|
+| NO_ACTION | deterministic | - |
+| NORMAL_REPLENISHMENT | deterministic, stochastic | cvar |
+| CAPITAL_OPTIMIZATION | deterministic, stochastic, cvar | protected, joint_recovery |
+| NETWORK_ALLOCATION | deterministic, stochastic, joint_recovery | cvar, protected, stress |
+| PROTECT | deterministic, stochastic, protected | hedged, stress, cvar |
+| RECOVER | deterministic, stochastic, cvar | joint_recovery, protected |
+| ESCALATE_UNKNOWN | all seven | - |
+
+Incumbent and projected base stock are always present without a solve; cadence classes are added when a
+supplier carries order-level economics; joint recovery is escalated on demand when no candidate meets
+every target. The stochastic class is absent at NO_ACTION because v8 (`7b4f508`) defined NO_ACTION as
+"the incumbent is feasible, meets every target with headroom, no active driver, no material excess:
+nothing expensive can improve it" and gave it one cheap deterministic solve as a check. That check is an
+intervention candidate in its own right and, on P, wins the sampled comparison while carrying no
+protection (pass G).
+
+Read-only diagnostic (`scripts/p1_candidate_completeness_diag.py exclude`; 22 decisive NO_ACTION reviews
+of P over three seeds; stochastic generated through the ordinary screen path and excluded from selection):
+the existing stochastic candidate passes the service gate at all 22, is the cheapest sampled plan at all
+22, and is cheaper under the common valuation at 15 / 22 (2 ties, 5 dearer). Under the current selector
+it would have been chosen at 19 / 22 (band guard removes the deterministic whenever the stochastic has
+lower exposure).
+
+Experimental mode. `Request.no_action_escalation` (default False). In the planner, after the deterministic
+solve at a NO_ACTION review: if the deterministic plan's executable period-0 order differs from the
+incumbent's (numerical tolerance 1e-6, no economic threshold), `stochastic_network` is appended to the
+required set and built by the same `solve(req, selection, service_floor=True, seed=incumbent)` call as
+everywhere else; recorded in `orchestration.escalated`; at most one extra MILP; never outside NO_ACTION,
+never when the screen already requests the class, no effect with adaptive escalation off. Bit-identity to
+the screen-requested class: proven at all 32 escalated C and P reviews
+(`candidate_completeness_escalate_CP.json`, `bit_identical_to_screen_requested` True) and by test.
+Scope is a state plus a plan comparison; it reads no fixture, cell or seed.
+
+Known reporting inconsistency in the experimental diff (not fixed, no code change permitted in this
+pass): `orchestration.candidate_classes_requested` is copied before the escalation and so omits the
+escalated class, while `classification`, `candidates_built` and `escalated` include it.
+
+## H2. Targeted fixtures under the mode (`closure/esc_targeted.json`, product defaults + mode)
+
+| fixture | arm A (product defaults) | arm B (mode) | service A / B | unmet A / B | inventory A / B | escalations (3 seeds) | MILPs B | wall A / B |
+|---|---|---|---|---|---|---|---|---|
+| P | +2.04% FAIL | **+0.29% PASS** | .978 / .990 | 24.7 / 10.7 | 146 / 179 | 22 | 163 | 6.5 / 7.3 s |
+| C | +0.27% | **+3.61% FAIL** | 1.000 / 1.000 | 0 / 0 | 230 / 282 | 10 | 193 | 5.7 / 6.3 s |
+| O | +0.77% | -0.21% | .921 / .924 | 87.0 / 83.5 | 41 / 56 | 17 | 140 | 4.6 / 4.8 s |
+| I | +0.53% | +0.53% | 1.000 / 1.000 | 0 / 0 | 259 / 258 | 8 | 233 | 18.7 / 23.7 s |
+| A | +0.09% (2 actions, abstains) | +0.43% (6 actions, 3 abstentions) | .991 / .989 | 9.8 / 12.7 | 15 / 15 | 32 | 133 | 2.1 / 3.8 s |
+| G | -8.21% | -10.01% | 1.000 / 1.000 | .6 / .6 | 867 / 867 | 11 | 252 | 11.8 / 15.5 s |
+| Q | +0.01% | +0.85% | .988 / .980 | 14.0 / 22.5 | 62 / 62 | 23 | 144 | 3.8 / 4.8 s |
+| T | -13.04% | -11.47% | 1.000 / 1.000 | 0 / 0 | 916 / 806 | 10 | 255 | 15.1 / 21.0 s |
+
+Per seed: P improves on all three (+1.05 -> +0.19, +2.11 -> -0.31, +2.91 -> +0.98). C is identical on
+41001 and regresses on 41002 (+1.10 -> +5.37) and 41003 (0.00 -> +5.65). Q 41002 +0.01 -> +2.99
+(service .968 -> .946). A 41003 +0.25 -> +1.17. T 41001 -14.0 -> -8.9 (inventory 919 -> 611).
+
+## H3. P0 six-cell arm `escalation` (`closure/p0_arm_escalation.json`, alone; product defaults otherwise)
+
+| cell | arm | service | p10 | breaches | unmet | worst | inventory | cost | starved | infeasible | joint chosen | NO_ACTION reviews | escalations | states |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 15 | product defaults | .980 | .962 | 1 | 5.0 | 4.2 | 46.1 | 1678 | 0 | 4 | 0 | 0 | - | PROTECT 12 |
+| 15 | escalation | .980 | .962 | 1 | 5.0 | 4.2 | 46.1 | 1678 | 0 | 4 | 0 | 0 | 0 | identical |
+| 16 | product defaults | .972 | 1.000 | 1 | 7.0 | 7.0 | 134.5 | 1515 | 0 | 6 | 0 | 0 | - | PROTECT 12 |
+| 16 | escalation | .972 | 1.000 | 1 | 7.0 | 7.0 | 134.5 | 1515 | 0 | 6 | 0 | 0 | 0 | identical |
+| 20 | product defaults | .884 | .000 | 6 | 44.9 | 17.0 | 144.0 | 2518 | 0 | 10 | 2 | 4 | - | NO_ACTION 4, PROTECT 16 |
+| 20 | escalation | **.837** | .218 | 5 | **63.2** | 21.1 | 182.7 | 2596 | 0 | 12 | 2 | 1 | **1 (r0)** | NO_ACTION 1, PROTECT 19 |
+| 21 | product defaults | .746 | .000 | 6 | 98.3 | 27.0 | 145.3 | 3483 | 0 | 17 | 5 | 2 | - | NO_ACTION 2, PROTECT 17, NORMAL 1 |
+| 21 | escalation | .770 | .000 | 5 | 89.0 | 27.0 | 145.8 | 3166 | 0 | 16 | 4 | 2 | 2 (r0, r19) | same |
+| 90 | product defaults | .863 | .220 | 4 | 70.1 | 22.0 | 95.8 | 3317 | 0 | 6 | 1 | 4 | - | NO_ACTION 4, PROTECT 15, NORMAL 7 |
+| 90 | escalation | .858 | .000 | 5 | 72.6 | 22.0 | 122.5 | 3328 | 0 | 5 | 0 | 4 | 4 (r0, r20, r24, r25) | NO_ACTION 4, PROTECT 18, NORMAL 4 |
+| 108 | product defaults | .884 | .241 | 5 | 66.9 | 22.0 | 142.4 | 3665 | 0 | 5 | 0 | 3 | - | NO_ACTION 3, PROTECT 18, CAPITAL 3, NORMAL 6 |
+| 108 | escalation | .882 | .000 | 6 | 67.8 | 22.0 | 139.8 | 3681 | 0 | 5 | 1 | 3 | 3 (r0, r28, r29) | same |
+
+Hard gates: cell 20 "no worse" FAILS (service, unmet, worst, cost all worse); cell 21 recovery
+improves; cell 90 no over-protection but one more breach and +28% inventory; cell 108 starvation 0 but
+one more breach. Every cell that has a review-0 NO_ACTION escalates there.
+
+Escalation events (traces `closure/cell{20,21,90,108}_trace_escalation.json`; the cell 21 trace replays
+at 3186 against the arm's 3166 with identical selections on 20 / 20 reviews, a time-limit artefact; the
+other three traces reproduce the arm exactly):
+
+| cell | review | prior -> state -> next | on hand | protection (regime, activity, units) | flags | incumbent p0 | deterministic p0 | stochastic p0 | chosen -> final | executed (mode) | product-default outcome at the same review |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 20 | 0 | - -> NO_ACTION -> PROTECT | 40 | LEAN, 0, 4.5 | - | 5.9 | 11.3 | 15.5 | stochastic -> accepted | 15.5 | RETAIN incumbent (5.9) |
+| 21 | 0 | - -> NO_ACTION -> PROTECT | 40 | LEAN, 0, 4.5 | - | 5.9 | 11.3 | 15.5 | stochastic -> accepted | 15.5 | RETAIN incumbent (5.9) |
+| 21 | 19 | NORMAL -> NO_ACTION -> end | 30 | LEAN, 0, 251.9 | FALSE_PROTECTION_RISK | 28.7 | 0 | 0 | deterministic (same plan) | 0 | deterministic 0 (identical) |
+| 90 | 0 | - -> NO_ACTION -> PROTECT | 40 | LEAN, 0, 4.5 | - | 5.9 | 11.3 | 13.5 | stochastic -> NO MATERIAL IMPROVEMENT (cost -0.83%, inventory -1.33%) -> RETAIN | **5.9** | deterministic accepted (11.3) |
+| 90 | 20 | NORMAL -> NO_ACTION -> NORMAL | 58 | LEAN, 0, 50.0 | FALSE_PROTECTION_RISK | 0 | 11.2 (infeasible on worlds, svc .948) | 0 | stochastic -> accepted | 0 | RETAIN incumbent (0) |
+| 90 | 24 | NORMAL -> NO_ACTION -> NO_ACTION | 35 | LEAN, 0, 47.4 | FALSE_PROTECTION_RISK | 13.5 | 1.2 (infeasible, svc .883) | 9.5 | stochastic -> accepted | 9.5 | RETAIN incumbent (13.5) |
+| 90 | 25 | NO_ACTION -> NO_ACTION -> end | 19 | LEAN, 0, 49.7 | FALSE_PROTECTION_RISK | 32.0 | 0 | 0 | deterministic (same plan) | 0 | deterministic 0 (identical) |
+| 108 | 0 | - -> NO_ACTION -> PROTECT | 40 | LEAN, 0, 4.5 | - | 5.9 | 11.3 | 13.4 | stochastic -> NO MATERIAL IMPROVEMENT (cost -0.83%, inventory +7.84%) -> RETAIN | **5.9** | deterministic accepted (11.3) |
+| 108 | 28 | NORMAL -> NO_ACTION -> NO_ACTION | 49 | LEAN, 0, 50.4 | FALSE_PROTECTION_RISK | 1.7 | 0 | 0 | deterministic (same plan) | 0 | identical |
+| 108 | 29 | NO_ACTION -> NO_ACTION -> end | 35 | LEAN, 0, 48.7 | FALSE_PROTECTION_RISK | 13.8 | 0 | 0 | deterministic (same plan) | 0 | identical |
+
+Two distinct effects. (i) Cells 20 and 21: the escalated candidate is chosen and accepted; the review-0
+order rises from the retained incumbent's 5.9 to 15.5. (ii) Cells 90 and 108: the escalated candidate is
+the cheapest, the band guard drops the deterministic plan (exposure 35-73 against 0), the stochastic
+plan then fails the materiality gate (cost -0.83% against the 1% threshold) and the review abstains; the
+deterministic intervention that product defaults executed (11.3) is displaced and the review-0 order
+*falls* to 5.9. The candidate never had to be selected to change the outcome. Downstream: cell 90 r1
+unmet 0 -> 1.3, r2 13.1 -> 17.0; cell 108 r1 0 -> 1.2, r2 12.9 -> 17.0.
+
+## H4. Cell 20 first divergence (`scripts/p1_cell90_diff.py p0_defaults escalation 20`)
+
+Review 0, NO_ACTION, lean review, one SKU / one location, on hand 40, no pipeline, no active driver
+(LEAN, activity 0, protection 4.5 units against lean 4.1), fitted demand about 20-21 per period, arrivals
+1-3 periods, fills .95-.99 on the three selection worlds, target .95, declared stress `operator_adverse`
+with credibility 0 at review 0, supply state `deterioration_recovery` (disruption from review 1).
+
+| candidate | period-0 order | schedule (periods 0-7) | sampled cost | service stat | exposure | burden | common valuation | E[short] units | feasible |
+|---|---|---|---|---|---|---|---|---|---|
+| incumbent / base stock | 5.9 | 6, 21, 21, 21, 21, 21, 21, 21 | 2315 | .994 | 26.4 | 28 | 2302.2 | 2.6 | yes |
+| deterministic (product default choice) | 11.3 | 11, 11, 21, 21, 21, 21, 21, 21 | 2303 | .985 | 66.7 | 25 | 2284.2 | 5.6 | yes |
+| stochastic (escalated) | 15.5 | 16, 16, 16, 22, 22, 22, 22, 23 | 2277 | 1.000 | 0.0 | 42 | **2269.3** | 1.2 | yes |
+
+Selector ranking (mode): cheapest = stochastic; band = {stochastic} (deterministic and incumbent fail the
+exposure guard); chosen stochastic; confirmation, stress and materiality gates: accepted. Common
+valuation ranking: stochastic 2269 < deterministic 2284 < incumbent 2302: the same order. The selector and
+the common lens agree; the escalated candidate is the ex-ante best plan at review 0 by both.
+
+Path after the divergence (A = product defaults with materiality off, the traced arm; B = mode):
+
+| review | state | A order / B order | A hand / B hand | A unmet / B unmet | decisive difference |
+|---|---|---|---|---|---|
+| 0 | NO_ACTION | 11.3 / 15.5 | 40 / 40 | 0 / 0 | +4.2 units in B |
+| 1 | PROTECT (demand driver .56) | 28.6 / 26.5 | 24 / 28 | 0 / 0 | both choose cvar; B orders 2 fewer |
+| 2 | PROTECT | 25.2 / 23.1 (both RETAIN) | 4 / 8 | 13.0 / 9.0 | A in recovery mode (feasible set empty, joint recovery FEASIBLE_TIME_LIMIT rejected); B has feasible protection but the confirmation gate rejects it; B better |
+| 3 | PROTECT, recovery mode | **33.9 / 4.3** | 0 / 0 | 14 / 14 | A: joint_recovery OPTIMAL, 33.9 now. B: joint_recovery FEASIBLE_TIME_LIMIT, `well_solved` False, 4.3 now (purchases deferred); same service statistic .936 on the worlds; accepted because every other class is INFEASIBLE in recovery mode |
+| 4 | PROTECT | 2.6 / 13.9 | 23 / 21 | 0 / 0 | B catching up |
+| 5 | PROTECT | 23.3 accepted / 10.8 (protected 23.9 rejected by the hedged-downside gate, RETAIN) | 25 / 22 | 0 / 0 | B under-orders again |
+| 6 | PROTECT | 22.7 / 20.6 | **33 / 5** | **0 / 21.7** | B stocks out: recovery mode |
+| 7 | PROTECT, supply driver 1.0 | 15.6 / 15.6 (B RETAIN) | 8 / 12 | 13.9 / 10.4 | |
+| 8 | PROTECT | 25.1 / 32.3 (B recovery) | 19 / 9 | 0 / 8.1 | |
+| 9-12 | PROTECT | 70.9 / 67.6 then equal | | 0 / 0 | trajectories re-converge at review 13 |
+
+Exact mechanism of .884 -> .837 and 44.9 -> 63.2: the review-0 change (+4 units, or +10 against the
+retained incumbent at product defaults) does not itself cost service; it moves the disruption reviews
+onto a different path, on which the review-3 joint-recovery MILP hits its time limit and returns a
+deferred-purchase plan (4.3 units now against 33.9 proved optimal on A's path) that the recovery ranking
+must accept because nothing else is usable; the review-5 hedged-downside gate then rejects the protection
+plan on B's confirmation draw; on hand falls to 5 at review 6 and 21.7 units go unmet, with recovery
+shortfalls at reviews 7-8 (18.5 more). Total extra unmet 18.3, of which 21.7 at review 6 alone. The
+candidate that looked better at review 0 was better at review 0; the worse service is produced by the
+frozen P0 recovery machinery's sensitivity to the state it is handed (documented in P0 as solve-quality
+exposure) and not by the stochastic candidate's quantity, timing, supply assumptions or the horizon.
+Cell 21 receives the identical review-0 change (15.5 for 5.9) and improves (.746 -> .770, unmet 98 ->
+89): the sign of the downstream effect is path-dependent, not a property of the candidate.
+
+## H5. The NO_ACTION state, classified (part C)
+
+Escalation events by context:
+
+| context | events | P0 risk context load-bearing? |
+|---|---|---|
+| P and C fixtures: nil declared stress, no drivers ever, states cycle NO_ACTION / CAPITAL_OPTIMIZATION / NORMAL | 32 (C 10, P 22) | no: a true calm economic state |
+| P0 cells, review 0: before a declared disruption (`operator_adverse`, supply state deterioration / closure recovery from review 1), credibility 0, no driver | 4 (cells 20, 21, 90, 108) | yes: the next review is PROTECT on every cell; the order placed here is the stock the disruption is met with |
+| P0 cells after the disruption: LEAN regime, activity 0, but `protection_units` 47-252 against a lean base of about 4, flag FALSE_PROTECTION_RISK, incumbent still buying 14-32 | 6 (21 r19; 90 r20, r24, r25; 108 r28, r29) | yes: on-hand stock is inherited protection being unwound; the deterministic plan is infeasible on the worlds at 90 r20 / r24 (service .948 / .883) |
+
+The screen's NO_ACTION test reads the incumbent's projected service, active drivers, material excess,
+scarcity and decline; it does not read the declared stress, the pending recovery, or the provenance of
+the on-hand stock (`inherited_on_hand`, `protection_units`, FALSE_PROTECTION_RISK are computed but not
+consulted). NO_ACTION is therefore a selector label that occurs both in a true calm economic state
+(P, C) and while P0 risk or recovery context is load-bearing (all ten P0 events).
+
+**NO_ACTION IS NOT A VALID P1/P0 ARCHITECTURAL BOUNDARY.**
+
+## H6. C: decisive-review forensics (part E; `candidate_completeness_escalate_CP.json`, mode on)
+
+Seed 41001: two escalations (r0, r7); the stochastic and deterministic plans agree; replay identical.
+
+| seed | review | on hand | incumbent | deterministic (schedule) | stochastic (schedule) | sampled stoch - det | common stoch - det | purchase / carry / shortage$ deltas | gate | executed A / B |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 41002 | 0 | 150 | 400 every period | 453 now + 606 at p5 | 547 now + 501 at p6 | -9.5 (-0.16%) | **+32.9 (+0.53%)** | -53 / -1 / +72 | accepted | 452.6 / 546.9 |
+| 41002 | 4 | 295 | 400 | 508 at p1 | 515 now | -80.8 (-1.97%) | -6.6 (-0.16%) | +36 / +8 / -32 | accepted | 400 (RETAIN) / 514.8 |
+| 41002 | 9 | 258 | 400 | 400 at p1 | 400 at p1 | 0 | 0 | identical | accepted | 0 / 0 |
+| 41003 | 0 | 150 | 400 | 453 + 606 at p5 | 400 + 671 at p4 | -26.3 (-0.43%) | -36.2 (-0.59%) | +63 / +6 / -81 | stress gate rejected both; RETAIN | 400 / 400 |
+| 41003 | 3 | 237 | 400 | 687 at p1 | 693 now | -67.3 (-1.43%) | -2.4 (-0.05%) | +28 / +10 / -28 | stress gate rejected stochastic; deterministic accepted | 0 / 0 |
+| 41003 | 4 | 142 | 400 | 670 now | 685 now | -31.5 (-0.76%) | -30.1 (-0.72%) | +73 / +1 / -65 | accepted | 400 (RETAIN) / 684.6 |
+| 41003 | 9, 10 | 304, 196 | 400 | 0 | 0 | 0 | 0 | identical | | 0 / 0 then 0 / 400 (RETAIN at r10) |
+
+Scale: the declared materiality is 1% of the candidate's cost (40-62 at these reviews) and the selector
+band is 5% (205-304). Every stochastic-deterministic difference above is below the materiality
+reference on the common lens (largest 36) and below the band on the sampled lens; one (41002 r4, sampled
+-1.97%) is above materiality on the sampled lens and a tie on the common lens. By the declared scale the
+two plans are NEAR-TIES at every changed review. The selector and the common lens disagree in sign once
+(41002 r0, sampled -9.5 against common +32.9: the three worlds under-price the shortage the 547-unit plan
+leaves at p5-p6); everywhere else they agree.
+
+What the escalation changes on C is not the quantity purchased over the horizon but *which review the
+next 400-unit lot is committed at*: "lot now" (stochastic, protection against the three worlds) against
+"lot next period" (deterministic) or "retain the incumbent's 400 this period" (the product-default
+outcome when the deterministic plan is gated out). Both seeds end with a full lot landing inside the last
+review (B r10 executes 400 on both seeds under a RETAIN) and 463 / 475 units of residual against 262 /
+200.
+
+## H7. C: terminal decomposition (part F; declared result stays authoritative)
+
+| seed | arm | units bought | residual | declared (80% salvage) | full terminal value | derived continuation value | extended-horizon empirical |
+|---|---|---|---|---|---|---|---|
+| 41001 | A / B (identical) | 1200 | 258 | -0.30% | -0.44% | -0.41% | -0.44% |
+| 41002 | A product defaults | 1253 | 262 | +1.10% | +0.25% | +0.30% | +0.28% |
+| 41002 | B mode | 1462 | 463 | **+5.37%** | +1.16% | +1.39% | +1.35% |
+| 41003 | A product defaults | 1200 | 200 | 0.00% | 0.00% | 0.00% | 0.00% |
+| 41003 | B mode | 1485 | 475 | **+5.65%** | +1.09% | +1.29% | +1.29% |
+
+Decomposition of the mode's regression on C (mean of 41002 / 41003, percentage points against the best
+baseline): declared +4.4 pts, of which +3.4 pts is the 80% haircut on a residual lot consumed within
+4.7 weeks of the window's end (measurement) and +1.0 pt is real policy cost (an extra lot's carrying and
+the earlier commitment). Both policies serve every unit of demand. The escalation regression on C is
+about three quarters finite-horizon measurement and one quarter real.
+
+## H8. Varied-truth diagnostics (parts D, G, H; `scripts/p1_escalation_truths.py`, request seed fixed,
+20 truths each, `closure/escalation_truths_*.json`; the registered truths remain the evidence)
+
+| fixture | request seed | parity A (mean; pass) | parity B (mean; pass) | B-A cost mean (se) | B better / worse / equal | at full terminal value B-A | service A / B | unmet A / B | inventory A / B | escalations per truth | actions A / B | abstentions A / B | B parity median / p10 / p90 / worst |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| C | 41001 | +0.25%; 20/20 | +0.25%; 20/20 | 0.0 (0) | 0 / 0 / 20 | 0.0 | 1.000 / 1.000 | 0 / 0 | - | 2.2 | - | - | identical |
+| C | 41002 | +1.08%; 20/20 | +0.36%; **13/20** | -41.8 (47.7) | 13 / 7 / 0 | +5.6 | 1.000 / 1.000 | .4 / 0 | 242 / 341 | 3.0 | 9.7 / 10.7 | 0 / 0 | -2.12% / -2.73% / +5.65% / +6.93% |
+| C | 41003 | -0.30%; 19/20 | -0.89%; 20/20 | -34.6 (21.5) | 4 / 5 / 11 | -0.7 | 1.000 / 1.000 | 0 / 0 | 249 / 261 | 3.5 | 9.2 / 9.4 | 0 / 0 | -0.45% / -2.38% / +0.34% / +0.53% |
+| P | 41001 | +1.21%; 18/20 | -0.06%; 20/20 | **-71.4 (9.7)** | 17 / 3 / 0 | -75.5 | .989 / .999 | 11.6 / 1.1 | 145 / 166 | 6.4 | 10.4 / 10.4 | 0 / 0 | |
+| P | 41002 | +1.15%; 17/20 | +0.14%; 20/20 | **-56.9 (10.1)** | 17 / 3 / 0 | -62.7 | .989 / .998 | 11.4 / 2.5 | 145 / 166 | 7.3 | 10.4 / 10.4 | 0 / 0 | +0.13% / -0.61% / +0.85% / +1.09% |
+| P | 41003 | +1.27%; 17/20 | -0.09%; 20/20 | **-77.2 (11.7)** | 18 / 2 / 0 | -81.2 | .988 / .999 | 12.7 / 0.8 | 149 / 192 | 6.7 | 10.6 / 10.4 | 0 / 0.1 | -0.01% / -0.93% / +0.37% / +0.90% |
+| A | 41001 | +0.48%; 20/20 | +0.25%; 20/20 | -12.7 (6.2) | 12 / 5 / 3 | -13.0 | .994 / .996 | 6.5 / 4.7 | 16 / 16 | 11.0 | 1.7 / 1.9 | 0 / 1.0 | +0.01% / -0.20% / +0.96% / +1.61% |
+| Q | 41001 | -0.01%; 20/20 | -0.20%; 20/20 | -10.5 (7.1) | 10 / 4 / 6 | +6.6 | 1.000 / .999 | .3 / 1.5 | 71 / 69 | 7.6 | 0.2 / 1.4 | 0 / 0 | -0.02% / -0.79% / +0.08% / +1.81% |
+
+P: the gain is robust to the truth path at every request seed (17-18 of 20 truths better, mean -57 to
+-77 on about 5,650, six to eight standard errors; service .989 -> .998-.999; unmet 11-13 -> 1-3; parity
+20 / 20 against 17-18 / 20; the same number of interventions). Stochastic-candidate availability on P is
+a genuine, path-robust economic gain.
+
+C: on request seed 41001 the mode never changes a decision (20 identical truths). On 41002 it changes the
+lot timing and the realised outcome becomes wide: mean better by 42 but the standard error is 48, seven
+truths fail parity (worst +6.9%) where product defaults fail none (worst +1.7%), and at full terminal
+value the mean effect is +6 (nil). On 41003 it is mildly better on average (-35, se 22) with 11 identical
+truths. C's registered +3.61% is therefore (2) a near-tie whose realised path is unfavourable and (3)
+mostly a finite-horizon / salvage measurement, driven by (4) MOQ lot timing that (6) the coarse
+three-world stochastic candidate resolves differently from the deterministic one. It is not (1) a
+clearly inferior ex-ante decision and not (5) a selector-ranking error: the selector agrees with the
+common lens at every changed review but one, and that one is below the band.
+
+A: escalation fires at every NO_ACTION review (11 per truth) yet the incumbent-good fixture keeps its
+behaviour: actions 1.7 -> 1.9 per truth, abstentions 0 -> 1.0 (the materiality verdict now fires on the
+escalated candidate), cost -13 (se 6), service .994 -> .996. No unnecessary intervention.
+
+Q: neutral churn: interventions 0.2 -> 1.4 per truth, cost -10 (se 7) at the declared terminal and +7 at
+full value, unmet .3 -> 1.5, worst truth +1.8% against +0.1%.
+
+## H9. Common valuation (part I) and candidate quality (part J)
+
+Selector against the common lens at the changed reviews: cell 20 r0 agree (stochastic best under both);
+C agree at 6 of 7 changed reviews and disagree once below the band (H6); P (pass G) agree at every
+decisive review. The issue is not selector comparability; the refuted hypothesis of pass G stands.
+
+The same solver class exposes different economic actions by state:
+
+| where | what the escalated stochastic candidate is | size against the deterministic plan |
+|---|---|---|
+| P (calm, no lot rule, six weeks of stock) | modest incremental protection: 2-100 more units now, 1-4 units of expected shortage removed | 0.1-2% of cost, always below the band |
+| cell 20 / 21 / 90 / 108 review 0 (pre-disruption) | modest incremental protection: +2 to +4 units, 4-5 units of expected shortage removed | 0.3-1.2% of cost |
+| C (400-unit MOQ) | a whole 400-700 unit lot committed now rather than next period; residual lands in the final review | 0.2-2% of cost sampled; below materiality on the common lens; realised effect up to 5.7% under the salvage haircut |
+
+"Request the stochastic candidate" is therefore too coarse as an architectural statement: under a lot
+rule the class is a lot-timing decision on three worlds, under a lean SKU it is a protection top-up, and
+before a declared disruption it is the stock the disruption will be met with.
+
+## H10. Existing domain boundary (part K)
+
+Fields already in the model that separate "normal purchasing economics" from "protection / recovery":
+`explicit_order_economics(req)` (supplier terms or fixed order fees declared); the screen state; the
+per-SKU/location risk state (`regime` LEAN / PROTECT / RECOVER, `activity`, `active_drivers`,
+`risk_active`, `flags` including FALSE_PROTECTION_RISK, `periods_to_lean`, `protection_units` against
+`lean_baseline_units`); `stress_credibility` / `effective_stress_weight`; the joint-recovery `deficit`;
+`inherited_on_hand` (replay-side provenance of stock). None of these is read by the NO_ACTION test or by
+the candidate-request matrix beyond the screen state itself, and the events in H5 show that the
+combination "screen NO_ACTION, activity 0" holds at review 0 of every P0 cell (before the declared
+disruption) and during the unwind of 50-250 units of inherited protection. A boundary that would
+separate P (true calm) from the P0 events would have to read the declared stress and the protection
+provenance together; that boundary does not exist today as a single field or state. **The P1 purchasing
+and P0 protection / recovery responsibilities are entangled inside one selector pass, one candidate
+matrix and one state label.** No new threshold or composite gate is proposed here.
+
+## H11. Classification (part L)
+
+**Primary: A. STATE-MACHINE / PLANNER-BOUNDARY DEFECT.**
+
+Evidence: (a) every P0 divergence begins at a NO_ACTION review whose P0 risk context is load-bearing (H5),
+where the escalated candidate is either better by both lenses (cells 20 / 21) or displaces the
+deterministic intervention through the band and materiality machinery (cells 90 / 108), and the
+downstream damage is produced by the frozen recovery machinery's path sensitivity (H4), not by the
+candidate; (b) the identical review-0 change improves cell 21 and damages cell 20; (c) on the true calm
+fixture the same class is a robust gain (H8, P); (d) the request matrix keys on the screen label alone,
+and that label does not distinguish the two situations (H10).
+Counter-evidence: cell 90 / 108 review 0 also shows a selector / materiality interaction (a candidate
+that is never selected changes the outcome by displacing another); C shows a horizon effect. Neither
+explains cell 20, where selector and lens agree and the candidate was accepted.
+Alternatives rejected: B (candidate-set completeness) was the hypothesis under test; it is confirmed as
+the mechanism of P but cannot be shipped through the current state machine, so completeness is a symptom
+of A, not the root. C (selector / materiality) explains only the 90 / 108 displacement and one C review;
+the cell 20 selection is right by both lenses. D (horizon) explains three quarters of C's regression
+(H7) and nothing on the P0 cells. E (stochastic candidate design) is refuted by bit-identity and by its
+robust gain on P. F (P1 / frozen-P0 incompatibility) is the consequence: the six-cell "no worse" gate
+cannot be passed by any change that alters a pre-disruption order, because the frozen machinery's
+outcome is path-chaotic; that is a property of the frozen benchmark protocol as much as of the code, and
+is recorded as the secondary classification rather than the root.
+
+**Secondary: D. HORIZON / TERMINAL ECONOMICS DEFECT** (C only: +3.4 of +4.4 points are the salvage
+haircut on a lot consumed within five weeks of the window), with **F** noted for the freeze protocol.
+
+Ruled out in this pass: selector comparability (again); stochastic candidate mathematics; sampler; the
+materiality thresholds as a cause of P; "always request" and any fixture / cell / seed keyed scope.
+
+## H12. Recommended direction for the next pass (one)
+
+Separate the planner's responsibilities before touching the candidate matrix again: a P1 purchasing pass
+that runs the full economic candidate set (deterministic, stochastic, cadence) only where the request has
+no declared stress in credible reach and no inherited protection being unwound, and a P0 protection /
+recovery pass that keeps the frozen matrix and machinery everywhere else. The boundary must be built from
+the fields in H10 (declared stress and its credibility, regime / activity, protection provenance), not
+from the NO_ACTION label and not from a threshold tuned on the six cells; the six-cell gate then tests
+that the P0 pass is bit-identical on the cells rather than "no worse" on a chaotic path.
+
+## H13. Tests and state
+
+`tests/unit/test_zaad_p1_candidate_completeness.py`: 15 tests, 13 pass. Two failures are test-design
+errors (a validation check that used `model_copy`, which does not validate; a materiality expectation
+that the escalated candidate at P review 4 would be immaterial at 10% thresholds, when its inventory
+change is material); one is the genuine reporting inconsistency in H1 (`candidate_classes_requested`).
+None was fixed: no code change in this pass. Full suite not rerun (no production code is being
+finalised). Experimental diff left uncommitted and identified in H1; evidence files under `closure/`
+uncommitted alongside it.
+
+Product defaults unchanged from `4f6aedc`. **P1 REMAINS OPEN.** P2 not started (`claude/zaad-meio-p2`
+does not exist). Validation7, Validation8, holdout4 untouched. Network Twin, PR #38, PR #39, frontend,
+Vercel, production, other worktrees untouched.

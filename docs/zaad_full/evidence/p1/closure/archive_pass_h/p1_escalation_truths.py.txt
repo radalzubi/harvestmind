@@ -1,0 +1,67 @@
+"""Diagnostic: is the escalation arm's effect on a fixture an expectation or a path realisation?
+Request seed fixed (41001: same selection worlds and refits), the truth path varied over K independent
+draws. Arms A (product defaults) and B (product defaults + no_action_escalation) and the lot-aware
+baselines on every truth. Reports paired A-B differences and the best-baseline parity per truth.
+Nothing here changes a fixture, a seed or a gate; the pre-registered truths remain the evidence."""
+from __future__ import annotations
+import json, os, sys, time
+from concurrent.futures import ProcessPoolExecutor
+from statistics import mean, pstdev
+from scripts.p1_fixtures import build, REVIEWS, POLICIES
+from zaad.full.contracts import Request
+from zaad.full.replay import replay
+from zaad.full.worlds import draw
+
+K = 20
+REQ_SEED = int(os.environ.get("P1_REQ_SEED", "41001"))
+PRODUCT = {k: Request.model_fields[k].default for k in ("stratified_scenarios", "timing_tiebreak", "analytic_shortage")}
+
+
+def one(args):
+    name, k, arm, policy = args
+    req = build(name, REQ_SEED).model_copy(update={**PRODUCT, "no_action_escalation": arm == "B"})
+    truth = draw(req, 50000 + k, 1)[0]
+    out = replay(req, truth, REVIEWS, policy)
+    if out["status"] != "COMPLETE":
+        return {"fixture": name, "k": k, "arm": arm, "policy": policy, "status": out["status"]}
+    sku = req.skus[0]; price, salvage = sku.asset_value, sku.terminal_value
+    ending = -out["ledger"]["closing_assets"] / salvage if salvage else 0.
+    esc = sum(1 for r in out["reviews"] for e in ((r.get("orchestration") or {}).get("escalated") or []) if e.startswith("stochastic"))
+    served = sum(x["served"] for r in out["reviews"] for x in r["settlement"]["service_by_period"])
+    demand = sum(x["demand"] for r in out["reviews"] for x in r["settlement"]["service_by_period"])
+    actions = sum(1 for r in out["reviews"] if r["warnings"] and r["warnings"][0] == "PENDING_REVIEW")
+    abst = sum(1 for r in out["reviews"] if any("NO MATERIAL IMPROVEMENT" in str(w) for w in r["warnings"]))
+    return {"fixture": name, "k": k, "arm": arm, "policy": policy, "status": "COMPLETE", "cost": out["economic_cost"], "actions": actions, "abstentions": abst,
+            "inventory": sum(sum(x["quantity"] for x in r["settlement"]["end_stock"]) for r in out["reviews"]) / len(out["reviews"]),
+            "cost_full_value": out["economic_cost"] - ending * (price - salvage), "ending_units": ending, "escalations": esc,
+            "service": served / demand if demand else None, "unmet": demand - served}
+
+
+if __name__ == "__main__":
+    names = sys.argv[1:]
+    jobs = [(n, k, arm, "gated") for n in names for k in range(1, K + 1) for arm in ("A", "B")]
+    jobs += [(n, k, "base", p) for n in names for k in range(1, K + 1) for p in POLICIES if p != "gated"]
+    t0 = time.time(); rows = []
+    with ProcessPoolExecutor(3) as pool:
+        for r in pool.map(one, jobs):
+            rows.append(r)
+    json.dump(rows, open(f"docs/zaad_full/evidence/p1/closure/escalation_truths_{''.join(n[0] for n in names)}_{REQ_SEED}.json", "w"), indent=1, default=float)
+    for n in names:
+        A = {r["k"]: r for r in rows if r["fixture"] == n and r["arm"] == "A" and r["status"] == "COMPLETE"}
+        B = {r["k"]: r for r in rows if r["fixture"] == n and r["arm"] == "B" and r["status"] == "COMPLETE"}
+        base = {}
+        for r in rows:
+            if r["fixture"] == n and r["arm"] == "base" and r["status"] == "COMPLETE":
+                base[r["k"]] = min(base.get(r["k"], float("inf")), r["cost"])
+        ks = sorted(set(A) & set(B) & set(base))
+        dAB = [B[k]["cost"] - A[k]["cost"] for k in ks]
+        dAB_full = [B[k]["cost_full_value"] - A[k]["cost_full_value"] for k in ks]
+        pa = [100 * (A[k]["cost"] - base[k]) / base[k] for k in ks]; pb = [100 * (B[k]["cost"] - base[k]) / base[k] for k in ks]
+        se = pstdev(dAB) / max(1, len(dAB)) ** .5 if len(dAB) > 1 else 0.
+        print(f"{n[:26]:26s} truths {len(ks)} | mean cost A {mean(A[k]['cost'] for k in ks):8.1f} B {mean(B[k]['cost'] for k in ks):8.1f} best-base {mean(base[k] for k in ks):8.1f} "
+              f"| parity A {mean(pa):+5.2f}% (pass {sum(1 for x in pa if x <= 2)}/{len(pa)}) B {mean(pb):+5.2f}% (pass {sum(1 for x in pb if x <= 2)}/{len(pb)}) "
+              f"| B-A mean {mean(dAB):+7.1f} se {se:5.1f} B better on {sum(1 for x in dAB if x < -1e-6)}, worse on {sum(1 for x in dAB if x > 1e-6)}, equal {sum(1 for x in dAB if abs(x) <= 1e-6)} "
+              f"| at full terminal value B-A {mean(dAB_full):+7.1f} | svc A {mean(A[k]['service'] for k in ks):.3f} B {mean(B[k]['service'] for k in ks):.3f} unmet A {mean(A[k]['unmet'] for k in ks):5.1f} B {mean(B[k]['unmet'] for k in ks):5.1f} "
+              f"| escalations/truth {mean(B[k]['escalations'] for k in ks):.1f} | actions A {mean(A[k]['actions'] for k in ks):.1f} B {mean(B[k]['actions'] for k in ks):.1f} abst A {mean(A[k]['abstentions'] for k in ks):.1f} B {mean(B[k]['abstentions'] for k in ks):.1f} inv A {mean(A[k]['inventory'] for k in ks):.0f} B {mean(B[k]['inventory'] for k in ks):.0f} "
+              f"| parity B median {sorted(pb)[len(pb)//2]:+.2f}% p10 {sorted(pb)[int(.1*(len(pb)-1))]:+.2f}% p90 {sorted(pb)[int(.9*(len(pb)-1))]:+.2f}% worst {max(pb):+.2f}% | A median {sorted(pa)[len(pa)//2]:+.2f}% p90 {sorted(pa)[int(.9*(len(pa)-1))]:+.2f}% worst {max(pa):+.2f}%")
+    print("seconds", round(time.time() - t0))

@@ -287,6 +287,29 @@
      "lean": 4.0748059452428596
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network"
+    ],
+    "candidates_built": [
+     "deterministic_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "the incumbent plan is physically usable, meets every requested service target, carries no active risk driver and holds no materially avoidable inventory"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [],
+     "flags": [],
+     "regime": "LEAN"
+    }
+   ],
    "economics_orders": [
     {
      "q": 11.31824119200602,
@@ -654,42 +677,42 @@
     "protected_network": {
      "status": "FEASIBLE_TIME_LIMIT",
      "p0_purchases": {
-      "main": 27.703062062549055
+      "main": 27.33294854366731
      },
      "purchases": {
-      "main:0": 27.703062062549055,
-      "main:1": 29.503767879444233,
-      "main:2": 25.28527469181248,
-      "main:3": 25.285274691812486,
-      "main:4": 25.285274691812486,
-      "main:5": 22.303119251194016,
-      "main:6": 22.82195804929909,
-      "main:7": 29.335659749171736,
-      "main:8": 29.158769982560667,
-      "main:9": 29.158769982560667,
-      "main:10": 29.158769982560667,
-      "main:11": 28.045028907197786,
-      "main:12": 28.04502890719779,
-      "main:13": 28.045028907197786,
-      "main:14": 28.045028907197786,
-      "main:15": 30.35741718409026,
-      "main:16": 30.35741718409026,
-      "main:17": 6.250826212800728
+      "main:0": 27.33294854366731,
+      "main:1": 27.181101331695736,
+      "main:2": 23.720552882533326,
+      "main:3": 22.041619973247673,
+      "main:4": 30.05047741223822,
+      "main:5": 25.963920535531535,
+      "main:6": 25.963920535531535,
+      "main:7": 25.96392053553154,
+      "main:8": 25.963920535531535,
+      "main:9": 29.741473863965872,
+      "main:10": 29.741473863965872,
+      "main:11": 24.84166630311132,
+      "main:12": 24.841666303111325,
+      "main:13": 24.841666303111325,
+      "main:14": 24.841666303111325,
+      "main:15": 26.69559180924599,
+      "main:16": 26.695591809245986,
+      "main:17": 26.695591809245986
      },
      "cost_by_world": [
-      2283.145908522301,
-      2639.068712778196,
-      2614.989369650464
+      2274.700560436877,
+      2644.145535429949,
+      2628.603908051679
      ],
      "service_by_world": [
       1.0,
-      1.0,
-      1.0
+      0.9973394551173601,
+      0.9945145446926382
      ],
-     "service_stat": 1.0,
-     "hedged_cost": 2526.042616123435,
-     "exposure": 5.210646728907401e-14,
-     "burden": 119.305263518445,
+     "service_stat": 0.9970955804891254,
+     "hedged_cost": 2529.934901151389,
+     "exposure": 14.251703588596506,
+     "burden": 100.93165901306594,
      "well_solved": true,
      "feasible": true
     },
@@ -780,6 +803,49 @@
      "activity": 0.5625,
      "protection_units": 14.520151176879137,
      "lean": 7.588168284523891
+    }
+   ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: demand"
+    ]
+   },
+   "selected_policy": "cvar_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "demand",
+       "score": 0.75,
+       "reasons": [
+        "retail_A: level change 2 observation(s) old"
+       ]
+      }
+     ],
+     "flags": [
+      "INSUFFICIENT_CALIBRATION"
+     ],
+     "regime": "PROTECT"
     }
    ],
    "economics_orders": [
@@ -1188,6 +1254,52 @@
      "lean": 7.448820576550086
     }
    ],
+   "orchestration": {
+    "escalated": [
+     "joint_recovery: no candidate met every service target"
+    ],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: demand"
+    ]
+   },
+   "selected_policy": "projected_base_stock_proxy",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "demand",
+       "score": 0.625,
+       "reasons": [
+        "retail_A: level change 3 observation(s) old"
+       ]
+      }
+     ],
+     "flags": [
+      "INSUFFICIENT_CALIBRATION"
+     ],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [
     {
      "q": 25.15207893630036,
@@ -1563,6 +1675,50 @@
      "activity": 0.375,
      "protection_units": 10.644666603884637,
      "lean": 8.50975505111421
+    }
+   ],
+   "orchestration": {
+    "escalated": [
+     "joint_recovery: no candidate met every service target"
+    ],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: demand"
+    ]
+   },
+   "selected_policy": "joint_recovery",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "demand",
+       "score": 0.5,
+       "reasons": [
+        "retail_A: level change 4 observation(s) old"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
     }
    ],
    "economics_orders": [
@@ -1997,6 +2153,55 @@
      "lean": 10.092324502336332
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: demand, supply"
+    ]
+   },
+   "selected_policy": "stochastic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "demand",
+       "score": 0.375,
+       "reasons": [
+        "retail_A: level change 5 observation(s) old"
+       ]
+      },
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 21%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [
     {
      "q": 2.607335969944046,
@@ -2418,6 +2623,55 @@
      "lean": 10.19699279624366
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: demand, supply"
+    ]
+   },
+   "selected_policy": "cvar_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "demand",
+       "score": 0.25,
+       "reasons": [
+        "retail_A: level change 6 observation(s) old"
+       ]
+      },
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 50%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [
     {
      "q": 23.30390633621586,
@@ -2814,6 +3068,62 @@
      "lean": 9.499073166504965
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: demand, inbound_eta, supply"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "demand",
+       "score": 0.125,
+       "reasons": [
+        "retail_A: level change 7 observation(s) old"
+       ]
+      },
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 83%",
+        "partial-delivery probability 55%"
+       ]
+      },
+      {
+       "driver": "inbound_eta",
+       "score": 1.0,
+       "reasons": [
+        "21 units of open orders at late risk"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [
     {
      "q": 22.65635488167433,
@@ -3166,6 +3476,58 @@
      "activity": 0.75,
      "protection_units": 92.2061152328872,
      "lean": 10.557694622923435
+    }
+   ],
+   "orchestration": {
+    "escalated": [
+     "joint_recovery: no candidate met every service target"
+    ],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: inbound_eta, supply"
+    ]
+   },
+   "selected_policy": "joint_recovery",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 86%",
+        "partial-delivery probability 60%"
+       ]
+      },
+      {
+       "driver": "inbound_eta",
+       "score": 1.0,
+       "reasons": [
+        "37 units of open orders at late risk"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
     }
    ],
    "economics_orders": [
@@ -3561,6 +3923,55 @@
      "lean": 10.00107906559607
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: inbound_eta, supply"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 88%",
+        "partial-delivery probability 83%"
+       ]
+      },
+      {
+       "driver": "inbound_eta",
+       "score": 1.0,
+       "reasons": [
+        "31 units of open orders at late risk"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [
     {
      "q": 25.104822067414066,
@@ -3930,6 +4341,55 @@
      "lean": 10.12171752572732
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: inbound_eta, supply"
+    ]
+   },
+   "selected_policy": "stochastic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 78%",
+        "partial-delivery probability 75%"
+       ]
+      },
+      {
+       "driver": "inbound_eta",
+       "score": 0.5572450043658462,
+       "reasons": [
+        "11 units of open orders at late risk"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [
     {
      "q": 70.88433902086324,
@@ -4281,6 +4741,48 @@
      "lean": 10.68222273915828
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: supply"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 70%",
+        "partial-delivery probability 70%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [
     {
      "q": 1.2358976244323847,
@@ -4621,6 +5123,48 @@
      "lean": 11.664180571805561
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: supply"
+    ]
+   },
+   "selected_policy": "stochastic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 64%",
+        "partial-delivery probability 64%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [],
    "settlement": {
     "unmet": 0.0,
@@ -4950,6 +5494,48 @@
      "activity": 0.75,
      "protection_units": 55.33377692763556,
      "lean": 12.260986202821629
+    }
+   ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: supply"
+    ]
+   },
+   "selected_policy": "stochastic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 64%",
+        "partial-delivery probability 64%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
     }
    ],
    "economics_orders": [
@@ -5289,6 +5875,48 @@
      "lean": 12.644539651821963
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: supply"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 58%",
+        "partial-delivery probability 58%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [],
    "settlement": {
     "unmet": 0.0,
@@ -5598,6 +6226,48 @@
      "lean": 12.462772632202585
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: supply"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 58%",
+        "partial-delivery probability 58%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [],
    "settlement": {
     "unmet": 0.0,
@@ -5894,6 +6564,48 @@
      "lean": 12.199278326653518
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: supply"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 58%",
+        "partial-delivery probability 58%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [],
    "settlement": {
     "unmet": 0.0,
@@ -6187,6 +6899,48 @@
      "lean": 11.937324277167296
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: supply"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 58%",
+        "partial-delivery probability 58%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [],
    "settlement": {
     "unmet": 0.0,
@@ -6471,6 +7225,48 @@
      "lean": 12.23770424893315
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: supply"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 58%",
+        "partial-delivery probability 58%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [],
    "settlement": {
     "unmet": 0.0,
@@ -6750,6 +7546,48 @@
      "lean": 11.973119761179605
     }
    ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: supply"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 58%",
+        "partial-delivery probability 58%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
+    }
+   ],
    "economics_orders": [],
    "settlement": {
     "unmet": 0.0,
@@ -7016,6 +7854,48 @@
      "activity": 0.75,
      "protection_units": 51.95134154252543,
      "lean": 11.774782052957741
+    }
+   ],
+   "orchestration": {
+    "escalated": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "candidates_built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "active_drivers": null,
+    "reasons": [
+     "a risk driver is materially active: supply"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "risk_drivers": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 58%",
+        "partial-delivery probability 58%"
+       ]
+      }
+     ],
+     "flags": [],
+     "regime": "PROTECT"
     }
    ],
    "economics_orders": [],
