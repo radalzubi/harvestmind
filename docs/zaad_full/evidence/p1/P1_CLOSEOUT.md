@@ -1,6 +1,6 @@
 # P1 CYCLE-STOCK ECONOMICS — CLOSE-OUT
 
-> **Current verdict (final economic closure, 2026-09-08): P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.** See the FINAL ECONOMIC CLOSURE section; earlier passes are kept as the record they were.
+> **Current verdict (candidate-comparability pass, 2026-09-09): P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.** See the CANDIDATE-COMPARABILITY PASS section; earlier passes are kept as the record they were.
 
 **Verdict: P1 CYCLE-STOCK ECONOMICS — FAIL ON FIXTURE PARITY (C, O, P); MECHANISMS COMPLETE AND RECONCILED; NOT FROZEN.**
 
@@ -1372,3 +1372,54 @@ mean-world class, whose objective holds no protection; the only protected altern
 base-stock proxy, whose order-up-to rule over-buys inside the shrinking horizon; the stochastic
 class, which sizes protection from the sampled spread and wins when forced (F7), is not
 requested. That is candidate-set architecture, and the brief's failure branch names it.
+
+## G6. The frozen P0 cells under the common lens (`closure/common_valuation_diag_p0.json`)
+
+| cell | reviews | disagreements | material (> $10) | states | common best leaner than chosen | largest gap $ |
+|---|---|---|---|---|---|---|
+| 15 | 12 | 5 | 1 | ['PROTECT'] | 0 | 32 |
+| 20 | 20 | 3 | 1 | ['PROTECT'] | 2 | 37 |
+| 21 | 20 | 5 | 4 | ['PROTECT'] | 2 | 51 |
+| 90 | 26 | 10 | 5 | ['NORMAL_REPLENISHMENT', 'PROTECT'] | 2 | 32 |
+| 108 | 30 | 13 | 8 | ['NORMAL_REPLENISHMENT', 'PROTECT'] | 5 | 263 |
+
+Reading. On the P0 cells the common valuation disagrees with the selector in 36 of 108 reviews,
+almost all in PROTECT states, and in the material cases it prefers the leaner plan (cell 108
+review 10: deterministic 25 units valued at 2,723 against the chosen protected plan at 2,986;
+review 6: 2,891 against the incumbent's 3,003). That is not evidence against the selector. The
+common lens values a plan on the review's mean supply path with the fitted demand mixture; it
+carries no representation of the supply risk (late and short receipts, the declared stress) that
+P0's protected, hedged, CVaR and joint-recovery candidates are built against, so in PROTECT and
+recovery states it systematically under-values protection. A selector that ranked on it there
+would strip the protection P0 validated, which is precisely the regression the analytic
+surrogate produced on cells 20, 21, 90 and 108. Any common lens fit to be a selector standard in
+those states would have to represent supply uncertainty as well as demand; this one does not,
+and building that is beyond a comparability fix.
+
+## G7. Conclusion of the pass (the brief's failure branch)
+
+Why common valuation failed to close P: not because it is wrong (it is validated to within 1% of
+a 400-world expectation and ranks identically), but because at P's decisive reviews the plan it
+prefers is the plan the selector already chose. The candidate set at those reviews holds no plan
+with modest protection: the NO_ACTION state requests only the mean-world class, and the only
+protected alternative is the base-stock proxy, which over-buys inside the shrinking horizon. The
+remaining conflict is **candidate-set architecture**, with a secondary **evaluation-architecture**
+finding for other states (a single common lens needs supply uncertainty to be a fair standard in
+PROTECT and recovery). Neither is a local patch. Consistent with the brief: no selector prototype
+was built, no plan was changed, no default moved; `valuation.py` remains a validated diagnostic
+instrument (6 tests, 6 ms per candidate) for the reassessment.
+
+What the reassessment has to decide, from this evidence: (1) whether the NO_ACTION state should
+request a protected class (the stochastic class wins when forced, F7 -0.58%, but that is a
+screen change on the P0-frozen side and needs the six-cell check); (2) whether the mean-world
+class should exist as an intervention candidate at all when the review is calm, since its
+objective cannot hold protection; (3) what a common standard that includes supply risk would be.
+
+**Final state.** Product defaults unchanged from dca4820 (P0 behaviour); `analytic_shortage`,
+`stratified_scenarios`, `timing_tiebreak` opt-in; fixtures at product defaults 17 / 20 with P
++2.040868%, N and R proven-invalid expectations; unit suite 1461 passed, 2 skipped (6 valuation
+tests added); invariants 60 / 60; P0 six-cell record unchanged (D4). Validation7, Validation8,
+holdout4 uninspected; Network Twin, PR #38, PR #39, frontend, Vercel, production, other worktrees
+untouched. P2 not started.
+
+**Verdict: P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.**
