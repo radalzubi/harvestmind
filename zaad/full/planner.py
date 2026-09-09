@@ -141,6 +141,7 @@ def evaluate(req, solution, worlds):
 WEIGHTED_STATS = True     # False: selector statistics ignore scenario weights
 BAND_GUARD = True         # False: the band's shortage-exposure guard is off
 TRACE: dict | None = None  # when a dict, plan() records its selection internals into it
+EXCLUDE_FROM_SELECTION: frozenset = frozenset()   # diagnostic: candidates evaluated but never selectable
 
 
 def _weights(rows: list[dict]) -> list[float]:
@@ -711,7 +712,15 @@ def plan(req: Request) -> dict:
 
     candidates = {"incumbent": incumbent, "base_stock": base}
     if wanted("deterministic_network"):
-        candidates["deterministic_network"] = solve(req, deterministic, service_floor=True, seed=incumbent, **v6)
+        # The mean-world candidate prices the expected shortage of the fitted distribution in its
+        # objective (P1 final closure): on the mean path (mean - available)^+ is zero wherever the
+        # plan covers the mean, so without it the candidate carries no protection at all and wins
+        # the sampled comparison it then loses in expectation (fixture P forensics).
+        # Lean reviews only (calm state, no active driver): under PROTECT, RECOVER, allocation or
+        # escalation P0's own protection machinery is the validated representation of downside, and
+        # applying the surrogate there moved P0 cells 21 and 108 (six-cell arm, final closure).
+        candidates["deterministic_network"] = solve(req, deterministic, service_floor=True, seed=incumbent,
+                                                    expected_shortage=(fits if (lean_review and req.analytic_shortage) else None), **v6)
     if wanted("stochastic_network"):
         candidates["stochastic_network"] = solve(req, selection, service_floor=True, seed=incumbent, **v6)
     if wanted("cvar_network"):
@@ -768,7 +777,7 @@ def plan(req: Request) -> dict:
                     joint_fitted_rows = evaluate(req, joint_fitted, selection)
     stress_rows = {name: evaluate(req, candidate, stress_worlds) for name, candidate in candidates.items()
                    if candidate.usable_plan and stress_weight > 0}
-    feasible = [name for name, rows in selection_rows.items() if service_ok(req, rows)]
+    feasible = [name for name, rows in selection_rows.items() if service_ok(req, rows) and name not in EXCLUDE_FROM_SELECTION]
 
     def hedged_cost(name: str) -> float:
         """Expected cost with the declared stress at its evidence-weighted probability (fitted only when zero)."""
@@ -1184,7 +1193,7 @@ def plan(req: Request) -> dict:
     materiality_result = (materiality(req, incumbent_rows, candidate_rows)
                           if chosen != "incumbent" and incumbent_rows and candidate_rows else None)
     materiality_configured = max(req.materiality_cost_fraction, req.materiality_inventory_fraction, req.materiality_service) > 0
-    if accepted and materiality_configured and materiality_result is not None and materiality_result["material"] is False:
+    if accepted and materiality_configured and lean_review and materiality_result is not None and materiality_result["material"] is False:
         accepted = False
         blocking["reasons"].append("immaterial")
         reasons.append(NO_MATERIAL_IMPROVEMENT + ": " + materiality_result["reason"])

@@ -30,7 +30,7 @@ def _build(name: str, seed: int):
         req = req.model_copy(update={"scenarios": SCENARIOS_ARM})
     if PRODUCT_DEFAULTS:
         from zaad.full.contracts import Request
-        req = req.model_copy(update={k: Request.model_fields[k].default for k in ("stratified_scenarios", "timing_tiebreak")})
+        req = req.model_copy(update={k: Request.model_fields[k].default for k in ("stratified_scenarios", "timing_tiebreak", "analytic_shortage")})
     return req
 from zaad.full.economics import COMPONENTS, cost_breakdown, order_waterfall
 from zaad.full.replay import replay

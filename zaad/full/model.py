@@ -199,6 +199,9 @@ class Solution:
     # Warm start telemetry (v8, P0-W4): whether a starting incumbent was supplied, whether the
     # formulation accepted it, and whether the solver improved on it or returned it.
     warm_start: dict | None = None
+    # Planning surrogate telemetry (P1 final closure): analytic expected shortage priced in the
+    # objective of a mean-world solve, in units and in the declared penalty; None when not used.
+    planning_surrogate: dict | None = None
 
     @property
     def usable_plan(self) -> bool:
@@ -326,7 +329,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           excess_penalty: dict[tuple[str, str], tuple[float, float]] | None = None,
           continuation: dict[tuple[str, str], tuple[float, float]] | None = None,
           seed: Solution | None = None,
-          allowed_periods: frozenset[int] | None = None) -> Solution:
+          allowed_periods: frozenset[int] | None = None,
+          expected_shortage: dict | None = None) -> Solution:
     """excess_penalty (v6): {(sku, location): (baseline_units, cost_per_unit_period)} charges inventory
     held above the lean baseline while a temporary risk driver is gone, so the plan runs temporary
     protection down through demand rather than replenishing it. continuation (v6): {(sku, location):
@@ -360,6 +364,28 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             service_for_stock[sku, service.location].append(service)
     costs: list[dict[int, float]] = [defaultdict(float) for _ in worlds]
     tiebreak: list[dict[int, float]] = [defaultdict(float) for _ in worlds]   # objective only (P1)
+    # Analytic expected shortage (P1 final closure): a planning surrogate for a single mean-world
+    # solve. `expected_shortage` is the forecast dict; for every service and period the objective
+    # charges the declared shortage penalty on E[(D - available)^+] under the fitted mixture in
+    # place of the mean world's own (mean - available)^+, through an exact cut envelope. Objective
+    # only: never the ledger, never the projected cost, never a stochastic solve.
+    surrogate: list[dict[int, float]] = [defaultdict(float) for _ in worlds]
+    shortage_terms: list[tuple] = []
+    if expected_shortage is not None and len(worlds) == 1:
+        from zaad.full.shortage import demand_atoms, loss_cuts
+        for service in req.services:
+            fit = expected_shortage.get(service.id)
+            if not fit:
+                continue
+            for t in range(H):
+                multiplier = 1.
+                for event in req.events:
+                    if event.service == service.id and event.start <= t <= event.end:
+                        multiplier *= event.multiplier
+                atoms, zero = demand_atoms(fit, multiplier)
+                cuts = loss_cuts(atoms, zero)
+                if cuts:
+                    shortage_terms.append((service, t, cuts))
     # Post-horizon supply per (sku, location): arrivals due at or after H and end-of-horizon stock (v6 continuation).
     post: list[dict[tuple[str, str], dict[int, float]]] = [defaultdict(lambda: defaultdict(float)) for _ in worlds]
     payments: list[list[dict[int, float]]] = [[defaultdict(float) for _ in range(H)] for _ in worlds]
@@ -866,10 +892,33 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     served = m.var(("continuation", sku, location, w), upper=demand_units)
                     m.row({**{q: -coef for q, coef in supply_terms.items()}, served: 1.}, upper=0)
                     costs[w][served] -= margin
+    es_vars: dict[tuple[str, int], int] = {}
+    for service, t, cuts in shortage_terms:
+        # Availability for the service in period t on the single world: what it served plus what
+        # its SKU still holds at the location at the end of the period. The epigraph variable is at
+        # least the mean world's own unmet units, so the surrogate only ever adds the part of the
+        # expected shortage the mean path cannot see.
+        u = unmet[service.id, t, 0]
+        held = stock_indices.get((service.sku, service.location, t, 0), [])
+        d = worlds[0].demand[service.id][t]
+        es = m.var(("expected_shortage", service.id, t))
+        es_vars[service.id, t] = es
+        m.row({es: 1., u: -1.}, lower=0.)
+        for a_k, l_k, slope_k in cuts:
+            # es >= l_k + slope_k * (d - u + sum(held) - a_k)
+            row = {es: 1., u: slope_k}
+            for i in held:
+                row[i] = row.get(i, 0.) - slope_k
+            m.row(row, lower=l_k + slope_k * (d - a_k))
+        penalty = service.selling_price + service.sla_per_unmet
+        surrogate[0][es] += penalty
+        surrogate[0][u] -= penalty
     for w, world in enumerate(worlds):
         for q, amount in costs[w].items():
             m.cost[q] += world.weight * amount
         for q, amount in tiebreak[w].items():
+            m.cost[q] += world.weight * amount
+        for q, amount in surrogate[w].items():
             m.cost[q] += world.weight * amount
     if cvar_weight:
         threshold = m.var(("cvar_threshold",), cost=cvar_weight, lower=-np.inf)
@@ -983,6 +1032,13 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     economic = constant + sum(world.weight * sum(values[q] * v for q, v in costs[w].items()) for w, world in enumerate(worlds))
     pack_of = {source.id: source_pack(source) for source in req.sources}
     po_pack = {order.id: pack_of[order.source] for order in req.pipeline}
+    telemetry = None
+    if shortage_terms:
+        es_units = {(service.id, t): float(values[es_vars[service.id, t]]) for service, t, _ in shortage_terms}
+        mean_unmet = {(service.id, t): float(values[unmet[service.id, t, 0]]) for service, t, _ in shortage_terms}
+        telemetry = {"expected_shortage_units": sum(es_units.values()), "mean_world_unmet_units": sum(mean_unmet.values()),
+                     "surrogate_cost": sum((es_units[k] - mean_unmet[k]) * (next(s_ for s_ in req.services if s_.id == k[0]).selling_price + next(s_ for s_ in req.services if s_.id == k[0]).sla_per_unmet) for k in es_units),
+                     "scope": "planning objective of the mean-world candidate only; not in the ledger or the projected cost"}
     return Solution(state, {k: float(max(0, values[q])) for k, q in x.items() if not is_dust(values[q], pack_of[k[0]])},
                     {k: float(max(0, values[q])) for k, q in tr.items() if not is_dust(values[q])},
                     {k: float(max(0, values[q])) for k, q in po.items() if not is_dust(values[q], po_pack[k[0]])},
@@ -990,4 +1046,4 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     [{"period": t, "scenario": w, "cash": float(values[cash[t, w]]), "debt": float(values[debt[t, w]])} for w in range(len(worlds)) for t in range(H)],
                     elapsed, len(m.names), len(m.rows), gap, residual,
                     ([] if state == "OPTIMAL" else [f"{state}: feasible plan returned without a proof of optimality"]),
-                    best_bound=bound, nodes=nodes, warm_start=warm)
+                    best_bound=bound, nodes=nodes, warm_start=warm, planning_surrogate=telemetry)

@@ -14,12 +14,13 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--tag", default="targeted"); ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--scenarios", type=int, default=0, help="diagnostic world-count override (0 = fixture's own)")
     ap.add_argument("--fixtures", default="")
+    ap.add_argument("--product-defaults", action="store_true")
     a = ap.parse_args()
     import scripts.run_p1_fixtures as R
     names = [n for n in a.fixtures.split(",") if n] or TARGET
     jobs = [(n, p, s) for n in names for p in POLICIES for s in SEEDS]
     t0 = time.time(); cells = []
-    with ProcessPoolExecutor(a.workers, initializer=R._init, initargs=("none", "default", 0., a.scenarios)) as pool:
+    with ProcessPoolExecutor(a.workers, initializer=R._init, initargs=("none", "default", 0., a.scenarios, a.product_defaults)) as pool:
         for c in pool.map(run_cell, *zip(*jobs)):
             cells.append(c)
     json.dump(cells, open(f"docs/zaad_full/evidence/p1/closure/{a.tag}.json", "w"), indent=1, default=float)

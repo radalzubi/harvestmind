@@ -456,6 +456,12 @@ class Request(Record):
     # Supply, PO and truth draws are bit-identical with or without it. Default and scope are set
     # by the P0 six-cell and fixture evidence recorded in the P1 close-out.
     stratified_scenarios: bool = False
+    # Analytic expected shortage in the mean-world candidate's planning objective (P1 final
+    # closure, `zaad/full/shortage.py`). Derived from the fitted mixture and the declared shortage
+    # economics, exact, objective-only. Opt-in: on fixture P it corrects a proven valuation defect
+    # (+2.04% -> +0.10%) but on the frozen P0 six-cell set, lean reviews only, it moved cells 20,
+    # 21 and 90 outside their recorded bands (P1 close-out, final economic closure).
+    analytic_shortage: bool = False
     service_tolerance: float = Field(ge=0, le=.1)
     force_unit_fills: bool = False
     # How review-by-review demand refits treat a detected level change. "symmetric" is the frozen

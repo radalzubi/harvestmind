@@ -46,6 +46,7 @@ ARMS = {
     "both": {"materiality_cost_fraction": .01, "materiality_inventory_fraction": .05, "materiality_service": .005, "timing_tiebreak": 1e-4},
     # per-period LHS sampler (P1 final closure): the representation arm above is rerun under it as "lhs"
     "lhs": {"stratified_scenarios": True},
+    "analytic_shortage": {"analytic_shortage": True},
 }
 
 

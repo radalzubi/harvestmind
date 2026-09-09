@@ -359,6 +359,10 @@ def materiality(req: Request, incumbent_rows: list[dict], candidate_rows: list[d
         weights = [float(r.get("weight", 1.)) for r in rows]
         return sum(w * mean(x["inventory_value"] for x in r["trace"]) for w, r in zip(weights, rows)) / (sum(weights) or 1.)
     inv_i, inv_c = carried(incumbent_rows), carried(candidate_rows)
+    # Measured against the incumbent's carried value. A base of one period's demand value was
+    # tried in the final economic closure (a lean incumbent carrying a few units read a one-unit
+    # change as several percent) and reverted: on the frozen P0 set it made the gate fire once on
+    # cells 20 and 21 and cost service there. The known consequence is recorded in the close-out.
     inv_delta = (inv_c - inv_i) / max(inv_i, 1.)
     s_i, s_c = _service_min(req, incumbent_rows), _service_min(req, candidate_rows)
     service_delta = (s_c - s_i) if s_i is not None and s_c is not None else 0.

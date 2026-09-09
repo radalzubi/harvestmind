@@ -1,6 +1,6 @@
 # P1 CYCLE-STOCK ECONOMICS — CLOSE-OUT
 
-> **Current verdict (final scenario-representation closure, 2026-09-08): P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.** See the FINAL SCENARIO-REPRESENTATION CLOSURE section; earlier passes are kept as the record they were.
+> **Current verdict (final economic closure, 2026-09-08): P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.** See the FINAL ECONOMIC CLOSURE section; earlier passes are kept as the record they were.
 
 **Verdict: P1 CYCLE-STOCK ECONOMICS — FAIL ON FIXTURE PARITY (C, O, P); MECHANISMS COMPLETE AND RECONCILED; NOT FROZEN.**
 
@@ -973,3 +973,295 @@ is not reachable by an unbiased equal-weight sampler at this world count; it wou
 deliberately weighted tail (rejected), an analytic expected-shortage term in the objective (a
 different design, not built), or a cost-of-capital-free fixture economics that makes P's protection
 worth more than the cost band tolerates (a fixture change, refused).
+
+
+# FINAL ECONOMIC CLOSURE (2026-09-08, fifth pass on this close-out; from 0e47afd)
+
+## F1. Lock and reproduction (sections A-B)
+
+Started from 0e47afd: clean tree, no background jobs, fixture definitions, seeds, window, 2% gate,
+baselines unchanged; P0 and validation evidence show no diff against 2e30721. Fixture P at product
+defaults, full precision: ZAAD 5,904.475730 against reorder point 5,786.383280, absolute
++118.092450, +2.040868%. Reproduction (three repeats per seed, product defaults):
+
+| seed | ZAAD | reorder point | gap | bit-identical over 3 repeats | first diverging period-0 order |
+|---|---|---|---|---|---|
+| 41001 | 5621.044561 | 5562.732003 | +1.0483% | True | review 3 |
+| 41002 | 6019.423974 | 5895.040914 | +2.1100% | True | review 5 |
+| 41003 | 6072.958654 | 5901.376923 | +2.9075% | True | review 4 |
+
+The result is deterministic (case A of section B): every solve reports OPTIMAL with gap 0 in
+under 0.03 s, so neither solver tolerance nor time limits nor ranking noise is involved.
+
+## F2. First divergence and mechanism (sections C, E)
+
+Reviews 0-2 (CAPITAL_OPTIMIZATION, 600 -> 300 on hand) are identical: both buy nothing. From the
+first NO_ACTION review with the stock run down (seed 41001 review 3, 41002 review 5, 41003 review
+4) the screen builds only the deterministic mean-world candidate (plus the ever-present incumbent
+and base-stock proxy). That candidate orders exactly the fitted mean each period with no
+protection; the reorder-point rule orders the mean plus its z-protection (about 10 units). With
+demand sd 6 the truth exceeds the mean in roughly half the weeks, and every such week is a
+shortage for ZAAD: seed 41001 review 8, 89 on hand, order 100.1, truth 98.2, 9.2 unmet; seed
+41003 reviews 5, 8, 9, 10 unmet 6.1 / 11.1 / 9.6 / 5.0 against the baseline's 0 / 0 / 7.5 / 0.
+
+Selector internals at seed 41001 review 8 (state NO_ACTION, lean, worlds equal-weighted iid):
+
+| candidate | period-0 order | weighted service | per world | cost on the 3 worlds | shortage exposure | burden | feasible |
+|---|---|---|---|---|---|---|---|
+| incumbent (replace sold) | 98.1 | .9695 | .959 / .984 / .966 | 2,170.66 | 148.0 | 9.7 | yes |
+| base stock proxy | 124.3 | .9870 | .979 / .985 / .997 | 2,137.20 | 63.4 | 77.6 | yes |
+| deterministic | 100.1 | .9783 | .974 / .985 / .976 | **2,041.96** | 105.3 | 18.6 | yes |
+
+The deterministic plan is the cheapest on the three sampled worlds, inside the band, the leanest,
+and the guard cannot exclude it because it is itself the exposure floor: chosen, accepted, and 9.2
+units short that week in truth. Why it is cheapest on the sample and worst in expectation is
+section F4.
+
+## F3. Cost reconciliation to the cent (section D; means of three seeds, ZAAD minus baseline)
+
+| component | ZAAD | baseline | delta |
+|---|---|---|---|
+| purchase (procurement) | 3,005.81 | 3,123.45 | -117.64 |
+| carrying (holding) | 23.12 | 22.83 | +0.29 |
+| financing / expedite / freight / fixed order / receiving / pallet / MOQ | 0 | 0 | 0 |
+| shortage: lost sales | 247.45 | 79.48 | +167.96 |
+| shortage: SLA | 61.86 | 19.87 | +41.99 |
+| terminal / salvage credit (closing assets) | -433.76 | -459.26 | +25.49 |
+| opening assets | 3,000.00 | 3,000.00 | 0 |
+| **total** | **5,904.48** | **5,786.38** | **+118.09** |
+
+Residual against the settlement's economic cost: 0.000000 on both. The +2.04% is shortage:
+$209.95 more lost sales and SLA, bought with $117.64 less purchasing and $25.49 less residual
+credit. At the declared economics a lost unit costs $7.50 net and a carried unit $0.014 a period.
+
+## F4. Why the deterministic candidate wins (section E) and what the counterfactuals show (section F)
+
+Construction: the deterministic candidate is `solve` on the single mean-demand world with the
+service floor; demand in period t is the fitted mean; its objective prices unmet units at the
+declared selling price plus SLA, but on the mean path (mean - available)^+ is zero as soon as the
+plan covers the mean, so the objective sees no shortage at all and no reason to hold a unit above
+the mean. Uncertainty enters candidate generation nowhere for this candidate, enters screening and
+selection only through the three sampled worlds, and enters settlement fully. The sampled
+evaluation is unbiased but so coarse that a plan with no protection often shows little shortage on
+the draw and wins the band as the leanest.
+
+Counterfactual arms (fixture P, three seeds, product defaults; `closure/p_counterfactuals.json`):
+
+| arm | cost | vs baseline | service | unmet |
+|---|---|---|---|---|
+| baseline reorder_point (through ZAAD settlement, F8) | 5,786.38 | +0.000% | 0.9929 | 7.9 |
+| F0 product defaults | 5,904.48 | +2.041% | 0.9777 | 24.7 |
+| F1 deterministic candidate not built | 5,799.82 | +0.232% | 0.9908 | 10.3 |
+| F2 deterministic built and evaluated but cannot win | 5,799.82 | +0.232% | 0.9908 | 10.3 |
+| F7 stochastic candidate forced (deterministic, base stock, incumbent unselectable) | 5,753.09 | -0.575% | 0.9967 | 3.7 |
+| F6 incumbent action forced (replace_sold rule) | 6,282.33 | +8.571% | 1.0000 | 0.0 |
+| F5 product defaults, residual at full value | 5,707.66 | -1.361% | - | - |
+| F5 baseline, residual at full value | 5,671.57 | -1.984% | - | - |
+
+Same physical plans at seed 41001 review 8 evaluated on the 3 selection worlds and on 200 iid worlds:
+
+| plan | period-0 order | cost on 3 worlds | shortage | cost on 200 worlds | shortage |
+|---|---|---|---|---|---|
+| deterministic candidate | 100.1 | **2,037.84** (cheapest) | 105.3 | **2,116.37** (dearest) | 190.1 |
+| reorder-point action | 121.6 | 2,033.23 | 63.4 | 2,089.60 | 115.0 |
+| deterministic + 10 units at t=0 | 110.1 | 2,020.21 | 63.4 | 2,086.92 | 130.5 |
+| deterministic + 17 units at t=0 | 117.1 | 2,027.89 | 63.4 | 2,086.17 | 117.9 |
+
+Under the fitted mixture at that review E[(D - a)^+] at a = mean is 2.606 units per period ($32.6
+at the $12.50 penalty), 0.704 at mean + 5, 0.002 at mean + 10. The mechanism is candidate
+valuation: the mean-world objective omits the expected shortage of the fitted distribution, and
+the three-world evaluation cannot correct it. Not terminal value (F5 moves both policies alike),
+not the incumbent (F6 +8.6%), not lot timing or cadence (no lot rules on P), not the gates (F1/F2
+pass with the candidate merely unable to win). The analytic expected-shortage hypothesis is
+therefore justified (section G).
+
+## F5. The mechanism implemented (sections H-J)
+
+`zaad/full/shortage.py` and `model.solve(expected_shortage=fits)`, used by the planner for the
+deterministic candidate only. For each service and period, the predictive distribution is the one
+ZAAD samples from: zero with the fitted zero probability, otherwise a historical size scaled to the
+fitted mean, widened by the calibration ratio and capped at the outlier bound exactly as
+`worlds.draw` does, times any period event multiplier. That distribution is discrete, so its loss
+function L(a) = E[(D - a)^+] is piecewise linear with breakpoints at the atoms and is represented
+exactly by one tangent cut per distinct atom: es_t >= L(a_k) - P(D > a_k) (a_t - a_k), plus
+es_t >= the mean world's own unmet. Availability a_t is what the service served plus what its
+SKU still holds at the location at the end of the period. The objective charges the declared
+penalty (selling price + SLA per unit, the same coefficient the model already charges on unmet)
+on es_t - unmet_t, so only the part of the expected shortage the mean path cannot see is added.
+No coefficient was introduced; the level uncertainty of the fit and firm order lines are not folded
+into the atoms (stated omission, slightly understates the tail). Exactness of the envelope, the
+hand-calculable cases and monotonicity are unit-tested (`tests/unit/test_zaad_shortage.py`).
+
+Scope (section I): design A, the deterministic candidate's planning objective. Stochastic and CVaR
+candidates already price shortage through their sampled worlds and are untouched (no double
+count). The term is a planning surrogate: it enters neither the settlement ledger nor the
+candidate's projected cost, so realised economics and customer savings are unchanged
+(`test_surrogate_never_enters_projected_cost_or_ledger`, and the model-settlement reconciliation
+test is unchanged). Hard service floors remain constraints; the surrogate is a cost; the two
+interact as constraint and objective, with no unit counted twice.
+
+Smoke at seed 41001 review 8: the deterministic candidate orders 109.4 instead of 99.1; its
+200-world cost falls from 2,056.2 to 2,034.7 and its shortage from 88.2 to 43.0; surrogate 2.28
+expected units, $28.45, in the objective only.
+
+Second, narrow correction exposed by the first (section L of the brief): the materiality gate's
+inventory axis divided the inventory change by the incumbent's carried value, so on fixture A's
+lean incumbent (14 units) a one-unit difference read as "-7%" and ZAAD intervened on 28 of 33
+reviews for a +0.2% cost effect. The axis is now measured against the larger of the incumbent's
+carried value and one period of demand at asset value; fixture A then abstains on every review
+(NO MATERIAL IMPROVEMENT AVAILABLE). No fixture-specific logic; the thresholds are unchanged.
+
+## F6. Adversarial tests (section N; `tests/unit/test_zaad_shortage.py`)
+
+Lower shortage economics buy no more protection and protection is monotone in the declared
+penalty; near-zero variance collapses to the mean-world plan; sufficient inventory buys nothing
+and reports zero expected shortage; a $1.15 per unit-period holding cost against a $5 miss stays
+lean while $0.014 against $12.50 protects; the surrogate never reaches the ledger or projected
+cost; MOQ keeps orders on the 400 lot; inbound stock counts as availability and forestalls a
+purchase; a Monday-only order calendar and a freight tariff are respected; an already-optimal
+incumbent yields NO MATERIAL IMPROVEMENT AVAILABLE. 17 tests, all passing.
+
+## F7. P0 six-cell regression (section O; frozen record -> arm; `closure/p0_arm_*.json`)
+
+**surrogate in every state + materiality inventory base = max(carried, one period of demand value)**
+
+| cell | service | p10 | breaches | unmet | worst | inventory | cost | starved | joint req/built/chosen | lat p95 / max s | abstentions |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 15 | 0.980 -> 0.980 | 0.962 -> 0.962 | 1 -> 1 | 5.0 -> 5.0 | 4.2 -> 4.2 | 46.1 -> 46.2 | 1678 -> 1683 | 0 | 0/1/0 -> 0/1/0 | 2 / 2 | 0 |
+| 16 | 0.972 -> 0.972 | 1.000 -> 1.000 | 1 -> 1 | 7.0 -> 7.0 | 7.0 -> 7.0 | 134.5 -> 133.1 | 1515 -> 1514 | 0 | 0/2/0 -> 0/2/0 | 1 / 4 | 0 |
+| 20 | 0.894 -> 0.916 | 0.233 -> 0.000 | 3 -> 3 | 40.9 -> 32.3 | 14.0 -> 17.0 | 183.7 -> 170.2 | 2502 -> 2458 | 0 | 0/3/2 -> 0/2/1 | 29 / 59 | 1 |
+| 21 | 0.760 -> 0.746 | 0.000 -> 0.000 | 5 -> 6 | 93.0 -> 98.3 | 27.0 -> 27.0 | 130.5 -> 159.9 | 3257 -> 3590 | 0 | 7/10/5 -> 8/12/5 | 29 / 59 | 1 |
+| 90 | 0.863 -> 0.866 | 0.220 -> 0.220 | 4 -> 4 | 70.1 -> 68.6 | 22.0 -> 22.0 | 94.4 -> 113.1 | 3315 -> 3341 | 0 | 1/3/1 -> 0/5/3 | 88 / 114 | 0 |
+| 108 | 0.879 -> 0.882 | 0.225 -> 0.000 | 4 -> 6 | 69.8 -> 67.8 | 22.0 -> 22.0 | 138.6 -> 269.6 | 3723 -> 3744 | 0 | 0/5/1 -> 0/11/1 | 133 / 153 | 2 |
+
+**surrogate on lean reviews only + the same materiality base**
+
+| cell | service | p10 | breaches | unmet | worst | inventory | cost | starved | joint req/built/chosen | lat p95 / max s | abstentions |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 15 | 0.980 -> 0.980 | 0.962 -> 0.962 | 1 -> 1 | 5.0 -> 5.0 | 4.2 -> 4.2 | 46.1 -> 46.1 | 1678 -> 1678 | 0 | 0/1/0 -> 0/1/0 | 1 / 2 | 0 |
+| 16 | 0.972 -> 0.972 | 1.000 -> 1.000 | 1 -> 1 | 7.0 -> 7.0 | 7.0 -> 7.0 | 134.5 -> 134.5 | 1515 -> 1515 | 0 | 0/2/0 -> 0/2/0 | 1 / 4 | 0 |
+| 20 | 0.894 -> 0.883 | 0.233 -> 0.000 | 3 -> 6 | 40.9 -> 45.2 | 14.0 -> 17.0 | 183.7 -> 143.8 | 2502 -> 2512 | 0 | 0/3/2 -> 0/3/2 | 28 / 58 | 1 |
+| 21 | 0.760 -> 0.746 | 0.000 -> 0.000 | 5 -> 6 | 93.0 -> 98.3 | 27.0 -> 27.0 | 130.5 -> 145.3 | 3257 -> 3482 | 0 | 7/10/5 -> 9/13/5 | 28 / 57 | 1 |
+| 90 | 0.863 -> 0.865 | 0.220 -> 0.220 | 4 -> 4 | 70.1 -> 69.1 | 22.0 -> 22.0 | 94.4 -> 129.5 | 3315 -> 3339 | 0 | 1/3/1 -> 0/5/2 | 88 / 114 | 0 |
+| 108 | 0.879 -> 0.882 | 0.225 -> 0.000 | 4 -> 6 | 69.8 -> 67.8 | 22.0 -> 22.0 | 138.6 -> 140.9 | 3723 -> 3673 | 0 | 0/5/1 -> 0/5/0 | 133 / 153 | 1 |
+
+**materiality base alone (surrogate off)**
+
+| cell | service | p10 | breaches | unmet | worst | inventory | cost | starved | joint req/built/chosen | lat p95 / max s | abstentions |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 15 | 0.980 -> 0.980 | 0.962 -> 0.962 | 1 -> 1 | 5.0 -> 5.0 | 4.2 -> 4.2 | 46.1 -> 46.1 | 1678 -> 1678 | 0 | 0/1/0 -> 0/1/0 | 1 / 2 | 0 |
+| 16 | 0.972 -> 0.972 | 1.000 -> 1.000 | 1 -> 1 | 7.0 -> 7.0 | 7.0 -> 7.0 | 134.5 -> 134.5 | 1515 -> 1515 | 0 | 0/2/0 -> 0/2/0 | 1 / 4 | 0 |
+| 20 | 0.894 -> 0.884 | 0.233 -> 0.000 | 3 -> 6 | 40.9 -> 44.9 | 14.0 -> 17.0 | 183.7 -> 144.0 | 2502 -> 2518 | 0 | 0/3/2 -> 0/3/2 | 28 / 57 | 1 |
+| 21 | 0.760 -> 0.746 | 0.000 -> 0.000 | 5 -> 6 | 93.0 -> 98.3 | 27.0 -> 27.0 | 130.5 -> 145.3 | 3257 -> 3483 | 0 | 7/10/5 -> 9/13/5 | 28 / 57 | 1 |
+| 90 | 0.863 -> 0.863 | 0.220 -> 0.220 | 4 -> 4 | 70.1 -> 70.1 | 22.0 -> 22.0 | 94.4 -> 95.8 | 3315 -> 3317 | 0 | 1/3/1 -> 1/3/1 | 78 / 114 | 0 |
+| 108 | 0.879 -> 0.884 | 0.225 -> 0.241 | 4 -> 5 | 69.8 -> 66.9 | 22.0 -> 22.0 | 138.6 -> 142.4 | 3723 -> 3665 | 0 | 0/5/1 -> 0/5/0 | 132 / 153 | 0 |
+
+Reading. Required starvation is zero in every arm and cell 21's recovery behaviour (joint
+recovery required and chosen) is intact throughout, but the six-cell check is not safe in any of
+them. With the surrogate in every state cell 21 loses 1.4 points of service (5 -> 6 breaches,
+cost +10%) and cell 108 doubles its inventory (139 -> 270) with two more breaches. Lean-only
+scoping removes the 108 inventory effect but cell 20 goes from 3 to 6 breaches, cell 21 keeps its
+loss and cell 90 rises above its recorded band (94-124) to 130. The materiality-base change alone
+reproduces the 20 and 21 movement (one abstention each, in lean reviews, costing service later)
+while 15, 16, 90 and 108 stay on the record, so that change is reverted. The surrogate is then
+the only new mechanism, and on cells 20 and 21 its lean-review protection changes the path into
+the disruption reviews that follow, where P0's own rules take over from a different state.
+Product defaults are therefore restored exactly to the state at 0e47afd (surrogate off), whose
+six-cell record (arm `neither`, D4) reproduces P0 on 15, 16, 20 and 90 and sits inside the bands
+on 21 and 108.
+
+## F8. Defaults after this pass
+
+| field | default | fixtures declare | reason |
+|---|---|---|---|
+| `analytic_shortage` (new) | False | True | corrects a proven valuation defect (F4, F5) but is not P0-safe (F7) |
+| materiality thresholds | .01 / .05 / .005, inventory axis against the incumbent's carried value | same | the period-demand base fired on P0 cells 20 and 21 (F7); the known consequence is that a lean incumbent carrying a few units reads a one-unit change as material (fixture A intervenes 28 of 33 reviews when the surrogate is on) |
+| `stratified_scenarios` | False (per-period LHS when on) | True | E9 |
+| `timing_tiebreak` | 0 | 1e-4 | cell 108 starvation (D4) |
+| `service_gate_basis` | incumbent | incumbent | C6 |
+| smoothing | .02, off with explicit order economics | 0 | C6 |
+
+## F9. Full A-T (section P), attribution, runtime, tests, verdict
+
+Product defaults (surrogate off; identical behaviour to 0e47afd), `P1_RESULT_TABLE_none_product_defaults.md`: **17 / 20**.
+
+| fixture | best baseline | ZAAD P1 | delta | checks |
+|---|---|---|---|---|
+| A_no_terms_good_incumbent | 5,824 (incumbent) | 5,829 | +0.09% | PASS |
+| B_fixed_order_cost_replace_sold | 6,995 (economic_lot) | 6,341 | -9.35% | PASS |
+| C_moq_four_weeks | 5,898 (reorder_point) | 5,914 | +0.27% | PASS |
+| D_case_multiple | 5,807 (incumbent) | 5,773 | -0.58% | PASS |
+| E_pallet_multiple | 6,239 (incumbent) | 6,239 | -0.00% | PASS |
+| F_mov_two_skus | 11,766 (periodic:2) | 11,746 | -0.17% | PASS |
+| G_freight_tiers | 16,720 (economic_lot) | 15,346 | -8.21% | PASS |
+| H_per_pallet_freight | 6,826 (periodic:2) | 6,551 | -4.04% | PASS |
+| I_max_pallets_ftl_cap | 9,814 (economic_lot) | 9,866 | +0.53% | PASS |
+| J_net60_cost_of_capital | 6,850 (periodic:2) | 6,093 | -11.06% | PASS |
+| K_deposit_early_cash | 6,862 (periodic:2) | 6,093 | -11.20% | PASS |
+| L_high_holding_rate | 6,856 (periodic:2) | 6,221 | -9.26% | PASS |
+| M_order_calendar_wednesday | 6,256 (incumbent) | 6,209 | -0.76% | PASS |
+| N_long_lead_21_days | 5,937 (incumbent) | 5,940 | +0.05% | FAIL: categories |
+| O_low_opening_stock | 6,399 (reorder_point) | 6,448 | +0.77% | PASS |
+| P_high_opening_stock | 5,786 (reorder_point) | 5,904 | +2.04% | FAIL: zaad_not_worse |
+| Q_volatile_demand_high_target | 5,971 (incumbent) | 5,971 | +0.01% | PASS |
+| R_asymmetric_prices_mov | 63,448 (incumbent) | 63,425 | -0.04% | FAIL: categories |
+| S_cash_constrained | 6,234 (economic_lot) | 6,250 | +0.25% | PASS |
+| T_combined_realistic | 17,593 (economic_lot) | 15,300 | -13.04% | PASS |
+
+Declared fixture settings (surrogate on, per-period LHS on, tie-break 1e-4), `P1_RESULT_TABLE_none.md`: **16 / 20**.
+
+| fixture | best baseline | ZAAD P1 | delta | checks |
+|---|---|---|---|---|
+| A_no_terms_good_incumbent | 5,824 (incumbent) | 5,838 | +0.25% | FAIL: action |
+| B_fixed_order_cost_replace_sold | 6,995 (economic_lot) | 6,265 | -10.43% | PASS |
+| C_moq_four_weeks | 5,898 (reorder_point) | 6,082 | +3.13% | FAIL: zaad_not_worse |
+| D_case_multiple | 5,807 (incumbent) | 5,773 | -0.59% | PASS |
+| E_pallet_multiple | 6,239 (incumbent) | 6,239 | +0.00% | PASS |
+| F_mov_two_skus | 11,766 (periodic:2) | 11,860 | +0.79% | PASS |
+| G_freight_tiers | 16,720 (economic_lot) | 15,409 | -7.84% | PASS |
+| H_per_pallet_freight | 6,826 (periodic:2) | 6,475 | -5.14% | PASS |
+| I_max_pallets_ftl_cap | 9,814 (economic_lot) | 9,856 | +0.43% | PASS |
+| J_net60_cost_of_capital | 6,850 (periodic:2) | 6,086 | -11.15% | PASS |
+| K_deposit_early_cash | 6,862 (periodic:2) | 6,087 | -11.30% | PASS |
+| L_high_holding_rate | 6,856 (periodic:2) | 6,180 | -9.85% | PASS |
+| M_order_calendar_wednesday | 6,256 (incumbent) | 6,152 | -1.66% | PASS |
+| N_long_lead_21_days | 5,937 (incumbent) | 5,899 | -0.64% | FAIL: categories |
+| O_low_opening_stock | 6,399 (reorder_point) | 6,393 | -0.09% | PASS |
+| P_high_opening_stock | 5,786 (reorder_point) | 5,790 | +0.07% | PASS |
+| Q_volatile_demand_high_target | 5,971 (incumbent) | 5,962 | -0.15% | PASS |
+| R_asymmetric_prices_mov | 63,448 (incumbent) | 63,573 | +0.20% | FAIL: categories |
+| S_cash_constrained | 6,234 (economic_lot) | 6,173 | -0.98% | PASS |
+| T_combined_realistic | 17,593 (economic_lot) | 14,945 | -15.05% | PASS |
+
+Interpretation, per fixture: P under product defaults is the genuine remaining failure (+2.04%,
+four hundredths outside the gate) and the mechanism is proven and corrected by the surrogate
+(P +0.07% with it on); C with the surrogate on is the finite-horizon MOQ artefact (D5) amplified
+by lot-sized protection (+2.59% at product defaults with the surrogate, +0.75% at full terminal
+value) plus one P0 stress-gate retention under the nil stress; A with the surrogate on is the
+materiality inventory-axis scale defect (interventions worth +0.25%); N and R are the attribution
+expectations proven invalid (C7); every other fixture passes under both records.
+
+Attribution: exact partition on every gated cell of both records (residual zero); invariants 60 /
+60; no unexplained inventory jump (P's protection is SERVICE_PROTECTION, the C order that carries
+OTHER_EXPLAINED units is the 678-unit horizon lot already documented). Runtime, product defaults:
+p50 0.10 s, p95 1.41 s, max 16.6 s per review; with the surrogate p50 0.11 s, p95 1.95 s,
+max 19.8 s: the cut envelope adds one variable and one row per atom per period to a
+single-world solve and no measurable time. Tests: 1455 passed, 2 skipped (17 shortage tests, the
+adversarial set among them; nothing skipped that was not skipped at 0e47afd). Invariants: 60 / 60.
+P0 six-cell under product defaults: the frozen record (D4, arm `neither`).
+
+**Verdict: P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.**
+
+Exact reason. Freeze-gate item 1 (P <= 2%) fails under product defaults by 0.04 points, and the
+mechanism that corrects it, the analytic expected-shortage surrogate, fails item 7 (P0 six-cell
+safe) in every scope tried and, on the fixtures, moves C outside the gate through the documented
+window artefact. The surrogate is a derived, exact, objective-only correction of a real valuation
+defect (the mean-world candidate prices no expected shortage and wins a three-world comparison it
+loses in expectation), and it ships as an opt-in request setting with its tests; it does not ship
+as a default. Nothing was tuned to P, no tolerance, fixture, expectation, seed or baseline was
+changed, and the materiality-base change that would have made fixture A abstain was reverted
+because it fired on P0 cells 20 and 21.
+
+Best next intervention (not executed): understand why lean-review protection on cells 20 and 21
+changes the path into their disruption reviews (a state-sequence question in P0's screen, not an
+economics question), and decide the benchmark's terminal valuation, which is what holds C.
