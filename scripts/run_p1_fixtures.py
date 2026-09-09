@@ -214,6 +214,7 @@ def main():
     ap.add_argument("--smoothing", type=float, default=0.)
     ap.add_argument("--product-defaults", action="store_true", help="drop the declared P1 fixture settings (stratified worlds, tie-break) and run at product defaults")
     ap.add_argument("--terminal", default="salvage", choices=("salvage", "continuation"), help="parity evaluation of residual stock: realised salvage ledger, or with the finite-horizon continuation adjustment")
+    ap.add_argument("--tag", default="", help="suffix for the result table / expectation / runtime file names, so an earlier record is never overwritten")
     a = ap.parse_args()
     global TERMINAL_ARM
     TERMINAL_ARM = a.terminal
@@ -221,7 +222,7 @@ def main():
     STRESS_ARM, GATE_ARM, SMOOTHING_ARM = a.stress, a.gate, a.smoothing
     global PRODUCT_DEFAULTS
     PRODUCT_DEFAULTS = a.product_defaults
-    arm = a.stress + ("" if a.gate == "default" else "_gate_" + a.gate) + ("" if a.smoothing == 0 else f"_smoothing_{a.smoothing:g}") + ("_product_defaults" if a.product_defaults else "") + ("" if a.terminal == "salvage" else "_terminal_" + a.terminal)
+    arm = a.stress + ("" if a.gate == "default" else "_gate_" + a.gate) + ("" if a.smoothing == 0 else f"_smoothing_{a.smoothing:g}") + ("_product_defaults" if a.product_defaults else "") + ("" if a.terminal == "salvage" else "_terminal_" + a.terminal) + ("_" + a.tag if a.tag else "")
     names = [n for n in a.fixtures.split(",") if n] or list(FIXTURES)
     policies = [p for p in a.policies.split(",") if p]
     jobs = [(n, p, s) for n in names for p in policies for s in SEEDS]

@@ -27,14 +27,19 @@ from __future__ import annotations
 from zaad.full.contracts import Request
 
 
-def continuation_value(req: Request, end_stock: list[dict], pending: list, fits: dict, window_end: int = 1) -> dict:
+def continuation_value(req: Request, end_stock: list[dict], pending: list, fits: dict, window_end: int = 1,
+                       landed: dict[str, float] | None = None) -> dict:
     """Value residual stock beyond the window. `end_stock` rows are the last settlement's
     (sku, location, expiry, quantity); `pending` its in-transit tuples (sku, location, expiry, due,
     quantity, kind); `fits` the last review's forecast (mean per service). Returns the salvage credit
     the ledger already holds, the continuation credit, and the adjustment (continuation minus
     salvage, as a cost delta: negative when the stock is worth more than salvage). `window_end` is the
     settlement step count of the last review (1 in a rolling replay): due and expiry indices in the
-    settlement are counted from that review's period 0, so post-window time is offset by it."""
+    settlement are counted from that review's period 0, so post-window time is offset by it. `landed`
+    (optional, per SKU) is the unit cost the consumption of a residual unit avoids when that cost is
+    more than the bare unit price: price plus the freight, ordering and receiving cost per unit the
+    policy actually incurred (benchmark pass J correction 1). Carrying stays on the asset value, as
+    the ledger charges it. Without `landed` the avoided purchase is `asset_value`, as before."""
     skus = {s.id: s for s in req.skus}
     locs = {l.id: l for l in req.locations}
     mu: dict[tuple[str, str], float] = {}
@@ -51,7 +56,8 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
     detail = {}
     for key, rows in lots.items():
         sku, location = key
-        price, salvage = skus[sku].asset_value, skus[sku].terminal_value
+        asset, salvage = skus[sku].asset_value, skus[sku].terminal_value
+        price = max(asset, (landed or {}).get(sku, asset))
         rate = float(locs[location].holding_per_value_period + req.liquidity.cost_of_capital_per_period)
         demand = mu.get(key, 0.)
         consumed_before = 0.       # units consumed ahead of the lot being valued
@@ -74,7 +80,7 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
                 if tau >= expiry:
                     value_here += q * salvage
                 else:
-                    value_here += q * min(price, max(salvage, price * (1. - rate * tau)))
+                    value_here += q * min(price, max(salvage, price - asset * rate * tau))
                     consumed_units += q
             consumed_before += quantity
         salvage_credit += salvage_here

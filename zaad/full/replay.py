@@ -98,9 +98,22 @@ def choose(req: Request, method: str) -> Solution:
     return result
 
 
-def replay(initial: Request, truth: World, reviews: int, method: str, keep_requests: list | None = None) -> dict:
-    if reviews > initial.horizon:
+def replay(initial: Request, truth: World, reviews: int, method: str, keep_requests: list | None = None,
+           rolling: bool = False) -> dict:
+    """Legacy mode (default): the planning horizon shrinks by one period per review (H-1 convention) and
+    the truth must cover `reviews` periods. Rolling mode (`rolling=True`, P1 benchmark evaluation): every
+    review replans on a fresh full-horizon snapshot, as production replanning does; declared
+    period-indexed data roll forward by repeating their last declared value, committed future payments
+    roll into `other_payments` at their due period, and the truth must cover `reviews - 1 + horizon`
+    periods (see `zaad.full.evaluation.long_truth`). Nothing else differs between the modes."""
+    truth_periods = min(len(v) for v in truth.demand.values()) if truth.demand else initial.horizon
+    if rolling:
+        if reviews - 1 + initial.horizon > truth_periods:
+            raise ValueError("truth shorter than the rolling window plus the planning horizon")
+    elif reviews > initial.horizon:
         raise ValueError("truth horizon shorter than replay")
+    last_truth = (truth_periods if rolling else initial.horizon) - 1
+    deferred: dict[int, float] = {}      # rolling mode: committed payments due beyond the next snapshot, by absolute period
     req = initial
     private = {p.id: (truth.po_due[p.id], truth.po_fill[p.id]) for p in initial.pipeline}
     reviews_log: list[dict] = []
@@ -175,8 +188,8 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
         H = req.horizon
         # The current review's exogenous truth is not supplied to choose().
         demand = {s.id: tuple(list(truth.demand[s.id][t:]) + [0.] * t)[:H] for s in req.services}
-        arrival = {(s.id, k): truth.arrival[s.id, min(t + k, initial.horizon - 1)] - t for s in req.sources for k in range(H)}
-        fills = {(s.id, k): truth.fills[s.id, min(t + k, initial.horizon - 1)] for s in req.sources for k in range(H)}
+        arrival = {(s.id, k): truth.arrival[s.id, min(t + k, last_truth)] - t for s in req.sources for k in range(H)}
+        fills = {(s.id, k): truth.fills[s.id, min(t + k, last_truth)] for s in req.sources for k in range(H)}
         world = World(f"truth-review-{t}", 1., demand, arrival, fills,
                       {p.id: max(0, private[p.id][0] - t) for p in req.pipeline}, {p.id: private[p.id][1] for p in req.pipeline})
         try:
@@ -286,15 +299,34 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
              "origin": next(a.origin for a in req.transfers if a.sku == sku and a.destination == location),
              "destination": location, "accepted_quantity": quantity, "due_in": max(0, due - 1), "expires_in": expiry - 1}
             for n, (sku, location, expiry, due, quantity, kind) in enumerate(outcome["pending"]) if kind == "transfer"]
-        # Replay does not fabricate new financial data: finite input horizon shrinks.
-        data["horizon"] = H - 1
-        for name in ("sources", "resources"):
-            data[name] = [{**r.model_dump(), "capacity_by_period": r.capacity_by_period[1:]} for r in getattr(req, name)]
-        liquidity = req.liquidity.model_dump()
         future = outcome["future_payments"]
-        liquidity.update(known_at=now, opening_cash=outcome["trace"][0]["cash"], opening_debt=outcome["trace"][0]["debt"],
-                         known_receivables=req.liquidity.known_receivables[1:],
-                         other_payments=tuple(req.liquidity.other_payments[k] + future.get(k, 0.) for k in range(1, H)))
+        if rolling:
+            # Constant planning horizon: declared period data roll forward by repeating their last declared
+            # value; every committed payment is kept and lands in `other_payments` at its due period.
+            next_h = H
+            data["horizon"] = H
+            for name in ("sources", "resources"):
+                data[name] = [{**r.model_dump(), "capacity_by_period": [*r.capacity_by_period[1:], r.capacity_by_period[-1]]} for r in getattr(req, name)]
+            for k, v in future.items():
+                if k > H:
+                    deferred[t + k] = deferred.get(t + k, 0.) + v
+            other = [req.liquidity.other_payments[k] + future.get(k, 0.) for k in range(1, H)] + [future.get(H, 0.)]
+            for j in range(H):
+                other[j] += deferred.pop(t + 1 + j, 0.)
+            liquidity = req.liquidity.model_dump()
+            liquidity.update(known_at=now, opening_cash=outcome["trace"][0]["cash"], opening_debt=outcome["trace"][0]["debt"],
+                             known_receivables=[*req.liquidity.known_receivables[1:], req.liquidity.known_receivables[-1]],
+                             other_payments=tuple(other))
+        else:
+            # Replay does not fabricate new financial data: finite input horizon shrinks.
+            next_h = H - 1
+            data["horizon"] = H - 1
+            for name in ("sources", "resources"):
+                data[name] = [{**r.model_dump(), "capacity_by_period": r.capacity_by_period[1:]} for r in getattr(req, name)]
+            liquidity = req.liquidity.model_dump()
+            liquidity.update(known_at=now, opening_cash=outcome["trace"][0]["cash"], opening_debt=outcome["trace"][0]["debt"],
+                             known_receivables=req.liquidity.known_receivables[1:],
+                             other_payments=tuple(req.liquidity.other_payments[k] + future.get(k, 0.) for k in range(1, H)))
         data["liquidity"] = liquidity
         data["events"] = [{**e.model_dump(), "start": max(0, e.start - 1), "end": e.end - 1} for e in req.events if e.end >= 1]
         data["order_lines"] = [{**line.model_dump(), "due_in": line.due_in - 1} for line in req.order_lines if line.due_in >= 1]
@@ -302,7 +334,7 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
         # period, is the declared incumbent for the next review. A retained proxy carries nothing.
         if req.carry_incumbent and method in {"gated", "gated_pr30", "gated_pr24", "gated_v4", "gated_v5"} and solution.warnings and solution.warnings[0] == "PENDING_REVIEW":
             data["incumbent_orders"] = [{"known_at": now, "source": source_id, "period": period - 1, "quantity": q}
-                                        for (source_id, period), q in solution.purchases.items() if period >= 1 and period - 1 < H - 1 and q > 0]
+                                        for (source_id, period), q in solution.purchases.items() if period >= 1 and period - 1 < next_h and q > 0]
         else:
             data["incumbent_orders"] = []
         req = Request.model_validate(data)
