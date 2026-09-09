@@ -28,6 +28,7 @@ COMPONENT_OF = {
     "sla": "SHORTAGE", "lost_sales_opportunity": "SHORTAGE",
     "substitution": "OTHER", "transfer": "OTHER",
     "opening_assets": "INVENTORY_VALUE_CHANGE", "closing_assets": "INVENTORY_VALUE_CHANGE",
+    "terminal_continuation": "INVENTORY_VALUE_CHANGE",   # P1 lot-sizing terminal valuation on evaluation rows (planner.evaluate)
 }
 COMPONENTS = ("PURCHASE", "FREIGHT", "ORDERING", "RECEIVING", "CARRYING", "FINANCING", "SHORTAGE", "OTHER", "INVENTORY_VALUE_CHANGE")
 CATEGORIES = ("LEAD_TIME_EXPOSURE", "DEMAND_CYCLE", "SERVICE_PROTECTION", "MOQ", "CASE_ROUNDING", "PALLET_ROUNDING",

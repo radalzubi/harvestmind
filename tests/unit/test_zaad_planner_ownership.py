@@ -174,8 +174,10 @@ def test_11_p0_ownership_generates_no_p1_side_effect(p_requests, cell20):
 
 def test_12_p1_candidates_are_bit_identical_to_the_existing_forced_classes(p_requests):
     """At a P1-owned NO_ACTION review the scenario plan the router requests is the existing class,
-    identical to the screen requesting it, and the mean-world plan is unchanged."""
-    req = p_requests[4]
+    identical to the screen requesting it, and the mean-world plan is unchanged. Routing identity is
+    tested with the lot-sizing terminal valuation off on both sides: that valuation is the declared
+    P1 change of the benchmark / horizon closure pass (`test_zaad_lotsizing`), not part of routing."""
+    req = p_requests[4].model_copy(update={"lot_terminal_valuation": False})
     rep, t = _traced(req)
     assert rep["orchestration"]["planner_owner"] == PURCHASING_ECONOMICS
     assert rep["orchestration"]["state"] == "NO_ACTION"

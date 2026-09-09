@@ -586,6 +586,14 @@ class Request(Record):
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.
     terminal_continuation: bool = False
+    # Lot-sizing terminal valuation (P1 benchmark / horizon closure pass). On a review the P1 purchasing
+    # planner owns, end-of-plan stock and committed arrivals are valued in every candidate solve and
+    # evaluation at the landed cost of the purchase they avoid (unit price plus the order, tariff and
+    # receiving cost per unit of one economic lot), less carrying and cost of capital until consumption,
+    # never below salvage (`zaad/full/lotsizing.py`). Without it a twelve-period plan is indifferent to
+    # the size of its first lot and defers the full load, which a rolling operator never then buys
+    # (fixtures I, G, T: 6-7% dearer than a full-load buyer over a year). P0-owned reviews are unaffected.
+    lot_terminal_valuation: bool = True
     mode: Literal["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] = "LEAN"
     evidence_label: Literal["SYNTHETIC", "OPERATOR-SHADOW"]
 

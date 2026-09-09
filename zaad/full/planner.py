@@ -124,14 +124,24 @@ def targets(req: Request, buffer: float = 1.645) -> dict:
     return orders
 
 
-def evaluate(req, solution, worlds):
+def evaluate(req, solution, worlds, terminal: dict[str, float] | None = None, fits: dict | None = None):
     """Gate evaluation on a world set. Later-period transfers are guidance: on a world where the
     feeding receipt lands late they are reduced to available stock and the reduction is
-    recorded, rather than failing a plan whose period-zero actions are perfectly legal."""
+    recorded, rather than failing a plan whose period-zero actions are perfectly legal.
+    `terminal` (P1-owned reviews only): landed unit cost per SKU; the row's economic cost then values
+    the stock left at the end of the plan by the landed-cost continuation rule (`zaad/full/terminal.py`)
+    instead of the settlement's salvage credit, so every candidate and the incumbent are compared under
+    the same terminal economics the plan was optimised on. The settlement itself is unchanged."""
     rows = []
     for world in worlds:
         try:
             result = settle(req, solution, world, future_guidance=True)
+            if terminal:
+                from zaad.full.terminal import continuation_value
+                adjustment = continuation_value(req, result["end_stock"], result["pending"], fits, window_end=req.horizon, landed=terminal)["adjustment"]
+                # carried in the row's ledger too (INVENTORY_VALUE_CHANGE), so components still reconcile
+                result = {**result, "economic_cost": result["economic_cost"] + adjustment, "terminal_adjustment": adjustment,
+                          "ledger": {**result["ledger"], "terminal_continuation": adjustment}}
             rows.append({"world": world.name, "weight": world.weight, "usable": True, **result})
         except PhysicalViolation as exc:
             rows.append({"world": world.name, "weight": world.weight, "usable": False, "reason": str(exc)})
@@ -663,8 +673,18 @@ def plan(req: Request) -> dict:
     ownership = (planner_owner(req, protection, screen_result) if req.planner_ownership
                  else {"owner": PROTECTION_RECOVERY, "reasons": ["planner ownership routing is off: frozen path"], "scope": "routing off"})
     p1_added: list[str] = []
+    p1_terminal: dict[str, float] | None = None
     if ownership["owner"] == PURCHASING_ECONOMICS:
         required, optional, p1_added = purchasing_candidates(screen_result["state"], required, optional)
+        if req.lot_terminal_valuation:
+            # Lot-sizing terminal valuation (P1 benchmark / horizon closure pass): end-of-plan stock and
+            # committed arrivals are worth the landed purchase they avoid, less carrying, never below
+            # salvage, in every candidate solve and in every candidate evaluation of this review.
+            from zaad.full.lotsizing import landed_unit_costs, terminal_terms
+            p1_terminal = landed_unit_costs(req, fits)
+            lot_terms = terminal_terms(req, fits)
+            if lot_terms:
+                v6 = {**v6, "continuation": lot_terms}
     # Cadence candidates (P1). When a supplier carries order-level economics (fixed order cost, MOV,
     # freight tariff) the review may be better served by ordering every k periods than by the
     # per-period cadence the incumbent runs. They are optional classes: skipping one is never
@@ -764,9 +784,9 @@ def plan(req: Request) -> dict:
     if req.protection_v6 and (not req.adaptive_escalation or screen_result["state"] in ("NETWORK_ALLOCATION", "ESCALATE_UNKNOWN")):
         joint_fitted = solve(req, selection, service_first="all", seed=incumbent, **v6)
         if joint_fitted.usable_plan:
-            joint_fitted_rows = evaluate(req, joint_fitted, selection)
+            joint_fitted_rows = evaluate(req, joint_fitted, selection, terminal=p1_terminal, fits=fits)
 
-    selection_rows = {name: evaluate(req, candidate, selection) for name, candidate in candidates.items() if candidate.usable_plan}
+    selection_rows = {name: evaluate(req, candidate, selection, terminal=p1_terminal, fits=fits) for name, candidate in candidates.items() if candidate.usable_plan}
     # Escalation on demand (v8): the feasibility frontier is only expensive when it is not needed.
     # If nothing in the minimum safe set meets every requested service target, the joint solve is
     # precisely the evidence required to say whether the miss was avoidable, so it is built now
@@ -779,12 +799,12 @@ def plan(req: Request) -> dict:
             compute["attempts"]["joint_recovery"] = recovery
             if recovery.usable_plan:
                 candidates["joint_recovery"] = recovery
-                selection_rows["joint_recovery"] = evaluate(req, recovery, selection)
+                selection_rows["joint_recovery"] = evaluate(req, recovery, selection, terminal=p1_terminal, fits=fits)
             if not joint_fitted_rows:
                 joint_fitted = solve(req, selection, service_first="all", seed=incumbent, **v6)
                 if joint_fitted.usable_plan:
-                    joint_fitted_rows = evaluate(req, joint_fitted, selection)
-    stress_rows = {name: evaluate(req, candidate, stress_worlds) for name, candidate in candidates.items()
+                    joint_fitted_rows = evaluate(req, joint_fitted, selection, terminal=p1_terminal, fits=fits)
+    stress_rows = {name: evaluate(req, candidate, stress_worlds, terminal=p1_terminal, fits=fits) for name, candidate in candidates.items()
                    if candidate.usable_plan and stress_weight > 0}
     feasible = [name for name, rows in selection_rows.items() if service_ok(req, rows) and name not in EXCLUDE_FROM_SELECTION]
 
@@ -922,7 +942,7 @@ def plan(req: Request) -> dict:
     elif incumbent.usable_plan:
         # Impossible SLA: rank every usable candidate by priority-weighted shortfall (cost breaks ties)
         # and take the best one only if it beats the incumbent by a material margin.
-        incumbent_selection = selection_rows.get("incumbent", evaluate(req, incumbent, selection))
+        incumbent_selection = selection_rows.get("incumbent", evaluate(req, incumbent, selection, terminal=p1_terminal, fits=fits))
         for name, rows in selection_rows.items():
             if name == "incumbent":
                 continue
@@ -965,8 +985,8 @@ def plan(req: Request) -> dict:
                            for name, c in candidates.items()},
             "feasible": list(feasible), "chosen": chosen, "recovery_mode": recovery_mode})
     confirmation = draw(req_draw, req.seed + 10000, req.scenarios)
-    incumbent_rows = evaluate(req, incumbent, confirmation) if incumbent.usable_plan else []
-    candidate_rows = evaluate(req, candidates[chosen], confirmation) if candidates[chosen].usable_plan else []
+    incumbent_rows = evaluate(req, incumbent, confirmation, terminal=p1_terminal, fits=fits) if incumbent.usable_plan else []
+    candidate_rows = evaluate(req, candidates[chosen], confirmation, terminal=p1_terminal, fits=fits) if candidates[chosen].usable_plan else []
     reasons, stress_report = [], []
     benefit_lower = None
     blocking: dict = {"downside": False, "stress": False, "reasons": []}
@@ -1111,8 +1131,8 @@ def plan(req: Request) -> dict:
 
     for i, stress in enumerate(req.stresses):
         adversaries = draw(req_draw, req.seed + 30000 + i, req.scenarios, stress)
-        before = evaluate(req, incumbent, adversaries) if incumbent.usable_plan else []
-        after = evaluate(req, candidates[chosen], adversaries) if candidates[chosen].usable_plan else []
+        before = evaluate(req, incumbent, adversaries, terminal=p1_terminal, fits=fits) if incumbent.usable_plan else []
+        after = evaluate(req, candidates[chosen], adversaries, terminal=p1_terminal, fits=fits) if candidates[chosen].usable_plan else []
         physically_ok = bool(after) and all(r["usable"] for r in after)
         downside_ok = physically_ok and bool(before) and all(r["usable"] for r in before)
         if downside_ok:
@@ -1146,7 +1166,7 @@ def plan(req: Request) -> dict:
     chosen_meets = bool(candidate_rows) and service_ok(req, candidate_rows)
     if not recovery_mode and not accepted:
         for alternative in sorted((n for n in feasible if n not in {chosen, "incumbent"}), key=lambda n: (hedged_cost(n), list(candidates).index(n))):
-            rows = evaluate(req, candidates[alternative], confirmation)
+            rows = evaluate(req, candidates[alternative], confirmation, terminal=p1_terminal, fits=fits)
             passes = service_ok(req, rows) and bool(incumbent_rows) and all(r["usable"] for r in incumbent_rows)
             lower = None
             if passes:
@@ -1154,8 +1174,8 @@ def plan(req: Request) -> dict:
             checks: list[dict[str, Any]] = []
             for i, stress in enumerate(req.stresses):
                 worlds = draw(req_draw, req.seed + 30000 + i, req.scenarios, stress)
-                before = evaluate(req, incumbent, worlds) if incumbent.usable_plan else []
-                after = evaluate(req, candidates[alternative], worlds)
+                before = evaluate(req, incumbent, worlds, terminal=p1_terminal, fits=fits) if incumbent.usable_plan else []
+                after = evaluate(req, candidates[alternative], worlds, terminal=p1_terminal, fits=fits)
                 usable_after = bool(after) and all(r["usable"] for r in after)
                 valid = usable_after and bool(before) and all(r["usable"] for r in before)
                 if valid:
@@ -1232,8 +1252,8 @@ def plan(req: Request) -> dict:
 
     eta = {p.id: asdict(conditional_eta(req.shipment_history, p.source, max(0, (req.as_of - p.placed_at).days), p.stage, p.carrier)) for p in req.pipeline}
     fingerprint = hashlib.sha256(req.model_dump_json().encode()).hexdigest()
-    recovery_rows = evaluate(req, recovery, confirmation) if recovery.usable_plan else []
-    final_rows = evaluate(req, final, confirmation) if final is not None else []
+    recovery_rows = evaluate(req, recovery, confirmation, terminal=p1_terminal, fits=fits) if recovery.usable_plan else []
+    final_rows = evaluate(req, final, confirmation, terminal=p1_terminal, fits=fits) if final is not None else []
 
     # Service reliability, tracked separately from economics.
     customers = {c.id: c for c in req.customers}
@@ -1388,6 +1408,7 @@ def plan(req: Request) -> dict:
                 **_completeness(req, candidates, selection_rows, compute),
                 "candidate_classes_requested": compute["requested"],
                 "planner_owner": ownership["owner"], "ownership_reasons": ownership["reasons"],
+                "p1_terminal_landed": p1_terminal,
                 "p1_classes_added": list(p1_added),
                 "candidate_classes_skipped": sorted(set(compute["skipped"])),
                 "candidates_built": sorted(n for n in candidates if n not in ("incumbent", "base_stock")),
