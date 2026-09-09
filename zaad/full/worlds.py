@@ -94,10 +94,11 @@ def forecast_all(req: Request, adaptive: bool = True) -> dict:
 # (tail world still added); STRATIFY_WEIGHTS False gives every world weight 1/count.
 STRATIFY_BODY = True
 STRATIFY_WEIGHTS = True
-# When True the stratified uniforms come from a generator of their own (seeded from the draw seed),
-# so the supply shocks drawn after demand are the same stream as an unstratified draw. Diagnostic
-# default False reproduces the coupled behaviour under investigation.
-STRATIFY_DECOUPLED_RNG = False
+# When True (shipped) a stratified draw consumes the random stream exactly as an unstratified draw
+# does, so every supply shock, PO due date and level draw is the same sample whether or not the
+# demand strata are used: a demand representation must not change the supply sample. False is the
+# coupled behaviour of the first closure pass, kept only to reproduce its cell-90 arms.
+STRATIFY_DECOUPLED_RNG = True
 
 
 def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
@@ -115,19 +116,24 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
     stratified = bool(req.stratified_scenarios) and count >= 2 and not deterministic
     q_tail = min((s.target for s in req.services), default=.95) if stratified else None
     weights = ([q_tail / (count - 1)] * (count - 1) + [1. - q_tail]) if (stratified and STRATIFY_WEIGHTS) else [1. / count] * count
-    rng_strata = np.random.default_rng(seed + 7_000_003) if (stratified and STRATIFY_DECOUPLED_RNG) else rng
+    rng_strata = rng
     for w in range(count):
         demand, arrival, fills, po_due, po_fill = {}, {}, {}, {}, {}
         for service in req.services:
             f = fits[service.id]
             if stratified:
                 lo, hi = (q_tail, 1.) if w == count - 1 else ((0., q_tail) if STRATIFY_BODY else (0., 1.))
-                d = sample(f, rng, req.horizon, u=lo + rng_strata.random(req.horizon) * (hi - lo))
-                if rng_strata is rng:
-                    pass
-                elif not deterministic:
-                    # keep the main stream aligned with an unstratified draw: consume what sample() would have
-                    rng.choice(np.asarray(f["sizes"]) if len(f["sizes"]) else np.zeros(1), req.horizon); rng.random(req.horizon)
+                if STRATIFY_DECOUPLED_RNG:
+                    # The strata uniforms are read from the stream, the stream is restored and then
+                    # consumed exactly as an unstratified draw consumes it, so every supply shock
+                    # drawn afterwards matches the unstratified draw.
+                    saved = rng.bit_generator.state
+                    u_strata = lo + rng.random(req.horizon) * (hi - lo)
+                    rng.bit_generator.state = saved
+                    sample(f, rng, req.horizon)      # consume as the unstratified path would
+                    d = sample(f, rng, req.horizon, u=u_strata)
+                else:
+                    d = sample(f, rng, req.horizon, u=lo + rng_strata.random(req.horizon) * (hi - lo))
             else:
                 d = np.full(req.horizon, f["mean"]) if deterministic else sample(f, rng, req.horizon)
             if reliability and req.protection_decay and not deterministic and f.get("uncertainty", {}).get("intermittent"):

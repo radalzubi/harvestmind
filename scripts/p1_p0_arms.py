@@ -51,6 +51,7 @@ ARMS = {
     "c90_strat_unweighted_stats": {"stratified_scenarios": True, "_switch": ("planner.WEIGHTED_STATS", False)},
     "c90_strat_body_iid": {"stratified_scenarios": True, "_switch": ("worlds.STRATIFY_BODY", False)},
     "c90_strat_decoupled": {"stratified_scenarios": True, "_switch": ("worlds.STRATIFY_DECOUPLED_RNG", True)},
+    "c90_strat_coupled": {"stratified_scenarios": True, "_switch": ("worlds.STRATIFY_DECOUPLED_RNG", False)},
 }
 
 

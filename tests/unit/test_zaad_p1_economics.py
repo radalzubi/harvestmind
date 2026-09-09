@@ -405,3 +405,13 @@ def test_stratified_worlds_make_the_plan_carry_attributable_protection():
     rows = order_waterfall(req, fits, prot, sol)
     assert rows and rows[0]["attribution"]["SERVICE_PROTECTION"] > 0
     assert rows[0]["under_need_units"] < rows[0]["justified_protection_units"]
+
+
+def test_stratified_draw_leaves_the_supply_sample_untouched():
+    # A demand representation must not change the supply sample: fills, arrivals and PO due dates
+    # are identical whether or not the demand strata are used (P1 diagnostic pass, cell 90).
+    req = p1_request()
+    off = draw(req.model_copy(update={"stratified_scenarios": False}), 38017, 3)
+    on = draw(req.model_copy(update={"stratified_scenarios": True}), 38017, 3)
+    assert all(a.fills == b.fills and a.arrival == b.arrival and a.po_due == b.po_due for a, b in zip(off, on))
+    assert on[-1].name.endswith(":tail") and on[-1].demand != off[-1].demand

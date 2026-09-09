@@ -422,13 +422,12 @@ class Request(Record):
     # Materiality for abstention (P1): a candidate that changes total modelled cost by less than
     # `materiality_cost_fraction`, carried inventory by less than `materiality_inventory_fraction`
     # and service by less than `materiality_service` is NO MATERIAL IMPROVEMENT, whatever its sign.
-    # Off by default (all zero): the abstention gate fires only when the operator declares
-    # thresholds. Bundled with the timing tie-break it moved P0 cells 21 and 90 on the six-cell set
-    # while the scenario representation alone did not, and the closure pass could not separate the
-    # two; the P1 fixtures declare .01 / .05 / .005.
-    materiality_cost_fraction: float = Field(default=0., ge=0, le=1)
-    materiality_inventory_fraction: float = Field(default=0., ge=0, le=1)
-    materiality_service: float = Field(default=0., ge=0, le=.1)
+    # Defaults .01 / .05 / .005 (P1 diagnostic pass): the gate alone is identical to P0 behaviour
+    # on every cell of the frozen six-cell set (it never fires there); the earlier bundled movement
+    # on cells 21 and 90 belonged to the timing tie-break, which stays opt-in.
+    materiality_cost_fraction: float = Field(default=.01, ge=0, le=1)
+    materiality_inventory_fraction: float = Field(default=.05, ge=0, le=1)
+    materiality_service: float = Field(default=.005, ge=0, le=.1)
     # Explicit cadence candidates (P1): purchases restricted to every 1, 2 or 4 periods, and to the
     # supplier's open order days, compared on total modelled cost against the free schedule.
     cadence_candidates: bool = True
@@ -444,9 +443,10 @@ class Request(Record):
     # fraction of the unit price per period of earliness added to the model objective only; it is
     # not an economic cost, never enters the settlement ledger, and at its default it is two
     # orders of magnitude below the smallest materiality the selector acts on.
-    # Default 0 (off): bundled with the materiality gate it moved P0 cells 21 and 90 on the
-    # six-cell set while the scenario representation alone did not, and this pass could not
-    # separate the two; opt in per request (the P1 fixtures use 1e-4).
+    # Default 0 (off). Alone on the frozen six-cell set it improves cells 15, 20 and 108 and is
+    # identical on 16 and 21, but cell 108 shows one starved required class (a time-limited solve
+    # with no usable plan once the ties are broken differently); starvation must stay zero, so it
+    # remains opt-in (the P1 fixtures use 1e-4).
     timing_tiebreak: float = Field(default=0., ge=0, le=1e-2)
     # Scenario representation (P1 closure). With S sampled worlds the plan can only protect against
     # the largest of S draws in each period, which for S=3 is the 79th percentile in the median

@@ -455,3 +455,322 @@ under product defaults. That is stated as such and is one of the reasons P1 rema
 **What was explicitly refused:** widening the 2% tolerance; editing C, O, P, their seeds, window, expectations or baselines; a generic safety margin; shipping any default that regressed a P0 cell; calling the C residual noise (it is the terminal haircut, same sign on every seed); calling the O/P finding noise (it was a systematic representation gap, now fixed under declared settings).
 
 **Best next intervention (not executed):** (1) separate the materiality gate from the tie-break on the P0 six-cell set (two arms, about an hour) so each can be judged for default on its own; (2) understand cell 90 under the stratified representation - why the tail world raises inventory without service on that truth path - before proposing it as default; (3) decide, as a benchmark-design question, whether end-of-window stock should be valued at continuation value rather than salvage, which is what keeps C at +2.3%.
+
+
+# DIAGNOSTIC PASS (2026-09-08, third pass on this close-out; from 673e3f8)
+
+## D1. Cell 90: first divergence (arm A = frozen P0 behaviour, arm B = representation + guard, lean reviews only)
+
+Traces: `closure/cell90_trace_p0_defaults.json`, `closure/cell90_trace_representation_only.json`
+(`scripts/p1_cell90_trace.py`, `scripts/p1_cell90_diff.py`). Cell 90: one SKU, one location, one
+source (no MOQ, no case pack, fill .97, lead 7 days), shared supplier and port capacity of 100 units
+per period, target .95, 26 reviews, declared stress "operator_adverse" (fill x0.7, +28 days, demand
+x1.1, recovery period 9, port), supply state "deterioration_recovery". Mechanisms 5 (MOQ / case
+pack) and 7 (cross-SKU allocation) cannot apply: there is no lot rule and one SKU; the only shared
+capacity is the 100-unit per-period cap, which matters below.
+
+Reviews 0-15: decisions and settlements identical in A and B. Review 0's chosen label differs
+(A deterministic_network, B cvar_network) but both execute the same 11-unit order and settle
+identically; reviews 1-15 are PROTECT (active driver) so the representation is off by construction.
+
+**Review 16 is the first material divergence** (first lean review after the disruption: profile
+LEAN, activity 0, protection 52.7 units, on hand 32, no pipeline, demand about 20 per period):
+
+| item | A (P0) | B (representation) |
+|---|---|---|
+| scenario demand paths, periods 0-5 | [32,12,12,23,23,14], [26,25,15,15,20,20], [28,15,20,20,22,12]; sums 203 / 194 / 185 | [17,24,13,9,23,16], [17,26,18,19,18,19], tail [29,29,29,29,29,29]; sums 171 / 195 / 292 |
+| weights | 1/3 each | .475 / .475 / .050 |
+| supply in the worlds (fill, arrival period of orders placed at 0,1,2) | fills .82/.97/.82, .82/.95/.83, .83/.82/.83; arrivals [3,2,5], [3,2,5], [3,4,5] | fills .98/.83/.82, .96/.96/.97, .97/.82/.96; arrivals [1,4,5], [1,2,3], [1,4,3] |
+| candidate period-0 orders | incumbent 22, base_stock 22, deterministic 14, stochastic INFEASIBLE, cvar INFEASIBLE, joint_recovery 33 (then 100 at period 1) | incumbent 22, base_stock 22, deterministic 14, stochastic **100**, cvar **100** |
+| service statistic (weighted unit fill over worlds) | incumbent .826, deterministic .768, joint .894 | incumbent .890, deterministic .812, stochastic .973, cvar .975 |
+| per-world service of the chosen plan | joint .944 / .903 / .832 | cvar 1.0 / 1.0 / .677 (tail) |
+| feasible set | empty -> recovery mode | stochastic, cvar |
+| band guard | not reached (recovery mode) | cheapest = cvar (1124), exposure 51.9; stochastic 1125, exposure 55.9 -> band {cvar}; chosen cvar |
+| selected / status | joint_recovery, PENDING_REVIEW | cvar_network, PENDING_REVIEW |
+| executed order | 33 | 100 (= the per-period capacity cap) |
+| attribution of the order | DEMAND_CYCLE 7, SERVICE_PROTECTION 26 | DEMAND_CYCLE 7, SERVICE_PROTECTION 53, OTHER_EXPLAINED 40 |
+| review settlement | unmet 0, end stock 19.5 | unmet 0, end stock 19.5 (the order has not landed) |
+
+Downstream (B): the 100 units land at review 17 (on hand 116 vs 51), the screen classifies
+reviews 17-20 as CAPITAL_OPTIMIZATION and B buys nothing until review 22; inventory runs 96 / 79 /
+62 / 54 against A's 31 / 16 / 20 / 36. At review 25 B arrives with 16 on hand (A: 23), every
+candidate is infeasible on B's worlds (the tail world demands 27 against 16 on hand with a
+3-period arrival), the incumbent's 36-unit order is retained and 2.4 units go unmet: the extra
+breach. A at review 25 holds 23, its worlds ask 13-17, and it serves everything.
+
+## D2. Why the 100-unit order: two mechanisms, separated
+
+**(a) Random-stream coupling.** The stratified sampler draws demand through `rng.random(H)`
+instead of `rng.choice(sizes, H)` + `rng.random(H)`, and the tail world skips the level-shock
+draw, so every random number drawn *after* demand (the shared supply factors that set fill and
+arrival) comes from a shifted stream. That is why B's worlds at review 16 see orders landing in
+1 period with fill .96-.98 where A's see 3-5 periods with fill .82. The supply the plan believes
+in is a different random sample, not a different representation. `STRATIFY_DECOUPLED_RNG` draws
+the strata from a generator of their own and consumes the main stream exactly as an unstratified
+draw would; with it on, fills, arrivals and PO due dates are bit-identical to the unstratified
+draw on the fixture and on cell 90 (checked). Arm `c90_strat_decoupled` measures cell 90 with
+only this changed.
+
+**(b) The correlated tail path.** The tail world is [29, 29, 29, ...]: 45% above the fitted
+level in every one of the remaining ten periods, at weight .05. Per period that is the 95th
+percentile, which is what the stratum is meant to be; as a path it is a ten-period run of 95th
+percentile weeks, which in the fitted world has probability of order 0.05^10, not 0.05. Where an
+order can be placed and land next period (the P1 fixtures: lead one week, capacity unbounded) the
+path costs nothing to follow, because each period's decision only has to cover the next week's
+tail draw. Where supply is slow and capped (cell 90 after the disruption: arrivals 3-5 periods,
+100 units per period) the only way to cover a ten-period run is to buy the cap now, and the CVaR
+candidate does exactly that: 100 units, of which the attribution can explain 60 and calls 40
+OTHER_EXPLAINED. This is mechanism 8 of the brief, dependence information lost by stratifying
+per world rather than per period.
+
+Mechanisms tested by arm (cell 90 only, one switch each on top of the representation):
+`c90_guard_only` (4), `c90_strat_noguard` (1+2+3 without 4), `c90_strat_equal_weights` (2),
+`c90_strat_unweighted_stats` (3), `c90_strat_body_iid` (1: body restriction), `c90_strat_decoupled`
+(1: stream coupling). Results in D3.
+
+
+## D3. Cell 90 mechanism arms (one switch each; `closure/p0_arm_c90_*.json`)
+
+| arm (cell 90) | service | breaches | unmet | inventory | cost | starved | joint req/built/chosen |
+|---|---|---|---|---|---|---|---|
+| p0_defaults | 0.863 | 4 | 70.1 | 94.4 | 3315 | 0 | 1/3/1 |
+| c90_guard_only | 0.863 | 4 | 70.1 | 95.8 | 3317 | 0 | 1/3/1 |
+| representation_only | 0.858 | 5 | 72.6 | 140.4 | 3388 | 0 | 2/6/0 |
+| c90_strat_noguard | 0.858 | 5 | 72.6 | 140.4 | 3388 | 0 | 2/6/0 |
+| c90_strat_equal_weights | 0.863 | 4 | 70.1 | 150.1 | 3357 | 0 | 1/7/1 |
+| c90_strat_unweighted_stats | 0.863 | 4 | 70.1 | 139.3 | 3354 | 0 | 1/9/3 |
+| c90_strat_body_iid | 0.859 | 5 | 72.2 | 120.6 | 3397 | 0 | 2/6/2 |
+
+Reading. The band guard is neutral (mechanism 4 cleared). The stratified worlds without the guard
+reproduce the full regression, so the worlds are the whole effect. The **extra breach is the
+selector's weighted statistic (mechanism 3)**: it appears exactly when the tail world enters the
+selector's service and shortfall statistics at weight .05 (`representation_only`, `strat_noguard`,
+`strat_body_iid`) and disappears when the selector treats worlds equally with the model's weights
+untouched (`strat_equal_weights`, `strat_unweighted_stats`). At weight .05 a plan whose service in
+the tail world is .677 still clears the weighted floor at .975 (review 16), so the selector admits
+plans with a worse tail than P0's equal-weight floor would, and review 25 pays with 2.4 unmet
+units. The **inventory rise is the world construction (mechanisms 1 and 8)**: present in every
+stratified arm (121-150 units against 94) whatever the weights, statistic or guard, and traced at
+review 16 to the CVaR candidate buying the 100-unit capacity cap against a ten-period run of
+95th-percentile demand. Drawing the body worlds over the full range narrows it (121) but keeps it.
+The decoupled-RNG arm (D3a, below) separates the random-stream shift from the tail path.
+
+## D4. Materiality gate versus tie-break, isolated (`closure/p0_arm_{neither,materiality_only,tiebreak_only,both}.json`)
+
+| arm | cell | service | breaches | unmet | inventory | cost | starved | joint req/built/chosen |
+|---|---|---|---|---|---|---|---|---|
+| p0_defaults | 15 | 0.980 | 1 | 5.0 | 46.1 | 1678 | 0 | 0/1/0 |
+| neither | 15 | 0.980 | 1 | 5.0 | 46.1 | 1678 | 0 | 0/1/0 |
+| materiality_only | 15 | 0.980 | 1 | 5.0 | 46.1 | 1678 | 0 | 0/1/0 |
+| tiebreak_only | 15 | 0.983 | 1 | 4.2 | 50.0 | 1576 | 0 | 0/0/0 |
+| both | 15 | 0.983 | 1 | 4.2 | 50.0 | 1576 | 0 | 0/0/0 |
+| p0_defaults | 16 | 0.972 | 1 | 7.0 | 134.5 | 1515 | 0 | 0/2/0 |
+| neither | 16 | 0.972 | 1 | 7.0 | 134.5 | 1515 | 0 | 0/2/0 |
+| materiality_only | 16 | 0.972 | 1 | 7.0 | 134.5 | 1515 | 0 | 0/2/0 |
+| tiebreak_only | 16 | 0.972 | 1 | 7.0 | 134.5 | 1515 | 0 | 0/2/0 |
+| both | 16 | 0.972 | 1 | 7.0 | 134.5 | 1515 | 0 | 0/2/0 |
+| p0_defaults | 20 | 0.894 | 3 | 40.9 | 183.7 | 2502 | 0 | 0/3/2 |
+| neither | 20 | 0.894 | 3 | 40.9 | 183.7 | 2502 | 0 | 0/3/2 |
+| materiality_only | 20 | 0.894 | 3 | 40.9 | 183.7 | 2502 | 0 | 0/3/2 |
+| tiebreak_only | 20 | 0.919 | 3 | 31.2 | 188.7 | 2465 | 0 | 0/2/1 |
+| both | 20 | 0.919 | 3 | 31.2 | 188.7 | 2465 | 0 | 0/2/1 |
+| p0_defaults | 21 | 0.760 | 5 | 93.0 | 130.5 | 3257 | 0 | 7/10/5 |
+| neither | 21 | 0.760 | 5 | 93.0 | 119.0 | 3366 | 0 | 9/12/6 |
+| materiality_only | 21 | 0.760 | 5 | 93.0 | 119.0 | 3404 | 0 | 9/12/5 |
+| tiebreak_only | 21 | 0.760 | 5 | 93.0 | 144.8 | 3364 | 0 | 9/13/6 |
+| both | 21 | 0.760 | 5 | 93.0 | 144.8 | 3364 | 0 | 9/13/6 |
+| p0_defaults | 90 | 0.863 | 4 | 70.1 | 94.4 | 3315 | 0 | 1/3/1 |
+| neither | 90 | 0.863 | 4 | 70.1 | 95.8 | 3317 | 0 | 1/3/1 |
+| materiality_only | 90 | 0.863 | 4 | 70.1 | 95.8 | 3317 | 0 | 1/3/1 |
+| tiebreak_only | 90 | 0.863 | 4 | 70.1 | 124.5 | 3361 | 0 | 0/5/2 |
+| both | 90 | 0.863 | 4 | 70.1 | 124.5 | 3361 | 0 | 0/5/2 |
+| p0_defaults | 108 | 0.879 | 4 | 69.8 | 138.6 | 3723 | 0 | 0/5/1 |
+| neither | 108 | 0.884 | 5 | 66.9 | 142.4 | 3665 | 0 | 0/5/0 |
+| materiality_only | 108 | 0.884 | 5 | 66.9 | 142.4 | 3665 | 0 | 0/5/0 |
+| tiebreak_only | 108 | 0.890 | 5 | 63.5 | 135.9 | 3658 | 1 | 0/7/1 |
+| both | 108 | 0.890 | 5 | 63.5 | 135.9 | 3658 | 1 | 0/7/1 |
+
+
+Reading. `neither` (current product defaults, which include the lean-review band guard) is
+identical to the P0 record on 15, 16, 20 and 90; cell 21 is identical on service, breaches and
+unmet with inventory inside the recorded band (119 against 130-145 across the P0 runs); cell 108
+is inside the band of its time-limited solves (service .884 against .879, one more breach, less
+unmet). **The materiality gate alone is identical to `neither` on all six cells**: it never fires
+on the P0 set. Neutrality demonstrated; it becomes the default. **The tie-break alone** improves
+cells 15, 20 and 108 on service, unmet and cost, is identical on 16, lands cell 21 exactly on the
+P0 record, and keeps cell 90's inventory inside the recorded band (124.5 against 94-124), but
+**cell 108 shows one starved required class** (a required candidate hit its time budget with no
+usable plan once the ties were broken differently). Starvation must stay zero, so the tie-break
+stays opt-in. `both` equals `tiebreak_only`, as the materiality gate is neutral. The earlier
+bundled movement on cells 15 and 21 is therefore the tie-break's (15) and, for 21, the
+representation's interaction with it, not the materiality gate's.
+## D5. C as a finite-horizon economics problem (objective 3; `scripts/p1_c_economics.py`, `closure/c_economics.json`)
+
+Fixture C unchanged (400-unit MOQ, replace-sold incumbent, three seeds, eleven reviews of a
+twelve-period plan, salvage 80% of the $5 price, holding 15% a year, no cost of capital, fill .98).
+ZAAD P1 under its declared fixture settings against the best baseline (reorder point with
+protection), means over the three seeds:
+
+| component | ZAAD | baseline | delta |
+|---|---|---|---|
+| purchase (procurement) | 6,359.5 | 6,000.0 | +359.5 |
+| carrying (holding) | 57.9 | 30.0 | +27.9 |
+| shortage (SLA + lost sales) | 0.0 | 0.0 | 0.0 |
+| order / setup | 0.0 | 0.0 | 0.0 |
+| terminal credit at salvage (closing assets) | -1,133.4 | -882.4 | -250.9 |
+| **total modelled cost** | **6,034** | **5,898** | **+136 (+2.31%)** |
+| units purchased | 1,271.9 | 1,200.0 | +71.9 |
+| demand served / demand | 1,103 / 1,103 | 1,103 / 1,103 | identical |
+| residual at window end (on hand + in transit) | 283.3 (155 on hand, 128 in transit) | 220.6 (all on hand) | +62.7 |
+| residual above one period of demand plus lean protection | 169 | 107 | +62 |
+| MOQ top-up units attributed in ZAAD's period-0 orders | 562 | - | - |
+
+Both policies serve every unit of demand with no shortage. The entire delta is timing and
+end-of-window valuation: ZAAD buys one more MOQ lot inside the window (the 128 units still in
+transit at the end are its last lot; the baseline's next lot falls after the window), carries
+larger lots earlier (+$28 of holding at a rate of 0.29% a period), and is credited for its 62 extra
+residual units at 80% of what it paid.
+
+Terminal valuation sensitivity (post-hoc revaluation of the residual, both policies alike; plans
+unchanged):
+
+| valuation of residual stock | ZAAD | baseline | delta |
+|---|---|---|---|
+| 80% salvage (current default) | 6,034 | 5,898 | +2.31% |
+| 100% purchase value (= zero haircut here, asset value equals price) | 5,751 | 5,677 | +1.30% |
+| continuation value: price less carrying until consumption at the fitted rate, unit by unit | 5,758 | 5,680 | +1.36% |
+| extended horizon: twelve further truth periods drawn from the same fitted distribution, residual consumed at price, carrying charged, remainder at salvage | 5,755 | 5,679 | +1.35% |
+
+Continuation value method: the k-th residual unit is consumed k/mu periods after the window at
+the fitted rate mu; its value is the purchase it avoids (price) less the carrying it incurs until
+then (holding rate x price x k/mu); no obsolescence term because shelf life is 52 weeks against a
+residual of 1.6-2.9 weeks of demand. On the extended truth every residual unit of both policies is
+consumed (ZAAD 283 of 283 within 2.9 periods, baseline 221 of 221 within 2.2), so the empirical and
+the derived continuation values agree to $3.
+
+Reading: 1.0 of the 2.3 points is the salvage haircut on stock that is consumed within three
+weeks of the window's end, a measurement artefact of a twelve-week window on a policy that buys
+in four-week lots. The remaining 1.3 points is real and small: $28 of carrying for lots placed
+earlier than the reorder-point rule places them, and the window-boundary purchase of the last lot.
+Over a longer horizon the two policies buy the same units and serve the same demand; ZAAD's is
+not a bad policy, it is a lot-timing choice that costs about $75 on $5,700 at a holding rate that
+makes timing nearly free. It is not sampling noise: the sign is the same on all three seeds. No
+default was changed on this basis; the salvage treatment stays as it is, and the choice of terminal
+valuation for the benchmark is recorded as an open design question, not decided here.
+
+## D3a. Random-stream coupling separated from the tail path (`closure/p0_arm_c90_strat_decoupled.json`, `closure/cell90_trace_c90_strat_decoupled.json`)
+
+The first-pass stratified sampler read its strata uniforms from the main random stream in place
+of the bootstrap draws, so every supply shock, PO due date and level draw sampled afterwards came
+from a shifted stream: arm B's worlds at review 16 saw orders landing in one period with fill
+.96-.98 where P0's saw three to five periods with fill .82, and that is what made B's stochastic
+and CVaR candidates feasible there. The stream-preserving construction (strata uniforms read, the
+generator state restored, then the stream consumed exactly as an unstratified draw consumes it)
+makes fills, arrivals and PO due dates bit-identical to the unstratified draw (checked on the
+fixture and on cell 90; `test_stratified_draw_leaves_the_supply_sample_untouched`).
+
+| arm (cell 90) | service | breaches | unmet | inventory | cost | starved |
+|---|---|---|---|---|---|---|
+| P0 record | .863 | 4 | 70.1 | 94.4 | 3315 | 0 |
+| stratified, coupled stream (first pass) | .858 | 5 | 72.6 | 140.4 | 3388 | 0 |
+| stratified, stream preserved | .864 | 4 | 69.9 | 127.4 | 3402 | 0 |
+
+With P0's own supply sample the extra breach is gone and service is P0's; the inventory rise
+remains (+35%, just above the recorded 94-124 band; +49% to +59% in the arms that also weight or
+equal-weight the tail world). The diverging reviews in the PROTECT phase of this arm (orders 23 vs
+36 at review 5, and so on) follow a one-unit difference at review 0 and are the known
+path-dependence of time-limited solves on this cell, not the representation, which is off in
+those reviews.
+
+**Root cause of cell 90, complete.** (i) Inventory: the stratified representation's tail world is
+one fixed path at or above the 95th percentile in every period, a ten-period run whose fitted
+probability is of order .05^10 but which carries weight .05; under the slow, capacity-capped supply
+that follows the disruption, the only plan that covers it is to buy the 100-unit per-period cap at
+the first lean review, and the screen then reads that stock as capital to optimise for four
+reviews. Mechanism 8 (dependence lost by stratifying per world). (ii) The extra breach: the
+selector's weighted service statistic admits, at weight .05, a plan whose service in the tail
+world is .677 (mechanism 3), and the coupled random stream (a defect of the first implementation,
+now fixed) handed the selector a more benign supply sample to admit it on. The band guard,
+probability weighting in the model, MOQ/case-pack, cross-SKU allocation and the tie-break are
+cleared for this cell.
+
+## D6. Decisions of the diagnostic pass
+
+| item | decision | causal basis |
+|---|---|---|
+| stratified representation (`stratified_scenarios`) | stays opt-in; the opt-in sampler now preserves the supply stream | explained (D3, D3a); the inventory effect is intrinsic to a fixed tail path and is not fixed here. A per-period stratification (each period one world in the tail stratum, equal weights) would restore independence and is the candidate design for the next pass; it has not been built or measured |
+| band guard | stays tied to lean reviews, on by default | neutral on cell 90 and on the six-cell set (`neither` arm) |
+| materiality gate | **becomes default** (.01 / .05 / .005) | identical to product defaults on all six cells; fires only on immaterial improvements (fixture A) |
+| timing tie-break | stays opt-in (0) | improves 15, 20, 108 and is exact on 21, but one starved required class on cell 108; starvation must be zero |
+| service gate basis | incumbent (unchanged) | first closure pass |
+| smoothing rule | unchanged | provable no-op on the six cells |
+| C | no change | finite-horizon artefact for 1.0 of 2.3 points, real lot-timing cost for the rest (D5) |
+
+## D7. Justified code changes, reruns and final state of the diagnostic pass
+
+**Code changes (two, both causally justified, neither made to improve the scorecard):**
+1. `materiality_*` thresholds default to .01 / .05 / .005: the gate alone is identical to product
+   defaults on every cell of the frozen six-cell set (D4).
+2. The opt-in stratified sampler preserves the random stream, so the supply sample is identical
+   with or without the demand strata (D3a). This corrects a defect of the first implementation; it
+   is confined to the opt-in feature and every truth path stays bit-identical.
+
+Everything else stays as decided in the closure pass: representation opt-in, tie-break opt-in,
+incumbent gate, conditional smoothing, guard on lean reviews. No tolerance, fixture, expectation,
+seed, window, baseline or terminal valuation was changed.
+
+**Targeted C/O/P rerun (`closure/targeted_diag.json`), declared fixture settings:** C +1.05%,
+O +1.29%, P +0.18%, all inside the pre-registered 2%; controls A +0.02%, G -4.8%, Q +0.39%,
+T -10.9%; service C 1.000, O .923, P .991; shortage unchanged or lower on every one.
+
+**Full A-T (`P1_RESULT_TABLE_none.md`, `fixtures_none.jsonl`):** 17 / 20.
+
+| fixture | incumbent | best baseline | ZAAD P1 | ZAAD vs best baseline | checks |
+|---|---|---|---|---|---|
+| A_no_terms_good_incumbent | 5,824 | 5,824 (incumbent) | 5,825 | +0.02% | PASS |
+| B_fixed_order_cost_replace_sold | 8,528 | 6,995 (economic_lot) | 6,236 | -10.84% | PASS |
+| C_moq_four_weeks | 9,595 | 5,898 (reorder_point) | 5,959 | +1.05% | PASS |
+| D_case_multiple | 5,807 | 5,807 (incumbent) | 5,777 | -0.51% | PASS |
+| E_pallet_multiple | 6,239 | 6,239 (incumbent) | 6,239 | +0.00% | PASS |
+| F_mov_two_skus | 14,040 | 11,766 (periodic:2) | 11,803 | +0.31% | PASS |
+| G_freight_tiers | 21,400 | 16,720 (economic_lot) | 15,925 | -4.75% | PASS |
+| H_per_pallet_freight | 6,884 | 6,826 (periodic:2) | 6,577 | -3.65% | PASS |
+| I_max_pallets_ftl_cap | 16,274 | 9,814 (economic_lot) | 10,206 | +3.99% | FAIL: zaad_not_worse |
+| J_net60_cost_of_capital | 7,478 | 6,850 (periodic:2) | 6,077 | -11.29% | PASS |
+| K_deposit_early_cash | 7,490 | 6,862 (periodic:2) | 6,077 | -11.44% | PASS |
+| L_high_holding_rate | 7,434 | 6,856 (periodic:2) | 6,148 | -10.33% | PASS |
+| M_order_calendar_wednesday | 6,256 | 6,256 (incumbent) | 6,276 | +0.32% | PASS |
+| N_long_lead_21_days | 5,937 | 5,937 (incumbent) | 6,041 | +1.74% | FAIL: categories |
+| O_low_opening_stock | 6,521 | 6,399 (reorder_point) | 6,481 | +1.29% | PASS |
+| P_high_opening_stock | 6,282 | 5,786 (reorder_point) | 5,797 | +0.18% | PASS |
+| Q_volatile_demand_high_target | 5,971 | 5,971 (incumbent) | 5,994 | +0.39% | PASS |
+| R_asymmetric_prices_mov | 63,448 | 63,448 (incumbent) | 63,413 | -0.06% | FAIL: categories |
+| S_cash_constrained | 6,924 | 6,234 (economic_lot) | 6,117 | -1.88% | PASS |
+| T_combined_realistic | 24,255 | 17,593 (economic_lot) | 15,679 | -10.88% | PASS |
+
+I moves from +1.7% to +4.0% and is the one parity failure. Cause, from the review outcomes on all
+three seeds: with the supply sample now P0's, the nil-stress adversary worlds carry the tail world,
+and the P0 incumbent-basis stress gate compares service world by world, so the lean full-load
+candidates lose to the replace-sold incumbent on the tail world and are retained more often (4.0
+orders per run instead of 3.7; freight $3,800 against $3,633). It is the same selector-statistic
+mechanism as cell 90's breach (D3), acting through the stress gate rather than the feasibility
+floor. Not corrected here: the correction would be a per-period stratification with equal weights
+(no fixed tail path) and it has not been designed or measured. N and R remain the two attribution
+expectations proven invalid (closure pass, C7).
+
+Runtime, primary arm: p50 0.12 s, p90 0.84 s, p95 1.27 s, max 16.6 s per review.
+
+**Invariants:** 60 / 60. **Unit suite:** 1437 passed, 2 skipped (one new test). **P0 six-cell set
+under product defaults:** identical to the frozen record on 15, 16, 20 and 90, inside the recorded
+bands on 21 and 108, starvation zero (D4, arm `neither`).
+
+**Verdict: P1 CYCLE-STOCK ECONOMICS — REMAINS OPEN.** C, O and P now meet the pre-registered
+parity under the declared fixture settings; I does not, for a named selector mechanism; the
+representation that makes C/O/P pass is not a product default because it raises inventory on P0
+cell 90 through a fixed tail path whose correction is designed but not built.
+
+**Best next intervention (not executed):** per-period stratification with equal world weights
+(each period exactly one world in the tail stratum, rotating), which removes both the fixed
+ten-period tail path (cell 90's inventory) and the .05 weight in the selector statistics (cell
+90's breach, fixture I's retentions), then the same isolating arms again. Separately, a benchmark
+decision on terminal valuation (D5).
