@@ -51,7 +51,12 @@ ARMS = {
     "clean_reference": {},
     "clean_reference_rerun": {},   # same code as clean_reference: measures run-to-run variability of time-limited solves
     "router": {},
-    "router_rerun": {},   # same code as router: run-to-run variability of the time-limited solves
+    "router_rerun": {},
+    "router_passj": {},
+    "router_lot": {},
+    "router_lot_rerun21": {},
+    "router_lot_off21": {"lot_terminal_valuation": False},
+    "router_final": {},   # pass J: final code (ledger key on P1 evaluation rows); P0 cells must stay decision-identical   # pass J: cell 21 alone with the lot valuation off (variability independent of the change?)   # pass J: cell 21 rerun alone after a r5 quantity difference in the time-limited hedged solve     # pass J: after the lot-sizing terminal valuation (P1-owned reviews only; P0 cells must stay decision-identical)   # pass J: after the opt-in rolling replay mode (legacy path must be decision-identical)   # same code as router: run-to-run variability of the time-limited solves
 }
 
 

@@ -2012,3 +2012,540 @@ under a declared non-identity stress envelope, or any risk activity, every revie
 path. `stratified_scenarios`, `analytic_shortage`, `timing_tiebreak` remain opt-in. The continuation
 valuation is reported by every replay beside the realised cost and used by no gate. Validation7,
 Validation8, holdout4 uninspected. `claude/zaad-meio-p2` does not exist.
+
+# Pass J: benchmark / horizon closure (2026-09-09; from de4e771)
+
+Pre-registration: `P1_BENCHMARK_PREREGISTRATION.md` (written before any extended run; correction 1
+appended before any extended ZAAD result was read). Tables: `P1_HORIZON_CONVERGENCE.md`,
+`P1_HORIZON_SUMMARY.json`; run record `closure/horizon52.jsonl` (300 cells).
+
+## J1. Lock (stage 1)
+
+Branch `claude/zaad-cycle-stock-p1` at `de4e771`, clean tree, no jobs, no `claude/zaad-meio-p2`.
+Targeted reproduction under the legacy benchmark (`closure/stage1_lock_P.json`, product defaults,
+realised ledger): C +3.61% FAIL, I +0.53%, P +0.29%, all bit-identical to `closure/router_targeted.json`.
+No terminal method was declared default; the realised ledger was the authoritative benchmark;
+Validation7 / Validation8 / holdout4 untouched. The planner's own in-model terminal continuation
+(`terminal_continuation`, contracts) is off by default, so the planner's objective haircuts end-of-plan
+stock at the declared salvage; this is product policy and was not changed in this pass.
+
+## J2. Horizon inventory (stage 2)
+
+Full table in the pre-registration, section 2. Planning horizon 12 periods and evaluation window 11
+reviews on every fixture; lead one period (M two, N three); next order opportunity the following review.
+Lot cycles from the recorded legacy evidence: the EOQ-style baseline buys 10-20 weeks of demand per order
+on B, G, J, K, L and T (its lot cycle is LONGER than the evaluation window), 4-7 weeks on C, F and I;
+ZAAD 7-8 weeks on B / G / J / K / L / T and 3-5 on C / I. The twelve-week window therefore ends inside a
+lot cycle on half the family, and the legacy salvage / continuation deltas on C (+3.61 / +0.77), I
+(+0.53 / +3.05) and S (+0.26 / +3.59) are decided by the terminal rule.
+
+## J3. Extension mechanics (stage 3; `zaad/full/replay.py` opt-in `rolling=True`, `zaad/full/evaluation.py`)
+
+* Rolling mode: every review replans on a fresh twelve-period snapshot (the replay's own production
+  note); declared period data roll by repeating the last declared value, committed payments roll into
+  `other_payments` at their due period, none dropped. The legacy shrinking path is untouched: after the
+  patch C reorder_point, C ZAAD and P ZAAD reproduce the lock to the cent, the full unit suite passes
+  (1,484 passed, 2 skipped), and the six-cell P0 arm was rerun (J11).
+* Truth: `long_truth` stitches twelve-period draws with `as_of` advanced by 12k periods and seed +k;
+  segment 0 is the legacy truth bit for bit (demand, arrivals, fills checked on C).
+* Endpoint reconstruction `endpoint(initial, log, W)`: opening assets of review 0, ledger components of
+  reviews 0..W-1, terminal state of review W-1 under each rule. Equal to a replay stopped at W to 1e-6
+  (test 10). One run per cell therefore yields the whole convergence curve, W = 1..52.
+* Three terminal rules scored at every endpoint on identical trajectories: A salvage (the ledger), B
+  continuation at unit price (`terminal.py` as pre-registered), B' continuation at the policy's own
+  landed unit cost (correction 1: unit price plus the freight, ordering and receiving cost per unit the
+  policy incurred over the window; carrying on asset value; salvage floor, landed cap, expiry and
+  zero-demand impairment unchanged; `terminal.py` `landed=` argument, default bit-identical).
+* Run: 300 cells, 52 reviews requested, four workers, 2,205 s wall. ZAAD reviews at full horizon: n 3,013,
+  p50 .99 s, p90 5.9 s, p95 11.4 s, max 79 s. Every cell complete except S (J7).
+
+## J4. Endpoint sensitivity and convergence classification (stages 3-4; `P1_HORIZON_CONVERGENCE.md`)
+
+Delta of ZAAD against the best baseline at W in {11, 23, 35, 47, 52}, seed means, under B':
+
+| fixture | @11 (rolling) | @23 | @35 | @47 | @52 | max dev over 40..52 | class |
+|---|---|---|---|---|---|---|---|
+| A | +1.70 | +1.19 | +1.06 | +0.96 | +0.87 | .23 pp | A stable pass |
+| B | +3.41 | +0.83 | +2.78 | +2.30 | +2.49 | 1.44 pp | E non-convergent |
+| C | +2.32 | +0.77 | +0.74 | +0.61 | +0.30 | .36 pp | C boundary-sensitive, converges to pass |
+| D | -0.16 | +0.30 | +0.73 | +0.70 | +0.63 | .17 pp | A |
+| E | +0.04 | -0.02 | -0.03 | -0.06 | -0.10 | .07 pp | A |
+| F | +1.28 | +1.27 | +0.83 | +0.64 | +0.72 | .08 pp | A |
+| G | +11.01 | +9.27 | +6.26 | +6.15 | +6.18 | .83 pp | D boundary-sensitive, converges to FAIL |
+| H | -2.36 | -1.75 | -1.31 | -1.32 | -1.27 | .19 pp | A |
+| I | +6.87 | +9.85 | +7.46 | +7.16 | +7.14 | .68 pp | D converges to FAIL |
+| J | +0.88 | -0.15 | -0.01 | -0.14 | +0.15 | .65 pp | A |
+| K | +0.94 | -0.15 | -0.01 | -0.15 | +0.15 | .67 pp | A |
+| L | +1.30 | +2.04 | +1.45 | +1.35 | +0.81 | .60 pp | A |
+| M | +0.94 | +0.53 | +0.23 | +0.04 | +0.05 | .17 pp | A |
+| N | +0.50 | +1.13 | +0.89 | +1.14 | +1.07 | .18 pp | A (proven-invalid classification kept) |
+| O | -0.37 | -0.10 | -0.07 | +0.12 | +0.09 | .13 pp | A |
+| P | -0.43 | -0.29 | +0.02 | +0.14 | +0.16 | .11 pp | A |
+| Q | +0.05 | +0.05 | +0.03 | +0.22 | +0.19 | .04 pp | A |
+| R | +0.69 | +0.38 | +0.41 | +0.51 | +0.65 | .18 pp | A (proven-invalid classification kept) |
+| S | +4.21 | - | - | - | - | - | invalid at 52 (J7) |
+| T | +5.40 | +5.22 | +6.80 | +7.30 | +6.87 | .96 pp | D converges to FAIL |
+
+Under the salvage rule 9 / 19 fixtures are stable at 52 (B, C, F, G, H, I, J, K, L, T all non-convergent:
+the salvage haircut on whichever policy holds the late lot swings the delta by 1-6 pp between adjacent
+endpoints); under unit-price continuation 12 / 19; under landed-cost continuation 18 / 19 (B alone,
+whose EOQ baseline buys 18.6 weeks of demand per lot, so 52 weeks is 2.8 cycles).
+
+Special attention: C converges to PASS under every rule once the planning horizon rolls (salvage -0.24%,
+B / B' +0.30% at 52); the legacy +3.61% was the window. I converges to FAIL under every rule (+8.30 /
++8.16 / +7.14% at 52); the legacy +0.53% was the window masking a real lot-sizing gap, as pass I's
+doubled-horizon diagnostic suggested. S cannot be run to 52 (J7). P is stable within +/-0.5% throughout.
+
+## J5. Benchmark options (stage 5)
+
+* **A fixed window + salvage** (legacy). Strength: the ledger's own conservative rule, no model of the
+  future. Weakness, now measured: BSI 1.635 pp per two-review shift (1.391 on baseline-only pairs), 10 of
+  19 fixtures non-convergent at 52 reviews; the rule fails validation test 2 (a unit consumed the week
+  after the cutoff is written down 20%). Salvage percentage sensitivity was not explored because the rule
+  fails on a property, not a parameter: any haircut below the landed price penalises the late lot holder,
+  any haircut above it rewards them.
+* **B continuation at unit price**. Mathematics in `terminal.py`; removes the 20% cliff; BSI .904 (.795
+  baseline-only); fails test 8 on freight-heavy fixtures because an endpoint just after a load charges
+  the load's freight and ordering with no offsetting credit (correction 1). 12 / 19 stable.
+* **B' continuation at landed cost**. Passes all twelve tests; BSI .477 (.426 baseline-only); 18 / 19
+  stable. Approximation error against the actual extension: over matched-state windows on I the salvage
+  and B' window costs agree within .1-.5% and B' cost per unit of demand agrees with the 40-review value
+  within 1.5% (test 8); on C the derived value of the residual agrees with twelve further truth periods
+  within 1% (`test_zaad_terminal` test 7).
+* **C extended realised evaluation**: the endpoint grid itself, every policy replanning on the same
+  constant horizon; no policy frozen while another operates. It is the declared window (52 reviews).
+* **D warm-up + scored window + settled tail** (start-offset diagnostic s = 0 / 4 / 8 with symmetric
+  endpoint handling, Option D table): under B' the deltas move by at most .5 pp on the stable fixtures
+  and 1.0 pp on T; under salvage by up to 3.2 pp (B) and 5.5 pp (T). B' already has the property D was
+  meant to buy, so D is not implemented.
+* **E lot-cycle normalisation** (Option E table): scoring each policy at its own cycle minimum in [40, 52]
+  and normalising per week changes no verdict (largest move +0.8 pp on T, L +.5 pp); a policy-specific
+  endpoint is not a common benchmark and stays diagnostic.
+
+## J6. Pre-registered benchmark and selection (stage 6)
+
+Declared P1 evaluation: constant rolling twelve-period planning horizon; realised ledger scored at W* = 52
+reviews (one commercial year) on the stitched truth; residual on-hand and in-transit units valued under
+the landed-cost continuation rule B'; service, breaches and unmet inside the window only; the same rule for
+ZAAD and every baseline, no policy, fixture, C- or I-specific term; tolerance unchanged. Selected by the
+pre-registered rule of section 6: B' is the only rule passing the twelve validation tests, and it also
+has the lowest boundary-sensitivity index (.477 against .904 and 1.635; .426 / .795 / 1.391 on pairs that
+do not involve ZAAD). The a-priori expectation recorded in the pre-registration (salvage fails test 2,
+continuation has the lower BSI) held; the correction (unit price to landed cost) came from test 8 on a
+baseline-only pair before any extended ZAAD number existed.
+
+Mathematical definition. For a policy's trajectory scored at W: cost(W) = opening assets at review 0 +
+sum over reviews t < W of every ledger component of the one-step settlement at t, minus the terminal
+credit at W. Terminal credit: for each SKU / location, residual units (on hand at 0, in transit at their
+due period) consumed in availability-then-expiry order at the fitted mean rate mu; the k-th unit consumed
+at time tau_k is worth min(L, max(s, L - a (h + c) tau_k)), where L is the policy's landed unit cost over
+the window (unit price a plus its freight, ordering and receiving per unit bought; a when it bought
+nothing), s the declared salvage, h the location's holding rate per value-period and c the cost of
+capital; a unit expiring before tau_k, or never consumed (mu = 0), is worth s. Stability criterion: over
+W in [40, 52] the delta stays within +/-1 pp of its value at 52 and the verdict is identical.
+
+## J7. Validity at the declared endpoint (section 7)
+
+S: its declared receivables (450 / week) are below every policy's cash-out, so the declared cash plus
+credit is exhausted between reviews 12 and 45 (ZAAD abstains at reviews 12-19 once the declared incumbent
+is unfinanceable; the baselines hit physical financing failures at 24-45). S is PROVEN INVALID at the
+declared benchmark: a transient cash-squeeze fixture whose inputs cannot carry any policy through a year.
+Its legacy verdict (+0.26% under the realised ledger) is kept as a legacy record; the diagnostic to the
+last common endpoint (W = 12: +4.21%) is not a verdict. N and R keep their proven-invalid classification
+(both `categories` checks fail exactly as recorded); their costs are inside tolerance at 52.
+
+## J8. Benchmark validation tests (stage 7; `tests/unit/test_zaad_benchmark_horizon.py`, 12 tests)
+
+1 phase-offset policies (periodic:4 on C, phase shifted one review, window [4, 52] after the opening
+transient): B' .20% apart, salvage .24%; 2 residual consumed immediately: B' credits > 99% of price,
+salvage 80%; 3 never consumed: salvage only; 4 in-transit valued consistently (on hand > due next period
+> due later > salvage); 5 carrying reduces it (L against C); 6 cost of capital reduces it; 7 zero demand:
+salvage; 8 complete lot cycle (matched-state windows on I EOQ): salvage and B' window costs within 1%, B'
+per-unit cost within 1.5% of the 40-review value, unit-price B further away; 9 increasing horizon converges
+the EOQ-versus-periodic ranking on I under both rules; 10 identical trajectory, identical result (endpoint
+reconstruction = stopped replay to 1e-6); 11 service after the nominal window not scored; 12 the scorer has
+no policy argument (same terminal state, same credit). All pass; the nine `terminal.py` tests unchanged.
+
+## J9. A-T under the declared benchmark beside the legacy record (stage 9)
+
+Full table with every component in `P1_HORIZON_CONVERGENCE.md` (Stage 9). Summary, ZAAD against the best
+baseline, B' at 52, product policy UNCHANGED (stage 8):
+
+| fixture | legacy 12-week (salvage) | declared @52 | verdict | service | actions / abstentions (156 reviews) |
+|---|---|---|---|---|---|
+| A | +0.43% | +0.87% vs incumbent | PASS | .989 | 38 / 11 |
+| B | -10.70% | +2.49% vs EOQ | FAIL (non-convergent) | 1.000 | 150 / 0 |
+| C | +3.61% | +0.30% vs reorder_point | PASS | 1.000 | 139 / 0 |
+| D | -0.58% | +0.63% | PASS | .995 | 70 / 13 |
+| E | -0.00% | -0.10% | PASS | 1.000 | 39 / 4 |
+| F | +0.24% | +0.72% vs periodic:2 | PASS | 1.000 | 118 / 0 |
+| G | -10.01% | +6.18% vs EOQ | FAIL | 1.000 | 144 / 0 |
+| H | -3.73% | -1.27% vs periodic:2 | PASS | .995 | 117 / 11 |
+| I | +0.53% | +7.14% vs EOQ | FAIL | 1.000 | 138 / 0 |
+| J | -11.06% | +0.15% vs EOQ | PASS | 1.000 | 142 / 5 |
+| K | -11.20% | +0.15% vs EOQ | PASS | 1.000 | 142 / 5 |
+| L | -10.16% | +0.81% vs EOQ | PASS | 1.000 | 151 / 0 |
+| M | -0.54% | +0.05% | PASS | .987 | 144 / 0 |
+| N | -0.71% | +1.07% | proven invalid (kept); inside tolerance | .987 | 124 / 5 |
+| O | +0.46% | +0.09% | PASS | .980 | 151 / 2 |
+| P | +0.29% | +0.16% | PASS | .995 | 128 / 9 |
+| Q | +0.85% | +0.19% | PASS | .991 | 19 / 0 |
+| R | -0.05% | +0.65% | proven invalid (kept); inside tolerance | .991 | 27 / 9 |
+| S | +0.26% | invalid at 52 | PROVEN INVALID at the declared benchmark | - | - |
+| T | -11.47% | +6.87% vs EOQ | FAIL | 1.000 | 141 / 0 |
+
+Valid fixtures at the declared benchmark: 17 (A-M, O, P, Q, T less nothing; S, N, R invalid). Passing:
+13 / 17. Failing: B, G, I, T. Reading: the legacy double-digit "wins" on B, G, J, K, L and T were the
+salvage haircut on the EOQ baseline's late 10-20-week lot; once the planning horizon rolls and the
+residual is valued at what it avoids, J, K and L are ties (+0.15 to +0.81%), and B, G, I and T show ZAAD
+paying more freight and ordering than the full-load / EOQ baseline. Ownership over the 3,013 ZAAD reviews:
+2,631 P1-owned, 382 P0-owned (M 143: order-calendar reviews with an active supply driver; Q 87, O 57; the
+rest 17-33 per fixture). Attribution on the first review is unchanged from the legacy record (review 0
+plans on the identical request).
+
+## J10. True remaining failures under the fair benchmark (stage 10)
+
+| fixture | declared @52 | class | mechanism (from J11-J13) |
+|---|---|---|---|
+| B | +2.49% vs EOQ, non-convergent (18.6-week EOQ lots, 2.8 cycles in a year) | A LOT-SIZING (+ E residual: the fixture's own cycle is a fifth of the window) | ZAAD lots half the EOQ (767 against 1,884 units) with 100-unit top-ups; 8 orders against 3 |
+| G | +6.18% vs EOQ | A LOT-SIZING / B FREIGHT / C ORDER TIMING | one-week top-up orders ($800 tier + $100) the review before each 20-pallet load; 13 orders against 7; freight +$3,400, ordering +$600 |
+| I | +7.14% vs EOQ | A LOT-SIZING / B FREIGHT | 200 / 315 / 66 / 200 / 148-unit orders interleaved with near-full loads; 16 orders against 12; freight +$3,200, ordering +$600 |
+| T | +6.87% vs EOQ | A LOT-SIZING / B FREIGHT / C ORDER TIMING | as G with case rounding; 13 orders against 7; freight +$3,700, ordering +$1,200 |
+| C | +0.30% PASS | resolved: the legacy +3.61% was the window | - |
+| S | invalid at the declared benchmark | F/G: fixture design (receivables below cash-out) | - |
+| all others | PASS, stable | - | - |
+
+One mechanism, general to every fixture with order-level economics, established in J12.
+
+## J11. I forensics (stage 11; `scripts/p1_i_forensics.py`, `closure/forensics_I_max_pallets_ftl_cap_41001.json`)
+
+Rolling replay of ZAAD on I seed 41001 with every candidate traced and the EOQ baseline's order from
+the identical snapshot. Review table (opening stock, inbound, demand, order, tier charged):
+
+| review | ZAAD open | inbound | demand | ZAAD order | tier | EOQ open | EOQ order | ZAAD state / candidate chosen |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 150 | 0 | 98 | 442 | 1,100 | 150 | 450 | NO_ACTION / stochastic |
+| 4 | 186 | 0 | 102 | 400 | 1,100 | 195 | 450 | NO_ACTION |
+| 6 | **375** | 0 | 88 | **438** | 1,100 | 432 | 0 | CAPITAL_OPTIMIZATION / stochastic_network (a load bought with 3.75 weeks on hand; EOQ waits to 139 at review 9) |
+| 13 | 141 | 0 | 100 | 398 | 1,100 | 209 | 0 (450 at 14) | NO_ACTION / cadence_4_network |
+| 17 | 130 | 0 | 110 | **200** | 800 | 240 | 0 (450 at 18) | NO_ACTION / stochastic_network |
+| 19 | 114 | 0 | 108 | **315** | 1,100 | 29 (+440 due) | 0 | NO_ACTION / stochastic_network |
+| 21 | 204 | 0 | 90 | 440 | 1,100 | 250 | 0 (450 at 22) | NO_ACTION / cadence_2_network |
+| 26 | 146 | 0 | 104 | 442 | 1,100 | 198 | 450 | NO_ACTION |
+
+Every review P1-owned (52 / 52), no abstention, no recovery mode; the full-load candidate is built and
+chosen at 0, 4, 13, 21, 26; the departures from EOQ are the early load at 6 and the small loads at 17
+and 19 (and later 42 / 43 / 50: 66, 200, 148 units). Selector: at 17 and 19 the chosen stochastic
+candidate itself carries the small first order; the selector did not overrule a full-load candidate.
+
+## J12. I lot-size economic frontier at the decisive reviews (stage 12)
+
+Twelve-period plan cost on the mean world with the first order allowed up to q (the optimizer's own
+preference, x0 = what it chose) and pinned at exactly q with the envelope's later schedule:
+
+| review | q <= 100 | q <= 150 | q <= 200 | q <= 300 | q <= 450 | reading |
+|---|---|---|---|---|---|---|
+| 13 (on hand 141) | x0 0: 9,561 (shortage 1,835) | x0 150: 9,435 | x0 155: **9,428.8** | x0 155: 9,428.8 | x0 401: **9,428.8** (pinned 450: 9,489) | flat: 155 and 401 cost the same to the cent; freight 3,000 (three shipments) in every schedule |
+| 17 (on hand 130) | x0 0: 9,661 | x0 150: 9,530 | x0 166: **9,438.0** | x0 166: 9,438.0 | x0 166: 9,438.0 (pinned 450: 10,087) | the optimizer, allowed a full load, prefers 166 |
+| 19 (on hand 114) | 10,580 | 10,580 | x0 200: 10,360 | x0 289: 10,182 | x0 418: 10,176.8 (x0 311 at q <= 350: 10,176.8) | flat above 300 |
+| 21 (on hand 204) | 10,102 | 10,102 | x0 200: 10,072.7 | x0 200: 10,072.7 | x0 450: 10,066.3 | 450 preferred by $6 |
+| 6 (on hand 375) | x0 0: 8,553.7 in every envelope | | | | pinned 438: 10,359 | the mean-world optimum is no order; the stochastic candidate bought 438 at 8,605 settled |
+
+Objective and settlement reconcile: every envelope's `projected_cost` equals its mean-world settled cost
+to the cent (nine rows per review). Freight per unit at the tiers: 200 units $4.00 + $0.75 order, 450
+units $2.44 + $0.33, so the full load is $2.00 per unit cheaper; the twelve-period objective cannot see
+it because every schedule inside the window needs the same three shipments, and the lot boundary is then
+decided by carrying (a cent per unit-week) and the salvage haircut on end-of-plan stock ($1 per unit),
+both of which favour "small now, large later". Only the small first order is ever executed; next review
+the same window shows the same preference. Same snapshot re-solved with a landed-cost continuation term
+(end-of-horizon stock up to one economic lot credited at landed cost less salvage and carrying): at 13
+and 17 the optimum becomes 450 now on a 4-5 week cadence (450 / 450 / 450), the EOQ schedule, and the
+"small now" envelope loses by $250-300. On G (two SKUs, 20-pallet loads) the same re-solve at the review
+before a big load is recorded in J13.
+
+Classification per stage 12: **D, with a proven planner defect** - the finite-horizon terminal valuation
+of the planner's objective (end-of-plan stock at the declared salvage, `terminal_continuation` off) is
+inconsistent with lumpy replenishment economics, so the plan defers the large lot and executes a small
+one; not A (the full-load candidate is generated), not B (the selector followed the solve), not C
+(freight modelled and settled correctly).
+
+## J13. Freight-cap / load audit (stage 13)
+
+From the 45 run cells on G, I and T (all five policies, three seeds): no period-0 load exceeds the
+supplier's maximum (450 units on I, 2,000 on G, 1,920 on T); every ledger FREIGHT total equals the sum
+of the tier charges implied by the executed loads (I: four $800 and twelve $1,100 loads = $16,400 for
+ZAAD seed 41001); ORDERING equals the order count times the fixed order cost; no fractional shipment
+economics (tiers are integer per shipment in the model, `freight_tier` binaries, and per shipment in the
+settlement). The MOV / case / pallet interactions on T reconcile as on the legacy run (attribution
+60 / 60). Objective-to-settlement reconciliation at the I decisive reviews: exact (J12).
+
+## J14. The correction (stage 14; `zaad/full/lotsizing.py`, planner wiring, `lot_terminal_valuation`)
+
+Smallest general correction to the proven defect: on a review the P1 purchasing planner owns, and only
+there, end-of-plan stock and committed arrivals are valued in every candidate solve and in every
+candidate evaluation at the landed cost of the purchase they avoid, less carrying and cost of capital
+until consumption, never below salvage: the benchmark's own rule B' applied ex ante.
+
+* `reference_lots(req, fits)`: per supplier, the economic lot = min(load limit, max(EOQ on the supplier's
+  fixed order cost and fee, MOQ, MOV in units, one period of demand)) and the order-level cost per unit
+  of that lot (fixed order cost + shipment tariff at that load + receiving) / lot. I: 450 units, $2.78;
+  G / T: 2,000 / 1,920 units, $0.80 / $0.90; B: the EOQ 1,854 units, $0.13; suppliers without
+  order-level economics: premium 0.
+* `landed_unit_costs`: per SKU, unit price + per-unit freight and handling + the premium of its cheapest
+  approved source's supplier. `terminal_terms`: per SKU / location, (this line's share of one lot,
+  landed - salvage - carrying and capital over half the lot's consumption time), floored at zero;
+  passed to `model.solve(continuation=...)`, the existing bounded-continuation mechanism (end-of-horizon
+  stock and committed post-horizon arrivals may earn the margin; new purchases landing after the horizon
+  never do). No change to `model.py`.
+* `planner.evaluate(..., terminal=, fits=)`: every candidate, incumbent, stress, confirmation and
+  materiality row of a P1-owned review carries the same landed-cost continuation adjustment
+  (`terminal.py`, `landed=`), recorded in the row's ledger as `terminal_continuation` under
+  INVENTORY_VALUE_CHANGE so components still reconcile to the cent. The settlement itself is unchanged.
+  The screening row that feeds ownership (`incumbent_screen_rows`) is unadjusted.
+* Contract flag `lot_terminal_valuation` (default on, documented); orchestration reports
+  `p1_terminal_landed`. A P0-owned review is untouched: the term is built after the router's decision
+  and the frozen path never sees it (J15).
+* Tests (`tests/unit/test_zaad_lotsizing.py`, 6): reference lot under a cap = the full load; = the EOQ
+  without one; no premium without order-level economics; margin formula and zero floor; the J12 review-17
+  snapshot flips from 166 to 450 now on a 4-5 week cadence; the term is reported on a P1-owned review,
+  absent with the flag off and absent on a P0-owned (stressed) review. Ownership test 12 (routing
+  bit-identity) now runs with the flag off on both sides, because the valuation is the declared change.
+  Full unit suite 1,502 passed, 2 skipped.
+
+Not done, by the brief: no fixture-specific logic, no quantity tuning, no benchmark change, no baseline
+change, no tolerance change; the selector, materiality, router, candidate matrix, sampler and order
+smoothing are untouched.
+
+## J15. Regressions after the correction (stage 15)
+
+Declared benchmark (rolling horizon, 52 reviews, B'; `closure/horizon52_lot.jsonl`, 300 cells, 1,526 s;
+`P1_HORIZON_CONVERGENCE_lot.md`; the pre-correction tables kept as `*_frozen_policy.*`):
+
+| fixture | before (J9) | after | class after | ZAAD orders / EOQ orders (seed 41001) |
+|---|---|---|---|---|
+| I | +7.14% FAIL | **+0.57% PASS**, stable (.14 pp) | A | 12 x 450 on the EOQ cadence / 12 x 450 |
+| G | +6.18% FAIL | **+0.46% PASS**, stable (.88 pp) | C (boundary-sensitive, converges to pass) | 7 / 7 |
+| T | +6.87% FAIL | **+2.06% FAIL** (seeds -1.02 / +1.99 / +5.24), stable (.38 pp) | D | 7 / 7 on seed 41001; 12 / 7 on 41003 (J16) |
+| B | +2.49% FAIL | +2.49% unchanged, non-convergent | E | 8 / 3 (J16) |
+| C | +0.30% | +0.46% PASS | C | |
+| A, D, E, F, H, J, K, L, M, O, P, Q | all PASS | all PASS (largest move P +0.16 -> +0.40, H -1.27 -> -1.53) | A | |
+| N, R | inside tolerance, proven invalid | same | | |
+| S | invalid at 52 | invalid at 52 | | |
+
+Valid fixtures 17; passing 15 / 17 (from 13 / 17). The declared rule and the BSI ordering are unchanged
+by the correction (B' .453, B .922, A 1.665; baseline-only pairs .426 / .795 / 1.391), as they must be:
+the benchmark was fixed before the policy. Runtime, ZAAD reviews: p50 .97 s, p90 4.4 s, p95 6.6 s, max
+79 s (the correction removes time from the D and H cells: 6,063 s of cell wall against 8,775 s).
+
+Legacy twelve-week record under the correction (`fixtures_product_defaults_lot.jsonl`,
+`P1_RESULT_TABLE_none_product_defaults_lot.md`; the earlier record untouched): 18 / 20 pass, only N and
+R (`categories`, proven invalid) fail. C +1.88% (was +3.61%), I +0.08% (was +0.53%), S +0.26%, P -0.29%,
+A +0.27%, O +0.98%, Q +0.85%; the legacy double-digit wins shrink where ZAAD now buys the larger lot that
+the twelve-week salvage ledger haircuts (G -3.98% from -10.0%, T -3.97% from -11.5%; B / J / K / L
+unchanged at -10.7 / -11.1 / -11.2 / -10.2%). Attribution partitions 60 / 60.
+
+P0 six-cell gate after the correction (`closure/p0_arm_router_lot.json`, run alone): J15a below.
+
+## J15a. P0 six-cell gate after each change (run alone; `scripts/p1_ownership_compare.py` against `closure/p0_arm_clean_reference.json`)
+
+| arm | code state | decision-identical P0-owned reviews | note |
+|---|---|---|---|
+| `router_passj` | after the opt-in rolling replay mode, before the correction | **120 / 120**; every cell's cost, service and unmet equal | the legacy replay path is bit-identical |
+| `router_lot` | after the correction | 110 / 120: cells 15, 16, 20, 90, 108 identical (12 / 12, 12 / 12, 20 / 20, 26 / 26, 30 / 30); cell 21 diverges at r5 with identical requested / built / selected / chosen sets and the same unmet, a different period-0 quantity from the chosen `joint_recovery` candidate (42.4 against 50.1) | cost 3,331 -> 3,366 |
+| `router_lot_rerun21` | same code, cell 21 alone | 11 / 20, first divergence r5 again, cost 3,404 | same code, a third value: run-to-run variability |
+| `router_lot_off21` | cell 21 alone with `lot_terminal_valuation=False` | 6 / 20, first divergence r4, cost 3,364 | the variability is independent of the change |
+
+All 120 P0-owned reviews are P0-owned under the router in every arm (owners `PROTECTION_RECOVERY` 12 /
+12 / 20 / 20 / 26 / 30), no P1 class is added, no P1 terminal term is built (`p1_terminal_landed` is None
+on every one), and no required candidate is starved. Cell 21's `joint_recovery` solve is a wall-clock-
+limited recovery solve whose incumbent varies with the machine's timing on identical inputs, the same
+frozen numerical variability recorded for cells 20 / 21 / 90 in passes H and I (`router_passj` matching
+20 / 20 was one draw). With the flag off the cell diverges as much: the correction is not the cause.
+P0 isolation therefore holds at decision level on every architectural quantity; the P0 gate is unchanged.
+
+## J16. What remains after the correction, and why (stage 10 revisited on the corrected run)
+
+**T (+2.06% at 52 on the corrected run; seeds -1.02 / +1.99 / +5.24).** On seed 41001 ZAAD now buys the
+seven 20-pallet loads the EOQ baseline buys and is 1% cheaper. Seed 41003 still carries seven small
+orders (192 + 120 units: the incumbent's weekly replace-sold lifted to the $1,500 MOV) beside five big
+loads. Traced (`closure/forensics_T_combined_realistic_41003.json`, per-review ownership from the run):
+
+* five of the seven sit inside P0-owned stretches (reviews 16-25, 29-35, 39-43: an active demand driver
+  on this seed's path hands the review to the frozen protection path), and every one is a
+  RETAIN_INCUMBENT outcome there: the frozen path retains the operator's declared weekly order. The
+  frozen path never had order-level economics; on a purchasing fixture it executes the incumbent's lot
+  pattern for as long as the driver stays active.
+* the other two (reviews 9 and 47) are P1-owned RETAIN_INCUMBENT outcomes with the reason
+  "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service
+  recovery": at review 9 every candidate (deterministic, stochastic, cadence 2 and 4) proposed the
+  1,056 + 864 load at hedged cost 14,352 against the incumbent's 23,314, the confirmation under the
+  declared nil stress rejected it, and the same load was accepted one review later. The same outcome
+  appears once on G (review 37) and twice on B (reviews 4 and 41).
+
+Both are P0-gate semantics on P1-owned or P0-owned reviews of a purchasing fixture, not lot-sizing
+economics; the brief's rule ("do not reopen the planner router unless this pass uncovers a real
+semantic defect") is respected: the evidence is recorded here for that decision, and nothing in the
+router, the stress confirmation or the materiality gate was changed. Classification: C ORDER TIMING via
+G OTHER (frozen-path ownership and out-of-model confirmation on a purchasing review).
+
+**B (+2.49% at 52, non-convergent).** The correction changes nothing on B (bit-identical trajectory):
+B's economic lot is 1,854 units, 18.6 weeks of demand, longer than the twelve-period planning horizon,
+so no twelve-week plan contains the second order whose $250 the larger lot would save, and the terminal
+credit (landed $5.13 against a $5 purchase, less carrying) cannot make holding 760 extra units for a
+saving outside the window worthwhile. ZAAD's lots are 55% of the EOQ (767 against 1,884 units), eight
+orders against three, plus two retained 100-unit incumbent orders (the confirmation outcome above).
+Classification: A LOT-SIZING via E HORIZON: a planning horizon shorter than the economic lot cycle. A
+general remedy is a planning horizon at least one lot cycle long (a product horizon design question,
+not a fixture patch); the fixture is also non-convergent at 52 reviews by the pre-registered criterion
+(2.8 cycles in a year, delta range 1.44 pp over 40-52), so the benchmark itself cannot settle B at the
+declared endpoint to within a point.
+
+**S** proven invalid at the declared benchmark (J7). **N / R** proven invalid (categories), inside
+tolerance. **C** resolved by the benchmark (+0.46%). **I, G** resolved by the correction.
+
+## J15b. FINAL-CODE reruns (authoritative; supersede J15 and every earlier post-fix table)
+
+The ledger key of J14 (evaluation rows carry `terminal_continuation` under INVENTORY_VALUE_CHANGE) reaches
+the materiality gate, which reads the component total; it moved A, P and O by a few tenths of a point
+and nothing else. Both A-T runs were therefore repeated on the final code: `closure/horizon52_final.jsonl`
+(300 cells, 1,503 s) and `fixtures_product_defaults_final.jsonl` (`P1_RESULT_TABLE_none_product_defaults_final.md`).
+The one authoritative table, with the pre-fix record beside it, is `P1_FINAL_RESULT_TABLE.md`
+(`scripts/p1_final_table.py`, `P1_FINAL_SUMMARY.json`); the convergence tables for the final run are
+`P1_HORIZON_CONVERGENCE_final.md` (pre-fix: `*_frozen_policy.md`; intermediate: `*_lot.md`).
+
+| fixture | legacy PRE-FIX | legacy FINAL | declared PRE-FIX @52 | **declared FINAL @52** | FINAL verdict |
+|---|---|---|---|---|---|
+| A | +0.43% | +0.27% | +0.87% | +0.81% vs incumbent | PASS, stable |
+| B | -10.70% | -10.70% | +2.49% | **+2.49%** vs EOQ | FAIL, non-convergent (1.44 pp) |
+| C | +3.61% | +1.88% | +0.30% | +0.46% vs reorder_point | PASS |
+| D | -0.58% | -0.51% | +0.63% | +0.66% | PASS |
+| E | -0.00% | +0.00% | -0.10% | -0.01% | PASS |
+| F | +0.24% | +0.30% | +0.72% | +0.70% | PASS |
+| G | -10.01% | -0.98% | +6.18% | **+0.46%** vs EOQ | PASS |
+| H | -3.73% | -5.00% | -1.27% | -1.67% | PASS |
+| I | +0.53% | +0.08% | +7.14% | **+0.57%** vs EOQ | PASS |
+| J | -11.06% | -11.06% | +0.15% | +0.15% | PASS |
+| K | -11.20% | -11.20% | +0.15% | +0.15% | PASS |
+| L | -10.16% | -10.16% | +0.81% | +0.81% | PASS |
+| M | -0.54% | -1.11% | +0.05% | -0.17% | PASS |
+| N | -0.71% | -1.08% (categories) | +1.07% | +0.61% | proven invalid, inside tolerance |
+| O | +0.46% | +1.04% | +0.09% | +0.21% | PASS |
+| P | +0.29% | +0.41% | +0.16% | +0.35% | PASS |
+| Q | +0.85% | +0.85% | +0.19% | +0.17% | PASS |
+| R | -0.05% | -0.02% (categories) | +0.65% | +0.55% | proven invalid, inside tolerance |
+| S | +0.26% | +0.26% | invalid | invalid at 52 (to W = 12) | proven invalid at the declared benchmark |
+| T | -11.47% | -3.97% | +6.87% | **+2.06%** vs EOQ (seeds -1.02 / +1.99 / +5.24) | FAIL, stable (.38 pp) |
+
+Legacy final: 18 / 20 (N, R categories). Declared final: valid 17, passing 15, failing B and T. Service
+on every valid fixture at or above its legacy level; A abstains on 18 of 156 reviews (legacy 4 of 33).
+Runtime, ZAAD reviews: p50 .96 s, p90 4.3 s, p95 6.5 s, max 79 s. Unit suite on the final code: J17.
+
+## J16b. B classification (stage 5 of the continuation)
+
+B fails the declared benchmark (+2.49%) and is non-convergent by the pre-registered criterion. Ownership
+decomposition (`scripts/p1_t_decomposition.py`): seeds +2.99 / +0.51 / +3.99%; ZAAD 5-9 orders against
+EOQ's 3; sub-economic orders are 100-unit RETAIN_INCUMBENT outcomes (the confirmation mechanism of J16)
+plus 800-900-unit lots that are half the EOQ. Classification: **B, planning-horizon limitation** (the
+economic lot of 18.6 weeks exceeds the twelve-period planning horizon, so no plan can contain the second
+order whose fixed cost a full EOQ lot saves; the landed terminal credit cannot represent a saving that
+falls outside the window), compounded by **A, benchmark design** at this endpoint (2.8 lot cycles in a
+year; delta range 1.44 pp over 40-52 under the declared rule). Not a policy defect the current planner
+can address without a longer planning horizon; not fixed in this continuation, per the brief.
+
+## J16c. T on the final code: decomposition and classification (continuation brief, stages 3-4)
+
+Final-code T: +2.06% (seeds -1.02 / +1.99 / +5.24%), stable (.38 pp). Ownership decomposition
+(`scripts/p1_t_decomposition.py` on `closure/horizon52_final.jsonl.gz`; per-review ledger differences by
+the owner of ZAAD's review, terminal credit difference as the boundary part; reconciles to the gap to
+1e-6 on every seed):
+
+| seed | gap | P1-owned reviews | P0-owned reviews | terminal / boundary | ZAAD orders (P0-owned reviews) / EOQ orders |
+|---|---|---|---|---|---|
+| 41001 | -657 (-1.02%) | +2,702 | -5,390 | +2,030 | 7 (2) / 7 |
+| 41002 | +1,250 (+1.99%) | +22,213 | -19,937 | -1,026 | 7 (11) / 6 |
+| 41003 | +3,331 (+5.24%) | +11,998 | -9,333 | +666 | 12 (19) / 7 |
+
+The per-review ledger split is dominated by purchase timing (the two trajectories buy in different
+weeks), so the informative partition is by shipment: ZAAD's nine sub-economic orders (312-384 units at the
+$800 tier plus $200 order and $25 receiving, $1,025 each, against $1,725 for a 1,920-unit load) are the
+whole excess. Traced with the gate detail (`closure/forensics_T_combined_realistic_4100{1,2,3}.json`):
+
+| seed, review | owner (router reason) | state / status | what happened |
+|---|---|---|---|
+| 41001 r46 | P0 (B@branch inherited protection under management, FALSE_PROTECTION_RISK) | NO_ACTION / PENDING_REVIEW | frozen objective (no lot valuation) chose the 72 + 240 deferral candidate, $100 cheaper than the 888 + 864 load on the twelve-week plan: J12 mechanism on a P0-owned review |
+| 41002 r36 | P0 (A@branch FALSE_PROTECTION_RISK) | NO_ACTION / RETAIN_INCUMBENT | candidate deferred; stress gate rejected; incumbent's 192 + 120 executed |
+| 41003 r9 | **P1** (calm, no driver) | NO_ACTION / RETAIN_INCUMBENT | every candidate proposed 1,056 + 864; stress gate ("nil") rejected on `within_downside` only: physically usable, service met (.964 / .969 against the .95 target), cost 14,790 against the incumbent's 23,423 on every world, but below the incumbent's 1.000 service on the stress worlds (per-service no-worse floor, planner line 1143) |
+| 41003 r20 | P0 (B@branch FALSE_PROTECTION_RISK) | NO_ACTION / PENDING_REVIEW | frozen objective chose 120 + 264 over the 840 + 1,080 cadence candidate |
+| 41003 r21, r22, r25 | P0 (FALSE_PROTECTION_RISK) | NO_ACTION, CAPITAL_OPTIMIZATION / RETAIN_INCUMBENT | candidate deferred or full load; stress gate rejected; incumbent's 312 executed |
+| 41003 r40 | P0 (screen PROTECT) | PROTECT / RETAIN_INCUMBENT | as above |
+| 41003 r47 | **P1** (calm, no driver) | NO_ACTION / RETAIN_INCUMBENT | cadence candidates proposed 936 + 984; chosen deterministic deferred; stress gate rejected; incumbent's 312 executed |
+
+Partition of the nine: seven are RETAIN_INCUMBENT outcomes of the declared-stress gate's per-service
+no-worse-than-incumbent floor on the nil stress (two on P1-owned reviews, five on P0-owned), two are
+frozen-objective deferrals on P0-owned reviews. The P1-owned share (two orders on one seed, about $1,500
+net on that seed, about 0.8 pp of the seed mean) would not on its own take T outside tolerance; the
+P0-owned share (seven, about 2.7 pp) would.
+
+Two semantic findings, recorded for decision and NOT changed here:
+
+1. **FALSE_PROTECTION_RISK ownership on P1 lots.** After each full load the stock sits far above the lean
+   baseline; the protection machinery reads that as inherited protection under management, the router
+   (pre-registered rule: any flag or driver -> P0) hands the next reviews to the frozen path, and the
+   frozen objective, which has no lot valuation, reproduces the J12 deferral there. A cycle-stock lot is
+   being classified as protection.
+2. **The stress gate's per-service floor on purchasing reviews.** Under a declared nil stress the
+   "stress" worlds are fitted worlds, and the rule that a candidate may not serve less than the incumbent
+   on them, even above target, structurally prevents any lot plan from replacing a weekly-ordering
+   incumbent whenever the fitted draw shows a fraction of a point of shortfall. It applies on P1-owned
+   reviews as it does on P0-owned ones; it is P0 acceptance machinery (V6 / V7 floors).
+
+Classification per the continuation's decision tree: **CASE T3, P1 / FROZEN-P0 COMPATIBILITY BLOCKER**.
+The router's ownership is what the pre-registered rule says it is, with the information at decision time;
+the material part of the gap sits on P0-owned reviews and the P1-owned part comes from the same P0 gate
+rule. No P0 or gate code was modified; T is not waived. B: J16b (planning horizon shorter than the lot
+cycle; not fixed). No further optimizer change was made in this continuation (one-fix limit: the
+lot-sizing terminal valuation is the one general correction of pass J).
+
+## J17. Freeze gate (continuation brief, stage 9) and verdict
+
+| # | requirement | state |
+|---|---|---|
+| 1 | planner-boundary architecture accepted | yes (I2-I4, J15a) |
+| 2 | benchmark pre-registered and stable | yes: `P1_BENCHMARK_PREREGISTRATION.md`; 18 / 19 fixtures stable under the declared rule (B non-convergent) |
+| 3 | final benchmark tests pass | 12 / 12 |
+| 4 | P0 isolation safe | yes: final-code arm 120 / 120 decision-identical (`closure/p0_arm_router_final.json`) |
+| 5 | required starvation zero | yes, every arm |
+| 6 | P <= 2% | +0.35% |
+| 7 | C <= 2% | +0.46% |
+| 8 | I <= 2% | +0.57% |
+| 9 | O <= 2% | +0.21% (service floor .80 met: .980) |
+| 10 | B passes if valid | **NO: +2.49%, non-convergent** (J16b) |
+| 11 | S valid and passing, or invalidity proven | invalidity proven: declared receivables below every policy's cash-out; no policy completes the year (J7) |
+| 12 | T passes if valid | **NO: +2.06%** (J16c, compatibility blocker) |
+| 13 | A preserves meaningful abstention | yes: 18 abstentions / 156 reviews, +0.81% |
+| 14 | G / Q safe | G +0.46%, Q +0.17% |
+| 15 | all other valid fixtures pass | yes (D, E, F, H, J, K, L, M) |
+| 16 | N / R preserved honestly | yes (categories fail as recorded; costs inside tolerance) |
+| 17 | no fixture-specific code | none |
+| 18 | no widened tolerance | 2% (3% on Q, S as declared) |
+| 19 | no arbitrary buffer | none |
+| 20 | freight accounting reconciles | yes (J13, 45 cells) |
+| 21 | terminal accounting reconciles | yes: evaluation rows reconcile to the cent with the `terminal_continuation` key; realised ledger untouched (stage 8 check) |
+| 22 | materiality uses consistent economics | yes: materiality reads the same adjusted rows (the reason for the final-code rerun) |
+| 23 | tests | 1,502 passed, 2 skipped (unchanged skip count) |
+| 24 | invariants | 720 / 720 (`P1_INVARIANTS.json`; pass-I record kept as `_pass_i`) |
+| 25 | runtime | p50 .96 s, p95 6.5 s, max 79 s per ZAAD review at full horizon |
+| 26-28 | Validation7 / Validation8 / holdout4 | untouched, unrun |
+| 29 | Network Twin / frontend / Vercel | untouched |
+
+**Verdict: P1 CORE ARCHITECTURE PASS — T (P1 / FROZEN-P0 COMPATIBILITY: FALSE_PROTECTION_RISK
+ownership of cycle-stock lots and the stress gate's per-service floor on purchasing reviews) AND B
+(PLANNING HORIZON SHORTER THAN THE ECONOMIC LOT CYCLE) REMAIN OPEN.** Not frozen. P2 NOT STARTED —
+P1 FREEZE GATE NOT MET.
+
+## J18. State after pass J
+
+Product defaults changed: `lot_terminal_valuation=True` (P1-owned reviews only). Evaluation-only
+additions: rolling replay mode, stitched truth, endpoint scoring, landed-cost continuation. The declared
+P1 benchmark is the rolling 52-review landed-cost evaluation; the legacy twelve-week record is kept and
+reported beside it. `claude/zaad-meio-p2` does not exist.

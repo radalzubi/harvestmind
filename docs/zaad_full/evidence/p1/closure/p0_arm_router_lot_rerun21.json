@@ -1,0 +1,1408 @@
+{
+ "21": {
+  "arm": "router_lot_rerun21",
+  "cell": 21,
+  "status": "COMPLETE",
+  "service": 0.759570770573741,
+  "tail": 0.0,
+  "p10": 0.0,
+  "breach_reviews": 5,
+  "worst_unmet": 27.0,
+  "total_unmet": 93.04611178796222,
+  "inventory": 118.99428234525101,
+  "cost": 3403.7183841632905,
+  "wall": 128.92463337490335,
+  "reviews": 20,
+  "required_requested": 63,
+  "required_completed": 45,
+  "required_starved": 0,
+  "required_infeasible": 18,
+  "joint_required": 9,
+  "joint_built": 12,
+  "joint_chosen": 5,
+  "states": {
+   "NO_ACTION": 3,
+   "PROTECT": 17
+  },
+  "owners": {
+   "PROTECTION_RECOVERY": 20
+  },
+  "p1_classes_added": 0,
+  "chosen": {
+   "deterministic_network": 4,
+   "cvar_network": 2,
+   "projected_base_stock_proxy": 6,
+   "joint_recovery": 5,
+   "protected_network": 2,
+   "stochastic_network": 1
+  },
+  "statuses": {
+   "PENDING_REVIEW": 14,
+   "RETAIN_INCUMBENT": 6
+  },
+  "abstentions": 0,
+  "lat_p50": 0.6392527497373521,
+  "lat_p90": 16.710401250049472,
+  "lat_p95": 29.758505708072335,
+  "lat_max": 48.77530191605911,
+  "per_review": [
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.286913416814059,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network"
+    ],
+    "built": [
+     "deterministic_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.003051124464066477,
+     "inventory_delta_fraction": -0.05439126122151105,
+     "service_delta": 0.0,
+     "better_on": [
+      "inventory"
+     ],
+     "worse_on": [],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -0.31%, inventory -5.44%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+    },
+    "reasons": [],
+    "chosen": "deterministic_network",
+    "feasible": [
+     "incumbent",
+     "base_stock",
+     "deterministic_network"
+    ],
+    "recovery_mode": false,
+    "lean_review": true,
+    "gates": {
+     "deterministic_network": "accepted"
+    },
+    "final_p0": {
+     "main": 11.31824119200602
+    },
+    "worlds": [
+     "fitted:38001:0",
+     "fitted:38001:1",
+     "fitted:38001:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": null,
+    "starved": [],
+    "latency": 48.77530191605911,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.018315872919901242,
+     "inventory_delta_fraction": 0.06898691563819961,
+     "service_delta": 0.03400341918977512,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -1.83%, inventory +6.90%, worst service +0.034 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Cheaper candidate failed the gate; the next qualified candidate passed independent and stress confirmation."
+    ],
+    "chosen": "deterministic_network",
+    "feasible": [
+     "incumbent",
+     "base_stock",
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "hedged_network"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "deterministic_network": "Neither the incumbent nor any candidate meets every requested service target under independent confirmation, and the candidate does not improve the priority-weighted shortfall; incumbent retained.; Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+     "cvar_network": "accepted"
+    },
+    "final_p0": {
+     "main": 28.611734381961778
+    },
+    "worlds": [
+     "fitted:38002:0",
+     "fitted:38002:1",
+     "fitted:38002:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "status": "RETAIN_INCUMBENT",
+    "service": 0.23258165953163423,
+    "unmet": 13.046111787962218,
+    "joint_class": null,
+    "starved": [],
+    "latency": 29.758505708072335,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": false,
+     "verdict": "NO MATERIAL IMPROVEMENT AVAILABLE",
+     "cost_delta_fraction": 0.03026436332681326,
+     "inventory_delta_fraction": 0.7330589112831912,
+     "service_delta": 0.0,
+     "better_on": [],
+     "worse_on": [
+      "cost",
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost +3.03%, inventory +73.31%, worst service +0.000 against the incumbent; no axis improves by more than the declared materiality"
+    },
+    "reasons": [
+     "Recovery candidate does not materially improve weighted service shortfall versus the incumbent under independent confirm",
+     "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+     "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery ins"
+    ],
+    "chosen": "joint_recovery",
+    "feasible": [],
+    "recovery_mode": true,
+    "lean_review": false,
+    "gates": {
+     "joint_recovery": "Recovery candidate does not materially improve weighted service shortfall versus the incumbent under independent confirmation.; Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+    },
+    "final_p0": {
+     "main": 25.15207893630036
+    },
+    "worlds": [
+     "fitted:38003:0",
+     "fitted:38003:1",
+     "fitted:38003:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "status": "PENDING_REVIEW",
+    "service": 0.0,
+    "unmet": 14.0,
+    "joint_class": null,
+    "starved": [],
+    "latency": 14.299003416672349,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.011642414683540063,
+     "inventory_delta_fraction": 1.5539303205258268,
+     "service_delta": 0.039672619101991935,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -1.16%, inventory +155.39%, worst service +0.040 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery ins"
+    ],
+    "chosen": "joint_recovery",
+    "feasible": [],
+    "recovery_mode": true,
+    "lean_review": false,
+    "gates": {
+     "joint_recovery": "accepted"
+    },
+    "final_p0": {
+     "main": 33.855712230251505
+    },
+    "worlds": [
+     "fitted:38004:0",
+     "fitted:38004:1",
+     "fitted:38004:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "status": "RETAIN_INCUMBENT",
+    "service": 0.0,
+    "unmet": 19.0,
+    "joint_class": null,
+    "starved": [],
+    "latency": 16.710401250049472,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.03637771983727514,
+     "inventory_delta_fraction": 0.47493775829180584,
+     "service_delta": 0.028010617113551017,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -3.64%, inventory +47.49%, worst service +0.028 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Recovery candidate improves service but exceeds the configured economic downside tolerance.",
+     "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery ins"
+    ],
+    "chosen": "joint_recovery",
+    "feasible": [],
+    "recovery_mode": true,
+    "lean_review": false,
+    "gates": {
+     "joint_recovery": "Recovery candidate improves service but exceeds the configured economic downside tolerance."
+    },
+    "final_p0": {},
+    "worlds": [
+     "fitted:38005:0",
+     "fitted:38005:1",
+     "fitted:38005:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "status": "PENDING_REVIEW",
+    "service": 0.0,
+    "unmet": 20.0,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 10.330146375112236,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "joint_recovery",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.14481350726348058,
+     "inventory_delta_fraction": 6.237000841090562,
+     "service_delta": 0.1957083428018379,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -14.48%, inventory +623.70%, worst service +0.196 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery ins"
+    ],
+    "chosen": "joint_recovery",
+    "feasible": [],
+    "recovery_mode": true,
+    "lean_review": false,
+    "gates": {
+     "joint_recovery": "accepted"
+    },
+    "final_p0": {
+     "main": 57.10431304194057
+    },
+    "worlds": [
+     "fitted:38006:0",
+     "fitted:38006:1",
+     "fitted:38006:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "status": "PENDING_REVIEW",
+    "service": 0.0,
+    "unmet": 27.0,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 1.7954970416612923,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "joint_recovery",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.2690895950639354,
+     "inventory_delta_fraction": 0.5555911782649804,
+     "service_delta": 0.269935446271505,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -26.91%, inventory +55.56%, worst service +0.270 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery ins"
+    ],
+    "chosen": "joint_recovery",
+    "feasible": [],
+    "recovery_mode": true,
+    "lean_review": false,
+    "gates": {
+     "joint_recovery": "accepted"
+    },
+    "final_p0": {
+     "main": 27.269726719514797
+    },
+    "worlds": [
+     "fitted:38007:0",
+     "fitted:38007:1",
+     "fitted:38007:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "protected_network",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 2.190552624873817,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "joint_recovery",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.3638805843874408,
+     "inventory_delta_fraction": 5.009659177478533,
+     "service_delta": 0.4365488737079042,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -36.39%, inventory +500.97%, worst service +0.437 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Incumbent misses a requested service target under independent confirmation and no candidate reaches it either; the candi"
+    ],
+    "chosen": "protected_network",
+    "feasible": [
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "protected_network": "accepted"
+    },
+    "final_p0": {
+     "main": 24.96698916291613
+    },
+    "worlds": [
+     "fitted:38008:0",
+     "fitted:38008:1",
+     "fitted:38008:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "protected_network",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 1.1203691670671105,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "joint_recovery",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.43055089202205465,
+     "inventory_delta_fraction": 7.07792155142826,
+     "service_delta": 0.5387333202347705,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -43.06%, inventory +707.79%, worst service +0.539 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the "
+    ],
+    "chosen": "protected_network",
+    "feasible": [
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "protected_network": "accepted"
+    },
+    "final_p0": {
+     "main": 24.28483270107681
+    },
+    "worlds": [
+     "fitted:38009:0",
+     "fitted:38009:1",
+     "fitted:38009:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 1.3445784160867333,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "joint_recovery",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.40333651553409955,
+     "inventory_delta_fraction": 13.313577150975496,
+     "service_delta": 0.6200745946717109,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -40.33%, inventory +1331.36%, worst service +0.620 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the "
+    ],
+    "chosen": "joint_recovery",
+    "feasible": [
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "joint_recovery": "accepted"
+    },
+    "final_p0": {
+     "main": 88.01345217092332
+    },
+    "worlds": [
+     "fitted:38010:0",
+     "fitted:38010:1",
+     "fitted:38010:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.6392527497373521,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "joint_recovery",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.44486956409503425,
+     "inventory_delta_fraction": 0.3420142485362867,
+     "service_delta": 0.40709059961843486,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -44.49%, inventory +34.20%, worst service +0.407 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Incumbent misses a requested service target under independent confirmation and no candidate reaches it either; the candi"
+    ],
+    "chosen": "stochastic_network",
+    "feasible": [
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "hedged_network",
+     "joint_recovery"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "stochastic_network": "accepted"
+    },
+    "final_p0": {},
+    "worlds": [
+     "fitted:38011:0",
+     "fitted:38011:1",
+     "fitted:38011:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.9570387080311775,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "joint_recovery",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.5360475606758067,
+     "inventory_delta_fraction": 5.033955684252652,
+     "service_delta": 0.6329565192164092,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -53.60%, inventory +503.40%, worst service +0.633 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the "
+    ],
+    "chosen": "joint_recovery",
+    "feasible": [
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "joint_recovery": "accepted"
+    },
+    "final_p0": {
+     "main": 45.22651007363062
+    },
+    "worlds": [
+     "fitted:38012:0",
+     "fitted:38012:1",
+     "fitted:38012:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "status": "RETAIN_INCUMBENT",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.15102645801380277,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": null,
+    "reasons": [],
+    "chosen": "incumbent",
+    "feasible": [
+     "incumbent",
+     "base_stock",
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "incumbent": "rejected",
+     "base_stock": "no positive hedged benefit against the incumbent",
+     "deterministic_network": "no positive hedged benefit against the incumbent",
+     "stochastic_network": "no positive hedged benefit against the incumbent",
+     "cvar_network": "no positive hedged benefit against the incumbent",
+     "protected_network": "no positive hedged benefit against the incumbent",
+     "hedged_network": "no positive hedged benefit against the incumbent",
+     "stress_network": "no positive hedged benefit against the incumbent"
+    },
+    "final_p0": {},
+    "worlds": [
+     "fitted:38013:0",
+     "fitted:38013:1",
+     "fitted:38013:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "status": "RETAIN_INCUMBENT",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.11551329074427485,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": false,
+     "verdict": "NO MATERIAL IMPROVEMENT AVAILABLE",
+     "cost_delta_fraction": 0.04360712826958972,
+     "inventory_delta_fraction": 0.01568653925762305,
+     "service_delta": 0.0,
+     "better_on": [],
+     "worse_on": [
+      "cost"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost +4.36%, inventory +1.57%, worst service +0.000 against the incumbent; no axis improves by more than the declared materiality"
+    },
+    "reasons": [
+     "Independent fitted-model confirmation does not establish positive benefit."
+    ],
+    "chosen": "stochastic_network",
+    "feasible": [
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "hedged_network"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "stochastic_network": "Independent fitted-model confirmation does not establish positive benefit.",
+     "cvar_network": "no positive hedged benefit against the incumbent",
+     "protected_network": "no positive hedged benefit against the incumbent",
+     "hedged_network": "no positive hedged benefit against the incumbent"
+    },
+    "final_p0": {},
+    "worlds": [
+     "fitted:38014:0",
+     "fitted:38014:1",
+     "fitted:38014:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.11029054131358862,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.114185895996542,
+     "inventory_delta_fraction": 0.14062705763821529,
+     "service_delta": 0.09595558334122956,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -11.42%, inventory +14.06%, worst service +0.096 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the "
+    ],
+    "chosen": "cvar_network",
+    "feasible": [
+     "stochastic_network",
+     "cvar_network",
+     "protected_network"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "cvar_network": "accepted"
+    },
+    "final_p0": {},
+    "worlds": [
+     "fitted:38015:0",
+     "fitted:38015:1",
+     "fitted:38015:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "status": "RETAIN_INCUMBENT",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.13363808440044522,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "joint_recovery",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": 0.0941759460222017,
+     "inventory_delta_fraction": 0.2833132644910147,
+     "service_delta": 0.15397216482474352,
+     "better_on": [
+      "service"
+     ],
+     "worse_on": [
+      "cost",
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost +9.42%, inventory +28.33%, worst service +0.154 against the incumbent; improvement exceeds the declared materiality on service"
+    },
+    "reasons": [
+     "Neither the incumbent nor any candidate meets every requested service target under independent confirmation, and the can",
+     "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+    ],
+    "chosen": "stochastic_network",
+    "feasible": [
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "stochastic_network": "Neither the incumbent nor any candidate meets every requested service target under independent confirmation, and the candidate does not improve the priority-weighted shortfall; incumbent retained.; Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+     "protected_network": "does not meet every service target under independent confirmation",
+     "cvar_network": "does not meet every service target under independent confirmation",
+     "joint_recovery": "does not meet every service target under independent confirmation"
+    },
+    "final_p0": {},
+    "worlds": [
+     "fitted:38016:0",
+     "fitted:38016:1",
+     "fitted:38016:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "status": "RETAIN_INCUMBENT",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.0741071249358356,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "joint_recovery",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": 0.3161402501598048,
+     "inventory_delta_fraction": 3.3681547207713924,
+     "service_delta": 0.17624460167674483,
+     "better_on": [
+      "service"
+     ],
+     "worse_on": [
+      "cost",
+      "inventory"
+     ],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost +31.61%, inventory +336.82%, worst service +0.176 against the incumbent; improvement exceeds the declared materiality on service"
+    },
+    "reasons": [
+     "Recovery candidate improves service but exceeds the configured economic downside tolerance.",
+     "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+     "Requested service targets are not jointly achievable under the modeled state; selector evaluated best joint recovery ins"
+    ],
+    "chosen": "joint_recovery",
+    "feasible": [],
+    "recovery_mode": true,
+    "lean_review": false,
+    "gates": {
+     "joint_recovery": "Recovery candidate improves service but exceeds the configured economic downside tolerance.; Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+    },
+    "final_p0": {
+     "main": 30.10194164370588
+    },
+    "worlds": [
+     "fitted:38017:0",
+     "fitted:38017:1",
+     "fitted:38017:2"
+    ]
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.07493541622534394,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "protected_network",
+     "hedged_network",
+     "stress_network",
+     "cvar_network"
+    ],
+    "built": [
+     "cvar_network",
+     "deterministic_network",
+     "hedged_network",
+     "protected_network",
+     "stochastic_network",
+     "stress_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.1984517882473966,
+     "inventory_delta_fraction": -0.030494483385329743,
+     "service_delta": 0.06367564652329438,
+     "better_on": [
+      "cost",
+      "service"
+     ],
+     "worse_on": [],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -19.85%, inventory -3.05%, worst service +0.064 against the incumbent; improvement exceeds the declared materiality on cost, service"
+    },
+    "reasons": [
+     "Cheaper candidate failed the gate; the next qualified candidate passed independent and stress confirmation."
+    ],
+    "chosen": "stochastic_network",
+    "feasible": [
+     "incumbent",
+     "base_stock",
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network"
+    ],
+    "recovery_mode": false,
+    "lean_review": false,
+    "gates": {
+     "stochastic_network": "rejected",
+     "cvar_network": "does not meet every service target under independent confirmation",
+     "protected_network": "does not meet every service target under independent confirmation",
+     "deterministic_network": "accepted"
+    },
+    "final_p0": {
+     "main": 16.207127130231033
+    },
+    "worlds": [
+     "fitted:38018:0",
+     "fitted:38018:1",
+     "fitted:38018:2"
+    ]
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.0141788343898952,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network"
+    ],
+    "built": [
+     "deterministic_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.3365428132791001,
+     "inventory_delta_fraction": -0.1552753099437872,
+     "service_delta": 0.0,
+     "better_on": [
+      "cost",
+      "inventory"
+     ],
+     "worse_on": [],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -33.65%, inventory -15.53%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost, inventory"
+    },
+    "reasons": [
+     "Incumbent misses a requested service target under independent confirmation and no candidate reaches it either; the candi"
+    ],
+    "chosen": "deterministic_network",
+    "feasible": [
+     "incumbent",
+     "base_stock",
+     "deterministic_network"
+    ],
+    "recovery_mode": false,
+    "lean_review": true,
+    "gates": {
+     "deterministic_network": "accepted"
+    },
+    "final_p0": {},
+    "worlds": [
+     "fitted:38019:0",
+     "fitted:38019:1",
+     "fitted:38019:2"
+    ]
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "status": "PENDING_REVIEW",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.012323541101068258,
+    "owner": "PROTECTION_RECOVERY",
+    "requested": [
+     "deterministic_network"
+    ],
+    "built": [
+     "deterministic_network"
+    ],
+    "p1_classes_added": [],
+    "materiality": {
+     "material": true,
+     "verdict": "MATERIAL_IMPROVEMENT",
+     "cost_delta_fraction": -0.36793352755082115,
+     "inventory_delta_fraction": 0.0,
+     "service_delta": 0.0,
+     "better_on": [
+      "cost"
+     ],
+     "worse_on": [],
+     "thresholds": {
+      "cost_fraction": 0.01,
+      "inventory_fraction": 0.05,
+      "service": 0.005
+     },
+     "reason": "cost -36.79%, inventory +0.00%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on cost"
+    },
+    "reasons": [
+     "Incumbent misses a requested service target under independent confirmation and no candidate reaches it either; the candi"
+    ],
+    "chosen": "deterministic_network",
+    "feasible": [
+     "incumbent",
+     "base_stock",
+     "deterministic_network"
+    ],
+    "recovery_mode": false,
+    "lean_review": true,
+    "gates": {
+     "deterministic_network": "accepted"
+    },
+    "final_p0": {},
+    "worlds": [
+     "fitted:38020:0",
+     "fitted:38020:1",
+     "fitted:38020:2"
+    ]
+   }
+  ]
+ }
+}

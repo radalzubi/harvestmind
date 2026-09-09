@@ -1,0 +1,7523 @@
+{
+ "fixture": "T_combined_realistic",
+ "seed": 41003,
+ "reviews": [
+  {
+   "state": "NO_ACTION",
+   "lean_profile": true,
+   "lean_review": true,
+   "worlds": [
+    {
+     "name": "fitted:41003:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       99.57561312037004,
+       99.57561312037004,
+       97.58410085796264,
+       103.55863764518485,
+       93.60107633314783,
+       103.55863764518485,
+       103.55863764518485,
+       95.59258859555524,
+       103.55863764518485,
+       107.54166216999964,
+       91.60956407074043,
+       105.55014990759224
+      ],
+      "svc_B": [
+       93.17953399433254,
+       89.21444744138223,
+       105.07479365318352,
+       109.03988020613386,
+       101.1097071002332,
+       95.16207727080773,
+       105.07479365318352,
+       89.21444744138223,
+       93.17953399433254,
+       95.16207727080773,
+       91.19699071785739,
+       105.07479365318352
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9838876881500203,
+      "src_A:1": 0.9816815043250684,
+      "src_A:2": 0.9828961497422278,
+      "src_A:3": 0.9805824085143965,
+      "src_B:0": 0.9838876881500203,
+      "src_B:1": 0.9816815043250684,
+      "src_B:2": 0.9828961497422278,
+      "src_B:3": 0.9805824085143965
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41003:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       101.65081051591933,
+       97.6645042211774,
+       91.6850447790645,
+       95.67135107380643,
+       93.67819792643546,
+       107.63026995803223,
+       107.63026995803223,
+       97.6645042211774,
+       101.65081051591933,
+       101.65081051591933,
+       105.63711681066127,
+       105.63711681066127
+      ],
+      "svc_B": [
+       98.30392123128802,
+       104.32252865361177,
+       102.31632617950385,
+       106.32873112771968,
+       102.31632617950385,
+       100.31012370539594,
+       96.2977187571801,
+       92.28531380896425,
+       108.3349336018276,
+       104.32252865361177,
+       104.32252865361177,
+       100.31012370539594
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9715138959865756,
+      "src_A:1": 1.0,
+      "src_A:2": 0.9797671792044895,
+      "src_A:3": 0.9634279551617032,
+      "src_B:0": 0.9715138959865756,
+      "src_B:1": 1.0,
+      "src_B:2": 0.9797671792044895,
+      "src_B:3": 0.9634279551617032
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41003:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       91.07449533853512,
+       98.99401667232078,
+       95.03425600542795,
+       106.91353800610644,
+       89.0946150050887,
+       106.91353800610644,
+       97.01413633887437,
+       97.01413633887437,
+       93.05437567198152,
+       93.05437567198152,
+       95.03425600542795,
+       97.01413633887437
+      ],
+      "svc_B": [
+       96.98732937163713,
+       100.9459958766019,
+       91.04932961418996,
+       104.90466238156668,
+       100.9459958766019,
+       98.96666262411952,
+       96.98732937163713,
+       106.88399563404907,
+       91.04932961418996,
+       104.90466238156668,
+       104.90466238156668,
+       95.00799611915474
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.997915399844277,
+      "src_A:1": 0.9774689240682475,
+      "src_A:2": 0.9848951239353146,
+      "src_A:3": 0.9761724934532114,
+      "src_B:0": 0.997915399844277,
+      "src_B:1": 0.9774689240682475,
+      "src_B:2": 0.9848951239353146,
+      "src_B:3": 0.9761724934532114
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "purchases": {
+      "src_A:0": 192.0,
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 192.0,
+      "src_A:4": 192.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:0": 120.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 120.0,
+      "src_B:4": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      23516.428039174185,
+      23887.890976190694,
+      23363.856775666216
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 23583.34396002114,
+     "exposure": 0.0,
+     "burden": 3483.3778606809874,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 120.0,
+      "src_A:4": 192.0,
+      "src_A:5": 120.0,
+      "src_A:6": 120.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 144.0,
+      "src_A:11": 192.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 192.0,
+      "src_B:4": 120.0,
+      "src_B:5": 192.0,
+      "src_B:6": 192.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 168.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      23138.064649642605,
+      23626.922198051627,
+      23047.587364952815
+     ],
+     "service_by_world": [
+      0.9592060276006141,
+      0.9591710214218782,
+      0.965464427720842
+     ],
+     "service_stat": 0.9612264378155617,
+     "hedged_cost": 23263.7485804524,
+     "exposure": 1131.203373156443,
+     "burden": 2490.4046684741334,
+     "well_solved": true,
+     "feasible": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 960.0,
+      "src_B": 960.0
+     },
+     "purchases": {
+      "src_A:0": 960.0,
+      "src_A:10": 960.0,
+      "src_B:0": 960.0,
+      "src_B:10": 960.0
+     },
+     "cost_by_world": [
+      14802.536553321688,
+      15474.012101923157,
+      14192.146143346543
+     ],
+     "service_by_world": [
+      0.9960306021443452,
+      0.9838056569315485,
+      1.0
+     ],
+     "service_stat": 0.9931868330636576,
+     "hedged_cost": 14809.412023252153,
+     "exposure": 254.79407907918372,
+     "burden": 4514.180120840664,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 888.0,
+      "src_B": 1032.0
+     },
+     "purchases": {
+      "src_A:0": 888.0,
+      "src_A:9": 1032.0,
+      "src_B:0": 1032.0,
+      "src_B:9": 888.0
+     },
+     "cost_by_world": [
+      14468.167541696013,
+      14762.6038832354,
+      14371.834296009656
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 14529.360293992047,
+     "exposure": 0.0,
+     "burden": 5299.4404261209465,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 576.0,
+      "src_B": 1296.0
+     },
+     "purchases": {
+      "src_A:0": 576.0,
+      "src_A:6": 1320.0,
+      "src_B:0": 1296.0,
+      "src_B:6": 600.0
+     },
+     "cost_by_world": [
+      14586.049138660308,
+      15045.84325490736,
+      14279.486131458838
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 14634.036360066064,
+     "exposure": 0.0,
+     "burden": 7458.767067807111,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 768.0,
+      "src_B": 1152.0
+     },
+     "purchases": {
+      "src_A:0": 768.0,
+      "src_A:8": 1152.0,
+      "src_B:0": 1152.0,
+      "src_B:8": 768.0000000000002
+     },
+     "cost_by_world": [
+      14590.23690070519,
+      15033.006798888315,
+      14433.351788026946
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 14680.527880357342,
+     "exposure": 0.0,
+     "burden": 6063.008558597908,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "base_stock",
+    "deterministic_network",
+    "stochastic_network",
+    "cadence_2_network",
+    "cadence_4_network"
+   ],
+   "chosen": "stochastic_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {
+    "src_A": 888.0,
+    "src_B": 1032.0
+   },
+   "candidate_gates": {
+    "stochastic_network": {
+     "accepted": true,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": true,
+       "gate_mode": "strict",
+       "physically_usable": true,
+       "within_downside": true,
+       "service_met": true,
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23366.495591624443,
+        "cost_min": 23267.460295326535,
+        "cost_max": 23546.82853905543,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 14365.73444793849,
+        "cost_min": 14253.89747777654,
+        "cost_max": 14532.934419626283,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       }
+      }
+     ],
+     "reason": "accepted"
+    }
+   },
+   "on_hand": 300.0,
+   "pipeline": [],
+   "forecast_mean": {
+    "A": 98.92307692307692,
+    "B": 98.92307692307692
+   },
+   "orchestration": {
+    "planner_owner": "PURCHASING_ECONOMICS",
+    "ownership_reasons": [
+     "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+    ],
+    "p1_classes_added": [
+     "stochastic_network"
+    ],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "cadence_2_network",
+     "cadence_4_network"
+    ],
+    "candidates_built": [
+     "cadence_2_network",
+     "cadence_4_network",
+     "deterministic_network",
+     "stochastic_network"
+    ],
+    "reasons": [
+     "the incumbent plan is physically usable, meets every requested service target, carries no active risk driver and holds no materially avoidable inventory"
+    ]
+   },
+   "selected_policy": "stochastic_network",
+   "blocking": null,
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23366.495591624443,
+      "cost_min": 23267.460295326535,
+      "cost_max": 23546.82853905543,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 14365.73444793849,
+      "cost_min": 14253.89747777654,
+      "cost_max": 14532.934419626283,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23514.17761002238,
+     "cost_min": 23408.163267748638,
+     "cost_max": 23586.356680325738,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 14565.279457579092,
+     "cost_min": 14384.559747428768,
+     "cost_max": 14801.408574060926,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "economics_orders": [
+    {
+     "q": 888.0,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 47.84615384615384,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 14.872879896543491,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 9.28096625730268,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 816.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 0.0
+     },
+     "need": 62.71903374269732
+    },
+    {
+     "q": 1032.0,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 47.84615384615384,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 14.872879896543491,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 9.28096625730268,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 960.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 0.0
+     },
+     "need": 62.71903374269732
+    }
+   ],
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "eoq_from_same_snapshot": {
+    "src_A:0": 960.0,
+    "src_B:0": 960.0
+   },
+   "chosen_solution": null,
+   "executed": [
+    [
+     "src_A",
+     888.0
+    ],
+    [
+     "src_B",
+     1032.0
+    ]
+   ],
+   "settlement": {
+    "demand": 199.50552207475604,
+    "served": 199.50552207475604,
+    "end_stock": 100.49447792524396,
+    "ledger": {
+     "opening_assets": 1500.0,
+     "procurement": 9600.0,
+     "freight": 1500.0,
+     "handling": 0.0,
+     "order_fees": 0.0,
+     "financing": 0.0,
+     "ordering": 200.0,
+     "receiving": 25.0,
+     "substitution": 0.0,
+     "lost_sales_opportunity": 0.0,
+     "sla": 0.0,
+     "holding": 1.734562221723389,
+     "working_capital": 3.26027397260274,
+     "closing_assets": -8060.062855424844
+    }
+   }
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "lean_profile": true,
+   "lean_review": true,
+   "worlds": [
+    {
+     "name": "fitted:41004:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       95.38637169579656,
+       105.32245208077536,
+       93.39915561880079,
+       103.3352360037796,
+       107.30966815777111,
+       109.29688423476689,
+       93.39915561880079,
+       91.41193954180503,
+       93.39915561880079,
+       103.3352360037796,
+       93.39915561880079,
+       101.34801992678383
+      ],
+      "svc_B": [
+       97.60116595542938,
+       91.62558436632146,
+       101.58488701483466,
+       93.6174448960241,
+       109.55232913364523,
+       109.55232913364523,
+       101.58488701483466,
+       99.59302648513201,
+       99.59302648513201,
+       89.63372383661881,
+       101.58488701483466,
+       95.60930542572673
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9629661361665613,
+      "src_A:1": 0.9731772841116918,
+      "src_A:2": 0.9708659343972066,
+      "src_A:3": 0.9802533424760553,
+      "src_B:0": 0.9629661361665613,
+      "src_B:1": 0.9731772841116918,
+      "src_B:2": 0.9708659343972066,
+      "src_B:3": 0.9802533424760553
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41004:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       95.05582045829225,
+       95.05582045829225,
+       106.93779801557878,
+       99.01647964405441,
+       104.95746842269769,
+       102.9771388298166,
+       89.11483167964897,
+       91.09516127253006,
+       91.09516127253006,
+       102.9771388298166,
+       102.9771388298166,
+       91.09516127253006
+      ],
+      "svc_B": [
+       102.79258525072026,
+       92.9086828227664,
+       100.8158047651295,
+       90.93190233717563,
+       88.95512185158485,
+       98.83902427953872,
+       90.93190233717563,
+       102.79258525072026,
+       108.7229267074926,
+       108.7229267074926,
+       102.79258525072026,
+       92.9086828227664
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9824232260805692,
+      "src_A:1": 0.9814607846648061,
+      "src_A:2": 0.9861741622022255,
+      "src_A:3": 0.9741948910056331,
+      "src_B:0": 0.9824232260805692,
+      "src_B:1": 0.9814607846648061,
+      "src_B:2": 0.9861741622022255,
+      "src_B:3": 0.9741948910056331
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41004:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       97.6277553487686,
+       95.63535217838557,
+       97.6277553487686,
+       95.63535217838557,
+       99.62015851915163,
+       95.63535217838557,
+       93.64294900800253,
+       99.62015851915163,
+       91.65054583761952,
+       93.64294900800253,
+       101.61256168953467,
+       91.65054583761952
+      ],
+      "svc_B": [
+       99.54876453300785,
+       93.57583866102738,
+       105.52169040498832,
+       99.54876453300785,
+       91.58486337036723,
+       91.58486337036723,
+       105.52169040498832,
+       97.5577892423477,
+       91.58486337036723,
+       107.51266569564848,
+       107.51266569564848,
+       109.50364098630865
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9880110024368787,
+      "src_A:1": 0.9528228321242337,
+      "src_A:2": 0.9778151103397312,
+      "src_A:3": 0.9722855425299332,
+      "src_B:0": 0.9880110024368787,
+      "src_B:1": 0.9528228321242337,
+      "src_B:2": 0.9778151103397312,
+      "src_B:3": 0.9722855425299332
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "purchases": {
+      "src_A:0": 192.0,
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 192.0,
+      "src_A:4": 192.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:0": 120.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 120.0,
+      "src_B:4": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      22941.210564688783,
+      22747.21965924972,
+      22798.92527848419
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 22831.73378094858,
+     "exposure": 0.0,
+     "burden": 12064.497390633418,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:10": 192.0,
+      "src_A:11": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 192.0
+     },
+     "cost_by_world": [
+      15188.432419209394,
+      14925.77260868952,
+      14836.453838302055
+     ],
+     "service_by_world": [
+      0.8726343420795205,
+      0.8772775484557606,
+      0.8920205692072016
+     ],
+     "service_stat": 0.8805425052734335,
+     "hedged_cost": 14990.289185441647,
+     "exposure": 1928.9246430458763,
+     "burden": 3955.861429233398,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:8": 1128.0,
+      "src_B:8": 792.0
+     },
+     "cost_by_world": [
+      12663.86898189489,
+      12675.051306740208,
+      12658.33981500068
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12672.48957645003,
+     "exposure": 0.0,
+     "burden": 6054.1330061091385,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:8": 959.999999997621,
+      "src_B:8": 960.000000002379
+     },
+     "cost_by_world": [
+      12662.508273973304,
+      12673.421655982249,
+      12655.034483743153
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12670.417139294459,
+     "exposure": 0.0,
+     "burden": 6054.1330061091385,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:8": 1079.9999999999998,
+      "src_B:8": 840.0000000000002
+     },
+     "cost_by_world": [
+      12661.932802205916,
+      12673.083866809053,
+      12655.88887638201
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12670.379616849277,
+     "exposure": 0.0,
+     "burden": 6054.1330061091385,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:8": 959.999999997621,
+      "src_B:8": 960.000000002379
+     },
+     "cost_by_world": [
+      12662.508273973304,
+      12673.421655982249,
+      12655.034483743153
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12670.417139294459,
+     "exposure": 0.0,
+     "burden": 6054.1330061091385,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:8": 960.0,
+      "src_B:8": 960.0
+     },
+     "cost_by_world": [
+      12662.508273973217,
+      12673.421655982167,
+      12655.034483743095
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12670.417139294384,
+     "exposure": 0.0,
+     "burden": 6054.1330061091385,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:8": 1080.0,
+      "src_B:8": 840.0
+     },
+     "cost_by_world": [
+      12661.932802205916,
+      12673.083866809051,
+      12655.88887638201
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12670.379616849277,
+     "exposure": 0.0,
+     "burden": 6054.1330061091385,
+     "well_solved": true,
+     "feasible": true
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:8": 960.0000000000068,
+      "src_B:8": 960.0000000000007
+     },
+     "cost_by_world": [
+      12662.508273973213,
+      12673.421655982167,
+      12655.034483743093
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12670.417139294383,
+     "exposure": 0.0,
+     "burden": 6054.133006109148,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "chosen": "deterministic_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {},
+   "candidate_gates": {
+    "deterministic_network": {
+     "accepted": true,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": true,
+       "gate_mode": "strict",
+       "physically_usable": true,
+       "within_downside": true,
+       "service_met": true,
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 22922.94091045393,
+        "cost_min": 22885.233206125144,
+        "cost_max": 22964.000691674715,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 12925.445389767943,
+        "cost_min": 12889.608701073808,
+        "cost_max": 12956.648390480852,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       }
+      }
+     ],
+     "reason": "accepted"
+    }
+   },
+   "on_hand": 2015.015713856211,
+   "pipeline": [],
+   "forecast_mean": {
+    "A": 99.23695447594999,
+    "B": 99.49423952980048
+   },
+   "orchestration": {
+    "planner_owner": "PURCHASING_ECONOMICS",
+    "ownership_reasons": [
+     "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+    ],
+    "p1_classes_added": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery",
+     "cadence_2_network",
+     "cadence_4_network"
+    ],
+    "candidates_built": [
+     "cadence_2_network",
+     "cadence_4_network",
+     "cvar_network",
+     "deterministic_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network"
+    ],
+    "reasons": [
+     "1589 units sit above a lean base stock against 199 per period of demand"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "blocking": null,
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 22922.94091045393,
+      "cost_min": 22885.233206125144,
+      "cost_max": 22964.000691674715,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 12925.445389767943,
+      "cost_min": 12889.608701073808,
+      "cost_max": 12956.648390480852,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 22791.578585806994,
+     "cost_min": 22589.46060897457,
+     "cost_max": 23018.15354329892,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 12796.492673800987,
+     "cost_min": 12462.467939041104,
+     "cost_max": 13221.430124041819,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "economics_orders": [],
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "eoq_from_same_snapshot": {
+    "src_A:8": 1224.0,
+    "src_B:9": 1224.0
+   },
+   "chosen_solution": null,
+   "executed": [],
+   "settlement": {
+    "demand": 189.77535768663768,
+    "served": 189.77535768663768,
+    "end_stock": 1825.2403561695733,
+    "ledger": {
+     "opening_assets": 10075.078569281053,
+     "substitution": 0.0,
+     "lost_sales_opportunity": 0.0,
+     "sla": 0.0,
+     "holding": 31.50414861333784,
+     "financing": 0.0,
+     "working_capital": 0.04794520547945206,
+     "closing_assets": -7300.961424678293
+    }
+   }
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "lean_profile": true,
+   "lean_review": true,
+   "worlds": [
+    {
+     "name": "fitted:41005:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       108.60616617784486,
+       110.6173914774346,
+       90.50513848153737,
+       108.60616617784486,
+       96.53881438030655,
+       90.50513848153737,
+       98.55003967989627,
+       98.55003967989627,
+       92.51636378112711,
+       108.60616617784486,
+       104.58371557866542,
+       94.52758908071682
+      ],
+      "svc_B": [
+       98.30207782413275,
+       92.4039531546848,
+       90.43791159820213,
+       90.43791159820213,
+       106.16624405006338,
+       94.36999471116745,
+       106.16624405006338,
+       108.13228560654605,
+       104.20020249358072,
+       94.36999471116745,
+       98.30207782413275,
+       96.3360362676501
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9732006403339505,
+      "src_A:1": 0.9698628837965598,
+      "src_A:2": 0.9870897296610776,
+      "src_A:3": 0.9767598779153667,
+      "src_B:0": 0.9732006403339505,
+      "src_B:1": 0.9698628837965598,
+      "src_B:2": 0.9870897296610776,
+      "src_B:3": 0.9767598779153667
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41005:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       93.38473409472071,
+       103.31928027501016,
+       89.41091562260495,
+       103.31928027501016,
+       103.31928027501016,
+       89.41091562260495,
+       101.33597182996198,
+       99.34546180289438,
+       105.30618951106806,
+       93.38473409472071,
+       109.28000798318384,
+       97.35855256683651
+      ],
+      "svc_B": [
+       105.96125284920167,
+       109.9597906925678,
+       101.38803903662759,
+       95.96490824078641,
+       103.96198392751863,
+       89.96710147573727,
+       89.96710147573727,
+       97.96417716246947,
+       91.96637039742032,
+       93.96563931910337,
+       91.96637039742032,
+       103.96198392751863
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9620952083200293,
+      "src_A:1": 0.9526310193704334,
+      "src_A:2": 0.9802280757466403,
+      "src_A:3": 0.9829426934001771,
+      "src_B:0": 0.9620952083200293,
+      "src_B:1": 0.9526310193704334,
+      "src_B:2": 0.9802280757466403,
+      "src_B:3": 0.9829426934001771
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41005:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       110.00106529454514,
+       98.00094908059475,
+       98.00094908059475,
+       102.00098781857821,
+       94.00091034261128,
+       98.00094908059475,
+       96.00092971160302,
+       100.00096844958648,
+       104.00100718756994,
+       102.00461236852362,
+       102.00098781857821,
+       110.00106529454514
+      ],
+      "svc_B": [
+       95.01624169338248,
+       95.01624169338248,
+       100.95475679921888,
+       95.01624169338248,
+       104.91376686977648,
+       100.95475679921888,
+       91.05723162282487,
+       98.97525176394008,
+       86.87229388435667,
+       102.93426183449769,
+       102.93426183449769,
+       93.03673665810369
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.977747060929176,
+      "src_A:1": 0.9680087447796454,
+      "src_A:2": 0.9529304151830621,
+      "src_A:3": 0.9793764875933364,
+      "src_B:0": 0.977747060929176,
+      "src_B:1": 0.9680087447796454,
+      "src_B:2": 0.9529304151830621,
+      "src_B:3": 0.9793764875933364
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "purchases": {
+      "src_A:0": 192.0,
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 192.0,
+      "src_A:4": 192.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:0": 120.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 120.0,
+      "src_B:4": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      22984.89983093377,
+      22914.418031948095,
+      22998.577154104132
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 22967.053889159928,
+     "exposure": 0.0,
+     "burden": 11058.765340160382,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:9": 120.0,
+      "src_A:10": 120.0,
+      "src_A:11": 192.0,
+      "src_B:9": 192.0,
+      "src_B:10": 192.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      16128.228847610437,
+      15833.238096367731,
+      16111.418230431002
+     ],
+     "service_by_world": [
+      0.8601333622721135,
+      0.8769922910018018,
+      0.8627436752166963
+     ],
+     "service_stat": 0.8665691305502101,
+     "hedged_cost": 16027.003722153315,
+     "exposure": 2004.18916485851,
+     "burden": 3295.428839885903,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:7": 1248.0,
+      "src_B:7": 672.0
+     },
+     "cost_by_world": [
+      13095.843955964887,
+      13037.526825689889,
+      13017.877380359376
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13053.556823789013,
+     "exposure": 0.0,
+     "burden": 5807.673329197318,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:6": 1224.0,
+      "src_B:6": 696.0
+     },
+     "cost_by_world": [
+      13020.284028285532,
+      12937.68025792311,
+      13026.299729462036
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12997.317646094974,
+     "exposure": 0.0,
+     "burden": 6620.47980632541,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:6": 1224.0,
+      "src_B:6": 696.0
+     },
+     "cost_by_world": [
+      13020.284028285532,
+      12937.68025792311,
+      13026.299729462036
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12997.317646094974,
+     "exposure": 0.0,
+     "burden": 6620.47980632541,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:6": 1224.0,
+      "src_B:6": 696.0
+     },
+     "cost_by_world": [
+      13020.284028285532,
+      12937.68025792311,
+      13026.299729462036
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12997.317646094974,
+     "exposure": 0.0,
+     "burden": 6620.47980632541,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:6": 1224.0,
+      "src_B:6": 696.0
+     },
+     "cost_by_world": [
+      13020.284028285532,
+      12937.68025792311,
+      13026.299729462036
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12997.317646094974,
+     "exposure": 0.0,
+     "burden": 6620.47980632541,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 1224.0,
+      "src_B:4": 696.0
+     },
+     "cost_by_world": [
+      12970.22236473988,
+      13096.715192260508,
+      13108.226330991074
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13064.179584580532,
+     "exposure": 0.0,
+     "burden": 8217.291325011045,
+     "well_solved": true,
+     "feasible": true
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:6": 887.9999999999993,
+      "src_B:6": 1032.0
+     },
+     "cost_by_world": [
+      13019.76405280728,
+      12936.131163074788,
+      13027.866272113322
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 12997.165580259742,
+     "exposure": 0.0,
+     "burden": 6620.479806325409,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "chosen": "deterministic_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {},
+   "candidate_gates": {
+    "deterministic_network": {
+     "accepted": true,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": true,
+       "gate_mode": "strict",
+       "physically_usable": true,
+       "within_downside": true,
+       "service_met": true,
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23065.838399595865,
+        "cost_min": 22889.826745733775,
+        "cost_max": 23169.298503951017,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 13166.061053153215,
+        "cost_min": 13022.158369013947,
+        "cost_max": 13312.571221578062,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       }
+      }
+     ],
+     "reason": "accepted"
+    }
+   },
+   "on_hand": 1825.2403561695733,
+   "pipeline": [],
+   "forecast_mean": {
+    "A": 100.00646405401488,
+    "B": 99.16898823532308
+   },
+   "orchestration": {
+    "planner_owner": "PURCHASING_ECONOMICS",
+    "ownership_reasons": [
+     "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+    ],
+    "p1_classes_added": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery",
+     "cadence_2_network",
+     "cadence_4_network"
+    ],
+    "candidates_built": [
+     "cadence_2_network",
+     "cadence_4_network",
+     "cvar_network",
+     "deterministic_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network"
+    ],
+    "reasons": [
+     "1398 units sit above a lean base stock against 199 per period of demand"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "blocking": null,
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23065.838399595865,
+      "cost_min": 22889.826745733775,
+      "cost_max": 23169.298503951017,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13166.061053153215,
+      "cost_min": 13022.158369013947,
+      "cost_max": 13312.571221578062,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 22973.829532434116,
+     "cost_min": 22547.827771349817,
+     "cost_max": 23417.318391126777,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13036.479732283937,
+     "cost_min": 12471.782384848852,
+     "cost_max": 13510.27831653525,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "economics_orders": [],
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "eoq_from_same_snapshot": {
+    "src_A:7": 1224.0,
+    "src_B:8": 1224.0
+   },
+   "chosen_solution": null,
+   "executed": [],
+   "settlement": {
+    "demand": 197.58841472850423,
+    "served": 197.58841472850423,
+    "end_stock": 1627.651941441069,
+    "ledger": {
+     "opening_assets": 9126.201780847867,
+     "substitution": 0.0,
+     "lost_sales_opportunity": 0.0,
+     "sla": 0.0,
+     "holding": 28.0937184413116,
+     "financing": 0.0,
+     "working_capital": 0.0,
+     "closing_assets": -6510.607765764276
+    }
+   }
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "lean_profile": true,
+   "lean_review": true,
+   "worlds": [
+    {
+     "name": "fitted:41006:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       109.52934484141169,
+       107.5010236406448,
+       91.27445403450974,
+       99.38773883757727,
+       105.47270243987792,
+       105.47270243987792,
+       111.55766604217858,
+       97.35941763681039,
+       101.41606003834416,
+       99.38773883757727,
+       95.33109643604351,
+       109.52934484141169
+      ],
+      "svc_B": [
+       103.31488873360055,
+       101.28910660156917,
+       103.31488873360055,
+       102.7325917261778,
+       109.3922351296947,
+       105.34067086563194,
+       97.23754233750641,
+       103.31488873360055,
+       99.26332446953779,
+       103.31488873360055,
+       101.28910660156917,
+       109.3922351296947
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9840404844121019,
+      "src_A:1": 0.9832226481334536,
+      "src_A:2": 0.9661962251545528,
+      "src_A:3": 0.9728947219084683,
+      "src_B:0": 0.9840404844121019,
+      "src_B:1": 0.9832226481334536,
+      "src_B:2": 0.9661962251545528,
+      "src_B:3": 0.9728947219084683
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41006:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       98.75924558265872,
+       94.72825596704,
+       100.77474039046807,
+       106.82122481389615,
+       94.72825596704,
+       94.72825596704,
+       108.83671962170551,
+       96.74375077484936,
+       98.75924558265872,
+       96.74375077484936,
+       96.74375077484936,
+       102.79023519827743
+      ],
+      "svc_B": [
+       90.80277878938999,
+       96.85629737534933,
+       92.82061831804309,
+       102.90981596130865,
+       94.45827876930086,
+       100.89197643265554,
+       102.90981596130865,
+       102.32980200007592,
+       92.82061831804309,
+       92.82061831804309,
+       106.94549501861486,
+       90.80277878938999
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9795659701403323,
+      "src_A:1": 0.970478259743867,
+      "src_A:2": 0.96495185551098,
+      "src_A:3": 0.969253931680795,
+      "src_B:0": 0.9795659701403323,
+      "src_B:1": 0.970478259743867,
+      "src_B:2": 0.96495185551098,
+      "src_B:3": 0.969253931680795
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41006:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       104.34917322091678,
+       96.35452517263383,
+       110.4062267603096,
+       106.3914548781165,
+       104.38406893701998,
+       106.3914548781165,
+       110.4062267603096,
+       104.38406893701998,
+       98.36191111373036,
+       108.39884081921305,
+       110.4062267603096,
+       110.4062267603096
+      ],
+      "svc_B": [
+       97.49190591961253,
+       105.45042885182579,
+       97.49190591961253,
+       109.42969031793245,
+       99.48153665266585,
+       99.48153665266585,
+       93.51264445350589,
+       109.42969031793245,
+       99.48153665266585,
+       107.44005958487911,
+       103.46079811877247,
+       103.46079811877247
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9805252309207823,
+      "src_A:1": 0.9705329578411579,
+      "src_A:2": 0.9838762636150375,
+      "src_A:3": 0.9886863885236432,
+      "src_B:0": 0.9805252309207823,
+      "src_B:1": 0.9705329578411579,
+      "src_B:2": 0.9838762636150375,
+      "src_B:3": 0.9886863885236432
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "purchases": {
+      "src_A:0": 192.0,
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 192.0,
+      "src_A:4": 192.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:0": 120.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 120.0,
+      "src_B:4": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      23565.8559542778,
+      22998.663896203692,
+      23728.751148382733
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 23429.957301847116,
+     "exposure": 0.0,
+     "burden": 9929.035012068445,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:8": 120.0,
+      "src_A:9": 120.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:8": 192.0,
+      "src_B:9": 192.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      17986.158335162,
+      16901.924027204892,
+      18144.816152293166
+     ],
+     "service_by_world": [
+      0.8398060220876619,
+      0.8627697027118889,
+      0.8347193245273709
+     ],
+     "service_stat": 0.845459580559795,
+     "hedged_cost": 17676.874339740025,
+     "exposure": 2562.5426634444807,
+     "burden": 2686.795912964514,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:6": 744.0,
+      "src_B:6": 1176.0
+     },
+     "cost_by_world": [
+      13843.122733186645,
+      13038.100943793008,
+      14024.015303937864
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      0.994281368401671
+     ],
+     "service_stat": 0.9980334801919962,
+     "hedged_cost": 13630.560543860687,
+     "exposure": 30.276351542229445,
+     "burden": 5453.959719266296,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:6": 792.0,
+      "src_B:6": 1128.0
+     },
+     "cost_by_world": [
+      13836.378970579104,
+      13030.799956971738,
+      14016.714365482001
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      0.994281368401671
+     ],
+     "service_stat": 0.9980334801919962,
+     "hedged_cost": 13623.43974943909,
+     "exposure": 30.276351542229445,
+     "burden": 5453.959719266296,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:5": 768.0000000000017,
+      "src_B:5": 1152.0000000000005
+     },
+     "cost_by_world": [
+      13805.875108050874,
+      13339.598350449283,
+      13822.83012239797
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13651.774047229725,
+     "exposure": 0.0,
+     "burden": 6234.575876152855,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:6": 792.0,
+      "src_B:6": 1128.0
+     },
+     "cost_by_world": [
+      13836.378970579104,
+      13030.799956971738,
+      14016.714365482001
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      0.994281368401671
+     ],
+     "service_stat": 0.9980334801919962,
+     "hedged_cost": 13623.43974943909,
+     "exposure": 30.276351542229445,
+     "burden": 5453.959719266296,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:6": 1344.0,
+      "src_B:6": 576.0
+     },
+     "cost_by_world": [
+      13842.502975856687,
+      13032.951240460294,
+      14016.606802180435
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      0.994281368401671
+     ],
+     "service_stat": 0.9980334801919962,
+     "hedged_cost": 13626.134008486195,
+     "exposure": 30.276351542229445,
+     "burden": 5453.959719266296,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 768.0,
+      "src_B:4": 1152.0
+     },
+     "cost_by_world": [
+      13665.482517690107,
+      13273.46455962477,
+      14017.761784310447
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13651.511549193498,
+     "exposure": 0.0,
+     "burden": 7046.169970554062,
+     "well_solved": true,
+     "feasible": true
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:5": 1368.0,
+      "src_B:5": 552.0
+     },
+     "cost_by_world": [
+      13812.836753050658,
+      13341.175228881768,
+      13822.150195318532
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13654.370802827329,
+     "exposure": 0.0,
+     "burden": 6234.57587615285,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "chosen": "cadence_2_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {},
+   "candidate_gates": {
+    "cadence_2_network": {
+     "accepted": true,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": true,
+       "gate_mode": "strict",
+       "physically_usable": true,
+       "within_downside": true,
+       "service_met": true,
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23239.2089614972,
+        "cost_min": 23133.486270085814,
+        "cost_max": 23297.085377737738,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 13355.18643067713,
+        "cost_min": 13129.755256267563,
+        "cost_max": 13471.917210691761,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       }
+      }
+     ],
+     "reason": "accepted"
+    }
+   },
+   "on_hand": 1627.651941441069,
+   "pipeline": [],
+   "forecast_mean": {
+    "A": 101.0807127215988,
+    "B": 99.44769454685488
+   },
+   "orchestration": {
+    "planner_owner": "PURCHASING_ECONOMICS",
+    "ownership_reasons": [
+     "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+    ],
+    "p1_classes_added": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery",
+     "cadence_2_network",
+     "cadence_4_network"
+    ],
+    "candidates_built": [
+     "cadence_2_network",
+     "cadence_4_network",
+     "cvar_network",
+     "deterministic_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network"
+    ],
+    "reasons": [
+     "1198 units sit above a lean base stock against 201 per period of demand"
+    ]
+   },
+   "selected_policy": "cadence_2_network",
+   "blocking": null,
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23239.2089614972,
+      "cost_min": 23133.486270085814,
+      "cost_max": 23297.085377737738,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13355.18643067713,
+      "cost_min": 13129.755256267563,
+      "cost_max": 13471.917210691761,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23162.258454091258,
+     "cost_min": 23036.30615502948,
+     "cost_max": 23400.452401312272,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13330.900882385438,
+     "cost_min": 13149.650117904588,
+     "cost_max": 13562.96441068179,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "economics_orders": [],
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "eoq_from_same_snapshot": {
+    "src_A:6": 1248.0,
+    "src_B:7": 1224.0
+   },
+   "chosen_solution": null,
+   "executed": [],
+   "settlement": {
+    "demand": 195.58230574726207,
+    "served": 195.58230574726207,
+    "end_stock": 1432.069635693807,
+    "ledger": {
+     "opening_assets": 8138.259707205345,
+     "substitution": 0.0,
+     "lost_sales_opportunity": 0.0,
+     "sla": 0.0,
+     "holding": 24.717914259920505,
+     "financing": 0.0,
+     "working_capital": 0.0,
+     "closing_assets": -5728.278542775228
+    }
+   }
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "lean_profile": true,
+   "lean_review": true,
+   "worlds": [
+    {
+     "name": "fitted:41007:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       97.84804666157441,
+       101.84184448449582,
+       105.83564230741722,
+       89.86045101573161,
+       101.84546337936892,
+       93.854248838653,
+       93.854248838653,
+       109.82944013033864,
+       93.854248838653,
+       97.84804666157441,
+       101.84184448449582,
+       95.85114775011371
+      ],
+      "svc_B": [
+       98.01633020362064,
+       110.01832982039052,
+       100.01666347308229,
+       92.01533039523571,
+       104.01733001200557,
+       98.01633020362064,
+       100.01666347308229,
+       102.01699674254394,
+       96.01599693415899,
+       100.01666347308229,
+       102.01699674254394,
+       100.01666347308229
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9833050293031467,
+      "src_A:1": 0.996955839573993,
+      "src_A:2": 0.9707397699708699,
+      "src_A:3": 0.9738487213882819,
+      "src_B:0": 0.9833050293031467,
+      "src_B:1": 0.996955839573993,
+      "src_B:2": 0.9707397699708699,
+      "src_B:3": 0.9738487213882819
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41007:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       98.01116740048701,
+       93.93363981568397,
+       95.93222789686874,
+       101.92799214042303,
+       105.92516830279256,
+       95.93222789686874,
+       105.92516830279256,
+       98.01116740048701,
+       107.92375638397732,
+       105.92516830279256,
+       95.93222789686874,
+       105.92516830279256
+      ],
+      "svc_B": [
+       106.14913400679757,
+       96.13506476087325,
+       106.14913400679757,
+       104.1463201576127,
+       102.14350630842785,
+       102.14350630842785,
+       100.14069245924298,
+       94.13225091168839,
+       108.15194785598241,
+       106.14913400679757,
+       92.12943706250354,
+       90.12662321331868
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9909301840015717,
+      "src_A:1": 0.9796770811108088,
+      "src_A:2": 0.9737947994281857,
+      "src_A:3": 0.9937308882981208,
+      "src_B:0": 0.9909301840015717,
+      "src_B:1": 0.9796770811108088,
+      "src_B:2": 0.9737947994281857,
+      "src_B:3": 0.9937308882981208
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41007:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       101.57151329377969,
+       101.57151329377969,
+       99.54008302790409,
+       99.54008302790409,
+       93.4457922302773,
+       105.63437382553087,
+       99.54008302790409,
+       105.59906013104384,
+       97.50865276202849,
+       103.60294355965527,
+       97.50865276202849,
+       105.63437382553087
+      ],
+      "svc_B": [
+       99.19994305878174,
+       103.67446050791686,
+       101.71833861154107,
+       107.58670430066844,
+       103.67446050791686,
+       93.89385102603791,
+       89.98160723328634,
+       95.8499729224137,
+       97.80609481878949,
+       85.84610457009958,
+       99.76221671516528,
+       105.63058240429264
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.975869561714274,
+      "src_A:1": 0.9774546782991711,
+      "src_A:2": 0.986247045874197,
+      "src_A:3": 0.9978368036916518,
+      "src_B:0": 0.975869561714274,
+      "src_B:1": 0.9774546782991711,
+      "src_B:2": 0.986247045874197,
+      "src_B:3": 0.9978368036916518
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "purchases": {
+      "src_A:0": 192.0,
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 192.0,
+      "src_A:4": 192.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:0": 120.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 120.0,
+      "src_B:4": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      23210.16813322123,
+      23405.660770579012,
+      23110.33185565727
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 23239.93328188402,
+     "exposure": 0.0,
+     "burden": 9064.167584344505,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:7": 192.0,
+      "src_A:8": 120.0,
+      "src_A:9": 120.0,
+      "src_A:10": 120.0,
+      "src_A:11": 192.0,
+      "src_B:7": 120.0,
+      "src_B:8": 192.0,
+      "src_B:9": 192.0,
+      "src_B:10": 192.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      18076.583835074496,
+      18316.45367677702,
+      18060.04228148795
+     ],
+     "service_by_world": [
+      0.866986598386065,
+      0.8692821920854387,
+      0.8602599411366406
+     ],
+     "service_stat": 0.8654993460035342,
+     "hedged_cost": 18145.869297135905,
+     "exposure": 2131.0610875056323,
+     "burden": 2304.5725712519,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:5": 672.0,
+      "src_B:5": 1248.0
+     },
+     "cost_by_world": [
+      13456.342219872284,
+      13774.401969806248,
+      13368.433779044783
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13533.840703444448,
+     "exposure": 0.0,
+     "burden": 5354.443891617249,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:5": 1440.0000000001135,
+      "src_B:5": 480.0
+     },
+     "cost_by_world": [
+      13465.23422356067,
+      13778.450014370734,
+      13368.845570857546
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13538.283568741965,
+     "exposure": 0.0,
+     "burden": 5354.443891617528,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:3": 1439.999999999456,
+      "src_B:3": 479.9999999998433
+     },
+     "cost_by_world": [
+      13644.304260688956,
+      13613.441349365014,
+      13429.160976328707
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13558.581529394634,
+     "exposure": 0.0,
+     "burden": 6972.7441862003725,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:5": 1440.0000000001135,
+      "src_B:5": 480.0
+     },
+     "cost_by_world": [
+      13465.23422356067,
+      13778.450014370734,
+      13368.845570857546
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13538.283568741965,
+     "exposure": 0.0,
+     "burden": 5354.443891617528,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 1008.0000000000002,
+      "src_B:4": 912.0
+     },
+     "cost_by_world": [
+      13595.963865338806,
+      13812.873818926731,
+      13627.725448152727
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13677.985433798787,
+     "exposure": 0.0,
+     "burden": 6074.578804686625,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 1440.0,
+      "src_B:4": 480.0
+     },
+     "cost_by_world": [
+      13637.572689343535,
+      13851.801453536335,
+      13664.52112457054
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13717.086929855006,
+     "exposure": 0.0,
+     "burden": 6074.578804686625,
+     "well_solved": true,
+     "feasible": true
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:3": 1416.0,
+      "src_B:3": 504.0
+     },
+     "cost_by_world": [
+      13639.457874102482,
+      13608.515766549632,
+      13424.336698108757
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13553.714363330915,
+     "exposure": 0.0,
+     "burden": 6972.744186202682,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "chosen": "deterministic_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {},
+   "candidate_gates": {
+    "deterministic_network": {
+     "accepted": true,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": true,
+       "gate_mode": "strict",
+       "physically_usable": true,
+       "within_downside": true,
+       "service_met": true,
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23226.83591976892,
+        "cost_min": 23054.23801645877,
+        "cost_max": 23418.02852981654,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 13568.425310406017,
+        "cost_min": 13272.233728227531,
+        "cost_max": 13815.823923096861,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       }
+      }
+     ],
+     "reason": "accepted"
+    }
+   },
+   "on_hand": 1432.069635693807,
+   "pipeline": [],
+   "forecast_mean": {
+    "A": 99.86203517235694,
+    "B": 98.78808792280921
+   },
+   "orchestration": {
+    "planner_owner": "PURCHASING_ECONOMICS",
+    "ownership_reasons": [
+     "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+    ],
+    "p1_classes_added": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery",
+     "cadence_2_network",
+     "cadence_4_network"
+    ],
+    "candidates_built": [
+     "cadence_2_network",
+     "cadence_4_network",
+     "cvar_network",
+     "deterministic_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network"
+    ],
+    "reasons": [
+     "1006 units sit above a lean base stock against 199 per period of demand"
+    ]
+   },
+   "selected_policy": "deterministic_network",
+   "blocking": null,
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23226.83591976892,
+      "cost_min": 23054.23801645877,
+      "cost_max": 23418.02852981654,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13568.425310406017,
+      "cost_min": 13272.233728227531,
+      "cost_max": 13815.823923096861,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23093.53495339197,
+     "cost_min": 22850.450249848505,
+     "cost_max": 23259.001625347715,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13420.42519269413,
+     "cost_min": 13227.962662987444,
+     "cost_max": 13549.089890551691,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "economics_orders": [],
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "eoq_from_same_snapshot": {
+    "src_A:5": 1224.0,
+    "src_B:6": 1224.0
+   },
+   "chosen_solution": null,
+   "executed": [],
+   "settlement": {
+    "demand": 209.2913124847434,
+    "served": 209.2913124847434,
+    "end_stock": 1222.7783232090635,
+    "ledger": {
+     "opening_assets": 7160.348178469035,
+     "substitution": 0.0,
+     "lost_sales_opportunity": 0.0,
+     "sla": 0.0,
+     "holding": 21.105488866348217,
+     "financing": 0.0,
+     "working_capital": 0.0,
+     "closing_assets": -4891.113292836254
+    }
+   }
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "lean_profile": true,
+   "lean_review": true,
+   "worlds": [
+    {
+     "name": "fitted:41008:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       98.95985479091672,
+       96.9806576950984,
+       93.02226350346172,
+       89.06386931182506,
+       100.93905188673507,
+       95.00146059928007,
+       96.9806576950984,
+       104.89744607837173,
+       93.02226350346172,
+       95.00146059928007,
+       93.17782033971821,
+       91.0430664076434
+      ],
+      "svc_B": [
+       95.25167994646492,
+       107.15813993977302,
+       91.28285994869555,
+       95.25167994646492,
+       101.20490994311898,
+       91.28285994869555,
+       93.26726994758023,
+       105.17372994088834,
+       93.26726994758023,
+       95.25167994646492,
+       103.18931994200366,
+       89.29844994981086
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9846975936750655,
+      "src_A:1": 0.9691652493833167,
+      "src_A:2": 0.990398867159418,
+      "src_A:3": 0.9828828426521019,
+      "src_B:0": 0.9846975936750655,
+      "src_B:1": 0.9691652493833167,
+      "src_B:2": 0.990398867159418,
+      "src_B:3": 0.9828828426521019
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41008:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       97.3081931382508,
+       97.38803370380727,
+       89.36466716778133,
+       101.28355505195955,
+       109.22348209395498,
+       93.33643015301605,
+       97.3081931382508,
+       93.33643015301605,
+       93.33643015301605,
+       103.26583761610287,
+       105.25171910872024,
+       97.3081931382508
+      ],
+      "svc_B": [
+       95.95394808220777,
+       93.99570424379537,
+       97.91219192062017,
+       93.99570424379537,
+       92.03746040538297,
+       90.07921656697057,
+       97.91219192062017,
+       97.91219192062017,
+       97.91219192062017,
+       105.74516727426979,
+       103.78692343585739,
+       105.74516727426979
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9836271659716297,
+      "src_A:1": 0.9695733496347688,
+      "src_A:2": 0.9668411220951061,
+      "src_A:3": 0.9588628842784385,
+      "src_B:0": 0.9836271659716297,
+      "src_B:1": 0.9695733496347688,
+      "src_B:2": 0.9668411220951061,
+      "src_B:3": 0.9588628842784385
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41008:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       101.5053763970346,
+       101.5053763970346,
+       97.52477340107247,
+       105.48597939299674,
+       103.49567789501566,
+       105.48597939299674,
+       97.52477340107247,
+       103.49567789501566,
+       97.52477340107247,
+       103.49567789501566,
+       95.53447190309139,
+       93.54417040511031
+      ],
+      "svc_B": [
+       97.19703882121027,
+       93.22981274687515,
+       99.18065185837783,
+       105.13149096988049,
+       99.18065185837783,
+       101.16426489554537,
+       92.85608224765993,
+       109.09871704421562,
+       100.59408910163158,
+       109.09871704421562,
+       109.09871704421562,
+       99.18065185837783
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.971935781648286,
+      "src_A:1": 0.9999883012570723,
+      "src_A:2": 0.982743080500605,
+      "src_A:3": 0.9752804811765408,
+      "src_B:0": 0.971935781648286,
+      "src_B:1": 0.9999883012570723,
+      "src_B:2": 0.982743080500605,
+      "src_B:3": 0.9752804811765408
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "purchases": {
+      "src_A:0": 192.0,
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 192.0,
+      "src_A:4": 192.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:0": 120.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 120.0,
+      "src_B:4": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      22746.056138822743,
+      23179.09290983346,
+      23470.564435441844
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 23129.148069119434,
+     "exposure": 0.0,
+     "burden": 8144.0843756791455,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:6": 120.00000000000011,
+      "src_A:7": 120.0,
+      "src_A:8": 120.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:6": 191.99999999999991,
+      "src_B:7": 192.0,
+      "src_B:8": 192.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      18291.912694017512,
+      18760.43152042628,
+      19322.09521028043
+     ],
+     "service_by_world": [
+      0.8801022140413851,
+      0.8710055764838596,
+      0.8513969155685687
+     ],
+     "service_stat": 0.8672663412397054,
+     "hedged_cost": 18793.097861035083,
+     "exposure": 1953.3548379589004,
+     "burden": 2073.0505511805636,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 696.0,
+      "src_B:4": 1224.0
+     },
+     "cost_by_world": [
+      13173.073659089212,
+      13476.492163288562,
+      13897.965718472993
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13515.27392550954,
+     "exposure": 0.0,
+     "burden": 5235.014033493,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 695.999999999987,
+      "src_B:4": 1223.999999999987
+     },
+     "cost_by_world": [
+      13173.07365908923,
+      13476.492163288578,
+      13897.96571847301
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13515.273925509557,
+     "exposure": 0.0,
+     "burden": 5235.0140334929265,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 1367.9999999999995,
+      "src_B:4": 552.0000000000002
+     },
+     "cost_by_world": [
+      13172.074450124583,
+      13472.289195412959,
+      13896.217702123511
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13512.952993613499,
+     "exposure": 0.0,
+     "burden": 5235.014033492999,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 695.999999999987,
+      "src_B:4": 1223.999999999987
+     },
+     "cost_by_world": [
+      13173.07365908923,
+      13476.492163288578,
+      13897.96571847301
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13515.273925509557,
+     "exposure": 0.0,
+     "burden": 5235.0140334929265,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 696.0,
+      "src_B:4": 1224.0
+     },
+     "cost_by_world": [
+      13173.073659089212,
+      13476.492163288562,
+      13897.965718472993
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13515.27392550954,
+     "exposure": 0.0,
+     "burden": 5235.014033493,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 1368.0,
+      "src_B:4": 552.0
+     },
+     "cost_by_world": [
+      13172.07445012458,
+      13472.289195412957,
+      13896.21770212351
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13512.952993613497,
+     "exposure": 0.0,
+     "burden": 5235.014033493,
+     "well_solved": true,
+     "feasible": true
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 1368.0,
+      "src_B:4": 552.0
+     },
+     "cost_by_world": [
+      13172.07445012458,
+      13472.289195412957,
+      13896.21770212351
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13512.952993613497,
+     "exposure": 0.0,
+     "burden": 5235.014033493,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "chosen": "stochastic_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {},
+   "candidate_gates": {
+    "stochastic_network": {
+     "accepted": true,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": true,
+       "gate_mode": "strict",
+       "physically_usable": true,
+       "within_downside": true,
+       "service_met": true,
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23099.010810837757,
+        "cost_min": 22963.90444264483,
+        "cost_max": 23171.73888832163,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 13380.719874721883,
+        "cost_min": 13348.123828998696,
+        "cost_max": 13420.536292573855,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       }
+      }
+     ],
+     "reason": "accepted"
+    }
+   },
+   "on_hand": 1222.7783232090635,
+   "pipeline": [],
+   "forecast_mean": {
+    "A": 99.55166845532547,
+    "B": 98.58240175405172
+   },
+   "orchestration": {
+    "planner_owner": "PURCHASING_ECONOMICS",
+    "ownership_reasons": [
+     "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+    ],
+    "p1_classes_added": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery",
+     "cadence_2_network",
+     "cadence_4_network"
+    ],
+    "candidates_built": [
+     "cadence_2_network",
+     "cadence_4_network",
+     "cvar_network",
+     "deterministic_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network"
+    ],
+    "reasons": [
+     "798 units sit above a lean base stock against 198 per period of demand"
+    ]
+   },
+   "selected_policy": "stochastic_network",
+   "blocking": null,
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23099.010810837757,
+      "cost_min": 22963.90444264483,
+      "cost_max": 23171.73888832163,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13380.719874721883,
+      "cost_min": 13348.123828998696,
+      "cost_max": 13420.536292573855,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23050.491105183544,
+     "cost_min": 22864.539574395643,
+     "cost_max": 23232.975806468472,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13512.29051189862,
+     "cost_min": 13341.15858461257,
+     "cost_max": 13686.251559149678,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "economics_orders": [],
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "eoq_from_same_snapshot": {
+    "src_A:4": 1224.0,
+    "src_B:5": 1224.0
+   },
+   "chosen_solution": null,
+   "executed": [],
+   "settlement": {
+    "demand": 211.24179544411663,
+    "served": 211.24179544411663,
+    "end_stock": 1011.5365277649469,
+    "ledger": {
+     "opening_assets": 6113.891616045317,
+     "substitution": 0.0,
+     "lost_sales_opportunity": 0.0,
+     "sla": 0.0,
+     "holding": 17.45939760251826,
+     "financing": 0.0,
+     "working_capital": 0.0,
+     "closing_assets": -4046.1461110597875
+    }
+   }
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "lean_profile": true,
+   "lean_review": true,
+   "worlds": [
+    {
+     "name": "fitted:41009:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       101.32961675222731,
+       93.382195830484,
+       101.32961675222731,
+       89.40848536961232,
+       95.36905106091982,
+       109.27703767397064,
+       101.32961675222731,
+       105.30332721309897,
+       105.30332721309897,
+       101.32961675222731,
+       107.29018244353479,
+       93.382195830484
+      ],
+      "svc_B": [
+       107.39192733552233,
+       99.43696975511325,
+       89.49327277960194,
+       103.41444854531778,
+       93.09605521874705,
+       105.40318794042005,
+       93.47075156980647,
+       101.42570915021552,
+       89.49327277960194,
+       93.47075156980647,
+       89.49327277960194,
+       105.40318794042005
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9839782153666069,
+      "src_A:1": 0.99394996615883,
+      "src_A:2": 1.0,
+      "src_A:3": 0.9767735336553418,
+      "src_B:0": 0.9839782153666069,
+      "src_B:1": 0.99394996615883,
+      "src_B:2": 1.0,
+      "src_B:3": 0.9767735336553418
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41009:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       93.71956939475933,
+       99.70166956889291,
+       101.69570296027076,
+       103.68973635164862,
+       93.87629230346201,
+       107.67780313440434,
+       107.67780313440434,
+       89.73150261200361,
+       89.73150261200361,
+       93.71956939475933,
+       95.71360278613719,
+       93.71956939475933
+      ],
+      "svc_B": [
+       101.98458589687706,
+       98.06210182392024,
+       94.13961775096344,
+       92.17837571448504,
+       103.94582793335547,
+       100.02334386039865,
+       96.10085978744185,
+       105.90706996983388,
+       107.8683120063123,
+       96.10085978744185,
+       99.45959845529536,
+       98.06210182392024
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9802198553678396,
+      "src_A:1": 0.9903948572400139,
+      "src_A:2": 0.9788121708619649,
+      "src_A:3": 0.9770496349363733,
+      "src_B:0": 0.9802198553678396,
+      "src_B:1": 0.9903948572400139,
+      "src_B:2": 0.9788121708619649,
+      "src_B:3": 0.9770496349363733
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41009:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       103.46554472635586,
+       105.49053234843757,
+       105.49053234843757,
+       101.50975754283614,
+       109.471307154039,
+       99.51937014003545,
+       97.60900445882629,
+       109.471307154039,
+       103.50014494563686,
+       89.56743312603189,
+       91.55782052883261,
+       93.54820793163331
+      ],
+      "svc_B": [
+       89.0188588316009,
+       96.93164628329875,
+       96.93164628329875,
+       100.31942105691174,
+       92.97525255744982,
+       100.88804000914767,
+       100.31942105691174,
+       106.82263059792108,
+       89.0188588316009,
+       98.90984314622321,
+       108.80082746084555,
+       108.80082746084555
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.985241378283018,
+      "src_A:1": 0.97505908894287,
+      "src_A:2": 0.9966011240213771,
+      "src_A:3": 0.9851613882481974,
+      "src_B:0": 0.985241378283018,
+      "src_B:1": 0.97505908894287,
+      "src_B:2": 0.9966011240213771,
+      "src_B:3": 0.9851613882481974
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "purchases": {
+      "src_A:0": 192.0,
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 192.0,
+      "src_A:4": 192.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:0": 120.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 120.0,
+      "src_B:4": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      23175.672287624155,
+      23281.735845453135,
+      23472.765436920447
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 23316.837160440013,
+     "exposure": 0.0,
+     "burden": 7044.329989424469,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 120.0,
+      "src_A:8": 144.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 192.0,
+      "src_B:8": 168.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 192.0
+     },
+     "cost_by_world": [
+      19953.141970166827,
+      20024.971515815803,
+      20351.34838629784
+     ],
+     "service_by_world": [
+      0.8664765127767415,
+      0.8539008302978028,
+      0.8383591640423733
+     ],
+     "service_stat": 0.8528779293872106,
+     "hedged_cost": 20116.543743861555,
+     "exposure": 2298.2138809066637,
+     "burden": 1846.1978472900066,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:3": 1296.0,
+      "src_B:3": 624.0
+     },
+     "cost_by_world": [
+      13849.598292543134,
+      13800.700022998462,
+      13902.356407434023
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13860.534305543917,
+     "exposure": 8.109599438549667,
+     "burden": 4873.660255858421,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:2": 1272.0000000000036,
+      "src_B:2": 647.9999999999941
+     },
+     "cost_by_world": [
+      13644.093008460255,
+      13819.443137433711,
+      13827.243395194031
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13769.131322309358,
+     "exposure": 0.0,
+     "burden": 5744.548122338668,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:2": 1272.0000000000157,
+      "src_B:2": 647.9999999999815
+     },
+     "cost_by_world": [
+      13644.093008460257,
+      13819.443137433713,
+      13827.24339519403
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13769.131322309358,
+     "exposure": 0.0,
+     "burden": 5744.548122338666,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:2": 1272.0000000000036,
+      "src_B:2": 647.9999999999941
+     },
+     "cost_by_world": [
+      13644.093008460255,
+      13819.443137433711,
+      13827.243395194031
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13769.131322309358,
+     "exposure": 0.0,
+     "burden": 5744.548122338668,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:2": 1272.0,
+      "src_B:2": 648.0
+     },
+     "cost_by_world": [
+      13644.093008460253,
+      13819.443137433707,
+      13827.243395194027
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13769.131322309355,
+     "exposure": 0.0,
+     "burden": 5744.548122338677,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 1296.0,
+      "src_B": 624.0
+     },
+     "purchases": {
+      "src_A:0": 1296.0,
+      "src_B:0": 624.0
+     },
+     "cost_by_world": [
+      13932.715306158714,
+      13915.50343197366,
+      14064.578887625885
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13980.99495034422,
+     "exposure": 0.0,
+     "burden": 7255.245265069885,
+     "well_solved": true,
+     "feasible": true
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:2": 791.9999999999969,
+      "src_B:2": 1127.9999999999936
+     },
+     "cost_by_world": [
+      13649.809282563741,
+      13818.252160497976,
+      13831.35783622849
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13771.980076805243,
+     "exposure": 0.0,
+     "burden": 5744.548122338641,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "chosen": "joint_recovery",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {},
+   "candidate_gates": {
+    "joint_recovery": {
+     "accepted": true,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": true,
+       "gate_mode": "not_worse",
+       "physically_usable": true,
+       "within_downside": false,
+       "service_met": true,
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23228.297918496104,
+        "cost_min": 22766.57885953435,
+        "cost_max": 23573.994132369466,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 13875.72275633277,
+        "cost_min": 13349.966631418632,
+        "cost_max": 14425.386544916071,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 0.9942358689807447,
+         "svc_B": 1.0
+        }
+       }
+      }
+     ],
+     "reason": "accepted"
+    }
+   },
+   "on_hand": 1011.5365277649469,
+   "pipeline": [],
+   "forecast_mean": {
+    "A": 99.39514789214014,
+    "B": 98.68059888986139
+   },
+   "orchestration": {
+    "planner_owner": "PURCHASING_ECONOMICS",
+    "ownership_reasons": [
+     "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+    ],
+    "p1_classes_added": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery",
+     "cadence_2_network",
+     "cadence_4_network"
+    ],
+    "candidates_built": [
+     "cadence_2_network",
+     "cadence_4_network",
+     "cvar_network",
+     "deterministic_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network"
+    ],
+    "reasons": [
+     "587 units sit above a lean base stock against 198 per period of demand"
+    ]
+   },
+   "selected_policy": "joint_recovery",
+   "blocking": null,
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "not_worse",
+     "physically_usable": true,
+     "within_downside": false,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23228.297918496104,
+      "cost_min": 22766.57885953435,
+      "cost_max": 23573.994132369466,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13875.72275633277,
+      "cost_min": 13349.966631418632,
+      "cost_max": 14425.386544916071,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 0.9942358689807447,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23335.02298156488,
+     "cost_min": 22984.860336398266,
+     "cost_max": 23510.7659440193,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13915.484273813205,
+     "cost_min": 13675.695521144678,
+     "cost_max": 14054.50620804903,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "economics_orders": [],
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "eoq_from_same_snapshot": {
+    "src_A:3": 1224.0,
+    "src_B:4": 1224.0
+   },
+   "chosen_solution": null,
+   "executed": [],
+   "settlement": {
+    "demand": 191.69246503288946,
+    "served": 191.69246503288946,
+    "end_stock": 819.8440627320574,
+    "ledger": {
+     "opening_assets": 5057.682638824734,
+     "substitution": 0.0,
+     "lost_sales_opportunity": 0.0,
+     "sla": 0.0,
+     "holding": 14.150733137567016,
+     "financing": 0.0,
+     "working_capital": 18.41095890410959,
+     "closing_assets": -3279.3762509282296
+    }
+   }
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "lean_profile": true,
+   "lean_review": true,
+   "worlds": [
+    {
+     "name": "fitted:41010:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       90.51327497687085,
+       92.48095486767238,
+       98.38399454007701,
+       100.35167443087853,
+       96.41631464927546,
+       90.51327497687085,
+       104.28703421248161,
+       102.28514884208315,
+       100.3552403733646,
+       92.48095486767238,
+       88.5455950860693,
+       106.25471410328316
+      ],
+      "svc_B": [
+       107.88060376498981,
+       93.89608105471336,
+       101.31298632505774,
+       93.89608105471336,
+       99.88944793054614,
+       107.88060376498981,
+       93.89608105471336,
+       107.88060376498981,
+       107.88060376498981,
+       97.89165897193521,
+       107.15796630534956,
+       103.88502584776798
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9876036493380176,
+      "src_A:1": 0.985240157757646,
+      "src_A:2": 0.9806949087703236,
+      "src_A:3": 0.9805828233791468,
+      "src_B:0": 0.9876036493380176,
+      "src_B:1": 0.985240157757646,
+      "src_B:2": 0.9806949087703236,
+      "src_B:3": 0.9805828233791468
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41010:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       95.93887434733594,
+       91.94142124953026,
+       105.93250709185008,
+       103.93378054294725,
+       99.9363274451416,
+       105.93250709185008,
+       93.9401477984331,
+       97.93760089623876,
+       91.94142124953026,
+       99.9363274451416,
+       91.94142124953026,
+       107.93123364075292
+      ],
+      "svc_B": [
+       88.79663002677512,
+       102.60943914205123,
+       96.6896638069329,
+       86.59815685849557,
+       92.37136731572862,
+       86.59815685849557,
+       108.52921447716959,
+       98.66292225197235,
+       108.52921447716959,
+       96.6896638069329,
+       96.6896638069329,
+       106.55595603213013
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9620864552819551,
+      "src_A:1": 0.9850795992327025,
+      "src_A:2": 0.9784256556022508,
+      "src_A:3": 0.9844425321322139,
+      "src_B:0": 0.9620864552819551,
+      "src_B:1": 0.9850795992327025,
+      "src_B:2": 0.9784256556022508,
+      "src_B:3": 0.9844425321322139
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41010:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       102.48885011931168,
+       98.54697126856892,
+       90.6632135670834,
+       92.63415299245479,
+       96.57603184319754,
+       106.43072897005443,
+       104.45978954468305,
+       88.69227414171203,
+       92.63415299245479,
+       100.5179106939403,
+       100.5179106939403,
+       102.48885011931168
+      ],
+      "svc_B": [
+       90.49587260135294,
+       104.26698364938491,
+       88.52857102306267,
+       88.52857102306267,
+       104.26698364938491,
+       94.43047575793351,
+       98.36507891451407,
+       102.29968207109462,
+       98.36507891451407,
+       88.52857102306267,
+       98.36507891451407,
+       90.49587260135294
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9784993570822323,
+      "src_A:1": 0.9985982415195533,
+      "src_A:2": 0.976660605242484,
+      "src_A:3": 0.9856210330526791,
+      "src_B:0": 0.9784993570822323,
+      "src_B:1": 0.9985982415195533,
+      "src_B:2": 0.976660605242484,
+      "src_B:3": 0.9856210330526791
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "purchases": {
+      "src_A:0": 192.0,
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 192.0,
+      "src_A:4": 192.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:0": 120.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 120.0,
+      "src_B:4": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      23326.224266844973,
+      23241.875492618623,
+      22843.85752438
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 23139.91878166899,
+     "exposure": 0.0,
+     "burden": 6166.3972716695525,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:4": 120.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:4": 192.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      20806.644346074987,
+      20746.206070950575,
+      20274.41588986439
+     ],
+     "service_by_world": [
+      0.8753634612516259,
+      0.8614668751809125,
+      0.8744751916573381
+     ],
+     "service_stat": 0.8703889796393431,
+     "hedged_cost": 20613.075813184623,
+     "exposure": 1947.2865972369327,
+     "burden": 1858.3294371767417,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:2": 888.0,
+      "src_B:2": 1032.0
+     },
+     "cost_by_world": [
+      13836.636316508662,
+      13691.782039993735,
+      13517.01006750921
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13683.382428279903,
+     "exposure": 0.0,
+     "burden": 4808.715533002292,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:1": 888.0000000000005,
+      "src_B:1": 1031.9999999999995
+     },
+     "cost_by_world": [
+      13840.34029784374,
+      13672.033548412935,
+      13327.736871065434
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13618.918745726962,
+     "exposure": 0.0,
+     "burden": 5679.955388619223,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:1": 1152.0,
+      "src_B:1": 768.0
+     },
+     "cost_by_world": [
+      13842.04592825241,
+      13668.166568700786,
+      13323.069140692874
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13616.663907689546,
+     "exposure": 0.0,
+     "burden": 5679.955388619223,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:1": 888.0000000000005,
+      "src_B:1": 1031.9999999999995
+     },
+     "cost_by_world": [
+      13840.34029784374,
+      13672.033548412935,
+      13327.736871065434
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13618.918745726962,
+     "exposure": 0.0,
+     "burden": 5679.955388619223,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:2": 1152.0,
+      "src_B:2": 768.0
+     },
+     "cost_by_world": [
+      13838.297907510298,
+      13687.888379485168,
+      13512.27109680057
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13681.082145214557,
+     "exposure": 0.0,
+     "burden": 4808.715533002292,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 888.0,
+      "src_B": 1032.0
+     },
+     "purchases": {
+      "src_A:0": 888.0,
+      "src_B:0": 1032.0
+     },
+     "cost_by_world": [
+      13868.525105253779,
+      13981.071296561458,
+      13604.834909046504
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13821.811283696494,
+     "exposure": 0.0,
+     "burden": 6352.19648025262,
+     "well_solved": true,
+     "feasible": true
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:1": 887.999999999997,
+      "src_B:1": 1032.0
+     },
+     "cost_by_world": [
+      13840.340297843743,
+      13672.033548412937,
+      13327.736871065437
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13618.918745726965,
+     "exposure": 0.0,
+     "burden": 5679.955388619211,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "chosen": "cadence_2_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {},
+   "candidate_gates": {
+    "cadence_2_network": {
+     "accepted": true,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": true,
+       "gate_mode": "strict",
+       "physically_usable": true,
+       "within_downside": true,
+       "service_met": true,
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23047.55802717954,
+        "cost_min": 22864.857431821496,
+        "cost_max": 23294.363584362516,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 13674.03522911337,
+        "cost_min": 13375.109216408371,
+        "cost_max": 13885.874586695754,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       }
+      }
+     ],
+     "reason": "accepted"
+    }
+   },
+   "on_hand": 819.8440627320574,
+   "pipeline": [],
+   "forecast_mean": {
+    "A": 98.78890174010961,
+    "B": 98.03241927519115
+   },
+   "orchestration": {
+    "planner_owner": "PURCHASING_ECONOMICS",
+    "ownership_reasons": [
+     "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+    ],
+    "p1_classes_added": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery",
+     "cadence_2_network",
+     "cadence_4_network"
+    ],
+    "candidates_built": [
+     "cadence_2_network",
+     "cadence_4_network",
+     "cvar_network",
+     "deterministic_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network"
+    ],
+    "reasons": [
+     "397 units sit above a lean base stock against 197 per period of demand"
+    ]
+   },
+   "selected_policy": "cadence_2_network",
+   "blocking": null,
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23047.55802717954,
+      "cost_min": 22864.857431821496,
+      "cost_max": 23294.363584362516,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13674.03522911337,
+      "cost_min": 13375.109216408371,
+      "cost_max": 13885.874586695754,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23209.784976470604,
+     "cost_min": 22901.338274020938,
+     "cost_max": 23371.884886846427,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13739.004872703425,
+     "cost_min": 13455.512186632795,
+     "cost_max": 13912.2808323884,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "economics_orders": [],
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "eoq_from_same_snapshot": {
+    "src_A:2": 1224.0,
+    "src_B:3": 1224.0
+   },
+   "chosen_solution": null,
+   "executed": [],
+   "settlement": {
+    "demand": 195.61568136038346,
+    "served": 195.61568136038346,
+    "end_stock": 624.228381371674,
+    "ledger": {
+     "opening_assets": 4099.2203136602875,
+     "substitution": 0.0,
+     "lost_sales_opportunity": 0.0,
+     "sla": 0.0,
+     "holding": 10.77435288394944,
+     "financing": 0.0,
+     "working_capital": 0.0,
+     "closing_assets": -2496.913525486696
+    }
+   }
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "lean_profile": true,
+   "lean_review": true,
+   "worlds": [
+    {
+     "name": "fitted:41011:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       89.17614448766821,
+       99.084604986298,
+       107.01137338520184,
+       108.99306548492781,
+       108.99306548492781,
+       97.10291288657204,
+       95.1212207868461,
+       99.084604986298,
+       108.99306548492781,
+       107.01137338520184,
+       99.084604986298,
+       99.084604986298
+      ],
+      "svc_B": [
+       91.840368395527,
+       97.70251956970957,
+       105.51872113528633,
+       103.56467074389214,
+       89.8863180041328,
+       97.70251956970957,
+       91.47220776410148,
+       91.47220776410148,
+       101.61062035249795,
+       95.74846917831537,
+       101.61062035249795,
+       97.70251956970957
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9764448830209154,
+      "src_A:1": 0.9876707641670882,
+      "src_A:2": 0.9774397921793699,
+      "src_A:3": 0.9769622551030198,
+      "src_B:0": 0.9764448830209154,
+      "src_B:1": 0.9876707641670882,
+      "src_B:2": 0.9774397921793699,
+      "src_B:3": 0.9769622551030198
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41011:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       89.02616932783279,
+       98.9179659198142,
+       94.96124728302163,
+       91.00452864622906,
+       108.80976251179563,
+       98.9595276396729,
+       89.02616932783279,
+       94.96124728302163,
+       96.93960660141792,
+       91.00452864622906,
+       89.02616932783279,
+       89.02616932783279
+      ],
+      "svc_B": [
+       94.80814811162182,
+       96.74300827716513,
+       106.41730910488167,
+       84.91301508739981,
+       90.93842778053522,
+       89.00356761499192,
+       90.93842778053522,
+       87.06870744944861,
+       90.93842778053522,
+       100.61272860825173,
+       92.46083865072426,
+       87.06870744944861
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9746403223914316,
+      "src_A:1": 0.9839181876701888,
+      "src_A:2": 0.9869651370389614,
+      "src_A:3": 0.9900076459922673,
+      "src_B:0": 0.9746403223914316,
+      "src_B:1": 0.9839181876701888,
+      "src_B:2": 0.9869651370389614,
+      "src_B:3": 0.9900076459922673
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41011:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       98.66867054488495,
+       104.54486484011314,
+       100.59977560086358,
+       106.5174094597379,
+       100.59977560086358,
+       98.62723098123881,
+       102.53803017409612,
+       100.59977560086358,
+       96.65468636161403,
+       100.60335035949055,
+       96.73399073027937,
+       104.54486484011314
+      ],
+      "svc_B": [
+       92.36831239858897,
+       84.45132155601925,
+       100.06567176513805,
+       90.4439725569517,
+       98.14133192350079,
+       101.99001160677533,
+       94.29265224022625,
+       90.4439725569517,
+       88.51963271531443,
+       105.83869129004988,
+       105.83869129004988,
+       97.58819379806668
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9748872445595909,
+      "src_A:1": 0.9781418688796886,
+      "src_A:2": 0.965528058161982,
+      "src_A:3": 0.9674323989164064,
+      "src_B:0": 0.9748872445595909,
+      "src_B:1": 0.9781418688796886,
+      "src_B:2": 0.965528058161982,
+      "src_B:3": 0.9674323989164064
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "purchases": {
+      "src_A:0": 192.0,
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 192.0,
+      "src_A:4": 192.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:0": 120.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 120.0,
+      "src_B:4": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      23291.866035084895,
+      22564.458652947164,
+      23323.730769719343
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 23067.273153051006,
+     "exposure": 0.0,
+     "burden": 5221.089458726192,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:3": 144.0,
+      "src_A:4": 144.0,
+      "src_A:5": 168.0,
+      "src_A:6": 120.0,
+      "src_A:7": 192.0,
+      "src_A:8": 120.0,
+      "src_A:9": 192.0,
+      "src_A:10": 120.0,
+      "src_A:11": 192.0,
+      "src_B:3": 168.0,
+      "src_B:4": 168.0,
+      "src_B:5": 144.0,
+      "src_B:6": 192.0,
+      "src_B:7": 120.0,
+      "src_B:8": 192.0,
+      "src_B:9": 120.0,
+      "src_B:10": 192.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      21796.462096486117,
+      20799.67200968684,
+      21779.25176508518
+     ],
+     "service_by_world": [
+      0.8596117583215875,
+      0.8756329692592547,
+      0.8537337804622621
+     ],
+     "service_stat": 0.8627033194014636,
+     "hedged_cost": 21467.583637681255,
+     "exposure": 2069.0293881176376,
+     "burden": 2051.5394391801638,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:1": 1104.0,
+      "src_B:1": 816.0
+     },
+     "cost_by_world": [
+      13948.951677458663,
+      13160.37887761855,
+      13918.866424716156
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13682.657235340774,
+     "exposure": 0.0,
+     "burden": 4678.208404074629,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:1": 1008.0,
+      "src_B:1": 911.9999999999993
+     },
+     "cost_by_world": [
+      13949.520834763485,
+      13160.12666521503,
+      13919.692267472863
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13682.812226609489,
+     "exposure": 0.0,
+     "burden": 4678.208404074626,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:1": 1128.0000000000002,
+      "src_B:1": 791.9999999999998
+     },
+     "cost_by_world": [
+      13949.57844402011,
+      13161.205179080942,
+      13919.414234237182
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13686.381250629338,
+     "exposure": 0.0,
+     "burden": 4678.208404074629,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:1": 1008.0,
+      "src_B:1": 911.9999999999993
+     },
+     "cost_by_world": [
+      13949.520834763485,
+      13160.12666521503,
+      13919.692267472863
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13682.812226609489,
+     "exposure": 0.0,
+     "burden": 4678.208404074626,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 1104.0,
+      "src_B": 816.0
+     },
+     "purchases": {
+      "src_A:0": 1104.0,
+      "src_B:0": 816.0
+     },
+     "cost_by_world": [
+      14128.426702048846,
+      13317.692303252441,
+      14009.238680602291
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13826.02304002921,
+     "exposure": 0.0,
+     "burden": 5395.112068747071,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 1032.0,
+      "src_B": 888.0
+     },
+     "purchases": {
+      "src_A:0": 1032.0,
+      "src_B:0": 888.0
+     },
+     "cost_by_world": [
+      14128.43691609133,
+      13317.087868774595,
+      14009.417763784762
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13824.778893088502,
+     "exposure": 0.0,
+     "burden": 5395.112068747071,
+     "well_solved": true,
+     "feasible": true
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:1": 1080.0,
+      "src_B:1": 840.0
+     },
+     "cost_by_world": [
+      13948.632543458061,
+      13159.857912548434,
+      13918.620339749947
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 13682.089040922676,
+     "exposure": 0.0,
+     "burden": 4678.208404074629,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "chosen": "stochastic_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {},
+   "candidate_gates": {
+    "stochastic_network": {
+     "accepted": true,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": true,
+       "gate_mode": "strict",
+       "physically_usable": true,
+       "within_downside": true,
+       "service_met": true,
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23205.33422361565,
+        "cost_min": 22973.57465504649,
+        "cost_max": 23496.630497866536,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 13844.339147126684,
+        "cost_min": 13647.257479424894,
+        "cost_max": 14072.472063981657,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       }
+      }
+     ],
+     "reason": "accepted"
+    }
+   },
+   "on_hand": 624.228381371674,
+   "pipeline": [],
+   "forecast_mean": {
+    "A": 98.6382876132709,
+    "B": 97.53808581436705
+   },
+   "orchestration": {
+    "planner_owner": "PURCHASING_ECONOMICS",
+    "ownership_reasons": [
+     "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+    ],
+    "p1_classes_added": [],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "cvar_network",
+     "protected_network",
+     "joint_recovery",
+     "cadence_2_network",
+     "cadence_4_network"
+    ],
+    "candidates_built": [
+     "cadence_2_network",
+     "cadence_4_network",
+     "cvar_network",
+     "deterministic_network",
+     "joint_recovery",
+     "protected_network",
+     "stochastic_network"
+    ],
+    "reasons": [
+     "203 units sit above a lean base stock against 196 per period of demand"
+    ]
+   },
+   "selected_policy": "stochastic_network",
+   "blocking": null,
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23205.33422361565,
+      "cost_min": 22973.57465504649,
+      "cost_max": 23496.630497866536,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13844.339147126684,
+      "cost_min": 13647.257479424894,
+      "cost_max": 14072.472063981657,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23220.756943738517,
+     "cost_min": 23099.07103485793,
+     "cost_max": 23320.37886541306,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13963.027120757308,
+     "cost_min": 13881.813379790943,
+     "cost_max": 14095.088053903028,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "economics_orders": [],
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "eoq_from_same_snapshot": {
+    "src_A:1": 1224.0,
+    "src_B:2": 1224.0
+   },
+   "chosen_solution": null,
+   "executed": [],
+   "settlement": {
+    "demand": 197.61066513725189,
+    "served": 197.61066513725189,
+    "end_stock": 426.61771623442206,
+    "ledger": {
+     "opening_assets": 3121.14190685837,
+     "substitution": 0.0,
+     "lost_sales_opportunity": 0.0,
+     "sla": 0.0,
+     "holding": 7.363538663772217,
+     "financing": 0.0,
+     "working_capital": 0.0,
+     "closing_assets": -1706.4708649376882
+    }
+   }
+  },
+  {
+   "state": "NO_ACTION",
+   "lean_profile": true,
+   "lean_review": true,
+   "worlds": [
+    {
+     "name": "fitted:41012:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       109.31655189200255,
+       97.39110986742045,
+       101.36985920408425,
+       103.31927957339356,
+       97.39110986742045,
+       95.52159809615632,
+       91.42838885512941,
+       109.31655189200255,
+       109.31655189200255,
+       103.35383087971151,
+       103.31927957339356,
+       89.44081518436573
+      ],
+      "svc_B": [
+       88.30554053712818,
+       100.07961260874526,
+       92.23023122766722,
+       98.11726726347575,
+       94.19257657293673,
+       102.04195795401479,
+       94.19257657293673,
+       103.34307122154452,
+       94.19257657293673,
+       104.0043032992843,
+       92.23023122766722,
+       105.2568317997213
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9940621563387876,
+      "src_A:1": 0.9717056131722747,
+      "src_A:2": 0.9866605520039207,
+      "src_A:3": 0.9766121739197012,
+      "src_B:0": 0.9940621563387876,
+      "src_B:1": 0.9717056131722747,
+      "src_B:2": 0.9866605520039207,
+      "src_B:3": 0.9766121739197012
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41012:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       99.23027925937576,
+       103.19949042975078,
+       99.23027925937576,
+       93.43244442532117,
+       93.2764625038132,
+       95.26106808900072,
+       107.1687016001258,
+       101.21488484456327,
+       103.19949042975078,
+       107.05800923734718,
+       107.1687016001258,
+       101.21488484456327
+      ],
+      "svc_B": [
+       97.68680741137337,
+       99.0789556699566,
+       95.73307126314589,
+       95.73307126314589,
+       103.54801585605576,
+       95.73307126314589,
+       87.6467684772693,
+       87.91812667023602,
+       99.64054355960083,
+       91.82559896669096,
+       99.64054355960083,
+       89.87186281846348
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.9720322285536028,
+      "src_A:1": 0.9900481967995605,
+      "src_A:2": 0.9749145809525492,
+      "src_A:3": 0.9800335021699423,
+      "src_B:0": 0.9720322285536028,
+      "src_B:1": 0.9900481967995605,
+      "src_B:2": 0.9749145809525492,
+      "src_B:3": 0.9800335021699423
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    },
+    {
+     "name": "fitted:41012:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "svc_A": [
+       103.2101102428692,
+       93.28606118105486,
+       91.301251368692,
+       89.31644155632912,
+       103.17560698252794,
+       93.28606118105486,
+       107.17972986759494,
+       99.24049061814347,
+       107.17972986759494,
+       97.33547828540372,
+       101.22889741681986,
+       91.301251368692
+      ],
+      "svc_B": [
+       102.09739910983203,
+       92.46556900513089,
+       84.54024219058792,
+       88.61283696325043,
+       96.31830104701135,
+       100.1710330888918,
+       96.31830104701135,
+       105.9501311517125,
+       86.41891423926765,
+       102.09739910983203,
+       104.02376513077225,
+       104.02376513077225
+      ]
+     },
+     "fills": {
+      "src_A:0": 0.98174113554581,
+      "src_A:1": 0.9891235354664268,
+      "src_A:2": 0.9899322887708967,
+      "src_A:3": 0.9749084701817655,
+      "src_B:0": 0.98174113554581,
+      "src_B:1": 0.9891235354664268,
+      "src_B:2": 0.9899322887708967,
+      "src_B:3": 0.9749084701817655
+     },
+     "arrival": {
+      "src_A:0": 1,
+      "src_A:1": 2,
+      "src_A:2": 3,
+      "src_A:3": 4,
+      "src_B:0": 1,
+      "src_B:1": 2,
+      "src_B:2": 3,
+      "src_B:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "purchases": {
+      "src_A:0": 192.0,
+      "src_A:1": 192.0,
+      "src_A:2": 192.0,
+      "src_A:3": 192.0,
+      "src_A:4": 192.0,
+      "src_A:5": 192.0,
+      "src_A:6": 192.0,
+      "src_A:7": 192.0,
+      "src_A:8": 192.0,
+      "src_A:9": 192.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:0": 120.0,
+      "src_B:1": 120.0,
+      "src_B:2": 120.0,
+      "src_B:3": 120.0,
+      "src_B:4": 120.0,
+      "src_B:5": 120.0,
+      "src_B:6": 120.0,
+      "src_B:7": 120.0,
+      "src_B:8": 120.0,
+      "src_B:9": 120.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      23322.055422917547,
+      23343.280718464455,
+      23275.083583198604
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 23313.894771326894,
+     "exposure": 0.0,
+     "burden": 4202.383189848109,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "src_A:2": 120.0,
+      "src_A:3": 120.0,
+      "src_A:4": 120.0,
+      "src_A:5": 192.0,
+      "src_A:6": 120.0,
+      "src_A:7": 168.0,
+      "src_A:8": 120.0,
+      "src_A:9": 120.0,
+      "src_A:10": 192.0,
+      "src_A:11": 192.0,
+      "src_B:2": 192.0,
+      "src_B:3": 192.0,
+      "src_B:4": 192.0,
+      "src_B:5": 120.0,
+      "src_B:6": 192.0,
+      "src_B:7": 144.0,
+      "src_B:8": 192.0,
+      "src_B:9": 192.0,
+      "src_B:10": 120.0,
+      "src_B:11": 120.0
+     },
+     "cost_by_world": [
+      22765.62324545881,
+      22739.99927208999,
+      22585.08008382012
+     ],
+     "service_by_world": [
+      0.8489880928870875,
+      0.8543100969949698,
+      0.8619270492923738
+     ],
+     "service_stat": 0.855011356998484,
+     "hedged_cost": 22697.96980690622,
+     "exposure": 2173.7305907759514,
+     "burden": 2275.027432334926,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 1056.0,
+      "src_B": 864.0
+     },
+     "purchases": {
+      "src_A:0": 1056.0,
+      "src_B:0": 864.0
+     },
+     "cost_by_world": [
+      14337.15028894251,
+      14560.94613965485,
+      14151.918160800613
+     ],
+     "service_by_world": [
+      0.9706932277642558,
+      0.9513413860283835,
+      0.9872199984911796
+     ],
+     "service_stat": 0.9695883056331653,
+     "hedged_cost": 14351.733667040691,
+     "exposure": 557.3510672632414,
+     "burden": 4447.471839623003,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 1056.0,
+      "src_B": 864.0
+     },
+     "purchases": {
+      "src_A:0": 1056.0,
+      "src_B:0": 864.0
+     },
+     "cost_by_world": [
+      14337.15028894251,
+      14560.94613965485,
+      14151.918160800613
+     ],
+     "service_by_world": [
+      0.9706932277642558,
+      0.9513413860283835,
+      0.9872199984911796
+     ],
+     "service_stat": 0.9695883056331653,
+     "hedged_cost": 14351.733667040691,
+     "exposure": 557.3510672632414,
+     "burden": 4447.471839623003,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 1056.0,
+      "src_B": 864.0
+     },
+     "purchases": {
+      "src_A:0": 1056.0,
+      "src_B:0": 864.0
+     },
+     "cost_by_world": [
+      14337.15028894251,
+      14560.94613965485,
+      14151.918160800613
+     ],
+     "service_by_world": [
+      0.9706932277642558,
+      0.9513413860283835,
+      0.9872199984911796
+     ],
+     "service_stat": 0.9695883056331653,
+     "hedged_cost": 14351.733667040691,
+     "exposure": 557.3510672632414,
+     "burden": 4447.471839623003,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "src_A": 1056.0,
+      "src_B": 864.0
+     },
+     "purchases": {
+      "src_A:0": 1056.0,
+      "src_B:0": 864.0
+     },
+     "cost_by_world": [
+      14337.15028894251,
+      14560.94613965485,
+      14151.918160800613
+     ],
+     "service_by_world": [
+      0.9706932277642558,
+      0.9513413860283835,
+      0.9872199984911796
+     ],
+     "service_stat": 0.9695883056331653,
+     "hedged_cost": 14351.733667040691,
+     "exposure": 557.3510672632414,
+     "burden": 4447.471839623003,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cadence_2_network",
+    "cadence_4_network"
+   ],
+   "chosen": "deterministic_network",
+   "recovery_mode": false,
+   "accepted": false,
+   "status": "RETAIN_INCUMBENT",
+   "reasons": [
+    "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+   ],
+   "final_p0_purchases": {
+    "src_A": 192.0,
+    "src_B": 120.0
+   },
+   "candidate_gates": {
+    "deterministic_network": {
+     "accepted": false,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": false,
+       "gate_mode": "rejected",
+       "physically_usable": true,
+       "within_downside": false,
+       "service_met": true,
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23422.824411299083,
+        "cost_min": 23308.74182679496,
+        "cost_max": 23632.363922398028,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 14789.667306151252,
+        "cost_min": 14568.799928854252,
+        "cost_max": 15217.719930124127,
+        "weighted_service_shortfall": 0.0,
+        "failures": [],
+        "service": {
+         "svc_A": 0.9635570128345237,
+         "svc_B": 0.96924203450536
+        }
+       }
+      }
+     ],
+     "reason": "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+    },
+    "stochastic_network": {
+     "accepted": false,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": false,
+       "gate_mode": "rejected",
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23422.824411299083,
+        "cost_min": 23308.74182679496,
+        "cost_max": 23632.363922398028,
+        "weighted_service_shortfall": null,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 14789.667306151252,
+        "cost_min": 14568.799928854252,
+        "cost_max": 15217.719930124127,
+        "weighted_service_shortfall": null,
+        "failures": [],
+        "service": {
+         "svc_A": 0.9635570128345237,
+         "svc_B": 0.96924203450536
+        }
+       }
+      }
+     ],
+     "deltas": {
+      "service": {
+       "svc_A": -0.032296592957482995,
+       "svc_B": -0.03420200293313391
+      },
+      "cost_fitted": -8704.634385796,
+      "inventory": 245.08864977489338,
+      "stress_service": {
+       "svc_A": [
+        0.9635570128345237,
+        1.0
+       ],
+       "svc_B": [
+        0.96924203450536,
+        1.0
+       ]
+      }
+     },
+     "reason": "stress gate: rejected"
+    },
+    "cadence_2_network": {
+     "accepted": false,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": false,
+       "gate_mode": "rejected",
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23422.824411299083,
+        "cost_min": 23308.74182679496,
+        "cost_max": 23632.363922398028,
+        "weighted_service_shortfall": null,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 14789.667306151252,
+        "cost_min": 14568.799928854252,
+        "cost_max": 15217.719930124127,
+        "weighted_service_shortfall": null,
+        "failures": [],
+        "service": {
+         "svc_A": 0.9635570128345237,
+         "svc_B": 0.96924203450536
+        }
+       }
+      }
+     ],
+     "deltas": {
+      "service": {
+       "svc_A": -0.032296592957482995,
+       "svc_B": -0.03420200293313391
+      },
+      "cost_fitted": -8704.634385796,
+      "inventory": 245.08864977489338,
+      "stress_service": {
+       "svc_A": [
+        0.9635570128345237,
+        1.0
+       ],
+       "svc_B": [
+        0.96924203450536,
+        1.0
+       ]
+      }
+     },
+     "reason": "stress gate: rejected"
+    },
+    "cadence_4_network": {
+     "accepted": false,
+     "stress": [
+      {
+       "stress": {
+        "name": "nil",
+        "fill_multiplier": 1.0,
+        "extra_lead_days": 0,
+        "demand_multiplier": 1.0,
+        "recovery_period": 12,
+        "shared_failure": true,
+        "affected_resources": []
+       },
+       "pass": false,
+       "gate_mode": "rejected",
+       "incumbent": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 23422.824411299083,
+        "cost_min": 23308.74182679496,
+        "cost_max": 23632.363922398028,
+        "weighted_service_shortfall": null,
+        "failures": [],
+        "service": {
+         "svc_A": 1.0,
+         "svc_B": 1.0
+        }
+       },
+       "candidate": {
+        "runs": 3,
+        "physical_failures": 0,
+        "cost_mean": 14789.667306151252,
+        "cost_min": 14568.799928854252,
+        "cost_max": 15217.719930124127,
+        "weighted_service_shortfall": null,
+        "failures": [],
+        "service": {
+         "svc_A": 0.9635570128345237,
+         "svc_B": 0.96924203450536
+        }
+       }
+      }
+     ],
+     "deltas": {
+      "service": {
+       "svc_A": -0.032296592957482995,
+       "svc_B": -0.03420200293313391
+      },
+      "cost_fitted": -8704.634385796,
+      "inventory": 245.08864977489338,
+      "stress_service": {
+       "svc_A": [
+        0.9635570128345237,
+        1.0
+       ],
+       "svc_B": [
+        0.96924203450536,
+        1.0
+       ]
+      }
+     },
+     "reason": "stress gate: rejected"
+    }
+   },
+   "on_hand": 426.61771623442206,
+   "pipeline": [],
+   "forecast_mean": {
+    "A": 99.24509138296973,
+    "B": 96.74748705522605
+   },
+   "orchestration": {
+    "planner_owner": "PURCHASING_ECONOMICS",
+    "ownership_reasons": [
+     "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+    ],
+    "p1_classes_added": [
+     "stochastic_network"
+    ],
+    "candidate_classes_requested": [
+     "deterministic_network",
+     "stochastic_network",
+     "cadence_2_network",
+     "cadence_4_network"
+    ],
+    "candidates_built": [
+     "cadence_2_network",
+     "cadence_4_network",
+     "deterministic_network",
+     "stochastic_network"
+    ],
+    "reasons": [
+     "the incumbent plan is physically usable, meets every requested service target, carries no active risk driver and holds no materially avoidable inventory"
+    ]
+   },
+   "selected_policy": "operator_declared",
+   "blocking": null,
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": false,
+     "gate_mode": "rejected",
+     "physically_usable": true,
+     "within_downside": false,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23422.824411299083,
+      "cost_min": 23308.74182679496,
+      "cost_max": 23632.363922398028,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 14789.667306151252,
+      "cost_min": 14568.799928854252,
+      "cost_max": 15217.719930124127,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 0.9635570128345237,
+       "svc_B": 0.96924203450536
+      }
+     }
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23481.870788606462,
+     "cost_min": 23439.007968757967,
+     "cost_max": 23513.375117847878,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 14777.236402810462,
+     "cost_min": 14635.004451751112,
+     "cost_max": 14868.495030735583,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "economics_orders": [
+    {
+     "q": 192.0,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 73.21029912647369,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 14.20955406869828,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 8.580146804828033,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 84.0,
+      "FREIGHT_ECONOMICS": 12.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 0.0
+     },
+     "need": 87.41985319517197
+    },
+    {
+     "q": 120.0,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 0.0,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 0.0,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 108.0,
+      "FREIGHT_ECONOMICS": 12.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 0.0
+     },
+     "need": 0.0
+    }
+   ],
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "eoq_from_same_snapshot": {
+    "src_A:0": 1224.0,
+    "src_B:2": 1224.0
+   },
+   "chosen_solution": null,
+   "executed": [
+    [
+     "src_A",
+     192.0
+    ],
+    [
+     "src_B",
+     120.0
+    ]
+   ],
+   "settlement": {
+    "demand": 197.61066513725189,
+    "served": 197.61066513725189,
+    "end_stock": 229.0070510971702,
+    "ledger": {
+     "opening_assets": 2133.0885811721105,
+     "procurement": 1560.0,
+     "freight": 800.0,
+     "handling": 0.0,
+     "order_fees": 0.0,
+     "financing": 0.0,
+     "ordering": 200.0,
+     "receiving": 25.0,
+     "substitution": 0.0,
+     "lost_sales_opportunity": 0.0,
+     "sla": 0.0,
+     "holding": 3.952724443594992,
+     "working_capital": 1.9178082191780823,
+     "closing_assets": -2139.237463138441
+    }
+   }
+  }
+ ],
+ "frontiers": {},
+ "economic_cost": 13455.256102296973,
+ "status": "COMPLETE"
+}
