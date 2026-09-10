@@ -12,7 +12,6 @@ import json
 import time
 from pathlib import Path
 
-from zaad.full.fixtures_p1 import NOW
 from zaad.meio.fixtures_p2 import p2_request
 
 OUT = Path("docs/zaad_full/evidence/p2")

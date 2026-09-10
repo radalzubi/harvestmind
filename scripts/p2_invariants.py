@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 import json
 import time
-from dataclasses import replace
 from pathlib import Path
 
 from zaad.full.model import Solution, solve
@@ -110,7 +109,7 @@ def inv_07_capacity() -> dict:
 def inv_08_pack_rounding() -> dict:
     req = p2_request(lane_multiple=24., opening_central=800., opening_branch=110., lane_capacity=240.)
     sol = solve(req, det(req), service_floor=True)
-    legal = all(abs(q / 24. - round(q / 24.)) < 1e-6 for q in period_transfers(sol).values())
+    legal = all(abs(q / 24. - round(q / 24.)) < 1e-6 for (a, t), q in period_transfers(sol).items() if t == 0)   # the executable period
     refused = False
     try:
         settle(req, fixed_plan(transfers={("lane_north", 52, 0): 30.}), det(req)[0])

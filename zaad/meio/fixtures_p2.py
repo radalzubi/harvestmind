@@ -86,9 +86,11 @@ def p2_request(*, branches: tuple[str, ...] = ("north", "south"), horizon: int =
             history.append({**known, "service": f"svc_{b}", "period": t, "quantity": q})
     if scenarios is None:
         # P2 network setting: the scenario count follows the longest lane a fed location waits on (see
-        # zaad.meio.topology.network_scenarios); a single location or one-period lanes keep P1's three
-        from zaad.meio.topology import network_scenarios
+        # zaad.meio.topology.network_scenarios) and the declared solve budget grows with it; a single
+        # location or one-period lanes keep P1's three worlds and budget
+        from zaad.meio.topology import network_scenarios, network_solve_seconds
         scenarios = network_scenarios(max((int(lead_b[b]) for b in branches), default=0) if not single else 0)
+        max_solve_seconds = network_solve_seconds(max_solve_seconds, scenarios)
     payload: dict[str, Any] = {
         "operator_id": "p2_fixture", "as_of": NOW, "currency": "USD", "period_days": period_days, "horizon": H,
         "skus": [{**known, "id": "A", "volume": 1., "asset_value": unit_price, "terminal_value": unit_price * .8, "shelf_life": 52, "disposal_fee": 0.}],

@@ -101,7 +101,8 @@ def test_lane_packs_are_whole_in_the_model_and_enforced_by_settlement():
     per_period: dict[tuple[str, int], float] = {}
     for (arc, _e, t), q in sol.transfers.items():
         per_period[arc, t] = per_period.get((arc, t), 0.) + q
-    assert per_period and all(abs(q / 12. - round(q / 12.)) < 1e-6 for q in per_period.values())
+    executable = {k: q for k, q in per_period.items() if k[1] == 0}
+    assert executable and all(abs(q / 12. - round(q / 12.)) < 1e-6 for q in executable.values())   # period zero is executed in whole packs
     illegal = Solution("OPTIMAL", {}, {("lane_north", 52, 0): 7.}, {}, {}, None, [], 0., 0, 0, None, 0., [])
     with pytest.raises(PhysicalViolation, match="pack"):
         settle(req, illegal, world(req)[0])

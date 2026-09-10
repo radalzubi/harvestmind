@@ -33,6 +33,13 @@ from zaad.full.worlds import dates, next_open
 NETWORK_LIMITS = {"locations": 12, "transfers": 60, "incumbent_transfers": 600}
 
 
+def network_solve_seconds(max_solve_seconds: float, scenarios: int, base: int = 3) -> float:
+    """Per-solve budget declared with a network scenario count (P2). The frozen adaptive budget scales
+    with horizon and breadth but was fitted on three worlds; a stochastic solve with S worlds carries
+    S / 3 times the variables, so the declared budget grows with it (capped by the contract's 120 s)."""
+    return float(min(120., max_solve_seconds * max(1., scenarios / base)))
+
+
 def network_scenarios(longest_lane_lead_periods: int, base: int = 3, cap: int = 8) -> int:
     """Scenario count for a network request (P2). Protection at a transfer-fed location covers demand
     over its lane lead plus one review; with S worlds per period the tail of that multi-period sum is

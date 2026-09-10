@@ -137,3 +137,29 @@ evidence invalidated and re-run, and the fix recorded in a dated section here an
 Validation7, Validation8 (not present as directories), `docs/zaad_full/evidence/v4/holdout4`
 (frozen, unrun), PR #39 / Network Twin, the dashboard and public website, sector physics
 (fresh-produce shelf life, cold chain, manufacturing), `main`, the frozen tags.
+
+## Correction 1 (dated 2026-09-10, after the authoritative run `p2_authoritative`)
+
+The authoritative run passed every economic, service, action, conservation and principle gate (20 / 20
+valid fixtures, 18 / 18 principles; `p2_authoritative.tables.md`). Two coding defects surfaced in the
+runtime gate and are corrected here; the affected evidence is invalidated and re-run as
+`p2_authoritative_c1` on the same seeds, reviews and rules:
+
+1. **Solve budget did not follow the scenario rule.** `network_scenarios` raised the world count to
+   six (D, O) and eight (M) but left the declared `max_solve_seconds` at 15, and the frozen adaptive
+   budget scales with horizon and breadth only (it was fitted on three worlds). The stochastic
+   candidate - a REQUIRED class on P1-owned reviews - then returned NO_FEASIBLE_SOLUTION inside the
+   budget on 15 reviews of D, M and O (a required-candidate starvation the gate forbids). Fix:
+   `zaad.meio.topology.network_solve_seconds` (the declared budget grows with S / 3, capped by the
+   contract's 120 s), applied by the fixture builder and the workspace adapter. Invalidated: D, M, O.
+2. **Transfer packs were enforced on guidance periods.** The model carried a general-integer pack
+   variable on every lane-period while the settlement (and the frozen doctrine: only period-zero
+   actions are executed, later actions are replanning guidance) judges packs on the executable period.
+   The inconsistency made every candidate solve on Q general-integer over 24 lane-periods; under
+   NETWORK_ALLOCATION (eight candidates at the adaptive budget) reviews took 217-282 s against the
+   pre-registered 180 s maximum. Fix: the pack variable binds period zero only; the per-dispatch cost
+   stays on every period. Invalidated: Q.
+
+No fixture argument, comparator rule, tolerance, service mode, scenario rule or scoring basis changes.
+The final table (`p2_final.tables.md`) is the authoritative record for the sixteen untouched fixtures
+plus `p2_authoritative_c1` for D, M, O and Q; the runtime gate is read over the same set.

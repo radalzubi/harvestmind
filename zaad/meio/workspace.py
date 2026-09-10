@@ -269,11 +269,12 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
         rho, rho_prov = (est, "INFERRED_FROM_HISTORY") if est is not None else (0., "NOT_AVAILABLE")
     provenance["demand_correlation"] = rho_prov
 
-    from zaad.meio.topology import network_scenarios
+    from zaad.meio.topology import network_scenarios, network_solve_seconds
     longest = max((a["lead_periods"] for a in transfer_rows), default=0)
+    worlds = max(int(data["scenarios"]), network_scenarios(longest))
     data.update({"locations": loc_rows, "services": service_rows, "history": history_rows, "stock": stock_rows, "sources": source_rows,
                  "transfers": transfer_rows, "inbound_transfers": inbound_rows, "incumbent_rule": incumbent_rule, "demand_correlation": rho,
-                 "scenarios": max(int(data["scenarios"]), network_scenarios(longest)),
+                 "scenarios": worlds, "max_solve_seconds": network_solve_seconds(float(data["max_solve_seconds"]), worlds),
                  # pack lanes make the joint MILP general-integer: a 1e-4 optimality gap is the honest operational
                  # setting there (the frozen contract's own note on solver_mip_gap); continuous lanes keep the default
                  "solver_mip_gap": (1e-4 if any(a["multiple"] > 0 for a in transfer_rows) else data["solver_mip_gap"]),
