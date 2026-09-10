@@ -123,3 +123,97 @@ def terminal_terms(req: Request, fits: dict) -> dict[tuple[str, str], tuple[floa
         if units > 0 and margin > 0:
             out[key] = (float(units), float(margin))
     return out
+
+
+def steady_state_unit_costs(req: Request, fits: dict) -> dict[str, float]:
+    """Per SKU: the long-run average cost of one RECEIVED unit of demand under the economic lot, c* / mu:
+    the replacement cost of a received unit (price, per-unit freight and handling, and the order and
+    shipment cost per unit of one reference lot, each divided by the source's declared fill ratio,
+    because the ledger charges an order on the ordered quantity and stock receives the filled part) plus
+    the holding and cost of capital that unit would incur while it waits its turn in a steady-state lot,
+    on average half the lot's consumption time. It is what a unit still on hand at the end of a plan
+    lets the operator avoid buying, ordering and holding later. (The pass-J `landed_unit_costs` basis is
+    kept as recorded: per ordered unit, no fill correction.)"""
+    skus = {s.id: s for s in req.skus}
+    locs = {loc.id: loc for loc in req.locations}
+    terms = {x.id: x for x in req.terms}
+    lots = reference_lots(req, fits)
+    out: dict[str, float] = {}
+    for source in sorted(req.sources, key=lambda s: (s.unit_price + s.freight_per_unit + s.handling_per_unit, s.id)):
+        if not (source.approved and source.compliance == "cleared") or source.sku in out:
+            continue
+        lot = lots.get(source.supplier)
+        fill = max(float(source.fill_mean), 1e-6)
+        premium = lot["premium_per_unit"] if lot else 0.
+        replacement = (source.unit_price * terms[source.terms].fx_rate_to_currency + source.freight_per_unit + source.handling_per_unit + premium) / fill
+        rate = locs[source.destination].holding_per_value_period + req.liquidity.cost_of_capital_per_period
+        tau = (lot["lot_units"] * fill / (2. * lot["demand_per_period"])) if lot and lot["demand_per_period"] > 0 else .5
+        out[source.sku] = replacement + skus[source.sku].asset_value * rate * tau
+    return out
+
+
+def economic_cycle(req: Request, fits: dict) -> dict[str, dict]:
+    """Per supplier: the reference lot, the demand it serves per period and the cycle length in periods
+    (lot / demand), for reporting and for the continuation's period slabs."""
+    return {supplier: {"lot_units": lot["lot_units"], "demand_per_period": lot["demand_per_period"],
+                       "cycle_periods": lot["lot_units"] / lot["demand_per_period"] if lot["demand_per_period"] > 0 else None}
+            for supplier, lot in reference_lots(req, fits).items()}
+
+
+def cycle_continuation_terms(req: Request, fits: dict) -> dict[tuple[str, str], list[tuple[float, float]]]:
+    """Solve terms for `model.solve(continuation=...)`, the steady-state relative value of end-of-plan
+    stock (P1 final closure). Per SKU / location, one slab per post-window period j = 0, 1, ... up to one
+    economic cycle: the units the fitted demand consumes in that period (mu) and the margin above
+    salvage each of them earns, c* / mu less the holding and cost of capital it incurs itself until that
+    period, (j + 1/2) periods after the plan ends. The solver fills the highest-margin slabs first, so
+    the credit is concave in the residual: the k-th residual unit is worth c* / mu - rate * price * k / mu,
+    which falls to the purchase price at exactly one economic lot and to salvage far beyond it. Slabs
+    with a non-positive margin are dropped; beyond one cycle the residual earns salvage, as before."""
+    skus = {s.id: s for s in req.skus}
+    locs = {loc.id: loc for loc in req.locations}
+    lots = reference_lots(req, fits)
+    unit_cost = steady_state_unit_costs(req, fits)
+    mu: dict[tuple[str, str], float] = defaultdict(float)
+    for s in req.services:
+        mu[s.sku, s.location] += float(fits[s.id]["mean"])
+    out: dict[tuple[str, str], list[tuple[float, float]]] = {}
+    for source in req.sources:
+        key = (source.sku, source.destination)
+        if key in out or mu[key] <= 0 or source.sku not in unit_cost:
+            continue
+        lot = lots.get(source.supplier)
+        periods = max(1, math.ceil(lot["lot_units"] / lot["demand_per_period"])) if lot and lot["demand_per_period"] > 0 else 1
+        sku = skus[source.sku]
+        # stock bought in the window expires shelf_life periods after arrival: a unit landed in period
+        # 0 cannot serve a post-window period at or beyond shelf_life - horizon, so no slab is credited
+        # there (the selection rows apply each lot's own expiry; this is the solve-side bound)
+        periods = min(periods, max(0, int(sku.shelf_life) - int(req.horizon)))
+        rate = locs[source.destination].holding_per_value_period + req.liquidity.cost_of_capital_per_period
+        slabs = []
+        for j in range(periods):
+            margin = unit_cost[source.sku] - sku.terminal_value - sku.asset_value * rate * (j + .5)
+            if margin <= 0:
+                break
+            slabs.append((float(mu[key]), float(margin)))
+        if slabs:
+            out[key] = slabs
+    return out
+
+
+def continuation_caps(req: Request, fits: dict) -> dict[str, float]:
+    """Per SKU: the residual units the continuation credits above salvage, one economic cycle of the
+    SKU's share of the supplier's demand (the same bound the solve's slabs carry)."""
+    lots = reference_lots(req, fits)
+    mu: dict[str, float] = defaultdict(float)
+    for s in req.services:
+        mu[s.sku] += float(fits[s.id]["mean"])
+    caps: dict[str, float] = {}
+    for source in req.sources:
+        if source.sku in caps or not (source.approved and source.compliance == "cleared"):
+            continue
+        lot = lots.get(source.supplier)
+        if lot and lot["demand_per_period"] > 0 and mu[source.sku] > 0:
+            caps[source.sku] = lot["lot_units"] * mu[source.sku] / lot["demand_per_period"]
+        else:
+            caps[source.sku] = mu[source.sku]
+    return caps

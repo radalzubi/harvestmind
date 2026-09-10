@@ -82,7 +82,13 @@ def test_the_term_makes_the_full_load_the_optimum_on_the_review_17_snapshot():
 def test_p1_owned_review_reports_the_landed_terminal_and_p0_owned_review_does_not():
     rep = plan(_req("I_max_pallets_ftl_cap"))
     assert rep["orchestration"]["planner_owner"] == "PURCHASING_ECONOMICS"
-    assert rep["orchestration"]["p1_terminal_landed"] == pytest.approx({"A": 5. + 1250. / 450.})
+    landed = 5. + 1250. / 450.
+    basis = rep["orchestration"]["p1_economics"]["terminal_economic_basis"]
+    # cycle basis (final closure): the replacement cost of a RECEIVED unit (landed / declared fill .98)
+    # plus the average holding of a future unit over half a lot of received units (lot * fill / 2 mu)
+    fill = _req("I_max_pallets_ftl_cap").sources[0].fill_mean
+    expected = landed / fill + 5. * _req("I_max_pallets_ftl_cap").locations[0].holding_per_value_period * 450. * fill / (2. * 100.) if basis == "cycle" else landed
+    assert rep["orchestration"]["p1_terminal_landed"]["A"] == pytest.approx(expected, rel=1e-2)
     off = plan(_req("I_max_pallets_ftl_cap").model_copy(update={"lot_terminal_valuation": False}))
     assert off["orchestration"]["p1_terminal_landed"] is None
     severe = build("I_max_pallets_ftl_cap", 41001, stresses="severe").model_copy(update=PRODUCT)

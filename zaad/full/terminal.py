@@ -28,7 +28,7 @@ from zaad.full.contracts import Request
 
 
 def continuation_value(req: Request, end_stock: list[dict], pending: list, fits: dict, window_end: int = 1,
-                       landed: dict[str, float] | None = None) -> dict:
+                       landed: dict[str, float] | None = None, cap_units: dict[str, float] | None = None) -> dict:
     """Value residual stock beyond the window. `end_stock` rows are the last settlement's
     (sku, location, expiry, quantity); `pending` its in-transit tuples (sku, location, expiry, due,
     quantity, kind); `fits` the last review's forecast (mean per service). Returns the salvage credit
@@ -39,7 +39,9 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
     (optional, per SKU) is the unit cost the consumption of a residual unit avoids when that cost is
     more than the bare unit price: price plus the freight, ordering and receiving cost per unit the
     policy actually incurred (benchmark pass J correction 1). Carrying stays on the asset value, as
-    the ledger charges it. Without `landed` the avoided purchase is `asset_value`, as before."""
+    the ledger charges it. Without `landed` the avoided purchase is `asset_value`, as before. `cap_units`
+    (optional, per SKU): residual units beyond the cap earn salvage only (the planner's selection rows
+    use one economic cycle, the bound its solve carries; the benchmark passes none)."""
     skus = {s.id: s for s in req.skus}
     locs = {loc.id: loc for loc in req.locations}
     mu: dict[tuple[str, str], float] = {}
@@ -63,6 +65,7 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
         consumed_before = 0.       # units consumed ahead of the lot being valued
         value_here = salvage_here = 0.
         consumed_units = 0.
+        cap = (cap_units or {}).get(sku)
         for available, expiry, quantity in sorted(rows, key=lambda r: (r[0], r[1])):
             salvage_here += quantity * salvage
             if demand <= 0:
@@ -77,7 +80,7 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
             for k in range(n + (1 if frac > 1e-9 else 0)):
                 q = 1. if k < n else frac
                 tau = start + (k + .5) / demand
-                if tau >= expiry:
+                if tau >= expiry or (cap is not None and consumed_before + k >= cap):
                     value_here += q * salvage
                 else:
                     value_here += q * min(price, max(salvage, price - asset * rate * tau))

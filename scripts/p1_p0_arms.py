@@ -32,7 +32,7 @@ ARMS = {
              "materiality_cost_fraction": 0., "materiality_inventory_fraction": 0., "materiality_service": 0.},
     "smoothing": {"service_gate_basis": "incumbent", "order_smoothing": .02, "timing_tiebreak": 0.,
                   "materiality_cost_fraction": 0., "materiality_inventory_fraction": 0., "materiality_service": 0.},
-    "both": {"service_gate_basis": "target", "order_smoothing": .02, "timing_tiebreak": 0.,
+    "both_gate_smoothing": {"service_gate_basis": "target", "order_smoothing": .02, "timing_tiebreak": 0.,   # was a second "both" key, shadowed by the materiality / tie-break arm below
              "materiality_cost_fraction": 0., "materiality_inventory_fraction": 0., "materiality_service": 0.},
     "final": {},
     "final_incgate": {"service_gate_basis": "incumbent"},   # P1 representation + band guard, P0 gate
@@ -60,7 +60,8 @@ ARMS = {
     "router_tA": {},
     "router_tA_rerun108": {},
     "router_tAonly": {},
-    "router_final_l": {},   # pass L: final code (B-F reverted, mechanical lint / typing fixes only)    # two-blocker closure: final code, rule T-A only (T-B rejected)   # two-blocker closure: cell 108 alone after a hedged-candidate time-out at r5 in the tA arm      # two-blocker closure: after rule T-A (flag not an ownership reason) and T-B (target floor on P1-owned reviews)   # pass J: final code (ledger key on P1 evaluation rows); P0 cells must stay decision-identical   # pass J: cell 21 alone with the lot valuation off (variability independent of the change?)   # pass J: cell 21 rerun alone after a r5 quantity difference in the time-limited hedged solve     # pass J: after the lot-sizing terminal valuation (P1-owned reviews only; P0 cells must stay decision-identical)   # pass J: after the opt-in rolling replay mode (legacy path must be decision-identical)   # same code as router: run-to-run variability of the time-limited solves
+    "router_final_l": {},
+    "router_cycle": {},     # P1 final closure: cycle continuation + rule P1-S; every P0 review is protection-owned, so the cells must stay decision-identical   # pass L: final code (B-F reverted, mechanical lint / typing fixes only)    # two-blocker closure: final code, rule T-A only (T-B rejected)   # two-blocker closure: cell 108 alone after a hedged-candidate time-out at r5 in the tA arm      # two-blocker closure: after rule T-A (flag not an ownership reason) and T-B (target floor on P1-owned reviews)   # pass J: final code (ledger key on P1 evaluation rows); P0 cells must stay decision-identical   # pass J: cell 21 alone with the lot valuation off (variability independent of the change?)   # pass J: cell 21 rerun alone after a r5 quantity difference in the time-limited hedged solve     # pass J: after the lot-sizing terminal valuation (P1-owned reviews only; P0 cells must stay decision-identical)   # pass J: after the opt-in rolling replay mode (legacy path must be decision-identical)   # same code as router: run-to-run variability of the time-limited solves
 }
 
 
@@ -87,7 +88,8 @@ def main():
             t0 = time.perf_counter()
             P.TRACE = {}
             rep = orig_plan(r)
-            trace = dict(P.TRACE); P.TRACE = None
+            trace = dict(P.TRACE)
+            P.TRACE = None
             rep["_decision"] = {"chosen": trace.get("chosen"), "feasible": trace.get("feasible"), "recovery_mode": trace.get("recovery_mode"),
                                 "lean_review": trace.get("lean_review"), "gates": trace.get("candidate_gates"),
                                 "final_p0": trace.get("final_p0_purchases"), "worlds": [w["name"] for w in trace.get("worlds", [])]}

@@ -886,12 +886,19 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                           upper=(1 - service.target) * sum(world.demand[service.id]))
     if continuation:
         for w in range(len(worlds)):
-            for (sku, location), (demand_units, margin) in continuation.items():
+            for (sku, location), value in continuation.items():
+                # one (units, margin) pair, or a list of slabs sharing the post-horizon supply (P1 final
+                # closure: the steady-state relative value, concave in the residual); P0 passes neither
+                slabs = value if isinstance(value, list) else [value]
                 supply_terms = post[w].get((sku, location), {})
-                if demand_units > 0 and margin > 0 and supply_terms:
-                    served = m.var(("continuation", sku, location, w), upper=demand_units)
-                    m.row({**{q: -coef for q, coef in supply_terms.items()}, served: 1.}, upper=0)
-                    costs[w][served] -= margin
+                served_vars = []
+                for j, (demand_units, margin) in enumerate(slabs):
+                    if demand_units > 0 and margin > 0 and supply_terms:
+                        served = m.var(("continuation", sku, location, w, j), upper=demand_units)
+                        costs[w][served] -= margin
+                        served_vars.append(served)
+                if served_vars:
+                    m.row({**{q: -coef for q, coef in supply_terms.items()}, **{s: 1. for s in served_vars}}, upper=0)
     es_vars: dict[tuple[str, int], int] = {}
     for service, t, cuts in shortage_terms:
         # Availability for the service in period t on the single world: what it served plus what

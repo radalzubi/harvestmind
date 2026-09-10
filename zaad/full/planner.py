@@ -124,7 +124,14 @@ def targets(req: Request, buffer: float = 1.645) -> dict:
     return orders
 
 
-def evaluate(req, solution, worlds, terminal: dict[str, float] | None = None, fits: dict | None = None):
+def _mean_continuation_credit(rows: list[dict]) -> float | None:
+    usable = [r for r in rows if r.get("usable") and "terminal_adjustment" in r]
+    if not usable:
+        return None
+    return -sum(r["terminal_adjustment"] * r["weight"] for r in usable) / sum(r["weight"] for r in usable)
+
+
+def evaluate(req, solution, worlds, terminal: dict[str, float] | None = None, fits: dict | None = None, terminal_cap: dict[str, float] | None = None):
     """Gate evaluation on a world set. Later-period transfers are guidance: on a world where the
     feeding receipt lands late they are reduced to available stock and the reduction is
     recorded, rather than failing a plan whose period-zero actions are perfectly legal.
@@ -138,7 +145,7 @@ def evaluate(req, solution, worlds, terminal: dict[str, float] | None = None, fi
             result = settle(req, solution, world, future_guidance=True)
             if terminal:
                 from zaad.full.terminal import continuation_value
-                adjustment = continuation_value(req, result["end_stock"], result["pending"], fits if fits is not None else {}, window_end=req.horizon, landed=terminal)["adjustment"]
+                adjustment = continuation_value(req, result["end_stock"], result["pending"], fits if fits is not None else {}, window_end=req.horizon, landed=terminal, cap_units=terminal_cap)["adjustment"]
                 # carried in the row's ledger too (INVENTORY_VALUE_CHANGE), so components still reconcile
                 result = {**result, "economic_cost": result["economic_cost"] + adjustment, "terminal_adjustment": adjustment,
                           "ledger": {**result["ledger"], "terminal_continuation": adjustment}}
@@ -680,15 +687,33 @@ def plan(req: Request) -> dict:
     optional = list(screen_result["optional_candidates"])
     p1_added: list[str] = []
     p1_terminal: dict[str, float] | None = None
+    p1_terminal_cap: dict[str, float] | None = None
+    p1_economics: dict = {}
     if ownership["owner"] == PURCHASING_ECONOMICS:
         required, optional, p1_added = purchasing_candidates(str(screen_result["state"]), required, optional)
         if req.lot_terminal_valuation:
-            # Lot-sizing terminal valuation (P1 benchmark / horizon closure pass): end-of-plan stock and
-            # committed arrivals are worth the landed purchase they avoid, less carrying, never below
-            # salvage, in every candidate solve and in every candidate evaluation of this review.
-            from zaad.full.lotsizing import landed_unit_costs, terminal_terms
-            p1_terminal = landed_unit_costs(req, fits)
-            lot_terms = terminal_terms(req, fits)
+            # Terminal valuation of a purchasing review (pass J, final closure): end-of-plan stock and
+            # committed arrivals are worth what they let the operator avoid later, in every candidate
+            # solve and in every candidate evaluation of this review. "cycle" basis: the steady-state
+            # relative value (c*/mu less the unit's own carrying, concave, one economic cycle credited);
+            # "landed" basis: the pass-J landed cost less carrying.
+            from zaad.full.lotsizing import (continuation_caps, cycle_continuation_terms, economic_cycle, landed_unit_costs,
+                                             steady_state_unit_costs, terminal_terms)
+            if req.terminal_economic_basis == "cycle":
+                p1_terminal = steady_state_unit_costs(req, fits)
+                p1_terminal_cap = continuation_caps(req, fits)
+                lot_terms: dict = cycle_continuation_terms(req, fits)
+            else:
+                p1_terminal = landed_unit_costs(req, fits)
+                lot_terms = terminal_terms(req, fits)
+            cycles = economic_cycle(req, fits)
+            p1_economics = {"terminal_economic_basis": req.terminal_economic_basis, "detailed_horizon": req.horizon,
+                            "economic_cycle": cycles,
+                            "economic_cycle_periods": {k: v["cycle_periods"] for k, v in cycles.items()},
+                            "economic_lot_reference": {k: v["lot_units"] for k, v in cycles.items()},
+                            "steady_state_unit_cost": p1_terminal,
+                            "continuation_slabs": {f"{k[0]}@{k[1]}": (len(v) if isinstance(v, list) else 1) for k, v in lot_terms.items()},
+                            "residual_units_credited_up_to": p1_terminal_cap}
             if lot_terms:
                 v6 = {**v6, "continuation": lot_terms}
     # Cadence candidates (P1). When a supplier carries order-level economics (fixed order cost, MOV,
@@ -790,9 +815,9 @@ def plan(req: Request) -> dict:
     if req.protection_v6 and (not req.adaptive_escalation or screen_result["state"] in ("NETWORK_ALLOCATION", "ESCALATE_UNKNOWN")):
         joint_fitted = solve(req, selection, service_first="all", seed=incumbent, **v6)
         if joint_fitted.usable_plan:
-            joint_fitted_rows = evaluate(req, joint_fitted, selection, terminal=p1_terminal, fits=fits)
+            joint_fitted_rows = evaluate(req, joint_fitted, selection, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap)
 
-    selection_rows = {name: evaluate(req, candidate, selection, terminal=p1_terminal, fits=fits) for name, candidate in candidates.items() if candidate.usable_plan}
+    selection_rows = {name: evaluate(req, candidate, selection, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap) for name, candidate in candidates.items() if candidate.usable_plan}
     # Escalation on demand (v8): the feasibility frontier is only expensive when it is not needed.
     # If nothing in the minimum safe set meets every requested service target, the joint solve is
     # precisely the evidence required to say whether the miss was avoidable, so it is built now
@@ -805,12 +830,12 @@ def plan(req: Request) -> dict:
             compute["attempts"]["joint_recovery"] = recovery
             if recovery.usable_plan:
                 candidates["joint_recovery"] = recovery
-                selection_rows["joint_recovery"] = evaluate(req, recovery, selection, terminal=p1_terminal, fits=fits)
+                selection_rows["joint_recovery"] = evaluate(req, recovery, selection, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap)
             if not joint_fitted_rows:
                 joint_fitted = solve(req, selection, service_first="all", seed=incumbent, **v6)
                 if joint_fitted.usable_plan:
-                    joint_fitted_rows = evaluate(req, joint_fitted, selection, terminal=p1_terminal, fits=fits)
-    stress_rows = {name: evaluate(req, candidate, stress_worlds, terminal=p1_terminal, fits=fits) for name, candidate in candidates.items()
+                    joint_fitted_rows = evaluate(req, joint_fitted, selection, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap)
+    stress_rows = {name: evaluate(req, candidate, stress_worlds, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap) for name, candidate in candidates.items()
                    if candidate.usable_plan and stress_weight > 0}
     feasible = [name for name, rows in selection_rows.items() if service_ok(req, rows) and name not in EXCLUDE_FROM_SELECTION]
 
@@ -929,10 +954,20 @@ def plan(req: Request) -> dict:
             # protection and paid the resulting shortage was preferred as "leanest" whenever the
             # shortage it accepted cost less than the band width, which on a purchase-dominated
             # cost is far more than protection costs to carry.
-            floor_exposure = (_shortage_exposure(selection_rows[cheapest_name])[0] or 0.) if (lean_review and BAND_GUARD) else float("inf")
-            band = [n for n in comparable
-                    if hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9
-                    and (_shortage_exposure(selection_rows[n])[0] or 0.) <= floor_exposure + 1e-9] or [cheapest_name]
+            if ownership["owner"] == PURCHASING_ECONOMICS:
+                # Purchasing-economics reviews (P1 final closure, rule P1-S): the objective already
+                # prices carried capital - holding, cost of capital and, through the cycle continuation,
+                # the value of stock that outlives the window - so the leanness band would charge cycle
+                # stock a second time, up to the downside tolerance (B: cadence plans buying partial lots
+                # at +0.8..+3.4% hedged cost won on burden over the full-lot plan the objective preferred).
+                # Rank on hedged cost; burden and earliness break numerical ties only. Protection-owned
+                # reviews keep the band and its shortage guard unchanged.
+                band = [n for n in comparable if hedged_cost(n) <= cheapest + 1e-6 * max(abs(cheapest), 1.)]
+            else:
+                floor_exposure = (_shortage_exposure(selection_rows[cheapest_name])[0] or 0.) if (lean_review and BAND_GUARD) else float("inf")
+                band = [n for n in comparable
+                        if hedged_cost(n) <= cheapest + req.downside_cost_tolerance * max(abs(cheapest), 1.) + 1e-9
+                        and (_shortage_exposure(selection_rows[n])[0] or 0.) <= floor_exposure + 1e-9] or [cheapest_name]
             chosen = min(band, key=lambda name: (burden(name), earliness(name), hedged_cost(name), list(candidates).index(name)))
         elif req.protection_v5:
             # Marginal value (v5): estimated costs are noisy; among feasible candidates whose hedged
@@ -948,7 +983,7 @@ def plan(req: Request) -> dict:
     elif incumbent.usable_plan:
         # Impossible SLA: rank every usable candidate by priority-weighted shortfall (cost breaks ties)
         # and take the best one only if it beats the incumbent by a material margin.
-        incumbent_selection = selection_rows.get("incumbent", evaluate(req, incumbent, selection, terminal=p1_terminal, fits=fits))
+        incumbent_selection = selection_rows.get("incumbent", evaluate(req, incumbent, selection, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap))
         for name, rows in selection_rows.items():
             if name == "incumbent":
                 continue
@@ -991,8 +1026,8 @@ def plan(req: Request) -> dict:
                            for name, c in candidates.items()},
             "feasible": list(feasible), "chosen": chosen, "recovery_mode": recovery_mode})
     confirmation = draw(req_draw, req.seed + 10000, req.scenarios)
-    incumbent_rows = evaluate(req, incumbent, confirmation, terminal=p1_terminal, fits=fits) if incumbent.usable_plan else []
-    candidate_rows = evaluate(req, candidates[chosen], confirmation, terminal=p1_terminal, fits=fits) if candidates[chosen].usable_plan else []
+    incumbent_rows = evaluate(req, incumbent, confirmation, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap) if incumbent.usable_plan else []
+    candidate_rows = evaluate(req, candidates[chosen], confirmation, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap) if candidates[chosen].usable_plan else []
     reasons, stress_report = [], []
     benefit_lower = None
     blocking: dict = {"downside": False, "stress": False, "reasons": []}
@@ -1144,8 +1179,8 @@ def plan(req: Request) -> dict:
     # named. The floor is ordinary service protection there, not only disruption protection.
     for i, stress in enumerate(req.stresses):
         adversaries = draw(req_draw, req.seed + 30000 + i, req.scenarios, stress)
-        before = evaluate(req, incumbent, adversaries, terminal=p1_terminal, fits=fits) if incumbent.usable_plan else []
-        after = evaluate(req, candidates[chosen], adversaries, terminal=p1_terminal, fits=fits) if candidates[chosen].usable_plan else []
+        before = evaluate(req, incumbent, adversaries, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap) if incumbent.usable_plan else []
+        after = evaluate(req, candidates[chosen], adversaries, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap) if candidates[chosen].usable_plan else []
         physically_ok = bool(after) and all(r["usable"] for r in after)
         downside_ok = physically_ok and bool(before) and all(r["usable"] for r in before)
         if downside_ok:
@@ -1179,7 +1214,7 @@ def plan(req: Request) -> dict:
     chosen_meets = bool(candidate_rows) and service_ok(req, candidate_rows)
     if not recovery_mode and not accepted:
         for alternative in sorted((n for n in feasible if n not in {chosen, "incumbent"}), key=lambda n: (hedged_cost(n), list(candidates).index(n))):
-            rows = evaluate(req, candidates[alternative], confirmation, terminal=p1_terminal, fits=fits)
+            rows = evaluate(req, candidates[alternative], confirmation, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap)
             passes = service_ok(req, rows) and bool(incumbent_rows) and all(r["usable"] for r in incumbent_rows)
             lower = None
             if passes:
@@ -1187,8 +1222,8 @@ def plan(req: Request) -> dict:
             checks: list[dict[str, Any]] = []
             for i, stress in enumerate(req.stresses):
                 worlds = draw(req_draw, req.seed + 30000 + i, req.scenarios, stress)
-                before = evaluate(req, incumbent, worlds, terminal=p1_terminal, fits=fits) if incumbent.usable_plan else []
-                after = evaluate(req, candidates[alternative], worlds, terminal=p1_terminal, fits=fits)
+                before = evaluate(req, incumbent, worlds, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap) if incumbent.usable_plan else []
+                after = evaluate(req, candidates[alternative], worlds, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap)
                 usable_after = bool(after) and all(r["usable"] for r in after)
                 valid = usable_after and bool(before) and all(r["usable"] for r in before)
                 if valid:
@@ -1265,8 +1300,8 @@ def plan(req: Request) -> dict:
 
     eta = {p.id: asdict(conditional_eta(req.shipment_history, p.source, max(0, (req.as_of - p.placed_at).days), p.stage, p.carrier)) for p in req.pipeline}
     fingerprint = hashlib.sha256(req.model_dump_json().encode()).hexdigest()
-    recovery_rows = evaluate(req, recovery, confirmation, terminal=p1_terminal, fits=fits) if recovery.usable_plan else []
-    final_rows = evaluate(req, final, confirmation, terminal=p1_terminal, fits=fits) if final is not None else []
+    recovery_rows = evaluate(req, recovery, confirmation, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap) if recovery.usable_plan else []
+    final_rows = evaluate(req, final, confirmation, terminal=p1_terminal, fits=fits, terminal_cap=p1_terminal_cap) if final is not None else []
 
     # Service reliability, tracked separately from economics.
     customers = {c.id: c for c in req.customers}
@@ -1422,6 +1457,9 @@ def plan(req: Request) -> dict:
                 "candidate_classes_requested": compute["requested"],
                 "planner_owner": ownership["owner"], "ownership_reasons": ownership["reasons"], "ownership_notes": ownership.get("notes", []),
                 "gate_basis": gate_basis, "p1_terminal_landed": p1_terminal,
+                # continuation_value: the credit above salvage the final plan books for its residual on the
+                # fitted confirmation worlds (mean); None when no continuation term applies
+                "p1_economics": ({**p1_economics, "continuation_value": _mean_continuation_credit(final_rows)} if p1_economics else {}),
                 "p1_classes_added": list(p1_added),
                 "candidate_classes_skipped": sorted(set(compute["skipped"])),
                 "candidates_built": sorted(n for n in candidates if n not in ("incumbent", "base_stock")),

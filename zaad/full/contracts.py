@@ -594,6 +594,15 @@ class Request(Record):
     # the size of its first lot and defers the full load, which a rolling operator never then buys
     # (fixtures I, G, T: 6-7% dearer than a full-load buyer over a year). P0-owned reviews are unaffected.
     lot_terminal_valuation: bool = True
+    # Basis of that valuation (P1 final closure). "cycle": the steady-state relative value of residual
+    # stock, c*/mu (the long-run average cost per unit of demand under the economic lot: landed cost plus
+    # the average holding a future unit would incur) less the residual unit's own carrying until it is
+    # consumed, concave in the residual and equal to the purchase price at exactly one economic lot; the
+    # short-horizon plan then sees the order and holding economics of a replenishment cycle longer than
+    # its horizon without a longer MILP. "landed": the pass-J valuation (landed cost less carrying), kept
+    # to reproduce the earlier record; it credits a residual unit at most its landed cost and so makes a
+    # twelve-period plan buy exactly its window (fixture B: lots at 55% of the economic lot).
+    terminal_economic_basis: Literal["cycle", "landed"] = "cycle"
     mode: Literal["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] = "LEAN"
     evidence_label: Literal["SYNTHETIC", "OPERATOR-SHADOW"]
 
