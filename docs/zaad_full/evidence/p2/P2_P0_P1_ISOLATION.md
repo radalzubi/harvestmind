@@ -52,10 +52,45 @@ left the feasible set (the P1 two-blocker record shows the same review). Every r
 cells that are not wall-clock-limited is identical. Every review of every cell is P0-owned; no P1
 class was added; no candidate starved.
 
-### Run 2 (`p0_arm_p2_meio_rerun.json`) - cells 21 and 108 alone on the quiet machine
+### Run 2 (`p0_arm_p2_meio_rerun.json`) - cells 21 and 108 rerun under the P2 code
 
-Recorded in `P2_CLOSEOUT.md` section "P0 isolation" when complete: the same code, the same
-settings, the two cells replayed with nothing else running.
+The same code and settings, the two cells replayed while only the quiet-machine benchmark re-run
+(two workers) was active:
+
+| cell | rerun vs recorded reference | rerun vs run 1 | first divergence vs reference |
+|---|---|---|---|
+| 21 | 11 / 20 | **20 / 20** | review 5: same candidate, period-0 quantity 50.08 against 42.38 |
+| 108 | 29 / 30 | **30 / 30** | review 5: hedged candidate not in the feasible set (time-limited); final P0 quantity 17.75 on both |
+
+The P2 code reproduces itself exactly on both cells.
+
+### Run 3 - the same cells on the FROZEN code (`main`, `scripts/p2_frozen_cell_variability.py`)
+
+Cell 21 replayed on the frozen canonical code from the `main` worktree, alone, on the same machine:
+**11 / 20 identical to the recorded reference and 20 / 20 identical to the P2 run**, with the same
+first divergence (review 5, 50.08 against 42.38) - the divergence from the record is run-to-run
+variability of the frozen wall-clock-limited solve, and the P2 code is decision-identical to the
+frozen code on this cell (`frozen_cell21_variability.log`).
+
+Cell 108 replayed on the frozen code: 30 / 30 identical to the recorded reference and 29 / 30 to the
+P2 runs (`frozen_cell108_variability.log`): the frozen replay solved the hedged candidate at review 5
+inside its budget on this occasion; the two P2 runs (one under load, one alongside the two-worker
+benchmark) did not. The P1 record itself documents this review as a hedged-candidate time-out
+("cell 108 alone after a hedged-candidate time-out at r5 in the tA arm"); the executed decision
+(the period-0 quantity 17.75) is identical either way.
+
+### Run 4 (`p0_arm_p2_meio_quiet.json`) - cell 108 under the P2 code with nothing else running
+
+**30 / 30 decision-identical to the recorded reference** (`p0_cell108_quiet.log`). With the machine idle
+the hedged candidate at review 5 solves inside its budget under the P2 code exactly as it did for the
+frozen record.
+
+### Conclusion
+
+Cells 15, 16, 20 and 90: identical on every review under load. Cell 21: the P2 code reproduces the
+frozen code's own replay review for review (20 / 20); both differ from the record at the documented
+time-limited review 5. Cell 108: identical to the record (30 / 30) when replayed without contention.
+**The frozen P0 decisions are unchanged by the P2 code on all 120 reviews of the six-cell set.**
 
 ## 3. Why the P2 hooks cannot reach a P0-owned review
 

@@ -221,6 +221,23 @@ private repositories.
 * **Verdict:** ZAAD CANONICAL RELEASE LINE — PASS, P2 MAY BE BRANCHED. P2 has not been started; it
   branches from `main` (`f7ff600` or later). Nothing in this pass claims production-ready security.
 
+## P2 multi-echelon / network optimization (2026-09-10, branch `claude/zaad-meio-p2`, worktree `harvestmind-p2`, parent `11f5459`)
+
+Not merged, not pushed. Evidence in `docs/zaad_full/evidence/p2/` (architecture decision, development
+record, pre-registration with its dated correction, authoritative results, invariants, adversarial review,
+scalability, P0 / P1 isolation, closeout). The frozen core was found to be one joint network MILP already;
+P2 adds the network layer `zaad/meio` (topology, reachability, router, accounting, explanations, network
+policies and baselines, fixtures, benchmark, workspace adapter with migration 016, API `network=true`,
+interactive bounds) and default-off / telemetry hooks in the frozen files (demand correlation, lane packs
+and dispatch fees, incumbent transfers, replay registry, settlement flows, network continuation). Frozen
+regression identical throughout; six-cell P0 isolation decision-identical (cell 108 on an idle machine; cell 21 identical to the frozen
+code's own replay, its divergence from the record being documented run-to-run variability). Authoritative benchmark: 20 / 20
+valid fixtures pass every economic, service and structural gate, 18 / 18 network principles, 20 / 20
+invariants, adversarial review clean, full suite 1,838 passed. **Verdict: P2 CORE ARCHITECTURE BUILT —
+FREEZE BLOCKED** on one pre-registered gate: the runtime maximum per review (180 s) is exceeded on two of
+344 reviews (M 257 s, O 315 s: three candidate classes at the declared per-solve budget with six to eight
+worlds); p50 9.7 s and p95 87 s pass. See `P2_CLOSEOUT.md` for the blocker and the decision it needs.
+
 ## Exact next action
 
 None for the release line. The next brief is P2, branched from `main`; keep `ZAAD_LEGACY_PLANNERS`

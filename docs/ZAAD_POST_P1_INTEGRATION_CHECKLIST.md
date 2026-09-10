@@ -77,3 +77,12 @@ gh pr close 32 --comment "Historical negative result, kept as evidence: the unto
 merge or close a PR before step 6, delete a branch, rebase shared history, force-push, deploy, alter
 Vercel, run Validation7 / Validation8 / holdout4, modify the Network Twin, rerun optimizer matrices for
 consolidation, start P2.
+
+## Step 9: P2 (multi-echelon / network) — BUILT 2026-09-10, FREEZE BLOCKED on the runtime maximum
+
+- [x] branch `claude/zaad-meio-p2` from `11f5459` in `harvestmind-p2`; P0 / P1 untouched in behaviour (regression identical; six-cell isolation)
+- [x] network layer, fixtures A-T, baselines, benchmark, invariants, adversarial, scalability, workspace adapter, API, tests
+- [x] authoritative run: 20 / 20 fixtures, 18 / 18 principles, 20 / 20 invariants
+- [ ] runtime maximum per review (pre-registered 180 s): two reviews at 257 s and 315 s on long-lane fixtures; decision needed (see `docs/zaad_full/evidence/p2/P2_CLOSEOUT.md`)
+- [ ] not merged, not pushed
+
