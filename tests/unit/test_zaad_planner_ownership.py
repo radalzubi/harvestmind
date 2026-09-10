@@ -93,10 +93,14 @@ def test_4_inherited_protection_unwind_is_p0(p_requests):
     assert planner_owner(req, _rows(regime="LEAN", activity=0., decaying=True), _screen("NO_ACTION"))["owner"] == PROTECTION_RECOVERY
 
 
-def test_5_false_protection_risk_is_p0(p_requests):
+def test_5_false_protection_risk_alone_is_not_p0(p_requests):
+    """Rule T-A of the two-blocker closure supersedes the pass-I rule: the flag reads no inventory (it
+    is the protection recommendation against the lean baseline, on T the forecast's calibration
+    widening), so alone it is a note, not an ownership reason; with any real driver P0 owns."""
     req = p_requests[4]
     out = planner_owner(req, _rows(flags=("FALSE_PROTECTION_RISK",)), _screen("NO_ACTION"))
-    assert out["owner"] == PROTECTION_RECOVERY and any("FALSE_PROTECTION_RISK" in r for r in out["reasons"])
+    assert out["owner"] == PURCHASING_ECONOMICS and any("FALSE_PROTECTION_RISK" in n for n in out["notes"])
+    assert planner_owner(req, _rows(flags=("FALSE_PROTECTION_RISK",), activity=.3), _screen("NO_ACTION"))["owner"] == PROTECTION_RECOVERY
 
 
 def test_6_ordinary_calm_cycle_inventory_is_p1(p_requests):

@@ -34,6 +34,7 @@ def is_protection_mandate(stress: Stress) -> bool:
 def planner_owner(req: Request, protection: list[dict], screen_result: dict) -> dict:
     """Which planner owns this review, with every reason. Pure in its inputs."""
     reasons: list[str] = []
+    notes: list[str] = []
     if any(is_protection_mandate(s) for s in req.stresses):
         names = ", ".join(s.name for s in req.stresses if is_protection_mandate(s))
         reasons.append(f"declared protection mandate: stress envelope(s) {names} are not the identity")
@@ -53,8 +54,13 @@ def planner_owner(req: Request, protection: list[dict], screen_result: dict) -> 
             reasons.append(f"{loc}: regime {st.get('regime')}")
         if st.get("demand_decline_confirmed"):
             reasons.append(f"{loc}: a confirmed demand decline is being run down")
+        # FALSE_PROTECTION_RISK is not an ownership reason (two-blocker closure, rule T-A). The flag
+        # compares the protection recommendation with the lean baseline and reads no inventory: it
+        # carries no evidence that protection or recovery stock exists. Protection being managed is
+        # canonical state the reasons above already read (active or decaying driver, non-LEAN regime,
+        # confirmed decline); the flag stays computed and reported, and P0 uses it unchanged when P0 owns.
         if "FALSE_PROTECTION_RISK" in (st.get("flags") or []):
-            reasons.append(f"{loc}: inherited protection under management (FALSE_PROTECTION_RISK)")
+            notes.append(f"{loc}: FALSE_PROTECTION_RISK flagged (protection recommendation above the lean baseline with no active driver); not an ownership reason")
     if screen_result.get("joint_recovery_required_by_rule"):
         reasons.append("the service-first joint recovery plan is required by rule")
     if float(screen_result.get("incumbent_service_deficit") or 0.) > 0.:
@@ -62,7 +68,7 @@ def planner_owner(req: Request, protection: list[dict], screen_result: dict) -> 
     owner = PROTECTION_RECOVERY if reasons else PURCHASING_ECONOMICS
     if owner == PURCHASING_ECONOMICS:
         reasons.append("no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation")
-    return {"owner": owner, "reasons": reasons,
+    return {"owner": owner, "reasons": reasons, "notes": notes,
             "scope": "decided before candidate assembly from the declared stress envelopes, the screen state, the per-SKU/location risk state and the recovery rule; never from a fixture, cell, seed or outcome"}
 
 

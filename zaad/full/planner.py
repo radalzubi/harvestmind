@@ -663,15 +663,21 @@ def plan(req: Request) -> dict:
     # target basis lost service on cells 20, 21, 90 and 108 in PROTECT reviews.
     lean_review = (screen_result["state"] in ("NO_ACTION", "NORMAL_REPLENISHMENT", "CAPITAL_OPTIMIZATION")
                    and all(float(row["state"]["activity"]) <= .05 for row in protection))
-    gate_basis = "target" if (req.service_gate_basis == "target" and lean_review) else "incumbent"
-    req_gate = req if gate_basis == req.service_gate_basis else req.model_copy(update={"service_gate_basis": gate_basis})
-    required = list(screen_result["minimum_safe_candidates"])
-    optional = list(screen_result["optional_candidates"])
     # Planner ownership (P1 planner-boundary pass): decided here, before any candidate is assembled,
     # from semantic state only. A P0-owned review continues on the frozen path with the frozen sets;
     # a P1-owned review uses the purchasing frontier (the NO_ACTION set gains the scenario plan).
     ownership = (planner_owner(req, protection, screen_result) if req.planner_ownership
                  else {"owner": PROTECTION_RECOVERY, "reasons": ["planner ownership routing is off: frozen path"], "scope": "routing off"})
+    # Service floor basis: the request's own setting, "target" only on a lean review when opted in
+    # (V7 / P0 "incumbent" by default). Rule T-B of the two-blocker closure (target basis on every
+    # P1-owned review) was tried and REJECTED: it let the capital tie-break and the alternatives loop
+    # accept leaner plans that serve less than the incumbent at a slightly higher cost (fixture A
+    # intervened on 36% of reviews against its pre-registered "mostly abstain" expectation; Q's legacy
+    # service fell below its target). The basis is unchanged by planner ownership.
+    gate_basis = "target" if (req.service_gate_basis == "target" and lean_review) else "incumbent"
+    req_gate = req if gate_basis == req.service_gate_basis else req.model_copy(update={"service_gate_basis": gate_basis})
+    required = list(screen_result["minimum_safe_candidates"])
+    optional = list(screen_result["optional_candidates"])
     p1_added: list[str] = []
     p1_terminal: dict[str, float] | None = None
     if ownership["owner"] == PURCHASING_ECONOMICS:
@@ -1407,8 +1413,8 @@ def plan(req: Request) -> dict:
                 **screen_result,
                 **_completeness(req, candidates, selection_rows, compute),
                 "candidate_classes_requested": compute["requested"],
-                "planner_owner": ownership["owner"], "ownership_reasons": ownership["reasons"],
-                "p1_terminal_landed": p1_terminal,
+                "planner_owner": ownership["owner"], "ownership_reasons": ownership["reasons"], "ownership_notes": ownership.get("notes", []),
+                "gate_basis": gate_basis, "p1_terminal_landed": p1_terminal,
                 "p1_classes_added": list(p1_added),
                 "candidate_classes_skipped": sorted(set(compute["skipped"])),
                 "candidates_built": sorted(n for n in candidates if n not in ("incumbent", "base_stock")),
