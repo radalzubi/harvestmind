@@ -29,6 +29,8 @@ are the number to read.
 """
 from __future__ import annotations
 
+from typing import Any
+
 import math
 
 from zaad.full.contracts import Request
@@ -59,7 +61,7 @@ def _cheapest_source(req: Request, sku: str, location: str):
 
 
 def decompose(req: Request, fits: dict, protection: list[dict], *,
-              inherited: dict[tuple[str, str], float] | None = None,
+              inherited: dict[Any, float] | None = None,
               transferred: dict[tuple[str, str], float] | None = None,
               early_units: dict[tuple[str, str], float] | None = None) -> list[dict]:
     """One row per SKU/location on hand at this review. `inherited`, `transferred` and
@@ -68,7 +70,7 @@ def decompose(req: Request, fits: dict, protection: list[dict], *,
     -order reason is skipped, and the reason waterfall is unaffected."""
     by_pair = {(row["sku"], row["location"]): row for row in protection}
     if inherited is not None and inherited and isinstance(next(iter(inherited)), str):
-        inherited = {tuple(k.split("|", 1)): v for k, v in inherited.items()}   # request carries string keys
+        inherited = {tuple(str(k).split("|", 1)): v for k, v in inherited.items()}   # request carries string keys
     rows: list[dict] = []
     pairs = sorted({(lot.sku, lot.location) for lot in req.stock}
                    | {(s.sku, s.location) for s in req.services}

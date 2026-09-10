@@ -43,7 +43,7 @@ def cost_breakdown(ledger: dict[str, float]) -> dict[str, Any]:
     INVENTORY_VALUE_CHANGE is the horizon's opening stock at asset value less closing stock at
     terminal value; it is what makes a plan that ends with a full shelf comparable to one that
     ends empty. TOTAL is the settlement's economic cost exactly."""
-    out = {name: 0. for name in COMPONENTS}
+    out: dict[str, Any] = {name: 0. for name in COMPONENTS}
     unmapped = []
     for key, value in ledger.items():
         component = COMPONENT_OF.get(key)
@@ -157,8 +157,8 @@ def order_waterfall(req: Request, fits: dict, protection: list[dict], solution: 
         minimal_cycle = rate * max(0, min(cover_until, arrival + 1) - arrival)
         calendar_units = max(0., cycle_demand - minimal_cycle)
         cycle_core = cycle_demand - calendar_units
-        row = prot.get(key)
-        protection_units = float(row["protection_units"]) if row else 0.
+        prot_row = prot.get(key)
+        protection_units = float(prot_row["protection_units"]) if prot_row else 0.
         usable_on_hand = on_hand.get(key, 0.)
         usable_inbound = sum(v for (k, loc, a), v in inbound.items() if (k, loc) == key and a < cover_until)
         usable_inbound += sum(v for (k, loc, a), v in planned_arrivals.items() if (k, loc) == key and a < arrival)
@@ -253,7 +253,7 @@ def order_waterfall(req: Request, fits: dict, protection: list[dict], solution: 
                     "after_mov": after_mov, "under_need_units": under_need,
                     "cycle_economics": cycle_economics,
                     "attribution": cats, "attribution_sum": sum(cats.values()),
-                    "protection_regime": (row["state"]["regime"] if row else None),
+                    "protection_regime": (prot_row["state"]["regime"] if prot_row else None),
                     "explanation": ""})
         out[-1]["explanation"] = explain_order(req, out[-1], st)
     return out
@@ -424,10 +424,10 @@ def provenance(req: Request) -> dict[str, dict[str, Any]]:
                                                               "provenance": st.provenance.get("freight_tiers", "CONFIGURED_ASSUMPTION" if st.freight_tiers else "NOT_AVAILABLE")}
         out[f"supplier_terms.{st.supplier}.units_per_pallet"] = {"value": dict(st.units_per_pallet),
                                                                  "provenance": st.provenance.get("units_per_pallet", "CONFIGURED_ASSUMPTION" if st.units_per_pallet else "NOT_AVAILABLE")}
-    for s in req.services:
+    for svc in req.services:
         for field in ("selling_price", "sla_per_unmet"):
-            key = f"service.{s.id}.{field}"
-            value = float(getattr(s, field))
+            key = f"service.{svc.id}.{field}"
+            value = float(getattr(svc, field))
             out[key] = {"value": value, "provenance": label(key, value)}
     return out
 

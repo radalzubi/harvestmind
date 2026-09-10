@@ -289,11 +289,11 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
     superseded = sum(1 for line in req.order_lines if line.superseded_by)
     cancelled_lines = sum(1 for line in req.order_lines if not line.superseded_by and line.cancelled >= line.quantity - line.filled - 1e-9 and line.quantity > 0)
     for rule in req.services:
-        lines = [line for line in req.order_lines if line.service == rule.id and line.due_in < end and line.open_quantity > 0]
+        open_lines = [line for line in req.order_lines if line.service == rule.id and line.due_in < end and line.open_quantity > 0]
         available = {r["period"]: r["served"] for r in service_by_period if r["service"] == rule.id}
         full, on_time, orders = [], [], defaultdict(list)
         open_units, filled_units, late, partial = 0., 0., 0, 0
-        for line in sorted(lines, key=lambda x: (x.promised_at, x.id)):
+        for line in sorted(open_lines, key=lambda x: (x.promised_at, x.id)):
             quantity = line.open_quantity
             filled = min(quantity, max(0., available.get(line.due_in, 0.)))
             available[line.due_in] = available.get(line.due_in, 0.) - filled

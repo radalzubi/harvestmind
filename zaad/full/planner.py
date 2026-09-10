@@ -14,7 +14,7 @@ import hashlib
 import json
 import math
 from statistics import mean
-from typing import Any
+from typing import cast, Any
 
 import numpy as np
 
@@ -210,6 +210,11 @@ def service_ok(req, rows):
         if value is None or value < service.target - 1e-6:
             return False
     return True
+
+
+def _finite(value: float) -> float | None:
+    """The report's JSON-safe form of a shortfall: None where the internal value is infinite."""
+    return value if math.isfinite(value) else None
 
 
 def weighted_shortfall(req: Request, rows: list[dict]) -> float:
@@ -683,8 +688,8 @@ def plan(req: Request) -> dict:
     # service fell below its target). The basis is unchanged by planner ownership.
     gate_basis = "target" if (req.service_gate_basis == "target" and lean_review) else "incumbent"
     req_gate = req if gate_basis == req.service_gate_basis else req.model_copy(update={"service_gate_basis": gate_basis})
-    required = list(screen_result["minimum_safe_candidates"])
-    optional = list(screen_result["optional_candidates"])
+    required = [str(n) for n in cast(list, screen_result["minimum_safe_candidates"])]
+    optional = [str(n) for n in cast(list, screen_result["optional_candidates"])]
     p1_added: list[str] = []
     p1_terminal: dict[str, float] | None = None
     p1_terminal_cap: dict[str, float] | None = None
@@ -1500,9 +1505,11 @@ def plan(req: Request) -> dict:
             "joint_service_feasibility": {"target_vector_feasible": target_jointly_feasible,
                 "recovery_mode": recovery_mode, "material_gap": material_shortfall_gap(req),
                 "recovery_ranking": recovery_ranking,
-                "incumbent_weighted_shortfall": weighted_shortfall(req, incumbent_rows),
-                "recovery_weighted_shortfall": weighted_shortfall(req, recovery_rows),
-                "selected_weighted_shortfall": weighted_shortfall(req, final_rows) if final else None,
+                # a physically unusable plan has an infinite shortfall internally; the report carries
+                # None for it (JSON has no infinity and the API and job store refuse it)
+                "incumbent_weighted_shortfall": _finite(weighted_shortfall(req, incumbent_rows)),
+                "recovery_weighted_shortfall": _finite(weighted_shortfall(req, recovery_rows)),
+                "selected_weighted_shortfall": _finite(weighted_shortfall(req, final_rows)) if final else None,
                 "scope": "joint priority-weighted modeled shortfall under independent confirmation; not a guaranteed ex-post frontier"},
             "cash": final.cash if final else [], "reasons": reasons,
             "confirmation_benefit_lower": benefit_lower,
