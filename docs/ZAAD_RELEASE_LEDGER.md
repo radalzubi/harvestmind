@@ -1,91 +1,126 @@
 # ZAAD release ledger
 
-Source of truth for what is frozen, where it lives, and what may move next. Written 2026-09-10 at the
-end of the P1 freeze session, from git ancestry and the CI records (no optimizer matrix was rerun for
-this ledger). Update this file whenever a freeze, a push, a merge or a Vercel change happens.
+Source of truth for what is frozen, where it lives, and what may move next. First written 2026-09-10
+after the P1 freeze; updated the same day at the end of the canonical integration pass. Update this
+file whenever a freeze, a push, a merge or a Vercel change happens.
 
-## Frozen states
+## Frozen milestones (immutable)
 
-| layer | state | SHA | branch (worktree) | pushed | evidence |
-|---|---|---|---|---|---|
-| P0 solver completeness / recovery | PASS AND FROZEN | `2e30721` | `claude/zaad-industry-standard-v8` (`harvestmind-zaad`) | **no**: origin is at `e8e2398`, nine commits behind the freeze (v8 orchestration, P0 corrections, warm start, close-out) | `docs/zaad_full/evidence/v8/p0` |
-| P1 cycle stock / purchasing economics | PASS AND FROZEN | product `f7e1e62`, evidence `12db66c` | `claude/zaad-cycle-stock-p1` (`harvestmind-p1`), 26 commits on top of `2e30721` | **no** (local only, no PR) | `docs/zaad_full/evidence/p1` (`P1_CLOSEOUT.md` M12, `P1_ECONOMIC_HORIZON_ARCHITECTURE.md`, `P1_FINAL_RESULT_TABLE_cycle.md`) |
-| P2 | NOT STARTED | - | - | - | - |
-| Network Twin V1 | DEFERRED (draft PR #39) | `734fa49` | `claude/zaad-network-twin-v1` = `adaptive/decision-engine` + 3 web commits | yes | - |
+| layer | verdict | SHA | tag (local) |
+|---|---|---|---|
+| P0 solver completeness / recovery | SOLVER COMPLETENESS / RECOVERY LOGIC — PASS AND FROZEN | `2e30721` | `p0-frozen` |
+| P1 product code | P1 CYCLE-STOCK / PURCHASING ECONOMICS — PASS AND FROZEN | `f7e1e62` | `p1-frozen-product` |
+| P1 final freeze (evidence) | same verdict; the P1 freeze point | `12db66c` | `p1-frozen` |
+| post-freeze consolidation / documentation state | not a freeze | `56e998f` | `pre-canonical-integration` |
 
-P1 result at the freeze: declared benchmark (constant twelve-period rolling horizon, 52 reviews,
-landed-cost continuation) B +1.30% vs the EOQ buyer (was +2.66%), PASS at 52 and at every endpoint
-40..52; 17 / 17 valid fixtures PASS; T -0.13%; A and Q unchanged; P0 six-cell arm 120 / 120
-decision-identical; invariants 720 / 720; 1,532 unit tests. Known residual: three-world near-ties on
-the first lot (B +1.30%, J +1.35%), recorded and not tuned.
+`12db66c` is the P1 frozen milestone; `56e998f` is the post-freeze documentation state (it adds only the
+three consolidation documents). Neither is relabelled by the integration.
+
+## Canonical branch
+
+`zaad/canonical`, created from `56e998f` (the frozen P1 lineage plus the consolidation documents) and
+carrying the integration in logical commits:
+
+| commit | content |
+|---|---|
+| `28d9839` | merge of the site lineage `origin/adaptive/decision-engine` (`c941c64`): the twelve web commits Vercel serves (#22, #29, #34); clean merge, no python change |
+| `0fbd8ee` | merge of `origin/main` (`865b701`): Project B synthetic generator (identical to the lineage's own copy), the workspace / agent documents (#15), the #26 / #27 net-zero pair; the 21 web conflicts of #28 resolved to the site lineage |
+| `073d702` | the customer-data path (`zaad/full/workspace.py`), the canonical workspace endpoints, the legacy-planner gate, the purchase-plan page on the canonical engine, tests and smoke |
+| `3263aff` | typed debt of the decision core (no behaviour change) and JSON-safe shortfall fields |
+| `d7f76cf` | canonical CI gates, the fast frozen regression, security and hygiene closure, ESLint |
+| closeout commit (this file) | source-of-truth documents |
+
+Frozen optimizer tree: `zaad/full` at `12db66c` has tree hash `7cd0f5ab`; the two merges left it
+byte-identical; `073d702` adds `workspace.py` beside it; `3263aff` changes annotations, three local
+names and the report's representation of an infinite shortfall (None), with the identity evidence
+below. Optimizer behaviour is frozen and verified, not assumed.
+
+## Integrity evidence after integration
+
+* `scripts/zaad_canonical_regression.py`: B, T, Q, A twelve-review rolling replays (seed 41001)
+  reproduce the first twelve reviews of the freeze record `closure/horizon52_cycle.jsonl.gz` order for
+  order and status for status; P0 cell 15 reproduces the isolation arm `closure/p0_arm_router_cycle.json`
+  review by review (state, candidate sets, selection, status, recovery mode, feasibility, chosen plan,
+  final P0 purchases), every review protection-owned. PASS at `d7f76cf`.
+* B alone on the freeze benchmark after the typing edits: costs and orders bit-identical to
+  `closure/horizon52_cycle_B.jsonl.gz` (`closure/identity_typing.jsonl.gz`).
+* P1 invariants: 720 / 720, byte-identical checks to the freeze record.
+* Python suite on the canonical tree: 1,810 passed, 2 skipped (1,532 unit at the freeze plus the
+  integration suites and 12 new tests); 71 P1 principle tests pass.
 
 ## Lineages (git ancestry, `origin` fetched 2026-09-10)
 
-Common base of everything: `11f06e9` on `main`. Three divergent tips:
+Common base `11f06e9` on `main`. Optimizer lineage: `main@11f06e9` -> #16 -> #17 -> #18 -> #19
+(`adaptive/decision-engine@2820a69`) -> #20 -> #21 -> #23 -> #24 -> #25 -> #30 -> #31 -> #32 -> #33 ->
+#35 -> #36 -> #37 -> #38 (`e8e2398`) -> P0 `2e30721` (+9 local) -> P1 `12db66c` (+26 local) -> `56e998f`;
+every step contains its parent completely. Site lineage: `adaptive/decision-engine@c941c64` =
+`2820a69` + 12 web commits (Vercel production per `81f141e` and the session record). `main`: five
+commits (#14, #15, #26, #27, #28). Network Twin: `adaptive` + 3 web commits (PR #39). The canonical
+branch now contains all three lineages; PR #39 is not merged.
 
-1. **Optimizer lineage**: `main@11f06e9` -> #16 -> #17 -> #18 -> #19 (`adaptive/decision-engine@2820a69`)
-   -> #20 -> #21 -> #23 -> #24 -> #25 -> #30 -> #31 -> #32 -> #33 -> #35 -> #36 -> #37 -> #38 (`e8e2398`)
-   -> P0 freeze `2e30721` (+9 local) -> P1 freeze `12db66c` (+26 local). Every step contains its parent
-   completely (zero parent commits missing from any child); the tip `12db66c` contains every commit of
-   every open optimizer PR. 157 commits and 1,003 files ahead of `main`.
-2. **Site lineage**: `adaptive/decision-engine@c941c64` = `2820a69` + 12 commits (#22 homepage, #29 SEO,
-   #34 how-it-works; 58 files, all under `web/`, one doc). Vercel production tracks this branch (commit
-   `81f141e` records the deployment and the ignored-build-step configuration). Network Twin sits on it.
-3. **`main`**: `11f06e9` + 5 commits (#14 Project B synthetic generator, #15 agent docs, #26 / #27 / #28
-   the "deployed ZAAD frontend as production source" change and its revert): 64 files under `web/`,
-   25 under `docs/`, 4 under `synthetic/`. None of these five commits is in either other lineage.
+## Integrated product surfaces
 
-## PR dispositions (39 PRs; merged ones are history)
+* API (`api/main.py`, title "Zaad Supply API", health service `zaad-api`): canonical planning engine
+  = the frozen P1 optimizer under `/api/zaad/network` (`/plan`, `/shadow`, `/jobs`, and the workspace
+  path `/request/from-workspace`, `/plan/from-workspace`); `/fmcg/plan` defaults to `mode=canonical`
+  and serves the purchase-plan page from the same engine. Superseded engines (the first ZAAD engine
+  under `/api/zaad`, the safe-selector modes of `/fmcg/plan`) are served only while legacy planners
+  are enabled: dev by default, off in pilot / staging / prod unless `ZAAD_LEGACY_PLANNERS=1` (410 with
+  the canonical pointer). No autonomous purchase order anywhere; approval stays with the operator.
+* Customer-data path: operator files -> `api/routers/intake.py` (validated upload into the operator's
+  own DuckDB vault, `stg_fmcg_*`) -> `zaad/full/workspace.py` (weekly normalisation, fitted supplier
+  fill and lead with sample sizes and provenance, shipment observations, opening stock, open orders,
+  promotions, pack structure and order-level economics) -> `zaad.full.contracts.Request` -> the frozen
+  planner -> the purchase-plan rows. Verified on a synthetic, schema-realistic workspace: 192k raw rows
+  become a 61 KB request for three SKUs (156 demand observations, 180 shipment observations, six open
+  orders); 428k rows for the 150-SKU distributor. No raw table reaches the MILP.
+* Web (`web/`): the site lineage (SEO, /how-it-works, homepage), the workspace (upload, data quality,
+  purchase plan on the canonical engine, state, reports), the network workspace at `/zaad/network`;
+  the first engine's page redirects and is kept at `/zaad/legacy`. Public surfaces say ZAAD.
 
-| PR | head -> base | disposition | reason |
-|---|---|---|---|
-| #16 real-data validation | `feat/commercial-real-data-validation` | SUPERSEDED | fully contained in the optimizer tip |
-| #17 commercial readiness | `commercial-readiness/fmcg-agriculture` | SUPERSEDED | contained |
-| #18 safe selector | `safe-adaptive/selector` | SUPERSEDED | contained |
-| #19 adaptive decision engine | `adaptive/decision-engine` -> `safe-adaptive/selector` | CANONICAL (site) / MERGE LATER (optimizer part contained) | production branch for Vercel; its 12 site commits are the only site work; its optimizer content is contained in the lineage |
-| #20 commercial audit | `codex/commercial-engine-evidence-audit` | SUPERSEDED | contained |
-| #21 resilience engine | `codex/zaad-resilience-engine` | SUPERSEDED | contained |
-| #23 full commercial optimizer | `codex/zaad-full-commercial-optimizer` | SUPERSEDED | contained |
-| #24 selector fix | `chatgpt/zaad-pr23-service-selector-fix` | SUPERSEDED | contained |
-| #25 release blockers | `claude/zaad-pr24-release-blockers` | SUPERSEDED | contained |
-| #30 service reliability | `claude/zaad-service-reliability` | SUPERSEDED | contained |
-| #31 false protection | `claude/zaad-false-protection` | SUPERSEDED | contained |
-| #32 holdout3 | `claude/zaad-holdout3` | EVIDENCE ONLY / SUPERSEDED | contained; holdout3 verdict kept in evidence |
-| #33 calibrated protection v4 | `claude/zaad-calibrated-protection-v4` | SUPERSEDED | contained; holdout4 frozen and unrun |
-| #35 network recovery v5 | `claude/zaad-network-recovery-v5` | SUPERSEDED | contained |
-| #36 MEIO / recovery v6 | `claude/zaad-meio-recovery-v6` | SUPERSEDED | contained (local branch one commit ahead of origin: development6 summaries) |
-| #37 capital recovery v7 | `claude/zaad-capital-recovery-v7` | SUPERSEDED | contained; CI fully green at `0e278c3` |
-| #38 V8 industry standard | `claude/zaad-industry-standard-v8` | CANONICAL (optimizer, to be replaced by the P1 tip) | origin nine commits behind the P0 freeze; mypy red (3 errors) at `e8e2398` |
-| #39 Network Twin V1 | `claude/zaad-network-twin-v1` -> `adaptive/decision-engine` | DEFERRED FEATURE | untouched; integrate after the canonical optimizer lineage exists, the API contract is stable and the illustrative simulation is separated from optimizer output |
-| P1 (no PR) | `claude/zaad-cycle-stock-p1` | **CANONICAL optimizer tip** | contains P0 and P1 freezes and every optimizer PR |
+## CI (workflow `.github/workflows/ci.yml` at `d7f76cf`; local run of every gate)
 
-Nothing is merged, closed or deleted by this ledger.
+| gate | status on the canonical tree |
+|---|---|
+| pytest (unit + integration) | 1,810 passed, 2 skipped |
+| ruff, canonical scope (all but `docs/`, `dashboard/`, `scripts/p1_*.py`) | clean |
+| mypy (`optimization risk backtesting api ingestion domain adaptive zaad/full`) | clean, 135 files |
+| bandit `-ll` on the canonical packages | 0 medium, 0 high |
+| pip-audit | clean after refreshing urllib3, weasyprint (pin raised to 70.0 for CVE-2026-55073) and tornado locally; the ignore of PYSEC-2026-3412 remains documented |
+| secret scan | gitleaks job added to CI; local bounded regex scan clean; `.env` untracked (`test_no_secrets_committed`) |
+| zaad frozen regression + invariants + workspace smoke | PASS / 720 / OK |
+| frontend typecheck, ESLint, production build, npm audit (prod) | clean / 0 errors, 21 warnings kept visible / builds / 0 vulnerabilities |
+| Docker image build and smoke | defined in CI (health, fail-closed, no open legacy planner in prod); not run locally (no Docker on this machine) |
 
-## CI status and debt (workflow `.github/workflows/ci.yml`: pytest, ruff, security = bandit `-ll` + pip-audit, mypy, docker build, next build; `codeql.yml`; dependabot)
+Remaining, documented debt: ruff in `docs/` evidence snippets, `dashboard/` (deprecated HarvestMind
+Streamlit shell) and the frozen P1 diagnostic scripts; the 21 ESLint warnings (React 19
+set-state-in-effect patterns in the site lineage, one `any`); the pip-audit ignore.
 
-| candidate | pytest | ruff | mypy | security | docker | next build | Vercel |
-|---|---|---|---|---|---|---|---|
-| #37 `0e278c3` (optimizer, pre-P0) | pass | pass | pass | pass | pass | pass | pass |
-| #38 `e8e2398` (optimizer, origin) | pass | pass | **fail (3 errors)** | pass | pass | pass | pass |
-| P1 `12db66c` (local; CI not run) | 1,532 pass locally | changed files clean; repo-wide debt | **19 errors locally** (4 at the P0 freeze, 15 from P1 passes C-H in `settlement.py` / `economics.py`) | bandit clean on `zaad/full` locally | not run | not run | - |
-| #19 `c941c64` (site / production) | pass | pass | **fail** | **fail (bandit: 3 Medium)** | pass | pass | pass |
-| #39 `734fa49` (Network Twin) | pass | pass | **fail** | **fail (bandit: 3 Medium)** | pass | pass | pass |
+## Deprecated code paths (kept, not served by default)
 
-Classification: mypy on the optimizer lineage = PRE-EXISTING DEBT (typing of P1 order-line metrics and
-economics helpers; no runtime defect; not in the files changed by the P1 freeze); mypy and bandit on
-the site lineage = CURRENT DEFECT to be fixed on the site branch before it merges (three Medium
-findings absent from the optimizer lineage); the ruff job's repo-wide step runs with `|| true`
-(STALE WORKFLOW: it hides ~150 findings in older P1 diagnostic scripts and pass C-H tests, while the
-changed-files step is the real gate); pip-audit ignores `PYSEC-2026-3412` by configuration (record the
-package and the reason before the canonical PR). Nothing was suppressed for this ledger.
+`zaad/engine.py` and its bounded API `api/routers/zaad.py` (first engine), the safe-selector modes of
+`api/routers/fmcg.py`, `optimization/` (HarvestMind-era LP / SP library still imported by the legacy
+modes and `adaptive/`), `dashboard/` (Streamlit shell), `api/routers/planning.py` (`/run` deprecated).
+Removal is a later step, after the legacy modes have no consumer (`docs/ZAAD_REPOSITORY_CONSOLIDATION_PLAN.md`).
+
+## PR dispositions
+
+| PR | disposition | safe to close after the canonical PR merges? |
+|---|---|---|
+| #16, #17, #18, #20, #21, #23, #24, #25, #30, #31, #33, #35, #36, #37 | SUPERSEDED (content contained in the canonical branch by ancestry) | yes |
+| #32 holdout3 | HISTORICAL NEGATIVE RESULT / EVIDENCE ONLY (holdout failed; evidence contained) | yes, with a closing note pointing at the evidence |
+| #38 V8 industry standard | SUPERSEDED (origin at `e8e2398`, nine commits behind the P0 freeze) | yes, after the push carries `2e30721` |
+| #19 adaptive decision engine (site, Vercel production) | CANONICAL SITE SOURCE until Vercel is repointed; content merged | after Vercel tracks `main` or `zaad/canonical` |
+| #39 Network Twin V1 | DEFERRED, untouched | no |
+
+No PR was merged, closed or deleted. No branch was deleted. Nothing was pushed.
 
 ## Untouched
 
-Validation7 and Validation8 do not exist as directories; `docs/zaad_full/evidence/v4/holdout4` is
-frozen and unrun; PR #38's origin state, PR #39, `web/`, Vercel and every other worktree are untouched.
+Validation7 and Validation8 (not present as directories), `docs/zaad_full/evidence/v4/holdout4` (frozen,
+unrun), PR #39 / `claude/zaad-network-twin-v1`, Vercel, every other worktree. P2 NOT STARTED.
 
 ## Exact next action
 
-Authorize `git push origin claude/zaad-cycle-stock-p1` (and the nine P0 commits on
-`claude/zaad-industry-standard-v8`), then follow `docs/ZAAD_POST_P1_INTEGRATION_CHECKLIST.md` step 1.
-No push has been made.
+Authorize the pushes in `docs/ZAAD_POST_P1_INTEGRATION_CHECKLIST.md` (steps 1 and 6): the two frozen
+branches with their tags and `zaad/canonical`, then the canonical pull request to `main`.

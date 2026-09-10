@@ -1,114 +1,99 @@
 # ZAAD repository consolidation plan
 
-Answer to "what exactly should become the canonical ZAAD repository lineage?", from the read-only
-audit of 2026-09-10 (`docs/ZAAD_RELEASE_LEDGER.md` carries the ancestry and CI facts). No merge, close,
-delete, rebase, push or deploy was performed.
+First written 2026-09-10 from the read-only audit after the P1 freeze; updated the same day at the end of
+the canonical integration pass (`zaad/canonical`). What was planned, what was done, and what remains.
 
-## 1. Canonical lineage
+## 1. Canonical lineage (done)
 
-**The optimizer lineage is the canonical code lineage**: `claude/zaad-cycle-stock-p1` at `12db66c`
-(P1 frozen; contains P0 `2e30721`, PR #38 `e8e2398` and, by strict ancestry, every commit of PRs #16
-through #38). It is created as `zaad/canonical` from that SHA without rebase, so every frozen SHA stays
-reachable. The site lineage (`adaptive/decision-engine`, 12 web commits) and `main` (5 commits: Project B
-synthetic generator, agent docs, the #26-#28 frontend change) are merged INTO it, never the other way,
-and it then becomes the base of one pull request to `main`.
+`zaad/canonical` was created from `56e998f` (P1 frozen at `12db66c` plus the consolidation documents),
+without rebase, so `2e30721`, `f7e1e62` and `12db66c` stay reachable and tagged. The site lineage
+(`origin/adaptive/decision-engine`) and `main` were merged INTO it (`28d9839`, `0fbd8ee`); the old
+optimizer PR stack was neither merged nor recreated: its accepted descendants are already in the
+lineage. Frozen tree `zaad/full` `7cd0f5ab` is unchanged by the merges.
 
-Why not `adaptive/decision-engine` or `main`: both lack 87 to 157 optimizer commits and the two
-frozen states; `main` also lacks the site work that Vercel serves. Why not a squash: the freeze SHAs,
-the evidence commits and the pre-registrations must remain addressable.
+## 2. Integration steps: planned -> done
 
-## 2. Port / merge order (each step has a validation and a rollback point)
-
-| step | action | validation | rollback point |
-|---|---|---|---|
-| 0 | local tags `p0-frozen` = `2e30721`, `p1-frozen-product` = `f7e1e62`, `p1-frozen` = `12db66c` (push with the branches when authorized) | `git tag --contains` | tags |
-| 1 | push `claude/zaad-industry-standard-v8` (nine P0 commits) and `claude/zaad-cycle-stock-p1`; open the P1 PR against #38's branch so the chain stays linear on GitHub | CI on the P1 PR: pytest green expected; mypy red (19, debt) and ruff repo-wide known | none needed (push only) |
-| 2 | create `zaad/canonical` from `12db66c` | `git rev-list --count 12db66c..zaad/canonical` = 0 | branch pointer |
-| 3 | merge `origin/adaptive/decision-engine` into `zaad/canonical` (conflicts only under `web/`: take the site lineage's `web/` wholesale, it is newer and is what Vercel serves) | `web`: `npm ci && npm run build`; python: `pytest tests/unit -q` (~2 min), `PYTHONPATH=. python3 -m scripts.p1_invariants` (720 / 720), the P1 suites in `tests/unit/test_zaad_*`, and one `p1_horizon_benchmark --fixtures B_fixed_order_cost_replace_sold --tag identity_step3` (5 min) bit-identical to `horizon52_cycle_B.jsonl.gz`; no matrix rerun | tag `consolidation-step3` before the merge |
-| 4 | fix the site lineage's CI defects on `zaad/canonical` (three bandit Medium findings, the mypy failures that are not the optimizer's 19) | `bandit -ll` on the CI package list, `mypy` count back to 19, then the 19 addressed as a separate typed-debt commit (no behaviour change; P1 identity check as in step 3) | tag `consolidation-step4` |
-| 5 | merge `origin/main` into `zaad/canonical` (conflicts: `web/` between #26-#28 and the site lineage; `docs/`; `synthetic/`). Decision required from the owner: which frontend is production (the ledger records Vercel on `adaptive/decision-engine`); keep Project B's synthetic generator and docs | as step 3 plus `docker compose -f compose.pilot.yml config -q` | tag `consolidation-step5` |
-| 6 | open ONE PR `zaad/canonical` -> `main` titled "ZAAD canonical lineage: P0 and P1 frozen, site merged"; CI must be green apart from documented, ticketed debt | full CI | the PR itself |
-| 7 | after that PR merges: close #16, #17, #18, #20, #21, #23, #24, #25, #30, #31, #32, #33, #35, #36, #37, #38 as superseded (their content is on `main`); repoint Vercel to `main` (or to `zaad/canonical` until then), then close #19 | Vercel preview of `main` green | Vercel previous deployment |
-| 8 | Network Twin (#39): rebase-free merge of its three web commits into `zaad/canonical` only after the `/api/zaad_full` contract is declared stable and the twin's illustrative scenario engine is labelled and separated from optimizer output (it already is a labelled demo adapter) | `web` build, the twin's contract tests | tag `consolidation-step8` |
-
-P2 does not start anywhere in this table.
-
-## 3. PRs to close as superseded (after step 7 only)
-
-#16, #17, #18, #20, #21, #23, #24, #25, #30, #31, #32, #33, #35, #36, #37, #38; then #19 once Vercel no
-longer depends on its branch. #39 stays open as a deferred feature.
-
-## 4. Duplicate / dead-code map (classification; nothing deleted now)
-
-| item | what it is | class |
+| step | planned | done |
 |---|---|---|
-| `zaad/full/` (30 files, 8.1k lines) | the frozen P0 + P1 optimizer: contracts, model, planner, ownership, lotsizing, terminal, settlement, evaluation, replay, jobs, shadow | KEEP (canonical) |
-| `zaad/engine.py`, `zaad/allocation.py`, `zaad/forecast.py`, `zaad/signals.py`, `zaad/intake.py`, `zaad/demo.py`, `zaad/contracts.py`, `api/routers/zaad.py` | the first ZAAD engine (finite-policy search) and its bounded API and CSV-bundle intake | DEPRECATE (superseded by `zaad/full`; keep until the FMCG intake is rewired) |
-| `optimization/` (18 files: LP baseline, two-stage SP, SAA bounds, CVaR, VSS / EVPI, policies) | HarvestMind-era optimizer library used by `adaptive/` and `api/routers/planning.py` | DEPRECATE for purchasing decisions; KEEP the VSS / EVPI and SAA helpers as diagnostics until ported |
-| `adaptive/` (10 files) | the PR #19 state layer (signals -> state -> posture) | PORT: its screen / posture ideas already exist in `zaad/full/screen.py`; keep until the API routes that use it are retired |
-| `api/routers/fmcg.py` | FMCG planning API with its own solve on `stg_fmcg_*` tables | PORT to `zaad/full` (build a `Request` from the staging tables) |
-| `api/routers/planning.py`, `backtest.py`, `forecasts.py`, `training.py`, `pool.py`, `fsma.py`, `assistant.py` | HarvestMind pilot surface | UNKNOWN (product decision); naming DEPRECATE |
-| `dashboard/` (26 files) | HarvestMind Streamlit shell | DEPRECATE (the Next site is the product surface) |
-| `docs/zaad_full/evidence` (117 MB), `docs/remodel/evidence` (11 MB), `docs/zaad_next/evidence` (6 MB) | frozen evidence | KEEP (never delete; consider git-lfs only for new records) |
-| `.coverage 2` .. `.coverage 6` (340 KB, tracked) | generated coverage databases | DELETE LATER (add to `.gitignore`) |
-| `data/external/portwatch/chokepoint_daily.csv` (8.2 MB) | real external dataset in the tree | UNKNOWN: move to tenant / feature storage or LFS |
-| `artifacts/*.json` (2.7 MB) | adaptive transition validation outputs | KEEP as evidence, DELETE LATER from the package path |
-| HarvestMind naming (168 files: `api/main.py`, `api/dependencies.py`, routers, `dashboard/lib`, `infrastructure`, `scripts`, tests, outreach docs) | old public name | DEPRECATE in code paths (rename module docstrings / app titles in one mechanical commit after step 5); KEEP in historical docs |
-| `zaad/contracts.py` vs `zaad/full/contracts.py` vs `api/models/schemas.py` | three schema families | KEEP `zaad/full/contracts.py` as the optimizer contract; the API schema wraps it; the old one goes with the old engine |
+| 0 | local tags | `p0-frozen`, `p1-frozen-product`, `p1-frozen`, `pre-canonical-integration` |
+| 1 | push the frozen branches | **not done: push not authorized** (commands in the checklist) |
+| 2 | create `zaad/canonical` | done from `56e998f` |
+| 3 | merge the site lineage | done, clean (`28d9839`); frontend typechecks and builds |
+| 4 | fix the site lineage's CI defects and the typed debt | bandit: the three medium findings of the site lineage are absent from the canonical packages (the lineage fixed them after `2820a69`); mypy: 19 -> 0 with identity evidence (`3263aff`) |
+| 5 | merge `main` | done (`0fbd8ee`); frontend decision recorded below |
+| 6 | canonical PR to `main` | **not done: requires the push** |
+| 7 | close superseded PRs, repoint Vercel | **not done: requires authorization** |
+| 8 | Network Twin | deferred, untouched |
 
-Repository size: worktree 228 MB, shared `.git` 79 MB, tracked content 136 MB under `docs` (jsonl 65 MB,
-gz 34 MB, json 30 MB, csv 18 MB), 471 tracked jsonl / json / csv files.
+Frontend decision recorded: the site lineage's `web/` is authoritative (SEO metadata, canonical host,
+`/how-it-works`, the workspace entry); main's #28 was an earlier copy of the same components whose only
+unique lines were older titles, i18n strings and hero CSS. Vercel production tracks
+`adaptive/decision-engine`; the canonical branch contains everything it serves.
 
-## 5. Real-data intake architecture (what exists, what is missing)
+## 3. What the integration added (not in any lineage before)
 
-Existing path: CSV upload (`api/routers/intake.py`: size and column validation into `stg_*` tables, LLM
-extraction sessions with operator confirmation; `ingestion/csv_ingestor.py`, `column_mapper.py`,
-`validators.py`, `anonymize.py`; `data_contracts/real_data_templates` for orders, order lines,
-deliveries, waste events with pandera schemas) -> tenant-isolated storage (`db/migrations` 001-015:
-dimensions products / suppliers / locations / lanes / buyers / contracts, facts orders / order lines /
-deliveries / purchase orders / inventory snapshots / lots / waste events / market prices / weather /
-yields, FMCG staging `stg_fmcg_{skus, suppliers, orders, purchase_orders, receipts, inventory,
-promotions, economics}`, planning outputs, lineage columns, supplier origin; `db/vault_storage.py`,
-`db/operator_registry.py`, `api/routers/access.py`, `zaad/full/jobs.py` with `test_tenant_isolation.py`)
--> forecasting / calibration (`forecasting/`, and inside the optimizer `zaad/full/worlds.py`:
-`history_series` -> `forecast_all` -> `draw`, the compact calibrated representation) -> compact planning
-state (`zaad/full/contracts.Request`: history series, sources with declared fill and lead
-distributions, terms, calendars, stresses) -> optimizer (`zaad/full/planner.plan`). External risk
-signals (NOAA, Open-Meteo, USDM, ENSO, NASS, USDA AMS fetchers) feed `risk/`, not the optimizer.
+* `zaad/full/workspace.py`: tenant staging tables -> frozen `Request` (the missing link), with fitted
+  supplier fill and lead (sample size, provenance, fallbacks), a leakage guard and compact dimensions.
+* `/api/zaad/network/request/from-workspace` and `/plan/from-workspace`; `/fmcg/plan?mode=canonical`.
+* `api.dependencies.legacy_planners_enabled`: one planning engine outside dev unless enabled explicitly.
+* `scripts/zaad_canonical_regression.py` (frozen P0 / P1 identity in minutes), `scripts/zaad_workspace_smoke.py`.
+* Canonical CI (`.github/workflows/ci.yml`), ESLint for the site, the hygiene and brand fixes.
 
-| data type | intake | storage | consumed by `zaad/full` |
-|---|---|---|---|
-| sales history / customer orders | yes (orders, order lines, `stg_fmcg_orders`) | `fact_orders`, `fact_order_lines` | as `Request.history` (built by fixtures / API payloads only) |
-| inventory history | `stg_fmcg_inventory`, `stg_inventory_lots` | `fact_inventory_snapshot`, `fact_lots` | as `Request.stock` (payload) |
-| purchase orders / receipts | `stg_fmcg_purchase_orders`, `stg_fmcg_receipts` | `fact_purchase_orders`, `fact_deliveries` | pending arrivals in the payload; **fill / lead fitting from receipts is missing** (declared per source today) |
-| supplier master / terms | `stg_fmcg_suppliers`, `stg_fmcg_economics`, supplier origin | `dim_suppliers`, `dim_contracts` | `Source`, `SupplierTerms`, `Terms` in the payload |
-| SKU / product master | `stg_products`, `stg_fmcg_skus` | `dim_products` | `Sku` in the payload |
-| waste / expiry | waste events template, `stg_waste_adjustments` | `fact_waste_events` | shelf life per SKU; realised waste not fed back |
-| location / network | - | `dim_locations`, `dim_logistics_lanes` | `Location`, lanes in the payload |
-| prices / costs | `stg_fmcg_economics` | `fact_market_prices` | unit prices in `Source` |
-| promotions | `stg_fmcg_promotions` | staging only | **not consumed** |
-| external risk signals | fetchers | `fact_weather_obs`, external sources | `risk/` only; ZAAD takes declared stresses |
+## 4. API consolidation
 
-Missing (must be built, not redesigned): one builder `tenant tables -> zaad.full.contracts.Request`
-(today no code outside fixtures and API payloads constructs a `Request`; the FMCG router has its own
-solve); supplier fill and lead fitting from receipts; promotion-aware demand history; a feedback of
-realised waste. Exists only on `main`: the Project B synthetic generator (#14). Rule: raw histories stay
-in tenant storage and calibration layers; the optimizer keeps consuming the compact `Request`.
+| entrypoint | class | note |
+|---|---|---|
+| `/api/zaad/network/*` (`api/routers/zaad_full.py`) | KEEP, canonical | frozen P1 planner: plan, shadow ledger, jobs, workspace path |
+| `/fmcg/plan?mode=canonical`, `/fmcg/status`, `/fmcg/readiness`, `/fmcg/state` | KEEP | purchase plan on the canonical engine; readiness and state are data diagnostics |
+| `/fmcg/plan` legacy modes (safe, adaptive, stochastic, deterministic, order_up_to, incumbent, anchored) | DEPRECATE | served only while legacy planners are enabled |
+| `/api/zaad/plan`, `/api/zaad/demo`, `/api/zaad/schema` (first engine) | DEPRECATE | gated the same way; page kept at `/zaad/legacy` |
+| `/planning/run` | DEPRECATE (already marked) | HarvestMind pilot |
+| `/jobs/*` (diagnostic jobs, PDF report), `/reports/*`, `/intake/*`, `/data/*`, `/access/*`, `/admin/*` | KEEP | product surfaces around the optimizer |
+| `/backtest`, `/forecasts`, `/training`, `/pool`, `/fsma`, `/assistant`, `/diagnostics` | KEEP (product decision pending) | HarvestMind pilot surfaces, not competing planners |
 
-## 6. Do-not-merge list
+REMOVE LATER (after the purchase-plan and network pages have no legacy consumer and one release has
+run with legacy planners off): the first engine (`zaad/engine.py`, `zaad/{allocation,forecast,signals,
+intake,demo,contracts}.py`, `api/routers/zaad.py`), the safe-selector modes of `fmcg.py` and the parts of
+`optimization/`, `backtesting/` and `adaptive/` only they use.
 
-PR #39 (deferred), any PR into `main` before step 6, any branch that is not `zaad/canonical` after step 2,
-`web/` changes from `main` #26-#28 without the production-frontend decision, P2 work of any kind.
+## 5. Database / schema
 
-## 7. Deferred work
+Canonical schema for the ZAAD product: the operator vault (one DuckDB per operator, every migration
+applied at creation by `scripts/setup_db.py`), with the FMCG staging family `stg_fmcg_{skus, orders,
+purchase_orders, receipts, inventory, promotions, suppliers, economics}` (migrations 013-015) as the
+intake contract the adapter reads, the planning-output tables (006) and the lineage columns (011).
+Legacy / deprecated tables kept as-is: the produce-era staging tables (`stg_products`,
+`stg_supplier_deliveries`, `stg_inventory_lots`, `stg_buyer_orders`, `stg_waste_adjustments`) and the
+HarvestMind fact / dimension families (001-005, 007-010, 012), which the pilot surfaces and the first
+engine still read. No migration was deleted or rewritten; tenant isolation is preserved (vault per
+operator; `tests/unit/test_tenant_isolation.py`, `tests/integration/test_zaad_jobs.py`).
 
-Typed debt (19 mypy errors) as a no-behaviour commit with the P1 identity check; ruff debt in older P1
-scripts and tests; renaming HarvestMind in code paths; git-lfs or archival for new evidence records; the
-`Request` builder from tenant tables; fill / lead fitting; promotion history; Network Twin integration;
-holdout4 remains frozen and unrun until a new validation cycle is authorized.
+## 6. Duplicate / dead-code map (classification unchanged; actions taken)
 
-## 8. First three actions
+| item | class | action in this pass |
+|---|---|---|
+| `zaad/full/` | KEEP (canonical) | untouched apart from `workspace.py` and the typed-debt commit |
+| first ZAAD engine + `api/routers/zaad.py` | DEPRECATE | gated; page moved to `/zaad/legacy` |
+| `optimization/`, `adaptive/`, `backtesting/` safe selector | DEPRECATE for purchasing | still imported by the legacy modes; lint-clean |
+| `api/routers/fmcg.py` | PORT | `mode=canonical` implemented; legacy modes gated |
+| `dashboard/` | DEPRECATE | excluded from the blocking lint scope |
+| `docs/zaad_full/evidence` (117 MB) and the other evidence directories | KEEP | untouched; new records gzipped |
+| `.coverage 2..6` | DELETE | removed and ignored |
+| `data/external/portwatch/chokepoint_daily.csv` (8.2 MB) | UNKNOWN | left in place; see the artifact policy |
+| HarvestMind naming | DEPRECATE in code paths | health service renamed; env-variable names (`HARVESTMIND_*`), logger names and internal module docstrings kept (configuration, not public); historical docs untouched |
 
-1. Authorize the pushes of `claude/zaad-industry-standard-v8` and `claude/zaad-cycle-stock-p1` (ledger).
-2. Create `zaad/canonical` from `12db66c` and tag the three frozen SHAs.
-3. Merge `origin/adaptive/decision-engine` into `zaad/canonical` (web only) and run the step-3 validation.
+## 7. Artifact storage policy (new evidence)
+
+Frozen evidence stays in git and is never rewritten. New benchmark records are gzipped jsonl under
+`docs/zaad_full/evidence/<phase>/closure/`; a record larger than ~10 MB compressed should go to git-lfs
+or an object store with its SHA-256 recorded in the closeout instead of the repository. Generated
+outputs (`.coverage*`, `coverage.xml`, `htmlcov/`, `.next/`) are ignored.
+
+## 8. Deferred (not in this pass)
+
+Repointing the two legacy consumers and removing the legacy engines; the 21 ESLint warnings; the
+HarvestMind names in configuration and internal modules; git-lfs for future evidence; the
+`data/external` dataset placement; PostgreSQL / production storage for vaults; Network Twin integration
+(its clean integration point: after the canonical PR merges and `/api/zaad/network` is declared
+stable, merge `claude/zaad-network-twin-v1` (three web commits) with its illustrative scenario engine
+kept a labelled demo adapter); P2.
