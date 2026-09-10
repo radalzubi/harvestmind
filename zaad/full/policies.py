@@ -152,6 +152,11 @@ def baseline_plan(req: Request, rule: str) -> Solution:
     economic_lot      reorder point as above, order quantity max(EOQ, cover) where EOQ uses the
                       supplier's fixed order cost and the location's holding rate; without a
                       fixed order cost EOQ is undefined and the rule collapses to reorder_point"""
+    if rule.startswith("network:"):
+        # Declared network policy (P2): branch reorder points, central echelon replenishment, priority
+        # allocation and lane transfers, projected deterministically like the rules below.
+        from zaad.meio.baselines import network_rule_plan
+        return network_rule_plan(req, rule)
     fits = forecast_all(req)
     rate, sd, stock, inbound = _projection(req, fits)
     purchases: dict[tuple[str, int], float] = {}

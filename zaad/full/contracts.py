@@ -156,6 +156,11 @@ class Transfer(Dated):
     cost_per_unit: float = Field(ge=0)
     loss_fraction: float = Field(ge=0, le=1)
     approved: bool
+    # Transfer physics (P2). `multiple`: the lane moves whole packs / cases / pallets of this size
+    # (0 = continuous, the frozen behaviour). `fixed_cost_per_dispatch`: charged once per period the
+    # lane is used at all (a truck, a consolidation fee); 0 adds nothing to the model.
+    multiple: float = Field(default=0., ge=0)
+    fixed_cost_per_dispatch: float = Field(default=0., ge=0)
 
 
 class Substitute(Dated):
@@ -377,6 +382,16 @@ class InboundTransfer(Dated):
     expires_in: int = Field(ge=0)
 
 
+class IncumbentTransfer(Dated):
+    """A transfer the operator's own network policy would make (P2): the incumbent plan's movement of
+    `quantity` units of the `expiry` cohort over lane `transfer` in `period`, so the frozen selector
+    compares ZAAD against the network policy the operator actually runs, transfers included."""
+    transfer: str
+    period: int = Field(ge=0)
+    expiry: int = Field(ge=1)
+    quantity: float = Field(ge=0)
+
+
 class Request(Record):
     schema_version: Literal["zaad.network.v2"] = "zaad.network.v2"
     operator_id: str = Field(pattern=r"^[a-zA-Z0-9_-]{1,80}$")
@@ -403,9 +418,14 @@ class Request(Record):
     pipeline: tuple[OpenPO, ...]
     inbound_transfers: tuple[InboundTransfer, ...] = ()
     incumbent_orders: tuple[IncumbentOrder, ...] = ()
+    # The incumbent network policy's transfers (P2), alongside `incumbent_orders`. Empty (default)
+    # reproduces the frozen incumbent projection, which never transfers.
+    incumbent_transfers: tuple[IncumbentTransfer, ...] = ()
     # Declared operator purchasing rule (P1): "replace_sold", "periodic:k", "reorder_point" or
     # "economic_lot". When set and no dated incumbent orders are declared, the rule's projection
-    # from the current snapshot is the incumbent at every review.
+    # from the current snapshot is the incumbent at every review. "network:<policy>" (P2) is a
+    # declared network policy (branch reorder points, central echelon replenishment, priority
+    # allocation and transfers) projected by `zaad.meio.baselines`.
     incumbent_rule: str | None = None
     supplier_terms: tuple[SupplierTerms, ...] = ()
     # Where each economic input came from, keyed like "source.main.freight_per_unit" or
@@ -456,6 +476,12 @@ class Request(Record):
     # Supply, PO and truth draws are bit-identical with or without it. Default and scope are set
     # by the P0 six-cell and fixture evidence recorded in the P1 close-out.
     stratified_scenarios: bool = False
+    # Cross-location demand correlation (P2, `zaad/full/correlation.py`). Services of the same SKU
+    # form a correlation group: per period their demand draws share a Gaussian-copula factor with
+    # this correlation, and so do their level shocks, while every service keeps its own fitted
+    # marginal distribution unchanged. 0 (default) reproduces the frozen independent draw bit for
+    # bit; a single-location request has no group of two, so nothing changes there at any value.
+    demand_correlation: float = Field(default=0., ge=0, le=1)
     # Analytic expected shortage in the mean-world candidate's planning objective (P1 final
     # closure, `zaad/full/shortage.py`). Derived from the fitted mixture and the declared shortage
     # economics, exact, objective-only. Opt-in: on fixture P it corrects a proven valuation defect
@@ -630,7 +656,7 @@ class Request(Record):
                         raise ValueError("all timestamps require timezone")
                     if key in {"known_at", "placed_at", "confirmed_at", "departed_at", "ordered_at", "delivered_at"} and value > self.as_of:
                         raise ValueError("future information at decision origin")
-        for records in (*tables, self.history, self.incumbent_orders, (self.liquidity,)):
+        for records in (*tables, self.history, self.incumbent_orders, self.incumbent_transfers, (self.liquidity,)):
             for record in records:
                 causal(record)
         maps = [{r.id: r for r in rows} for rows in (self.skus, self.locations, self.calendars, self.terms, self.resources, self.sources, self.customers, self.services)]
@@ -659,6 +685,10 @@ class Request(Record):
             require(row.sku in sk and row.origin in loc and row.destination in loc and row.expires_in > row.due_in)
         for row in self.transfers:
             require(row.sku in sk and row.origin in loc and row.destination in loc and row.origin != row.destination)
+        arcs = {a.id for a in self.transfers}
+        for row in self.incumbent_transfers:
+            require(row.transfer in arcs and row.period < self.horizon)
+        require(len({(r.transfer, r.expiry, r.period) for r in self.incumbent_transfers}) == len(self.incumbent_transfers))
         for row in self.services:
             require(row.sku in sk and row.location in loc and row.customer in customers)
             require(row.selling_price >= sk[row.sku].asset_value)
@@ -680,8 +710,9 @@ class Request(Record):
         require(len({(r.source, r.period) for r in self.incumbent_orders}) == len(self.incumbent_orders))
         if self.incumbent_rule is not None:
             kind, _, arg = self.incumbent_rule.partition(":")
-            require(kind in {"replace_sold", "periodic", "reorder_point", "economic_lot"})
+            require(kind in {"replace_sold", "periodic", "reorder_point", "economic_lot", "network"})
             require(kind != "periodic" or (arg.isdigit() and int(arg) >= 1))
+            require(kind != "network" or arg in {"rop", "pool"})
         for po in self.pipeline:
             require(po.source in src and po.remaining > 0)
             for option in po.options:

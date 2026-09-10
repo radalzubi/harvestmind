@@ -110,6 +110,16 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
     # exactly as an unstratified draw consumes it, so every supply shock, PO due date, level draw
     # and truth path is bit-identical with or without the strata.
     stratified = bool(req.stratified_scenarios) and count >= 2 and not deterministic
+    # Correlated branch demand (P2). When declared, the per-period uniforms and the level shock of
+    # every service in a correlation group come from a Gaussian copula with the declared correlation
+    # (`zaad/full/correlation.py`); marginals unchanged. Off by default: the frozen stream below is
+    # then consumed exactly as before, and this block never runs.
+    correlated = req.demand_correlation > 0 and not deterministic and len(req.services) > 1
+    copula = None
+    if correlated:
+        from zaad.full.correlation import copula_draws
+        copula = copula_draws(req, seed, count)
+        stratified = False
     weights = [1. / count] * count
     strata_u: dict[str, np.ndarray] = {}
     if stratified:
@@ -122,7 +132,9 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
         demand, arrival, fills, po_due, po_fill = {}, {}, {}, {}, {}
         for service in req.services:
             f = fits[service.id]
-            if stratified:
+            if copula is not None:
+                d = sample(f, rng, req.horizon, u=copula["u"][service.id][w])
+            elif stratified:
                 sample(f, rng, req.horizon)      # consume the stream exactly as the unstratified path
                 d = sample(f, rng, req.horizon, u=strata_u[service.id][w])
             else:
@@ -158,7 +170,8 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                 if u.get("pre_change_level") is not None and u.get("pre_change_weight", 0.) > 0 and float(rng.random()) < u["pre_change_weight"]:
                     d = d * max(0., u["pre_change_level"] / f["mean"])
                 else:
-                    d = d * max(0., 1. + float(rng.normal()) * u["level_se"] / f["mean"])
+                    level_z = float(copula["level"][service.id][w]) if copula is not None else float(rng.normal())
+                    d = d * max(0., 1. + level_z * u["level_se"] / f["mean"])
             for event in req.events:
                 if event.service == service.id:
                     d[event.start:min(req.horizon, event.end + 1)] *= event.multiplier
@@ -270,6 +283,6 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                 po_fill[po.id] *= stress.fill_multiplier
             if req.force_unit_fills:
                 po_fill[po.id] = 1.
-        label = f"{stress.name if stress else 'fitted'}:{seed}:{w}" + (":lhs" if stratified else "")
+        label = f"{stress.name if stress else 'fitted'}:{seed}:{w}" + (":lhs" if stratified else "") + (":rho" if copula is not None else "")
         worlds.append(World(label, weights[w], demand, arrival, fills, po_due, po_fill))
     return worlds

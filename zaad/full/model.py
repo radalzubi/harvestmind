@@ -632,6 +632,18 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         post[w][arc.sku, arc.destination][q] += 1 - arc.loss_fraction
             if ids:
                 m.row({q: 1 for q in ids}, upper=arc.capacity)
+                lane_cap = arc.capacity if arc.approved and "transfers" not in disabled else 0.
+                if arc.multiple > 0 and lane_cap > 0:
+                    # Transfer packs (P2): the period's movement over the lane is a whole number of
+                    # packs across cohorts. A lane without a declared pack is continuous, as before.
+                    packs = m.var(("transfer_packs", arc.id, t), upper=math.floor(lane_cap / arc.multiple), integer=True)
+                    m.row({**{q: 1 for q in ids}, packs: -arc.multiple}, 0, 0)
+                if arc.fixed_cost_per_dispatch > 0 and lane_cap > 0:
+                    # Per-dispatch cost (P2): charged once in any period the lane carries anything.
+                    dispatch = m.var(("transfer_dispatch", arc.id, t), upper=1, integer=True)
+                    m.row({**{q: 1 for q in ids}, dispatch: -lane_cap}, upper=0)
+                    for w in range(len(worlds)):
+                        expense(dispatch, arc.fixed_cost_per_dispatch, w, t)
     # Executable transfers share observed opening inventory across all arcs.
     # Expected PO receipts, including overdue ones, cannot fund today's action.
     confirmed: dict[tuple[str, str, int], float] = defaultdict(float)

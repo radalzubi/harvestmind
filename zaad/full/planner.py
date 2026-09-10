@@ -642,7 +642,8 @@ def plan(req: Request) -> dict:
     incumbent_label = "projected_base_stock_proxy"
     if req.incumbent_orders:
         declared = replace(base, status="OPTIMAL", purchases={(x.source, x.period): x.quantity for x in req.incumbent_orders},
-                           transfers={}, amendments={(p.id, next(o.id for o in p.options if o.action == "keep")): p.remaining for p in req.pipeline})
+                           transfers={(x.transfer, x.expiry, x.period): x.quantity for x in req.incumbent_transfers},
+                           amendments={(p.id, next(o.id for o in p.options if o.action == "keep")): p.remaining for p in req.pipeline})
         incumbent = solve(req, deterministic, fixed=declared)
         incumbent_label = "operator_declared"
     elif req.incumbent_rule:
@@ -650,7 +651,7 @@ def plan(req: Request) -> dict:
         # incumbent, so ZAAD is compared against the policy the buyer actually runs.
         from zaad.full.policies import baseline_plan
         rule_plan = baseline_plan(req, req.incumbent_rule)
-        declared = replace(base, status="OPTIMAL", purchases=dict(rule_plan.purchases), transfers={}, amendments=dict(rule_plan.amendments))
+        declared = replace(base, status="OPTIMAL", purchases=dict(rule_plan.purchases), transfers=dict(rule_plan.transfers), amendments=dict(rule_plan.amendments))
         incumbent = solve(req, deterministic, fixed=declared)
         incumbent_label = "operator_rule:" + req.incumbent_rule
     # Adaptive escalation (v8): classify the review first, then solve only the candidate classes
@@ -1519,7 +1520,8 @@ def plan(req: Request) -> dict:
             "candidate_gates": candidate_gates,
             "recovery_guidance": {"status": recovery.status, "actions": action_rows(recovery),
                                   "projected_unit_fill": recovery.projected_service,
-                                  "weighted_service_shortfall": weighted_shortfall(req, recovery_rows),
+                                  # None, never infinity, when the recovery plan is unusable on the confirmation worlds (JSON-safe)
+                                  "weighted_service_shortfall": _finite(weighted_shortfall(req, recovery_rows)),
                                   "warning": "Best priority-weighted modeled service with minimum-cost tie-break; approval still depends on independent and stress confirmation."} if recovery.usable_plan else None,
             "candidates": {name: {"status": c.status, "solve_seconds": c.solve_seconds, "variables": c.variables,
                 "constraints": c.constraints, "gap": c.gap, "residual": c.residual,

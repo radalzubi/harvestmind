@@ -28,7 +28,14 @@ V6_ENGINE_METHODS = {"gated_v6"}                  # PR 36 engine: v6 rules on, v
 COMPARATOR_METHODS = FROZEN_METHODS | PR30_METHODS | V4_METHODS | V5_ENGINE_METHODS | V6_ENGINE_METHODS
 
 
+# Additional replay methods registered by later passes (P2 network baselines register here). The
+# frozen method table below is untouched; an unknown method still falls through to it.
+NETWORK_METHODS: dict = {}
+
+
 def choose(req: Request, method: str) -> Solution:
+    if method in NETWORK_METHODS:
+        return NETWORK_METHODS[method](req)
     if method in FROZEN_METHODS and req.engine_profile != "pr24":
         req = req.model_copy(update={"engine_profile": "pr24"})
     if method in PR30_METHODS and req.protection_decay:
@@ -174,10 +181,14 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
             # would buy from this snapshot, so ZAAD is always compared against the real policy.
             from zaad.full.policies import baseline_plan
             declared = baseline_plan(planning_req, req.incumbent_rule)
-            from zaad.full.contracts import IncumbentOrder
+            from zaad.full.contracts import IncumbentOrder, IncumbentTransfer
             planning_req = planning_req.model_copy(update={"incumbent_orders": tuple(
                 IncumbentOrder(known_at=planning_req.as_of, source=sid, period=t, quantity=q)
-                for (sid, t), q in declared.purchases.items() if q > 0 and t < planning_req.horizon)})
+                for (sid, t), q in declared.purchases.items() if q > 0 and t < planning_req.horizon),
+                # a network policy's transfers (P2) ride along; frozen rules never transfer, so this stays empty for them
+                "incumbent_transfers": tuple(
+                IncumbentTransfer(known_at=planning_req.as_of, transfer=arc, period=t, expiry=expiry, quantity=q)
+                for (arc, expiry, t), q in declared.transfers.items() if q > 0 and t < planning_req.horizon)})
         if keep_requests is not None:
             keep_requests.append(planning_req)      # diagnostics only: the exact snapshot each review planned on
         wall_started = time.perf_counter()
