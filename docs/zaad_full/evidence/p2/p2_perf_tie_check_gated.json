@@ -1,0 +1,4191 @@
+[
+ {
+  "cell": [
+   "A_independent_demand",
+   "gated",
+   41001
+  ],
+  "review": 5,
+  "key": "transfers",
+  "before": {
+   "lane_north": 104.287185,
+   "lane_south": 98.61909
+  },
+  "after": {
+   "lane_north": 104.287185,
+   "lane_south": 113.543339
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   11.1,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13148.527858297117,
+     13148.527858297119
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12944.460768006988,
+     12944.460768006984
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12640.522421211928,
+     12640.522421211932
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12985.65068589898,
+     12985.650685898976
+    ],
+    "same_objective": true,
+    "nodes": [
+     55,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12635.416444191818,
+     12635.416444191818
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12635.416444191816,
+     12635.416444191818
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 13.5
+ },
+ {
+  "cell": [
+   "B_correlated_demand",
+   "gated",
+   41001
+  ],
+  "review": 1,
+  "key": "transfers",
+  "before": {
+   "lane_north": 100.857738,
+   "lane_south": 91.634143
+  },
+  "after": {
+   "lane_north": 99.947383,
+   "lane_south": 91.634143
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   2.9,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13143.455188510314,
+     13143.455188510314
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12900.506761551784,
+     12900.506761551766
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12594.89637895723,
+     12594.89637895723
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12854.907600960847,
+     12854.90760096085
+    ],
+    "same_objective": true,
+    "nodes": [
+     37,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12590.463208421916,
+     12590.463208421916
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12590.463208421916,
+     12590.463208421916
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 3.7
+ },
+ {
+  "cell": [
+   "B_correlated_demand",
+   "gated",
+   41002
+  ],
+  "review": 7,
+  "key": "transfers",
+  "before": {
+   "lane_north": 92.211173,
+   "lane_south": 120.650048
+  },
+  "after": {
+   "lane_north": 105.061835,
+   "lane_south": 107.799386
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   5.8,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12640.945451076901,
+     12640.945451076894
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12431.941893872308,
+     12431.941893871706
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12136.460533498686,
+     12136.460533498688
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12202.884054633534,
+     12202.884054633541
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12133.964380658641,
+     12133.964380658641
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12133.964380658641,
+     12133.964380658641
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 9.3
+ },
+ {
+  "cell": [
+   "C_short_transfer_lead",
+   "gated",
+   41001
+  ],
+  "review": 5,
+  "key": "transfers",
+  "before": {
+   "lane_north": 104.287185,
+   "lane_south": 98.61909
+  },
+  "after": {
+   "lane_north": 104.287185,
+   "lane_south": 113.543339
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   11.2,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13148.527858297117,
+     13148.527858297119
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12944.460768006988,
+     12944.460768006984
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12640.522421211928,
+     12640.522421211932
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12985.65068589898,
+     12985.650685898976
+    ],
+    "same_objective": true,
+    "nodes": [
+     55,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12635.416444191818,
+     12635.416444191818
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12635.416444191816,
+     12635.416444191818
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 13.6
+ },
+ {
+  "cell": [
+   "D_long_transfer_lead",
+   "gated",
+   41001
+  ],
+  "review": 2,
+  "key": "transfers",
+  "before": {
+   "lane_north": 90.627317,
+   "lane_south": 115.48627
+  },
+  "after": {
+   "lane_north": 90.627317,
+   "lane_south": 87.716127
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   58.9,
+   0.5
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13382.825575627507,
+     13382.825575627028
+    ],
+    "same_objective": true,
+    "nodes": [
+     23,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13202.186800728688,
+     13202.186800722393
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12372.9591252168,
+     12372.9591252168
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12472.726405604699,
+     12472.726405604755
+    ],
+    "same_objective": true,
+    "nodes": [
+     995,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12369.400258398113,
+     12369.400258398113
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12369.400258398113,
+     12369.400258398113
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 60.8
+ },
+ {
+  "cell": [
+   "D_long_transfer_lead",
+   "gated",
+   41002
+  ],
+  "review": 1,
+  "key": "transfers",
+  "before": {
+   "lane_north": 116.835861,
+   "lane_south": 88.813233
+  },
+  "after": {
+   "lane_north": 89.756732,
+   "lane_south": 88.813233
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   60.4,
+   0.5
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13482.652081670582,
+     13482.65208167058
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13303.637437743671,
+     13303.637437743671
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12464.530226478006,
+     12464.530226478006
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12569.50860482421,
+     12569.508604824166
+    ],
+    "same_objective": true,
+    "nodes": [
+     2634,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12460.986108639047,
+     12460.986108639048
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12460.986108639047,
+     12460.986108639048
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 61.7
+ },
+ {
+  "cell": [
+   "F_low_transfer_cost",
+   "gated",
+   41001
+  ],
+  "review": 5,
+  "key": "transfers",
+  "before": {
+   "lane_north": 103.857613,
+   "lane_south": 98.766303
+  },
+  "after": {
+   "lane_north": 103.857613,
+   "lane_south": 113.543339
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   8.9,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12746.780225325565,
+     12746.780225325567
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12497.608979913015,
+     12497.60897991302
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12237.194898158597,
+     12237.194898158881
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12568.932696958891,
+     12568.9326969589
+    ],
+    "same_objective": true,
+    "nodes": [
+     51,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12232.088669037254,
+     12232.088669037254
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12232.088669037254,
+     12232.088669037254
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 11.1
+ },
+ {
+  "cell": [
+   "F_low_transfer_cost",
+   "gated",
+   41002
+  ],
+  "review": 4,
+  "key": "status",
+  "before": "PENDING_REVIEW",
+  "after": "RETAIN_INCUMBENT",
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": false,
+   "status": false,
+   "purchases_t0": false,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   4.1,
+   0.6
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12788.76627563469,
+     12788.76627563469
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12492.080855970205,
+     12492.080855970224
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12231.319517264576,
+     12231.319517264586
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12602.402541189334,
+     12602.402541189334
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12226.346151436243,
+     12226.346151436243
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12226.346152687682,
+     12226.346151436243
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 6.3
+ },
+ {
+  "cell": [
+   "H_one_branch_demand_shock",
+   "gated",
+   41001
+  ],
+  "review": 0,
+  "key": "transfers",
+  "before": {
+   "lane_north": 80.235616,
+   "lane_south": 319.764384
+  },
+  "after": {
+   "lane_north": 170.632275,
+   "lane_south": 140.051716
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   11.7,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     15420.730375662972,
+     15420.730375662966
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     15851.380032925194,
+     15851.380032917154
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13963.178232687209,
+     13963.17823268721
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13809.53202934448,
+     13809.524360260762
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "cvar_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13809.524360260395,
+     13809.524360260757
+    ],
+    "same_objective": true,
+    "nodes": [
+     47,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13926.31189221736,
+     13926.31189221736
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13926.31189221736,
+     13926.31189221736
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 12.4
+ },
+ {
+  "cell": [
+   "H_one_branch_demand_shock",
+   "gated",
+   41002
+  ],
+  "review": 7,
+  "key": "transfers",
+  "before": {
+   "lane_north": 84.879545,
+   "lane_south": 115.733338
+  },
+  "after": {
+   "lane_north": 134.873881,
+   "lane_south": 115.733338
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   82.5,
+   0.7
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     15627.675883110973,
+     15627.675883109801
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     15221.678424846417,
+     15221.678424846414
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14702.426390975534,
+     14702.426390975532
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     15436.07248891824,
+     15436.07248891831
+    ],
+    "same_objective": true,
+    "nodes": [
+     3200,
+     1
+    ]
+   },
+   {
+    "candidate": "cvar_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     15436.649708726929,
+     15436.649708726934
+    ],
+    "same_objective": true,
+    "nodes": [
+     764,
+     1
+    ]
+   },
+   {
+    "candidate": "protected_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     15436.072488918313,
+     15436.072488918311
+    ],
+    "same_objective": true,
+    "nodes": [
+     333,
+     1
+    ]
+   },
+   {
+    "candidate": "joint_recovery",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     16774.61003288374,
+     16774.610032883735
+    ],
+    "same_objective": true,
+    "nodes": [
+     137,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14702.426390975534,
+     14702.42639097553
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14702.426390975532,
+     14702.42639097553
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 88.8
+ },
+ {
+  "cell": [
+   "I_shared_supplier_disruption",
+   "gated",
+   41001
+  ],
+  "review": 0,
+  "key": "status",
+  "before": "PENDING_REVIEW",
+  "after": "RETAIN_INCUMBENT",
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": false,
+   "status": false,
+   "purchases_t0": false,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   0.4,
+   0.2
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13250.813597441589,
+     13250.813597441595
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12951.554144231388,
+     12951.554144231382
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12678.22121541212,
+     12678.221215412126
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12641.716634050868,
+     12641.716634050868
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12641.716634050868,
+     12641.716634050868
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 0.8
+ },
+ {
+  "cell": [
+   "I_shared_supplier_disruption",
+   "gated",
+   41002
+  ],
+  "review": 0,
+  "key": "status",
+  "before": "PENDING_REVIEW",
+  "after": "RETAIN_INCUMBENT",
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": false,
+   "status": false,
+   "purchases_t0": false,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   0.4,
+   0.2
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13250.813597441589,
+     13250.813597441595
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12951.554144231388,
+     12951.554144231382
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12678.22121541212,
+     12678.221215412126
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12641.716634050868,
+     12641.716634050868
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12641.716634050868,
+     12641.716634050868
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 0.8
+ },
+ {
+  "cell": [
+   "J_asymmetric_service_targets",
+   "gated",
+   41001
+  ],
+  "review": 5,
+  "key": "transfers",
+  "before": {
+   "lane_north": 85.002966,
+   "lane_south": 95.825909
+  },
+  "after": {
+   "lane_north": 85.002966,
+   "lane_south": 99.423185
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   12.8,
+   0.5
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13155.183482481005,
+     13155.183482481414
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12963.72826028987,
+     12963.728260290038
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12676.060514169016,
+     12676.060514169016
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13095.404350144978,
+     13095.404350144981
+    ],
+    "same_objective": true,
+    "nodes": [
+     20,
+     1
+    ]
+   },
+   {
+    "candidate": "cvar_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13095.962969211103,
+     13095.962969211105
+    ],
+    "same_objective": true,
+    "nodes": [
+     23,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12632.417463027039,
+     12632.41746302704
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12632.417463027039,
+     12632.417463027037
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 16.1
+ },
+ {
+  "cell": [
+   "J_asymmetric_service_targets",
+   "gated",
+   41002
+  ],
+  "review": 0,
+  "key": "transfers",
+  "before": {
+   "lane_north": 61.716046,
+   "lane_south": 128.035429
+  },
+  "after": {
+   "lane_north": 61.716046,
+   "lane_south": 83.666742
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   18.3,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13254.621440283678,
+     13254.621440283676
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12978.220701620074,
+     12978.220701620074
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12650.525236307401,
+     12650.525236307394
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12625.945007118658,
+     12625.945007118658
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "cvar_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12625.945007118658,
+     12625.94500711866
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12646.099496785004,
+     12646.099496785006
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12646.099496785004,
+     12646.099496785004
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 19.0
+ },
+ {
+  "cell": [
+   "K_unequal_demand_scale",
+   "gated",
+   41001
+  ],
+  "review": 2,
+  "key": "status",
+  "before": "PENDING_REVIEW",
+  "after": "RETAIN_INCUMBENT",
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": true,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": true,
+   "actions": true,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   11.8,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     22810.223276090343,
+     22810.223276090335
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     22398.46000347962,
+     22398.460003426768
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     21853.159967259406,
+     21853.159967259402
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     22011.873218211804,
+     22011.873218211815
+    ],
+    "same_objective": true,
+    "nodes": [
+     120,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     21845.397225855482,
+     21845.397225855482
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     21845.397225855482,
+     21845.397225855486
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 12.8
+ },
+ {
+  "cell": [
+   "K_unequal_demand_scale",
+   "gated",
+   41002
+  ],
+  "review": 3,
+  "key": "transfers",
+  "before": {
+   "lane_north": 288.581204,
+   "lane_south": 49.547485
+  },
+  "after": {
+   "lane_north": 298.022225,
+   "lane_south": 49.547485
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   4.4,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     23043.660631608243,
+     23043.660631608225
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     22664.28375016655,
+     22664.283750166553
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     22112.400454915267,
+     22112.40045491528
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     22208.125797321518,
+     22208.12579732151
+    ],
+    "same_objective": true,
+    "nodes": [
+     26,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     22104.578111900988,
+     22104.57811190099
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     22104.578111900988,
+     22104.578111900988
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 5.8
+ },
+ {
+  "cell": [
+   "L_already_efficient_network",
+   "gated",
+   41001
+  ],
+  "review": 5,
+  "key": "transfers",
+  "before": {
+   "lane_north": 96.545683,
+   "lane_south": 102.846201
+  },
+  "after": {
+   "lane_north": 101.951023,
+   "lane_south": 113.543339
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   11.2,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13166.115168431006,
+     13166.115168431003
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12954.813612409576,
+     12954.813612409573
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12649.969923272223,
+     12649.969923272212
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12998.934459971504,
+     12998.934459971511
+    ],
+    "same_objective": true,
+    "nodes": [
+     16,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12644.863694150587,
+     12644.863694150587
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12644.863694150587,
+     12644.863694150587
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 13.4
+ },
+ {
+  "cell": [
+   "M_transfer_not_reachable_in_time",
+   "gated",
+   41001
+  ],
+  "review": 4,
+  "key": "transfers",
+  "before": {
+   "lane_north": 51.66006,
+   "lane_south": 1.609915
+  },
+  "after": {
+   "lane_north": 106.255965,
+   "lane_south": 73.958078
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   84.3,
+   0.7
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13916.453656332593,
+     13916.453656332618
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13547.670614985076,
+     13547.670614985069
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12445.30215658265,
+     12445.302156582646
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12399.62989027973,
+     12399.62989027973
+    ],
+    "same_objective": true,
+    "nodes": [
+     2133,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12442.226747280976,
+     12442.226747280974
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12442.226747280976,
+     12442.226747280976
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 89.6
+ },
+ {
+  "cell": [
+   "M_transfer_not_reachable_in_time",
+   "gated",
+   41002
+  ],
+  "review": 4,
+  "key": "purchases",
+  "before": [
+   [
+    "src_A",
+    165.111647
+   ]
+  ],
+  "after": [
+   [
+    "src_A",
+    217.786264
+   ]
+  ],
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [
+   "stochastic_network"
+  ],
+  "objective_identical": false,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": false,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   91.0,
+   0.7
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13893.703471618523,
+     13893.703471618523
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13512.635751667403,
+     13512.635751667403
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12404.42524706299,
+     12404.42524706299
+    ],
+    "same_objective": true,
+    "nodes": [
+     30,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "FEASIBLE_TIME_LIMIT",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12482.805664235235,
+     12475.97114740365
+    ],
+    "same_objective": false,
+    "nodes": [
+     4059,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12401.439299194773,
+     12401.439299194773
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12401.439299194772,
+     12401.439299194772
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 96.4
+ },
+ {
+  "cell": [
+   "O_multiple_transfer_options",
+   "gated",
+   41001
+  ],
+  "review": 1,
+  "key": "transfers",
+  "before": {
+   "lane_north": 78.48097,
+   "lane_south": 90.31921
+  },
+  "after": {
+   "lane_north": 78.48097,
+   "lane_south": 116.210368
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   65.3,
+   0.6
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13256.836862647324,
+     13256.83686264734
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14543.80363289908,
+     14543.803632899078
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12315.877636249385,
+     12315.877636249399
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12345.287657680676,
+     12345.287657680676
+    ],
+    "same_objective": true,
+    "nodes": [
+     1102,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12311.8916835773,
+     12311.8916835773
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12311.8916835773,
+     12311.8916835773
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 66.9
+ },
+ {
+  "cell": [
+   "O_multiple_transfer_options",
+   "gated",
+   41002
+  ],
+  "review": 1,
+  "key": "transfers",
+  "before": {
+   "lane_north": 90.020066,
+   "lane_south": 131.707107
+  },
+  "after": {
+   "lane_north": 90.020066,
+   "lane_south": 120.617398
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   81.7,
+   0.6
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13271.635764603512,
+     13271.635764603521
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14574.752160247563,
+     14574.752159996846
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12330.310323699088,
+     12330.310323699088
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12441.096419642316,
+     12441.096419642325
+    ],
+    "same_objective": true,
+    "nodes": [
+     2825,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12326.323757319858,
+     12326.323757319858
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12326.323757319858,
+     12326.323757319858
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 83.4
+ },
+ {
+  "cell": [
+   "Q_pack_constraint_on_transfer",
+   "gated",
+   41001
+  ],
+  "review": 0,
+  "key": "purchases",
+  "before": [
+   [
+    "src_A",
+    261.525737
+   ]
+  ],
+  "after": [
+   [
+    "src_A",
+    250.748335
+   ]
+  ],
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": false,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": false,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   18.3,
+   5.2
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13456.430734707446,
+     13456.430734707465
+    ],
+    "same_objective": true,
+    "nodes": [
+     7,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13359.402285600598,
+     13359.4022856006
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12792.226934731343,
+     12792.226934731341
+    ],
+    "same_objective": true,
+    "nodes": [
+     80,
+     23
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12623.124216259352,
+     12622.800264274905
+    ],
+    "same_objective": false,
+    "nodes": [
+     409,
+     35
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12787.69857637471,
+     12787.698576374592
+    ],
+    "same_objective": true,
+    "nodes": [
+     172,
+     33
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12787.698576374698,
+     12787.698576374687
+    ],
+    "same_objective": true,
+    "nodes": [
+     31,
+     43
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 28.7
+ },
+ {
+  "cell": [
+   "Q_pack_constraint_on_transfer",
+   "gated",
+   41002
+  ],
+  "review": 7,
+  "key": "purchases",
+  "before": [
+   [
+    "src_A",
+    129.966247
+   ]
+  ],
+  "after": [
+   [
+    "src_A",
+    127.599544
+   ]
+  ],
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": false,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": false,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   38.4,
+   6.7
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13400.999701917128,
+     13401.143366444663
+    ],
+    "same_objective": false,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13260.95113277616,
+     13260.951132776376
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12717.011741709572,
+     12716.899702797436
+    ],
+    "same_objective": false,
+    "nodes": [
+     241,
+     127
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12674.461718318655,
+     12673.625291472083
+    ],
+    "same_objective": false,
+    "nodes": [
+     1078,
+     81
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12707.91741758234,
+     12707.917417582343
+    ],
+    "same_objective": true,
+    "nodes": [
+     307,
+     151
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12707.917417582341,
+     12707.917417582341
+    ],
+    "same_objective": true,
+    "nodes": [
+     86,
+     64
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 114.0
+ },
+ {
+  "cell": [
+   "R_order_transfer_interaction",
+   "gated",
+   41001
+  ],
+  "review": 0,
+  "key": "transfers",
+  "before": {
+   "lane_north": 170.632275,
+   "lane_south": 26.857128
+  },
+  "after": {
+   "lane_north": 170.632275,
+   "lane_south": 47.51766
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   21.8,
+   3.5
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14671.733781861454,
+     14671.733781861454
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14287.34084897328,
+     14287.340848973112
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13014.260625362293,
+     13014.260625361847
+    ],
+    "same_objective": true,
+    "nodes": [
+     66,
+     17
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12905.4770237087,
+     12905.477023708681
+    ],
+    "same_objective": true,
+    "nodes": [
+     1719,
+     3
+    ]
+   },
+   {
+    "candidate": "cadence_2_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12989.456740027057,
+     12989.456740027053
+    ],
+    "same_objective": true,
+    "nodes": [
+     516,
+     1
+    ]
+   },
+   {
+    "candidate": "cadence_4_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12989.45674002724,
+     12989.456740027033
+    ],
+    "same_objective": true,
+    "nodes": [
+     35,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12991.917135115375,
+     12991.91713511539
+    ],
+    "same_objective": true,
+    "nodes": [
+     44,
+     11
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12991.917135115371,
+     12991.917135115373
+    ],
+    "same_objective": true,
+    "nodes": [
+     49,
+     11
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14239.570046766015,
+     14239.570046766014
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   }
+  ],
+  "seconds": 28.8
+ },
+ {
+  "cell": [
+   "R_order_transfer_interaction",
+   "gated",
+   41002
+  ],
+  "review": 0,
+  "key": "transfers",
+  "before": {
+   "lane_north": 60.280315,
+   "lane_south": 83.666742
+  },
+  "after": {
+   "lane_north": 60.280315,
+   "lane_south": 152.433517
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": false,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   12.6,
+   2.7
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14671.733781861454,
+     14671.733781861454
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14287.34084897328,
+     14287.340848973112
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13014.260625362293,
+     13014.260625361847
+    ],
+    "same_objective": true,
+    "nodes": [
+     66,
+     17
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12983.992398379814,
+     12983.992398379807
+    ],
+    "same_objective": true,
+    "nodes": [
+     325,
+     21
+    ]
+   },
+   {
+    "candidate": "cadence_2_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12983.992398380018,
+     12983.992398379816
+    ],
+    "same_objective": true,
+    "nodes": [
+     96,
+     7
+    ]
+   },
+   {
+    "candidate": "cadence_4_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12983.992398379816,
+     12983.992398379314
+    ],
+    "same_objective": true,
+    "nodes": [
+     382,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12991.917135115375,
+     12991.91713511539
+    ],
+    "same_objective": true,
+    "nodes": [
+     44,
+     11
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12991.917135115371,
+     12991.917135115373
+    ],
+    "same_objective": true,
+    "nodes": [
+     49,
+     11
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     14246.944959585286,
+     14246.944959585288
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   }
+  ],
+  "seconds": 18.1
+ },
+ {
+  "cell": [
+   "S_recovery_after_imbalance",
+   "gated",
+   41001
+  ],
+  "review": 5,
+  "key": "transfers",
+  "before": {
+   "lane_north": 97.870776,
+   "lane_south": 113.6548
+  },
+  "after": {
+   "lane_north": 100.196088,
+   "lane_south": 111.329489
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": true,
+   "status": true,
+   "purchases_t0": true,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   8.9,
+   0.3
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13166.759063470028,
+     13166.759063470028
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12955.091041100299,
+     12955.091038727329
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12650.248459957209,
+     12650.248459957289
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12995.344434972933,
+     12995.344434972918
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12645.14223083566,
+     12645.14223083566
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12645.14223083566,
+     12645.14223083566
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 11.2
+ },
+ {
+  "cell": [
+   "S_recovery_after_imbalance",
+   "gated",
+   41002
+  ],
+  "review": 4,
+  "key": "status",
+  "before": "PENDING_REVIEW",
+  "after": "RETAIN_INCUMBENT",
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "decision_keys_on_snapshot": {
+   "state": true,
+   "owner": true,
+   "selected_policy": false,
+   "status": false,
+   "purchases_t0": false,
+   "transfers_t0": false,
+   "actions": false,
+   "requested": true,
+   "built": true
+  },
+  "walls": [
+   8.8,
+   0.5
+  ],
+  "candidates": [
+   {
+    "candidate": "base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13201.057323589153,
+     13201.057323589146
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "incumbent",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12945.388345283378,
+     12945.38834528338
+    ],
+    "same_objective": true,
+    "nodes": [
+     0,
+     1
+    ]
+   },
+   {
+    "candidate": "deterministic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12640.367382514363,
+     12640.367382514361
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "stochastic_network",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13026.451573453052,
+     13026.451573453052
+    ],
+    "same_objective": true,
+    "nodes": [
+     268,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_north",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12635.394016686021,
+     12635.394016686017
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "oracle:svc_south",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     12635.39401668602,
+     12635.394016686021
+    ],
+    "same_objective": true,
+    "nodes": [
+     1,
+     1
+    ]
+   },
+   {
+    "candidate": "restricted:transfers",
+    "status": [
+     "INFEASIBLE",
+     "INFEASIBLE"
+    ],
+    "objective": [
+     null,
+     null
+    ],
+    "same_objective": true,
+    "nodes": [
+     null,
+     null
+    ]
+   }
+  ],
+  "seconds": 11.2
+ }
+]

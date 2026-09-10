@@ -163,3 +163,12 @@ runtime gate and are corrected here; the affected evidence is invalidated and re
 No fixture argument, comparator rule, tolerance, service mode, scenario rule or scoring basis changes.
 The final table (`p2_final.tables.md`) is the authoritative record for the sixteen untouched fixtures
 plus `p2_authoritative_c1` for D, M, O and Q; the runtime gate is read over the same set.
+
+## Performance pass (2026-09-10, after the closeout)
+
+No rule, tolerance, world count, budget, candidate class, fixture, seed or gate above is changed. The
+runtime maximum (180 s) failed as pre-registered on M and O; the performance pass diagnosed the cause
+before any change (`perf/P2_PERF_DIAGNOSIS.md`), applied one exact model change (`perf/P2_PERF_LOG.md`
+entry 1), pre-registered its own re-run (`perf/P2_PERF_CORRECTIVE_PLAN.md`, dated before the run) and
+re-ran the unchanged set (`perf/P2_PERF_RESULTS.md`). The original record and its FAIL stand as
+written above and in `P2_RESULTS.md`.

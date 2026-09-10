@@ -1,7 +1,7 @@
 [
  {
   "case": "huge_central_zero_local",
-  "seconds": 0.6,
+  "seconds": 0.3,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -22,8 +22,8 @@
   "state": "CAPITAL_OPTIMIZATION",
   "owner": "PROTECTION_RECOVERY",
   "milps": 7,
-  "solver_seconds": 0.4,
-  "wall_seconds": 0.6,
+  "solver_seconds": 0.2,
+  "wall_seconds": 0.3,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -51,7 +51,7 @@
  },
  {
   "case": "zero_central_excess_one_branch",
-  "seconds": 2.3,
+  "seconds": 0.4,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -66,13 +66,13 @@
   "purchases_over_horizon_demand": false,
   "economic_lot_reference": 200.46153846153845,
   "stranded_units": 0.0,
-  "central_share_of_end_stock": 0.025787580838003896,
+  "central_share_of_end_stock": 0.025787580838003785,
   "status": "PENDING_REVIEW",
   "state": "NETWORK_ALLOCATION",
   "owner": "PROTECTION_RECOVERY",
   "milps": 8,
-  "solver_seconds": 1.4,
-  "wall_seconds": 2.3,
+  "solver_seconds": 0.2,
+  "wall_seconds": 0.4,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -88,7 +88,7 @@
    "central holds 0 usable A against a need of 204 at south: the pool is short, purchasing decides"
   ],
   "verdict": "ZAAD recommends the changes below for your approval.",
-  "end_stock_units": 357.64568428559375,
+  "end_stock_units": 357.64568428559363,
   "incumbent_service": {
    "svc_north": 1.0,
    "svc_south": 0.019
@@ -98,12 +98,12 @@
    "svc_south": 0.82
   },
   "transfers_period_0": 0,
-  "purchases_period_0": 110.12540314936759,
+  "purchases_period_0": 110.12540314936757,
   "findings": []
  },
  {
   "case": "both_branches_short",
-  "seconds": 19.2,
+  "seconds": 0.5,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -124,8 +124,8 @@
   "state": "NETWORK_ALLOCATION",
   "owner": "PROTECTION_RECOVERY",
   "milps": 8,
-  "solver_seconds": 14.7,
-  "wall_seconds": 19.2,
+  "solver_seconds": 0.3,
+  "wall_seconds": 0.5,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -156,7 +156,7 @@
  },
  {
   "case": "perfectly_correlated_spike",
-  "seconds": 13.2,
+  "seconds": 0.3,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -169,13 +169,13 @@
   "purchases_over_horizon_demand": false,
   "economic_lot_reference": 201.23076923076923,
   "stranded_units": 0.0,
-  "central_share_of_end_stock": 0.04992419249622694,
+  "central_share_of_end_stock": 0.049924192496226816,
   "status": "PENDING_REVIEW",
   "state": "NORMAL_REPLENISHMENT",
   "owner": "PURCHASING_ECONOMICS",
   "milps": 5,
-  "solver_seconds": 13.0,
-  "wall_seconds": 13.2,
+  "solver_seconds": 0.2,
+  "wall_seconds": 0.3,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -195,13 +195,13 @@
    "svc_north": 0.997,
    "svc_south": 0.992
   },
-  "transfers_period_0": 189.02047505689612,
+  "transfers_period_0": 180.46639695979025,
   "purchases_period_0": 130.08998329111589,
   "findings": []
  },
  {
   "case": "independent_spikes",
-  "seconds": 7.4,
+  "seconds": 0.2,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -214,13 +214,13 @@
   "purchases_over_horizon_demand": false,
   "economic_lot_reference": 201.23076923076923,
   "stranded_units": 0.0,
-  "central_share_of_end_stock": 0.06250367776148069,
+  "central_share_of_end_stock": 0.06250367776147202,
   "status": "PENDING_REVIEW",
   "state": "NO_ACTION",
   "owner": "PURCHASING_ECONOMICS",
   "milps": 4,
-  "solver_seconds": 7.2,
-  "wall_seconds": 7.4,
+  "solver_seconds": 0.1,
+  "wall_seconds": 0.2,
   "candidates_built": [
    "deterministic_network",
    "stochastic_network"
@@ -230,7 +230,7 @@
   "issues": [],
   "router": [],
   "verdict": "ZAAD recommends the changes below for your approval.",
-  "end_stock_units": 135.70451221460957,
+  "end_stock_units": 135.70451221463523,
   "incumbent_service": {
    "svc_north": 0.977,
    "svc_south": 0.969
@@ -239,13 +239,13 @@
    "svc_north": 0.975,
    "svc_south": 0.965
   },
-  "transfers_period_0": 280.8522733155927,
-  "purchases_period_0": 88.15381107556556,
+  "transfers_period_0": 238.0535117056856,
+  "purchases_period_0": 88.15381107556557,
   "findings": []
  },
  {
   "case": "one_lane_unavailable",
-  "seconds": 4.5,
+  "seconds": 0.3,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -267,8 +267,8 @@
   "state": "NORMAL_REPLENISHMENT",
   "owner": "PROTECTION_RECOVERY",
   "milps": 6,
-  "solver_seconds": 4.3,
-  "wall_seconds": 4.5,
+  "solver_seconds": 0.2,
+  "wall_seconds": 0.3,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -299,7 +299,7 @@
  },
  {
   "case": "long_lane_lead",
-  "seconds": 10.4,
+  "seconds": 0.7,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -320,8 +320,8 @@
   "state": "NORMAL_REPLENISHMENT",
   "owner": "PROTECTION_RECOVERY",
   "milps": 6,
-  "solver_seconds": 10.1,
-  "wall_seconds": 10.4,
+  "solver_seconds": 0.5,
+  "wall_seconds": 0.7,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -350,7 +350,7 @@
  },
  {
   "case": "zero_transfer_cost",
-  "seconds": 4.6,
+  "seconds": 0.3,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -368,8 +368,8 @@
   "state": "NO_ACTION",
   "owner": "PURCHASING_ECONOMICS",
   "milps": 4,
-  "solver_seconds": 4.4,
-  "wall_seconds": 4.6,
+  "solver_seconds": 0.1,
+  "wall_seconds": 0.3,
   "candidates_built": [
    "deterministic_network",
    "stochastic_network"
@@ -394,7 +394,7 @@
  },
  {
   "case": "enormous_transfer_cost",
-  "seconds": 24.8,
+  "seconds": 8.3,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -412,8 +412,8 @@
   "state": "NO_ACTION",
   "owner": "PURCHASING_ECONOMICS",
   "milps": 4,
-  "solver_seconds": 24.6,
-  "wall_seconds": 24.8,
+  "solver_seconds": 8.1,
+  "wall_seconds": 8.3,
   "candidates_built": [
    "deterministic_network",
    "stochastic_network"
@@ -438,7 +438,7 @@
  },
  {
   "case": "zero_supplier_availability",
-  "seconds": 0.4,
+  "seconds": 0.2,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -462,8 +462,8 @@
   "state": "NORMAL_REPLENISHMENT",
   "owner": "PROTECTION_RECOVERY",
   "milps": 6,
-  "solver_seconds": 0.3,
-  "wall_seconds": 0.4,
+  "solver_seconds": 0.1,
+  "wall_seconds": 0.2,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -490,7 +490,7 @@
  },
  {
   "case": "supplier_short_fill",
-  "seconds": 11.2,
+  "seconds": 1.4,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -511,8 +511,8 @@
   "state": "PROTECT",
   "owner": "PROTECTION_RECOVERY",
   "milps": 9,
-  "solver_seconds": 11.0,
-  "wall_seconds": 11.2,
+  "solver_seconds": 1.3,
+  "wall_seconds": 1.4,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -542,7 +542,7 @@
  },
  {
   "case": "targets_90_vs_99",
-  "seconds": 15.3,
+  "seconds": 0.5,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -562,8 +562,8 @@
   "state": "NORMAL_REPLENISHMENT",
   "owner": "PROTECTION_RECOVERY",
   "milps": 6,
-  "solver_seconds": 11.1,
-  "wall_seconds": 15.3,
+  "solver_seconds": 0.3,
+  "wall_seconds": 0.5,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -592,7 +592,7 @@
  },
  {
   "case": "very_unequal_demand",
-  "seconds": 6.6,
+  "seconds": 0.2,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -610,8 +610,8 @@
   "state": "NO_ACTION",
   "owner": "PURCHASING_ECONOMICS",
   "milps": 4,
-  "solver_seconds": 6.3,
-  "wall_seconds": 6.6,
+  "solver_seconds": 0.1,
+  "wall_seconds": 0.2,
   "candidates_built": [
    "deterministic_network",
    "stochastic_network"
@@ -636,7 +636,7 @@
  },
  {
   "case": "branch_with_no_demand",
-  "seconds": 3.3,
+  "seconds": 0.4,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -649,13 +649,13 @@
   "purchases_over_horizon_demand": false,
   "economic_lot_reference": 98.38461538461539,
   "stranded_units": 0.0,
-  "central_share_of_end_stock": 0.035052833807383624,
+  "central_share_of_end_stock": 0.035052833807384026,
   "status": "PENDING_REVIEW",
   "state": "CAPITAL_OPTIMIZATION",
   "owner": "PROTECTION_RECOVERY",
   "milps": 7,
-  "solver_seconds": 3.1,
-  "wall_seconds": 3.3,
+  "solver_seconds": 0.3,
+  "wall_seconds": 0.4,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -668,7 +668,7 @@
   "issues": [],
   "router": [],
   "verdict": "ZAAD recommends the changes below for your approval.",
-  "end_stock_units": 236.56378416172356,
+  "end_stock_units": 236.56378416172365,
   "incumbent_service": {
    "svc_north": 0.593
   },
@@ -681,7 +681,7 @@
  },
  {
   "case": "transfer_capacity_zero",
-  "seconds": 0.4,
+  "seconds": 0.2,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -705,8 +705,8 @@
   "state": "CAPITAL_OPTIMIZATION",
   "owner": "PROTECTION_RECOVERY",
   "milps": 7,
-  "solver_seconds": 0.3,
-  "wall_seconds": 0.4,
+  "solver_seconds": 0.1,
+  "wall_seconds": 0.2,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -734,7 +734,7 @@
  },
  {
   "case": "moq_larger_than_branch_demand",
-  "seconds": 12.8,
+  "seconds": 4.2,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -752,8 +752,8 @@
   "state": "NETWORK_ALLOCATION",
   "owner": "PROTECTION_RECOVERY",
   "milps": 8,
-  "solver_seconds": 10.5,
-  "wall_seconds": 12.8,
+  "solver_seconds": 3.6,
+  "wall_seconds": 4.2,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -784,7 +784,7 @@
  },
  {
   "case": "central_full_load_economics",
-  "seconds": 8.6,
+  "seconds": 3.6,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -804,8 +804,8 @@
   "state": "NETWORK_ALLOCATION",
   "owner": "PROTECTION_RECOVERY",
   "milps": 10,
-  "solver_seconds": 7.5,
-  "wall_seconds": 8.6,
+  "solver_seconds": 3.1,
+  "wall_seconds": 3.6,
   "candidates_built": [
    "cadence_2_network",
    "cadence_4_network",
@@ -838,7 +838,7 @@
  },
  {
   "case": "recovery_after_disruption",
-  "seconds": 9.4,
+  "seconds": 0.5,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -859,8 +859,8 @@
   "state": "NETWORK_ALLOCATION",
   "owner": "PROTECTION_RECOVERY",
   "milps": 8,
-  "solver_seconds": 6.2,
-  "wall_seconds": 9.4,
+  "solver_seconds": 0.3,
+  "wall_seconds": 0.5,
   "candidates_built": [
    "cvar_network",
    "deterministic_network",
@@ -891,7 +891,7 @@
  },
  {
   "case": "already_perfect_incumbent",
-  "seconds": 7.4,
+  "seconds": 0.3,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -909,8 +909,8 @@
   "state": "NO_ACTION",
   "owner": "PURCHASING_ECONOMICS",
   "milps": 4,
-  "solver_seconds": 7.2,
-  "wall_seconds": 7.4,
+  "solver_seconds": 0.1,
+  "wall_seconds": 0.3,
   "candidates_built": [
    "deterministic_network",
    "stochastic_network"
@@ -935,7 +935,7 @@
  },
  {
   "case": "reverse_lane_at_cost",
-  "seconds": 6.8,
+  "seconds": 0.3,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -953,8 +953,8 @@
   "state": "NO_ACTION",
   "owner": "PURCHASING_ECONOMICS",
   "milps": 4,
-  "solver_seconds": 6.6,
-  "wall_seconds": 6.8,
+  "solver_seconds": 0.2,
+  "wall_seconds": 0.3,
   "candidates_built": [
    "deterministic_network",
    "stochastic_network"
@@ -987,7 +987,7 @@
  },
  {
   "case": "five_branches",
-  "seconds": 15.3,
+  "seconds": 0.9,
   "physically_unusable_worlds": 0,
   "conservation": true,
   "reconciles": true,
@@ -1005,8 +1005,8 @@
   "state": "NO_ACTION",
   "owner": "PURCHASING_ECONOMICS",
   "milps": 4,
-  "solver_seconds": 14.2,
-  "wall_seconds": 15.3,
+  "solver_seconds": 0.4,
+  "wall_seconds": 0.9,
   "candidates_built": [
    "deterministic_network",
    "stochastic_network"

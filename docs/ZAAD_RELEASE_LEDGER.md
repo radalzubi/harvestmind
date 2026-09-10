@@ -238,8 +238,27 @@ FREEZE BLOCKED** on one pre-registered gate: the runtime maximum per review (180
 344 reviews (M 257 s, O 315 s: three candidate classes at the declared per-solve budget with six to eight
 worlds); p50 9.7 s and p95 87 s pass. See `P2_CLOSEOUT.md` for the blocker and the decision it needs.
 
+## P2 performance pass (2026-09-10, branch `claude/zaad-meio-p2`, code `cab3849`)
+
+Not merged, not pushed. Evidence in `docs/zaad_full/evidence/p2/perf/` (diagnosis written before any
+change, development log, dated corrective plan, re-run results, architecture note, profiles, gate
+logs). The original runtime failure stands as recorded (`P2_RESULTS.md`: M 257 s, O 315 s). Profiling
+the two failing reviews on their exact snapshots showed 69% of the wall in the warm-start completion
+forfeiting its cap and the rest in solves whose first incumbent took 10-31 s, because 95% of the
+binaries were FEFO indicators between cohorts that all outlive a 12-period horizon (big-M 1e6). One
+exact model change (`zaad/full/model.py`, `FEFO_SYMMETRY_ELIMINATION`: no FEFO indicator between two
+cohorts that both outlive the horizon and the latest schedulable transfer arrival; network requests
+only, the single-node P1 formulation verbatim) removes 95% of the binaries; every candidate then solves
+at the root node with identical objectives. Authoritative set re-run unchanged (`p2_authoritative_perf`):
+**p50 0.5 s, p95 6.6 s, max 14.6 s** (gate 60 / 120 / 180), 0 time-limited solves, 20 / 20 fixtures,
+18 / 18 principles, 20 / 20 invariants, adversarial clean; P1 B / T / Q / A and the P0 six-cell set
+(120 / 120 reviews) decision-identical; full suite 1,843 passed. Every decision difference from the
+pre-performance record is a tie broken differently (objective equality proved on the snapshot) or the
+one review whose frozen plan was time-limited. **Verdict: P2 MULTI-ECHELON / NETWORK OPTIMIZATION —
+PASS AND FROZEN** (see `perf/P2_PERF_RESULTS.md`, `P2_CLOSEOUT.md`; frozen SHA recorded there).
+
 ## Exact next action
 
-None for the release line. The next brief is P2, branched from `main`; keep `ZAAD_LEGACY_PLANNERS`
+Owner decision on merging `claude/zaad-meio-p2` into `main` (local only; not pushed). Keep `ZAAD_LEGACY_PLANNERS`
 explicit on every deployed environment and run `scripts/zaad_canonical_regression.py` before accepting
 any Dependabot bump that touches the solver stack.

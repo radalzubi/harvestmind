@@ -107,3 +107,54 @@ stochastic 10.3 s -> 0.1 s, cvar 30.8 s -> 0.1 s; O stochastic 27.4 s (never imp
   each would change the solver path on frozen cells for no gate benefit. Not applied.
 * **Gap policy**: rejected by the measurement (time to decision equals time to proof on every
   profiled candidate before and after).
+
+## Entry 4 - the packs / dispatch and the order-transfer reviews (Q, R), `cab3849`
+
+Q 41002 r6 (NETWORK_ALLOCATION, packs of 24 and a dispatch fee on both lanes, declared 1e-4 gap)
+and R 41001 r11 (NETWORK_ALLOCATION, supplier order economics, cadence classes) were materialised
+with the new code and profiled under both formulations on the same snapshot
+(`perf/profiles/Q_41002_r6*.json`, `R_41001_r11*.json`, `qr_compare.log`):
+
+| review | wall frozen -> new | stochastic vars / binaries | nodes (stochastic, joint_recovery) | statuses | objectives | decision |
+|---|---|---|---|---|---|---|
+| Q 41002 r6 | 77.7 s -> 14.6 s | 4,325 / 1,104 -> 3,317 / 96 | 685 -> 47, 214 -> 11 | identical | identical to 1e-12 on ten candidates; joint_recovery 12,704.988 -> 12,704.817 (-0.0013%, inside Q's declared 1e-4 MIP gap: both are "optimal" at that tolerance, the new point is the better of the two) | state, owner, selected policy, status, period-zero purchases and transfers identical |
+| R 41001 r11 | 61.1 s -> 9.4 s | 3,781 / 948 -> 2,917 / 84 | 374 -> 7, 2,536 -> 19 | identical | identical to 1e-12 on eleven candidates; stochastic and protected 13,036.8965 -> 13,036.8877 (-6.8e-7, inside the 1e-6 gap at which the frozen solve declared optimality) | period-zero purchases and transfers, state, owner, status identical; the selected LABEL moves between equal-cost classes (cvar / stochastic / protected all at 13,036.8877 now, the frozen cvar 0.0088 cheaper than the frozen stochastic): the candidate-label variance the canonical regression defines as non-decisional |
+
+Q keeps 96 binaries after the change (the `depleted` flags plus the period-zero packs and the
+per-period dispatch flags with M = lane capacity 360): its candidates branch (11-47 nodes) but solve
+in 0.5-3.4 s. No further formulation change is made to the pack / dispatch rows: 14.6 s is inside
+every gate and any tightening would change Q's solver path for no gate benefit.
+
+On R the models fall below `warm_start_min_variables` (3,000), so the frozen warm-start policy
+skips the completion on them - an exact consequence of the frozen threshold, recorded.
+
+## Entry 5 - frozen P0 six-cell set under the change, `cab3849`
+
+`scripts/p1_p0_arms.py p2_perf` (product defaults, cells 15, 16, 20, 21, 90, 108, seed 38001) against
+`router_cycle` by `scripts/p1_ownership_compare.py`: **120 / 120 P0-owned reviews decision-identical**
+(state, requested and built sets, selected, status, recovery mode, feasible set, chosen, final P0
+purchases), costs 1678 / 1515 / 2502 / 3331 / 3317 / 3665 identical to the record, no P1 class added,
+no starvation (`perf/gates/p0_six_cell_p2_perf.log`, `evidence/p1/closure/p0_arm_p2_perf.json`).
+Cells 21 and 108, wall-clock-limited under the frozen formulation (their divergences in the P2
+closeout were run-to-run variability of time-limited solves), now reproduce the record exactly:
+their solves finish well inside the budget.
+
+## Entry 6 - authoritative re-run, code `cab3849` (evidence tree `a0b1573`)
+
+Executed as pre-registered in `P2_PERF_CORRECTIVE_PLAN.md` (`p2_authoritative_perf`, four workers,
+nothing else of ours running). Full results: `P2_PERF_RESULTS.md`.
+
+| gate | pre-performance final record | re-run |
+|---|---|---|
+| ZAAD reviews | 344 | 344 |
+| wall p50 / p95 / max | 9.7 / 86.9 / 314.6 s | **0.5 / 6.6 / 14.6 s** |
+| required-candidate starvation | 0 | 0 |
+| solve statuses | 1,476 OPTIMAL, 143 INFEASIBLE, 19 FEASIBLE_TIME_LIMIT | 1,515 OPTIMAL, 143 INFEASIBLE, 0 time-limited |
+| fixtures passing | 20 / 20 | 20 / 20 |
+| network principles | 18 / 18 | 18 / 18 |
+| runtime gate | FAIL (max) | **PASS** |
+
+Decision comparison and the tie protocol: `P2_PERF_RESULTS.md` (network_rop and central_pool 344 /
+344 identical; ZAAD, isolated chains and echelon base stock differ on later reviews of some cells
+after a first differing review whose snapshot both formulations solve to the same candidate
+objectives).
