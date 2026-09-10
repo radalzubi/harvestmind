@@ -221,6 +221,32 @@ private repositories.
 * **Verdict:** ZAAD CANONICAL RELEASE LINE — PASS, P2 MAY BE BRANCHED. P2 has not been started; it
   branches from `main` (`f7ff600` or later). Nothing in this pass claims production-ready security.
 
+## Production P0/P1 plumbing (2026-09-10, verified live)
+
+The API deployment is separate from Vercel: Fly app `zaad-api` (`api.zaadsupply.com`, region fra, volume
+`harvestmind_data`). After the canonical merge it was still running the 2026-09-05 image (service
+`harvestmind-api`, no `/api/zaad/*` route), so the site on `main` could not reach the frozen optimizer.
+The owner deployed `registry.fly.io/zaad-api:canonical-11f5459` (release v13) with the persistent
+`ZAAD_JOB_STORE` / `ZAAD_SHADOW_LEDGER` paths and `ZAAD_LEGACY_PLANNERS=0` (volume snapshot taken first).
+
+Live verification against `https://api.zaadsupply.com` (production `NEXT_PUBLIC_API_URL` of the Vercel
+project `zaad`): `/health` = `zaad-api`, env `pilot`, `auth_enforced` true, rate limit 60; 91 OpenAPI paths
+including every `/api/zaad/network/*` route; anonymous `/fmcg/status`, `/api/zaad/network/jobs`,
+`request/from-workspace` = 401; `/api/zaad/demo`, `/fmcg/plan?mode=incumbent`, `/api/zaad/plan` = 410
+with the canonical pointer; CORS preflight allows `https://zaadsupply.com` and `https://www.zaadsupply.com`
+and refuses a foreign origin; the site sends `Authorization: Bearer`. Bounded synthetic smoke on a
+self-serve workspace (`op_b9bbe700`, SYNTHETIC CALIBRATED sample, no customer data): `request/from-workspace`
+for two SKUs builds `zaad.network.v2` with the leakage guard and fitted provenance (1 s);
+`plan/from-workspace` with `max_solve_seconds=5` returns `engine = zaad.full frozen P1`,
+`mode_run = canonical_p1`, `planner_owner = PROTECTION_RECOVERY`, `solver_status = RETAIN_INCUMBENT`,
+`approval_required = true`, `executable_purchase_order = false` (25 s); `/fmcg/plan?mode=canonical` the
+same (36 s). The only frontend callers of the old engine are the explicit `/zaad/legacy` page and the
+`(legacy)`-labelled modes of the `/fmcg` selector, which answer 410 in production; no normal route falls
+back silently. Fly logs after the deploy: one health-check miss inside the start-up grace, the old
+process's cancellation traceback, then "Application startup complete"; no 5xx during the smoke.
+
+**PRODUCTION P0/P1 PLUMBING — VERIFIED.**
+
 ## Exact next action
 
 None for the release line. The next brief is P2, branched from `main`; keep `ZAAD_LEGACY_PLANNERS`
