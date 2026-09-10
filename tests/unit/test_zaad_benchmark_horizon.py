@@ -17,7 +17,6 @@ from zaad.full.contracts import Request
 from zaad.full.evaluation import curve, endpoint, long_truth
 from zaad.full.replay import replay
 from zaad.full.terminal import continuation_value
-from zaad.full.worlds import draw
 
 PRODUCT = {k: Request.model_fields[k].default for k in ("stratified_scenarios", "timing_tiebreak", "analytic_shortage")}
 

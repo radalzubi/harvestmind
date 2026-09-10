@@ -208,7 +208,7 @@ def order_waterfall(req: Request, fits: dict, protection: list[dict], solution: 
             periods_extended = remainder / rate
             cadence = max(1, next_feasible - arrival)
             orders_avoided = periods_extended / cadence
-            holding = next(l.holding_per_value_period for l in req.locations if l.id == src.destination)
+            holding = next(loc.holding_per_value_period for loc in req.locations if loc.id == src.destination)
             rate_per_period = holding * next(k.asset_value for k in req.skus if k.id == src.sku) + req.liquidity.cost_of_capital_per_period * price
             extra_carry = remainder * rate_per_period * periods_extended / 2.
             justified = orders_avoided * per_order >= extra_carry

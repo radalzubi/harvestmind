@@ -142,9 +142,11 @@ def _service(rows: list[dict], service_id: str) -> float | None:
 
 def _state(name: str, reasons: list[str], above_lean: float, demand: float, incumbent_ok: bool | None,
            joint_required: bool = False, deficit: float = 0.) -> dict:
-    minimum = list(MINIMUM_SAFE[name]); optional = list(OPTIONAL[name])
+    minimum = list(MINIMUM_SAFE[name])
+    optional = list(OPTIONAL[name])
     if joint_required and "joint_recovery" not in minimum:
-        minimum.append("joint_recovery"); optional = [c for c in optional if c != "joint_recovery"]
+        minimum.append("joint_recovery")
+        optional = [c for c in optional if c != "joint_recovery"]
     return {"state": name, "reasons": reasons,
             "minimum_safe_candidates": minimum, "optional_candidates": optional,
             "incumbent_service_deficit": deficit, "joint_recovery_required_by_rule": joint_required,

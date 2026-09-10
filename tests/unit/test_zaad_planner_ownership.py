@@ -193,7 +193,8 @@ def test_12_p1_candidates_are_bit_identical_to_the_existing_forced_classes(p_req
         S.MINIMUM_SAFE["NO_ACTION"] = ("deterministic_network", "stochastic_network")
         rep_ref, t_ref = _traced(req.model_copy(update={"planner_ownership": False}))
     finally:
-        S.MINIMUM_SAFE.clear(); S.MINIMUM_SAFE.update(saved)
+        S.MINIMUM_SAFE.clear()
+        S.MINIMUM_SAFE.update(saved)
     for name in ("deterministic_network", "stochastic_network", "incumbent", "base_stock"):
         assert t["candidates"][name]["status"] == t_ref["candidates"][name]["status"]
         assert t["candidates"][name]["purchases"] == t_ref["candidates"][name]["purchases"]

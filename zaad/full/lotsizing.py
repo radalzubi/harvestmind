@@ -21,7 +21,7 @@ import math
 from collections import defaultdict
 
 from zaad.full.contracts import Request
-from zaad.full.model import pallet_units, supplier_orders
+from zaad.full.model import pallet_units
 
 
 def _tier_charge(st, pallets: float) -> float:
@@ -38,8 +38,7 @@ def reference_lots(req: Request, fits: dict) -> dict[str, dict]:
     unit of that lot. Lot = min(load limit, max(EOQ on the supplier's fixed costs, minimum order
     quantities, minimum order value, one period of demand)); premium = (fixed order cost + shipment
     tariff at that load + receiving) / lot. Suppliers with no order-level economics get premium 0."""
-    skus = {s.id: s for s in req.skus}
-    locs = {l.id: l for l in req.locations}
+    locs = {loc.id: loc for loc in req.locations}
     terms = {x.id: x for x in req.terms}
     mu: dict[tuple[str, str], float] = defaultdict(float)
     for s in req.services:
@@ -100,7 +99,7 @@ def terminal_terms(req: Request, fits: dict) -> dict[tuple[str, str], tuple[floa
     unit: landed cost less salvage less the carrying and cost of capital over half the lot's consumption
     time, floored at zero. Above one lot the residual earns salvage, as before."""
     skus = {s.id: s for s in req.skus}
-    locs = {l.id: l for l in req.locations}
+    locs = {loc.id: loc for loc in req.locations}
     lots = reference_lots(req, fits)
     landed = landed_unit_costs(req, fits)
     mu: dict[tuple[str, str], float] = defaultdict(float)

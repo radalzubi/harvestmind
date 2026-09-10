@@ -75,10 +75,10 @@ def choose(req: Request, method: str) -> Solution:
                                      for p in report["protection"]]
         solution.procurement_timing = report.get("procurement_timing")
         solution.capital = report.get("capital")
-        solution.inherited_on_hand = None      # filled by replay, which alone knows the provenance
+        solution.inherited_on_hand = None      # type: ignore[attr-defined]  # filled by replay, which alone knows the provenance
         solution.solve_quality = report.get("solve_quality")
         orch = report.get("orchestration") or {}
-        solution.orchestration = {k: orch.get(k) for k in ("state", "planner_owner", "p1_classes_added", "candidate_classes_requested",
+        solution.orchestration = {k: orch.get(k) for k in ("state", "planner_owner", "p1_classes_added", "candidate_classes_requested",   # type: ignore[attr-defined]
                                                             "candidates_built", "milps_attempted", "required_candidate_starved")}
         return solution
     deterministic = method in {"base_stock", "order_up_to", "deterministic", "frozen_forecast"}

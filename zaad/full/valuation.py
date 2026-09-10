@@ -26,7 +26,7 @@ import numpy as np
 
 from zaad.full.contracts import Request
 from zaad.full.model import Solution
-from zaad.full.settlement import PhysicalViolation, settle
+from zaad.full.settlement import settle
 from zaad.full.shortage import demand_atoms
 from zaad.full.worlds import draw
 
@@ -124,7 +124,8 @@ def common_candidate_value(req: Request, solution: Solution, fits: dict, grid: f
         e_short, e_inv, p_short = expected_inventory_path(opening[sku, loc], arr, demand, grid)
         # shortage is charged at each service's declared penalty; with several services at one
         # location the units are split by mean demand
-        weights = np.array([fits[s.id]["mean"] for s in services]); weights = weights / max(weights.sum(), 1e-12)
+        weights = np.array([fits[s.id]["mean"] for s in services])
+        weights = weights / max(weights.sum(), 1e-12)
         penalty = float(sum(w * (s.selling_price + s.sla_per_unmet) for w, s in zip(weights, services)))
         exp_short_units += float(e_short.sum())
         exp_short_cost += penalty * float(e_short.sum())

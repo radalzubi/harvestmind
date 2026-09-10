@@ -65,4 +65,4 @@ def loss_envelope(cuts: list[tuple[float, float, float]], available: float) -> f
     """max over the cuts, the value the model's epigraph variable takes."""
     if not cuts:
         return 0.
-    return max(0., max(l + s * (available - a) for a, l, s in cuts))
+    return max(0., max(intercept + slope * (available - a) for a, intercept, slope in cuts))

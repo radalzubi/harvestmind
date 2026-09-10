@@ -138,7 +138,7 @@ def evaluate(req, solution, worlds, terminal: dict[str, float] | None = None, fi
             result = settle(req, solution, world, future_guidance=True)
             if terminal:
                 from zaad.full.terminal import continuation_value
-                adjustment = continuation_value(req, result["end_stock"], result["pending"], fits, window_end=req.horizon, landed=terminal)["adjustment"]
+                adjustment = continuation_value(req, result["end_stock"], result["pending"], fits if fits is not None else {}, window_end=req.horizon, landed=terminal)["adjustment"]
                 # carried in the row's ledger too (INVENTORY_VALUE_CHANGE), so components still reconcile
                 result = {**result, "economic_cost": result["economic_cost"] + adjustment, "terminal_adjustment": adjustment,
                           "ledger": {**result["ledger"], "terminal_continuation": adjustment}}
@@ -681,7 +681,7 @@ def plan(req: Request) -> dict:
     p1_added: list[str] = []
     p1_terminal: dict[str, float] | None = None
     if ownership["owner"] == PURCHASING_ECONOMICS:
-        required, optional, p1_added = purchasing_candidates(screen_result["state"], required, optional)
+        required, optional, p1_added = purchasing_candidates(str(screen_result["state"]), required, optional)
         if req.lot_terminal_valuation:
             # Lot-sizing terminal valuation (P1 benchmark / horizon closure pass): end-of-plan stock and
             # committed arrivals are worth the landed purchase they avoid, less carrying, never below
@@ -1135,6 +1135,13 @@ def plan(req: Request) -> dict:
             elif reliability and not incumbent_meets:
                 reasons.append("Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the economic downside tolerance (service-first acceptance).")
 
+    # The declared-stress confirmation's per-service floor is the incumbent's own level on every review.
+    # Rule B-F of the final-blocker pass (`P1_B_FLOOR_PREREGISTRATION.md`: the target floor on a
+    # P1-owned identity-stress review for a benefit-established candidate) was implemented, measured and
+    # REJECTED: it closed B (+2.66% -> +1.60%) with every declared-benchmark control unchanged, but on the
+    # legacy record it admitted one ex-ante-optimistic lean plan on the volatile fixture Q that stocked
+    # out the next week (service .980 -> .965 against a .98 target), the control the pre-registration
+    # named. The floor is ordinary service protection there, not only disruption protection.
     for i, stress in enumerate(req.stresses):
         adversaries = draw(req_draw, req.seed + 30000 + i, req.scenarios, stress)
         before = evaluate(req, incumbent, adversaries, terminal=p1_terminal, fits=fits) if incumbent.usable_plan else []

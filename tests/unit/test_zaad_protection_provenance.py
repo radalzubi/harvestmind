@@ -2,14 +2,11 @@
 (`P1_TWO_BLOCKER_PREREGISTRATION.md`, rules T-A and T-B)."""
 from __future__ import annotations
 
-import pytest
 
 from scripts.p1_fixtures import build
 from zaad.full.contracts import Request, Stress
-from zaad.full.evaluation import long_truth
 from zaad.full.ownership import PROTECTION_RECOVERY, PURCHASING_ECONOMICS, planner_owner
 from zaad.full.planner import plan, protection_profile, supply_profiles
-from zaad.full.replay import replay
 from zaad.full.worlds import forecast_all
 
 PRODUCT = {k: Request.model_fields[k].default for k in ("stratified_scenarios", "timing_tiebreak", "analytic_shortage")}

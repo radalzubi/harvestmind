@@ -41,7 +41,7 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
     policy actually incurred (benchmark pass J correction 1). Carrying stays on the asset value, as
     the ledger charges it. Without `landed` the avoided purchase is `asset_value`, as before."""
     skus = {s.id: s for s in req.skus}
-    locs = {l.id: l for l in req.locations}
+    locs = {loc.id: loc for loc in req.locations}
     mu: dict[tuple[str, str], float] = {}
     for s in req.services:
         mu[s.sku, s.location] = mu.get((s.sku, s.location), 0.) + float(fits[s.id]["mean"])
