@@ -1,9 +1,8 @@
 # ZAAD post-P1 integration checklist
 
-Operational companion to `docs/ZAAD_REPOSITORY_CONSOLIDATION_PLAN.md`. Updated 2026-09-10 at the end
-of the canonical integration pass: done items are ticked with their evidence; the remaining items need
-the owner's authorization (push, PR, closures, Vercel). Run from the `harvestmind-p1` worktree on
-`zaad/canonical`.
+Operational companion to `docs/ZAAD_REPOSITORY_CONSOLIDATION_PLAN.md`. Updated 2026-09-10 at the close
+of the release line: every step through Step 7 is done with its evidence (PR #40 merged as `f7ff600`,
+`main` verified, superseded PRs closed, Vercel on `main`). Only Step 8 (Network Twin, deferred) remains.
 
 ## Done in this pass
 
@@ -14,7 +13,7 @@ the owner's authorization (push, PR, closures, Vercel). Run from the `harvestmin
 - [x] Step 5: `main` merged (`0fbd8ee`); web conflicts resolved to the site lineage
 - [x] Customer-data path and canonical API (`073d702`); CI, security, hygiene, ESLint (`d7f76cf`)
 - [x] Validation on the canonical tree: pytest 1,810 passed / 2 skipped; ruff canonical scope clean; mypy clean; bandit 0 medium; pip-audit clean; frontend typecheck / lint / build / audit clean; `scripts/zaad_canonical_regression.py` PASS; invariants 720 / 720 identical to the freeze; workspace smoke OK
-- [ ] Docker image smoke: defined in CI, not runnable on this machine (no Docker); passes on the first CI run or is fixed there
+- [x] Docker image smoke: passed on GitHub (PR #40 runs 2-4 and the `main` run 34474090176): image builds, `/health` `zaad-api` with `auth_enforced` true in prod, anonymous jobs 401, legacy demo closed, compose validated
 
 ## Step 1: publish the frozen branches and the canonical branch — DONE 2026-09-10 (authorized)
 
@@ -44,14 +43,14 @@ gh pr create --base main --head zaad/canonical \
 gh pr checks --watch          # every job must be green; the Docker smoke runs here for the first time
 ```
 
-- [ ] opened from `zaad/canonical` to `main` with `docs/ZAAD_CANONICAL_PR.md` as the body
-- [ ] body links `docs/ZAAD_RELEASE_LEDGER.md` (frozen SHAs, integrity evidence, CI table, documented debt)
-- [ ] CI green; review; merge without squash (the freeze SHAs must remain reachable from `main`)
+- [x] opened from `zaad/canonical` to `main` with `docs/ZAAD_CANONICAL_PR.md` as the body (PR #40)
+- [x] body links `docs/ZAAD_RELEASE_LEDGER.md` (frozen SHAs, integrity evidence, CI table, documented debt)
+- [x] CI green on head `9a8d266` (run 34462761422, every job); merged without squash as `f7ff600`; `2e30721`, `f7e1e62`, `12db66c` reachable from `main`; `main` run 34474090176 green
 
-## Step 7: after the canonical PR merges (needs explicit authorization)
+## Step 7: after the canonical PR merges — DONE 2026-09-10 (authorized)
 
-- [ ] Vercel: point production at `main` (or keep `adaptive/decision-engine` until the next site change); record the choice in the ledger
-- [ ] close as superseded (heads verified as ancestors of the canonical branch):
+- [x] Vercel: project `zaad` production branch `adaptive/decision-engine` -> `main` (dashboard, Environments -> Production -> Branch Tracking); production deployment of `f7ff600` READY on `zaadsupply.com`; recorded in the ledger
+- [x] closed as superseded 2026-09-10 (heads re-verified as ancestors of `main`; branches kept):
 
 ```bash
 for n in 16 17 18 20 21 23 24 25 30 31 33 35 36 37 38; do
@@ -60,8 +59,8 @@ done
 gh pr close 32 --comment "Historical negative result, kept as evidence: the untouched holdout3 evaluation (HOLDOUT FAILED) that started the v4 cycle. Its head is an ancestor of the canonical ZAAD lineage now on main; nothing here is merged as a feature. Branch and evidence kept."
 ```
 
-- [ ] close #19 only after Vercel no longer tracks its branch
-- [ ] set `ZAAD_LEGACY_PLANNERS` explicitly on every deployed environment (unset = off outside dev)
+- [x] #19 closed after the Vercel repoint; #39 left open (deferred); Dependabot #41-#51 untouched, out of scope
+- [ ] set `ZAAD_LEGACY_PLANNERS` explicitly on every deployed API environment (unset = off outside dev); the API is deployed outside Vercel and outside this pass
 
 ## Step 8: Network Twin (deferred)
 
