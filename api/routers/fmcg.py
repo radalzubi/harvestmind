@@ -462,6 +462,8 @@ def plan(
     seed: int = Query(0, ge=0),
     min_rel_improvement: float = Query(0.03, ge=0.0, le=0.5),
     diagnostics: bool = Query(False, description="also compute VSS/EVPI (20+ extra solves)"),
+    skus: str | None = Query(None, description="canonical mode: comma-separated SKU subset to plan (default: every SKU with history)"),
+    max_solve_seconds: float = Query(15., gt=0, le=120, description="canonical mode: the frozen engine's per-candidate solve budget"),
     conn=Depends(get_conn),
     authed: str | None = Depends(require_operator),
 ):
@@ -480,7 +482,9 @@ def plan(
         from zaad.full.planner import plan as frozen_plan
         from zaad.full.workspace import WorkspaceError, build_request, to_purchase_plan
         try:
-            req, build = build_request(conn, authed or "workspace", horizon=horizon_weeks, service_target=service_level, seed=seed or 41001)
+            subset = [x.strip() for x in skus.split(",") if x.strip()] if skus else None
+            req, build = build_request(conn, authed or "workspace", horizon=horizon_weeks, service_target=service_level, seed=seed or 41001,
+                                       skus=subset, max_solve_seconds=max_solve_seconds)
         except WorkspaceError as exc:
             raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
         report = frozen_plan(req)

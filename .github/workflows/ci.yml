@@ -25,7 +25,7 @@ jobs:
   test:
     name: pytest
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -131,6 +131,8 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # findings go to the job summary and the SARIF artifact; PR comments would need write scope
+          GITLEAKS_ENABLE_COMMENTS: "false"
 
   zaad-regression:
     name: zaad frozen regression

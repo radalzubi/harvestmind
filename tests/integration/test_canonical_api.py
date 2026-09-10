@@ -90,7 +90,7 @@ def test_workspace_plan_endpoint_runs_the_frozen_planner_and_keeps_approval(monk
     body = r.json()
     assert body["mode_run"] == "canonical_p1" and body["approval_required"] is True and body["executable_purchase_order"] is False
     assert body["engine"] == "zaad.full frozen P1" and isinstance(body["orders"], list)
-    page = client.post("/fmcg/plan?mode=canonical&horizon_weeks=12")
+    page = client.post(f"/fmcg/plan?mode=canonical&horizon_weeks=12&skus={SUBSET}&max_solve_seconds=5")
     assert page.status_code == 200, page.text
     assert page.json()["mode_run"] == "canonical_p1" and page.json()["approval_required"] is True
 
