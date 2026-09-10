@@ -21,6 +21,21 @@ from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
 
 
+# P2 performance pass: exact symmetry elimination of the FEFO indicators (see
+# docs/zaad_full/evidence/p2/perf/P2_PERF_DIAGNOSIS.md). A cohort that outlives the horizon and every
+# transfer arrival the plan can schedule is economically interchangeable with every other such cohort
+# of its SKU: no disposal, the same terminal and continuation value, the same lane eligibility. The
+# FEFO rule between two interchangeable cohorts constrains only which label is consumed, never a cost
+# or a quantity, so the indicator and its two rows are omitted (the FEFO rule against every cohort that
+# CAN matter inside the window is kept exactly). Objective and executable decisions are unchanged; the
+# settlement applies FEFO itself. It applies to network requests (a declared transfer lane): the
+# frozen single-node P1 formulation is kept verbatim so its recorded decision path is reproduced
+# bit for bit (on the P1 fixture T the elimination is objective-exact to 1e-15 but breaks a tie
+# between two equal-cost source splits differently; a frozen path is not re-tuned for speed it does
+# not need). False restores the frozen formulation everywhere (diagnostic / equivalence runs).
+FEFO_SYMMETRY_ELIMINATION = True
+
+
 class Linear:
     def __init__(self):
         self.names, self.cost, self.lower, self.upper, self.integer = [], [], [], [], []
@@ -605,17 +620,19 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     for service in req.services:
         for sku, _, _ in compatible(req, service):
             pairs.add((sku, service.location))
+    latest_due: dict[str, int] = defaultdict(int)   # latest transfer arrival the plan can schedule, per SKU
     for arc in req.transfers:
         for t in range(H):
             ids = []
+            # Receiving calendar, rather than silently unloading on closed days.
+            when = req.as_of + timedelta(days=(t + arc.lead_periods) * req.period_days)
+            actual = next_open(when, calendars[locs[arc.destination].receiving_calendar])
+            due = math.ceil((actual - req.as_of).total_seconds() / (86400 * req.period_days))
+            latest_due[arc.sku] = max(latest_due[arc.sku], due)
             for expiry in sorted(cohorts[arc.sku]):
                 if expiry <= t + arc.lead_periods:
                     continue
                 cap = arc.capacity if arc.approved and "transfers" not in disabled else 0.
-                # Receiving calendar, rather than silently unloading on closed days.
-                when = req.as_of + timedelta(days=(t + arc.lead_periods) * req.period_days)
-                actual = next_open(when, calendars[locs[arc.destination].receiving_calendar])
-                due = math.ceil((actual - req.as_of).total_seconds() / (86400 * req.period_days))
                 if due >= expiry:
                     cap = 0.
                 q = m.var(("transfer", arc.id, expiry, t), upper=cap)
@@ -721,9 +738,12 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         cap = locs[service.location].capacity_volume / skus[sku].volume
                         m.row({**{i: 1 for i in stocks}, empty: cap}, upper=cap)
                         # FEFO: consumption of younger cohorts requires older remaining stock zero.
+                        # An older cohort beyond the window (outlives the horizon and every schedulable
+                        # transfer arrival) is interchangeable with the younger one: omitted exactly.
+                        window = max(H, latest_due[sku]) if (FEFO_SYMMETRY_ELIMINATION and req.transfers) else math.inf
                         for expiry, q in consumptions:
                             older = [inv[sku, service.location, e, t, w] for e in cohorts[sku]
-                                     if t < e < expiry and (sku, service.location, e, t, w) in inv]
+                                     if t < e < expiry and e <= window and (sku, service.location, e, t, w) in inv]
                             if older:
                                 active = m.var(("fefo", sku, service.id, expiry, t, w), upper=1, integer=True)
                                 m.row({q: 1, active: -d}, upper=0)
