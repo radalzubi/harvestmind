@@ -30,14 +30,29 @@ posture. Never force-push.
 
 ## Step 6: the canonical pull request
 
-- [ ] open "ZAAD canonical lineage: P0 and P1 frozen, site and main merged, customer-data path" from `zaad/canonical` to `main`
+```bash
+gh pr create --base main --head zaad/canonical \
+  --title "ZAAD canonical lineage: P0 and P1 frozen, site and main merged, customer-data path" \
+  --body-file docs/ZAAD_CANONICAL_PR.md
+gh pr checks --watch          # every job must be green; the Docker smoke runs here for the first time
+```
+
+- [ ] opened from `zaad/canonical` to `main` with `docs/ZAAD_CANONICAL_PR.md` as the body
 - [ ] body links `docs/ZAAD_RELEASE_LEDGER.md` (frozen SHAs, integrity evidence, CI table, documented debt)
 - [ ] CI green; review; merge without squash (the freeze SHAs must remain reachable from `main`)
 
 ## Step 7: after the canonical PR merges (needs explicit authorization)
 
 - [ ] Vercel: point production at `main` (or keep `adaptive/decision-engine` until the next site change); record the choice in the ledger
-- [ ] close as superseded with a note linking the ledger: #16, #17, #18, #20, #21, #23, #24, #25, #30, #31, #33, #35, #36, #37, #38; close #32 as a historical negative result (evidence retained)
+- [ ] close as superseded (heads verified as ancestors of the canonical branch):
+
+```bash
+for n in 16 17 18 20 21 23 24 25 30 31 33 35 36 37 38; do
+  gh pr close "$n" --comment "Superseded: this PR's head is an ancestor of the canonical ZAAD lineage now on main (see docs/ZAAD_RELEASE_LEDGER.md). Branch and evidence kept."
+done
+gh pr close 32 --comment "Historical negative result, kept as evidence: the untouched holdout3 evaluation (HOLDOUT FAILED) that started the v4 cycle. Its head is an ancestor of the canonical ZAAD lineage now on main; nothing here is merged as a feature. Branch and evidence kept."
+```
+
 - [ ] close #19 only after Vercel no longer tracks its branch
 - [ ] set `ZAAD_LEGACY_PLANNERS` explicitly on every deployed environment (unset = off outside dev)
 

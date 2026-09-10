@@ -120,6 +120,20 @@ No PR was merged, closed or deleted. No branch was deleted. Nothing was pushed.
 Validation7 and Validation8 (not present as directories), `docs/zaad_full/evidence/v4/holdout4` (frozen,
 unrun), PR #39 / `claude/zaad-network-twin-v1`, Vercel, every other worktree. P2 NOT STARTED.
 
+
+## Release gate status (2026-09-10, end of the release-engineering pass)
+
+* Preflight at `3bbb07c`: branch `zaad/canonical`, clean tree, `12db66c` and `2e30721` ancestors;
+  frozen regression re-run PASS (B, T, Q, A twelve-review identity; P0 cell 15 identity).
+* Remote: `origin` has no `zaad/canonical`, no tags, and `claude/zaad-industry-standard-v8` at
+  `e8e2398` (nine commits behind the P0 freeze); `main` at `865b701`, fully contained in the canonical
+  branch (176 commits ahead, 0 behind). The token has push and workflow scope; branch protection is not
+  available on the private plan.
+* **Push authorization was not explicit in the session, so nothing was pushed, no PR was opened, no PR
+  was closed, Vercel was not touched.** The exact commands are in
+  `docs/ZAAD_POST_P1_INTEGRATION_CHECKLIST.md`; the PR body is `docs/ZAAD_CANONICAL_PR.md`.
+* Every open PR head except #39 is an ancestor of `zaad/canonical` (re-verified).
+
 ## Exact next action
 
 Authorize the pushes in `docs/ZAAD_POST_P1_INTEGRATION_CHECKLIST.md` (steps 1 and 6): the two frozen
