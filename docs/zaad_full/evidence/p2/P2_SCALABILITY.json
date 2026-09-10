@@ -1,0 +1,119 @@
+[
+ {
+  "branches": 2,
+  "locations": 3,
+  "lanes": 2,
+  "services": 2,
+  "deterministic": {
+   "status": "OPTIMAL",
+   "variables": 1464,
+   "constraints": 1260,
+   "solve_seconds": 0.0,
+   "wall_seconds": 0.0,
+   "gap": 0.0,
+   "worlds": 1
+  },
+  "stochastic_3_worlds": {
+   "status": "OPTIMAL",
+   "variables": 3744,
+   "constraints": 3678,
+   "solve_seconds": 1.1,
+   "wall_seconds": 1.1,
+   "gap": 0.0,
+   "worlds": 3
+  },
+  "plan_network": {
+   "status": "RETAIN_INCUMBENT",
+   "state": "NO_ACTION",
+   "owner": "PURCHASING_ECONOMICS",
+   "milps": 4,
+   "solver_seconds": 9.2,
+   "wall_seconds": 9.4,
+   "time_limited": 0,
+   "no_feasible": 0,
+   "candidates": [
+    "deterministic_network",
+    "stochastic_network"
+   ]
+  },
+  "max_rss_mb": 217.0
+ },
+ {
+  "branches": 5,
+  "locations": 6,
+  "lanes": 5,
+  "services": 5,
+  "deterministic": {
+   "status": "OPTIMAL",
+   "variables": 3372,
+   "constraints": 2808,
+   "solve_seconds": 0.1,
+   "wall_seconds": 0.1,
+   "gap": 0.0,
+   "worlds": 1
+  },
+  "stochastic_3_worlds": {
+   "status": "OPTIMAL",
+   "variables": 8532,
+   "constraints": 8244,
+   "solve_seconds": 6.6,
+   "wall_seconds": 6.6,
+   "gap": 0.0,
+   "worlds": 3
+  },
+  "plan_network": {
+   "status": "RETAIN_INCUMBENT",
+   "state": "NO_ACTION",
+   "owner": "PURCHASING_ECONOMICS",
+   "milps": 4,
+   "solver_seconds": 11.0,
+   "wall_seconds": 11.8,
+   "time_limited": 0,
+   "no_feasible": 0,
+   "candidates": [
+    "deterministic_network",
+    "stochastic_network"
+   ]
+  },
+  "max_rss_mb": 290.0
+ },
+ {
+  "branches": 8,
+  "locations": 9,
+  "lanes": 8,
+  "services": 8,
+  "deterministic": {
+   "status": "OPTIMAL",
+   "variables": 5280,
+   "constraints": 4356,
+   "solve_seconds": 0.1,
+   "wall_seconds": 0.1,
+   "gap": 1.896000011958934e-16,
+   "worlds": 1
+  },
+  "stochastic_3_worlds": {
+   "status": "OPTIMAL",
+   "variables": 13320,
+   "constraints": 12810,
+   "solve_seconds": 32.5,
+   "wall_seconds": 32.5,
+   "gap": 0.0,
+   "worlds": 3
+  },
+  "plan_network": {
+   "status": "PENDING_REVIEW",
+   "state": "NO_ACTION",
+   "owner": "PURCHASING_ECONOMICS",
+   "milps": 4,
+   "solver_seconds": 66.5,
+   "wall_seconds": 68.3,
+   "time_limited": 0,
+   "no_feasible": 0,
+   "candidates": [
+    "deterministic_network",
+    "stochastic_network"
+   ]
+  },
+  "max_rss_mb": 409.0
+ }
+]

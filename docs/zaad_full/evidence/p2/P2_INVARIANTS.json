@@ -1,0 +1,236 @@
+{
+ "01_conservation": {
+  "pass": true,
+  "settlement_residual": 5.684341886080801e-13,
+  "max_flow_row_residual": 2.842170943040401e-14,
+  "transfers_units": 2205.0769230769233,
+  "principle": "a transfer moves units, never creates them: opening + receipts - served - out - expired = closing at every location",
+  "seconds": 0.1
+ },
+ "02_no_double_count": {
+  "pass": true,
+  "period_0_outbound": 100.0,
+  "central_usable": 100.0,
+  "settlement_refuses_200_from_100": true,
+  "principle": "one unit protects one place: both branches cannot draw the same central unit",
+  "seconds": 0.0
+ },
+ "03_unreachable_inventory": {
+  "pass": true,
+  "served_in_periods_0_to_3": 0.0,
+  "demand_in_periods_0_to_3": 801.8461538461538,
+  "central_units": 1000.0,
+  "lane_lead": 4,
+  "principle": "stock four periods away serves nothing in the next four periods, in the plan and in the settlement",
+  "seconds": 0.0
+ },
+ "04_05_transfer_cost_monotone": {
+  "pass": true,
+  "transfer_units_by_lane_cost": {
+   "0.0": 2205.0769230769233,
+   "0.2": 2205.0769230769233,
+   "5.0": 2205.0769230769233
+  },
+  "principle": "all else equal, a cheaper lane is used weakly more and a dearer lane weakly less",
+  "seconds": 0.1
+ },
+ "06_shorter_lead_more_useful": {
+  "pass": true,
+  "projected_cost_by_lead": {
+   "1": 12631.413943786147,
+   "3": 15230.95945893637
+  },
+  "principle": "reachable pooled stock is weakly more useful when the lane is shorter",
+  "seconds": 0.1
+ },
+ "07_capacity": {
+  "pass": true,
+  "peak_lane_period_units": 60.0,
+  "capacity": 60.0,
+  "settlement_refuses_61": true,
+  "principle": "transfers never exceed lane capacity",
+  "seconds": 0.1
+ },
+ "08_pack_rounding": {
+  "pass": true,
+  "period_units": {
+   "lane_north@0": 96.0,
+   "lane_north@1": 187.53846153846155,
+   "lane_north@3": 98.38461538461539,
+   "lane_north@4": 98.38461538461539,
+   "lane_north@5": 98.38461538461539,
+   "lane_north@6": 98.38461538461539,
+   "lane_north@7": 98.38461538461539,
+   "lane_north@8": 98.38461538461539,
+   "lane_north@9": 98.38461538461539,
+   "lane_north@10": 98.38461538461539,
+   "lane_south@0": 96.0,
+   "lane_south@1": 100.23076923076924,
+   "lane_south@2": 102.07692307692308,
+   "lane_south@3": 102.07692307692308,
+   "lane_south@4": 102.07692307692308,
+   "lane_south@5": 102.07692307692308,
+   "lane_south@6": 102.07692307692308,
+   "lane_south@7": 102.07692307692308,
+   "lane_south@8": 102.07692307692308,
+   "lane_south@9": 102.07692307692308,
+   "lane_south@10": 102.07692307692308
+  },
+  "settlement_refuses_30_of_24s": true,
+  "principle": "transfer quantities stay legal packs",
+  "seconds": 0.0
+ },
+ "09_shared_central_inventory": {
+  "pass": true,
+  "period_0_allocations": 150.0,
+  "central_usable": 150.0,
+  "principle": "total allocations cannot exceed the stock the origin holds",
+  "seconds": 0.0
+ },
+ "10_supply_cap": {
+  "pass": true,
+  "peak_period_purchases": 90.0,
+  "shared_capacity": 90.0,
+  "settlement_refuses_120": true,
+  "principle": "a shared supplier capacity cannot be allocated twice across destinations",
+  "seconds": 0.0
+ },
+ "11_single_node_identity": {
+  "pass": true,
+  "status": "PENDING_REVIEW",
+  "selected": "deterministic_network",
+  "principle": "one node, no lane: the P2 fields change nothing; the canonical regression proves the frozen fixtures separately",
+  "seconds": 1.0
+ },
+ "12_zero_lane_identity": {
+  "pass": true,
+  "transfers": 0,
+  "service": {
+   "svc_north": 0.0,
+   "svc_south": 0.0
+  },
+  "central_units_stranded": 500.0,
+  "principle": "disconnected nodes cannot exchange inventory: central stock serves nobody",
+  "seconds": 0.0
+ },
+ "13_14_pooling_and_correlation": {
+  "pass": true,
+  "worlds": {
+   "independent": {
+    "pooled_p95": 463.9216388873129,
+    "sum_of_branch_p95": 490.9681955453657,
+    "ratio": 0.9449117948912973
+   },
+   "correlated": {
+    "pooled_p95": 496.36799460440375,
+    "sum_of_branch_p95": 497.49290514591996,
+    "ratio": 0.9977388410369666
+   }
+  },
+  "worlds_pass": {
+   "13": true,
+   "14": true
+  },
+  "model": {
+   "independent": {
+    "pooled_status": "OPTIMAL",
+    "isolated_status": "OPTIMAL",
+    "pooled_inventory_value": 1317.984936752929,
+    "isolated_inventory_value": 1540.7251530020274
+   },
+   "correlated": {
+    "pooled_status": "OPTIMAL",
+    "isolated_status": "OPTIMAL",
+    "pooled_inventory_value": 1602.0081449934407,
+    "isolated_inventory_value": 1962.0040707638939
+   }
+  },
+  "model_pass": {
+   "13_pooled_leq_isolated": true,
+   "14_pooled_inventory_rises_with_correlation": true
+  },
+  "principle": "13: pooling can reduce the inventory needed for the same service under independent demand; 14: the scenario worlds and the solve invent no diversification under perfect correlation",
+  "seconds": 19.9
+ },
+ "15_no_action": {
+  "pass": true,
+  "status": "RETAIN_INCUMBENT",
+  "state": "NO_ACTION",
+  "selected": "operator_rule:network:rop",
+  "period_0": {
+   "purchases_period_0": 0,
+   "purchase_lines": 9,
+   "transfers_period_0": 0,
+   "transfer_lines": 23,
+   "no_action": true
+  },
+  "principle": "an efficient state produces no unnecessary transfer or purchase",
+  "seconds": 7.8
+ },
+ "16_service_not_overridden": {
+  "pass": true,
+  "projected_service": {
+   "svc_north": 1.0,
+   "svc_south": 1.0
+  },
+  "targets": {
+   "svc_north": 0.99,
+   "svc_south": 0.95
+  },
+  "principle": "a free lane never buys one branch's service with another's: every floor holds in the solve",
+  "seconds": 0.0
+ },
+ "17_allocation": {
+  "pass": true,
+  "north_units": 80.0,
+  "south_units": 0.0,
+  "explanation": "central holds 80 of A against requests of 401. north receives 80 because its customers carry the higher priority (3); south receives 0.",
+  "status": "RETAIN_INCUMBENT",
+  "principle": "scarce stock goes first to the higher-priority branch and the reason is stated",
+  "seconds": 5.6
+ },
+ "18_recovery": {
+  "pass": true,
+  "cells": [
+   {
+    "seed": 41001,
+    "early_transfers": 226.54632770689315,
+    "late_transfers": 399.063520435244,
+    "late_demand": 410.7406284324226,
+    "reverse": 0.0
+   },
+   {
+    "seed": 41002,
+    "early_transfers": 226.54632770689315,
+    "late_transfers": 380.6091178633275,
+    "late_demand": 407.9606798689911,
+    "reverse": 0.0
+   }
+  ],
+  "principle": "after the imbalance is recovered, transfers settle to what demand needs and never reverse",
+  "seconds": 0.0
+ },
+ "19_terminal_edge_and_loops": {
+  "pass": true,
+  "last_period_transfers": 801.8461538461542,
+  "max_mid_period_transfers": 688.692307692308,
+  "demand_rate": 200.46153846153845,
+  "reverse_pair_forward": 880.6153846153846,
+  "reverse_pair_back": 0,
+  "principle": "no horizon-edge transfer spike and no loop through a priced reverse lane",
+  "seconds": 0.3
+ },
+ "20_accounting": {
+  "pass": true,
+  "buckets": {
+   "node": 11637.309663394486,
+   "lane": 480.21402160319013,
+   "upstream": 99.99999999999999,
+   "network": 1828.2178464788994
+  },
+  "economic_cost": 14045.741531476577,
+  "worst_check": 3.183231456205249e-12,
+  "principle": "node + lane + upstream + network economics reconcile to the settlement total",
+  "seconds": 0.3
+ }
+}

@@ -62,6 +62,7 @@ ARMS = {
     "router_tAonly": {},
     "router_final_l": {},
     "p2_meio": {},          # P2 freeze gate: product defaults on the P2 code; every P0 cell must stay decision-identical to router_cycle
+    "p2_meio_rerun": {},    # P2 freeze gate: the wall-clock-limited cells (21, 108) rerun alone on a quiet machine
     "router_cycle": {},     # P1 final closure: cycle continuation + rule P1-S; every P0 review is protection-owned, so the cells must stay decision-identical   # pass L: final code (B-F reverted, mechanical lint / typing fixes only)    # two-blocker closure: final code, rule T-A only (T-B rejected)   # two-blocker closure: cell 108 alone after a hedged-candidate time-out at r5 in the tA arm      # two-blocker closure: after rule T-A (flag not an ownership reason) and T-B (target floor on P1-owned reviews)   # pass J: final code (ledger key on P1 evaluation rows); P0 cells must stay decision-identical   # pass J: cell 21 alone with the lot valuation off (variability independent of the change?)   # pass J: cell 21 rerun alone after a r5 quantity difference in the time-limited hedged solve     # pass J: after the lot-sizing terminal valuation (P1-owned reviews only; P0 cells must stay decision-identical)   # pass J: after the opt-in rolling replay mode (legacy path must be decision-identical)   # same code as router: run-to-run variability of the time-limited solves
 }
 
