@@ -63,6 +63,7 @@ def test_principal_mismatch_refused_in_dev(client, payload):
 
 def test_production_requires_auth_even_with_false_override(client, payload, monkeypatch):
     monkeypatch.setenv("HARVESTMIND_ENV", "production")
+    monkeypatch.setenv("ZAAD_LEGACY_PLANNERS", "1")     # this engine is superseded; served in production only when enabled explicitly
     assert client.post("/api/zaad/plan", json=payload).status_code == 401
 
 

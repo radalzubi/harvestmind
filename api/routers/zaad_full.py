@@ -7,11 +7,11 @@ from pathlib import Path
 import threading
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request as HTTPRequest
+from fastapi import APIRouter, Depends, HTTPException, Query, Request as HTTPRequest
 from pydantic import Field, ValidationError, model_validator
 from starlette.concurrency import run_in_threadpool
 
-from api.dependencies import require_operator
+from api.dependencies import get_conn, require_operator
 from api.routers.zaad import bounded_rate
 from zaad.contracts import Record
 from zaad.full.contracts import Request
@@ -120,6 +120,42 @@ async def recommend(request: HTTPRequest, operator: str | None = Depends(require
     if operator is not None and req.operator_id != operator:
         raise HTTPException(403, "Operator mismatch")
     return await compute(req)
+
+
+def _workspace_request(conn, operator: str, horizon: int, service_target: float, skus: str | None, max_solve_seconds: float):
+    from zaad.full.workspace import WorkspaceError, build_request
+    subset = [x.strip() for x in skus.split(",") if x.strip()] if skus else None
+    try:
+        return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds)
+    except WorkspaceError as exc:
+        raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
+
+
+@router.get("/request/from-workspace", dependencies=[Depends(bounded_rate)])
+def workspace_request(operator: str = Depends(authenticated), conn=Depends(get_conn), horizon: int = Query(12, ge=4, le=26),
+                      service_target: float = Query(.95, gt=.5, le=1.), skus: str | None = Query(None, description="comma-separated subset"),
+                      max_solve_seconds: float = Query(15., gt=0, le=120)):
+    """The frozen contract built from the operator's own vault (the canonical customer-data path), with
+    the build report: rows read, compact dimensions, fitted supplier fill and lead with sample sizes,
+    provenance, warnings and the leakage guard. No plan is run."""
+    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds)
+    return {"request": req.model_dump(mode="json"), "build": build}
+
+
+@router.post("/plan/from-workspace", dependencies=[Depends(bounded_rate)])
+async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(get_conn), horizon: int = Query(12, ge=4, le=26),
+                         service_target: float = Query(.95, gt=.5, le=1.), skus: str | None = Query(None, description="comma-separated subset"),
+                         max_solve_seconds: float = Query(15., gt=0, le=120), commit_window_weeks: int = Query(4, ge=1, le=8),
+                         shape: Literal["network", "purchase_plan"] = Query("purchase_plan")):
+    """Plan the operator's workspace with the frozen P1 optimizer: vault -> compact Request -> plan.
+    `shape=purchase_plan` returns the workspace purchase-plan rows (approval stays with the operator,
+    never an executable order); `shape=network` returns the full network report with the build."""
+    from zaad.full.workspace import to_purchase_plan
+    req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds)
+    report = await compute(req)
+    if shape == "network":
+        return {"report": report, "build": build, "executable_purchase_order": False}
+    return to_purchase_plan(req, report, build, commit_window_weeks=commit_window_weeks, run_id=str(report.get("input_fingerprint", "")))
 
 
 @router.post("/shadow", dependencies=[Depends(bounded_rate)])

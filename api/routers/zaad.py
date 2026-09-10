@@ -1,4 +1,6 @@
-"""Isolated, bounded recommendation API. No vault writes or PO execution."""
+"""The first ZAAD engine's bounded recommendation API (SUPERSEDED by the frozen P1 optimizer under
+/api/zaad/network). Served only while legacy planners are enabled (see api.dependencies.legacy_planners_enabled);
+no vault writes or PO execution."""
 from __future__ import annotations
 
 import json
@@ -11,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
-from api.dependencies import require_operator
+from api.dependencies import legacy_planner_gate, require_operator
 from zaad.contracts import PlanningRequest, PlanReport
 
 router = APIRouter(prefix="/api/zaad", tags=["zaad-experimental"])
@@ -54,7 +56,7 @@ async def _plan(payload: PlanningRequest) -> PlanReport:
         _slots.release()
 
 
-@router.get("/demo", dependencies=[Depends(bounded_rate)])
+@router.get("/demo", dependencies=[Depends(bounded_rate), Depends(legacy_planner_gate)], deprecated=True)
 async def demo(
     case: Literal["balanced", "overstock", "understock", "disruption", "false_alarm", "recovery"] = "balanced",
     authed: str | None = Depends(require_operator),
@@ -67,7 +69,7 @@ async def demo(
             "classification": "SYNTHETIC demonstration; not customer validation or live risk intelligence"}
 
 
-@router.post("/plan", response_model=PlanReport, dependencies=[Depends(bounded_rate)])
+@router.post("/plan", response_model=PlanReport, dependencies=[Depends(bounded_rate), Depends(legacy_planner_gate)], deprecated=True)
 async def recommend(request: Request, authed: str | None = Depends(require_operator)):
     if request.headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
         raise HTTPException(415, "Send a canonical application/json planning request.")

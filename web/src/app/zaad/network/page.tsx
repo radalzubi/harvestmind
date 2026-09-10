@@ -59,7 +59,7 @@ export default function NetworkPlanner() {
     finally { setBusy(false); }
   }
   return <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-slate-900">
-    <header><Link href="/zaad" className="text-sm text-emerald-800">← ZAAD overview</Link>
+    <header><Link href="/overview" className="text-sm text-emerald-800">← Overview</Link>
       <h1 className="mt-3 text-3xl font-semibold">Network planning & resilience</h1>
       <p className="mt-2 max-w-3xl text-slate-600">Continuous purchasing, network inventory, contractual shipment changes, and dated liquidity. Review-only engineering build; no autonomous orders.</p></header>
     <section className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm">Synthetic fixtures are not customer validation. A retained incumbent is not certified safe. Inspect every service and stress failure below.</section>

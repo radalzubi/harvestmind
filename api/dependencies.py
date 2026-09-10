@@ -20,6 +20,30 @@ def deployment_env() -> str:
     return os.getenv("HARVESTMIND_ENV", "dev").strip().lower() or "dev"
 
 
+def legacy_planners_enabled() -> bool:
+    """Whether the superseded planning engines (the first ZAAD engine under /api/zaad and the
+    safe-selector purchase plan under /fmcg/plan modes other than canonical) are served.
+
+    FAIL-CLOSED OUTSIDE DEV: the canonical product exposes one planning engine, the frozen P1
+    optimizer (/api/zaad/network and /fmcg/plan?mode=canonical). Set ZAAD_LEGACY_PLANNERS=1 to keep
+    the legacy engines reachable (dev workspaces, migration of the old pages); ZAAD_LEGACY_PLANNERS=0
+    disables them even in dev."""
+    raw = os.getenv("ZAAD_LEGACY_PLANNERS")
+    if raw is not None and raw.strip() != "":
+        return raw.strip().lower() in ("1", "true", "yes")
+    return deployment_env() == "dev"
+
+
+def legacy_planner_gate() -> None:
+    """FastAPI dependency: 410 with the canonical replacement when the legacy engines are off."""
+    if not legacy_planners_enabled():
+        raise HTTPException(status_code=410, detail={
+            "code": "legacy_planner_disabled",
+            "message": "This planning engine is superseded by the frozen ZAAD P1 optimizer.",
+            "canonical": {"workspace_plan": "/api/zaad/network/plan/from-workspace",
+                          "purchase_plan": "/fmcg/plan?mode=canonical", "network_plan": "/api/zaad/network/plan"}})
+
+
 def auth_required() -> bool:
     """Whether the API enforces operator authentication.
 

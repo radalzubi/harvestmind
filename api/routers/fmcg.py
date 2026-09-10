@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from api.dependencies import get_conn, rate_limiter, require_operator
+from api.dependencies import get_conn, legacy_planner_gate, rate_limiter, require_operator
 from backtesting.counterfactual import (
     EXTRA_CANDIDATES, FoldInputs, _optimizer_kwargs, _scenarios, _supply_df,
     policy_deterministic_sp, policy_order_up_to, policy_stochastic_sp,
@@ -449,7 +449,7 @@ def latest_gate_decision(operator_id: str | None, n_products: int, history_perio
 
 @router.post("/plan", dependencies=[Depends(rate_limiter)])
 def plan(
-    mode: str = Query("safe", pattern="^(safe|adaptive|selected|stochastic|deterministic|order_up_to|incumbent|anchored)$"),
+    mode: str = Query("canonical", pattern="^(canonical|safe|adaptive|selected|stochastic|deterministic|order_up_to|incumbent|anchored)$"),
     horizon_weeks: int = Query(12, ge=4, le=26),
     commit_window_weeks: int = Query(4, ge=1, le=8),
     train_weeks: int = Query(52, ge=MIN_HISTORY_WEEKS, le=156),
@@ -471,6 +471,21 @@ def plan(
     next review. ``mode=safe`` (default) departs from the incumbent only on
     credible evidence and returns ``mode_run=incumbent`` otherwise, which is
     a successful outcome."""
+    if mode == "canonical":
+        # The canonical product path (post-P1 integration): the operator's vault -> the frozen P1
+        # optimizer's compact Request -> the frozen planner -> this page's purchase-plan rows. The
+        # frozen engine keeps its own product defaults (three stratified worlds, its solve budget);
+        # `scenarios`, `train_weeks`, `holding_rate_per_week`, `warehouse_cap_weeks` and
+        # `min_rel_improvement` belong to the superseded engine and are ignored here.
+        from zaad.full.planner import plan as frozen_plan
+        from zaad.full.workspace import WorkspaceError, build_request, to_purchase_plan
+        try:
+            req, build = build_request(conn, authed or "workspace", horizon=horizon_weeks, service_target=service_level, seed=seed or 41001)
+        except WorkspaceError as exc:
+            raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
+        report = frozen_plan(req)
+        return to_purchase_plan(req, report, build, commit_window_weeks=commit_window_weeks, run_id=str(report.get("input_fingerprint", "")))
+    legacy_planner_gate()
     fi, report = build_inputs(conn, horizon=horizon_weeks, train_weeks=train_weeks, service_level=service_level,
                               holding_rate_per_week=holding_rate_per_week, currency=currency,
                               incumbent_cover_weeks=incumbent_cover_weeks)
