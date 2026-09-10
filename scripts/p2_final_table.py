@@ -3,7 +3,7 @@ corrected re-run (`P2_PREREGISTRATION.md`, Correction 1) for the fixtures it inv
 under the same rules (`scripts.p2_benchmark.summarize`) and written as p2_final.jsonl / .summary.json /
 .tables.md with the runtime gate read over every ZAAD review of the combined set.
 
-usage: PYTHONPATH=. python3 -m scripts.p2_final_table [--base p2_authoritative] [--corrected p2_authoritative_c1] [--replaced D,M,O,Q]"""
+usage: PYTHONPATH=. python3 -m scripts.p2_final_table [--base p2_authoritative] [--corrected p2_authoritative_c1] [--replaced D,M,O,Q] [--out p2_final]"""
 from __future__ import annotations
 
 import argparse
@@ -21,12 +21,13 @@ def main() -> int:
     ap.add_argument("--p50", type=float, default=60.)
     ap.add_argument("--p95", type=float, default=120.)
     ap.add_argument("--max", type=float, default=180.)
+    ap.add_argument("--out", default="p2_final", help="output prefix (p2_final.jsonl / .summary.json / .tables.md)")
     a = ap.parse_args()
-    replaced = set(a.replaced.split(","))
+    replaced = {x for x in a.replaced.split(",") if x}
     base = [json.loads(line) for line in (OUT / f"{a.base}.jsonl").read_text().splitlines()]
     corrected = [json.loads(line) for line in (OUT / f"{a.corrected}.jsonl").read_text().splitlines()]
     records = [r for r in base if r["fixture"].split("_")[0] not in replaced] + [r for r in corrected if r["fixture"].split("_")[0] in replaced]
-    (OUT / "p2_final.jsonl").write_text("".join(json.dumps(r, allow_nan=True) + "\n" for r in records))
+    (OUT / f"{a.out}.jsonl").write_text("".join(json.dumps(r, allow_nan=True) + "\n" for r in records))
     summary = summarize(records, REVIEWS)
     zaad = [r for r in records if r["policy"] == "gated" and r.get("per_review")]
     walls = sorted(x["wall_seconds"] for r in zaad for x in r["per_review"])
@@ -47,14 +48,14 @@ def main() -> int:
                "slowest_reviews": [(r["fixture"], r["seed"], x["review"], round(x["wall_seconds"]), x["state"]) for r in zaad for x in r["per_review"] if x["wall_seconds"] > a.p95]}
     summary["runtime_gate"] = runtime
     summary["sources"] = {"base": a.base, "corrected": a.corrected, "replaced_fixtures": sorted(replaced)}
-    (OUT / "p2_final.summary.json").write_text(json.dumps(summary, indent=1, allow_nan=True, default=str))
+    (OUT / f"{a.out}.summary.json").write_text(json.dumps(summary, indent=1, allow_nan=True, default=str))
     text = tables(summary)
     text += ("\n## Runtime gate (ZAAD, every review of the final set)\n\n"
              f"| reviews | p50 s | p95 s | max s | gate p50 / p95 / max | required-candidate starvation | pass |\n|---|---|---|---|---|---|---|\n"
              f"| {runtime['reviews']} | {runtime['p50']:.1f} | {runtime['p95']:.1f} | {runtime['max']:.1f} | {a.p50:.0f} / {a.p95:.0f} / {a.max:.0f} | {len(starved)} | {'PASS' if runtime['pass'] else 'FAIL'} |\n\n"
              f"Solve statuses over every ZAAD candidate: {statuses}. Reviews above the p95 gate: {runtime['slowest_reviews']}.\n"
              f"Sources: {a.base} for the sixteen untouched fixtures, {a.corrected} for {sorted(replaced)}.\n")
-    (OUT / "p2_final.tables.md").write_text(text)
+    (OUT / f"{a.out}.tables.md").write_text(text)
     print(f"final: valid {summary['valid_fixtures']} passing {summary['passing_fixtures']} principles {summary['principles_passing']}/{summary['principles_total']} "
           f"runtime p50 {runtime['p50']:.1f} p95 {runtime['p95']:.1f} max {runtime['max']:.1f} starved {len(starved)} -> {'PASS' if runtime['pass'] else 'FAIL'}")
     return 0
