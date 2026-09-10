@@ -79,7 +79,7 @@ FIXTURES: dict[str, dict[str, Any]] = {
     "P_transfer_capacity_limit": {"args": {"lane_capacity": 70., "opening_branch": 120.},
         "expect": {"zaad_not_worse": .03, "service": "feasible", "action": "either", "network": "capacity_respected"},
         "why": "a lane that carries 70% of branch demand per period: capacity binds, service as feasible"},
-    "Q_pack_constraint_on_transfer": {"args": {"lane_multiple": 24., "lane_fixed_cost": 15., "lane_capacity": 360.},
+    "Q_pack_constraint_on_transfer": {"args": {"lane_multiple": 24., "lane_fixed_cost": 15., "lane_capacity": 360., "extra": {"solver_mip_gap": 1e-4}},
         "expect": {"zaad_not_worse": .02, "service": "target", "action": "either", "network": "legal_packs"},
         "why": "moves in whole cases of 24 with a per-dispatch fee: only legal quantities, fewer dispatches"},
     "R_order_transfer_interaction": {"args": {"fixed_order_cost": 250., "local_sources": {"north": {"price_premium": .15, "lead_days": 7}, "south": {"price_premium": .15, "lead_days": 7}}},

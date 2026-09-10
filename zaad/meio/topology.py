@@ -33,6 +33,15 @@ from zaad.full.worlds import dates, next_open
 NETWORK_LIMITS = {"locations": 12, "transfers": 60, "incumbent_transfers": 600}
 
 
+def network_scenarios(longest_lane_lead_periods: int, base: int = 3, cap: int = 8) -> int:
+    """Scenario count for a network request (P2). Protection at a transfer-fed location covers demand
+    over its lane lead plus one review; with S worlds per period the tail of that multi-period sum is
+    represented by S strata of each period, which P1 sized at three for a two-period window. The count
+    grows with the window (three per two periods of window) and is capped at eight."""
+    window = max(2, int(longest_lane_lead_periods) + 1)
+    return int(min(cap, max(base, base * math.ceil(window / 2.))))
+
+
 @dataclass(frozen=True)
 class LaneView:
     id: str

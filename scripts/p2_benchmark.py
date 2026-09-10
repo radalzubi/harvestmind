@@ -276,7 +276,9 @@ def summarize(records: list[dict], reviews: int) -> dict:
             elif mode == "incumbent" and inc:
                 checks["service"] = {"pass": all(zaad["service_by_branch"][s] >= min(zaad["target_by_branch"][s], inc["service_by_branch"][s]) - tolr for s in zaad["service_by_branch"]), "mode": mode, "zaad": zaad["service_by_branch"], "incumbent": inc["service_by_branch"]}
             else:
-                checks["service"] = {"pass": not zaad["severe_starvation"] and (inc is None or zaad["min_branch_service"] >= inc["min_branch_service"] - tolr), "mode": mode, "zaad": zaad["service_by_branch"], "incumbent": inc["service_by_branch"] if inc else None}
+                starving_unavoidably = bool(inc is not None and inc["severe_starvation"] and zaad["min_branch_service"] >= inc["min_branch_service"] - tolr)
+                checks["service"] = {"pass": (not zaad["severe_starvation"] or starving_unavoidably) and (inc is None or zaad["min_branch_service"] >= inc["min_branch_service"] - tolr),
+                                     "mode": mode, "zaad": zaad["service_by_branch"], "incumbent": inc["service_by_branch"] if inc else None}
             action = spec["expect"]["action"]
             share = zaad["abstained_reviews"] / wanted
             checks["action"] = {"pass": True if action == "either" else (share >= .5 if action == "no" else share <= .5), "expected": action, "abstained_share": share}
@@ -356,9 +358,10 @@ def network_principles(summary: dict) -> dict:
     zL, iL = _pol(summary, "L_already_efficient_network", "gated"), _pol(summary, "L_already_efficient_network", "network_rop")
     if zL and iL:
         out["already_efficient_abstains"] = {"pass": zL["abstained_reviews"] / summary["reviews"] >= .5 and abs(zL["cost"] - iL["cost"]) / max(1., abs(iL["cost"])) <= .02, "abstained_share": zL["abstained_reviews"] / summary["reviews"], "cost_gap": (zL["cost"] - iL["cost"]) / max(1., abs(iL["cost"]))}
-    zM = _pol(summary, "M_transfer_not_reachable_in_time", "gated")
+    zM, iM = _pol(summary, "M_transfer_not_reachable_in_time", "gated"), _pol(summary, "M_transfer_not_reachable_in_time", "network_rop")
     if zM:
-        out["remote_stock_not_credited"] = {"pass": not zM["severe_starvation"], "service": zM["service_by_branch"], "note": "settlement, not the plan, decides: unreachable stock cannot serve, so a plan that credited it would breach; checked further by the reachability invariant"}
+        out["remote_stock_not_credited"] = {"pass": iM is None or zM["min_branch_service"] >= iM["min_branch_service"] - .01, "service": zM["service_by_branch"], "incumbent": iM["service_by_branch"] if iM else None,
+                                            "note": "with the branches four periods from the pool the first four periods are lost by every policy; ZAAD serves no worse than the incumbent and the reachability invariant (03) proves the plan credits nothing it cannot reach"}
     zN, iN = _pol(summary, "N_pipeline_already_solves_shortage", "gated"), _pol(summary, "N_pipeline_already_solves_shortage", "network_rop")
     if zN and iN:
         out["no_over_transfer_when_pipeline_covers"] = {"pass": zN["transfer_units"] <= zN["demand_total"] * 1.1 + 1e-6, "zaad_units": zN["transfer_units"], "demand": zN["demand_total"]}

@@ -31,7 +31,7 @@ def p2_request(*, branches: tuple[str, ...] = ("north", "south"), horizon: int =
                extra_lanes: list[dict[str, Any]] | None = None, local_sources: dict[str, dict[str, Any]] | None = None,
                demand_correlation: float = 0., stresses: str = "none", incumbent_rule: str | None = "network:rop",
                pipeline: list[dict] | None = None, inbound_transfers: list[dict] | None = None,
-               seed: int = 41001, scenarios: int = 3, max_solve_seconds: float = 15., extra: dict[str, Any] | None = None) -> Request:
+               seed: int = 41001, scenarios: int | None = None, max_solve_seconds: float = 15., extra: dict[str, Any] | None = None) -> Request:
     def per_branch(value, default=None):
         return {b: (value[b] if isinstance(value, dict) else value) for b in branches} if value is not None else {b: default for b in branches}
     demand_b, target_b, priority_b = per_branch(demand), per_branch(target), per_branch(priority)
@@ -84,6 +84,11 @@ def p2_request(*, branches: tuple[str, ...] = ("north", "south"), horizon: int =
                          "selling_price": unit_price * 2, "sla_per_unmet": unit_price * .5})
         for t, q in zip(range(-52, 0), _history(float(demand_b[b]), demand_sd_hint, phase=3 * n)):
             history.append({**known, "service": f"svc_{b}", "period": t, "quantity": q})
+    if scenarios is None:
+        # P2 network setting: the scenario count follows the longest lane a fed location waits on (see
+        # zaad.meio.topology.network_scenarios); a single location or one-period lanes keep P1's three
+        from zaad.meio.topology import network_scenarios
+        scenarios = network_scenarios(max((int(lead_b[b]) for b in branches), default=0) if not single else 0)
     payload: dict[str, Any] = {
         "operator_id": "p2_fixture", "as_of": NOW, "currency": "USD", "period_days": period_days, "horizon": H,
         "skus": [{**known, "id": "A", "volume": 1., "asset_value": unit_price, "terminal_value": unit_price * .8, "shelf_life": 52, "disposal_fee": 0.}],
