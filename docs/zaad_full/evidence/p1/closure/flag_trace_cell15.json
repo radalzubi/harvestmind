@@ -1,0 +1,576 @@
+{
+ "name": "cell",
+ "seed": 15,
+ "status": "COMPLETE",
+ "reviews": [
+  {
+   "review": 0,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 40.0,
+     "pipeline_units": 0,
+     "inherited_on_hand": 40.0,
+     "mu": 20.652462637497226,
+     "window": 2,
+     "protection_units": 7.028088581414927,
+     "lean_baseline_units": 6.759018735127677,
+     "incremental_protection_units": 0.26906984628725006,
+     "ratio_protection_to_lean": 1.0398090102767215,
+     "drivers": {},
+     "activity": 0.4125000000000002,
+     "demand_score": 0.0,
+     "supply_score": 0.5500000000000003,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "supply",
+       "score": 0.5500000000000003,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 89%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 48.06394401012213
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     3.3
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 1,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 15.794740641520875,
+     "pipeline_units": 0,
+     "inherited_on_hand": 13.0,
+     "mu": 23.755264587870066,
+     "window": 2,
+     "protection_units": 15.7895361198225,
+     "lean_baseline_units": 9.800763163856631,
+     "incremental_protection_units": 5.988772955965869,
+     "ratio_protection_to_lean": 1.6110516962649741,
+     "drivers": {},
+     "activity": 0.5625,
+     "demand_score": 0.75,
+     "supply_score": 0.5491505675483008,
+     "regime": "PROTECT",
+     "flags": [
+      "INSUFFICIENT_CALIBRATION"
+     ],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "demand",
+       "score": 0.75,
+       "reasons": [
+        "retail_A: level change 2 observation(s) old"
+       ]
+      },
+      {
+       "driver": "supply",
+       "score": 0.5491505675483008,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 89%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 57.31129233959676
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     40.7
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 2,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 30.588115774187383,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 22.503509725246712,
+     "window": 2,
+     "protection_units": 12.571162727789407,
+     "lean_baseline_units": 9.487447895876564,
+     "incremental_protection_units": 3.083714831912843,
+     "ratio_protection_to_lean": 1.3250310163234822,
+     "drivers": {},
+     "activity": 0.46875,
+     "demand_score": 0.625,
+     "supply_score": 0.584109254781495,
+     "regime": "PROTECT",
+     "flags": [
+      "INSUFFICIENT_CALIBRATION"
+     ],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "demand",
+       "score": 0.625,
+       "reasons": [
+        "retail_A: level change 3 observation(s) old"
+       ]
+      },
+      {
+       "driver": "supply",
+       "score": 0.584109254781495,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 91%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 54.49446734636999
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     30.3
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 3,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 39.4208436558697,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 21.127632293935033,
+     "window": 2,
+     "protection_units": 11.989277057695855,
+     "lean_baseline_units": 10.141487479078158,
+     "incremental_protection_units": 1.8477895786176965,
+     "ratio_protection_to_lean": 1.1822010412604342,
+     "drivers": {},
+     "activity": 0.75,
+     "demand_score": 0.5,
+     "supply_score": 1.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "demand",
+       "score": 0.5,
+       "reasons": [
+        "retail_A: level change 4 observation(s) old"
+       ]
+      },
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 91%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 52.396752066948224
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     15.1
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 4,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 38.23864473292295,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 17.321321475344845,
+     "window": 2,
+     "protection_units": 12.207181222910032,
+     "lean_baseline_units": 11.05942329044135,
+     "incremental_protection_units": 1.1477579324686822,
+     "ratio_protection_to_lean": 1.1037809931247218,
+     "drivers": {},
+     "activity": 0.75,
+     "demand_score": 0.375,
+     "supply_score": 1.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "demand",
+       "score": 0.375,
+       "reasons": [
+        "retail_A: level change 5 observation(s) old"
+       ]
+      },
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 91%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 45.70206624113104
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 5,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 19.238644732922953,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 19.19673020030653,
+     "window": 2,
+     "protection_units": 12.193560517562553,
+     "lean_baseline_units": 10.51204488073068,
+     "incremental_protection_units": 1.6815156368318718,
+     "ratio_protection_to_lean": 1.159960850235163,
+     "drivers": {},
+     "activity": 0.75,
+     "demand_score": 0.25,
+     "supply_score": 1.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "demand",
+       "score": 0.25,
+       "reasons": [
+        "retail_A: level change 6 observation(s) old"
+       ]
+      },
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 91%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 48.905505281343736
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     35.8
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 6,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 28.73444399393278,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 19.64436131082002,
+     "window": 2,
+     "protection_units": 10.91932447959134,
+     "lean_baseline_units": 9.984062588289909,
+     "incremental_protection_units": 0.9352618913014314,
+     "ratio_protection_to_lean": 1.0936754836050788,
+     "drivers": {},
+     "activity": 0.75,
+     "demand_score": 0.125,
+     "supply_score": 1.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "demand",
+       "score": 0.125,
+       "reasons": [
+        "retail_A: level change 7 observation(s) old"
+       ]
+      },
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 91%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 49.27278520992995
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     24.0
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 7,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 22.88684915332224,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 20.56381614696752,
+     "window": 2,
+     "protection_units": 14.935413867651912,
+     "lean_baseline_units": 11.186802778975299,
+     "incremental_protection_units": 3.748611088676613,
+     "ratio_protection_to_lean": 1.3350922656580508,
+     "drivers": {},
+     "activity": 0.75,
+     "demand_score": 0.0,
+     "supply_score": 1.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 100%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 52.314435072910335
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     38.6
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 8,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 37.9121555877507,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 20.723392130637794,
+     "window": 2,
+     "protection_units": 14.95443788071081,
+     "lean_baseline_units": 10.772769951420507,
+     "incremental_protection_units": 4.1816679292903025,
+     "ratio_protection_to_lean": 1.3881701686889643,
+     "drivers": {},
+     "activity": 0.75,
+     "demand_score": 0.0,
+     "supply_score": 1.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 86%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 52.219554212696096
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     17.6
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 9,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 32.28928646051263,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 20.351052917574016,
+     "window": 2,
+     "protection_units": 15.3426625193829,
+     "lean_baseline_units": 10.908025599054112,
+     "incremental_protection_units": 4.4346369203287885,
+     "ratio_protection_to_lean": 1.4065480851744,
+     "drivers": {},
+     "activity": 0.75,
+     "demand_score": 0.0,
+     "supply_score": 1.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 88%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 51.610131434202145
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     25.9
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 10,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 29.91737198103204,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 20.864593561430922,
+     "window": 2,
+     "protection_units": 14.751932624116941,
+     "lean_baseline_units": 11.265819149328674,
+     "incremental_protection_units": 3.486113474788267,
+     "ratio_protection_to_lean": 1.30944163301219,
+     "drivers": {},
+     "activity": 0.75,
+     "demand_score": 0.0,
+     "supply_score": 1.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 89%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 52.99500627219052
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     23.4
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 11,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 20.552964575394423,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 22.743667641629163,
+     "window": 2,
+     "protection_units": 14.312204543759046,
+     "lean_baseline_units": 11.985839136198184,
+     "incremental_protection_units": 2.3263654075608624,
+     "ratio_protection_to_lean": 1.1940928274712994,
+     "drivers": {},
+     "activity": 0.75,
+     "demand_score": 0.0,
+     "supply_score": 1.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": false,
+     "active_drivers": [
+      {
+       "driver": "supply",
+       "score": 1.0,
+       "reasons": [
+        "late probability 0%",
+        "partial-delivery probability 90%"
+       ]
+      }
+     ],
+     "lean_base_stock_units": 57.47317441945651
+    }
+   ],
+   "purchases": [
+    [
+     "main",
+     44.9
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  }
+ ]
+}

@@ -20,21 +20,26 @@ PRODUCT = {k: Request.model_fields[k].default for k in ("stratified_scenarios", 
 W_MAX = 52
 
 
-def run_cell(name: str, policy: str, seed: int, reviews: int = W_MAX) -> dict:
-    from zaad.full.evaluation import curve, long_truth
+def run_cell(name: str, policy: str, seed: int, reviews: int = W_MAX, horizon: int = 0) -> dict:
+    from zaad.full.evaluation import curve, long_truth, with_horizon
     from zaad.full.replay import replay
     from zaad.full.tolerance import is_dust
     initial = build(name, seed).model_copy(update=PRODUCT)
-    segments = -(-(reviews - 1 + initial.horizon) // initial.horizon)
-    truth = long_truth(initial, seed + 10000, segments * initial.horizon)
+    base_h = initial.horizon
+    # diagnostic planning-horizon override for ZAAD cells only (B sweep); the truth is the benchmark's
+    # own stitched path (twelve-period segments), long enough for the longer plan
+    planning = with_horizon(initial, horizon) if (horizon and policy == "gated") else initial
+    segments = -(-(reviews - 1 + planning.horizon) // base_h)
+    truth = long_truth(initial, seed + 10000, segments * base_h)
     started = time.time()
-    out = replay(initial, truth, reviews, policy, rolling=True)
+    out = replay(planning, truth, reviews, policy, rolling=True)
     seconds = time.time() - started
     log = out.get("reviews", [])
     cell = {"fixture": name, "policy": policy, "seed": seed, "status": out["status"], "failure": out.get("failure"),
             "reviews_completed": len(log), "reviews_requested": reviews, "seconds": seconds}
     if log:
         cell["curve"] = curve(initial, log)
+        cell["planning_horizon"] = planning.horizon
         cell["per_review"] = []
         for row in log:
             st = row["settlement"]
@@ -56,11 +61,11 @@ def run_cell(name: str, policy: str, seed: int, reviews: int = W_MAX) -> dict:
 
 
 def _job(args):
-    name, policy, seed, reviews = args
+    name, policy, seed, reviews, horizon = args
     try:
-        return run_cell(name, policy, seed, reviews)
+        return run_cell(name, policy, seed, reviews, horizon)
     except Exception as exc:     # a crashed cell is a recorded failure, not a lost run
-        return {"fixture": name, "policy": policy, "seed": seed, "status": "ERROR", "failure": repr(exc), "reviews_completed": 0, "reviews_requested": reviews}
+        return {"fixture": name, "policy": policy, "seed": seed, "status": "ERROR", "failure": repr(exc), "reviews_completed": 0, "reviews_requested": reviews, "planning_horizon": horizon}
 
 
 if __name__ == "__main__":
@@ -70,12 +75,13 @@ if __name__ == "__main__":
     ap.add_argument("--reviews", type=int, default=W_MAX)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--tag", default="horizon52")
+    ap.add_argument("--horizon", type=int, default=0, help="diagnostic: planning horizon for ZAAD cells (0 = the fixture's own)")
     a = ap.parse_args()
     names = [n for n in a.fixtures.split(",") if n] or list(FIXTURES)
     policies = [p for p in a.policies.split(",") if p]
     # ZAAD cells first, largest fixtures first, so the slow solves do not trail the pool.
     order = {"D_case_multiple": 0, "H_per_pallet_freight": 1, "F_mov_two_skus": 2, "E_pallet_multiple": 3, "T_combined_realistic": 4, "I_max_pallets_ftl_cap": 5, "G_freight_tiers": 6}
-    jobs = sorted([(n, p, s, a.reviews) for n in names for p in policies for s in SEEDS], key=lambda j: (j[1] != "gated", order.get(j[0], 9)))
+    jobs = sorted([(n, p, s, a.reviews, a.horizon) for n in names for p in policies for s in SEEDS], key=lambda j: (j[1] != "gated", order.get(j[0], 9)))
     out = Path("docs/zaad_full/evidence/p1/closure") / f"{a.tag}.jsonl"
     started = time.time()
     with ProcessPoolExecutor(a.workers) as pool, out.open("w") as f:

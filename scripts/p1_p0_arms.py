@@ -56,7 +56,10 @@ ARMS = {
     "router_lot": {},
     "router_lot_rerun21": {},
     "router_lot_off21": {"lot_terminal_valuation": False},
-    "router_final": {},   # pass J: final code (ledger key on P1 evaluation rows); P0 cells must stay decision-identical   # pass J: cell 21 alone with the lot valuation off (variability independent of the change?)   # pass J: cell 21 rerun alone after a r5 quantity difference in the time-limited hedged solve     # pass J: after the lot-sizing terminal valuation (P1-owned reviews only; P0 cells must stay decision-identical)   # pass J: after the opt-in rolling replay mode (legacy path must be decision-identical)   # same code as router: run-to-run variability of the time-limited solves
+    "router_final": {},
+    "router_tA": {},
+    "router_tA_rerun108": {},
+    "router_tAonly": {},    # two-blocker closure: final code, rule T-A only (T-B rejected)   # two-blocker closure: cell 108 alone after a hedged-candidate time-out at r5 in the tA arm      # two-blocker closure: after rule T-A (flag not an ownership reason) and T-B (target floor on P1-owned reviews)   # pass J: final code (ledger key on P1 evaluation rows); P0 cells must stay decision-identical   # pass J: cell 21 alone with the lot valuation off (variability independent of the change?)   # pass J: cell 21 rerun alone after a r5 quantity difference in the time-limited hedged solve     # pass J: after the lot-sizing terminal valuation (P1-owned reviews only; P0 cells must stay decision-identical)   # pass J: after the opt-in rolling replay mode (legacy path must be decision-identical)   # same code as router: run-to-run variability of the time-limited solves
 }
 
 

@@ -105,3 +105,28 @@ def endpoint(initial: Request, reviews_log: list[dict], W: int) -> dict:
 def curve(initial: Request, reviews_log: list[dict]) -> list[dict]:
     """Endpoint scores at every W from 1 to the number of reviews replayed."""
     return [endpoint(initial, reviews_log, W) for W in range(1, len(reviews_log) + 1)]
+
+
+def with_horizon(req: Request, horizon: int) -> Request:
+    """The same request with a different planning horizon: declared period-indexed data are extended
+    by repeating their last declared value (as the rolling replay does) or truncated; every other field
+    is unchanged. Diagnostic and P1 use only (economic visibility horizon); a P0-owned review never sees it."""
+    if horizon == req.horizon:
+        return req
+    data = req.model_dump(mode="python")
+
+    def resize(values, fill=None):
+        values = list(values)
+        if len(values) >= horizon:
+            return values[:horizon]
+        return values + [values[-1] if fill is None else fill] * (horizon - len(values))
+
+    data["horizon"] = horizon
+    for name in ("sources", "resources"):
+        data[name] = [{**r.model_dump(), "capacity_by_period": resize(r.capacity_by_period)} for r in getattr(req, name)]
+    liquidity = req.liquidity.model_dump()
+    liquidity["known_receivables"] = resize(req.liquidity.known_receivables)
+    liquidity["other_payments"] = resize(req.liquidity.other_payments, fill=0.)
+    data["liquidity"] = liquidity
+    data["stresses"] = [{**s.model_dump(), "recovery_period": (horizon if s.recovery_period >= req.horizon else s.recovery_period)} for s in req.stresses]
+    return Request.model_validate(data)

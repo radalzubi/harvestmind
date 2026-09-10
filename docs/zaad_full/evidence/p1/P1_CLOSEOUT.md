@@ -2549,3 +2549,163 @@ Product defaults changed: `lot_terminal_valuation=True` (P1-owned reviews only).
 additions: rolling replay mode, stitched truth, endpoint scoring, landed-cost continuation. The declared
 P1 benchmark is the rolling 52-review landed-cost evaluation; the legacy twelve-week record is kept and
 reported beside it. `claude/zaad-meio-p2` does not exist.
+
+# Pass K: two-blocker closure, T and B (2026-09-09; from 4f49322)
+
+Pre-registration: `P1_TWO_BLOCKER_PREREGISTRATION.md` (rules T-A, T-B, B-A written before any run;
+dated notes appended after). Benchmark unchanged: the declared rolling 52-review landed-cost evaluation.
+
+## K1. T: where FALSE_PROTECTION_RISK comes from (stage T1; `scripts/p1_flag_trace.py`, `closure/flag_trace_*.json`)
+
+`protection.py`: the flag is `activity <= .05 and protection > 1.25 * lean_baseline + 1`, where protection
+is the quantile recommendation on the fitted spread WITH calibration widening, level error, observed
+supply spread and open orders at late risk, and the lean baseline is the same recommendation on the fitted
+spread and the declared supply spread. No inventory field enters it: not on-hand, not pipeline, not
+inherited stock, not the previous action. Traced on T: every flagged SKU-review has zero units in the
+pipeline and on-hand anywhere between 116 and 1,036; the ratio (1.41-1.53 at reviews 16 / 20 / 24 of seed
+41003) equals the demand forecast's calibration ratio to two decimals (realized one-step errors 8.8-9.5
+against a fitted spread of 6.2, regime age none, level error about 1 unit), below the threshold at which
+calibration becomes an active demand driver. The flag on T is a forecast-calibration state. Occurrence:
+A, I, P never; G once in 52 reviews; T 2 / 14 / 18 SKU-reviews per seed; P0 cells 15, 16, 20 never, cell 21
+twice with ratio 8 (a real supply driver, and the cell is P0-owned by its declared mandate anyway).
+
+## K2. T: provenance state (stage T2) and the two pre-registered rules (stages T3, T5)
+
+No new provenance state: protection or recovery stock exists only downstream of PROTECT / RECOVER
+decisions, and every such situation is canonical state the router already reads (active or decaying
+driver, non-LEAN regime, confirmed decline, non-calm state, mandate, recovery obligation); cycle stock is
+stock held while all of those are absent. **Rule T-A** (`ownership.py`): FALSE_PROTECTION_RISK alone is not
+an ownership reason; it is reported as a note; P0's own machinery still uses the flag whenever P0 owns.
+**Rule T-B** (`planner.py`): on a P1-owned review every gate that compares a candidate with the incumbent
+uses the target service basis (a candidate meeting every target has not worsened service); on a P0-owned
+review the basis is exactly the request's own rule as before. Ownership is now decided before the basis,
+still from the snapshot only; the report carries `gate_basis` and `ownership_notes`. Mapped gate (stage
+T4): at T 41003 review 9 the lot candidate was physically usable, met service (.964 / .969 against .95) and
+cost 14,790 against the incumbent's 23,423 on every fitted world, and was rejected only because the
+weekly-ordering incumbent served 1.000 there. Tests: `tests/unit/test_zaad_protection_provenance.py` (8:
+flag alone stays P1, real protection routes to P0, protection accounting bounded on the family,
+deterministic flag, the review-9 snapshot now accepts the load under the target basis, a P0-owned review
+keeps the incumbent basis, a credible declared stress keeps P0 and its floor, routing and basis are
+snapshot-pure); pass-I ownership test 5 rewritten to rule T-A.
+
+## K3. T under the rules (stage T7; `closure/horizon52_tA.jsonl`)
+
+| | before (J15b) | after |
+|---|---|---|
+| delta @52 vs EOQ | +2.06% (seeds -1.02 / +1.99 / +5.24) | **-0.57%** (seeds -2.23 / +0.56 / -0.01) |
+| stable (max dev 40..52) | yes (.38 pp) | yes (.76 pp) |
+| orders per seed (EOQ 7 / 6 / 7) | 7 / 7 / 12 | 6 / 6 / 7 |
+| sub-economic orders | 9 | 1 (41003 review 40: PROTECT regime, P0-owned by regime, incumbent retained) |
+| P1 / P0 owned reviews | 124 / 32 | 153 / 3 |
+| service | .999 | 1.000 / .997 / .999 |
+| actions / abstentions | 149 / 0 | 155 / 0 |
+
+Every remaining order is a 1,700-2,000-unit load on the EOQ cadence except the one PROTECT review.
+Ownership decomposition (`scripts/p1_t_decomposition.py`): seed means gap -362 = P1 -3,879 + P0 +874 +
+terminal +2,643; shipment part P1 -1,150 (ZAAD ships less than EOQ), P0 +342 (the one retained order).
+
+## K4. Controls (stage T8; `closure/horizon52_tA_controls.jsonl`)
+
+| fixture | before | after | stable | P1 / P0 owned before -> after | abstentions | service |
+|---|---|---|---|---|---|---|
+| A | +0.81% | +0.89% | yes (.24) | 138 / 18 -> 153 / 3 | 21 | .989 |
+| G | +0.46% | -1.02% | yes (.50) | 125 / 31 -> 151 / 5 | 0 | .998 |
+| I | +0.57% | +0.24% | yes (.45) | 137 / 19 -> 153 / 3 | 0 | 1.000 |
+| P | +0.35% | +0.59% | yes (.19) | 138 / 18 -> 152 / 4 | 23 | .992 |
+| Q | +0.17% | +0.17% | yes (.04) | 69 / 87 -> 72 / 84 | 2 | .991 |
+| C | +0.46% | +0.13% | yes (.14) | 137 / 19 -> 153 / 3 | 0 | 1.000 |
+| O | +0.21% | +0.12% | yes (.13) | 96 / 60 -> 108 / 48 | 18 | .980 |
+
+Ordinary large lots on G and I no longer hand reviews to P0; Q and O keep most of their P0 ownership
+(real demand drivers on those paths). A still abstains (21 of 156).
+
+## K5. B (part II)
+
+Under rules T-A / T-B alone B is **+1.60%** at the base horizon (from +2.49%: its two 100-unit
+RETAIN_INCUMBENT orders were the gate floor), with the verdict PASS at every endpoint from 40 to 52
+(range +0.05..+1.60, magnitude not inside the +/-1 pp band: class E by the pre-registered criterion, a
+property of an 18.6-week cycle in a 52-week window). Diagnostic sweep of ZAAD's planning horizon
+(`closure/horizon52_B_h{12,16,20,24,32}.jsonl`, baselines at 12): +1.60 / +0.15 / +0.59 / +1.57 / +2.21%
+(32: one seed, 64 s median per review, stopped), first lots 1,071 / 1,478 / 1,870 / 2,281 / 1,613 against
+the EOQ 1,854, magnitude-stable only at 20. The pre-registered derived horizon (lead 1 + cycle 19 + 1 = 21)
+sits in the passing region, but the first lot moves by a fifth between 20 and 24 (overshoot past the EOQ
+once more than one cycle is visible) and solve time grows with the square of the horizon (max 44 s at 20,
+116 s at 24). Per the brief ("if B passes the declared benchmark: record limitation and move on") and the
+pre-registered condition for a horizon redesign (B a valid, economically material freeze blocker, which it
+no longer is), rule B-A is NOT implemented; the sweep is the recorded limitation: planning horizon shorter
+than the lot cycle costs B about 1-1.5 points against an EOQ buyer, and a visibility horizon of one lot
+cycle would recover most of it at 5-10x the solve time on such fixtures.
+
+## K6. Rule T-B rejected; final code is rule T-A only
+
+The full A-T under T-A + T-B (`closure/horizon52_tA_full.jsonl.gz`, `fixtures_product_defaults_tA.jsonl`,
+`P1_FINAL_RESULT_TABLE_tA.md`) closed T (-0.57%), G (-1.02%), I (+0.24%), C (+0.13%) and moved B to
++1.60%, but created a valid failure: A intervened on 12 of 33 legacy reviews (36%) and 46 of 156
+declared reviews against its pre-registered "mostly abstain" expectation (at most a quarter), through
+three capital tie-break and three "next qualified candidate" acceptances of leaner plans that serve less
+than the incumbent (.986 against .992) at +0.80% cost; Q's legacy service fell from .980 to .965 against a
+.98 target (declared benchmark unchanged, .991). By the brief's rule ("if it creates another valid
+failure: reject it; do not continue patching") T-B was reverted: the gate basis is the request's own on
+every review, reported as `gate_basis`; rule T-A (the flag is not an ownership reason) stands. The
+narrower candidate (target basis on the disruption stress-gate floor only; capital tie-break retired
+where the terminal valuation already prices closing stock) is recorded, not applied.
+
+## K7. Final code (rule T-A only): A-T, legacy, P0 (`closure/horizon52_tAonly.jsonl.gz`, `fixtures_product_defaults_tAonly.jsonl`, `P1_FINAL_RESULT_TABLE_tAonly.md`, `P1_HORIZON_CONVERGENCE_tAonly.md`)
+
+| fixture | pass J final (4f49322) | **final (T-A)** | verdict | stable |
+|---|---|---|---|---|
+| A | +0.81% | +0.81% | PASS (21 abstentions / 156; legacy action check passes) | yes (.22) |
+| B | +2.49% | **+2.66%** vs EOQ | **FAIL** (PASS at 40-44, FAIL from 45; rising) | NO (1.77 pp) |
+| C | +0.46% | +0.39% | PASS | yes |
+| D / E / F | +0.66 / -0.01 / +0.70% | +0.65 / -0.02 / +0.80% | PASS | yes |
+| G | +0.46% | **-0.76%** | PASS | yes (.72) |
+| H | -1.67% | -1.97% | PASS | yes |
+| I | +0.57% | **+0.07%** | PASS | yes (.12) |
+| J / K | +0.15 / +0.15% | +0.34 / +0.34% | PASS at 52 and every endpoint 40-52; magnitude 1.25 / 1.28 pp (one dip to -0.9 at 44) | NO |
+| L | +0.81% | +1.07% | PASS | yes (.54) |
+| M / O / P / Q | -0.17 / +0.21 / +0.35 / +0.17% | -0.17 / +0.13 / +0.29 / +0.17% | PASS | yes |
+| N / R | inside tolerance, proven invalid | +0.61 / +0.59%, proven invalid (kept) | | yes |
+| S | invalid at 52 | invalid at 52 | | |
+| T | **+2.06% FAIL** | **-0.28% PASS** (seeds -2.17 / +0.62 / +0.70) | PASS | yes (.86) |
+
+Legacy record: 18 / 20 (N, R categories). Ownership: P0-owned reviews 3 / 156 on every fixture except
+M (144, order calendar with an active supply driver), Q (84), O (48), all real drivers. B's remaining
+mechanism: seven 100-unit RETAIN_INCUMBENT orders across the seeds (the incumbent-level stress-gate floor
+on P1-owned reviews, the target of the rejected T-B) and lots at about 55% of the EOQ (planning horizon
+shorter than the 18.6-week lot cycle, K5). Per the brief's B classification: mixed, gate-floor (the T-B
+candidate) and planning-horizon limitation (the B-A candidate); the horizon redesign is not authorized
+because the failure is not convergent at the declared endpoint (verdict flips inside 40-52). P0 six-cell
+arm on the final code (`closure/p0_arm_router_tAonly.json`, run alone): cells 15, 16, 20, 90, 108
+decision-identical (108 30 / 30 after a hedged-candidate time-out in the T-A + T-B arm, rerun alone
+`router_tA_rerun108`), cell 21 10 / 20 at its recorded wall-clock variability (cost 3,366, the same value
+as in three earlier arms); ownership 100% P0 on every cell, no P1 class added, starvation zero. Tests:
+1,510 passed, 2 skipped (8 new); invariants 720 / 720. Runtime p50 1.0 s, p95 6.3 s, max 67 s.
+
+## K8. Freeze gate (continuation brief, stage 9) and verdict
+
+| # | requirement | state |
+|---|---|---|
+| 1 | planner boundary semantically correct | yes; rule T-A removes a forecast-calibration flag from ownership |
+| 2 | economic cycle stock no longer enters protection ownership | yes: G / I / T P0-owned reviews 31 / 19 / 32 -> 3 |
+| 3 | real protection still does | yes: Q 84, O 48, M 144 P0-owned; synthetic states tested |
+| 4 | P0 stress gate frozen inside P0 | yes (T-B reverted; basis unchanged everywhere) |
+| 5 | P1 nil-stress decisions not vetoed by P0-only risk semantics | **NO**: the incumbent-level floor still vetoes lot plans on P1-owned reviews (B: seven retained 100-unit orders); the rule that lifts it (T-B) was rejected on A / Q |
+| 6 | T <= 2% | yes, -0.28% |
+| 7 | adaptive horizon economically derived | not implemented (K5; not authorized) |
+| 8 | B <= 2% | **NO: +2.66%**, verdict flips inside 40-52 |
+| 9 | horizon decisions stable | n/a (no adaptive horizon) |
+| 10 | runtime | p50 1.0 s, p95 6.3 s, max 67 s |
+| 11 | P0 six-cell isolation | 110 / 120 with cell 21 variability classified |
+| 12 | starvation zero | yes |
+| 13-16 | P, C, I, O | +0.29, +0.39, +0.07, +0.13% |
+| 17 | G / Q / A safe | -0.76 / +0.17 / +0.81%, A abstains 21 / 156 |
+| 18 | every valid A-T fixture passes | **NO: B** |
+| 19-20 | N / R, S | preserved |
+| 21-23 | no fixture logic, no widened tolerance, no buffer | none |
+| 24 | economics reconcile | yes (K7 tables reconcile; evaluation rows carry the terminal key) |
+| 25-26 | tests, invariants | 1,510 passed / 2 skipped; 720 / 720 |
+| 27-30 | Validation7 / 8 / holdout4 / Network Twin, frontend, Vercel | untouched |
+
+**Verdict: P1 CORE ARCHITECTURE PASS — B (INCUMBENT-LEVEL STRESS-GATE FLOOR ON P1-OWNED PURCHASING
+REVIEWS, AND A PLANNING HORIZON SHORTER THAN THE ECONOMIC LOT CYCLE) REMAINS OPEN.** T is closed by rule
+T-A. Not frozen. P2 NOT STARTED — P1 FREEZE GATE NOT MET.

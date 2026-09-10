@@ -31,9 +31,15 @@ def legacy(tag):
 
 
 def main():
-    leg_pre, leg_fin = legacy("terminal_continuation"), legacy("final")
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--rolling-tag", default="final", help="closure/horizon52_<tag>.jsonl of the final run")
+    ap.add_argument("--legacy-tag", default="final", help="fixtures_product_defaults_<tag>.jsonl of the final legacy run")
+    ap.add_argument("--out-tag", default="", help="suffix for the output files")
+    a = ap.parse_args()
+    leg_pre, leg_fin = legacy("terminal_continuation"), legacy(a.legacy_tag)
     _, pre = load(EVID / "closure/horizon52.jsonl")
-    _, fin = load(EVID / "closure/horizon52_final.jsonl")
+    _, fin = load(EVID / f"closure/horizon52_{a.rolling_tag}.jsonl")
     lines = ["# P1 authoritative final result table (final code; pre-fix record beside it, never overwritten)\n",
              "Legacy: eleven rolling reviews of a shrinking twelve-period plan, realised ledger (declared salvage). Declared benchmark: constant rolling "
              "twelve-period planning horizon, 52 reviews, landed-cost continuation of the residual (pre-registered in `P1_BENCHMARK_PREREGISTRATION.md`). "
@@ -59,7 +65,15 @@ def main():
             if name in INVALID_LEGACY:
                 v = f"proven invalid (kept); cost {'within' if cost_ok else 'outside'} tolerance"
             else:
-                v = "PASS" if (cost_ok and floor_ok and first_ok and st) else ("FAIL" if not cost_ok or not floor_ok or not first_ok else "FAIL (unstable)")
+                verdict_every_w = all(verdict(fin, name, W, KEY) for W in range(40, W_STAR + 1))
+                if cost_ok and floor_ok and first_ok and st:
+                    v = "PASS"
+                elif cost_ok and floor_ok and first_ok and verdict_every_w:
+                    v = "PASS at 52 and at every endpoint 40..52; magnitude not converged (class E)"
+                elif cost_ok and floor_ok and first_ok:
+                    v = "FAIL (verdict flips inside 40..52)"
+                else:
+                    v = "FAIL"
             orders_z = mean(sum(1 for r in fin[name, "gated", s]["per_review"] if r["purchases"]) for s in SEEDS)
             orders_b = mean(sum(1 for r in fin[name, bp, s]["per_review"] if r["purchases"]) for s in SEEDS)
             dpre = f"{delta(pre, name, W_STAR, KEY)[0]:+.2f}%" if valid_pre else "invalid"
@@ -77,8 +91,9 @@ def main():
     walls = sorted(r["wall_seconds"] for k, c in fin.items() if k[1] == "gated" for r in c.get("per_review", []))
     lines.append(f"\nRuntime, final rolling run, ZAAD reviews: n {len(walls)}, p50 {walls[len(walls) // 2]:.2f} s, p90 {walls[int(.9 * len(walls))]:.2f} s, p95 {walls[int(.95 * len(walls))]:.2f} s, max {walls[-1]:.1f} s.")
     text = "\n".join(lines)
-    (EVID / "P1_FINAL_RESULT_TABLE.md").write_text(text + "\n")
-    json.dump(summary, open(EVID / "P1_FINAL_SUMMARY.json", "w"), indent=1, default=float)
+    suffix = ("_" + a.out_tag) if a.out_tag else ""
+    (EVID / f"P1_FINAL_RESULT_TABLE{suffix}.md").write_text(text + "\n")
+    json.dump(summary, open(EVID / f"P1_FINAL_SUMMARY{suffix}.json", "w"), indent=1, default=float)
     print(text)
 
 

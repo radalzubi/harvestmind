@@ -1,0 +1,4167 @@
+{
+ "name": "T_combined_realistic",
+ "seed": 41003,
+ "status": "COMPLETE",
+ "reviews": [
+  {
+   "review": 0,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 150.0,
+     "pipeline_units": 0,
+     "inherited_on_hand": 150.0,
+     "mu": 98.92307692307692,
+     "window": 2,
+     "protection_units": 14.872879896543491,
+     "lean_baseline_units": 14.557513210073521,
+     "incremental_protection_units": 0.3153666864699698,
+     "ratio_protection_to_lean": 1.021663499934298,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0036710708322105,
+       "level_se": 0.8489901447555545,
+       "regime_age": null,
+       "residual_sd": 6.122154998559492
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.099762338953544
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.40366705622736
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 150.0,
+     "pipeline_units": 0,
+     "inherited_on_hand": 150.0,
+     "mu": 98.92307692307692,
+     "window": 2,
+     "protection_units": 14.872879896543491,
+     "lean_baseline_units": 14.557513210073521,
+     "incremental_protection_units": 0.3153666864699698,
+     "ratio_protection_to_lean": 1.021663499934298,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0036710708322105,
+       "level_se": 0.8489901447555545,
+       "regime_age": null,
+       "residual_sd": 6.122154998559492
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.099762338953544
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.40366705622736
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     888.0
+    ],
+    [
+     "src_B",
+     1032.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 1,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 937.3856634307225,
+     "pipeline_units": 0,
+     "inherited_on_hand": 51.91959181265017,
+     "mu": 99.23695447594999,
+     "window": 2,
+     "protection_units": 14.870194679530798,
+     "lean_baseline_units": 14.439602553888042,
+     "incremental_protection_units": 0.4305921256427556,
+     "ratio_protection_to_lean": 1.029820220053551,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.012475709722522,
+       "level_se": 0.8409426631834173,
+       "regime_age": null,
+       "residual_sd": 6.122154998559492
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.046717901249525
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.91351150578802
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 1077.6300504254884,
+     "pipeline_units": 0,
+     "inherited_on_hand": 48.57488611259379,
+     "mu": 99.49423952980048,
+     "window": 2,
+     "protection_units": 14.87205514360244,
+     "lean_baseline_units": 14.43935164846372,
+     "incremental_protection_units": 0.4327034951387194,
+     "ratio_protection_to_lean": 1.0299669615141451,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0126358760408278,
+       "level_se": 0.8409426631834173,
+       "regime_age": null,
+       "residual_sd": 6.122154998559492
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.045761505602293
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 213.42783070806468
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 2,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 835.3820389158786,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.00646405401488,
+     "window": 2,
+     "protection_units": 14.535216442204934,
+     "lean_baseline_units": 14.334444333007854,
+     "incremental_protection_units": 0.20077210919708044,
+     "ratio_protection_to_lean": 1.0140062708070772,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8966525198887335,
+       "level_se": 0.731838543678617,
+       "regime_age": null,
+       "residual_sd": 5.377893018342454
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.997744833204508
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 214.34737244103763
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 989.8583172536946,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.16898823532308,
+     "window": 2,
+     "protection_units": 15.056004396428131,
+     "lean_baseline_units": 14.804449379422174,
+     "incremental_protection_units": 0.2515550170059573,
+     "ratio_protection_to_lean": 1.0169918522843282,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9861970326863083,
+       "level_se": 0.8331197707055688,
+       "regime_age": null,
+       "residual_sd": 6.122154998559492
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.20784163371828
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 213.14242585006835
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 3,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 731.4168062372878,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 101.0807127215988,
+     "window": 2,
+     "protection_units": 14.395759630425635,
+     "lean_baseline_units": 14.275996178994419,
+     "incremental_protection_units": 0.1197634514312167,
+     "ratio_protection_to_lean": 1.0083891484649903,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.699942153939901,
+       "level_se": 0.5632900032104293,
+       "regime_age": null,
+       "residual_sd": 4.177470469605297
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.968308161025528
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 216.437421622192
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 896.2351352037812,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.44769454685488,
+     "window": 2,
+     "protection_units": 14.98813231703682,
+     "lean_baseline_units": 14.796987786244204,
+     "incremental_protection_units": 0.1911445307926165,
+     "ratio_protection_to_lean": 1.0129178001329644,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8670749939225093,
+       "level_se": 0.7253094959738827,
+       "regime_age": null,
+       "residual_sd": 5.379039186717627
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.203660841819125
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 213.69237687995397
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 4,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 637.259614377432,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.86203517235694,
+     "window": 2,
+     "protection_units": 14.374639295535486,
+     "lean_baseline_units": 14.256849049047354,
+     "incremental_protection_units": 0.11779024648813241,
+     "ratio_protection_to_lean": 1.0082620111977691,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.700453478494675,
+       "level_se": 0.5582379728795952,
+       "regime_age": null,
+       "residual_sd": 4.177470469605297
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.963951351320266
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 213.98091939376124
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 794.810021316375,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.78808792280921,
+     "window": 2,
+     "protection_units": 14.800130447055128,
+     "lean_baseline_units": 14.677434801147228,
+     "incremental_protection_units": 0.12269564590789983,
+     "ratio_protection_to_lean": 1.0083594747699585,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.7030801457634267,
+       "level_se": 0.5781002109180846,
+       "regime_age": null,
+       "residual_sd": 4.32610584895445
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.153076395375988
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.25361064676565
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 5,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 533.2943816988411,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.55166845532547,
+     "window": 2,
+     "protection_units": 14.30386571275972,
+     "lean_baseline_units": 14.191998074458875,
+     "incremental_protection_units": 0.11186763830084523,
+     "ratio_protection_to_lean": 1.0078824445799617,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.690246979678519,
+       "level_se": 0.5427325831561413,
+       "regime_age": null,
+       "residual_sd": 4.097541145455681
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.936340565175818
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 213.2953349851098
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 689.4839415102224,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.58240175405172,
+     "window": 2,
+     "protection_units": 14.816161171974425,
+     "lean_baseline_units": 14.658544305027027,
+     "incremental_protection_units": 0.1576168669473983,
+     "ratio_protection_to_lean": 1.0107525593038147,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8049250637278575,
+       "level_se": 0.6551923679378019,
+       "regime_age": null,
+       "residual_sd": 4.9465939011834
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.14540921147888
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 211.82334781313045
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 6,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 429.32914902025027,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.39514789214014,
+     "window": 2,
+     "protection_units": 14.241333895721688,
+     "lean_baseline_units": 14.128279739653614,
+     "incremental_protection_units": 0.11305415606807401,
+     "ratio_protection_to_lean": 1.0080019760474281,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.7016715616226338,
+       "level_se": 0.5443932407832215,
+       "regime_age": null,
+       "residual_sd": 4.145975402170953
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.908712322020402
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.9185755239339
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 582.2073787446966,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.68059888986139,
+     "window": 2,
+     "protection_units": 14.912417408904815,
+     "lean_baseline_units": 14.719583158344424,
+     "incremental_protection_units": 0.1928342505603915,
+     "ratio_protection_to_lean": 1.013100523872585,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8966097363514852,
+       "level_se": 0.7266333411929196,
+       "regime_age": null,
+       "residual_sd": 5.5338746576810705
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.17199929168704
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.0807809380672
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 7,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 333.21034899664744,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.78890174010961,
+     "window": 2,
+     "protection_units": 14.169155461272675,
+     "lean_baseline_units": 14.057454421813613,
+     "incremental_protection_units": 0.11170103945906185,
+     "ratio_protection_to_lean": 1.0079460360394787,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.7051632285207241,
+       "level_se": 0.5397600225619197,
+       "regime_age": null,
+       "residual_sd": 4.145975402170953
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.879454904176285
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 211.63525790203283
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 486.63371373540997,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.03241927519115,
+     "window": 2,
+     "protection_units": 14.841427338182939,
+     "lean_baseline_units": 14.650964110442988,
+     "incremental_protection_units": 0.19046322773995072,
+     "ratio_protection_to_lean": 1.013000047389659,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9007209581585198,
+       "level_se": 0.720449115187878,
+       "regime_age": null,
+       "residual_sd": 5.5338746576810705
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.143828016386793
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.7158026608253
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 8,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 233.1683326455506,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.6382876132709,
+     "window": 2,
+     "protection_units": 14.055762286930575,
+     "lean_baseline_units": 13.945037139788932,
+     "incremental_protection_units": 0.11072514714164328,
+     "ratio_protection_to_lean": 1.0079401113121251,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.7111107484236099,
+       "level_se": 0.53524312287979,
+       "regime_age": null,
+       "residual_sd": 4.145975402170953
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.8302808829169726
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 211.22161236633073
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 391.06004872612334,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.53808581436705,
+     "window": 2,
+     "protection_units": 14.771659694667132,
+     "lean_baseline_units": 14.583495271497704,
+     "incremental_protection_units": 0.18816442316942883,
+     "ratio_protection_to_lean": 1.0129025600287458,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9048677929190068,
+       "level_se": 0.7144201463066019,
+       "regime_age": null,
+       "residual_sd": 5.5338746576810705
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.115672036275468
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.6596669002318
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 9,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 125.27988363946578,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.24509138296973,
+     "window": 2,
+     "protection_units": 14.20955406869828,
+     "lean_baseline_units": 14.040647978884538,
+     "incremental_protection_units": 0.168906089813742,
+     "ratio_protection_to_lean": 1.0120297930742055,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8834190429120712,
+       "level_se": 0.6640123864176805,
+       "regime_age": null,
+       "residual_sd": 5.186102525816692
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.870489851250442
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.53083074482402
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 301.3378325949563,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.74748705522605,
+     "window": 2,
+     "protection_units": 14.974144221289025,
+     "lean_baseline_units": 14.758819875512222,
+     "incremental_protection_units": 0.21532434577680348,
+     "ratio_protection_to_lean": 1.0145895368053153,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9696266168653689,
+       "level_se": 0.769145350283808,
+       "regime_age": null,
+       "residual_sd": 6.0072172227792215
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.195392245109248
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 208.2537939859643
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     192.0
+    ],
+    [
+     "src_B",
+     120.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 10,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 205.57747444103634,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.0057413065147,
+     "window": 2,
+     "protection_units": 14.319680867481877,
+     "lean_baseline_units": 14.127667304305637,
+     "incremental_protection_units": 0.1920135631762392,
+     "ratio_protection_to_lean": 1.013591314053504,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.947117814404997,
+       "level_se": 0.7104435816474515,
+       "regime_age": null,
+       "residual_sd": 5.594038355933186
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.906380674982342
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 214.13914991733503
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 329.23189134357386,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.11073444993119,
+     "window": 2,
+     "protection_units": 15.127932320911153,
+     "lean_baseline_units": 14.918289682631912,
+     "incremental_protection_units": 0.20964263827924157,
+     "ratio_protection_to_lean": 1.0140527260657306,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9584649163780489,
+       "level_se": 0.7629173502106928,
+       "regime_age": null,
+       "residual_sd": 6.0072172227792215
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.267540021683783
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 207.1397585824943
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     1056.0
+    ],
+    [
+     "src_B",
+     864.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 11,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 1131.368773508561,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 103.2899233133777,
+     "window": 2,
+     "protection_units": 14.295456594607524,
+     "lean_baseline_units": 14.14658478171869,
+     "incremental_protection_units": 0.14887181288883333,
+     "ratio_protection_to_lean": 1.010523516112611,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8409965358056043,
+       "level_se": 0.6255029582700194,
+       "regime_age": null,
+       "residual_sd": 4.964775815753052
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.9034438364210535
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 220.7264314084741
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 1071.9398010187829,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.52805090280859,
+     "window": 2,
+     "protection_units": 15.027736471562985,
+     "lean_baseline_units": 14.820049859784714,
+     "incremental_protection_units": 0.2076866117782714,
+     "ratio_protection_to_lean": 1.0140138942677814,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9653206889859174,
+       "level_se": 0.7568382306199006,
+       "regime_age": null,
+       "residual_sd": 6.0072172227792215
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.223027529939181
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 207.8761516654019
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 12,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 1023.4803245024762,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 107.39804696514808,
+     "window": 2,
+     "protection_units": 14.406467969964725,
+     "lean_baseline_units": 14.246644674641956,
+     "incremental_protection_units": 0.1598232953227683,
+     "ratio_protection_to_lean": 1.0112183113268236,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8771046843176716,
+       "level_se": 0.6505020830153525,
+       "regime_age": null,
+       "residual_sd": 5.20401666412282
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.933176229894604
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 229.0427386049381
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 978.3166189688693,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.49906490664809,
+     "window": 2,
+     "protection_units": 15.004926945171489,
+     "lean_baseline_units": 14.802387768315766,
+     "incremental_protection_units": 0.20253917685572276,
+     "ratio_protection_to_lean": 1.0136828719815902,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9613543794371644,
+       "level_se": 0.746893524829491,
+       "regime_age": null,
+       "residual_sd": 5.975148198635928
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.2153440255134065
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 207.80051758161193
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 13,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 921.1652765882379,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 106.00469669218643,
+     "window": 2,
+     "protection_units": 14.301489465986284,
+     "lean_baseline_units": 14.142970653507422,
+     "incremental_protection_units": 0.1585188124788619,
+     "ratio_protection_to_lean": 1.011208310924378,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.883203129357026,
+       "level_se": 0.645478825732292,
+       "regime_age": null,
+       "residual_sd": 5.20401666412282
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.89220813552977
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 226.1523640378803
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 889.0439053358733,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.28927364764778,
+     "window": 2,
+     "protection_units": 15.168423668651764,
+     "lean_baseline_units": 14.969108458544621,
+     "incremental_protection_units": 0.1993152101071427,
+     "ratio_protection_to_lean": 1.0133151022760725,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9550321107026051,
+       "level_se": 0.7450180788442627,
+       "regime_age": null,
+       "residual_sd": 6.0065277787846565
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.289346411992085
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 207.54765575384016
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 14,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 830.8872931344983,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 101.60208030410011,
+     "window": 2,
+     "protection_units": 14.453598567921528,
+     "lean_baseline_units": 14.299155479697808,
+     "incremental_protection_units": 0.15444308822372044,
+     "ratio_protection_to_lean": 1.0108008538296547,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8707061131417211,
+       "level_se": 0.6405701702681713,
+       "regime_age": null,
+       "residual_sd": 5.20401666412282
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.976777451745977
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 217.50331608789804
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 783.9004870570113,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.57529706237514,
+     "window": 2,
+     "protection_units": 15.15657903696589,
+     "lean_baseline_units": 14.960148151524761,
+     "incremental_protection_units": 0.19643088544112963,
+     "ratio_protection_to_lean": 1.0131302767493722,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9557644282213189,
+       "level_se": 0.739352459899383,
+       "regime_age": null,
+       "residual_sd": 6.0065277787846565
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.284527443611631
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 208.11074227627503
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 15,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 736.5969548605925,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.6929546619921,
+     "window": 2,
+     "protection_units": 14.42740742249015,
+     "lean_baseline_units": 14.275002605028753,
+     "incremental_protection_units": 0.152404817461397,
+     "ratio_protection_to_lean": 1.0106763425323444,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8708402854527034,
+       "level_se": 0.635771824276838,
+       "regime_age": null,
+       "residual_sd": 5.20401666412282
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 5.975856596273023
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 211.66091192901297
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 682.7247449396158,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.60637467357529,
+     "window": 2,
+     "protection_units": 15.065292034596325,
+     "lean_baseline_units": 14.87062423197242,
+     "incremental_protection_units": 0.19466780262390593,
+     "ratio_protection_to_lean": 1.0130907620007883,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9622867578995313,
+       "level_se": 0.7338141612448337,
+       "regime_age": null,
+       "residual_sd": 6.0065277787846565
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.241931242923511
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.083373579123
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 16,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 646.3189714068529,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 94.2903382739058,
+     "window": 2,
+     "protection_units": 14.585156859707517,
+     "lean_baseline_units": 14.410839764231087,
+     "incremental_protection_units": 0.1743170954764306,
+     "ratio_protection_to_lean": 1.0120962482636924,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9315159898764078,
+       "level_se": 0.6834106750029686,
+       "regime_age": null,
+       "residual_sd": 5.635548797423805
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.049868020163048
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 202.9915163120427
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 579.565164741487,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.0,
+     "window": 2,
+     "protection_units": 22.60899179707251,
+     "lean_baseline_units": 14.795063543398907,
+     "incremental_protection_units": 7.813928253673602,
+     "ratio_protection_to_lean": 1.5281442847982853,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.5265732212355352,
+       "calibration_ratio_raw": 1.5265732212355352,
+       "level_se": 1.1503000396799972,
+       "regime_age": null,
+       "residual_sd": 9.485617129505629
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.2136666604359965
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 206.7950635433989
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 17,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 554.0348105430303,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 91.78261651130192,
+     "window": 2,
+     "protection_units": 14.625245968992244,
+     "lean_baseline_units": 14.45394670443063,
+     "incremental_protection_units": 0.1712992645616147,
+     "ratio_protection_to_lean": 1.0118513834362697,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9274292962232457,
+       "level_se": 0.6784403495843455,
+       "regime_age": null,
+       "residual_sd": 5.635548797423805
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.076526610032003
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 198.01917972703447
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 476.40558454335826,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 94.0,
+     "window": 2,
+     "protection_units": 22.595303366557193,
+     "lean_baseline_units": 14.717294163263226,
+     "incremental_protection_units": 7.878009203293967,
+     "ratio_protection_to_lean": 1.5352892397135587,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.5335029771072641,
+       "calibration_ratio_raw": 1.5335029771072641,
+       "level_se": 1.1419341101805205,
+       "regime_age": null,
+       "residual_sd": 9.485617129505629
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.185587684608803
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 202.71729416326323
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 18,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 453.7259400388752,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.45697258590707,
+     "window": 2,
+     "protection_units": 14.960152068945746,
+     "lean_baseline_units": 14.395725619433787,
+     "incremental_protection_units": 0.5644264495119593,
+     "ratio_protection_to_lean": 1.0392079193805974,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0266504026632872,
+       "level_se": 0.7403179886418326,
+       "regime_age": null,
+       "residual_sd": 6.1939446802072915
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.033158574855918
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.30967079124792
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 387.1328709103622,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 92.0,
+     "window": 2,
+     "protection_units": 21.080873491346857,
+     "lean_baseline_units": 14.866211728040078,
+     "incremental_protection_units": 6.214661763306779,
+     "ratio_protection_to_lean": 1.4180393685356252,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.4133196013021436,
+       "calibration_ratio_raw": 1.4133196013021436,
+       "level_se": 1.056957595341685,
+       "regime_age": null,
+       "residual_sd": 8.843141697639668
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.257000673798166
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 198.86621172804007
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 19,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 363.4479565851356,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.02117475947358,
+     "window": 2,
+     "protection_units": 15.07295040532482,
+     "lean_baseline_units": 14.530387277456837,
+     "incremental_protection_units": 0.5425631278679823,
+     "ratio_protection_to_lean": 1.0373398944919894,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0248232986940748,
+       "level_se": 0.7415525618808181,
+       "regime_age": null,
+       "residual_sd": 6.248432951090403
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.0970832328390046
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 206.572736796404
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 287.94096687369995,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 90.0,
+     "window": 2,
+     "protection_units": 21.07926721476745,
+     "lean_baseline_units": 14.75217534523663,
+     "incremental_protection_units": 6.327091869530822,
+     "ratio_protection_to_lean": 1.4288921275311302,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.4241906026875488,
+       "calibration_ratio_raw": 1.424190602687549,
+       "level_se": 1.0500864843643853,
+       "regime_age": null,
+       "residual_sd": 8.848185992042525
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.212782176307981
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 194.75217534523662
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 20,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 271.1637957213129,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 95.27377198034341,
+     "window": 2,
+     "protection_units": 15.065073852621026,
+     "lean_baseline_units": 14.571909042998254,
+     "incremental_protection_units": 0.49316480962277254,
+     "ratio_protection_to_lean": 1.0338435278567524,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.021368520833654,
+       "level_se": 0.7363848852509159,
+       "regime_age": null,
+       "residual_sd": 6.248432951090403
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.117706609941681
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 205.11945300368507
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 190.73290091777093,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 110.00000000000001,
+     "window": 2,
+     "protection_units": 21.183646766098125,
+     "lean_baseline_units": 14.810662248980073,
+     "incremental_protection_units": 6.372984517118052,
+     "ratio_protection_to_lean": 1.4302970663959962,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.4335466656501685,
+       "calibration_ratio_raw": 1.4335466656501685,
+       "level_se": 1.0430659572603953,
+       "regime_age": null,
+       "residual_sd": 8.850708139243956
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.173993739666521
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 234.8106622489801
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     120.0
+    ],
+    [
+     "src_B",
+     264.0
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 21,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 299.1827434034782,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 108.0,
+     "window": 2,
+     "protection_units": 14.960264902553115,
+     "lean_baseline_units": 14.792370759710947,
+     "incremental_protection_units": 0.16789414284216875,
+     "ratio_protection_to_lean": 1.0113500496688097,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9403549439878959,
+       "level_se": 0.6793964017299352,
+       "regime_age": null,
+       "residual_sd": 5.80476540093582
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.172951435038702
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 230.79237075971093
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 353.7780834608326,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 108.0,
+     "window": 2,
+     "protection_units": 23.649624486985083,
+     "lean_baseline_units": 14.7087434226825,
+     "incremental_protection_units": 8.940881064302582,
+     "ratio_protection_to_lean": 1.6078616512213246,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.61613200743823,
+       "calibration_ratio_raw": 1.61613200743823,
+       "level_se": 1.1606316343659522,
+       "regime_age": null,
+       "residual_sd": 9.916441030956703
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.135910300220768
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 230.7087434226825
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     192.0
+    ],
+    [
+     "src_B",
+     120.0
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 22,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 391.40294593732125,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 106.0,
+     "window": 2,
+     "protection_units": 17.462445967114675,
+     "lean_baseline_units": 14.685886627385653,
+     "incremental_protection_units": 2.7765593397290225,
+     "ratio_protection_to_lean": 1.1890631059721928,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.183529243585029,
+       "calibration_ratio_raw": 1.183529243585029,
+       "level_se": 0.8437612843003304,
+       "regime_age": null,
+       "residual_sd": 7.258309015289069
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.132766938063078
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 226.68588662738566
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 363.74379878795105,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 106.0,
+     "window": 2,
+     "protection_units": 21.15404519250638,
+     "lean_baseline_units": 14.841233414051333,
+     "incremental_protection_units": 6.312811778455048,
+     "ratio_protection_to_lean": 1.4253562761487348,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.427189738619758,
+       "calibration_ratio_raw": 1.4271897386197583,
+       "level_se": 1.0288739223978123,
+       "regime_age": null,
+       "residual_sd": 8.850708139243956
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.2014936765195054
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 226.84123341405135
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     192.0
+    ],
+    [
+     "src_B",
+     120.0
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 23,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 488.44837496026946,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 95.9228196954785,
+     "window": 2,
+     "protection_units": 17.442269834159738,
+     "lean_baseline_units": 14.645511178329214,
+     "incremental_protection_units": 2.7967586558305246,
+     "ratio_protection_to_lean": 1.1909635397341989,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.1944945639701126,
+       "calibration_ratio_raw": 1.1944945639701126,
+       "level_se": 0.8479950509681731,
+       "regime_age": null,
+       "residual_sd": 7.343852564219178
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.148083704801966
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 206.4911505692862
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 384.86672651125383,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 104.0,
+     "window": 2,
+     "protection_units": 21.56980120776927,
+     "lean_baseline_units": 14.742634427262592,
+     "incremental_protection_units": 6.827166780506678,
+     "ratio_protection_to_lean": 1.4630900138093124,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.4758036690794791,
+       "calibration_ratio_raw": 1.4758036690794791,
+       "level_se": 1.0505325277096034,
+       "regime_age": null,
+       "residual_sd": 9.097878564983963
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.164694366601415
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 222.7426344272626
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 24,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 378.10861740569885,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 102.0,
+     "window": 2,
+     "protection_units": 20.93474638886841,
+     "lean_baseline_units": 14.88179665557575,
+     "incremental_protection_units": 6.052949733292662,
+     "ratio_protection_to_lean": 1.4067351458551753,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.4167682549505438,
+       "calibration_ratio_raw": 1.416768254950544,
+       "level_se": 1.0129193893573916,
+       "regime_age": null,
+       "residual_sd": 8.830426512323598
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.232795294126524
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 218.88179665557576
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 293.61017479752456,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 102.0,
+     "window": 2,
+     "protection_units": 22.097721007047166,
+     "lean_baseline_units": 14.788871637250224,
+     "incremental_protection_units": 7.308849369796942,
+     "ratio_protection_to_lean": 1.494212780330543,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.5063082093375282,
+       "calibration_ratio_raw": 1.506308209337528,
+       "level_se": 1.0698500439612622,
+       "regime_age": null,
+       "residual_sd": 9.326736452739379
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.191784918201609
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 218.78887163725022
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 25,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 288.9570134161524,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 94.82097905668573,
+     "window": 2,
+     "protection_units": 20.085892679294073,
+     "lean_baseline_units": 14.991302189239496,
+     "incremental_protection_units": 5.094590490054577,
+     "ratio_protection_to_lean": 1.3398364215292375,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.3447815785013835,
+       "calibration_ratio_raw": 1.3447815785013837,
+       "level_se": 0.9660338803456456,
+       "regime_age": null,
+       "residual_sd": 8.476912897047264
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.3035611377826015
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 204.63326030261095
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 199.1144615127594,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.0,
+     "window": 2,
+     "protection_units": 15.849459242507383,
+     "lean_baseline_units": 14.73411869401483,
+     "incremental_protection_units": 1.1153405484925525,
+     "ratio_protection_to_lean": 1.0756978121090892,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0785561487472888,
+       "level_se": 0.7588839462260211,
+       "regime_age": null,
+       "residual_sd": 6.659179602296933
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.174161271095041
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 214.73411869401482
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     192.0
+    ],
+    [
+     "src_B",
+     120.0
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 26,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 389.27378851012105,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 93.80840644709406,
+     "window": 2,
+     "protection_units": 17.409849317008813,
+     "lean_baseline_units": 15.133379016310716,
+     "incremental_protection_units": 2.2764703006980973,
+     "ratio_protection_to_lean": 1.1504270988154413,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.1530636090217574,
+       "calibration_ratio_raw": 1.1530636090217574,
+       "level_se": 0.8315275600609274,
+       "regime_age": null,
+       "residual_sd": 7.343852564219178
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.368991707621054
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 202.75019191049884
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 221.06782446175856,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 94.85617623315531,
+     "window": 2,
+     "protection_units": 15.406954340798253,
+     "lean_baseline_units": 14.623399284676806,
+     "incremental_protection_units": 0.7835550561214468,
+     "ratio_protection_to_lean": 1.0535822787074205,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0561321299720874,
+       "level_se": 0.7344410665397445,
+       "regime_age": null,
+       "residual_sd": 6.486407870089803
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.141663231343253
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 204.3357517509874
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 27,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 300.1221845205746,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 93.72176187292536,
+     "window": 2,
+     "protection_units": 17.406927891885026,
+     "lean_baseline_units": 15.270679736462027,
+     "incremental_protection_units": 2.136248155422999,
+     "ratio_protection_to_lean": 1.139892145751852,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.1422078479490467,
+       "calibration_ratio_raw": 1.1422078479490467,
+       "level_se": 0.8262479666187553,
+       "regime_age": null,
+       "residual_sd": 7.343852564219178
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.429523818634087
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 202.71420348231274
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 128.540771870426,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 93.6859228920062,
+     "window": 2,
+     "protection_units": 15.401472818666173,
+     "lean_baseline_units": 14.626024345931311,
+     "incremental_protection_units": 0.7754484727348618,
+     "ratio_protection_to_lean": 1.0530184043451682,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.055316644570159,
+       "level_se": 0.7297779015109378,
+       "regime_age": null,
+       "residual_sd": 6.486407870089803
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.1464091402934145
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 201.99787012994372
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     888.0
+    ],
+    [
+     "src_B",
+     1032.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 28,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 1088.5710549334415,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 93.6312664287936,
+     "window": 2,
+     "protection_units": 15.349608499607351,
+     "lean_baseline_units": 15.258879686837224,
+     "incremental_protection_units": 0.09072881277012712,
+     "ratio_protection_to_lean": 1.0059459681596672,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0064652073873002,
+       "level_se": 0.7229369518650277,
+       "regime_age": null,
+       "residual_sd": 6.466144671266782
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.424608246570545
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 202.5214125444244
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 1056.5952903317302,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.16434659743084,
+     "window": 2,
+     "protection_units": 14.51597009652811,
+     "lean_baseline_units": 14.57055779115367,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9962535617779367,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9438457839976164,
+       "level_se": 0.6452150657993269,
+       "regime_age": null,
+       "residual_sd": 5.770978988937179
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.1143240630841795
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 206.89925098601535
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 29,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 991.494863922602,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 92.0,
+     "window": 2,
+     "protection_units": 22.949962207418174,
+     "lean_baseline_units": 15.166361185218491,
+     "incremental_protection_units": 7.783601022199683,
+     "ratio_protection_to_lean": 1.5132147999868137,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.5203583752423215,
+       "calibration_ratio_raw": 1.5203583752423218,
+       "level_se": 1.0792408803625266,
+       "regime_age": null,
+       "residual_sd": 9.71316792326274
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.388735762194628
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 199.16636118521848
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 960.1309163535325,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.22435207358424,
+     "window": 2,
+     "protection_units": 14.442166057474047,
+     "lean_baseline_units": 14.49921219496557,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9960655698582485,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9487512720571308,
+       "level_se": 0.6412198876596865,
+       "regime_age": null,
+       "residual_sd": 5.770978988937179
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.0827101463845725
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 206.94791634213405
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 30,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 882.531792379823,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 90.0,
+     "window": 2,
+     "protection_units": 24.94688199064166,
+     "lean_baseline_units": 15.27431829882134,
+     "incremental_protection_units": 9.67256369182032,
+     "ratio_protection_to_lean": 1.633256653592633,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.6403558435138241,
+       "calibration_ratio_raw": 1.6403558435138241,
+       "level_se": 1.1669026479196336,
+       "regime_age": null,
+       "residual_sd": 10.56675289562465
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.441744294329146
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 195.27431829882133
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 859.7292209884695,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.05982073188,
+     "window": 2,
+     "protection_units": 14.263542488891225,
+     "lean_baseline_units": 14.42573008917867,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9887570612173655,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.567401908926136,
+       "level_se": 0.3789410786665439,
+       "regime_age": null,
+       "residual_sd": 3.431457411986784
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.047666315541933
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 208.54537155293866
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 31,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 783.4744546136602,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 95.34092685172162,
+     "window": 2,
+     "protection_units": 15.19464086227201,
+     "lean_baseline_units": 15.220775862259696,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9982829390417286,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9857596203665155,
+       "level_se": 0.6927946742201443,
+       "regime_age": null,
+       "residual_sd": 6.311659863467538
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.402838717537242
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 205.90262956570294
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 761.2961863168391,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.33446351983008,
+     "window": 2,
+     "protection_units": 14.180449070564746,
+     "lean_baseline_units": 14.345455041335697,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9884976830434801,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.5708263342975473,
+       "level_se": 0.3766513835128673,
+       "regime_age": null,
+       "residual_sd": 3.431457411986784
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.011385960687147
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.01438208099586
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 32,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 690.3605571134673,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 108.0,
+     "window": 2,
+     "protection_units": 29.930069881785734,
+     "lean_baseline_units": 15.302602842254885,
+     "incremental_protection_units": 14.627467039530849,
+     "ratio_protection_to_lean": 1.9558809824914365,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.9818249312196319,
+       "calibration_ratio_raw": 1.9818249312196317,
+       "level_se": 1.3836173631694215,
+       "regime_age": null,
+       "residual_sd": 12.681062599158157
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.398679519766725
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 231.30260284225488
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 656.9571695649109,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 108.0,
+     "window": 2,
+     "protection_units": 16.16830062651408,
+     "lean_baseline_units": 14.411417770663624,
+     "incremental_protection_units": 1.7568828558504546,
+     "ratio_protection_to_lean": 1.1219090920691248,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.133243283172357,
+       "calibration_ratio_raw": 1.133243283172357,
+       "level_se": 0.7423898429381107,
+       "regime_age": null,
+       "residual_sd": 6.8041153008605395
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.0041082103865335
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 230.41141777066363
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 33,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 595.2655128579511,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 106.0,
+     "window": 2,
+     "protection_units": 24.983753336511164,
+     "lean_baseline_units": 15.235480685884102,
+     "incremental_protection_units": 9.748272650627062,
+     "ratio_protection_to_lean": 1.6398401764677488,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.6587253801628394,
+       "calibration_ratio_raw": 1.6587253801628392,
+       "level_se": 1.1470826319048297,
+       "regime_age": null,
+       "residual_sd": 10.57557932103511
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.375726474985806
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 227.2354806858841
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 566.398777667011,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 106.0,
+     "window": 2,
+     "protection_units": 16.16052555632581,
+     "lean_baseline_units": 14.47133669446908,
+     "incremental_protection_units": 1.689188861856728,
+     "ratio_protection_to_lean": 1.1167265262028168,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.126924016570592,
+       "calibration_ratio_raw": 1.126924016570592,
+       "level_se": 0.7380099236333002,
+       "regime_age": null,
+       "residual_sd": 6.8041153008605395
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.037776461244067
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 226.47133669446907
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 34,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 500.1704686024348,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 104.0,
+     "window": 2,
+     "protection_units": 24.97688032577319,
+     "lean_baseline_units": 15.168790445201823,
+     "incremental_protection_units": 9.808089880571368,
+     "ratio_protection_to_lean": 1.64659670235433,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.6646889229301465,
+       "calibration_ratio_raw": 1.6646889229301463,
+       "level_se": 1.1403940464201523,
+       "regime_age": null,
+       "residual_sd": 10.57557932103511
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.352886221180726
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 223.16879044520184
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 462.0597609150828,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.85098118147137,
+     "window": 2,
+     "protection_units": 14.304673518059449,
+     "lean_baseline_units": 14.393185916923533,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9938503956403417,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9074176105998191,
+       "level_se": 0.5901062623207802,
+       "regime_age": null,
+       "residual_sd": 5.472420348565827
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.030762776301487
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.09514827986627
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 35,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 407.05657110224183,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 102.0,
+     "window": 2,
+     "protection_units": 23.762993155522107,
+     "lean_baseline_units": 15.142203135954935,
+     "incremental_protection_units": 8.620790019567172,
+     "ratio_protection_to_lean": 1.5693220426489483,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.5849309930100612,
+       "calibration_ratio_raw": 1.584930993010061,
+       "level_se": 1.0786077664812626,
+       "regime_age": null,
+       "residual_sd": 10.060583487576242
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.347647646456477
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 219.14220313595493
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 369.5327083237502,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.57528565462553,
+     "window": 2,
+     "protection_units": 14.309603690135656,
+     "lean_baseline_units": 14.393914312791873,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9941426202196236,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.906751184215442,
+       "level_se": 0.5867050451598838,
+       "regime_age": null,
+       "residual_sd": 5.472420348565827
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.035195149263343
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 207.54448562204294
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 36,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 307.9992333360791,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.20027916906312,
+     "window": 2,
+     "protection_units": 14.922578018978717,
+     "lean_baseline_units": 15.018831542423689,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.993591144346144,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8101901324343556,
+       "level_se": 0.5451014016654128,
+       "regime_age": null,
+       "residual_sd": 5.113504410146587
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.311486903428685
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 207.41938988054994
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 263.2250308783894,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.0,
+     "window": 2,
+     "protection_units": 15.604118306536467,
+     "lean_baseline_units": 14.45731438956464,
+     "incremental_protection_units": 1.1468039169718267,
+     "ratio_protection_to_lean": 1.0793234404447616,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0864454581745244,
+       "level_se": 0.7009178840984898,
+       "regime_age": null,
+       "residual_sd": 6.575192579835297
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.052022704281093
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 214.45731438956463
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 37,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 201.59793256897294,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.24048348867174,
+     "window": 2,
+     "protection_units": 14.957315330853998,
+     "lean_baseline_units": 15.063225309451411,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9929689706937491,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.808492520608954,
+       "level_se": 0.5420303834158554,
+       "regime_age": null,
+       "residual_sd": 5.113504410146587
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.324739289233141
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 211.5441922867949
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 165.66253817577024,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.0,
+     "window": 2,
+     "protection_units": 15.59683070909023,
+     "lean_baseline_units": 14.369383342143335,
+     "incremental_protection_units": 1.2274473669468957,
+     "ratio_protection_to_lean": 1.0854210189623774,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0922647632949396,
+       "level_se": 0.6969690195258964,
+       "regime_age": null,
+       "residual_sd": 6.575192579835297
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.019779087261305
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.36938334214332
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     912.0
+    ],
+    [
+     "src_B",
+     960.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 38,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 990.7963804593977,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.46356088925434,
+     "window": 2,
+     "protection_units": 14.980141970462023,
+     "lean_baseline_units": 15.021255309327234,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9972629891431456,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.6491664093522618,
+       "level_se": 0.4316910104990251,
+       "regime_age": null,
+       "residual_sd": 4.095380515789741
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.308675952405041
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.94837708783592
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 992.1840088784356,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.0,
+     "window": 2,
+     "protection_units": 15.683027548337813,
+     "lean_baseline_units": 14.322134469602686,
+     "incremental_protection_units": 1.3608930787351277,
+     "ratio_protection_to_lean": 1.0950202696129887,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0948803311903466,
+       "level_se": 0.6930861535506017,
+       "regime_age": null,
+       "residual_sd": 6.575192579835297
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.005398391518086
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 206.32213446960267
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 39,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 890.4177948300522,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.04656583727257,
+     "window": 2,
+     "protection_units": 14.884712682278392,
+     "lean_baseline_units": 14.950180939022705,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9956209053916245,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.534089686856915,
+       "level_se": 0.35135607304073874,
+       "regime_age": null,
+       "residual_sd": 3.351723317294763
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.275581423448651
+     },
+     "activity": 0.375,
+     "demand_score": 0.5,
+     "supply_score": 0.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": true,
+     "active_drivers": [
+      {
+       "driver": "demand",
+       "score": 0.5,
+       "reasons": []
+      }
+     ],
+     "lean_base_stock_units": 211.04331261356785
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 894.6215161758165,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 94.0,
+     "window": 2,
+     "protection_units": 15.672236733650498,
+     "lean_baseline_units": 14.236984299113283,
+     "incremental_protection_units": 1.4352524345372153,
+     "ratio_protection_to_lean": 1.1008115485964682,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.1005928977671893,
+       "calibration_ratio_raw": 1.1005928977671893,
+       "level_se": 0.6892674679967813,
+       "regime_age": null,
+       "residual_sd": 6.575192579835297
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 5.974227703244875
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 202.2369842991133
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 40,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 790.0392092007068,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.51296979568716,
+     "window": 2,
+     "protection_units": 14.812190913775387,
+     "lean_baseline_units": 14.879520424903623,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.995475021425049,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.5368769798486105,
+       "level_se": 0.34944131179357624,
+       "regime_age": null,
+       "residual_sd": 3.351723317294763
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.243000618577255
+     },
+     "activity": 0.375,
+     "demand_score": 0.5,
+     "supply_score": 0.0,
+     "regime": "PROTECT",
+     "flags": [],
+     "risk_active": true,
+     "decaying": true,
+     "active_drivers": [
+      {
+       "driver": "demand",
+       "score": 0.5,
+       "reasons": []
+      }
+     ],
+     "lean_base_stock_units": 211.90546001627794
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 797.0590234731973,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.05579616235316,
+     "window": 2,
+     "protection_units": 14.202644364742193,
+     "lean_baseline_units": 14.204531332022816,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9998671573713687,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.8916463576913614,
+       "level_se": 0.5525143382649106,
+       "regime_age": null,
+       "residual_sd": 5.29953136106625
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 5.94353502972605
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.31612365672913
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     192.0
+    ],
+    [
+     "src_B",
+     120.0
+    ]
+   ],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 41,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 867.5921351334306,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 101.38237148563891,
+     "window": 2,
+     "protection_units": 17.303843122515328,
+     "lean_baseline_units": 15.074001317096828,
+     "incremental_protection_units": 2.2298418054185003,
+     "ratio_protection_to_lean": 1.1479263374409705,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.1504943830852006,
+       "calibration_ratio_raw": 1.1504943830852006,
+       "level_se": 0.7539286301636108,
+       "regime_age": null,
+       "residual_sd": 7.270624408011681
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.319565323313057
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 217.83874428837464
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 805.0309594208337,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 102.0424030818211,
+     "window": 2,
+     "protection_units": 15.052249884665427,
+     "lean_baseline_units": 14.378488640467136,
+     "incremental_protection_units": 0.6737612441982908,
+     "ratio_protection_to_lean": 1.046858975309967,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0478569583968669,
+       "level_se": 0.6530715335406434,
+       "regime_age": null,
+       "residual_sd": 6.297993791412062
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.010356414531487
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 218.46329480410935
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 42,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 763.1984060789114,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 103.89183612637255,
+     "window": 2,
+     "protection_units": 15.020292129661378,
+     "lean_baseline_units": 15.068279427394883,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9968153432537055,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.7595797162883879,
+       "level_se": 0.4942673417393069,
+       "regime_age": null,
+       "residual_sd": 4.792099673456703
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.308883150372722
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 222.85195168014
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 709.4595379978598,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.05133180217581,
+     "window": 2,
+     "protection_units": 15.041211670069178,
+     "lean_baseline_units": 14.315494989919792,
+     "incremental_protection_units": 0.725716680149386,
+     "ratio_protection_to_lean": 1.0506944873831046,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0515540306025424,
+       "level_se": 0.6495884605268372,
+       "regime_age": null,
+       "residual_sd": 6.297993791412062
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 5.989225097452483
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 214.4181585942714
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 43,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 658.804677024392,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 104.895621982666,
+     "window": 2,
+     "protection_units": 14.999383807423017,
+     "lean_baseline_units": 15.050999483715369,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9965706147058075,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.7609008974737583,
+       "level_se": 0.49165905260009135,
+       "regime_age": null,
+       "residual_sd": 4.792099673456703
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.2979287964658655
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 224.84224344904737
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 601.9416888970142,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 108.0,
+     "window": 2,
+     "protection_units": 19.12591939521062,
+     "lean_baseline_units": 14.446910430129114,
+     "incremental_protection_units": 4.679008965081506,
+     "ratio_protection_to_lean": 1.3238760970874026,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.3364225501869538,
+       "calibration_ratio_raw": 1.3364225501869538,
+       "level_se": 0.8254061948760208,
+       "regime_age": null,
+       "residual_sd": 8.045064432387885
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.019850855751013
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [
+      "FALSE_PROTECTION_RISK"
+     ],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 230.44691043012912
+    }
+   ],
+   "purchases": [],
+   "owner": "PROTECTION_RECOVERY"
+  },
+  {
+   "review": 44,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 562.4412348202204,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 103.89183612637254,
+     "window": 2,
+     "protection_units": 14.988064084960701,
+     "lean_baseline_units": 14.98454610718844,
+     "incremental_protection_units": 0.0035179777722618155,
+     "ratio_protection_to_lean": 1.000234773729354,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.972409728907586,
+       "level_se": 0.6224637435256534,
+       "regime_age": null,
+       "residual_sd": 6.098874220082027
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.271918141886093
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 222.7682183599335
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 502.3881249147496,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 103.03793872164376,
+     "window": 2,
+     "protection_units": 15.260101579601102,
+     "lean_baseline_units": 14.336894306399836,
+     "incremental_protection_units": 0.9232072732012657,
+     "ratio_protection_to_lean": 1.0643938117608327,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0666865108478663,
+       "level_se": 0.6519636816110462,
+       "regime_age": null,
+       "residual_sd": 6.387913403093662
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 5.988557404758185
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 220.41277174968735
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 45,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 460.0550774782881,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 101.88426441378563,
+     "window": 2,
+     "protection_units": 14.921977320730383,
+     "lean_baseline_units": 14.914648480104924,
+     "incremental_protection_units": 0.007328840625458355,
+     "ratio_protection_to_lean": 1.0004913854077913,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.976184091065571,
+       "level_se": 0.6192468550992578,
+       "regime_age": null,
+       "residual_sd": 6.098874220082027
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.247668114960461
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 218.68317730767617
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 406.8167034917757,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.55356398226449,
+     "window": 2,
+     "protection_units": 14.266148865467294,
+     "lean_baseline_units": 14.264980155073877,
+     "incremental_protection_units": 0.0011687103934168164,
+     "ratio_protection_to_lean": 1.0000819286378748,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9761015044896993,
+       "level_se": 0.5915339970434028,
+       "regime_age": null,
+       "residual_sd": 5.825934221808551
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 5.968574164686201
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 213.37210811960287
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 46,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 357.6689201363558,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 101.3823714856389,
+     "window": 2,
+     "protection_units": 14.863743424847423,
+     "lean_baseline_units": 14.856510717707147,
+     "incremental_protection_units": 0.007232707140275352,
+     "ratio_protection_to_lean": 1.0004868375406384,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9799504129118382,
+       "level_se": 0.6160793312319739,
+       "regime_age": null,
+       "residual_sd": 6.098874220082027
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.2236559521004216
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 217.62125368898495
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 315.2274246280924,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.55802834244184,
+     "window": 2,
+     "protection_units": 14.654879793974516,
+     "lean_baseline_units": 14.297001542016842,
+     "incremental_protection_units": 0.35787825195767375,
+     "ratio_protection_to_lean": 1.0250316998921711,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0251650403160981,
+       "level_se": 0.6198953333409918,
+       "regime_age": null,
+       "residual_sd": 6.136650713638349
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 5.986012468534999
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 211.41305822690052
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 47,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 263.31304964477107,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.87290684490526,
+     "window": 2,
+     "protection_units": 15.316129945580457,
+     "lean_baseline_units": 14.811215852911321,
+     "incremental_protection_units": 0.5049140926691358,
+     "ratio_protection_to_lean": 1.0340899827322338,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0339206609233917,
+       "level_se": 0.6454830290868934,
+       "regime_age": null,
+       "residual_sd": 6.422475048069859
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.211767779487029
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.55702954272184
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 213.68278936618262,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.06472488270788,
+     "window": 2,
+     "protection_units": 14.646432569095891,
+     "lean_baseline_units": 14.229181067186085,
+     "incremental_protection_units": 0.4172515019098064,
+     "ratio_protection_to_lean": 1.029323648349098,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0294708105488617,
+       "level_se": 0.6167566026243971,
+       "regime_age": null,
+       "residual_sd": 6.136650713638349
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 5.960975921567506
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 208.35863083260185
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     192.0
+    ],
+    [
+     "src_B",
+     120.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 48,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 345.6379327171013,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.88047855749217,
+     "window": 2,
+     "protection_units": 15.346058597231108,
+     "lean_baseline_units": 14.803412918547684,
+     "incremental_protection_units": 0.5426456786834244,
+     "ratio_protection_to_lean": 1.0366567954071946,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0355712894318154,
+       "level_se": 0.6422475048069859,
+       "regime_age": null,
+       "residual_sd": 6.422475048069859
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.2018666542924965
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 216.56437003353201
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 240.78371436142555,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 94.57588578315126,
+     "window": 2,
+     "protection_units": 14.342724017678496,
+     "lean_baseline_units": 14.311875954990363,
+     "incremental_protection_units": 0.03084806268813267,
+     "ratio_protection_to_lean": 1.00215541713645,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9701162586752899,
+       "level_se": 0.5825934221808553,
+       "regime_age": null,
+       "residual_sd": 5.825934221808553
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.005397981643936
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 203.4636475212929
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     888.0
+    ],
+    [
+     "src_B",
+     1032.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 49,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 1119.5703839553414,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.46356152068799,
+     "window": 2,
+     "protection_units": 14.824537489633967,
+     "lean_baseline_units": 14.79360534711719,
+     "incremental_protection_units": 0.030932142516777006,
+     "ratio_protection_to_lean": 1.0020909130526998,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.997757639237473,
+       "level_se": 0.6160668173279535,
+       "regime_age": null,
+       "residual_sd": 6.191394888445737
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.205309430832776
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 211.72072838849317
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 1158.3442473104385,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 93.09012988351346,
+     "window": 2,
+     "protection_units": 14.42247484336718,
+     "lean_baseline_units": 14.395256418745598,
+     "incremental_protection_units": 0.02721842462158186,
+     "ratio_protection_to_lean": 1.0018907912321824,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 0.9634853567932996,
+       "level_se": 0.5797021218416603,
+       "regime_age": null,
+       "residual_sd": 5.825934221808553
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.0467283500795475
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 200.5755161857725
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 50,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 1020.9336933226652,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.52619484337396,
+     "window": 2,
+     "protection_units": 14.786984608451569,
+     "lean_baseline_units": 14.718270321467324,
+     "incremental_protection_units": 0.06871428698424431,
+     "ratio_protection_to_lean": 1.0046686387383457,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.0026404697025,
+       "level_se": 0.6130394436392888,
+       "regime_age": null,
+       "residual_sd": 6.191394888445737
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.175089751047877
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.77066000821523
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 1058.7571386166355,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.33319203724608,
+     "window": 2,
+     "protection_units": 17.641010923114216,
+     "lean_baseline_units": 14.366505053372117,
+     "incremental_protection_units": 3.2745058697420983,
+     "ratio_protection_to_lean": 1.2279264064278113,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.2334255560676641,
+       "calibration_ratio_raw": 1.2334255560676641,
+       "level_se": 0.7348917140292176,
+       "regime_age": null,
+       "residual_sd": 7.422042494999455
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.017422339344079
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 211.03288912786428
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 51,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 916.3788012520284,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.07595023813698,
+     "window": 2,
+     "protection_units": 14.799265313418788,
+     "lean_baseline_units": 14.719028390464914,
+     "incremental_protection_units": 0.08023692295387441,
+     "ratio_protection_to_lean": 1.00545123773291,
+     "drivers": {},
+     "calibration": {
+      "svc_A": {
+       "calibration_ratio": 1.0,
+       "calibration_ratio_raw": 1.003969039585123,
+       "level_se": 0.6100900361144069,
+       "regime_age": null,
+       "residual_sd": 6.191737621468311
+      }
+     },
+     "sd_fitted": {
+      "svc_A": 6.167259524284698
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 214.8709288667389
+    },
+    {
+     "sku": "B",
+     "location": "branch",
+     "on_hand": 953.1948034012044,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.48908655062117,
+     "window": 2,
+     "protection_units": 17.64005748743777,
+     "lean_baseline_units": 14.382224943775777,
+     "incremental_protection_units": 3.2578325436619924,
+     "ratio_protection_to_lean": 1.2265179801037593,
+     "drivers": {},
+     "calibration": {
+      "svc_B": {
+       "calibration_ratio": 1.2321097059458903,
+       "calibration_ratio_raw": 1.2321097059458903,
+       "level_se": 0.7313155774102522,
+       "regime_age": null,
+       "residual_sd": 7.422042494999455
+      }
+     },
+     "sd_fitted": {
+      "svc_B": 6.02384873618178
+     },
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 211.36039804501812
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  }
+ ]
+}
