@@ -274,3 +274,52 @@ def test_independent_branch_requests_isolate_every_branch_with_a_virtual_supplie
         assert virtual.destination == name and virtual.lead_days == 7 + 14 and virtual.freight_per_unit == pytest.approx(.3)
         assert part.inbound_transfers and part.inbound_transfers[0].due_in == 2
     assert sum(p.inbound_transfers[0].accepted_quantity for p in parts.values()) == pytest.approx(100.)
+
+
+# ---------------------------------------------------------------- network continuation (P2)
+
+
+def test_origin_residual_is_valued_through_its_lanes_never_above_the_branch_and_never_twice():
+    from zaad.full.lotsizing import continuation_feeds, cycle_continuation_terms
+    from zaad.full.terminal import continuation_value
+    from zaad.full.worlds import forecast_all
+    req = p2_request(lane_cost=.4, lane_lead_periods=1, opening_central=0., opening_branch=0.)
+    fits = forecast_all(req)
+    feeds = continuation_feeds(req, fits)
+    assert set(feeds) == {("A", "central")} and {f["branch"] for f in feeds["A", "central"]} == {"north", "south"}
+    single = p2_request(branches=("branch",), opening_central=0., extra={"_single_node": True}, incumbent_rule="reorder_point")
+    assert continuation_feeds(single, forecast_all(single)) == {}
+    at_branch = continuation_value(req, [{"sku": "A", "location": "north", "expiry": 52, "quantity": 100.}], [], fits)
+    at_origin = continuation_value(req, [{"sku": "A", "location": "central", "expiry": 52, "quantity": 100.}], [], fits)
+    salvage = 100. * req.skus[0].terminal_value
+    assert at_branch["continuation_credit"] > salvage and at_origin["continuation_credit"] > salvage       # both above salvage
+    assert at_origin["continuation_credit"] < at_branch["continuation_credit"]                            # lane cost and lead are paid
+    assert at_branch["continuation_credit"] - at_origin["continuation_credit"] <= 100. * .4 + 100. * req.skus[0].asset_value * .02 + 1e-6
+    # no double counting: a branch already holding a full cycle leaves the origin's units nothing but salvage-ish value
+    slabs = cycle_continuation_terms(req, fits)["A", "north"]
+    cycle_units = sum(d for d, _ in slabs)
+    both = continuation_value(req, [{"sku": "A", "location": "north", "expiry": 52, "quantity": cycle_units * 2},
+                                    {"sku": "A", "location": "central", "expiry": 52, "quantity": 100.}], [], fits, cap_units={"A": cycle_units})
+    branch_only = continuation_value(req, [{"sku": "A", "location": "north", "expiry": 52, "quantity": cycle_units * 2}], [], fits, cap_units={"A": cycle_units})
+    assert both["continuation_credit"] - branch_only["continuation_credit"] <= 100. * req.skus[0].terminal_value + 1e-6 + 100. * req.skus[0].asset_value * .5
+
+
+def test_the_solve_credits_origin_residual_through_feeds_and_shares_the_branch_demand():
+    from zaad.full.lotsizing import continuation_feeds, cycle_continuation_terms
+    from zaad.full.worlds import forecast_all
+    req = p2_request(lane_cost=.4, opening_central=900., opening_branch=200., fixed_order_cost=200.)   # a multi-period cycle: slabs beyond the lane lead
+    fits = forecast_all(req)
+    slabs = cycle_continuation_terms(req, fits)
+    feeds = continuation_feeds(req, fits)
+    assert len(slabs["A", "north"]) > 1
+    hold = Solution("OPTIMAL", {}, {}, {}, {}, None, [], 0., 0, 0, None, 0., [])   # buy nothing, move nothing: 900 stay at central
+    without = solve(req, world(req), fixed=hold, continuation=slabs)
+    with_feeds = solve(req, world(req), fixed=hold, continuation=slabs, continuation_feeds=feeds)
+    assert without.usable_plan and with_feeds.usable_plan
+    assert with_feeds.projected_cost < without.projected_cost - 1.                      # the central residual now earns above salvage
+    # bounded by the slabs: the credit cannot exceed one full cycle of branch demand at the net margin
+    bound = sum(max(0., m - .4) * d for b in ("north", "south") for d, m in slabs["A", b])
+    assert without.projected_cost - with_feeds.projected_cost <= bound + 1e-6
+    # single node: the kwarg is never built, so the frozen path is untouched
+    single = p2_request(branches=("branch",), opening_central=0., extra={"_single_node": True}, incumbent_rule="reorder_point")
+    assert continuation_feeds(single, forecast_all(single)) == {}

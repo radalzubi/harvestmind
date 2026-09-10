@@ -307,7 +307,9 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
                                       "elapsed_days": (now - p["placed_at"]).days, "arrived": False,
                                       "stage": p["stage"], "carrier": p["carrier"]} for p in pipeline]
         data["inbound_transfers"] = [{"id": f"inbound-{n}", "known_at": now, "sku": sku,
-             "origin": next(a.origin for a in req.transfers if a.sku == sku and a.destination == location),
+             # an in-flight transfer normally has a lane; a declared inbound without one (an isolated-branch
+             # projection, P2) keeps its destination as origin rather than failing the replay
+             "origin": next((a.origin for a in req.transfers if a.sku == sku and a.destination == location), location),
              "destination": location, "accepted_quantity": quantity, "due_in": max(0, due - 1), "expires_in": expiry - 1}
             for n, (sku, location, expiry, due, quantity, kind) in enumerate(outcome["pending"]) if kind == "transfer"]
         future = outcome["future_payments"]

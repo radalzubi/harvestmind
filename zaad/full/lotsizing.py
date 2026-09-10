@@ -20,7 +20,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 
-from zaad.full.contracts import Request
+from zaad.full.contracts import Request, Source
 from zaad.full.model import pallet_units
 
 
@@ -33,6 +33,31 @@ def _tier_charge(st, pallets: float) -> float:
     return st.freight_tiers[-1].charge
 
 
+def echelon_demand(req: Request, mu: dict[tuple[str, str], float]) -> dict[tuple[str, str], float]:
+    """Demand each (SKU, location) ultimately serves: its own plus that of every location its approved
+    lanes feed, transitively (P2). A source delivering to a central DC without customers of its own
+    still buys for the branches the DC feeds, so its economic lot is sized on that demand. Without
+    lanes this is `mu` unchanged."""
+    out: dict[tuple[str, str], float] = defaultdict(float, mu)
+    if not any(a.approved for a in req.transfers):
+        return out
+    downstream: dict[tuple[str, str], set[str]] = defaultdict(set)
+    for arc in req.transfers:
+        if arc.approved:
+            downstream[arc.sku, arc.origin].add(arc.destination)
+    for (sku, origin), dests in downstream.items():
+        seen: set[str] = set()
+        frontier = list(dests)
+        while frontier:
+            dest = frontier.pop()
+            if dest in seen or dest == origin:
+                continue
+            seen.add(dest)
+            frontier.extend(downstream.get((sku, dest), ()))
+        out[sku, origin] = mu.get((sku, origin), 0.) + sum(mu.get((sku, d), 0.) for d in seen)
+    return out
+
+
 def reference_lots(req: Request, fits: dict) -> dict[str, dict]:
     """Per supplier: the economic lot the operator would buy from it and the order-level cost per
     unit of that lot. Lot = min(load limit, max(EOQ on the supplier's fixed costs, minimum order
@@ -43,6 +68,7 @@ def reference_lots(req: Request, fits: dict) -> dict[str, dict]:
     mu: dict[tuple[str, str], float] = defaultdict(float)
     for s in req.services:
         mu[s.sku, s.location] += float(fits[s.id]["mean"])
+    mu = echelon_demand(req, mu)
     declared = {st.supplier: st for st in req.supplier_terms}
     by_supplier: dict[str, list] = defaultdict(list)
     for source in req.sources:
@@ -93,6 +119,31 @@ def landed_unit_costs(req: Request, fits: dict) -> dict[str, float]:
     return landed
 
 
+def _continuation_sources(req: Request, mu: dict) -> list[tuple[tuple[str, str], Source]]:
+    """(SKU, location) pairs that carry continuation slabs, each with the source whose supplier lot
+    sets the cycle: a source destination keeps the first source declared for it (the frozen P1 rule,
+    unchanged); a served location that buys nothing itself - a transfer-fed branch (P2) - uses the
+    cheapest approved source of the SKU anywhere in the network, since that is the purchase its
+    residual lets the operator avoid. Order: source destinations in declaration order, then the
+    other served locations sorted."""
+    out: list[tuple[tuple[str, str], Source]] = []
+    seen: set[tuple[str, str]] = set()
+    for source in req.sources:
+        key = (source.sku, source.destination)
+        if key not in seen:
+            seen.add(key)
+            out.append((key, source))
+    cheapest: dict[str, Source] = {}
+    for source in sorted(req.sources, key=lambda s: (s.unit_price + s.freight_per_unit + s.handling_per_unit, s.id)):
+        if source.approved and source.compliance == "cleared":
+            cheapest.setdefault(source.sku, source)
+    for key in sorted(mu):
+        if key not in seen and mu[key] > 0 and key[0] in cheapest:
+            seen.add(key)
+            out.append((key, cheapest[key[0]]))
+    return out
+
+
 def terminal_terms(req: Request, fits: dict) -> dict[tuple[str, str], tuple[float, float]]:
     """Solve terms for `model.solve(continuation=...)`: per SKU / location, the units of end-of-plan
     supply that may earn the landed margin (this line's share of one reference lot) and the margin per
@@ -106,8 +157,7 @@ def terminal_terms(req: Request, fits: dict) -> dict[tuple[str, str], tuple[floa
     for s in req.services:
         mu[s.sku, s.location] += float(fits[s.id]["mean"])
     out: dict[tuple[str, str], tuple[float, float]] = {}
-    for source in req.sources:
-        key = (source.sku, source.destination)
+    for key, source in _continuation_sources(req, mu):
         if key in out or mu[key] <= 0 or source.sku not in landed:
             continue
         lot = lots.get(source.supplier)
@@ -118,7 +168,7 @@ def terminal_terms(req: Request, fits: dict) -> dict[tuple[str, str], tuple[floa
             units = lot["lot_units"] * mu[key] / lot["demand_per_period"]
             tau = lot["lot_units"] / (2. * lot["demand_per_period"])
         sku = skus[source.sku]
-        rate = locs[source.destination].holding_per_value_period + req.liquidity.cost_of_capital_per_period
+        rate = locs[key[1]].holding_per_value_period + req.liquidity.cost_of_capital_per_period
         margin = landed[source.sku] - sku.terminal_value - sku.asset_value * rate * tau
         if units > 0 and margin > 0:
             out[key] = (float(units), float(margin))
@@ -177,8 +227,7 @@ def cycle_continuation_terms(req: Request, fits: dict) -> dict[tuple[str, str], 
     for s in req.services:
         mu[s.sku, s.location] += float(fits[s.id]["mean"])
     out: dict[tuple[str, str], list[tuple[float, float]]] = {}
-    for source in req.sources:
-        key = (source.sku, source.destination)
+    for key, source in _continuation_sources(req, mu):
         if key in out or mu[key] <= 0 or source.sku not in unit_cost:
             continue
         lot = lots.get(source.supplier)
@@ -188,7 +237,7 @@ def cycle_continuation_terms(req: Request, fits: dict) -> dict[tuple[str, str], 
         # 0 cannot serve a post-window period at or beyond shelf_life - horizon, so no slab is credited
         # there (the selection rows apply each lot's own expiry; this is the solve-side bound)
         periods = min(periods, max(0, int(sku.shelf_life) - int(req.horizon)))
-        rate = locs[source.destination].holding_per_value_period + req.liquidity.cost_of_capital_per_period
+        rate = locs[key[1]].holding_per_value_period + req.liquidity.cost_of_capital_per_period
         slabs = []
         for j in range(periods):
             margin = unit_cost[source.sku] - sku.terminal_value - sku.asset_value * rate * (j + .5)
@@ -197,6 +246,29 @@ def cycle_continuation_terms(req: Request, fits: dict) -> dict[tuple[str, str], 
             slabs.append((float(mu[key]), float(margin)))
         if slabs:
             out[key] = slabs
+    return out
+
+
+def continuation_feeds(req: Request, fits: dict) -> dict[tuple[str, str], list[dict]]:
+    """Post-window outlets for the residual stock of an origin that serves no customers of its own (P2
+    network continuation). Per SKU / origin with no fitted demand and approved lanes to locations that
+    carry continuation slabs: the fed locations, each with its lane lead (periods) and cost per unit.
+    The model lets origin residual earn a fed location's slab margin less the lane cost, from slab
+    `lead` onward, SHARING that location's post-window demand with the location's own residual, so no
+    unit of post-window demand is credited twice. A single-location request, or an origin with its own
+    customers, yields nothing here and the frozen continuation is unchanged."""
+    mu: dict[tuple[str, str], float] = defaultdict(float)
+    for s in req.services:
+        mu[s.sku, s.location] += float(fits[s.id]["mean"])
+    slabs = cycle_continuation_terms(req, fits) if req.terminal_economic_basis == "cycle" else {k: [v] for k, v in terminal_terms(req, fits).items()}
+    out: dict[tuple[str, str], list[dict]] = {}
+    for arc in sorted(req.transfers, key=lambda a: (a.lead_periods, a.cost_per_unit, a.id)):
+        if not arc.approved or mu.get((arc.sku, arc.origin), 0.) > 0 or (arc.sku, arc.destination) not in slabs:
+            continue
+        feeds = out.setdefault((arc.sku, arc.origin), [])
+        if any(f["branch"] == arc.destination for f in feeds):
+            continue          # the fastest, then cheapest, lane to each fed location
+        feeds.append({"branch": arc.destination, "lead": int(arc.lead_periods), "cost": float(arc.cost_per_unit)})
     return out
 
 

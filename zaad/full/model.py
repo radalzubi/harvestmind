@@ -333,7 +333,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           continuation: dict[tuple[str, str], tuple[float, float]] | None = None,
           seed: Solution | None = None,
           allowed_periods: frozenset[int] | None = None,
-          expected_shortage: dict | None = None) -> Solution:
+          expected_shortage: dict | None = None,
+          continuation_feeds: dict[tuple[str, str], list[dict]] | None = None) -> Solution:
     """excess_penalty (v6): {(sku, location): (baseline_units, cost_per_unit_period)} charges inventory
     held above the lean baseline while a temporary risk driver is gone, so the plan runs temporary
     protection down through demand rather than replenishing it. continuation (v6): {(sku, location):
@@ -901,6 +902,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                           upper=(1 - service.target) * sum(world.demand[service.id]))
     if continuation:
         for w in range(len(worlds)):
+            slab_vars: dict[tuple[str, str, int], tuple[int, float]] = {}     # (sku, location, slab) -> (served var, demand units)
             for (sku, location), value in continuation.items():
                 # one (units, margin) pair, or a list of slabs sharing the post-horizon supply (P1 final
                 # closure: the steady-state relative value, concave in the residual); P0 passes neither
@@ -912,8 +914,45 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         served = m.var(("continuation", sku, location, w, j), upper=demand_units)
                         costs[w][served] -= margin
                         served_vars.append(served)
+                        slab_vars[sku, location, j] = (served, demand_units)
                 if served_vars:
                     m.row({**{q: -coef for q, coef in supply_terms.items()}, **{s: 1. for s in served_vars}}, upper=0)
+            # Network continuation (P2): an origin without customers of its own may earn a fed location's
+            # slab margin less the lane cost, from the slab its lane lead can reach, sharing that
+            # location's post-window demand with the location's own residual (one row per slab), and
+            # bounded by the origin's own post-horizon supply. Absent feeds: nothing is added.
+            for (sku, feed_origin), feeds in (continuation_feeds or {}).items():
+                supply_terms = post[w].get((sku, feed_origin), {})
+                if not supply_terms:
+                    continue
+                via_vars = []
+                shared: dict[tuple[str, str, int], list[int]] = defaultdict(list)
+                for feed in feeds:
+                    fed_entry = continuation.get((sku, feed["branch"]))
+                    if not fed_entry:
+                        continue
+                    fed_slabs: list = list(fed_entry) if isinstance(fed_entry, list) else [fed_entry]
+                    for j, (demand_units, margin) in enumerate(fed_slabs):
+                        net = margin - feed["cost"]
+                        if j < feed["lead"] or demand_units <= 0 or net <= 0:
+                            continue
+                        via = m.var(("continuation_via", sku, feed_origin, feed["branch"], w, j), upper=demand_units)
+                        costs[w][via] -= net
+                        via_vars.append(via)
+                        shared[sku, feed["branch"], j].append(via)
+                if via_vars:
+                    m.row({**{q: -coef for q, coef in supply_terms.items()}, **{v: 1. for v in via_vars}}, upper=0)
+                    for slab_key, vias in shared.items():
+                        own = slab_vars.get(slab_key)
+                        row = {v: 1. for v in vias}
+                        if own is not None:
+                            row[own[0]] = 1.
+                            demand_units = own[1]
+                        else:
+                            entry = continuation[slab_key[0], slab_key[1]]
+                            branch_slabs: list = list(entry) if isinstance(entry, list) else [entry]
+                            demand_units = float(branch_slabs[slab_key[2]][0])
+                        m.row(row, upper=demand_units)
     es_vars: dict[tuple[str, int], int] = {}
     for service, t, cuts in shortage_terms:
         # Availability for the service in period t on the single world: what it served plus what

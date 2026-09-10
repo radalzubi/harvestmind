@@ -703,8 +703,8 @@ def plan(req: Request) -> dict:
             # solve and in every candidate evaluation of this review. "cycle" basis: the steady-state
             # relative value (c*/mu less the unit's own carrying, concave, one economic cycle credited);
             # "landed" basis: the pass-J landed cost less carrying.
-            from zaad.full.lotsizing import (continuation_caps, cycle_continuation_terms, economic_cycle, landed_unit_costs,
-                                             steady_state_unit_costs, terminal_terms)
+            from zaad.full.lotsizing import (continuation_caps, continuation_feeds, cycle_continuation_terms, economic_cycle,
+                                             landed_unit_costs, steady_state_unit_costs, terminal_terms)
             if req.terminal_economic_basis == "cycle":
                 p1_terminal = steady_state_unit_costs(req, fits)
                 p1_terminal_cap = continuation_caps(req, fits)
@@ -722,6 +722,12 @@ def plan(req: Request) -> dict:
                             "residual_units_credited_up_to": p1_terminal_cap}
             if lot_terms:
                 v6 = {**v6, "continuation": lot_terms}
+                feeds = continuation_feeds(req, fits)
+                if feeds:
+                    # network continuation (P2): only a request with a customer-less origin feeding a
+                    # location that carries slabs adds anything; a single location never does
+                    v6 = {**v6, "continuation_feeds": feeds}
+                    p1_economics["continuation_feeds"] = {f"{k[0]}@{k[1]}": v for k, v in feeds.items()}
     # Cadence candidates (P1). When a supplier carries order-level economics (fixed order cost, MOV,
     # freight tariff) the review may be better served by ordering every k periods than by the
     # per-period cadence the incumbent runs. They are optional classes: skipping one is never
