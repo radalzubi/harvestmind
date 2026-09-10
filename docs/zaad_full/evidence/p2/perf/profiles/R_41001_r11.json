@@ -1,0 +1,5342 @@
+{
+ "fixture": "R",
+ "seed": 41001,
+ "review": 11,
+ "snapshot": "docs/zaad_full/evidence/p2/perf/snapshots/R_41001_r11.json",
+ "machine": {
+  "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+  "python": "3.14.3",
+  "cpus": 12,
+  "loadavg_1m": 4.5576171875,
+  "scipy": "1.17.1",
+  "highspy": "?",
+  "other_python_processes": 34
+ },
+ "switches": {
+  "FEFO_SYMMETRY_ELIMINATION": false
+ },
+ "request": {
+  "horizon": 12,
+  "scenarios": 3,
+  "max_solve_seconds": 15.0,
+  "solve_budget_ceiling_seconds": 90.0,
+  "solver": "highs",
+  "solver_mip_gap": 1e-06,
+  "warm_start": true,
+  "warm_start_min_variables": 3000,
+  "locations": 3,
+  "transfers": 2,
+  "sources": 3,
+  "services": 2,
+  "skus": 1,
+  "stresses": 1,
+  "engine_profile": "reliability"
+ },
+ "wall_seconds": 61.13176479190588,
+ "decision": {
+  "status": "PENDING_REVIEW",
+  "selected_policy": "cadence_4_network",
+  "state": "NETWORK_ALLOCATION",
+  "owner": "PROTECTION_RECOVERY",
+  "requested": [
+   "deterministic_network",
+   "stochastic_network",
+   "joint_recovery",
+   "cvar_network",
+   "protected_network",
+   "stress_network",
+   "cadence_2_network",
+   "cadence_4_network"
+  ],
+  "built": [
+   "cadence_2_network",
+   "cadence_4_network",
+   "cvar_network",
+   "deterministic_network",
+   "joint_recovery",
+   "protected_network",
+   "stochastic_network",
+   "stress_network"
+  ],
+  "purchases_t0": [
+   [
+    "src_A",
+    2047.449356
+   ],
+   [
+    "src_A_north",
+    86.780833
+   ]
+  ],
+  "transfers_t0": [],
+  "actions": [
+   [
+    "purchase",
+    "src_A",
+    0,
+    2047.449356
+   ],
+   [
+    "purchase",
+    "src_A_north",
+    0,
+    86.780833
+   ],
+   [
+    "transfer",
+    "lane_north",
+    1,
+    794.124735
+   ],
+   [
+    "transfer",
+    "lane_north",
+    9,
+    93.477187
+   ],
+   [
+    "transfer",
+    "lane_north",
+    10,
+    79.757217
+   ],
+   [
+    "transfer",
+    "lane_south",
+    1,
+    46.912266
+   ],
+   [
+    "transfer",
+    "lane_south",
+    2,
+    208.812588
+   ],
+   [
+    "transfer",
+    "lane_south",
+    4,
+    104.213224
+   ],
+   [
+    "transfer",
+    "lane_south",
+    5,
+    559.025451
+   ],
+   [
+    "transfer",
+    "lane_south",
+    10,
+    94.339158
+   ]
+  ],
+  "candidate_status": {
+   "incumbent": "OPTIMAL",
+   "base_stock": "OPTIMAL",
+   "deterministic_network": "OPTIMAL",
+   "stochastic_network": "OPTIMAL",
+   "cvar_network": "OPTIMAL",
+   "protected_network": "OPTIMAL",
+   "stress_network": "OPTIMAL",
+   "cadence_2_network": "OPTIMAL",
+   "cadence_4_network": "OPTIMAL",
+   "joint_recovery": "OPTIMAL"
+  },
+  "candidate_cost": {
+   "incumbent": 0.0,
+   "base_stock": 0.0,
+   "deterministic_network": 0.0,
+   "stochastic_network": 8.037922623864105e-07,
+   "cvar_network": 0.0,
+   "protected_network": 8.037922623864105e-07,
+   "stress_network": 0.0,
+   "cadence_2_network": 0.0,
+   "cadence_4_network": 0.0,
+   "joint_recovery": 0.0
+  }
+ },
+ "phases": {
+  "solve_total": 61.08312154235318,
+  "milp_total": 60.65955245587975,
+  "completion_total": 0.1555600007995963,
+  "construction_total": 0.26800908567383885,
+  "matrix_total": 0.072329665068537,
+  "evaluate_total": 0.022532792761921883,
+  "evaluate_calls": 22,
+  "settle_calls": 66,
+  "settle_total": 0.022461875807493925,
+  "draw_total": 0.016251584514975548,
+  "other": 0.02611045679077506
+ },
+ "solves": [
+  {
+   "index": 0,
+   "label": "base_stock",
+   "worlds": 1,
+   "horizon": 12,
+   "arguments": {
+    "targets": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 66.3,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.10474258381873369,
+     "variables": 1573,
+     "integer": 324,
+     "binary": 324,
+     "continuous": 1249,
+     "rows": 1331,
+     "nonzeros": 7459,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 468,
+      "unmet": 24,
+      "allocate": 312,
+      "depleted": 24,
+      "fefo": 288,
+      "cash": 12,
+      "debt": 12,
+      "target_above": 36,
+      "target_below": 36
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 12175.033374128918,
+     "gap": 0.0,
+     "bound": 12175.033374128918,
+     "nodes": 1,
+     "residual": 7.334165275096893e-09,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 12.640625,
+     "rss_after_mb": 128.53125
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.0013447911478579044,
+   "total_seconds": 0.11133470805361867,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.11099741607904434,
+   "variables": 1573,
+   "constraints": 1331,
+   "gap": 0.0,
+   "best_bound": 12175.033374128918,
+   "nodes": 1,
+   "projected_cost": 14169.95479270087,
+   "warm_start": null,
+   "linear_seconds": 0.10474258381873369,
+   "completion_seconds": 0,
+   "rss_delta_mb": 14.65625,
+   "construction_seconds": 0.006592124234884977
+  },
+  {
+   "index": 1,
+   "label": "incumbent",
+   "worlds": 1,
+   "horizon": 12,
+   "arguments": {
+    "fixed": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 66.3,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.008654000237584114,
+     "variables": 1501,
+     "integer": 324,
+     "binary": 324,
+     "continuous": 1177,
+     "rows": 1643,
+     "nonzeros": 7699,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 468,
+      "unmet": 24,
+      "allocate": 312,
+      "depleted": 24,
+      "fefo": 288,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 11717.743288937978,
+     "gap": 0.0,
+     "bound": 11717.743288937983,
+     "nodes": 0,
+     "residual": 1.1641532182693481e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 0.28125,
+     "rss_after_mb": 129.078125
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.0013162922114133835,
+   "total_seconds": 0.014975749887526035,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.01465595792979002,
+   "variables": 1501,
+   "constraints": 1643,
+   "gap": 0.0,
+   "best_bound": 11717.743288937983,
+   "nodes": 0,
+   "projected_cost": 13712.690909644753,
+   "warm_start": null,
+   "linear_seconds": 0.008654000237584114,
+   "completion_seconds": 0,
+   "rss_delta_mb": 0.5,
+   "construction_seconds": 0.006321749649941921
+  },
+  {
+   "index": 2,
+   "label": "deterministic_network",
+   "worlds": 1,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "seed": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 66.3,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.23158987518399954,
+     "variables": 1501,
+     "integer": 324,
+     "binary": 324,
+     "continuous": 1177,
+     "rows": 1297,
+     "nonzeros": 7375,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 468,
+      "unmet": 24,
+      "allocate": 312,
+      "depleted": 24,
+      "fefo": 288,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 10928.914616636133,
+     "gap": 0.0,
+     "bound": 10928.914616636132,
+     "nodes": 30,
+     "residual": 1.1641532182693481e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 4.859375,
+     "rss_after_mb": 134.140625
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.001186625100672245,
+   "total_seconds": 0.2378154592588544,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.23748412495478988,
+   "variables": 1501,
+   "constraints": 1297,
+   "gap": 0.0,
+   "best_bound": 10928.914616636132,
+   "nodes": 30,
+   "projected_cost": 12923.45318874653,
+   "warm_start": null,
+   "linear_seconds": 0.23158987518399954,
+   "completion_seconds": 0,
+   "rss_delta_mb": 5.09375,
+   "construction_seconds": 0.006225584074854851
+  },
+  {
+   "index": 3,
+   "label": "stochastic_network",
+   "worlds": 3,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "seed": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 66.27103854082524,
+     "solver": "highspy",
+     "seeded": true,
+     "mip_gap": 1e-06,
+     "seconds": 5.0522479163482785,
+     "variables": 3781,
+     "integer": 948,
+     "binary": 948,
+     "continuous": 2833,
+     "rows": 3717,
+     "nonzeros": 21329,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1404,
+      "unmet": 72,
+      "allocate": 936,
+      "depleted": 72,
+      "fefo": 864,
+      "cash": 36,
+      "debt": 36
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 11042.415406660257,
+     "gap": 8.037922623864105e-07,
+     "bound": 11042.406530852193,
+     "nodes": 374,
+     "residual": 2.3283064365386963e-10,
+     "message": "highspy HighsModelStatus.kOptimal",
+     "rss_delta_mb": 54.21875,
+     "rss_after_mb": 200.0
+    }
+   ],
+   "completions": [
+    {
+     "mode": "equal",
+     "budget_seconds": 30.0,
+     "seconds": 0.028966249898076057,
+     "accepted": true,
+     "status": "highspy HighsModelStatus.kOptimal",
+     "controls": 348
+    }
+   ],
+   "matrix_seconds": 0.006766249891370535,
+   "total_seconds": 5.102725249715149,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 5.1017402918078005,
+   "variables": 3781,
+   "constraints": 3717,
+   "gap": 8.037922623864105e-07,
+   "best_bound": 11042.406530852193,
+   "nodes": 374,
+   "projected_cost": 13036.896534029709,
+   "warm_start": {
+    "supplied": true,
+    "source": "OPTIMAL",
+    "controls_seeded": 348,
+    "accepted": true,
+    "reason": "completed by the formulation (equal pins)",
+    "mode": "equal",
+    "completion_seconds": 0.028961459174752235,
+    "completion_status": "highspy HighsModelStatus.kOptimal",
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 11952.045228604573,
+    "solver_accepted": true,
+    "phase1_objective": 11042.415406660257,
+    "phase1_status": 0,
+    "outcome": "improved",
+    "final_objective": 11042.415406660257,
+    "model_variables": 3781,
+    "solve_seconds": 5.101744459010661,
+    "highs_integrality_violation": 2.220446049250313e-16,
+    "highs_primal_infeasibility": 2.3283064365386963e-10
+   },
+   "linear_seconds": 5.0522479163482785,
+   "completion_seconds": 0.028966249898076057,
+   "rss_delta_mb": 66.5,
+   "construction_seconds": 0.021511083468794823
+  },
+  {
+   "index": 4,
+   "label": "cvar_network",
+   "worlds": 3,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "cvar_weight": 0.2,
+    "seed": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 66.27504491684958,
+     "solver": "highspy",
+     "seeded": true,
+     "mip_gap": 1e-06,
+     "seconds": 7.038959249854088,
+     "variables": 3785,
+     "integer": 948,
+     "binary": 948,
+     "continuous": 2837,
+     "rows": 3720,
+     "nonzeros": 23924,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1404,
+      "unmet": 72,
+      "allocate": 936,
+      "depleted": 72,
+      "fefo": 864,
+      "cash": 36,
+      "debt": 36,
+      "cvar_threshold": 1,
+      "cvar_tail": 3
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 13306.030577409816,
+     "gap": 0.0,
+     "bound": 13306.030577409816,
+     "nodes": 300,
+     "residual": 1.1641532182693481e-10,
+     "message": "highspy HighsModelStatus.kOptimal",
+     "rss_delta_mb": 7.84375,
+     "rss_after_mb": 208.8125
+    }
+   ],
+   "completions": [
+    {
+     "mode": "equal",
+     "budget_seconds": 30.0,
+     "seconds": 0.024960957933217287,
+     "accepted": true,
+     "status": "highspy HighsModelStatus.kOptimal",
+     "controls": 348
+    }
+   ],
+   "matrix_seconds": 0.007573542185127735,
+   "total_seconds": 7.086421417072415,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 7.085471166763455,
+   "variables": 3785,
+   "constraints": 3720,
+   "gap": 0.0,
+   "best_bound": 13306.030577409816,
+   "nodes": 300,
+   "projected_cost": 13036.887657588739,
+   "warm_start": {
+    "supplied": true,
+    "source": "OPTIMAL",
+    "controls_seeded": 348,
+    "accepted": true,
+    "reason": "completed by the formulation (equal pins)",
+    "mode": "equal",
+    "completion_seconds": 0.024955083150416613,
+    "completion_status": "highspy HighsModelStatus.kOptimal",
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 14520.173882818926,
+    "solver_accepted": true,
+    "phase1_objective": 13306.030577409816,
+    "phase1_status": 0,
+    "outcome": "improved",
+    "final_objective": 13306.030577409816,
+    "model_variables": 3785,
+    "solve_seconds": 7.085475457832217,
+    "highs_integrality_violation": 0.0,
+    "highs_primal_infeasibility": 1.1641532182693481e-10
+   },
+   "linear_seconds": 7.038959249854088,
+   "completion_seconds": 0.024960957933217287,
+   "rss_delta_mb": 8.828125,
+   "construction_seconds": 0.022501209285110235
+  },
+  {
+   "index": 5,
+   "label": "protected_network",
+   "worlds": 3,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "service_risk": "cvar",
+    "service_risk_levels": true,
+    "seed": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 66.27772237518802,
+     "solver": "highspy",
+     "seeded": true,
+     "mip_gap": 1e-06,
+     "seconds": 5.146110916975886,
+     "variables": 3781,
+     "integer": 948,
+     "binary": 948,
+     "continuous": 2833,
+     "rows": 3717,
+     "nonzeros": 21329,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1404,
+      "unmet": 72,
+      "allocate": 936,
+      "depleted": 72,
+      "fefo": 864,
+      "cash": 36,
+      "debt": 36
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 11042.415406660257,
+     "gap": 8.037922623864105e-07,
+     "bound": 11042.406530852193,
+     "nodes": 374,
+     "residual": 2.3283064365386963e-10,
+     "message": "highspy HighsModelStatus.kOptimal",
+     "rss_delta_mb": 1.328125,
+     "rss_after_mb": 211.34375
+    }
+   ],
+   "completions": [
+    {
+     "mode": "equal",
+     "budget_seconds": 30.0,
+     "seconds": 0.0222847918048501,
+     "accepted": true,
+     "status": "highspy HighsModelStatus.kOptimal",
+     "controls": 348
+    }
+   ],
+   "matrix_seconds": 0.006937082856893539,
+   "total_seconds": 5.1895194160752,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 5.188641459215432,
+   "variables": 3781,
+   "constraints": 3717,
+   "gap": 8.037922623864105e-07,
+   "best_bound": 11042.406530852193,
+   "nodes": 374,
+   "projected_cost": 13036.896534029709,
+   "warm_start": {
+    "supplied": true,
+    "source": "OPTIMAL",
+    "controls_seeded": 348,
+    "accepted": true,
+    "reason": "completed by the formulation (equal pins)",
+    "mode": "equal",
+    "completion_seconds": 0.022277624811977148,
+    "completion_status": "highspy HighsModelStatus.kOptimal",
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 11952.045228604573,
+    "solver_accepted": true,
+    "phase1_objective": 11042.415406660257,
+    "phase1_status": 0,
+    "outcome": "improved",
+    "final_objective": 11042.415406660257,
+    "model_variables": 3781,
+    "solve_seconds": 5.188642959110439,
+    "highs_integrality_violation": 2.220446049250313e-16,
+    "highs_primal_infeasibility": 2.3283064365386963e-10
+   },
+   "linear_seconds": 5.146110916975886,
+   "completion_seconds": 0.0222847918048501,
+   "rss_delta_mb": 2.3125,
+   "construction_seconds": 0.02112370729446411
+  },
+  {
+   "index": 6,
+   "label": "stress_network",
+   "worlds": 4,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "per_world_service": true,
+    "seed": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 66.27008691681549,
+     "solver": "highspy",
+     "seeded": true,
+     "mip_gap": 1e-06,
+     "seconds": 10.735223874915391,
+     "variables": 4921,
+     "integer": 1260,
+     "binary": 1260,
+     "continuous": 3661,
+     "rows": 4935,
+     "nonzeros": 28402,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1872,
+      "unmet": 96,
+      "allocate": 1248,
+      "depleted": 96,
+      "fefo": 1152,
+      "cash": 48,
+      "debt": 48
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 11013.46099942138,
+     "gap": 0.0,
+     "bound": 11013.46099942138,
+     "nodes": 955,
+     "residual": 1.835869625210762e-07,
+     "message": "highspy HighsModelStatus.kOptimal",
+     "rss_delta_mb": 48.203125,
+     "rss_after_mb": 261.71875
+    }
+   ],
+   "completions": [
+    {
+     "mode": "equal",
+     "budget_seconds": 30.0,
+     "seconds": 0.029917417094111443,
+     "accepted": true,
+     "status": "highspy HighsModelStatus.kOptimal",
+     "controls": 348
+    }
+   ],
+   "matrix_seconds": 0.009004207793623209,
+   "total_seconds": 10.796001499984413,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 10.794737458694726,
+   "variables": 4921,
+   "constraints": 4935,
+   "gap": 0.0,
+   "best_bound": 11013.46099942138,
+   "nodes": 955,
+   "projected_cost": 13007.94212615794,
+   "warm_start": {
+    "supplied": true,
+    "source": "OPTIMAL",
+    "controls_seeded": 348,
+    "accepted": true,
+    "reason": "completed by the formulation (equal pins)",
+    "mode": "equal",
+    "completion_seconds": 0.02991308318451047,
+    "completion_status": "highspy HighsModelStatus.kOptimal",
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 11907.53815262708,
+    "solver_accepted": true,
+    "phase1_objective": 11013.46099942138,
+    "phase1_status": 0,
+    "outcome": "improved",
+    "final_objective": 11013.46099942138,
+    "model_variables": 4921,
+    "solve_seconds": 10.79473933391273,
+    "highs_integrality_violation": 2.3738458304540775e-13,
+    "highs_primal_infeasibility": 1.835869625210762e-07
+   },
+   "linear_seconds": 10.735223874915391,
+   "completion_seconds": 0.029917417094111443,
+   "rss_delta_mb": 50.8125,
+   "construction_seconds": 0.030860207974910736
+  },
+  {
+   "index": 7,
+   "label": "cadence_2_network",
+   "worlds": 3,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "allowed_periods": [
+     0,
+     2,
+     4,
+     6,
+     8,
+     10
+    ]
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 66.3,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 1.7876733327284455,
+     "variables": 3781,
+     "integer": 948,
+     "binary": 948,
+     "continuous": 2833,
+     "rows": 3717,
+     "nonzeros": 21323,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1404,
+      "unmet": 72,
+      "allocate": 936,
+      "depleted": 72,
+      "fefo": 864,
+      "cash": 36,
+      "debt": 36
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 11042.40653085215,
+     "gap": 0.0,
+     "bound": 11042.406530852148,
+     "nodes": 94,
+     "residual": 1.67969838038573e-08,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 3.765625,
+     "rss_after_mb": 266.546875
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.0033318339847028255,
+   "total_seconds": 1.8087995406240225,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 1.8078447920270264,
+   "variables": 3781,
+   "constraints": 3717,
+   "gap": 0.0,
+   "best_bound": 11042.406530852148,
+   "nodes": 94,
+   "projected_cost": 13036.887657588706,
+   "warm_start": null,
+   "linear_seconds": 1.7876733327284455,
+   "completion_seconds": 0,
+   "rss_delta_mb": 3.9375,
+   "construction_seconds": 0.021126207895576954
+  },
+  {
+   "index": 8,
+   "label": "cadence_4_network",
+   "worlds": 3,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "allowed_periods": [
+     0,
+     4,
+     8
+    ]
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 66.3,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.8305420419201255,
+     "variables": 3781,
+     "integer": 948,
+     "binary": 948,
+     "continuous": 2833,
+     "rows": 3717,
+     "nonzeros": 21320,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1404,
+      "unmet": 72,
+      "allocate": 936,
+      "depleted": 72,
+      "fefo": 864,
+      "cash": 36,
+      "debt": 36
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 11042.40653085218,
+     "gap": 0.0,
+     "bound": 11042.40653085218,
+     "nodes": 19,
+     "residual": 2.2737367544323206e-13,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 0.65625,
+     "rss_after_mb": 267.390625
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.003386625088751316,
+   "total_seconds": 0.8567196251824498,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.8557377504184842,
+   "variables": 3781,
+   "constraints": 3717,
+   "gap": 0.0,
+   "best_bound": 11042.40653085218,
+   "nodes": 19,
+   "projected_cost": 13036.887657588739,
+   "warm_start": null,
+   "linear_seconds": 0.8305420419201255,
+   "completion_seconds": 0,
+   "rss_delta_mb": 1.3125,
+   "construction_seconds": 0.026177583262324333
+  },
+  {
+   "index": 9,
+   "label": "joint_recovery",
+   "worlds": 4,
+   "horizon": 12,
+   "arguments": {
+    "service_first": "all",
+    "seed": true
+   },
+   "linear": [
+    {
+     "phase": "phase1",
+     "budget_seconds": 66.27111095907166,
+     "solver": "highspy",
+     "seeded": true,
+     "mip_gap": 1e-06,
+     "seconds": 0.10108841583132744,
+     "variables": 4921,
+     "integer": 1260,
+     "binary": 1260,
+     "continuous": 3661,
+     "rows": 4925,
+     "nonzeros": 28210,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1872,
+      "unmet": 96,
+      "allocate": 1248,
+      "depleted": 96,
+      "fefo": 1152,
+      "cash": 48,
+      "debt": 48
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 0.0,
+     "gap": 0.0,
+     "bound": 0.0,
+     "nodes": 1,
+     "residual": 1.7053025658242404e-13,
+     "message": "highspy HighsModelStatus.kOptimal",
+     "rss_delta_mb": 0.03125,
+     "rss_after_mb": 268.796875
+    },
+    {
+     "phase": "phase2",
+     "budget_seconds": 66.11149295903742,
+     "solver": "highspy",
+     "seeded": true,
+     "mip_gap": 1e-06,
+     "seconds": 19.604769208002836,
+     "variables": 4921,
+     "integer": 1260,
+     "binary": 1260,
+     "continuous": 3661,
+     "rows": 4926,
+     "nonzeros": 28306,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1872,
+      "unmet": 96,
+      "allocate": 1248,
+      "depleted": 96,
+      "fefo": 1152,
+      "cash": 48,
+      "debt": 48
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 11013.460999421159,
+     "gap": 0.0,
+     "bound": 11013.460999421159,
+     "nodes": 2536,
+     "residual": 5.653128027915955e-07,
+     "message": "highspy HighsModelStatus.kOptimal",
+     "rss_delta_mb": 2.0625,
+     "rss_after_mb": 271.921875
+    }
+   ],
+   "completions": [
+    {
+     "mode": "equal",
+     "budget_seconds": 30.0,
+     "seconds": 0.028893916867673397,
+     "accepted": true,
+     "status": "highspy HighsModelStatus.kOptimal",
+     "controls": 348
+    }
+   ],
+   "matrix_seconds": 0.013207540847361088,
+   "total_seconds": 19.773310834076256,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 19.771958499681205,
+   "variables": 4921,
+   "constraints": 4926,
+   "gap": 0.0,
+   "best_bound": 11013.460999421159,
+   "nodes": 2536,
+   "projected_cost": 13007.942126157717,
+   "warm_start": {
+    "supplied": true,
+    "source": "OPTIMAL",
+    "controls_seeded": 348,
+    "accepted": true,
+    "reason": "completed by the formulation (equal pins)",
+    "mode": "equal",
+    "completion_seconds": 0.028889040928333998,
+    "completion_status": "highspy HighsModelStatus.kOptimal",
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 31.074658018545875,
+    "solver_accepted": true,
+    "phase1_objective": 0.0,
+    "phase1_status": 0,
+    "outcome": "improved",
+    "final_objective": 11013.460999421159,
+    "model_variables": 4921,
+    "solve_seconds": 19.771961332764477,
+    "highs_integrality_violation": 5.653255641391297e-13,
+    "highs_primal_infeasibility": 5.653128027915955e-07
+   },
+   "linear_seconds": 19.705857623834163,
+   "completion_seconds": 0.028893916867673397,
+   "rss_delta_mb": 4.953125,
+   "construction_seconds": 0.03855929337441921
+  },
+  {
+   "index": 10,
+   "label": "joint_fitted",
+   "worlds": 3,
+   "horizon": 12,
+   "arguments": {
+    "service_first": "all",
+    "seed": true
+   },
+   "linear": [
+    {
+     "phase": "phase1",
+     "budget_seconds": 66.27946766624227,
+     "solver": "highspy",
+     "seeded": true,
+     "mip_gap": 1e-06,
+     "seconds": 0.0755249997600913,
+     "variables": 3781,
+     "integer": 948,
+     "binary": 948,
+     "continuous": 2833,
+     "rows": 3715,
+     "nonzeros": 21257,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1404,
+      "unmet": 72,
+      "allocate": 936,
+      "depleted": 72,
+      "fefo": 864,
+      "cash": 36,
+      "debt": 36
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 0.0,
+     "gap": 0.0,
+     "bound": 0.0,
+     "nodes": 1,
+     "residual": 1.7053025658242404e-13,
+     "message": "highspy HighsModelStatus.kOptimal",
+     "rss_delta_mb": 0.0,
+     "rss_after_mb": 272.984375
+    },
+    {
+     "phase": "phase2",
+     "budget_seconds": 66.16319191614166,
+     "solver": "highspy",
+     "seeded": true,
+     "mip_gap": 1e-06,
+     "seconds": 9.30845845816657,
+     "variables": 3781,
+     "integer": 948,
+     "binary": 948,
+     "continuous": 2833,
+     "rows": 3716,
+     "nonzeros": 21329,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1404,
+      "unmet": 72,
+      "allocate": 936,
+      "depleted": 72,
+      "fefo": 864,
+      "cash": 36,
+      "debt": 36
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 11042.406530852177,
+     "gap": 0.0,
+     "bound": 11042.406530852177,
+     "nodes": 845,
+     "residual": 6.984919309616089e-10,
+     "message": "highspy HighsModelStatus.kOptimal",
+     "rss_delta_mb": 3.1875,
+     "rss_after_mb": 276.484375
+    }
+   ],
+   "completions": [
+    {
+     "mode": "equal",
+     "budget_seconds": 30.0,
+     "seconds": 0.020536667201668024,
+     "accepted": true,
+     "status": "highspy HighsModelStatus.kOptimal",
+     "controls": 348
+    }
+   ],
+   "matrix_seconds": 0.010226790327578783,
+   "total_seconds": 9.431496667210013,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 9.430525625124574,
+   "variables": 3781,
+   "constraints": 3716,
+   "gap": 0.0,
+   "best_bound": 11042.406530852177,
+   "nodes": 845,
+   "projected_cost": 13036.887657588732,
+   "warm_start": {
+    "supplied": true,
+    "source": "OPTIMAL",
+    "controls_seeded": 348,
+    "accepted": true,
+    "reason": "completed by the formulation (equal pins)",
+    "mode": "equal",
+    "completion_seconds": 0.020532333757728338,
+    "completion_status": "highspy HighsModelStatus.kOptimal",
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 33.40495160564671,
+    "solver_accepted": true,
+    "phase1_objective": 0.0,
+    "phase1_status": 0,
+    "outcome": "improved",
+    "final_objective": 11042.406530852177,
+    "model_variables": 3781,
+    "solve_seconds": 9.430528125260025,
+    "highs_integrality_violation": 1.6010028034819643e-15,
+    "highs_primal_infeasibility": 6.984919309616089e-10
+   },
+   "linear_seconds": 9.38398345792666,
+   "completion_seconds": 0.020536667201668024,
+   "rss_delta_mb": 4.28125,
+   "construction_seconds": 0.026976542081683874
+  },
+  {
+   "index": 11,
+   "label": "oracle:svc_north",
+   "worlds": 1,
+   "horizon": 12,
+   "arguments": {
+    "service_first": "svc_north"
+   },
+   "linear": [
+    {
+     "phase": "phase1",
+     "budget_seconds": 66.3,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.018530167173594236,
+     "variables": 1501,
+     "integer": 324,
+     "binary": 324,
+     "continuous": 1177,
+     "rows": 1295,
+     "nonzeros": 7351,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 468,
+      "unmet": 24,
+      "allocate": 312,
+      "depleted": 24,
+      "fefo": 288,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 0.0,
+     "gap": 0.0,
+     "bound": 0.0,
+     "nodes": 1,
+     "residual": 1.1641532182693481e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 0.0,
+     "rss_after_mb": 277.984375
+    },
+    {
+     "phase": "phase2",
+     "budget_seconds": 66.27518754098564,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.15847729099914432,
+     "variables": 1501,
+     "integer": 324,
+     "binary": 324,
+     "continuous": 1177,
+     "rows": 1296,
+     "nonzeros": 7363,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 468,
+      "unmet": 24,
+      "allocate": 312,
+      "depleted": 24,
+      "fefo": 288,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 10928.914616636132,
+     "gap": 0.0,
+     "bound": 10928.914616636132,
+     "nodes": 30,
+     "residual": 1.1641532182693481e-09,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 0.046875,
+     "rss_after_mb": 278.203125
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.0024534170515835285,
+   "total_seconds": 0.18592650024220347,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.18549729231745005,
+   "variables": 1501,
+   "constraints": 1296,
+   "gap": 0.0,
+   "best_bound": 10928.914616636132,
+   "nodes": 30,
+   "projected_cost": 12923.453188746531,
+   "warm_start": null,
+   "linear_seconds": 0.17700745817273855,
+   "completion_seconds": 0,
+   "rss_delta_mb": 0.390625,
+   "construction_seconds": 0.008919042069464922
+  },
+  {
+   "index": 12,
+   "label": "oracle:svc_south",
+   "worlds": 1,
+   "horizon": 12,
+   "arguments": {
+    "service_first": "svc_south"
+   },
+   "linear": [
+    {
+     "phase": "phase1",
+     "budget_seconds": 66.3,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.01832083286717534,
+     "variables": 1501,
+     "integer": 324,
+     "binary": 324,
+     "continuous": 1177,
+     "rows": 1295,
+     "nonzeros": 7351,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 468,
+      "unmet": 24,
+      "allocate": 312,
+      "depleted": 24,
+      "fefo": 288,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 0.0,
+     "gap": 0.0,
+     "bound": 0.0,
+     "nodes": 1,
+     "residual": 1.1641532182693481e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 0.03125,
+     "rss_after_mb": 278.40625
+    },
+    {
+     "phase": "phase2",
+     "budget_seconds": 66.27513020783663,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.21780670806765556,
+     "variables": 1501,
+     "integer": 324,
+     "binary": 324,
+     "continuous": 1177,
+     "rows": 1296,
+     "nonzeros": 7363,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 468,
+      "unmet": 24,
+      "allocate": 312,
+      "depleted": 24,
+      "fefo": 288,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 10928.914616636037,
+     "gap": 0.0,
+     "bound": 10928.914616636037,
+     "nodes": 30,
+     "residual": 2.3283064365386963e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 0.09375,
+     "rss_after_mb": 278.65625
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.0023964582942426205,
+   "total_seconds": 0.24528670776635408,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.24485129211097956,
+   "variables": 1501,
+   "constraints": 1296,
+   "gap": 0.0,
+   "best_bound": 10928.914616636037,
+   "nodes": 30,
+   "projected_cost": 12923.453188746435,
+   "warm_start": null,
+   "linear_seconds": 0.2361275409348309,
+   "completion_seconds": 0,
+   "rss_delta_mb": 0.46875,
+   "construction_seconds": 0.00915916683152318
+  },
+  {
+   "index": 13,
+   "label": "restricted:transfers",
+   "worlds": 3,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "service_risk": "cvar",
+    "disabled": [
+     "transfers"
+    ],
+    "service_risk_levels": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 66.3,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.22083258302882314,
+     "variables": 3781,
+     "integer": 948,
+     "binary": 948,
+     "continuous": 2833,
+     "rows": 3717,
+     "nonzeros": 21329,
+     "variable_kinds": {
+      "inbound_transfer": 1,
+      "purchase": 36,
+      "order": 12,
+      "transfer": 312,
+      "inventory": 1404,
+      "unmet": 72,
+      "allocate": 936,
+      "depleted": 72,
+      "fefo": 864,
+      "cash": 36,
+      "debt": 36
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 11716.122836349816,
+     "gap": 0.0,
+     "bound": 11716.122836349814,
+     "nodes": 1,
+     "residual": 1.1641532182693481e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 1.234375,
+     "rss_after_mb": 281.421875
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.003198208287358284,
+   "total_seconds": 0.24278816720470786,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.24175191670656204,
+   "variables": 3781,
+   "constraints": 3717,
+   "gap": 0.0,
+   "best_bound": 11716.122836349814,
+   "nodes": 1,
+   "projected_cost": 13710.980318685675,
+   "warm_start": null,
+   "linear_seconds": 0.22083258302882314,
+   "completion_seconds": 0,
+   "rss_delta_mb": 2.96875,
+   "construction_seconds": 0.021955584175884724
+  }
+ ],
+ "evaluate": [
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.00141091737896204,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.001075000036507845,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0013530831784009933,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0013269586488604546,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0007774997502565384,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0008885832503437996,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0008718748576939106,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0010831672698259354,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.000794166699051857,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0009310408495366573,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0008867504075169563,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0008220002055168152,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0013382090255618095,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0010595419444143772,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0013271672651171684,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0007932502776384354,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0008349171839654446,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0013087908737361431,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0008231247775256634,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0009096660651266575,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0008037500083446503,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0011133328080177307,
+   "usable": 3
+  }
+ ],
+ "memory": {
+  "rss_before_mb": 113.78125,
+  "rss_after_mb": 282.09375,
+  "ru_maxrss_mb": 283.75
+ },
+ "deep": [
+  {
+   "index": 0,
+   "candidate": "base_stock",
+   "phase": "solve",
+   "seeded": false,
+   "budget_seconds": 66.3,
+   "seconds": 0.10680254176259041,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 12175.03337412892,
+   "bound": 12175.03337412892,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 1573,
+    "rows": 1331,
+    "nonzeros": 7459,
+    "integer": 324,
+    "binary": 324
+   },
+   "highs": {
+    "presolve": {
+     "rows": 596,
+     "rows_removed": 735,
+     "columns": 716,
+     "columns_removed": 857,
+     "elements": 3314,
+     "elements_removed": 4145
+    },
+    "reduced": {
+     "rows": 596,
+     "cols": 716,
+     "binary": 163,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 553,
+     "nonzeros": 3314
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-179375668.8899",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "R",
+      "t": 0.0,
+      "bound": "12175.033374",
+      "sol": "5851114.225718",
+      "gap": "99.79%",
+      "lp_iters": 464
+     },
+     {
+      "tag": "C",
+      "t": 0.0,
+      "bound": "12175.033374",
+      "sol": "3319646.381225",
+      "gap": "99.63%",
+      "lp_iters": 1139
+     },
+     {
+      "tag": "L",
+      "t": 0.1,
+      "bound": "12175.033374",
+      "sol": "12175.033374",
+      "gap": "0.00%",
+      "lp_iters": 2644
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "12175.033374",
+      "sol": "12175.033374",
+      "gap": "0.00%",
+      "lp_iters": 2705
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.1,
+    "final_incumbent_objective": 12175.033374,
+    "proof_s": 0.11,
+    "lp_iterations": 2705,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.11
+    },
+    "incumbent_count": 3,
+    "final_gap": "|",
+    "max_submip_depth": 1,
+    "lp_iterations_separation": 2180,
+    "lp_iterations_heuristics": 61
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/00_base_stock_solve.log"
+  },
+  {
+   "index": 1,
+   "candidate": "incumbent",
+   "phase": "solve",
+   "seeded": false,
+   "budget_seconds": 66.3,
+   "seconds": 0.006461792159825563,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 11717.743288937978,
+   "bound": 11717.74328893798,
+   "gap": 0.0,
+   "nodes": 0,
+   "raw": {
+    "cols": 1501,
+    "rows": 1643,
+    "nonzeros": 7699,
+    "integer": 324,
+    "binary": 324
+   },
+   "highs": {
+    "presolve": {
+     "rows": 0,
+     "rows_removed": 1643,
+     "columns": 0,
+     "columns_removed": 1501,
+     "elements": 0,
+     "elements_removed": 7699
+    },
+    "reduced": null,
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "11717.743289",
+      "sol": "11717.743289",
+      "gap": "0.00%",
+      "lp_iters": 0
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 11717.743289,
+    "proof_s": 0.01,
+    "lp_iterations": 0,
+    "nodes": 0,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.01
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/01_incumbent_solve.log"
+  },
+  {
+   "index": 2,
+   "candidate": "deterministic_network",
+   "phase": "solve",
+   "seeded": false,
+   "budget_seconds": 66.3,
+   "seconds": 0.22984970919787884,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 10928.914616636133,
+   "bound": 10928.914616636132,
+   "gap": 0.0,
+   "nodes": 30,
+   "raw": {
+    "cols": 1501,
+    "rows": 1297,
+    "nonzeros": 7375,
+    "integer": 324,
+    "binary": 324
+   },
+   "highs": {
+    "presolve": {
+     "rows": 577,
+     "rows_removed": 720,
+     "columns": 674,
+     "columns_removed": 827,
+     "elements": 3271,
+     "elements_removed": 4104
+    },
+    "reduced": {
+     "rows": 577,
+     "cols": 674,
+     "binary": 163,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 511,
+     "nonzeros": 3271
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-179376039.6142",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "R",
+      "t": 0.0,
+      "bound": "10550.583967",
+      "sol": "11663.033975",
+      "gap": "9.54%",
+      "lp_iters": 491
+     },
+     {
+      "tag": "C",
+      "t": 0.0,
+      "bound": "10625.938068",
+      "sol": "11663.033975",
+      "gap": "8.89%",
+      "lp_iters": 498
+     },
+     {
+      "tag": "L",
+      "t": 0.1,
+      "bound": "10625.938068",
+      "sol": "11314.573425",
+      "gap": "6.09%",
+      "lp_iters": 498
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "10625.938068",
+      "sol": "11314.573425",
+      "gap": "6.09%",
+      "lp_iters": 1142
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "10625.938068",
+      "sol": "11314.573425",
+      "gap": "6.09%",
+      "lp_iters": 1146
+     },
+     {
+      "tag": "L",
+      "t": 0.2,
+      "bound": "10625.938068",
+      "sol": "11314.573425",
+      "gap": "6.09%",
+      "lp_iters": 1803
+     },
+     {
+      "tag": "T",
+      "t": 0.2,
+      "bound": "10625.938068",
+      "sol": "11255.22128",
+      "gap": "5.59%",
+      "lp_iters": 2141
+     },
+     {
+      "tag": "B",
+      "t": 0.2,
+      "bound": "10625.938068",
+      "sol": "11160.129426",
+      "gap": "4.79%",
+      "lp_iters": 2379
+     },
+     {
+      "tag": "T",
+      "t": 0.2,
+      "bound": "10625.938068",
+      "sol": "10928.914617",
+      "gap": "2.77%",
+      "lp_iters": 2588
+     },
+     {
+      "tag": "",
+      "t": 0.2,
+      "bound": "10928.914617",
+      "sol": "10928.914617",
+      "gap": "0.00%",
+      "lp_iters": 3203
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.2,
+    "final_incumbent_objective": 10928.914617,
+    "proof_s": 0.23,
+    "lp_iterations": 3203,
+    "nodes": 30,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.23
+    },
+    "incumbent_count": 5,
+    "final_gap": "|",
+    "max_submip_depth": 4,
+    "lp_iterations_separation": 7,
+    "lp_iterations_heuristics": 1510
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/02_deterministic_network_solve.log"
+  },
+  {
+   "index": 3,
+   "candidate": "stochastic_network",
+   "phase": "solve",
+   "seeded": true,
+   "budget_seconds": 66.27103854082524,
+   "seconds": 5.018376041203737,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 11042.415406660257,
+   "bound": 11042.406530852193,
+   "gap": 8.037922623864105e-07,
+   "nodes": 374,
+   "raw": {
+    "cols": 3781,
+    "rows": 3717,
+    "nonzeros": 21329,
+    "integer": 948,
+    "binary": 948
+   },
+   "highs": {
+    "presolve": {
+     "rows": 1720,
+     "rows_removed": 1997,
+     "columns": 1720,
+     "columns_removed": 2061,
+     "elements": 9494,
+     "elements_removed": 11835
+    },
+    "reduced": {
+     "rows": 1720,
+     "cols": 1720,
+     "binary": 467,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 1253,
+     "nonzeros": 9494
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-191769518.567",
+      "sol": "11952.045229",
+      "gap": "Large",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "10628.453239",
+      "sol": "11952.045229",
+      "gap": "11.07%",
+      "lp_iters": 1537
+     },
+     {
+      "tag": "",
+      "t": 1.6,
+      "bound": "10725.676565",
+      "sol": "11952.045229",
+      "gap": "10.26%",
+      "lp_iters": 13235
+     },
+     {
+      "tag": "",
+      "t": 1.6,
+      "bound": "10725.676567",
+      "sol": "11952.045229",
+      "gap": "10.26%",
+      "lp_iters": 13685
+     },
+     {
+      "tag": "B",
+      "t": 3.0,
+      "bound": "10739.80507",
+      "sol": "11918.131436",
+      "gap": "9.89%",
+      "lp_iters": 19920
+     },
+     {
+      "tag": "B",
+      "t": 3.6,
+      "bound": "10752.147388",
+      "sol": "11531.327935",
+      "gap": "6.76%",
+      "lp_iters": 27747
+     },
+     {
+      "tag": "T",
+      "t": 3.6,
+      "bound": "10752.147388",
+      "sol": "11531.175017",
+      "gap": "6.76%",
+      "lp_iters": 27747
+     },
+     {
+      "tag": "T",
+      "t": 3.7,
+      "bound": "10752.147388",
+      "sol": "11482.932695",
+      "gap": "6.36%",
+      "lp_iters": 36668
+     },
+     {
+      "tag": "T",
+      "t": 3.7,
+      "bound": "10752.147388",
+      "sol": "11441.681081",
+      "gap": "6.03%",
+      "lp_iters": 37670
+     },
+     {
+      "tag": "T",
+      "t": 3.7,
+      "bound": "10752.147388",
+      "sol": "11419.657695",
+      "gap": "5.85%",
+      "lp_iters": 37909
+     },
+     {
+      "tag": "B",
+      "t": 3.8,
+      "bound": "10752.147388",
+      "sol": "11415.005707",
+      "gap": "5.81%",
+      "lp_iters": 38149
+     },
+     {
+      "tag": "B",
+      "t": 3.8,
+      "bound": "10752.147388",
+      "sol": "11384.956518",
+      "gap": "5.56%",
+      "lp_iters": 38466
+     },
+     {
+      "tag": "T",
+      "t": 3.8,
+      "bound": "10752.147388",
+      "sol": "11375.492709",
+      "gap": "5.48%",
+      "lp_iters": 38488
+     },
+     {
+      "tag": "L",
+      "t": 4.0,
+      "bound": "10752.147388",
+      "sol": "11131.122492",
+      "gap": "3.40%",
+      "lp_iters": 38868
+     },
+     {
+      "tag": "T",
+      "t": 4.3,
+      "bound": "10752.147388",
+      "sol": "11131.072716",
+      "gap": "3.40%",
+      "lp_iters": 45631
+     },
+     {
+      "tag": "B",
+      "t": 4.3,
+      "bound": "10752.147388",
+      "sol": "11129.449976",
+      "gap": "3.39%",
+      "lp_iters": 45722
+     },
+     {
+      "tag": "T",
+      "t": 4.5,
+      "bound": "10944.578816",
+      "sol": "11119.079864",
+      "gap": "1.57%",
+      "lp_iters": 47231
+     },
+     {
+      "tag": "T",
+      "t": 4.6,
+      "bound": "10944.578816",
+      "sol": "11118.862369",
+      "gap": "1.57%",
+      "lp_iters": 48007
+     },
+     {
+      "tag": "T",
+      "t": 4.6,
+      "bound": "10944.578816",
+      "sol": "11116.483228",
+      "gap": "1.55%",
+      "lp_iters": 48169
+     },
+     {
+      "tag": "T",
+      "t": 4.6,
+      "bound": "10944.578816",
+      "sol": "11116.265734",
+      "gap": "1.54%",
+      "lp_iters": 48468
+     },
+     {
+      "tag": "T",
+      "t": 4.7,
+      "bound": "10944.578816",
+      "sol": "11115.392915",
+      "gap": "1.54%",
+      "lp_iters": 48639
+     },
+     {
+      "tag": "B",
+      "t": 4.7,
+      "bound": "10944.578816",
+      "sol": "11114.956801",
+      "gap": "1.53%",
+      "lp_iters": 49516
+     },
+     {
+      "tag": "T",
+      "t": 4.7,
+      "bound": "10944.578816",
+      "sol": "11114.775241",
+      "gap": "1.53%",
+      "lp_iters": 49529
+     },
+     {
+      "tag": "T",
+      "t": 4.8,
+      "bound": "10944.578816",
+      "sol": "11110.309206",
+      "gap": "1.49%",
+      "lp_iters": 49983
+     },
+     {
+      "tag": "T",
+      "t": 4.8,
+      "bound": "10944.578816",
+      "sol": "11107.712571",
+      "gap": "1.47%",
+      "lp_iters": 50420
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11097.634019",
+      "gap": "1.38%",
+      "lp_iters": 51286
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11056.75512",
+      "gap": "1.01%",
+      "lp_iters": 51353
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11055.13348",
+      "gap": "1.00%",
+      "lp_iters": 51406
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11046.633682",
+      "gap": "0.92%",
+      "lp_iters": 51495
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11045.012747",
+      "gap": "0.91%",
+      "lp_iters": 51899
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11044.037047",
+      "gap": "0.90%",
+      "lp_iters": 52225
+     },
+     {
+      "tag": "T",
+      "t": 5.0,
+      "bound": "10944.578816",
+      "sol": "11042.415407",
+      "gap": "0.89%",
+      "lp_iters": 52226
+     },
+     {
+      "tag": "",
+      "t": 5.0,
+      "bound": "11042.406531",
+      "sol": "11042.415407",
+      "gap": "0.00%",
+      "lp_iters": 53424
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 5.0,
+    "final_incumbent_objective": 11042.415407,
+    "proof_s": 5.02,
+    "lp_iterations": 53424,
+    "nodes": 374,
+    "status": "Optimal",
+    "timing": {
+     "total": 5.02
+    },
+    "incumbent_count": 29,
+    "final_gap": "|",
+    "max_submip_depth": 5,
+    "lp_iterations_separation": 4029,
+    "lp_iterations_heuristics": 16095
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/03_stochastic_network_solve.log"
+  },
+  {
+   "index": 4,
+   "candidate": "cvar_network",
+   "phase": "solve",
+   "seeded": true,
+   "budget_seconds": 66.27504491684958,
+   "seconds": 6.698282666970044,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 13306.030577409816,
+   "bound": 13306.030577409816,
+   "gap": 0.0,
+   "nodes": 300,
+   "raw": {
+    "cols": 3785,
+    "rows": 3720,
+    "nonzeros": 23924,
+    "integer": 948,
+    "binary": 948
+   },
+   "highs": {
+    "presolve": {
+     "rows": 1722,
+     "rows_removed": 1998,
+     "columns": 1720,
+     "columns_removed": 2065,
+     "elements": 10522,
+     "elements_removed": 13402
+    },
+    "reduced": {
+     "rows": 1722,
+     "cols": 1720,
+     "binary": 467,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 1253,
+     "nonzeros": 10522
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-230859501.6655",
+      "sol": "14520.173883",
+      "gap": "Large",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "12824.376839",
+      "sol": "14520.173883",
+      "gap": "11.68%",
+      "lp_iters": 1829
+     },
+     {
+      "tag": "",
+      "t": 1.2,
+      "bound": "13059.792825",
+      "sol": "14520.173883",
+      "gap": "10.06%",
+      "lp_iters": 9256
+     },
+     {
+      "tag": "",
+      "t": 1.2,
+      "bound": "13059.792825",
+      "sol": "14520.173883",
+      "gap": "10.06%",
+      "lp_iters": 9776
+     },
+     {
+      "tag": "T",
+      "t": 3.7,
+      "bound": "13063.099319",
+      "sol": "14502.430713",
+      "gap": "9.92%",
+      "lp_iters": 21123
+     },
+     {
+      "tag": "B",
+      "t": 4.2,
+      "bound": "13075.626324",
+      "sol": "13539.877622",
+      "gap": "3.43%",
+      "lp_iters": 34496
+     },
+     {
+      "tag": "B",
+      "t": 4.3,
+      "bound": "13075.626324",
+      "sol": "13525.468778",
+      "gap": "3.33%",
+      "lp_iters": 42482
+     },
+     {
+      "tag": "T",
+      "t": 4.4,
+      "bound": "13075.626324",
+      "sol": "13488.438712",
+      "gap": "3.06%",
+      "lp_iters": 44621
+     },
+     {
+      "tag": "T",
+      "t": 4.4,
+      "bound": "13075.626324",
+      "sol": "13488.340436",
+      "gap": "3.06%",
+      "lp_iters": 45218
+     },
+     {
+      "tag": "T",
+      "t": 4.5,
+      "bound": "13075.626324",
+      "sol": "13488.313114",
+      "gap": "3.06%",
+      "lp_iters": 45596
+     },
+     {
+      "tag": "T",
+      "t": 5.2,
+      "bound": "13083.171148",
+      "sol": "13472.307346",
+      "gap": "2.89%",
+      "lp_iters": 55835
+     },
+     {
+      "tag": "T",
+      "t": 5.3,
+      "bound": "13083.171148",
+      "sol": "13471.462933",
+      "gap": "2.88%",
+      "lp_iters": 58117
+     },
+     {
+      "tag": "T",
+      "t": 5.3,
+      "bound": "13083.171148",
+      "sol": "13425.260884",
+      "gap": "2.55%",
+      "lp_iters": 58118
+     },
+     {
+      "tag": "B",
+      "t": 5.3,
+      "bound": "13083.171148",
+      "sol": "13423.074535",
+      "gap": "2.53%",
+      "lp_iters": 58473
+     },
+     {
+      "tag": "T",
+      "t": 5.6,
+      "bound": "13083.171148",
+      "sol": "13417.711357",
+      "gap": "2.49%",
+      "lp_iters": 63081
+     },
+     {
+      "tag": "T",
+      "t": 5.6,
+      "bound": "13083.171148",
+      "sol": "13416.560421",
+      "gap": "2.48%",
+      "lp_iters": 63082
+     },
+     {
+      "tag": "T",
+      "t": 5.7,
+      "bound": "13083.171148",
+      "sol": "13410.289246",
+      "gap": "2.44%",
+      "lp_iters": 63542
+     },
+     {
+      "tag": "T",
+      "t": 5.8,
+      "bound": "13083.171148",
+      "sol": "13409.581769",
+      "gap": "2.43%",
+      "lp_iters": 63773
+     },
+     {
+      "tag": "T",
+      "t": 5.8,
+      "bound": "13083.171148",
+      "sol": "13408.676628",
+      "gap": "2.43%",
+      "lp_iters": 64856
+     },
+     {
+      "tag": "B",
+      "t": 5.9,
+      "bound": "13083.171148",
+      "sol": "13403.43117",
+      "gap": "2.39%",
+      "lp_iters": 65981
+     },
+     {
+      "tag": "B",
+      "t": 6.5,
+      "bound": "13083.171148",
+      "sol": "13401.988952",
+      "gap": "2.38%",
+      "lp_iters": 77365
+     },
+     {
+      "tag": "B",
+      "t": 6.6,
+      "bound": "13083.171148",
+      "sol": "13358.365477",
+      "gap": "2.06%",
+      "lp_iters": 77599
+     },
+     {
+      "tag": "T",
+      "t": 6.7,
+      "bound": "13106.707965",
+      "sol": "13322.751198",
+      "gap": "1.62%",
+      "lp_iters": 77736
+     },
+     {
+      "tag": "T",
+      "t": 6.7,
+      "bound": "13106.707965",
+      "sol": "13306.030577",
+      "gap": "1.50%",
+      "lp_iters": 79745
+     },
+     {
+      "tag": "",
+      "t": 6.7,
+      "bound": "13306.030577",
+      "sol": "13306.030577",
+      "gap": "0.00%",
+      "lp_iters": 79746
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 6.7,
+    "final_incumbent_objective": 13306.030577,
+    "proof_s": 6.7,
+    "lp_iterations": 79746,
+    "nodes": 300,
+    "status": "Optimal",
+    "timing": {
+     "total": 6.7
+    },
+    "incumbent_count": 21,
+    "final_gap": "|",
+    "max_submip_depth": 6,
+    "lp_iterations_separation": 5571,
+    "lp_iterations_heuristics": 13618
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/04_cvar_network_solve.log"
+  },
+  {
+   "index": 5,
+   "candidate": "protected_network",
+   "phase": "solve",
+   "seeded": true,
+   "budget_seconds": 66.27772237518802,
+   "seconds": 5.0129612921737134,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 11042.415406660257,
+   "bound": 11042.406530852193,
+   "gap": 8.037922623864105e-07,
+   "nodes": 374,
+   "raw": {
+    "cols": 3781,
+    "rows": 3717,
+    "nonzeros": 21329,
+    "integer": 948,
+    "binary": 948
+   },
+   "highs": {
+    "presolve": {
+     "rows": 1720,
+     "rows_removed": 1997,
+     "columns": 1720,
+     "columns_removed": 2061,
+     "elements": 9494,
+     "elements_removed": 11835
+    },
+    "reduced": {
+     "rows": 1720,
+     "cols": 1720,
+     "binary": 467,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 1253,
+     "nonzeros": 9494
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-191769518.567",
+      "sol": "11952.045229",
+      "gap": "Large",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "10628.453239",
+      "sol": "11952.045229",
+      "gap": "11.07%",
+      "lp_iters": 1537
+     },
+     {
+      "tag": "",
+      "t": 1.6,
+      "bound": "10725.676565",
+      "sol": "11952.045229",
+      "gap": "10.26%",
+      "lp_iters": 13235
+     },
+     {
+      "tag": "",
+      "t": 1.6,
+      "bound": "10725.676567",
+      "sol": "11952.045229",
+      "gap": "10.26%",
+      "lp_iters": 13685
+     },
+     {
+      "tag": "B",
+      "t": 3.0,
+      "bound": "10739.80507",
+      "sol": "11918.131436",
+      "gap": "9.89%",
+      "lp_iters": 19920
+     },
+     {
+      "tag": "B",
+      "t": 3.6,
+      "bound": "10752.147388",
+      "sol": "11531.327935",
+      "gap": "6.76%",
+      "lp_iters": 27747
+     },
+     {
+      "tag": "T",
+      "t": 3.6,
+      "bound": "10752.147388",
+      "sol": "11531.175017",
+      "gap": "6.76%",
+      "lp_iters": 27747
+     },
+     {
+      "tag": "T",
+      "t": 3.7,
+      "bound": "10752.147388",
+      "sol": "11482.932695",
+      "gap": "6.36%",
+      "lp_iters": 36668
+     },
+     {
+      "tag": "T",
+      "t": 3.7,
+      "bound": "10752.147388",
+      "sol": "11441.681081",
+      "gap": "6.03%",
+      "lp_iters": 37670
+     },
+     {
+      "tag": "T",
+      "t": 3.7,
+      "bound": "10752.147388",
+      "sol": "11419.657695",
+      "gap": "5.85%",
+      "lp_iters": 37909
+     },
+     {
+      "tag": "B",
+      "t": 3.8,
+      "bound": "10752.147388",
+      "sol": "11415.005707",
+      "gap": "5.81%",
+      "lp_iters": 38149
+     },
+     {
+      "tag": "B",
+      "t": 3.8,
+      "bound": "10752.147388",
+      "sol": "11384.956518",
+      "gap": "5.56%",
+      "lp_iters": 38466
+     },
+     {
+      "tag": "T",
+      "t": 3.8,
+      "bound": "10752.147388",
+      "sol": "11375.492709",
+      "gap": "5.48%",
+      "lp_iters": 38488
+     },
+     {
+      "tag": "L",
+      "t": 4.0,
+      "bound": "10752.147388",
+      "sol": "11131.122492",
+      "gap": "3.40%",
+      "lp_iters": 38868
+     },
+     {
+      "tag": "T",
+      "t": 4.3,
+      "bound": "10752.147388",
+      "sol": "11131.072716",
+      "gap": "3.40%",
+      "lp_iters": 45631
+     },
+     {
+      "tag": "B",
+      "t": 4.3,
+      "bound": "10752.147388",
+      "sol": "11129.449976",
+      "gap": "3.39%",
+      "lp_iters": 45722
+     },
+     {
+      "tag": "T",
+      "t": 4.5,
+      "bound": "10944.578816",
+      "sol": "11119.079864",
+      "gap": "1.57%",
+      "lp_iters": 47231
+     },
+     {
+      "tag": "T",
+      "t": 4.6,
+      "bound": "10944.578816",
+      "sol": "11118.862369",
+      "gap": "1.57%",
+      "lp_iters": 48007
+     },
+     {
+      "tag": "T",
+      "t": 4.6,
+      "bound": "10944.578816",
+      "sol": "11116.483228",
+      "gap": "1.55%",
+      "lp_iters": 48169
+     },
+     {
+      "tag": "T",
+      "t": 4.6,
+      "bound": "10944.578816",
+      "sol": "11116.265734",
+      "gap": "1.54%",
+      "lp_iters": 48468
+     },
+     {
+      "tag": "T",
+      "t": 4.7,
+      "bound": "10944.578816",
+      "sol": "11115.392915",
+      "gap": "1.54%",
+      "lp_iters": 48639
+     },
+     {
+      "tag": "B",
+      "t": 4.7,
+      "bound": "10944.578816",
+      "sol": "11114.956801",
+      "gap": "1.53%",
+      "lp_iters": 49516
+     },
+     {
+      "tag": "T",
+      "t": 4.7,
+      "bound": "10944.578816",
+      "sol": "11114.775241",
+      "gap": "1.53%",
+      "lp_iters": 49529
+     },
+     {
+      "tag": "T",
+      "t": 4.8,
+      "bound": "10944.578816",
+      "sol": "11110.309206",
+      "gap": "1.49%",
+      "lp_iters": 49983
+     },
+     {
+      "tag": "T",
+      "t": 4.8,
+      "bound": "10944.578816",
+      "sol": "11107.712571",
+      "gap": "1.47%",
+      "lp_iters": 50420
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11097.634019",
+      "gap": "1.38%",
+      "lp_iters": 51286
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11056.75512",
+      "gap": "1.01%",
+      "lp_iters": 51353
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11055.13348",
+      "gap": "1.00%",
+      "lp_iters": 51406
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11046.633682",
+      "gap": "0.92%",
+      "lp_iters": 51495
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11045.012747",
+      "gap": "0.91%",
+      "lp_iters": 51899
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11044.037047",
+      "gap": "0.90%",
+      "lp_iters": 52225
+     },
+     {
+      "tag": "T",
+      "t": 4.9,
+      "bound": "10944.578816",
+      "sol": "11042.415407",
+      "gap": "0.89%",
+      "lp_iters": 52226
+     },
+     {
+      "tag": "",
+      "t": 5.0,
+      "bound": "11042.406531",
+      "sol": "11042.415407",
+      "gap": "0.00%",
+      "lp_iters": 53424
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 4.9,
+    "final_incumbent_objective": 11042.415407,
+    "proof_s": 5.01,
+    "lp_iterations": 53424,
+    "nodes": 374,
+    "status": "Optimal",
+    "timing": {
+     "total": 5.01
+    },
+    "incumbent_count": 29,
+    "final_gap": "|",
+    "max_submip_depth": 5,
+    "lp_iterations_separation": 4029,
+    "lp_iterations_heuristics": 16095
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/05_protected_network_solve.log"
+  },
+  {
+   "index": 6,
+   "candidate": "stress_network",
+   "phase": "solve",
+   "seeded": true,
+   "budget_seconds": 66.27008691681549,
+   "seconds": 10.716659707948565,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 11013.46099942138,
+   "bound": 11013.46099942138,
+   "gap": 0.0,
+   "nodes": 955,
+   "raw": {
+    "cols": 4921,
+    "rows": 4935,
+    "nonzeros": 28402,
+    "integer": 1260,
+    "binary": 1260
+   },
+   "highs": {
+    "presolve": {
+     "rows": 2304,
+     "rows_removed": 2631,
+     "columns": 2249,
+     "columns_removed": 2672,
+     "elements": 12620,
+     "elements_removed": 15782
+    },
+    "reduced": {
+     "rows": 2304,
+     "cols": 2249,
+     "binary": 619,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 1630,
+     "nonzeros": 12620
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-201627622.0378",
+      "sol": "11907.538153",
+      "gap": "Large",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "10615.777929",
+      "sol": "11907.538153",
+      "gap": "10.85%",
+      "lp_iters": 2367
+     },
+     {
+      "tag": "",
+      "t": 3.1,
+      "bound": "10832.605506",
+      "sol": "11907.538153",
+      "gap": "9.03%",
+      "lp_iters": 29507
+     },
+     {
+      "tag": "",
+      "t": 3.2,
+      "bound": "10832.605506",
+      "sol": "11907.538153",
+      "gap": "9.03%",
+      "lp_iters": 30263
+     },
+     {
+      "tag": "B",
+      "t": 6.2,
+      "bound": "10905.976811",
+      "sol": "11862.653184",
+      "gap": "8.06%",
+      "lp_iters": 33791
+     },
+     {
+      "tag": "B",
+      "t": 7.3,
+      "bound": "10909.74425",
+      "sol": "11409.865659",
+      "gap": "4.38%",
+      "lp_iters": 55103
+     },
+     {
+      "tag": "T",
+      "t": 7.9,
+      "bound": "10909.74425",
+      "sol": "11402.967566",
+      "gap": "4.33%",
+      "lp_iters": 69437
+     },
+     {
+      "tag": "T",
+      "t": 8.3,
+      "bound": "10909.74425",
+      "sol": "11392.700424",
+      "gap": "4.24%",
+      "lp_iters": 75431
+     },
+     {
+      "tag": "T",
+      "t": 8.3,
+      "bound": "10909.74425",
+      "sol": "11387.726055",
+      "gap": "4.20%",
+      "lp_iters": 78937
+     },
+     {
+      "tag": "B",
+      "t": 8.3,
+      "bound": "10909.74425",
+      "sol": "11387.688945",
+      "gap": "4.20%",
+      "lp_iters": 79221
+     },
+     {
+      "tag": "T",
+      "t": 8.8,
+      "bound": "10909.74425",
+      "sol": "11383.250903",
+      "gap": "4.16%",
+      "lp_iters": 82638
+     },
+     {
+      "tag": "T",
+      "t": 9.3,
+      "bound": "10909.74425",
+      "sol": "11376.533646",
+      "gap": "4.10%",
+      "lp_iters": 87023
+     },
+     {
+      "tag": "T",
+      "t": 9.3,
+      "bound": "10909.74425",
+      "sol": "11376.263907",
+      "gap": "4.10%",
+      "lp_iters": 87090
+     },
+     {
+      "tag": "B",
+      "t": 9.6,
+      "bound": "10909.74425",
+      "sol": "11320.350557",
+      "gap": "3.63%",
+      "lp_iters": 87963
+     },
+     {
+      "tag": "T",
+      "t": 9.6,
+      "bound": "10909.74425",
+      "sol": "11289.072712",
+      "gap": "3.36%",
+      "lp_iters": 87963
+     },
+     {
+      "tag": "B",
+      "t": 9.6,
+      "bound": "10909.74425",
+      "sol": "11235.273251",
+      "gap": "2.90%",
+      "lp_iters": 88908
+     },
+     {
+      "tag": "T",
+      "t": 9.7,
+      "bound": "10909.74425",
+      "sol": "11232.944347",
+      "gap": "2.88%",
+      "lp_iters": 89803
+     },
+     {
+      "tag": "T",
+      "t": 9.7,
+      "bound": "10909.74425",
+      "sol": "11204.200266",
+      "gap": "2.63%",
+      "lp_iters": 89884
+     },
+     {
+      "tag": "T",
+      "t": 9.7,
+      "bound": "10909.74425",
+      "sol": "11203.923132",
+      "gap": "2.63%",
+      "lp_iters": 90076
+     },
+     {
+      "tag": "T",
+      "t": 9.8,
+      "bound": "10909.74425",
+      "sol": "11202.079451",
+      "gap": "2.61%",
+      "lp_iters": 90526
+     },
+     {
+      "tag": "T",
+      "t": 9.8,
+      "bound": "10909.74425",
+      "sol": "11174.218023",
+      "gap": "2.37%",
+      "lp_iters": 90780
+     },
+     {
+      "tag": "T",
+      "t": 9.9,
+      "bound": "10909.74425",
+      "sol": "11162.432296",
+      "gap": "2.26%",
+      "lp_iters": 90853
+     },
+     {
+      "tag": "T",
+      "t": 10.0,
+      "bound": "10909.74425",
+      "sol": "11158.88831",
+      "gap": "2.23%",
+      "lp_iters": 91626
+     },
+     {
+      "tag": "B",
+      "t": 10.3,
+      "bound": "10909.74425",
+      "sol": "11157.064703",
+      "gap": "2.22%",
+      "lp_iters": 94461
+     },
+     {
+      "tag": "T",
+      "t": 10.3,
+      "bound": "10909.74425",
+      "sol": "11150.735671",
+      "gap": "2.16%",
+      "lp_iters": 94735
+     },
+     {
+      "tag": "B",
+      "t": 10.4,
+      "bound": "10909.74425",
+      "sol": "11144.642769",
+      "gap": "2.11%",
+      "lp_iters": 95333
+     },
+     {
+      "tag": "T",
+      "t": 10.4,
+      "bound": "10909.74425",
+      "sol": "11142.154575",
+      "gap": "2.09%",
+      "lp_iters": 95591
+     },
+     {
+      "tag": "T",
+      "t": 10.5,
+      "bound": "10909.74425",
+      "sol": "11139.198183",
+      "gap": "2.06%",
+      "lp_iters": 95828
+     },
+     {
+      "tag": "T",
+      "t": 10.5,
+      "bound": "10909.74425",
+      "sol": "11100.536174",
+      "gap": "1.72%",
+      "lp_iters": 95897
+     },
+     {
+      "tag": "T",
+      "t": 10.5,
+      "bound": "10909.74425",
+      "sol": "11020.835634",
+      "gap": "1.01%",
+      "lp_iters": 95936
+     },
+     {
+      "tag": "B",
+      "t": 10.6,
+      "bound": "10916.177492",
+      "sol": "11018.68413",
+      "gap": "0.93%",
+      "lp_iters": 97087
+     },
+     {
+      "tag": "T",
+      "t": 10.6,
+      "bound": "10916.177492",
+      "sol": "11018.61599",
+      "gap": "0.93%",
+      "lp_iters": 97284
+     },
+     {
+      "tag": "T",
+      "t": 10.6,
+      "bound": "10916.177492",
+      "sol": "11018.597443",
+      "gap": "0.93%",
+      "lp_iters": 97285
+     },
+     {
+      "tag": "B",
+      "t": 10.6,
+      "bound": "10916.177492",
+      "sol": "11013.460999",
+      "gap": "0.88%",
+      "lp_iters": 97351
+     },
+     {
+      "tag": "",
+      "t": 10.7,
+      "bound": "11013.460999",
+      "sol": "11013.460999",
+      "gap": "0.00%",
+      "lp_iters": 98785
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 10.6,
+    "final_incumbent_objective": 11013.460999,
+    "proof_s": 10.72,
+    "lp_iterations": 98785,
+    "nodes": 955,
+    "status": "Optimal",
+    "timing": {
+     "total": 10.72
+    },
+    "incumbent_count": 31,
+    "final_gap": "|",
+    "max_submip_depth": 3,
+    "lp_iterations_separation": 15217,
+    "lp_iterations_heuristics": 15752
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/06_stress_network_solve.log"
+  },
+  {
+   "index": 7,
+   "candidate": "cadence_2_network",
+   "phase": "solve",
+   "seeded": false,
+   "budget_seconds": 66.3,
+   "seconds": 1.927952874917537,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 11042.406530878277,
+   "bound": 11042.406530878276,
+   "gap": 0.0,
+   "nodes": 173,
+   "raw": {
+    "cols": 3781,
+    "rows": 3717,
+    "nonzeros": 21323,
+    "integer": 948,
+    "binary": 948
+   },
+   "highs": {
+    "presolve": {
+     "rows": 1097,
+     "rows_removed": 2620,
+     "columns": 934,
+     "columns_removed": 2847,
+     "elements": 4876,
+     "elements_removed": 16447
+    },
+    "reduced": {
+     "rows": 1097,
+     "cols": 934,
+     "binary": 244,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 690,
+     "nonzeros": 4876
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-407122573.621",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "10654.789497",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 849
+     },
+     {
+      "tag": "L",
+      "t": 0.4,
+      "bound": "10861.172485",
+      "sol": "11391.219165",
+      "gap": "4.65%",
+      "lp_iters": 1858
+     },
+     {
+      "tag": "L",
+      "t": 1.0,
+      "bound": "10861.172485",
+      "sol": "11391.219165",
+      "gap": "4.65%",
+      "lp_iters": 3206
+     },
+     {
+      "tag": "B",
+      "t": 1.2,
+      "bound": "10861.172485",
+      "sol": "11390.12936",
+      "gap": "4.64%",
+      "lp_iters": 7757
+     },
+     {
+      "tag": "L",
+      "t": 1.5,
+      "bound": "10861.172485",
+      "sol": "11311.239956",
+      "gap": "3.98%",
+      "lp_iters": 8027
+     },
+     {
+      "tag": "B",
+      "t": 1.6,
+      "bound": "10861.172485",
+      "sol": "11167.356558",
+      "gap": "2.74%",
+      "lp_iters": 12111
+     },
+     {
+      "tag": "T",
+      "t": 1.7,
+      "bound": "10861.172485",
+      "sol": "11160.303202",
+      "gap": "2.68%",
+      "lp_iters": 15278
+     },
+     {
+      "tag": "T",
+      "t": 1.7,
+      "bound": "10861.172485",
+      "sol": "11156.434219",
+      "gap": "2.65%",
+      "lp_iters": 15425
+     },
+     {
+      "tag": "T",
+      "t": 1.7,
+      "bound": "10861.172485",
+      "sol": "11151.907329",
+      "gap": "2.61%",
+      "lp_iters": 15683
+     },
+     {
+      "tag": "T",
+      "t": 1.7,
+      "bound": "10861.172485",
+      "sol": "11151.491808",
+      "gap": "2.60%",
+      "lp_iters": 15740
+     },
+     {
+      "tag": "T",
+      "t": 1.8,
+      "bound": "10861.172485",
+      "sol": "11149.871817",
+      "gap": "2.59%",
+      "lp_iters": 15915
+     },
+     {
+      "tag": "T",
+      "t": 1.8,
+      "bound": "10861.172485",
+      "sol": "11145.389506",
+      "gap": "2.55%",
+      "lp_iters": 16019
+     },
+     {
+      "tag": "T",
+      "t": 1.8,
+      "bound": "10861.172485",
+      "sol": "11142.959885",
+      "gap": "2.53%",
+      "lp_iters": 16110
+     },
+     {
+      "tag": "T",
+      "t": 1.8,
+      "bound": "10861.172485",
+      "sol": "11122.287424",
+      "gap": "2.35%",
+      "lp_iters": 16481
+     },
+     {
+      "tag": "T",
+      "t": 1.8,
+      "bound": "10861.172485",
+      "sol": "11119.848079",
+      "gap": "2.33%",
+      "lp_iters": 16639
+     },
+     {
+      "tag": "B",
+      "t": 1.8,
+      "bound": "10861.172485",
+      "sol": "11080.226684",
+      "gap": "1.98%",
+      "lp_iters": 16794
+     },
+     {
+      "tag": "T",
+      "t": 1.8,
+      "bound": "10861.172485",
+      "sol": "11076.731844",
+      "gap": "1.95%",
+      "lp_iters": 17294
+     },
+     {
+      "tag": "B",
+      "t": 1.9,
+      "bound": "10861.172485",
+      "sol": "11074.292499",
+      "gap": "1.92%",
+      "lp_iters": 17296
+     },
+     {
+      "tag": "T",
+      "t": 1.9,
+      "bound": "10861.172485",
+      "sol": "11066.033188",
+      "gap": "1.85%",
+      "lp_iters": 17712
+     },
+     {
+      "tag": "B",
+      "t": 1.9,
+      "bound": "10861.172485",
+      "sol": "11064.357515",
+      "gap": "1.84%",
+      "lp_iters": 17713
+     },
+     {
+      "tag": "L",
+      "t": 1.9,
+      "bound": "10861.172485",
+      "sol": "11042.406531",
+      "gap": "1.64%",
+      "lp_iters": 17718
+     },
+     {
+      "tag": "",
+      "t": 1.9,
+      "bound": "11042.406531",
+      "sol": "11042.406531",
+      "gap": "0.00%",
+      "lp_iters": 18521
+     }
+    ],
+    "first_incumbent_s": 0.4,
+    "final_incumbent_s": 1.9,
+    "final_incumbent_objective": 11042.406531,
+    "proof_s": 1.93,
+    "lp_iterations": 18521,
+    "nodes": 173,
+    "status": "Optimal",
+    "timing": {
+     "total": 1.93
+    },
+    "incumbent_count": 19,
+    "final_gap": "|",
+    "max_submip_depth": 5,
+    "lp_iterations_separation": 1028,
+    "lp_iterations_heuristics": 8327
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/07_cadence_2_network_solve.log"
+  },
+  {
+   "index": 8,
+   "candidate": "cadence_4_network",
+   "phase": "solve",
+   "seeded": false,
+   "budget_seconds": 66.3,
+   "seconds": 0.8410186250694096,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 11042.406530851662,
+   "bound": 11042.406530851662,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 3781,
+    "rows": 3717,
+    "nonzeros": 21320,
+    "integer": 948,
+    "binary": 948
+   },
+   "highs": {
+    "presolve": {
+     "rows": 655,
+     "rows_removed": 3062,
+     "columns": 581,
+     "columns_removed": 3200,
+     "elements": 2543,
+     "elements_removed": 18777
+    },
+    "reduced": {
+     "rows": 655,
+     "cols": 581,
+     "binary": 144,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 437,
+     "nonzeros": 2543
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-52446013.69552",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "10695.622066",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 431
+     },
+     {
+      "tag": "L",
+      "t": 0.2,
+      "bound": "10938.448239",
+      "sol": "11082.767994",
+      "gap": "1.30%",
+      "lp_iters": 663
+     },
+     {
+      "tag": "",
+      "t": 0.2,
+      "bound": "10938.448239",
+      "sol": "11082.767994",
+      "gap": "1.30%",
+      "lp_iters": 1649
+     },
+     {
+      "tag": "",
+      "t": 0.2,
+      "bound": "10938.448239",
+      "sol": "11082.767994",
+      "gap": "1.30%",
+      "lp_iters": 1771
+     },
+     {
+      "tag": "L",
+      "t": 0.4,
+      "bound": "10944.794208",
+      "sol": "11077.314783",
+      "gap": "1.20%",
+      "lp_iters": 1892
+     },
+     {
+      "tag": "T",
+      "t": 0.8,
+      "bound": "10944.794208",
+      "sol": "11042.406531",
+      "gap": "0.88%",
+      "lp_iters": 4704
+     },
+     {
+      "tag": "",
+      "t": 0.8,
+      "bound": "11042.406531",
+      "sol": "11042.406531",
+      "gap": "0.00%",
+      "lp_iters": 5173
+     }
+    ],
+    "first_incumbent_s": 0.2,
+    "final_incumbent_s": 0.8,
+    "final_incumbent_objective": 11042.406531,
+    "proof_s": 0.84,
+    "lp_iterations": 5173,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.84
+    },
+    "incumbent_count": 3,
+    "final_gap": "|",
+    "max_submip_depth": 5,
+    "lp_iterations_separation": 367,
+    "lp_iterations_heuristics": 3784
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/08_cadence_4_network_solve.log"
+  },
+  {
+   "index": 9,
+   "candidate": "joint_recovery",
+   "phase": "phase1",
+   "seeded": true,
+   "budget_seconds": 66.27111095907166,
+   "seconds": 0.0939315827563405,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 0.0,
+   "bound": 0.0,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 4921,
+    "rows": 4925,
+    "nonzeros": 28210,
+    "integer": 1260,
+    "binary": 1260
+   },
+   "highs": {
+    "presolve": {
+     "rows": 2294,
+     "rows_removed": 2631,
+     "columns": 2249,
+     "columns_removed": 2672,
+     "elements": 12452,
+     "elements_removed": 15758
+    },
+    "reduced": {
+     "rows": 2294,
+     "cols": 2249,
+     "binary": 619,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 1630,
+     "nonzeros": 12452
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "31.07465802",
+      "gap": "100.00%",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "31.07465802",
+      "gap": "100.00%",
+      "lp_iters": 401
+     },
+     {
+      "tag": "C",
+      "t": 0.1,
+      "bound": "0",
+      "sol": "0",
+      "gap": "0.00%",
+      "lp_iters": 418
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "0",
+      "sol": "0",
+      "gap": "0.00%",
+      "lp_iters": 418
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.1,
+    "final_incumbent_objective": 0.0,
+    "proof_s": 0.09,
+    "lp_iterations": 418,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.09
+    },
+    "incumbent_count": 2,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 17,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/09_joint_recovery_phase1.log"
+  },
+  {
+   "index": 10,
+   "candidate": "joint_recovery",
+   "phase": "phase2",
+   "seeded": true,
+   "budget_seconds": 66.11149295903742,
+   "seconds": 19.555648915935308,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 11013.460999421159,
+   "bound": 11013.460999421159,
+   "gap": 0.0,
+   "nodes": 2536,
+   "raw": {
+    "cols": 4921,
+    "rows": 4926,
+    "nonzeros": 28306,
+    "integer": 1260,
+    "binary": 1260
+   },
+   "highs": {
+    "presolve": {
+     "rows": 1989,
+     "rows_removed": 2937,
+     "columns": 1945,
+     "columns_removed": 2976,
+     "elements": 10763,
+     "elements_removed": 17543
+    },
+    "reduced": {
+     "rows": 1989,
+     "cols": 1945,
+     "binary": 491,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 1454,
+     "nonzeros": 10763
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-201624550.4016",
+      "sol": "11900.192726",
+      "gap": "Large",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "10615.777983",
+      "sol": "11900.192726",
+      "gap": "10.79%",
+      "lp_iters": 1957
+     },
+     {
+      "tag": "B",
+      "t": 5.1,
+      "bound": "10709.23078",
+      "sol": "11627.736206",
+      "gap": "7.90%",
+      "lp_iters": 60661
+     },
+     {
+      "tag": "B",
+      "t": 5.2,
+      "bound": "10709.23078",
+      "sol": "11616.114787",
+      "gap": "7.81%",
+      "lp_iters": 60661
+     },
+     {
+      "tag": "B",
+      "t": 5.9,
+      "bound": "10709.23078",
+      "sol": "11540.395428",
+      "gap": "7.20%",
+      "lp_iters": 69968
+     },
+     {
+      "tag": "T",
+      "t": 5.9,
+      "bound": "10709.23078",
+      "sol": "11498.750221",
+      "gap": "6.87%",
+      "lp_iters": 69968
+     },
+     {
+      "tag": "T",
+      "t": 6.0,
+      "bound": "10709.23078",
+      "sol": "11444.057077",
+      "gap": "6.42%",
+      "lp_iters": 71153
+     },
+     {
+      "tag": "T",
+      "t": 6.0,
+      "bound": "10709.23078",
+      "sol": "11442.134214",
+      "gap": "6.41%",
+      "lp_iters": 71381
+     },
+     {
+      "tag": "T",
+      "t": 6.1,
+      "bound": "10709.23078",
+      "sol": "11441.486791",
+      "gap": "6.40%",
+      "lp_iters": 71698
+     },
+     {
+      "tag": "B",
+      "t": 6.1,
+      "bound": "10709.23078",
+      "sol": "11441.295235",
+      "gap": "6.40%",
+      "lp_iters": 72092
+     },
+     {
+      "tag": "L",
+      "t": 6.3,
+      "bound": "10709.23078",
+      "sol": "11398.795202",
+      "gap": "6.05%",
+      "lp_iters": 72915
+     },
+     {
+      "tag": "L",
+      "t": 6.4,
+      "bound": "10709.23078",
+      "sol": "11264.799539",
+      "gap": "4.93%",
+      "lp_iters": 75893
+     },
+     {
+      "tag": "L",
+      "t": 6.8,
+      "bound": "10709.23078",
+      "sol": "11264.700083",
+      "gap": "4.93%",
+      "lp_iters": 77991
+     },
+     {
+      "tag": "T",
+      "t": 7.4,
+      "bound": "10709.23078",
+      "sol": "11260.117184",
+      "gap": "4.89%",
+      "lp_iters": 87568
+     },
+     {
+      "tag": "T",
+      "t": 7.6,
+      "bound": "10709.23078",
+      "sol": "11254.38468",
+      "gap": "4.84%",
+      "lp_iters": 88827
+     },
+     {
+      "tag": "T",
+      "t": 7.6,
+      "bound": "10709.23078",
+      "sol": "11254.232764",
+      "gap": "4.84%",
+      "lp_iters": 91180
+     },
+     {
+      "tag": "T",
+      "t": 7.6,
+      "bound": "10709.23078",
+      "sol": "11251.668558",
+      "gap": "4.82%",
+      "lp_iters": 91293
+     },
+     {
+      "tag": "T",
+      "t": 7.8,
+      "bound": "10709.23078",
+      "sol": "11248.369982",
+      "gap": "4.79%",
+      "lp_iters": 93559
+     },
+     {
+      "tag": "T",
+      "t": 7.9,
+      "bound": "10709.23078",
+      "sol": "11243.900237",
+      "gap": "4.76%",
+      "lp_iters": 94250
+     },
+     {
+      "tag": "T",
+      "t": 8.0,
+      "bound": "10709.23078",
+      "sol": "11242.919905",
+      "gap": "4.75%",
+      "lp_iters": 95196
+     },
+     {
+      "tag": "B",
+      "t": 8.1,
+      "bound": "10709.23078",
+      "sol": "11228.290964",
+      "gap": "4.62%",
+      "lp_iters": 96769
+     },
+     {
+      "tag": "T",
+      "t": 9.3,
+      "bound": "10709.23078",
+      "sol": "11224.885525",
+      "gap": "4.59%",
+      "lp_iters": 109204
+     },
+     {
+      "tag": "T",
+      "t": 9.3,
+      "bound": "10709.23078",
+      "sol": "11221.275764",
+      "gap": "4.56%",
+      "lp_iters": 110556
+     },
+     {
+      "tag": "T",
+      "t": 9.4,
+      "bound": "10709.23078",
+      "sol": "11220.943359",
+      "gap": "4.56%",
+      "lp_iters": 111366
+     },
+     {
+      "tag": "T",
+      "t": 9.6,
+      "bound": "10709.23078",
+      "sol": "11217.516781",
+      "gap": "4.53%",
+      "lp_iters": 112930
+     },
+     {
+      "tag": "T",
+      "t": 9.6,
+      "bound": "10709.23078",
+      "sol": "11205.361876",
+      "gap": "4.43%",
+      "lp_iters": 113265
+     },
+     {
+      "tag": "T",
+      "t": 9.8,
+      "bound": "10719.238443",
+      "sol": "11204.575822",
+      "gap": "4.33%",
+      "lp_iters": 115555
+     },
+     {
+      "tag": "T",
+      "t": 9.8,
+      "bound": "10719.238443",
+      "sol": "11184.541618",
+      "gap": "4.16%",
+      "lp_iters": 115781
+     },
+     {
+      "tag": "B",
+      "t": 9.9,
+      "bound": "10719.238443",
+      "sol": "11183.794573",
+      "gap": "4.15%",
+      "lp_iters": 117670
+     },
+     {
+      "tag": "T",
+      "t": 10.7,
+      "bound": "10719.238443",
+      "sol": "11183.382835",
+      "gap": "4.15%",
+      "lp_iters": 126492
+     },
+     {
+      "tag": "B",
+      "t": 10.9,
+      "bound": "10719.238443",
+      "sol": "11182.924053",
+      "gap": "4.15%",
+      "lp_iters": 128579
+     },
+     {
+      "tag": "B",
+      "t": 11.0,
+      "bound": "10719.82628",
+      "sol": "11182.776664",
+      "gap": "4.14%",
+      "lp_iters": 130046
+     },
+     {
+      "tag": "T",
+      "t": 11.4,
+      "bound": "10719.82628",
+      "sol": "11182.176977",
+      "gap": "4.13%",
+      "lp_iters": 134499
+     },
+     {
+      "tag": "T",
+      "t": 11.5,
+      "bound": "10719.82628",
+      "sol": "11181.904166",
+      "gap": "4.13%",
+      "lp_iters": 135563
+     },
+     {
+      "tag": "T",
+      "t": 11.8,
+      "bound": "10719.82628",
+      "sol": "11180.250824",
+      "gap": "4.12%",
+      "lp_iters": 138383
+     },
+     {
+      "tag": "T",
+      "t": 11.9,
+      "bound": "10719.82628",
+      "sol": "11177.676025",
+      "gap": "4.10%",
+      "lp_iters": 139129
+     },
+     {
+      "tag": "T",
+      "t": 11.9,
+      "bound": "10719.82628",
+      "sol": "11166.219969",
+      "gap": "4.00%",
+      "lp_iters": 139689
+     },
+     {
+      "tag": "T",
+      "t": 12.0,
+      "bound": "10719.82628",
+      "sol": "11164.104085",
+      "gap": "3.98%",
+      "lp_iters": 140054
+     },
+     {
+      "tag": "T",
+      "t": 12.4,
+      "bound": "10719.82628",
+      "sol": "11163.428432",
+      "gap": "3.97%",
+      "lp_iters": 145288
+     },
+     {
+      "tag": "T",
+      "t": 12.4,
+      "bound": "10719.82628",
+      "sol": "11163.265465",
+      "gap": "3.97%",
+      "lp_iters": 145366
+     },
+     {
+      "tag": "T",
+      "t": 12.6,
+      "bound": "10719.82628",
+      "sol": "11161.81462",
+      "gap": "3.96%",
+      "lp_iters": 146637
+     },
+     {
+      "tag": "T",
+      "t": 12.6,
+      "bound": "10719.82628",
+      "sol": "11161.785892",
+      "gap": "3.96%",
+      "lp_iters": 146711
+     },
+     {
+      "tag": "B",
+      "t": 14.3,
+      "bound": "10724.152356",
+      "sol": "11159.110354",
+      "gap": "3.90%",
+      "lp_iters": 169081
+     },
+     {
+      "tag": "T",
+      "t": 14.6,
+      "bound": "10724.152356",
+      "sol": "11158.861758",
+      "gap": "3.90%",
+      "lp_iters": 172036
+     },
+     {
+      "tag": "T",
+      "t": 14.6,
+      "bound": "10724.152356",
+      "sol": "11158.847647",
+      "gap": "3.90%",
+      "lp_iters": 172088
+     },
+     {
+      "tag": "T",
+      "t": 14.9,
+      "bound": "10724.152356",
+      "sol": "11157.636176",
+      "gap": "3.89%",
+      "lp_iters": 176019
+     },
+     {
+      "tag": "T",
+      "t": 15.2,
+      "bound": "10724.152356",
+      "sol": "11155.692555",
+      "gap": "3.87%",
+      "lp_iters": 179022
+     },
+     {
+      "tag": "T",
+      "t": 15.3,
+      "bound": "10724.152356",
+      "sol": "11155.435003",
+      "gap": "3.87%",
+      "lp_iters": 179026
+     },
+     {
+      "tag": "T",
+      "t": 15.3,
+      "bound": "10724.152356",
+      "sol": "11153.37177",
+      "gap": "3.85%",
+      "lp_iters": 179870
+     },
+     {
+      "tag": "T",
+      "t": 15.7,
+      "bound": "10724.152356",
+      "sol": "11152.368241",
+      "gap": "3.84%",
+      "lp_iters": 183162
+     },
+     {
+      "tag": "T",
+      "t": 16.3,
+      "bound": "10724.152356",
+      "sol": "11145.602848",
+      "gap": "3.78%",
+      "lp_iters": 190766
+     },
+     {
+      "tag": "T",
+      "t": 16.3,
+      "bound": "10724.152356",
+      "sol": "11139.102074",
+      "gap": "3.73%",
+      "lp_iters": 190873
+     },
+     {
+      "tag": "T",
+      "t": 16.4,
+      "bound": "10724.152356",
+      "sol": "11118.925885",
+      "gap": "3.55%",
+      "lp_iters": 191091
+     },
+     {
+      "tag": "T",
+      "t": 16.4,
+      "bound": "10724.152356",
+      "sol": "11118.679978",
+      "gap": "3.55%",
+      "lp_iters": 191422
+     },
+     {
+      "tag": "T",
+      "t": 16.4,
+      "bound": "10724.152356",
+      "sol": "11116.710038",
+      "gap": "3.53%",
+      "lp_iters": 191794
+     },
+     {
+      "tag": "T",
+      "t": 17.1,
+      "bound": "10724.152356",
+      "sol": "11116.055283",
+      "gap": "3.53%",
+      "lp_iters": 199760
+     },
+     {
+      "tag": "T",
+      "t": 17.6,
+      "bound": "10724.152356",
+      "sol": "11112.834499",
+      "gap": "3.50%",
+      "lp_iters": 207079
+     },
+     {
+      "tag": "T",
+      "t": 17.7,
+      "bound": "10724.152356",
+      "sol": "11110.816309",
+      "gap": "3.48%",
+      "lp_iters": 207715
+     },
+     {
+      "tag": "T",
+      "t": 17.8,
+      "bound": "10724.152356",
+      "sol": "11109.62159",
+      "gap": "3.47%",
+      "lp_iters": 208714
+     },
+     {
+      "tag": "T",
+      "t": 17.9,
+      "bound": "10724.152356",
+      "sol": "11103.870782",
+      "gap": "3.42%",
+      "lp_iters": 210157
+     },
+     {
+      "tag": "T",
+      "t": 18.0,
+      "bound": "10724.152356",
+      "sol": "11099.664984",
+      "gap": "3.38%",
+      "lp_iters": 211365
+     },
+     {
+      "tag": "T",
+      "t": 18.1,
+      "bound": "10724.152356",
+      "sol": "11098.107783",
+      "gap": "3.37%",
+      "lp_iters": 212078
+     },
+     {
+      "tag": "T",
+      "t": 18.1,
+      "bound": "10724.152356",
+      "sol": "11097.279121",
+      "gap": "3.36%",
+      "lp_iters": 212294
+     },
+     {
+      "tag": "T",
+      "t": 18.1,
+      "bound": "10724.152356",
+      "sol": "11097.253291",
+      "gap": "3.36%",
+      "lp_iters": 212308
+     },
+     {
+      "tag": "T",
+      "t": 18.2,
+      "bound": "10724.152356",
+      "sol": "11044.180421",
+      "gap": "2.90%",
+      "lp_iters": 212723
+     },
+     {
+      "tag": "T",
+      "t": 18.2,
+      "bound": "10724.152356",
+      "sol": "11044.000838",
+      "gap": "2.90%",
+      "lp_iters": 213310
+     },
+     {
+      "tag": "T",
+      "t": 18.2,
+      "bound": "10724.152356",
+      "sol": "11039.666381",
+      "gap": "2.86%",
+      "lp_iters": 213448
+     },
+     {
+      "tag": "T",
+      "t": 18.9,
+      "bound": "10741.279581",
+      "sol": "11039.306058",
+      "gap": "2.70%",
+      "lp_iters": 222516
+     },
+     {
+      "tag": "T",
+      "t": 18.9,
+      "bound": "10741.279581",
+      "sol": "11039.28039",
+      "gap": "2.70%",
+      "lp_iters": 222694
+     },
+     {
+      "tag": "T",
+      "t": 19.1,
+      "bound": "10741.279581",
+      "sol": "11034.343988",
+      "gap": "2.66%",
+      "lp_iters": 223905
+     },
+     {
+      "tag": "T",
+      "t": 19.1,
+      "bound": "10741.279581",
+      "sol": "11033.901662",
+      "gap": "2.65%",
+      "lp_iters": 224378
+     },
+     {
+      "tag": "T",
+      "t": 19.1,
+      "bound": "10741.279581",
+      "sol": "11033.012784",
+      "gap": "2.64%",
+      "lp_iters": 224615
+     },
+     {
+      "tag": "T",
+      "t": 19.2,
+      "bound": "10741.279581",
+      "sol": "11032.570458",
+      "gap": "2.64%",
+      "lp_iters": 224828
+     },
+     {
+      "tag": "T",
+      "t": 19.2,
+      "bound": "10741.279581",
+      "sol": "11027.623196",
+      "gap": "2.60%",
+      "lp_iters": 225339
+     },
+     {
+      "tag": "T",
+      "t": 19.2,
+      "bound": "10741.279581",
+      "sol": "11023.659549",
+      "gap": "2.56%",
+      "lp_iters": 225487
+     },
+     {
+      "tag": "T",
+      "t": 19.2,
+      "bound": "10741.279581",
+      "sol": "11023.600665",
+      "gap": "2.56%",
+      "lp_iters": 225584
+     },
+     {
+      "tag": "T",
+      "t": 19.3,
+      "bound": "10741.279581",
+      "sol": "11017.462672",
+      "gap": "2.51%",
+      "lp_iters": 225948
+     },
+     {
+      "tag": "T",
+      "t": 19.3,
+      "bound": "10741.279581",
+      "sol": "11013.460999",
+      "gap": "2.47%",
+      "lp_iters": 226242
+     },
+     {
+      "tag": "",
+      "t": 19.6,
+      "bound": "11013.460999",
+      "sol": "11013.460999",
+      "gap": "0.00%",
+      "lp_iters": 229300
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 19.3,
+    "final_incumbent_objective": 11013.460999,
+    "proof_s": 19.55,
+    "lp_iterations": 229300,
+    "nodes": 2536,
+    "status": "Optimal",
+    "timing": {
+     "total": 19.55
+    },
+    "incumbent_count": 77,
+    "final_gap": "|",
+    "max_submip_depth": 3,
+    "lp_iterations_separation": 5527,
+    "lp_iterations_heuristics": 28919
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/10_joint_recovery_phase2.log"
+  },
+  {
+   "index": 11,
+   "candidate": "joint_fitted",
+   "phase": "phase1",
+   "seeded": true,
+   "budget_seconds": 66.27946766624227,
+   "seconds": 0.06889058370143175,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 0.0,
+   "bound": 0.0,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 3781,
+    "rows": 3715,
+    "nonzeros": 21257,
+    "integer": 948,
+    "binary": 948
+   },
+   "highs": {
+    "presolve": {
+     "rows": 1718,
+     "rows_removed": 1997,
+     "columns": 1720,
+     "columns_removed": 2061,
+     "elements": 9431,
+     "elements_removed": 11826
+    },
+    "reduced": {
+     "rows": 1718,
+     "cols": 1720,
+     "binary": 467,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 1253,
+     "nonzeros": 9431
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "33.40495161",
+      "gap": "100.00%",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "33.40495161",
+      "gap": "100.00%",
+      "lp_iters": 297
+     },
+     {
+      "tag": "C",
+      "t": 0.1,
+      "bound": "0",
+      "sol": "0",
+      "gap": "0.00%",
+      "lp_iters": 319
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "0",
+      "sol": "0",
+      "gap": "0.00%",
+      "lp_iters": 319
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.1,
+    "final_incumbent_objective": 0.0,
+    "proof_s": 0.07,
+    "lp_iterations": 319,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.07
+    },
+    "incumbent_count": 2,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 22,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/11_joint_fitted_phase1.log"
+  },
+  {
+   "index": 12,
+   "candidate": "joint_fitted",
+   "phase": "phase2",
+   "seeded": true,
+   "budget_seconds": 66.16319191614166,
+   "seconds": 9.261857207864523,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 11042.406530852177,
+   "bound": 11042.406530852177,
+   "gap": 0.0,
+   "nodes": 845,
+   "raw": {
+    "cols": 3781,
+    "rows": 3716,
+    "nonzeros": 21329,
+    "integer": 948,
+    "binary": 948
+   },
+   "highs": {
+    "presolve": {
+     "rows": 1494,
+     "rows_removed": 2222,
+     "columns": 1497,
+     "columns_removed": 2284,
+     "elements": 8121,
+     "elements_removed": 13208
+    },
+    "reduced": {
+     "rows": 1494,
+     "cols": 1497,
+     "binary": 371,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 1126,
+     "nonzeros": 8121
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-191309074.045",
+      "sol": "11931.973349",
+      "gap": "Large",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.1,
+      "bound": "10628.453292",
+      "sol": "11931.973349",
+      "gap": "10.92%",
+      "lp_iters": 1595
+     },
+     {
+      "tag": "B",
+      "t": 3.0,
+      "bound": "10813.990597",
+      "sol": "11716.267448",
+      "gap": "7.70%",
+      "lp_iters": 18011
+     },
+     {
+      "tag": "T",
+      "t": 5.0,
+      "bound": "10813.990597",
+      "sol": "11546.935974",
+      "gap": "6.35%",
+      "lp_iters": 51988
+     },
+     {
+      "tag": "B",
+      "t": 5.1,
+      "bound": "10813.990597",
+      "sol": "11546.818574",
+      "gap": "6.35%",
+      "lp_iters": 53664
+     },
+     {
+      "tag": "B",
+      "t": 5.2,
+      "bound": "10813.990597",
+      "sol": "11546.792038",
+      "gap": "6.35%",
+      "lp_iters": 54791
+     },
+     {
+      "tag": "B",
+      "t": 5.8,
+      "bound": "10813.990597",
+      "sol": "11504.820504",
+      "gap": "6.00%",
+      "lp_iters": 58830
+     },
+     {
+      "tag": "T",
+      "t": 5.8,
+      "bound": "10813.990597",
+      "sol": "11502.160336",
+      "gap": "5.98%",
+      "lp_iters": 58830
+     },
+     {
+      "tag": "B",
+      "t": 5.8,
+      "bound": "10813.990597",
+      "sol": "11500.986181",
+      "gap": "5.97%",
+      "lp_iters": 63694
+     },
+     {
+      "tag": "L",
+      "t": 5.9,
+      "bound": "10813.990597",
+      "sol": "11332.630142",
+      "gap": "4.58%",
+      "lp_iters": 63706
+     },
+     {
+      "tag": "T",
+      "t": 6.0,
+      "bound": "10813.990597",
+      "sol": "11331.891193",
+      "gap": "4.57%",
+      "lp_iters": 66706
+     },
+     {
+      "tag": "B",
+      "t": 6.9,
+      "bound": "10813.990597",
+      "sol": "11330.595785",
+      "gap": "4.56%",
+      "lp_iters": 79716
+     },
+     {
+      "tag": "T",
+      "t": 7.2,
+      "bound": "10901.472589",
+      "sol": "11325.658314",
+      "gap": "3.75%",
+      "lp_iters": 83437
+     },
+     {
+      "tag": "T",
+      "t": 7.2,
+      "bound": "10901.472589",
+      "sol": "11325.461258",
+      "gap": "3.74%",
+      "lp_iters": 83639
+     },
+     {
+      "tag": "T",
+      "t": 7.2,
+      "bound": "10901.472589",
+      "sol": "11325.392677",
+      "gap": "3.74%",
+      "lp_iters": 83642
+     },
+     {
+      "tag": "T",
+      "t": 7.2,
+      "bound": "10901.472589",
+      "sol": "11319.267761",
+      "gap": "3.69%",
+      "lp_iters": 83649
+     },
+     {
+      "tag": "T",
+      "t": 7.2,
+      "bound": "10901.472589",
+      "sol": "11319.070705",
+      "gap": "3.69%",
+      "lp_iters": 83740
+     },
+     {
+      "tag": "T",
+      "t": 7.2,
+      "bound": "10901.472589",
+      "sol": "11318.958418",
+      "gap": "3.69%",
+      "lp_iters": 83744
+     },
+     {
+      "tag": "T",
+      "t": 7.2,
+      "bound": "10901.472589",
+      "sol": "11299.253935",
+      "gap": "3.52%",
+      "lp_iters": 83758
+     },
+     {
+      "tag": "T",
+      "t": 7.2,
+      "bound": "10901.472589",
+      "sol": "11299.056879",
+      "gap": "3.52%",
+      "lp_iters": 83934
+     },
+     {
+      "tag": "T",
+      "t": 7.2,
+      "bound": "10901.472589",
+      "sol": "11299.018326",
+      "gap": "3.52%",
+      "lp_iters": 83952
+     },
+     {
+      "tag": "T",
+      "t": 7.3,
+      "bound": "10901.472589",
+      "sol": "11292.198652",
+      "gap": "3.46%",
+      "lp_iters": 84401
+     },
+     {
+      "tag": "T",
+      "t": 7.3,
+      "bound": "10901.472589",
+      "sol": "11292.001596",
+      "gap": "3.46%",
+      "lp_iters": 84779
+     },
+     {
+      "tag": "T",
+      "t": 7.3,
+      "bound": "10901.472589",
+      "sol": "11287.902803",
+      "gap": "3.42%",
+      "lp_iters": 85449
+     },
+     {
+      "tag": "T",
+      "t": 7.3,
+      "bound": "10901.472589",
+      "sol": "11287.705748",
+      "gap": "3.42%",
+      "lp_iters": 85450
+     },
+     {
+      "tag": "T",
+      "t": 7.4,
+      "bound": "10901.472589",
+      "sol": "11279.676295",
+      "gap": "3.35%",
+      "lp_iters": 85920
+     },
+     {
+      "tag": "T",
+      "t": 7.4,
+      "bound": "10901.472589",
+      "sol": "11263.727697",
+      "gap": "3.22%",
+      "lp_iters": 86180
+     },
+     {
+      "tag": "T",
+      "t": 7.6,
+      "bound": "10901.472589",
+      "sol": "11257.185434",
+      "gap": "3.16%",
+      "lp_iters": 88923
+     },
+     {
+      "tag": "T",
+      "t": 7.7,
+      "bound": "10901.472589",
+      "sol": "11254.300941",
+      "gap": "3.14%",
+      "lp_iters": 89332
+     },
+     {
+      "tag": "T",
+      "t": 7.7,
+      "bound": "10901.472589",
+      "sol": "11243.93276",
+      "gap": "3.05%",
+      "lp_iters": 89508
+     },
+     {
+      "tag": "L",
+      "t": 7.8,
+      "bound": "10901.472589",
+      "sol": "11208.509653",
+      "gap": "2.74%",
+      "lp_iters": 89513
+     },
+     {
+      "tag": "T",
+      "t": 7.9,
+      "bound": "10901.472589",
+      "sol": "11205.411924",
+      "gap": "2.71%",
+      "lp_iters": 93071
+     },
+     {
+      "tag": "T",
+      "t": 7.9,
+      "bound": "10901.472589",
+      "sol": "11205.411924",
+      "gap": "2.71%",
+      "lp_iters": 93490
+     },
+     {
+      "tag": "T",
+      "t": 7.9,
+      "bound": "10901.472589",
+      "sol": "11197.42845",
+      "gap": "2.64%",
+      "lp_iters": 93511
+     },
+     {
+      "tag": "T",
+      "t": 8.0,
+      "bound": "10901.472589",
+      "sol": "11193.471892",
+      "gap": "2.61%",
+      "lp_iters": 93878
+     },
+     {
+      "tag": "T",
+      "t": 8.1,
+      "bound": "10901.472589",
+      "sol": "11183.860804",
+      "gap": "2.52%",
+      "lp_iters": 95066
+     },
+     {
+      "tag": "T",
+      "t": 8.1,
+      "bound": "10901.472589",
+      "sol": "11182.394926",
+      "gap": "2.51%",
+      "lp_iters": 95383
+     },
+     {
+      "tag": "T",
+      "t": 8.2,
+      "bound": "10901.472589",
+      "sol": "11176.736353",
+      "gap": "2.46%",
+      "lp_iters": 95775
+     },
+     {
+      "tag": "T",
+      "t": 8.2,
+      "bound": "10901.472589",
+      "sol": "11161.804334",
+      "gap": "2.33%",
+      "lp_iters": 95903
+     },
+     {
+      "tag": "T",
+      "t": 8.3,
+      "bound": "10901.472589",
+      "sol": "11150.4091",
+      "gap": "2.23%",
+      "lp_iters": 96640
+     },
+     {
+      "tag": "B",
+      "t": 8.3,
+      "bound": "10901.472589",
+      "sol": "11150.4091",
+      "gap": "2.23%",
+      "lp_iters": 96652
+     },
+     {
+      "tag": "B",
+      "t": 8.3,
+      "bound": "10901.472589",
+      "sol": "11150.123439",
+      "gap": "2.23%",
+      "lp_iters": 96751
+     },
+     {
+      "tag": "B",
+      "t": 8.3,
+      "bound": "10901.472589",
+      "sol": "11150.123439",
+      "gap": "2.23%",
+      "lp_iters": 96751
+     },
+     {
+      "tag": "T",
+      "t": 8.3,
+      "bound": "10901.472589",
+      "sol": "11150.033931",
+      "gap": "2.23%",
+      "lp_iters": 96751
+     },
+     {
+      "tag": "T",
+      "t": 8.3,
+      "bound": "10901.472589",
+      "sol": "11138.447317",
+      "gap": "2.13%",
+      "lp_iters": 96798
+     },
+     {
+      "tag": "T",
+      "t": 8.3,
+      "bound": "10901.472589",
+      "sol": "11096.157588",
+      "gap": "1.75%",
+      "lp_iters": 96857
+     },
+     {
+      "tag": "T",
+      "t": 8.5,
+      "bound": "10901.472589",
+      "sol": "11095.520435",
+      "gap": "1.75%",
+      "lp_iters": 99970
+     },
+     {
+      "tag": "T",
+      "t": 8.6,
+      "bound": "10901.472589",
+      "sol": "11092.726515",
+      "gap": "1.72%",
+      "lp_iters": 100782
+     },
+     {
+      "tag": "T",
+      "t": 8.6,
+      "bound": "10901.472589",
+      "sol": "11092.281745",
+      "gap": "1.72%",
+      "lp_iters": 101034
+     },
+     {
+      "tag": "T",
+      "t": 8.6,
+      "bound": "10901.472589",
+      "sol": "11092.09755",
+      "gap": "1.72%",
+      "lp_iters": 101299
+     },
+     {
+      "tag": "B",
+      "t": 8.7,
+      "bound": "10901.472589",
+      "sol": "11082.895964",
+      "gap": "1.64%",
+      "lp_iters": 101594
+     },
+     {
+      "tag": "T",
+      "t": 8.7,
+      "bound": "10901.478768",
+      "sol": "11080.917828",
+      "gap": "1.62%",
+      "lp_iters": 102362
+     },
+     {
+      "tag": "T",
+      "t": 8.7,
+      "bound": "10901.478768",
+      "sol": "11070.208332",
+      "gap": "1.52%",
+      "lp_iters": 102627
+     },
+     {
+      "tag": "T",
+      "t": 8.7,
+      "bound": "10901.478768",
+      "sol": "11054.484047",
+      "gap": "1.38%",
+      "lp_iters": 102687
+     },
+     {
+      "tag": "T",
+      "t": 9.0,
+      "bound": "10901.478768",
+      "sol": "11045.003152",
+      "gap": "1.30%",
+      "lp_iters": 106811
+     },
+     {
+      "tag": "T",
+      "t": 9.3,
+      "bound": "10926.586488",
+      "sol": "11042.406531",
+      "gap": "1.05%",
+      "lp_iters": 108834
+     },
+     {
+      "tag": "",
+      "t": 9.3,
+      "bound": "11042.406531",
+      "sol": "11042.406531",
+      "gap": "0.00%",
+      "lp_iters": 111001
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 9.3,
+    "final_incumbent_objective": 11042.406531,
+    "proof_s": 9.26,
+    "lp_iterations": 111001,
+    "nodes": 845,
+    "status": "Optimal",
+    "timing": {
+     "total": 9.26
+    },
+    "incumbent_count": 52,
+    "final_gap": "|",
+    "max_submip_depth": 6,
+    "lp_iterations_separation": 7014,
+    "lp_iterations_heuristics": 28876
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/12_joint_fitted_phase2.log"
+  },
+  {
+   "index": 13,
+   "candidate": "oracle:svc_north",
+   "phase": "phase1",
+   "seeded": false,
+   "budget_seconds": 66.3,
+   "seconds": 0.015133209060877562,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 0.0,
+   "bound": 0.0,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 1501,
+    "rows": 1295,
+    "nonzeros": 7351,
+    "integer": 324,
+    "binary": 324
+   },
+   "highs": {
+    "presolve": {
+     "rows": 575,
+     "rows_removed": 720,
+     "columns": 674,
+     "columns_removed": 827,
+     "elements": 3250,
+     "elements_removed": 4101
+    },
+    "reduced": {
+     "rows": 575,
+     "cols": 674,
+     "binary": 163,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 511,
+     "nonzeros": 3250
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "R",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "0",
+      "gap": "0.00%",
+      "lp_iters": 89
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "0",
+      "gap": "0.00%",
+      "lp_iters": 89
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 0.0,
+    "proof_s": 0.01,
+    "lp_iterations": 89,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.01
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 0,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/13_oracle:svc_north_phase1.log"
+  },
+  {
+   "index": 14,
+   "candidate": "oracle:svc_north",
+   "phase": "phase2",
+   "seeded": false,
+   "budget_seconds": 66.27518754098564,
+   "seconds": 0.15205754106864333,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 10928.914616636132,
+   "bound": 10928.914616636132,
+   "gap": 0.0,
+   "nodes": 30,
+   "raw": {
+    "cols": 1501,
+    "rows": 1296,
+    "nonzeros": 7363,
+    "integer": 324,
+    "binary": 324
+   },
+   "highs": {
+    "presolve": {
+     "rows": 528,
+     "rows_removed": 768,
+     "columns": 625,
+     "columns_removed": 876,
+     "elements": 2913,
+     "elements_removed": 4450
+    },
+    "reduced": {
+     "rows": 528,
+     "cols": 625,
+     "binary": 141,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 484,
+     "nonzeros": 2913
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-179373486.8228",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "R",
+      "t": 0.0,
+      "bound": "10550.583978",
+      "sol": "11663.583655",
+      "gap": "9.54%",
+      "lp_iters": 467
+     },
+     {
+      "tag": "L",
+      "t": 0.0,
+      "bound": "10625.938078",
+      "sol": "11305.225663",
+      "gap": "6.01%",
+      "lp_iters": 472
+     },
+     {
+      "tag": "B",
+      "t": 0.1,
+      "bound": "10625.938078",
+      "sol": "11255.22128",
+      "gap": "5.59%",
+      "lp_iters": 1269
+     },
+     {
+      "tag": "B",
+      "t": 0.1,
+      "bound": "10625.938078",
+      "sol": "11160.129426",
+      "gap": "4.79%",
+      "lp_iters": 1425
+     },
+     {
+      "tag": "T",
+      "t": 0.1,
+      "bound": "10625.938078",
+      "sol": "10928.914617",
+      "gap": "2.77%",
+      "lp_iters": 1690
+     },
+     {
+      "tag": "",
+      "t": 0.2,
+      "bound": "10928.914617",
+      "sol": "10928.914617",
+      "gap": "0.00%",
+      "lp_iters": 2141
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.1,
+    "final_incumbent_objective": 10928.914617,
+    "proof_s": 0.15,
+    "lp_iterations": 2141,
+    "nodes": 30,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.15
+    },
+    "incumbent_count": 5,
+    "final_gap": "|",
+    "max_submip_depth": 4,
+    "lp_iterations_separation": 5,
+    "lp_iterations_heuristics": 663
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/14_oracle:svc_north_phase2.log"
+  },
+  {
+   "index": 15,
+   "candidate": "oracle:svc_south",
+   "phase": "phase1",
+   "seeded": false,
+   "budget_seconds": 66.3,
+   "seconds": 0.01529570808634162,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 0.0,
+   "bound": 0.0,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 1501,
+    "rows": 1295,
+    "nonzeros": 7351,
+    "integer": 324,
+    "binary": 324
+   },
+   "highs": {
+    "presolve": {
+     "rows": 575,
+     "rows_removed": 720,
+     "columns": 674,
+     "columns_removed": 827,
+     "elements": 3250,
+     "elements_removed": 4101
+    },
+    "reduced": {
+     "rows": 575,
+     "cols": 674,
+     "binary": 163,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 511,
+     "nonzeros": 3250
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "R",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "0",
+      "gap": "0.00%",
+      "lp_iters": 97
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "0",
+      "gap": "0.00%",
+      "lp_iters": 97
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 0.0,
+    "proof_s": 0.02,
+    "lp_iterations": 97,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.02
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 0,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/15_oracle:svc_south_phase1.log"
+  },
+  {
+   "index": 16,
+   "candidate": "oracle:svc_south",
+   "phase": "phase2",
+   "seeded": false,
+   "budget_seconds": 66.27513020783663,
+   "seconds": 0.2175446250475943,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 10928.914616636037,
+   "bound": 10928.914616636037,
+   "gap": 0.0,
+   "nodes": 30,
+   "raw": {
+    "cols": 1501,
+    "rows": 1296,
+    "nonzeros": 7363,
+    "integer": 324,
+    "binary": 324
+   },
+   "highs": {
+    "presolve": {
+     "rows": 554,
+     "rows_removed": 742,
+     "columns": 653,
+     "columns_removed": 848,
+     "elements": 3129,
+     "elements_removed": 4234
+    },
+    "reduced": {
+     "rows": 554,
+     "cols": 653,
+     "binary": 153,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 500,
+     "nonzeros": 3129
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-179375671.8814",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "R",
+      "t": 0.0,
+      "bound": "10550.583967",
+      "sol": "11663.583655",
+      "gap": "9.54%",
+      "lp_iters": 488
+     },
+     {
+      "tag": "C",
+      "t": 0.0,
+      "bound": "10625.938068",
+      "sol": "11663.583655",
+      "gap": "8.90%",
+      "lp_iters": 492
+     },
+     {
+      "tag": "L",
+      "t": 0.1,
+      "bound": "10625.938068",
+      "sol": "11381.567021",
+      "gap": "6.64%",
+      "lp_iters": 492
+     },
+     {
+      "tag": "L",
+      "t": 0.2,
+      "bound": "10625.938068",
+      "sol": "11381.567021",
+      "gap": "6.64%",
+      "lp_iters": 1242
+     },
+     {
+      "tag": "B",
+      "t": 0.2,
+      "bound": "10625.938068",
+      "sol": "11353.175183",
+      "gap": "6.41%",
+      "lp_iters": 1987
+     },
+     {
+      "tag": "B",
+      "t": 0.2,
+      "bound": "10625.938068",
+      "sol": "11255.22128",
+      "gap": "5.59%",
+      "lp_iters": 2163
+     },
+     {
+      "tag": "B",
+      "t": 0.2,
+      "bound": "10625.938068",
+      "sol": "11160.129426",
+      "gap": "4.79%",
+      "lp_iters": 2384
+     },
+     {
+      "tag": "T",
+      "t": 0.2,
+      "bound": "10625.938068",
+      "sol": "10928.914617",
+      "gap": "2.77%",
+      "lp_iters": 2680
+     },
+     {
+      "tag": "",
+      "t": 0.2,
+      "bound": "10928.914617",
+      "sol": "10928.914617",
+      "gap": "0.00%",
+      "lp_iters": 3168
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.2,
+    "final_incumbent_objective": 10928.914617,
+    "proof_s": 0.22,
+    "lp_iterations": 3168,
+    "nodes": 30,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.22
+    },
+    "incumbent_count": 6,
+    "final_gap": "|",
+    "max_submip_depth": 4,
+    "lp_iterations_separation": 4,
+    "lp_iterations_heuristics": 1360
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/16_oracle:svc_south_phase2.log"
+  },
+  {
+   "index": 17,
+   "candidate": "restricted:transfers",
+   "phase": "solve",
+   "seeded": false,
+   "budget_seconds": 66.3,
+   "seconds": 0.4821576667018235,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 11716.122836349747,
+   "bound": 11716.122836349745,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 3781,
+    "rows": 3717,
+    "nonzeros": 21329,
+    "integer": 948,
+    "binary": 948
+   },
+   "highs": {
+    "presolve": {
+     "rows": 1368,
+     "rows_removed": 2349,
+     "columns": 1300,
+     "columns_removed": 2481,
+     "elements": 7724,
+     "elements_removed": 13605
+    },
+    "reduced": {
+     "rows": 1368,
+     "cols": 1300,
+     "binary": 467,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 833,
+     "nonzeros": 7724
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-75316635.86283",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "11716.122836",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 1011
+     },
+     {
+      "tag": "L",
+      "t": 0.5,
+      "bound": "11716.122836",
+      "sol": "11716.122836",
+      "gap": "0.00%",
+      "lp_iters": 5196
+     },
+     {
+      "tag": "",
+      "t": 0.5,
+      "bound": "11716.122836",
+      "sol": "11716.122836",
+      "gap": "0.00%",
+      "lp_iters": 5405
+     }
+    ],
+    "first_incumbent_s": 0.5,
+    "final_incumbent_s": 0.5,
+    "final_incumbent_objective": 11716.122836,
+    "proof_s": 0.48,
+    "lp_iterations": 5405,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.48
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 2,
+    "lp_iterations_separation": 4185,
+    "lp_iterations_heuristics": 202
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/R_41001_r11.highs/17_restricted:transfers_solve.log"
+  }
+ ]
+}

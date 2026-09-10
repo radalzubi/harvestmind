@@ -89,6 +89,9 @@ async def payload(request: HTTPRequest) -> Request:
                                  for e in exc.errors(include_input=False, include_context=False)]) from exc
     if len(result.skus) > 20 or len(result.sources) > 40 or len(result.services) > 20 or result.horizon > 12 or result.scenarios > 4 or len(result.stresses) > 4:
         raise HTTPException(413, "Interactive network limit exceeded; use offline batch planning.")
+    from zaad.meio.topology import NETWORK_LIMITS
+    if len(result.locations) > NETWORK_LIMITS["locations"] or len(result.transfers) > NETWORK_LIMITS["transfers"] or len(result.incumbent_transfers) > NETWORK_LIMITS["incumbent_transfers"]:
+        raise HTTPException(413, f"Interactive network bounds exceeded (locations, lanes, incumbent transfers): {NETWORK_LIMITS}; use offline batch planning.")
     if result.max_solve_seconds * (10 + len(result.services)) > 180:
         raise HTTPException(422, "Aggregate requested solver time exceeds 180 seconds; lower max_solve_seconds.")
     return result
@@ -98,6 +101,13 @@ async def compute(req):
     if not _slots.acquire(blocking=False):
         raise HTTPException(429, "Network planner busy; retry shortly.")
     try:
+        if req.transfers or len(req.locations) > 1:
+            # a network request: the frozen decision plus the P2 network block (accounting, explanations)
+            from zaad.meio.planner import NetworkRefused, plan_network
+            try:
+                return await run_in_threadpool(plan_network, req)
+            except NetworkRefused as exc:
+                raise HTTPException(422, {"code": "network_refused", "message": str(exc)}) from exc
         return await run_in_threadpool(plan, req)
     finally:
         _slots.release()
@@ -122,10 +132,14 @@ async def recommend(request: HTTPRequest, operator: str | None = Depends(require
     return await compute(req)
 
 
-def _workspace_request(conn, operator: str, horizon: int, service_target: float, skus: str | None, max_solve_seconds: float):
+def _workspace_request(conn, operator: str, horizon: int, service_target: float, skus: str | None, max_solve_seconds: float, network: bool = False):
     from zaad.full.workspace import WorkspaceError, build_request
     subset = [x.strip() for x in skus.split(",") if x.strip()] if skus else None
     try:
+        if network:
+            # P2: the vault's declared locations and lanes; identical to the frozen adapter below two locations
+            from zaad.meio.workspace import build_network_request
+            return build_network_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds)
         return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds)
     except WorkspaceError as exc:
         raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
@@ -134,11 +148,12 @@ def _workspace_request(conn, operator: str, horizon: int, service_target: float,
 @router.get("/request/from-workspace", dependencies=[Depends(bounded_rate)])
 def workspace_request(operator: str = Depends(authenticated), conn=Depends(get_conn), horizon: int = Query(12, ge=4, le=26),
                       service_target: float = Query(.95, gt=.5, le=1.), skus: str | None = Query(None, description="comma-separated subset"),
-                      max_solve_seconds: float = Query(15., gt=0, le=120)):
+                      max_solve_seconds: float = Query(15., gt=0, le=120),
+                      network: bool = Query(False, description="P2: build the multi-location network from stg_fmcg_locations / lanes / transfers")):
     """The frozen contract built from the operator's own vault (the canonical customer-data path), with
     the build report: rows read, compact dimensions, fitted supplier fill and lead with sample sizes,
     provenance, warnings and the leakage guard. No plan is run."""
-    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds)
+    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds, network)
     return {"request": req.model_dump(mode="json"), "build": build}
 
 
@@ -146,15 +161,19 @@ def workspace_request(operator: str = Depends(authenticated), conn=Depends(get_c
 async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(get_conn), horizon: int = Query(12, ge=4, le=26),
                          service_target: float = Query(.95, gt=.5, le=1.), skus: str | None = Query(None, description="comma-separated subset"),
                          max_solve_seconds: float = Query(15., gt=0, le=120), commit_window_weeks: int = Query(4, ge=1, le=8),
-                         shape: Literal["network", "purchase_plan"] = Query("purchase_plan")):
+                         shape: Literal["network", "purchase_plan"] = Query("purchase_plan"),
+                         network: bool = Query(False, description="P2: plan the declared multi-location network (purchases, transfers, allocation)")):
     """Plan the operator's workspace with the frozen P1 optimizer: vault -> compact Request -> plan.
     `shape=purchase_plan` returns the workspace purchase-plan rows (approval stays with the operator,
     never an executable order); `shape=network` returns the full network report with the build."""
     from zaad.full.workspace import to_purchase_plan
-    req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds)
+    req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds, network)
     report = await compute(req)
     if shape == "network":
         return {"report": report, "build": build, "executable_purchase_order": False}
+    if network and (req.transfers or len(req.locations) > 1):
+        from zaad.meio.workspace import to_network_plan
+        return to_network_plan(req, report, build, commit_window_weeks=commit_window_weeks, run_id=str(report.get("input_fingerprint", "")))
     return to_purchase_plan(req, report, build, commit_window_weeks=commit_window_weeks, run_id=str(report.get("input_fingerprint", "")))
 
 

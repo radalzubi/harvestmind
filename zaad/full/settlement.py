@@ -57,6 +57,11 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
     served_total: dict[str, float] = defaultdict(float)
     substitute_total: dict[str, float] = defaultdict(float)
     initial_units, received_units, served_inputs, expired_units, transit_loss = 0., 0., 0., 0., 0.
+    # Per SKU / location / period flow telemetry (P2 network accounting). Read from the same state the
+    # settlement itself evolves; it changes nothing about the economics or the validation.
+    flows: list[dict] = []
+    transfer_events: list[dict] = []
+    flow_in: dict[tuple[str, str], dict[str, float]] = defaultdict(lambda: defaultdict(float))
     for lot in req.stock:
         stock[lot.sku, lot.location, lot.expires_in] += lot.usable
         locked[lot.location] += (lot.quantity - lot.usable) * skus[lot.sku].volume
@@ -102,18 +107,25 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
     service_by_period: list[dict] = []
     for t in range(end):
         period_start = req.as_of + timedelta(days=t * req.period_days)
+        expired_at_start: dict[tuple[str, str], float] = defaultdict(float)
         for key in list(stock):
-            sku, _, expiry = key
+            sku, location_of_lot, expiry = key
             if expiry <= t:
                 q = stock.pop(key)
                 ledger["disposal"] += q * skus[sku].disposal_fee
                 expired_units += q
+                expired_at_start[sku, location_of_lot] += q
         rest = []
+        opening_units_at: dict[tuple[str, str], float] = defaultdict(float)
+        for (sku, location, expiry), q in stock.items():
+            opening_units_at[sku, location] += q
+        flow_in.clear()
         for sku, location, expiry, due, quantity, kind in pending:
             if due <= t:
                 stock[sku, location, expiry] += quantity
                 if kind == "external":
                     received_units += quantity
+                flow_in[sku, location]["external" if kind == "external" else "transfer"] += quantity
             else:
                 rest.append((sku, location, expiry, due, quantity, kind))
         pending = rest
@@ -193,6 +205,7 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             if usage[capacity_resource.id] > capacity_resource.capacity_by_period[t] + 1e-5:
                 raise PhysicalViolation("shared supplier/route capacity breach")
         transfer_usage: dict[str, float] = defaultdict(float)
+        expired_now = expired_at_start
         for (arc_id, expiry, period), q in plan.transfers.items():
             if period != t or is_dust(q):
                 continue
@@ -214,8 +227,22 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             transit_loss += q * arc.loss_fraction
             ledger["transfer"] += q * arc.cost_per_unit
             payments[t] += q * arc.cost_per_unit
+            flow_in[arc.sku, arc.origin]["transfer_out"] += q
+            transfer_events.append({"period": t, "transfer": arc_id, "sku": arc.sku, "origin": arc.origin, "destination": arc.destination,
+                                    "expiry": expiry, "quantity": q, "arrives": due, "received": q * (1 - arc.loss_fraction)})
         if any(q > arcs[a].capacity + 1e-5 for a, q in transfer_usage.items()):
             raise PhysicalViolation("transfer capacity breach")
+        for arc_id, moved in transfer_usage.items():
+            arc = arcs[arc_id]
+            if is_dust(moved):
+                continue
+            # Packs are checked on the executable period-zero movement; later transfers are replanning
+            # guidance that this evaluator may already have reduced to the stock a world actually holds.
+            if t == 0 and arc.multiple > 0 and abs(moved / arc.multiple - round(moved / arc.multiple)) * arc.multiple > 1e-6 * max(1., arc.multiple):
+                raise PhysicalViolation("transfer pack violation")
+            if arc.fixed_cost_per_dispatch > 0:
+                ledger["transfer"] += arc.fixed_cost_per_dispatch
+                payments[t] += arc.fixed_cost_per_dispatch
         # Real allocation is work conserving and uses only this review's revealed demand.
         # Contract priority first, then contribution, then stable ID. No future demand input.
         for service in sorted(req.services, key=lambda s: (-customers[s.customer].priority,
@@ -228,6 +255,7 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
                     quantity = min(need, max(0., stock[key]) / ratio)
                     stock[key] -= quantity * ratio
                     served_inputs += quantity * ratio
+                    flow_in[sku, service.location]["served"] += quantity * ratio
                     need -= quantity
                     ledger["substitution"] += quantity * fee
                     payments[t] += quantity * fee
@@ -243,6 +271,18 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             service_by_period.append({"service": service.id, "period": t, "demand": demand, "served": served})
         holding = sum(q * skus[s].asset_value * locations[location_key].holding_per_value_period for (s, location_key, _), q in stock.items())
         ledger["holding"] += holding
+        closing_units_at: dict[tuple[str, str], float] = defaultdict(float)
+        for (sku, location, expiry), q in stock.items():
+            closing_units_at[sku, location] += q
+        for pair in sorted(set(opening_units_at) | set(closing_units_at) | set(flow_in)):
+            pair_sku, pair_location = pair
+            f = flow_in.get(pair, {})
+            flows.append({"period": t, "sku": pair_sku, "location": pair_location, "opening": opening_units_at.get(pair, 0.),
+                          "external_receipts": f.get("external", 0.), "transfer_receipts": f.get("transfer", 0.),
+                          "served": f.get("served", 0.), "transfer_out": f.get("transfer_out", 0.), "expired": expired_now.get(pair, 0.),
+                          "closing": closing_units_at.get(pair, 0.),
+                          "holding_cost": sum(q * skus[s].asset_value * locations[pair_location].holding_per_value_period
+                                              for (s, loc_, _), q in stock.items() if s == pair_sku and loc_ == pair_location)})
         # Holding is an economic accrual, NOT a second cash-financing charge.
         interest = debt * req.liquidity.interest_per_period
         ledger["financing"] += interest
@@ -342,5 +382,6 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             "end_stock": [{"sku": s, "location": location_key, "expiry": e, "quantity": q} for (s, location_key, e), q in stock.items()],
             "future_payments": {t: v for t, v in payments.items() if t >= end},
             "pending": pending,
+            "flows": flows, "transfer_events": transfer_events,
             "metric_note": "unit fill is not OTIF; zero-demand service is unobserved",
             "initial_units": initial_units, "received_units": received_units}

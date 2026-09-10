@@ -247,8 +247,44 @@ process's cancellation traceback, then "Application startup complete"; no 5xx du
 
 **PRODUCTION P0/P1 PLUMBING — VERIFIED.**
 
+## P2 multi-echelon / network optimization (2026-09-10, branch `claude/zaad-meio-p2`, worktree `harvestmind-p2`, parent `11f5459`)
+
+Not merged, not pushed. Evidence in `docs/zaad_full/evidence/p2/` (architecture decision, development
+record, pre-registration with its dated correction, authoritative results, invariants, adversarial review,
+scalability, P0 / P1 isolation, closeout). The frozen core was found to be one joint network MILP already;
+P2 adds the network layer `zaad/meio` (topology, reachability, router, accounting, explanations, network
+policies and baselines, fixtures, benchmark, workspace adapter with migration 016, API `network=true`,
+interactive bounds) and default-off / telemetry hooks in the frozen files (demand correlation, lane packs
+and dispatch fees, incumbent transfers, replay registry, settlement flows, network continuation). Frozen
+regression identical throughout; six-cell P0 isolation decision-identical (cell 108 on an idle machine; cell 21 identical to the frozen
+code's own replay, its divergence from the record being documented run-to-run variability). Authoritative benchmark: 20 / 20
+valid fixtures pass every economic, service and structural gate, 18 / 18 network principles, 20 / 20
+invariants, adversarial review clean, full suite 1,838 passed. **Verdict: P2 CORE ARCHITECTURE BUILT —
+FREEZE BLOCKED** on one pre-registered gate: the runtime maximum per review (180 s) is exceeded on two of
+344 reviews (M 257 s, O 315 s: three candidate classes at the declared per-solve budget with six to eight
+worlds); p50 9.7 s and p95 87 s pass. See `P2_CLOSEOUT.md` for the blocker and the decision it needs.
+
+## P2 performance pass (2026-09-10, branch `claude/zaad-meio-p2`, code `cab3849`)
+
+Not merged, not pushed. Evidence in `docs/zaad_full/evidence/p2/perf/` (diagnosis written before any
+change, development log, dated corrective plan, re-run results, architecture note, profiles, gate
+logs). The original runtime failure stands as recorded (`P2_RESULTS.md`: M 257 s, O 315 s). Profiling
+the two failing reviews on their exact snapshots showed 69% of the wall in the warm-start completion
+forfeiting its cap and the rest in solves whose first incumbent took 10-31 s, because 95% of the
+binaries were FEFO indicators between cohorts that all outlive a 12-period horizon (big-M 1e6). One
+exact model change (`zaad/full/model.py`, `FEFO_SYMMETRY_ELIMINATION`: no FEFO indicator between two
+cohorts that both outlive the horizon and the latest schedulable transfer arrival; network requests
+only, the single-node P1 formulation verbatim) removes 95% of the binaries; every candidate then solves
+at the root node with identical objectives. Authoritative set re-run unchanged (`p2_authoritative_perf`):
+**p50 0.5 s, p95 6.6 s, max 14.6 s** (gate 60 / 120 / 180), 0 time-limited solves, 20 / 20 fixtures,
+18 / 18 principles, 20 / 20 invariants, adversarial clean; P1 B / T / Q / A and the P0 six-cell set
+(120 / 120 reviews) decision-identical; full suite 1,843 passed. Every decision difference from the
+pre-performance record is a tie broken differently (objective equality proved on the snapshot) or the
+one review whose frozen plan was time-limited. **Verdict: P2 MULTI-ECHELON / NETWORK OPTIMIZATION —
+PASS AND FROZEN** (see `perf/P2_PERF_RESULTS.md`, `P2_CLOSEOUT.md`; frozen SHA recorded there).
+
 ## Exact next action
 
-None for the release line. The next brief is P2, branched from `main`; keep `ZAAD_LEGACY_PLANNERS`
+Owner decision on merging `claude/zaad-meio-p2` into `main` (local only; not pushed). Keep `ZAAD_LEGACY_PLANNERS`
 explicit on every deployed environment and run `scripts/zaad_canonical_regression.py` before accepting
 any Dependabot bump that touches the solver stack.

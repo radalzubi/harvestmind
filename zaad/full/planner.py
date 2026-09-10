@@ -144,8 +144,10 @@ def evaluate(req, solution, worlds, terminal: dict[str, float] | None = None, fi
         try:
             result = settle(req, solution, world, future_guidance=True)
             if terminal:
+                from zaad.full.lotsizing import lane_premiums
                 from zaad.full.terminal import continuation_value
-                adjustment = continuation_value(req, result["end_stock"], result["pending"], fits if fits is not None else {}, window_end=req.horizon, landed=terminal, cap_units=terminal_cap)["adjustment"]
+                adjustment = continuation_value(req, result["end_stock"], result["pending"], fits if fits is not None else {}, window_end=req.horizon, landed=terminal, cap_units=terminal_cap,
+                                                location_premium=lane_premiums(req) or None)["adjustment"]
                 # carried in the row's ledger too (INVENTORY_VALUE_CHANGE), so components still reconcile
                 result = {**result, "economic_cost": result["economic_cost"] + adjustment, "terminal_adjustment": adjustment,
                           "ledger": {**result["ledger"], "terminal_continuation": adjustment}}
@@ -642,7 +644,8 @@ def plan(req: Request) -> dict:
     incumbent_label = "projected_base_stock_proxy"
     if req.incumbent_orders:
         declared = replace(base, status="OPTIMAL", purchases={(x.source, x.period): x.quantity for x in req.incumbent_orders},
-                           transfers={}, amendments={(p.id, next(o.id for o in p.options if o.action == "keep")): p.remaining for p in req.pipeline})
+                           transfers={(x.transfer, x.expiry, x.period): x.quantity for x in req.incumbent_transfers},
+                           amendments={(p.id, next(o.id for o in p.options if o.action == "keep")): p.remaining for p in req.pipeline})
         incumbent = solve(req, deterministic, fixed=declared)
         incumbent_label = "operator_declared"
     elif req.incumbent_rule:
@@ -650,7 +653,7 @@ def plan(req: Request) -> dict:
         # incumbent, so ZAAD is compared against the policy the buyer actually runs.
         from zaad.full.policies import baseline_plan
         rule_plan = baseline_plan(req, req.incumbent_rule)
-        declared = replace(base, status="OPTIMAL", purchases=dict(rule_plan.purchases), transfers={}, amendments=dict(rule_plan.amendments))
+        declared = replace(base, status="OPTIMAL", purchases=dict(rule_plan.purchases), transfers=dict(rule_plan.transfers), amendments=dict(rule_plan.amendments))
         incumbent = solve(req, deterministic, fixed=declared)
         incumbent_label = "operator_rule:" + req.incumbent_rule
     # Adaptive escalation (v8): classify the review first, then solve only the candidate classes
@@ -702,8 +705,8 @@ def plan(req: Request) -> dict:
             # solve and in every candidate evaluation of this review. "cycle" basis: the steady-state
             # relative value (c*/mu less the unit's own carrying, concave, one economic cycle credited);
             # "landed" basis: the pass-J landed cost less carrying.
-            from zaad.full.lotsizing import (continuation_caps, cycle_continuation_terms, economic_cycle, landed_unit_costs,
-                                             steady_state_unit_costs, terminal_terms)
+            from zaad.full.lotsizing import (continuation_caps, continuation_feeds, cycle_continuation_terms, economic_cycle,
+                                             landed_unit_costs, steady_state_unit_costs, terminal_terms)
             if req.terminal_economic_basis == "cycle":
                 p1_terminal = steady_state_unit_costs(req, fits)
                 p1_terminal_cap = continuation_caps(req, fits)
@@ -721,6 +724,12 @@ def plan(req: Request) -> dict:
                             "residual_units_credited_up_to": p1_terminal_cap}
             if lot_terms:
                 v6 = {**v6, "continuation": lot_terms}
+                feeds = continuation_feeds(req, fits)
+                if feeds:
+                    # network continuation (P2): only a request with a customer-less origin feeding a
+                    # location that carries slabs adds anything; a single location never does
+                    v6 = {**v6, "continuation_feeds": feeds}
+                    p1_economics["continuation_feeds"] = {f"{k[0]}@{k[1]}": v for k, v in feeds.items()}
     # Cadence candidates (P1). When a supplier carries order-level economics (fixed order cost, MOV,
     # freight tariff) the review may be better served by ordering every k periods than by the
     # per-period cadence the incumbent runs. They are optional classes: skipping one is never
@@ -1519,7 +1528,8 @@ def plan(req: Request) -> dict:
             "candidate_gates": candidate_gates,
             "recovery_guidance": {"status": recovery.status, "actions": action_rows(recovery),
                                   "projected_unit_fill": recovery.projected_service,
-                                  "weighted_service_shortfall": weighted_shortfall(req, recovery_rows),
+                                  # None, never infinity, when the recovery plan is unusable on the confirmation worlds (JSON-safe)
+                                  "weighted_service_shortfall": _finite(weighted_shortfall(req, recovery_rows)),
                                   "warning": "Best priority-weighted modeled service with minimum-cost tie-break; approval still depends on independent and stress confirmation."} if recovery.usable_plan else None,
             "candidates": {name: {"status": c.status, "solve_seconds": c.solve_seconds, "variables": c.variables,
                 "constraints": c.constraints, "gap": c.gap, "residual": c.residual,

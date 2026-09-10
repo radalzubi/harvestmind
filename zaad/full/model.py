@@ -21,6 +21,21 @@ from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
 
 
+# P2 performance pass: exact symmetry elimination of the FEFO indicators (see
+# docs/zaad_full/evidence/p2/perf/P2_PERF_DIAGNOSIS.md). A cohort that outlives the horizon and every
+# transfer arrival the plan can schedule is economically interchangeable with every other such cohort
+# of its SKU: no disposal, the same terminal and continuation value, the same lane eligibility. The
+# FEFO rule between two interchangeable cohorts constrains only which label is consumed, never a cost
+# or a quantity, so the indicator and its two rows are omitted (the FEFO rule against every cohort that
+# CAN matter inside the window is kept exactly). Objective and executable decisions are unchanged; the
+# settlement applies FEFO itself. It applies to network requests (a declared transfer lane): the
+# frozen single-node P1 formulation is kept verbatim so its recorded decision path is reproduced
+# bit for bit (on the P1 fixture T the elimination is objective-exact to 1e-15 but breaks a tie
+# between two equal-cost source splits differently; a frozen path is not re-tuned for speed it does
+# not need). False restores the frozen formulation everywhere (diagnostic / equivalence runs).
+FEFO_SYMMETRY_ELIMINATION = True
+
+
 class Linear:
     def __init__(self):
         self.names, self.cost, self.lower, self.upper, self.integer = [], [], [], [], []
@@ -333,7 +348,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           continuation: dict[tuple[str, str], tuple[float, float]] | None = None,
           seed: Solution | None = None,
           allowed_periods: frozenset[int] | None = None,
-          expected_shortage: dict | None = None) -> Solution:
+          expected_shortage: dict | None = None,
+          continuation_feeds: dict[tuple[str, str], list[dict]] | None = None) -> Solution:
     """excess_penalty (v6): {(sku, location): (baseline_units, cost_per_unit_period)} charges inventory
     held above the lean baseline while a temporary risk driver is gone, so the plan runs temporary
     protection down through demand rather than replenishing it. continuation (v6): {(sku, location):
@@ -604,17 +620,19 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     for service in req.services:
         for sku, _, _ in compatible(req, service):
             pairs.add((sku, service.location))
+    latest_due: dict[str, int] = defaultdict(int)   # latest transfer arrival the plan can schedule, per SKU
     for arc in req.transfers:
         for t in range(H):
             ids = []
+            # Receiving calendar, rather than silently unloading on closed days.
+            when = req.as_of + timedelta(days=(t + arc.lead_periods) * req.period_days)
+            actual = next_open(when, calendars[locs[arc.destination].receiving_calendar])
+            due = math.ceil((actual - req.as_of).total_seconds() / (86400 * req.period_days))
+            latest_due[arc.sku] = max(latest_due[arc.sku], due)
             for expiry in sorted(cohorts[arc.sku]):
                 if expiry <= t + arc.lead_periods:
                     continue
                 cap = arc.capacity if arc.approved and "transfers" not in disabled else 0.
-                # Receiving calendar, rather than silently unloading on closed days.
-                when = req.as_of + timedelta(days=(t + arc.lead_periods) * req.period_days)
-                actual = next_open(when, calendars[locs[arc.destination].receiving_calendar])
-                due = math.ceil((actual - req.as_of).total_seconds() / (86400 * req.period_days))
                 if due >= expiry:
                     cap = 0.
                 q = m.var(("transfer", arc.id, expiry, t), upper=cap)
@@ -632,6 +650,21 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         post[w][arc.sku, arc.destination][q] += 1 - arc.loss_fraction
             if ids:
                 m.row({q: 1 for q in ids}, upper=arc.capacity)
+                lane_cap = arc.capacity if arc.approved and "transfers" not in disabled else 0.
+                if arc.multiple > 0 and lane_cap > 0 and t == 0:
+                    # Transfer packs (P2): the executable movement over the lane is a whole number of
+                    # packs across cohorts. Later periods are replanning guidance (the settlement judges
+                    # packs on period zero, the only period an operator executes), so they stay
+                    # continuous and the model does not carry a general integer per lane-period. A lane
+                    # without a declared pack is continuous, as before.
+                    packs = m.var(("transfer_packs", arc.id, t), upper=math.floor(lane_cap / arc.multiple), integer=True)
+                    m.row({**{q: 1 for q in ids}, packs: -arc.multiple}, 0, 0)
+                if arc.fixed_cost_per_dispatch > 0 and lane_cap > 0:
+                    # Per-dispatch cost (P2): charged once in any period the lane carries anything.
+                    dispatch = m.var(("transfer_dispatch", arc.id, t), upper=1, integer=True)
+                    m.row({**{q: 1 for q in ids}, dispatch: -lane_cap}, upper=0)
+                    for w in range(len(worlds)):
+                        expense(dispatch, arc.fixed_cost_per_dispatch, w, t)
     # Executable transfers share observed opening inventory across all arcs.
     # Expected PO receipts, including overdue ones, cannot fund today's action.
     confirmed: dict[tuple[str, str, int], float] = defaultdict(float)
@@ -705,9 +738,12 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         cap = locs[service.location].capacity_volume / skus[sku].volume
                         m.row({**{i: 1 for i in stocks}, empty: cap}, upper=cap)
                         # FEFO: consumption of younger cohorts requires older remaining stock zero.
+                        # An older cohort beyond the window (outlives the horizon and every schedulable
+                        # transfer arrival) is interchangeable with the younger one: omitted exactly.
+                        window = max(H, latest_due[sku]) if (FEFO_SYMMETRY_ELIMINATION and req.transfers) else math.inf
                         for expiry, q in consumptions:
                             older = [inv[sku, service.location, e, t, w] for e in cohorts[sku]
-                                     if t < e < expiry and (sku, service.location, e, t, w) in inv]
+                                     if t < e < expiry and e <= window and (sku, service.location, e, t, w) in inv]
                             if older:
                                 active = m.var(("fefo", sku, service.id, expiry, t, w), upper=1, integer=True)
                                 m.row({q: 1, active: -d}, upper=0)
@@ -889,6 +925,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                           upper=(1 - service.target) * sum(world.demand[service.id]))
     if continuation:
         for w in range(len(worlds)):
+            slab_vars: dict[tuple[str, str, int], tuple[int, float]] = {}     # (sku, location, slab) -> (served var, demand units)
             for (sku, location), value in continuation.items():
                 # one (units, margin) pair, or a list of slabs sharing the post-horizon supply (P1 final
                 # closure: the steady-state relative value, concave in the residual); P0 passes neither
@@ -900,8 +937,45 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         served = m.var(("continuation", sku, location, w, j), upper=demand_units)
                         costs[w][served] -= margin
                         served_vars.append(served)
+                        slab_vars[sku, location, j] = (served, demand_units)
                 if served_vars:
                     m.row({**{q: -coef for q, coef in supply_terms.items()}, **{s: 1. for s in served_vars}}, upper=0)
+            # Network continuation (P2): an origin without customers of its own may earn a fed location's
+            # slab margin less the lane cost, from the slab its lane lead can reach, sharing that
+            # location's post-window demand with the location's own residual (one row per slab), and
+            # bounded by the origin's own post-horizon supply. Absent feeds: nothing is added.
+            for (sku, feed_origin), feeds in (continuation_feeds or {}).items():
+                supply_terms = post[w].get((sku, feed_origin), {})
+                if not supply_terms:
+                    continue
+                via_vars = []
+                shared: dict[tuple[str, str, int], list[int]] = defaultdict(list)
+                for feed in feeds:
+                    fed_entry = continuation.get((sku, feed["branch"]))
+                    if not fed_entry:
+                        continue
+                    fed_slabs: list = list(fed_entry) if isinstance(fed_entry, list) else [fed_entry]
+                    for j, (demand_units, margin) in enumerate(fed_slabs):
+                        net = margin - feed["cost"]
+                        if j < feed["lead"] or demand_units <= 0 or net <= 0:
+                            continue
+                        via = m.var(("continuation_via", sku, feed_origin, feed.get("lane", feed["branch"]), w, j), upper=demand_units)
+                        costs[w][via] -= net
+                        via_vars.append(via)
+                        shared[sku, feed["branch"], j].append(via)
+                if via_vars:
+                    m.row({**{q: -coef for q, coef in supply_terms.items()}, **{v: 1. for v in via_vars}}, upper=0)
+                    for slab_key, vias in shared.items():
+                        own = slab_vars.get(slab_key)
+                        row = {v: 1. for v in vias}
+                        if own is not None:
+                            row[own[0]] = 1.
+                            demand_units = own[1]
+                        else:
+                            entry = continuation[slab_key[0], slab_key[1]]
+                            branch_slabs: list = list(entry) if isinstance(entry, list) else [entry]
+                            demand_units = float(branch_slabs[slab_key[2]][0])
+                        m.row(row, upper=demand_units)
     es_vars: dict[tuple[str, int], int] = {}
     for service, t, cuts in shortage_terms:
         # Availability for the service in period t on the single world: what it served plus what

@@ -28,7 +28,8 @@ from zaad.full.contracts import Request
 
 
 def continuation_value(req: Request, end_stock: list[dict], pending: list, fits: dict, window_end: int = 1,
-                       landed: dict[str, float] | None = None, cap_units: dict[str, float] | None = None) -> dict:
+                       landed: dict[str, float] | None = None, cap_units: dict[str, float] | None = None,
+                       location_premium: dict[tuple[str, str], float] | None = None) -> dict:
     """Value residual stock beyond the window. `end_stock` rows are the last settlement's
     (sku, location, expiry, quantity); `pending` its in-transit tuples (sku, location, expiry, due,
     quantity, kind); `fits` the last review's forecast (mean per service). Returns the salvage credit
@@ -41,19 +42,44 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
     policy actually incurred (benchmark pass J correction 1). Carrying stays on the asset value, as
     the ledger charges it. Without `landed` the avoided purchase is `asset_value`, as before. `cap_units`
     (optional, per SKU): residual units beyond the cap earn salvage only (the planner's selection rows
-    use one economic cycle, the bound its solve carries; the benchmark passes none)."""
+    use one economic cycle, the bound its solve carries; the benchmark passes none). `location_premium`
+    (optional, per (SKU, location), P2): the cost of the move a residual unit at a transfer-fed location
+    avoids, added to the purchase it avoids; origin residual that reaches that location through a lane
+    pays the lane cost, so it nets to the origin's own replacement value."""
     skus = {s.id: s for s in req.skus}
     locs = {loc.id: loc for loc in req.locations}
     mu: dict[tuple[str, str], float] = {}
     for s in req.services:
         mu[s.sku, s.location] = mu.get((s.sku, s.location), 0.) + float(fits[s.id]["mean"])
-    lots: dict[tuple[str, str], list[tuple[float, float, float]]] = {}
+    lots: dict[tuple[str, str], list[tuple[float, float, float, float]]] = {}
+    premium = location_premium or {}
     for row in end_stock:
         if row["quantity"] > 1e-9:
-            lots.setdefault((row["sku"], row["location"]), []).append((0., float(row["expiry"]) - window_end, float(row["quantity"])))
+            lots.setdefault((row["sku"], row["location"]), []).append((0., float(row["expiry"]) - window_end, float(row["quantity"]), -premium.get((row["sku"], row["location"]), 0.)))
     for sku, location, expiry, due, quantity, _kind in pending:
         if quantity > 1e-9:
-            lots.setdefault((sku, location), []).append((max(0., float(due) - window_end), float(expiry) - window_end, float(quantity)))
+            lots.setdefault((sku, location), []).append((max(0., float(due) - window_end), float(expiry) - window_end, float(quantity), -premium.get((sku, location), 0.)))
+    # Network continuation (P2): residual at an origin with no customers of its own reaches the
+    # locations its approved lanes feed. Each such lot is split across the fed locations by their
+    # fitted demand, joins that location's consumption queue after the lane lead (behind the
+    # location's own residual, so no unit of demand is valued twice) and gives up the lane cost per
+    # unit. Without such lanes nothing changes: a single location, or an origin with customers, is
+    # valued exactly as before.
+    for key in [k for k in lots if mu.get(k, 0.) <= 0]:
+        sku, origin = key
+        feeders = [a for a in req.transfers if a.approved and a.sku == sku and a.origin == origin and mu.get((sku, a.destination), 0.) > 0]
+        # post-window consumption is not time-critical: the cheapest lane into each location carries it
+        by_branch: dict[str, tuple[int, float]] = {}
+        for a in sorted(feeders, key=lambda a: (a.cost_per_unit, a.lead_periods, a.id)):
+            by_branch.setdefault(a.destination, (a.lead_periods, a.cost_per_unit))
+        total = sum(mu[sku, b] for b in by_branch)
+        if not by_branch or total <= 0:
+            continue
+        for available, expiry, quantity, extra in lots.pop(key):
+            for branch, (lead, cost) in by_branch.items():
+                share = mu[sku, branch] / total
+                # the origin's own row carries no premium; at the branch it earns that location's premium less the lane cost
+                lots.setdefault((sku, branch), []).append((available + lead, expiry, quantity * share, cost - premium.get((sku, branch), 0.)))
     salvage_credit = continuation_credit = units = 0.
     detail = {}
     for key, rows in lots.items():
@@ -66,7 +92,7 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
         value_here = salvage_here = 0.
         consumed_units = 0.
         cap = (cap_units or {}).get(sku)
-        for available, expiry, quantity in sorted(rows, key=lambda r: (r[0], r[1])):
+        for available, expiry, quantity, deduction in sorted(rows, key=lambda r: (r[0], r[1])):
             salvage_here += quantity * salvage
             if demand <= 0:
                 value_here += quantity * salvage
@@ -83,7 +109,7 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
                 if tau >= expiry or (cap is not None and consumed_before + k >= cap):
                     value_here += q * salvage
                 else:
-                    value_here += q * min(price, max(salvage, price - asset * rate * tau))
+                    value_here += q * min(price - deduction, max(salvage, price - deduction - asset * rate * tau))
                     consumed_units += q
             consumed_before += quantity
         salvage_credit += salvage_here

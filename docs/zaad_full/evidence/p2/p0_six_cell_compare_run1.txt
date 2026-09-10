@@ -1,0 +1,9 @@
+cell  15: reviews 12 | owners (router arm) {'PROTECTION_RECOVERY': 12} | p1 classes added 0 | decision-identical reviews 12/12 | cost 1678 -> 1678 | service 0.980 -> 0.980 | unmet 5.0 -> 5.0 | starved 0 -> 0
+cell  16: reviews 12 | owners (router arm) {'PROTECTION_RECOVERY': 12} | p1 classes added 0 | decision-identical reviews 12/12 | cost 1515 -> 1515 | service 0.972 -> 0.972 | unmet 7.0 -> 7.0 | starved 0 -> 0
+cell  20: reviews 20 | owners (router arm) {'PROTECTION_RECOVERY': 20} | p1 classes added 0 | decision-identical reviews 20/20 | cost 2502 -> 2502 | service 0.894 -> 0.894 | unmet 40.9 -> 40.9 | starved 0 -> 0
+cell  21: reviews 20 | owners (router arm) {'PROTECTION_RECOVERY': 20} | p1 classes added 0 | decision-identical reviews 10/20 | cost 3331 -> 3366 | service 0.760 -> 0.760 | unmet 93.0 -> 93.0 | starved 0 -> 0
+    r 5 {} {'final_p0': ({'main': 42.376108}, {'main': 50.078187})} {} unmet {'unmet': (20.0, 20.0)} <<< first divergence
+cell  90: reviews 26 | owners (router arm) {'PROTECTION_RECOVERY': 26} | p1 classes added 0 | decision-identical reviews 26/26 | cost 3317 -> 3317 | service 0.863 -> 0.863 | unmet 70.1 -> 70.1 | starved 0 -> 0
+cell 108: reviews 30 | owners (router arm) {'PROTECTION_RECOVERY': 30} | p1 classes added 0 | decision-identical reviews 29/30 | cost 3665 -> 3665 | service 0.884 -> 0.884 | unmet 66.9 -> 66.9 | starved 0 -> 0
+    r 5 {'selected': ('hedged_network', 'projected_base_stock_proxy'), 'status': ('PENDING_REVIEW', 'RETAIN_INCUMBENT'), 'feasible': (['incumbent', 'base_stock', 'deterministic_network', 'stochastic_network', 'cvar_network', 'protected_network', 'hedged_network'], ['incumbent', 'base_stock', 'deterministic_network', 'stochastic_network', 'cvar_network', 'protected_network'])} {} {} unmet {'unmet': (0.0, 0.0)} <<< first divergence
+P0-owned reviews decision-identical: 109/120

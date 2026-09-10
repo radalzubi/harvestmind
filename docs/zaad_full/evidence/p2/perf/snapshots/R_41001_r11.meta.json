@@ -1,0 +1,9 @@
+{
+ "fixture": "R_order_transfer_interaction",
+ "seed": 41001,
+ "review": 11,
+ "status": "COMPLETE",
+ "seconds_to_materialise": 57.2,
+ "review_wall_seconds": 9.725161333102733,
+ "state": "NETWORK_ALLOCATION"
+}

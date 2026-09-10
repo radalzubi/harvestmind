@@ -1,0 +1,9 @@
+{
+ "fixture": "H_one_branch_demand_shock",
+ "seed": 41001,
+ "review": 4,
+ "status": "COMPLETE",
+ "seconds_to_materialise": 179.5,
+ "review_wall_seconds": 84.75356454215944,
+ "state": "PROTECT"
+}

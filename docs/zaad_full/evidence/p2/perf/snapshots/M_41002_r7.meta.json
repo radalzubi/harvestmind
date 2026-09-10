@@ -1,0 +1,9 @@
+{
+ "fixture": "M_transfer_not_reachable_in_time",
+ "seed": 41002,
+ "review": 7,
+ "status": "COMPLETE",
+ "seconds_to_materialise": 796.8,
+ "review_wall_seconds": 253.21090187504888,
+ "state": "NETWORK_ALLOCATION"
+}

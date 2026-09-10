@@ -1,0 +1,1643 @@
+{
+ "fixture": "A",
+ "seed": 41001,
+ "review": 7,
+ "snapshot": "docs/zaad_full/evidence/p2/perf/snapshots/A_41001_r7.json",
+ "machine": {
+  "platform": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+  "python": "3.14.3",
+  "cpus": 12,
+  "loadavg_1m": 4.8701171875,
+  "scipy": "1.17.1",
+  "highspy": "?",
+  "other_python_processes": 34
+ },
+ "switches": {
+  "FEFO_SYMMETRY_ELIMINATION": true
+ },
+ "request": {
+  "horizon": 12,
+  "scenarios": 3,
+  "max_solve_seconds": 15.0,
+  "solve_budget_ceiling_seconds": 90.0,
+  "solver": "highs",
+  "solver_mip_gap": 1e-06,
+  "warm_start": true,
+  "warm_start_min_variables": 3000,
+  "locations": 3,
+  "transfers": 2,
+  "sources": 1,
+  "services": 2,
+  "skus": 1,
+  "stresses": 1,
+  "engine_profile": "reliability"
+ },
+ "wall_seconds": 0.32508275005966425,
+ "decision": {
+  "status": "RETAIN_INCUMBENT",
+  "selected_policy": "operator_declared",
+  "state": "NO_ACTION",
+  "owner": "PURCHASING_ECONOMICS",
+  "requested": [
+   "deterministic_network",
+   "stochastic_network"
+  ],
+  "built": [
+   "deterministic_network",
+   "stochastic_network"
+  ],
+  "purchases_t0": [],
+  "transfers_t0": [
+   [
+    "lane_north",
+    51,
+    79.631388
+   ],
+   [
+    "lane_south",
+    51,
+    133.825461
+   ]
+  ],
+  "actions": [
+   [
+    "purchase",
+    "src_A",
+    1,
+    155.729813
+   ],
+   [
+    "purchase",
+    "src_A",
+    2,
+    208.322509
+   ],
+   [
+    "purchase",
+    "src_A",
+    3,
+    209.572219
+   ],
+   [
+    "purchase",
+    "src_A",
+    4,
+    209.601914
+   ],
+   [
+    "purchase",
+    "src_A",
+    5,
+    209.60262
+   ],
+   [
+    "purchase",
+    "src_A",
+    6,
+    209.602637
+   ],
+   [
+    "purchase",
+    "src_A",
+    7,
+    209.602637
+   ],
+   [
+    "purchase",
+    "src_A",
+    8,
+    209.602637
+   ],
+   [
+    "purchase",
+    "src_A",
+    9,
+    209.602637
+   ],
+   [
+    "purchase",
+    "src_A",
+    10,
+    209.602637
+   ],
+   [
+    "transfer",
+    "lane_north",
+    0,
+    79.631388
+   ],
+   [
+    "transfer",
+    "lane_north",
+    1,
+    96.730653
+   ],
+   [
+    "transfer",
+    "lane_north",
+    2,
+    42.962092
+   ],
+   [
+    "transfer",
+    "lane_north",
+    2,
+    49.215901
+   ],
+   [
+    "transfer",
+    "lane_north",
+    3,
+    96.139879
+   ],
+   [
+    "transfer",
+    "lane_north",
+    4,
+    96.716615
+   ],
+   [
+    "transfer",
+    "lane_north",
+    5,
+    96.730319
+   ],
+   [
+    "transfer",
+    "lane_north",
+    6,
+    96.730645
+   ],
+   [
+    "transfer",
+    "lane_north",
+    7,
+    96.730653
+   ],
+   [
+    "transfer",
+    "lane_north",
+    8,
+    96.730653
+   ],
+   [
+    "transfer",
+    "lane_north",
+    9,
+    96.730653
+   ],
+   [
+    "transfer",
+    "lane_north",
+    10,
+    96.730653
+   ],
+   [
+    "transfer",
+    "lane_north",
+    11,
+    96.730653
+   ],
+   [
+    "transfer",
+    "lane_south",
+    0,
+    133.825461
+   ],
+   [
+    "transfer",
+    "lane_south",
+    1,
+    104.998658
+   ],
+   [
+    "transfer",
+    "lane_south",
+    2,
+    102.813454
+   ],
+   [
+    "transfer",
+    "lane_south",
+    3,
+    107.232461
+   ],
+   [
+    "transfer",
+    "lane_south",
+    4,
+    107.87574
+   ],
+   [
+    "transfer",
+    "lane_south",
+    5,
+    107.891026
+   ],
+   [
+    "transfer",
+    "lane_south",
+    6,
+    107.891389
+   ],
+   [
+    "transfer",
+    "lane_south",
+    7,
+    107.891397
+   ],
+   [
+    "transfer",
+    "lane_south",
+    8,
+    107.891398
+   ],
+   [
+    "transfer",
+    "lane_south",
+    9,
+    107.891398
+   ],
+   [
+    "transfer",
+    "lane_south",
+    10,
+    107.891398
+   ],
+   [
+    "transfer",
+    "lane_south",
+    11,
+    107.891398
+   ]
+  ],
+  "candidate_status": {
+   "incumbent": "OPTIMAL",
+   "base_stock": "OPTIMAL",
+   "deterministic_network": "OPTIMAL",
+   "stochastic_network": "OPTIMAL"
+  },
+  "candidate_cost": {
+   "incumbent": 0.0,
+   "base_stock": 0.0,
+   "deterministic_network": 0.0,
+   "stochastic_network": 0.0
+  }
+ },
+ "phases": {
+  "solve_total": 0.27720241667702794,
+  "milp_total": 0.15723979054018855,
+  "completion_total": 0.051432082895189524,
+  "construction_total": 0.06853054324164987,
+  "matrix_total": 0.014909667428582907,
+  "evaluate_total": 0.020294000394642353,
+  "evaluate_calls": 13,
+  "settle_calls": 39,
+  "settle_total": 0.018224249128252268,
+  "draw_total": 0.01841895654797554,
+  "other": 0.027586332987993956
+ },
+ "solves": [
+  {
+   "index": 0,
+   "label": "base_stock",
+   "worlds": 1,
+   "horizon": 12,
+   "arguments": {
+    "targets": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 42.9,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.017098667100071907,
+     "variables": 1295,
+     "integer": 24,
+     "binary": 24,
+     "continuous": 1271,
+     "rows": 737,
+     "nonzeros": 4921,
+     "variable_kinds": {
+      "inbound_transfer": 3,
+      "purchase": 12,
+      "transfer": 336,
+      "inventory": 504,
+      "unmet": 24,
+      "allocate": 336,
+      "depleted": 24,
+      "cash": 12,
+      "debt": 12,
+      "target_above": 16,
+      "target_below": 16
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 10010.054132566922,
+     "gap": 0.0,
+     "bound": 10010.054132566922,
+     "nodes": 1,
+     "residual": 1.1641532182693481e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 5.6875,
+     "rss_after_mb": 121.046875
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.0008094166405498981,
+   "total_seconds": 0.022410249803215265,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.022061416413635015,
+   "variables": 1295,
+   "constraints": 737,
+   "gap": 0.0,
+   "best_bound": 10010.054132566922,
+   "nodes": 1,
+   "projected_cost": 13501.495742046613,
+   "warm_start": null,
+   "linear_seconds": 0.017098667100071907,
+   "completion_seconds": 0,
+   "rss_delta_mb": 7.265625,
+   "construction_seconds": 0.005311582703143358
+  },
+  {
+   "index": 1,
+   "label": "incumbent",
+   "worlds": 1,
+   "horizon": 12,
+   "arguments": {
+    "fixed": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 42.9,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.008280124980956316,
+     "variables": 1263,
+     "integer": 24,
+     "binary": 24,
+     "continuous": 1239,
+     "rows": 1069,
+     "nonzeros": 5169,
+     "variable_kinds": {
+      "inbound_transfer": 3,
+      "purchase": 12,
+      "transfer": 336,
+      "inventory": 504,
+      "unmet": 24,
+      "allocate": 336,
+      "depleted": 24,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 9788.674239857075,
+     "gap": 0.0,
+     "bound": 9788.674239857075,
+     "nodes": 1,
+     "residual": 1.1641532182693481e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 1.09375,
+     "rss_after_mb": 122.375
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.0008173338137567043,
+   "total_seconds": 0.013827125076204538,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.013425459153950214,
+   "variables": 1263,
+   "constraints": 1069,
+   "gap": 0.0,
+   "best_bound": 9788.674239857075,
+   "nodes": 1,
+   "projected_cost": 13280.130805981255,
+   "warm_start": null,
+   "linear_seconds": 0.008280124980956316,
+   "completion_seconds": 0,
+   "rss_delta_mb": 1.40625,
+   "construction_seconds": 0.005547000095248222
+  },
+  {
+   "index": 2,
+   "label": "deterministic_network",
+   "worlds": 1,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "seed": true,
+    "expected_shortage": true,
+    "continuation": true,
+    "continuation_feeds": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 42.9,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.02328154118731618,
+     "variables": 1289,
+     "integer": 24,
+     "binary": 24,
+     "continuous": 1265,
+     "rows": 1181,
+     "nonzeros": 11503,
+     "variable_kinds": {
+      "inbound_transfer": 3,
+      "purchase": 12,
+      "transfer": 336,
+      "inventory": 504,
+      "unmet": 24,
+      "allocate": 336,
+      "depleted": 24,
+      "cash": 12,
+      "debt": 12,
+      "continuation": 2,
+      "expected_shortage": 24
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 9527.532843886278,
+     "gap": 0.0,
+     "bound": 9527.532843886278,
+     "nodes": 1,
+     "residual": 1.1641532182693481e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 3.546875,
+     "rss_after_mb": 126.796875
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.0016422499902546406,
+   "total_seconds": 0.03156450018286705,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.03107437491416931,
+   "variables": 1289,
+   "constraints": 1181,
+   "gap": 0.0,
+   "best_bound": 9527.532843886278,
+   "nodes": 1,
+   "projected_cost": 12966.526705606346,
+   "warm_start": null,
+   "linear_seconds": 0.02328154118731618,
+   "completion_seconds": 0,
+   "rss_delta_mb": 4.34375,
+   "construction_seconds": 0.008282958995550871
+  },
+  {
+   "index": 3,
+   "label": "stochastic_network",
+   "worlds": 3,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "seed": true,
+    "continuation": true,
+    "continuation_feeds": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 42.84857883360237,
+     "solver": "highspy",
+     "seeded": true,
+     "mip_gap": 1e-06,
+     "seconds": 0.03690066561102867,
+     "variables": 3093,
+     "integer": 72,
+     "binary": 72,
+     "continuous": 3021,
+     "rows": 2071,
+     "nonzeros": 13957,
+     "variable_kinds": {
+      "inbound_transfer": 3,
+      "purchase": 12,
+      "transfer": 336,
+      "inventory": 1512,
+      "unmet": 72,
+      "allocate": 1008,
+      "depleted": 72,
+      "cash": 36,
+      "debt": 36,
+      "continuation": 6
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 9438.085783129345,
+     "gap": 0.0,
+     "bound": 9438.085783129345,
+     "nodes": 1,
+     "residual": 2.3283064365386963e-10,
+     "message": "highspy HighsModelStatus.kOptimal",
+     "rss_delta_mb": 0.84375,
+     "rss_after_mb": 142.59375
+    }
+   ],
+   "completions": [
+    {
+     "mode": "equal",
+     "budget_seconds": 25.74,
+     "seconds": 0.00929595809429884,
+     "accepted": false,
+     "status": "highspy HighsModelStatus.kInfeasible",
+     "controls": 348
+    },
+    {
+     "mode": "floor",
+     "budget_seconds": 25.730712124854325,
+     "seconds": 0.042136124800890684,
+     "accepted": true,
+     "status": "highspy HighsModelStatus.kOptimal",
+     "controls": 10
+    }
+   ],
+   "matrix_seconds": 0.006196124944835901,
+   "total_seconds": 0.10555474972352386,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.10474920785054564,
+   "variables": 3093,
+   "constraints": 2071,
+   "gap": 0.0,
+   "best_bound": 9438.085783129345,
+   "nodes": 1,
+   "projected_cost": 12929.51514920145,
+   "warm_start": {
+    "supplied": true,
+    "source": "OPTIMAL",
+    "controls_seeded": 348,
+    "accepted": true,
+    "reason": "completed by the formulation (floor pins)",
+    "mode": "floor",
+    "completion_seconds": 0.05142116639763117,
+    "completion_status": "highspy HighsModelStatus.kOptimal",
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 9525.624960728084,
+    "solver_accepted": true,
+    "phase1_objective": 9438.085783129345,
+    "phase1_status": 0,
+    "outcome": "improved",
+    "final_objective": 9438.085783129345,
+    "model_variables": 3093,
+    "solve_seconds": 0.10475120786577463,
+    "highs_integrality_violation": 0.0,
+    "highs_primal_infeasibility": 2.703579582430393e-10
+   },
+   "linear_seconds": 0.03690066561102867,
+   "completion_seconds": 0.051432082895189524,
+   "rss_delta_mb": 16.265625,
+   "construction_seconds": 0.01722200121730566
+  },
+  {
+   "index": 4,
+   "label": "oracle:svc_north",
+   "worlds": 1,
+   "horizon": 12,
+   "arguments": {
+    "service_first": "svc_north"
+   },
+   "linear": [
+    {
+     "phase": "phase1",
+     "budget_seconds": 42.9,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.014799957629293203,
+     "variables": 1263,
+     "integer": 24,
+     "binary": 24,
+     "continuous": 1239,
+     "rows": 721,
+     "nonzeros": 4821,
+     "variable_kinds": {
+      "inbound_transfer": 3,
+      "purchase": 12,
+      "transfer": 336,
+      "inventory": 504,
+      "unmet": 24,
+      "allocate": 336,
+      "depleted": 24,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 0.0,
+     "gap": 0.0,
+     "bound": 0.0,
+     "nodes": 1,
+     "residual": 3.5575453694036696e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 0.5,
+     "rss_after_mb": 144.125
+    },
+    {
+     "phase": "phase2",
+     "budget_seconds": 42.880421083047985,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.01563849998638034,
+     "variables": 1263,
+     "integer": 24,
+     "binary": 24,
+     "continuous": 1239,
+     "rows": 722,
+     "nonzeros": 4833,
+     "variable_kinds": {
+      "inbound_transfer": 3,
+      "purchase": 12,
+      "transfer": 336,
+      "inventory": 504,
+      "unmet": 24,
+      "allocate": 336,
+      "depleted": 24,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 9469.501993551685,
+     "gap": 0.0,
+     "bound": 9469.501993551683,
+     "nodes": 1,
+     "residual": 1.1641532182693481e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 0.28125,
+     "rss_after_mb": 144.46875
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.0015760008245706558,
+   "total_seconds": 0.03762212488800287,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.037136499769985676,
+   "variables": 1263,
+   "constraints": 722,
+   "gap": 0.0,
+   "best_bound": 9469.501993551683,
+   "nodes": 1,
+   "projected_cost": 12960.98376692831,
+   "warm_start": null,
+   "linear_seconds": 0.030438457615673542,
+   "completion_seconds": 0,
+   "rss_delta_mb": 1.109375,
+   "construction_seconds": 0.0071836672723293304
+  },
+  {
+   "index": 5,
+   "label": "oracle:svc_south",
+   "worlds": 1,
+   "horizon": 12,
+   "arguments": {
+    "service_first": "svc_south"
+   },
+   "linear": [
+    {
+     "phase": "phase1",
+     "budget_seconds": 42.9,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.01633299980312586,
+     "variables": 1263,
+     "integer": 24,
+     "binary": 24,
+     "continuous": 1239,
+     "rows": 721,
+     "nonzeros": 4821,
+     "variable_kinds": {
+      "inbound_transfer": 3,
+      "purchase": 12,
+      "transfer": 336,
+      "inventory": 504,
+      "unmet": 24,
+      "allocate": 336,
+      "depleted": 24,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 2.8927399568398044,
+     "gap": 0.0,
+     "bound": 2.8927399568398044,
+     "nodes": 1,
+     "residual": 2.3936763682286255e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 0.125,
+     "rss_after_mb": 144.65625
+    },
+    {
+     "phase": "phase2",
+     "budget_seconds": 42.87810854203999,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.017588125076144934,
+     "variables": 1263,
+     "integer": 24,
+     "binary": 24,
+     "continuous": 1239,
+     "rows": 722,
+     "nonzeros": 4833,
+     "variable_kinds": {
+      "inbound_transfer": 3,
+      "purchase": 12,
+      "transfer": 336,
+      "inventory": 504,
+      "unmet": 24,
+      "allocate": 336,
+      "depleted": 24,
+      "cash": 12,
+      "debt": 12
+     },
+     "row_count_by_kind": {},
+     "status": 0,
+     "objective": 9469.501993551685,
+     "gap": 0.0,
+     "bound": 9469.501993551683,
+     "nodes": 1,
+     "residual": 2.3283064365386963e-10,
+     "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+     "rss_delta_mb": 0.140625,
+     "rss_after_mb": 144.84375
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.001874040812253952,
+   "total_seconds": 0.04151754220947623,
+   "status": "OPTIMAL",
+   "model_solve_seconds": 0.041135457810014486,
+   "variables": 1263,
+   "constraints": 722,
+   "gap": 0.0,
+   "best_bound": 9469.501993551683,
+   "nodes": 1,
+   "projected_cost": 12960.983766928306,
+   "warm_start": null,
+   "linear_seconds": 0.03392112487927079,
+   "completion_seconds": 0,
+   "rss_delta_mb": 0.375,
+   "construction_seconds": 0.0075964173302054405
+  },
+  {
+   "index": 6,
+   "label": "restricted:transfers",
+   "worlds": 3,
+   "horizon": 12,
+   "arguments": {
+    "service_floor": true,
+    "service_risk": "cvar",
+    "disabled": [
+     "transfers"
+    ],
+    "service_risk_levels": true
+   },
+   "linear": [
+    {
+     "phase": "solve",
+     "budget_seconds": 42.9,
+     "solver": "highs",
+     "seeded": false,
+     "mip_gap": 1e-06,
+     "seconds": 0.007319209165871143,
+     "variables": 3087,
+     "integer": 72,
+     "binary": 72,
+     "continuous": 3015,
+     "rows": 2065,
+     "nonzeros": 13783,
+     "variable_kinds": {
+      "inbound_transfer": 3,
+      "purchase": 12,
+      "transfer": 336,
+      "inventory": 1512,
+      "unmet": 72,
+      "allocate": 1008,
+      "depleted": 72,
+      "cash": 36,
+      "debt": 36
+     },
+     "row_count_by_kind": {},
+     "status": 2,
+     "objective": null,
+     "gap": null,
+     "bound": null,
+     "nodes": null,
+     "residual": null,
+     "message": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+     "rss_delta_mb": 1.15625,
+     "rss_after_mb": 147.453125
+    }
+   ],
+   "completions": [],
+   "matrix_seconds": 0.0019945004023611546,
+   "total_seconds": 0.024706124793738127,
+   "status": "INFEASIBLE",
+   "model_solve_seconds": 0.024221791420131922,
+   "variables": 3087,
+   "constraints": 2065,
+   "gap": null,
+   "best_bound": null,
+   "nodes": null,
+   "projected_cost": null,
+   "warm_start": null,
+   "linear_seconds": 0.007319209165871143,
+   "completion_seconds": 0,
+   "rss_delta_mb": 2.984375,
+   "construction_seconds": 0.017386915627866983
+  }
+ ],
+ "evaluate": [
+  {
+   "worlds": 3,
+   "terminal": false,
+   "seconds": 0.0016369996592402458,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.0018012500368058681,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.001614042092114687,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.0013653747737407684,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.001290000043809414,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.001566207967698574,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.0013826251961290836,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.0016363332979381084,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.0014555826783180237,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.0013640420511364937,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.0016470421105623245,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.0017297081649303436,
+   "usable": 3
+  },
+  {
+   "worlds": 3,
+   "terminal": true,
+   "seconds": 0.0018047923222184181,
+   "usable": 3
+  }
+ ],
+ "memory": {
+  "rss_before_mb": 113.59375,
+  "rss_after_mb": 148.125,
+  "ru_maxrss_mb": 149.78125
+ },
+ "deep": [
+  {
+   "index": 0,
+   "candidate": "base_stock",
+   "phase": "solve",
+   "seeded": false,
+   "budget_seconds": 42.9,
+   "seconds": 0.013196291867643595,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 10010.054132566922,
+   "bound": 10010.054132566922,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 1295,
+    "rows": 737,
+    "nonzeros": 4921,
+    "integer": 24,
+    "binary": 24
+   },
+   "highs": {
+    "presolve": {
+     "rows": 317,
+     "rows_removed": 420,
+     "columns": 549,
+     "columns_removed": 746,
+     "elements": 2323,
+     "elements_removed": 2598
+    },
+    "reduced": {
+     "rows": 317,
+     "cols": 549,
+     "binary": 22,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 527,
+     "nonzeros": 2323
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-212625663.6974",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "T",
+      "t": 0.0,
+      "bound": "-212625663.6974",
+      "sol": "10010.054133",
+      "gap": "Large",
+      "lp_iters": 413
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "10010.054133",
+      "sol": "10010.054133",
+      "gap": "0.00%",
+      "lp_iters": 413
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 10010.054133,
+    "proof_s": 0.01,
+    "lp_iterations": 413,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.01
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 0,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/A_41001_r7_v1.highs/00_base_stock_solve.log"
+  },
+  {
+   "index": 1,
+   "candidate": "incumbent",
+   "phase": "solve",
+   "seeded": false,
+   "budget_seconds": 42.9,
+   "seconds": 0.006118082907050848,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 9788.674239857075,
+   "bound": 9788.674239857075,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 1263,
+    "rows": 1069,
+    "nonzeros": 5169,
+    "integer": 24,
+    "binary": 24
+   },
+   "highs": {
+    "presolve": {
+     "rows": 52,
+     "rows_removed": 1017,
+     "columns": 128,
+     "columns_removed": 1135,
+     "elements": 408,
+     "elements_removed": 4761
+    },
+    "reduced": {
+     "rows": 52,
+     "cols": 128,
+     "binary": 12,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 116,
+     "nonzeros": 408
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "4407.016107",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "T",
+      "t": 0.0,
+      "bound": "4407.016107",
+      "sol": "9788.67424",
+      "gap": "54.98%",
+      "lp_iters": 44
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "9788.67424",
+      "sol": "9788.67424",
+      "gap": "0.00%",
+      "lp_iters": 44
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 9788.67424,
+    "proof_s": 0.01,
+    "lp_iterations": 44,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.01
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 0,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/A_41001_r7_v1.highs/01_incumbent_solve.log"
+  },
+  {
+   "index": 2,
+   "candidate": "deterministic_network",
+   "phase": "solve",
+   "seeded": false,
+   "budget_seconds": 42.9,
+   "seconds": 0.019903958309441805,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 9527.53284388628,
+   "bound": 9527.532843886278,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 1289,
+    "rows": 1181,
+    "nonzeros": 11503,
+    "integer": 24,
+    "binary": 24
+   },
+   "highs": {
+    "presolve": {
+     "rows": 700,
+     "rows_removed": 481,
+     "columns": 551,
+     "columns_removed": 738,
+     "elements": 5522,
+     "elements_removed": 5981
+    },
+    "reduced": {
+     "rows": 700,
+     "cols": 551,
+     "binary": 22,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 529,
+     "nonzeros": 5522
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-192613198.4272",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "T",
+      "t": 0.0,
+      "bound": "-192613198.4272",
+      "sol": "9527.532844",
+      "gap": "Large",
+      "lp_iters": 452
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "9527.532844",
+      "sol": "9527.532844",
+      "gap": "0.00%",
+      "lp_iters": 452
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 9527.532844,
+    "proof_s": 0.02,
+    "lp_iterations": 452,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.02
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 0,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/A_41001_r7_v1.highs/02_deterministic_network_solve.log"
+  },
+  {
+   "index": 3,
+   "candidate": "stochastic_network",
+   "phase": "solve",
+   "seeded": true,
+   "budget_seconds": 42.84857883360237,
+   "seconds": 0.04203445790335536,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 9438.085783129345,
+   "bound": 9438.085783129345,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 3093,
+    "rows": 2071,
+    "nonzeros": 13957,
+    "integer": 72,
+    "binary": 72
+   },
+   "highs": {
+    "presolve": {
+     "rows": 899,
+     "rows_removed": 1172,
+     "columns": 1306,
+     "columns_removed": 1787,
+     "elements": 7000,
+     "elements_removed": 6957
+    },
+    "reduced": {
+     "rows": 899,
+     "cols": 1306,
+     "binary": 66,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 1240,
+     "nonzeros": 7000
+    },
+    "timeline": [
+     {
+      "tag": "J",
+      "t": 0.0,
+      "bound": "-inf",
+      "sol": "9525.624961",
+      "gap": "Large",
+      "lp_iters": 0
+     },
+     {
+      "tag": "T",
+      "t": 0.0,
+      "bound": "-191896048.5657",
+      "sol": "9438.085783",
+      "gap": "Large",
+      "lp_iters": 1081
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "9438.085783",
+      "sol": "9438.085783",
+      "gap": "0.00%",
+      "lp_iters": 1081
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 9438.085783,
+    "proof_s": 0.04,
+    "lp_iterations": 1081,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.04
+    },
+    "incumbent_count": 2,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 0,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/A_41001_r7_v1.highs/03_stochastic_network_solve.log"
+  },
+  {
+   "index": 4,
+   "candidate": "oracle:svc_north",
+   "phase": "phase1",
+   "seeded": false,
+   "budget_seconds": 42.9,
+   "seconds": 0.010947083123028278,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 0.0,
+   "bound": 0.0,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 1263,
+    "rows": 721,
+    "nonzeros": 4821,
+    "integer": 24,
+    "binary": 24
+   },
+   "highs": {
+    "presolve": {
+     "rows": 289,
+     "rows_removed": 432,
+     "columns": 516,
+     "columns_removed": 747,
+     "elements": 2227,
+     "elements_removed": 2594
+    },
+    "reduced": {
+     "rows": 289,
+     "cols": 516,
+     "binary": 21,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 495,
+     "nonzeros": 2227
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "T",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "0",
+      "gap": "0.00%",
+      "lp_iters": 85
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "0",
+      "sol": "0",
+      "gap": "0.00%",
+      "lp_iters": 85
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 0.0,
+    "proof_s": 0.01,
+    "lp_iterations": 85,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.01
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 0,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/A_41001_r7_v1.highs/04_oracle:svc_north_phase1.log"
+  },
+  {
+   "index": 5,
+   "candidate": "oracle:svc_north",
+   "phase": "phase2",
+   "seeded": false,
+   "budget_seconds": 42.880421083047985,
+   "seconds": 0.013743290677666664,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 9469.501993551685,
+   "bound": 9469.501993551683,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 1263,
+    "rows": 722,
+    "nonzeros": 4833,
+    "integer": 24,
+    "binary": 24
+   },
+   "highs": {
+    "presolve": {
+     "rows": 268,
+     "rows_removed": 454,
+     "columns": 494,
+     "columns_removed": 769,
+     "elements": 2074,
+     "elements_removed": 2759
+    },
+    "reduced": {
+     "rows": 268,
+     "cols": 494,
+     "binary": 10,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 484,
+     "nonzeros": 2074
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-193973385.9087",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "T",
+      "t": 0.0,
+      "bound": "-193973385.9087",
+      "sol": "9469.501994",
+      "gap": "Large",
+      "lp_iters": 362
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "9469.501994",
+      "sol": "9469.501994",
+      "gap": "0.00%",
+      "lp_iters": 362
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 9469.501994,
+    "proof_s": 0.01,
+    "lp_iterations": 362,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.01
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 0,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/A_41001_r7_v1.highs/05_oracle:svc_north_phase2.log"
+  },
+  {
+   "index": 6,
+   "candidate": "oracle:svc_south",
+   "phase": "phase1",
+   "seeded": false,
+   "budget_seconds": 42.9,
+   "seconds": 0.010752374771982431,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 2.8927399568398044,
+   "bound": 2.8927399568398044,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 1263,
+    "rows": 721,
+    "nonzeros": 4821,
+    "integer": 24,
+    "binary": 24
+   },
+   "highs": {
+    "presolve": {
+     "rows": 289,
+     "rows_removed": 432,
+     "columns": 516,
+     "columns_removed": 747,
+     "elements": 2227,
+     "elements_removed": 2594
+    },
+    "reduced": {
+     "rows": 289,
+     "cols": 516,
+     "binary": 21,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 495,
+     "nonzeros": 2227
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "2.892739957",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "T",
+      "t": 0.0,
+      "bound": "2.892739957",
+      "sol": "2.892739957",
+      "gap": "0.00%",
+      "lp_iters": 82
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "2.892739957",
+      "sol": "2.892739957",
+      "gap": "0.00%",
+      "lp_iters": 82
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 2.892739957,
+    "proof_s": 0.01,
+    "lp_iterations": 82,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.01
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 0,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/A_41001_r7_v1.highs/06_oracle:svc_south_phase1.log"
+  },
+  {
+   "index": 7,
+   "candidate": "oracle:svc_south",
+   "phase": "phase2",
+   "seeded": false,
+   "budget_seconds": 42.87810854203999,
+   "seconds": 0.012904165778309107,
+   "model_status": "HighsModelStatus.kOptimal",
+   "objective": 9469.501993551685,
+   "bound": 9469.501993551683,
+   "gap": 0.0,
+   "nodes": 1,
+   "raw": {
+    "cols": 1263,
+    "rows": 722,
+    "nonzeros": 4833,
+    "integer": 24,
+    "binary": 24
+   },
+   "highs": {
+    "presolve": {
+     "rows": 267,
+     "rows_removed": 455,
+     "columns": 494,
+     "columns_removed": 769,
+     "elements": 2105,
+     "elements_removed": 2728
+    },
+    "reduced": {
+     "rows": 267,
+     "cols": 494,
+     "binary": 11,
+     "integer": 0,
+     "implied_int": 0,
+     "continuous": 483,
+     "nonzeros": 2105
+    },
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-193147760.6254",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     },
+     {
+      "tag": "T",
+      "t": 0.0,
+      "bound": "-193147760.6254",
+      "sol": "9469.501994",
+      "gap": "Large",
+      "lp_iters": 348
+     },
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "9469.501994",
+      "sol": "9469.501994",
+      "gap": "0.00%",
+      "lp_iters": 348
+     }
+    ],
+    "first_incumbent_s": 0.0,
+    "final_incumbent_s": 0.0,
+    "final_incumbent_objective": 9469.501994,
+    "proof_s": 0.01,
+    "lp_iterations": 348,
+    "nodes": 1,
+    "status": "Optimal",
+    "timing": {
+     "total": 0.01
+    },
+    "incumbent_count": 1,
+    "final_gap": "|",
+    "max_submip_depth": 0,
+    "lp_iterations_separation": 0,
+    "lp_iterations_heuristics": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/A_41001_r7_v1.highs/07_oracle:svc_south_phase2.log"
+  },
+  {
+   "index": 8,
+   "candidate": "restricted:transfers",
+   "phase": "solve",
+   "seeded": false,
+   "budget_seconds": 42.9,
+   "seconds": 0.0026894588954746723,
+   "model_status": "HighsModelStatus.kInfeasible",
+   "objective": Infinity,
+   "bound": null,
+   "gap": null,
+   "nodes": 0,
+   "raw": {
+    "cols": 3087,
+    "rows": 2065,
+    "nonzeros": 13783,
+    "integer": 72,
+    "binary": 72
+   },
+   "highs": {
+    "presolve": null,
+    "reduced": null,
+    "timeline": [
+     {
+      "tag": "",
+      "t": 0.0,
+      "bound": "-inf",
+      "sol": "inf",
+      "gap": "inf",
+      "lp_iters": 0
+     }
+    ],
+    "first_incumbent_s": null,
+    "final_incumbent_s": null,
+    "final_incumbent_objective": null,
+    "proof_s": null,
+    "lp_iterations": 0,
+    "nodes": 0,
+    "status": "Infeasible",
+    "timing": {
+     "total": 0.0
+    },
+    "incumbent_count": 0,
+    "final_gap": "|",
+    "max_submip_depth": 0
+   },
+   "log": "docs/zaad_full/evidence/p2/perf/profiles/A_41001_r7_v1.highs/08_restricted:transfers_solve.log"
+  }
+ ]
+}

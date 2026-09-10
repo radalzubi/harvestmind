@@ -1,0 +1,632 @@
+[
+ {
+  "cell": [
+   "A_independent_demand",
+   "echelon_base_stock",
+   41001
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 92.091214,
+   "lane_south": 90.906717
+  },
+  "after": {
+   "lane_north": 84.681653,
+   "lane_south": 90.906717
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13090.519828527267,
+     13090.519828527264
+    ]
+   }
+  ],
+  "seconds": 0.8
+ },
+ {
+  "cell": [
+   "A_independent_demand",
+   "echelon_base_stock",
+   41002
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 103.709917,
+   "lane_south": 108.358759
+  },
+  "after": {
+   "lane_north": 103.709917,
+   "lane_south": 103.1154
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13175.236268129976,
+     13175.236267362632
+    ]
+   }
+  ],
+  "seconds": 1.3
+ },
+ {
+  "cell": [
+   "B_correlated_demand",
+   "echelon_base_stock",
+   41001
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 96.594434,
+   "lane_south": 101.744711
+  },
+  "after": {
+   "lane_north": 95.975858,
+   "lane_south": 102.363287
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13776.455741970154,
+     13776.455741970145
+    ]
+   }
+  ],
+  "seconds": 1.2
+ },
+ {
+  "cell": [
+   "C_short_transfer_lead",
+   "echelon_base_stock",
+   41001
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 92.091214,
+   "lane_south": 90.906717
+  },
+  "after": {
+   "lane_north": 84.681653,
+   "lane_south": 90.906717
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13090.519828527267,
+     13090.519828527264
+    ]
+   }
+  ],
+  "seconds": 0.8
+ },
+ {
+  "cell": [
+   "C_short_transfer_lead",
+   "echelon_base_stock",
+   41002
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 103.709917,
+   "lane_south": 108.358759
+  },
+  "after": {
+   "lane_north": 103.709917,
+   "lane_south": 103.1154
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13175.236268129976,
+     13175.236267362632
+    ]
+   }
+  ],
+  "seconds": 1.3
+ },
+ {
+  "cell": [
+   "D_long_transfer_lead",
+   "echelon_base_stock",
+   41001
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 89.803833,
+   "lane_south": 101.671074
+  },
+  "after": {
+   "lane_north": 89.803833,
+   "lane_south": 108.203248
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": true,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13721.774469921575,
+     13721.77446992157
+    ]
+   }
+  ],
+  "seconds": 1.3
+ },
+ {
+  "cell": [
+   "D_long_transfer_lead",
+   "echelon_base_stock",
+   41002
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 118.16923,
+   "lane_south": 92.708356
+  },
+  "after": {
+   "lane_north": 113.870526,
+   "lane_south": 97.007059
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13634.666061281805,
+     13634.666061285556
+    ]
+   }
+  ],
+  "seconds": 0.9
+ },
+ {
+  "cell": [
+   "E_high_transfer_cost",
+   "echelon_base_stock",
+   41001
+  ],
+  "review": 7,
+  "key": "transfers",
+  "before": {
+   "lane_north": 79.631349,
+   "lane_south": 111.158464
+  },
+  "after": {
+   "lane_north": 79.631349,
+   "lane_south": 114.02719
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     17919.440980805197,
+     17919.44098080519
+    ]
+   }
+  ],
+  "seconds": 2.5
+ },
+ {
+  "cell": [
+   "E_high_transfer_cost",
+   "echelon_base_stock",
+   41002
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 103.709917,
+   "lane_south": 108.358759
+  },
+  "after": {
+   "lane_north": 103.709917,
+   "lane_south": 106.944176
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     17484.60157867599,
+     17484.60157867599
+    ]
+   }
+  ],
+  "seconds": 1.6
+ },
+ {
+  "cell": [
+   "G_central_supply_shortage",
+   "echelon_base_stock",
+   41001
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 91.648569,
+   "lane_south": 24.366692
+  },
+  "after": {
+   "lane_north": 92.091214,
+   "lane_south": 24.366692
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     19866.79141629649,
+     19866.791416299424
+    ]
+   }
+  ],
+  "seconds": 0.9
+ },
+ {
+  "cell": [
+   "G_central_supply_shortage",
+   "echelon_base_stock",
+   41002
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 103.709917,
+   "lane_south": 13.164824
+  },
+  "after": {
+   "lane_north": 102.301275,
+   "lane_south": 13.164824
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     20219.588157517068,
+     20219.588157746424
+    ]
+   }
+  ],
+  "seconds": 1.0
+ },
+ {
+  "cell": [
+   "I_shared_supplier_disruption",
+   "echelon_base_stock",
+   41001
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 83.934977,
+   "lane_south": 90.906717
+  },
+  "after": {
+   "lane_north": 84.681653,
+   "lane_south": 90.906717
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13090.519828566008,
+     13090.519828566
+    ]
+   }
+  ],
+  "seconds": 1.2
+ },
+ {
+  "cell": [
+   "I_shared_supplier_disruption",
+   "echelon_base_stock",
+   41002
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 98.945155,
+   "lane_south": 108.35876
+  },
+  "after": {
+   "lane_north": 103.709917,
+   "lane_south": 103.115402
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13175.236267727716,
+     13175.236267728014
+    ]
+   }
+  ],
+  "seconds": 0.9
+ },
+ {
+  "cell": [
+   "K_unequal_demand_scale",
+   "echelon_base_stock",
+   41001
+  ],
+  "review": 7,
+  "key": "transfers",
+  "before": {
+   "lane_north": 238.894047,
+   "lane_south": 66.912712
+  },
+  "after": {
+   "lane_north": 238.894047,
+   "lane_south": 66.338269
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     22692.417641066204,
+     22692.417641066262
+    ]
+   }
+  ],
+  "seconds": 0.7
+ },
+ {
+  "cell": [
+   "K_unequal_demand_scale",
+   "echelon_base_stock",
+   41002
+  ],
+  "review": 6,
+  "key": "transfers",
+  "before": {
+   "lane_north": 311.12975,
+   "lane_south": 58.973597
+  },
+  "after": {
+   "lane_north": 306.437744,
+   "lane_south": 58.973597
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     23247.55507964076,
+     23247.555079640748
+    ]
+   }
+  ],
+  "seconds": 1.3
+ },
+ {
+  "cell": [
+   "M_transfer_not_reachable_in_time",
+   "echelon_base_stock",
+   41002
+  ],
+  "review": 7,
+  "key": "transfers",
+  "before": {
+   "lane_north": 96.978267,
+   "lane_south": 107.307546
+  },
+  "after": {
+   "lane_north": 98.154176,
+   "lane_south": 106.722932
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     13782.261706356869,
+     13782.261706356872
+    ]
+   }
+  ],
+  "seconds": 0.7
+ },
+ {
+  "cell": [
+   "O_multiple_transfer_options",
+   "echelon_base_stock",
+   41001
+  ],
+  "review": 7,
+  "key": "transfers",
+  "before": {
+   "express_north": 75.732517,
+   "express_south": 114.212627
+  },
+  "after": {
+   "express_north": 79.631349,
+   "express_south": 114.212627
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     15492.61554686575,
+     15492.615546865749
+    ]
+   }
+  ],
+  "seconds": 3.4
+ },
+ {
+  "cell": [
+   "O_multiple_transfer_options",
+   "echelon_base_stock",
+   41002
+  ],
+  "review": 7,
+  "key": "transfers",
+  "before": {
+   "express_north": 97.262741,
+   "express_south": 96.429968
+  },
+  "after": {
+   "express_north": 99.520082,
+   "express_south": 95.199358
+  },
+  "predecessor_end_stock_identical": true,
+  "frozen_time_limited_candidates": [],
+  "objective_identical": true,
+  "decision_identical_on_snapshot": false,
+  "candidates": [
+   {
+    "candidate": "echelon_base_stock",
+    "status": [
+     "OPTIMAL",
+     "OPTIMAL"
+    ],
+    "objective": [
+     15046.52509701252,
+     15046.52509701252
+    ]
+   }
+  ],
+  "seconds": 2.1
+ }
+]
