@@ -2709,3 +2709,139 @@ as in three earlier arms); ownership 100% P0 on every cell, no P1 class added, s
 **Verdict: P1 CORE ARCHITECTURE PASS — B (INCUMBENT-LEVEL STRESS-GATE FLOOR ON P1-OWNED PURCHASING
 REVIEWS, AND A PLANNING HORIZON SHORTER THAN THE ECONOMIC LOT CYCLE) REMAINS OPEN.** T is closed by rule
 T-A. Not frozen. P2 NOT STARTED — P1 FREEZE GATE NOT MET.
+
+# Pass L: final blocker B, the narrow confirmation-floor rule (2026-09-09; from aed5aba)
+
+Pre-registration: `P1_B_FLOOR_PREREGISTRATION.md` (hypothesis, phase-1 trace, exact predicate,
+predictions, pass criteria; written before the code change). Traces: `scripts/p1_gate_trace.py`,
+`closure/gate_trace_*.json` (B two seeds, A, Q, T, P0 cells 15 and 20).
+
+## L1. Phase 1: the veto, traced
+
+B seed 41003, reviews 2 / 3 / 9 (996 / 990 / 483 units on hand, P1-owned, CAPITAL_OPTIMIZATION, regime
+LEAN, activity 0, no flags, declared stress "nil"): the chosen candidate defers the weekly top-up, is
+physically usable on every world, meets the .95 target on every fitted world (.975 / .988 / .985), costs
+6,238 / 6,459 / 6,280 against the incumbent's 9,112 / 9,331 / 9,036 on the fitted confirmation, and is
+rejected by the declared-stress confirmation on `within_downside` alone: the per-service floor is the
+incumbent's own level (1.000 on those worlds) and the not-worse fallback applies the same floor. The
+incumbent's ~100-unit replace-sold order executes. Reviews 0 and 5 pass on the fallback because the fall
+stays inside the 1% tolerance. The floor lives in the confirmation layer only (`_floor(req_gate, ...)` in
+the stress loop, the not-worse mode, the alternatives loop, the symmetric path); the ordinary acceptance
+is target-based plus the benefit test. Comparable traces: A's interventions come through the alternatives
+loop and one established-benefit strict pass, its retentions are "benefit not established"; Q's P1-owned
+rejections all miss the .98 target (`service_met` false); T review 9 has B's shape (usable, target met,
+floor only, 14.8k against 23.4k); P0 cells 15 and 20 run under the non-identity `operator_adverse`
+stress. Answers: the veto is disruption-confirmation-specific; the stress is the identity; protection
+provenance is absent; the condition is expressible from ownership, the stress-mandate test, recovery mode
+and the confirmation's own benefit outcome; P0-owned reviews are untouched by construction.
+
+## L2. Rule B-F (phase 3; `planner.py`, one gate call; `tests/unit/test_zaad_confirmation_floor.py`, 7 tests)
+
+`waive_incumbent_floor = P1-owned and every declared stress is the identity and not recovery_mode and
+the fitted confirmation established a positive economic benefit (never a capital tie-break or a symmetric
+acceptance) and the candidate meets every service target`. When true, the chosen candidate's
+declared-stress confirmation uses the target floor (`min(incumbent level, target)`) in the per-service
+check and in the not-worse fallback of that call; the per-world cost cap, physical usability, the service
+targets on the stress worlds, priority consistency and materiality are unchanged; the alternatives loop,
+the symmetric path, the capital tie-break and every P0-owned review keep the incumbent floor. Reported as
+`confirmation_floor_waived`. Tests: B review 2 accepted with no top-up; a genuine declared stress keeps
+the floor (P0-owned); P0 cell 15 keeps it; T under the severe envelope keeps it; Q review 4 (active
+demand driver, P0-owned) keeps it; T review 9 accepts the 1,920-unit load; A reviews 0 / 1 unchanged (no
+established benefit, no waiver).
+
+## L3. Phase 4: B alone (`closure/horizon52_bf_B.jsonl`, baselines unchanged from `horizon52_tAonly`)
+
+| | before (aed5aba) | after (B-F) |
+|---|---|---|
+| delta @52 vs EOQ | +2.66% (28,390 / 27,654) | **+1.60%** (28,095 / 27,654) |
+| per seed | +2.99 / +0.51 / +3.99 (J16b) then +1.71 / +0.34 / +2.75 predicted | +1.71 / +0.34 / +2.75 |
+| verdict over 40..52 | PASS at 40-44, FAIL from 45 | PASS at every endpoint |
+| magnitude band (+/-1 pp) | 1.77 pp | 1.55 pp (class E, as predicted) |
+| retained ~100-unit incumbent orders | 7 | 1 (seed 41003 review 40: PROTECT regime, P0-owned, incumbent retained) |
+| orders per seed (EOQ 3) | 8 / 6 / 9 | 6 / 5 / 7 |
+| lots | 55% of EOQ plus 100-unit top-ups | 803-1,239 units (first lots 1,093 / 1,053 / 1,071 against the EOQ 1,854) |
+| service / unmet | 1.000 / 0 | 1.000 / 0 |
+| average inventory | 597 | 599 / 602 / 585 |
+| ordering / carrying | 1,833 / 446 | 1,500 / 448; 1,250 / 450; 1,750 / 438 |
+| P1 / P0 owned reviews | 153 / 3 | 153 / 3 |
+| solve time per review | p50 .9 s | p50 .70-.83 s, max 2.6 s |
+
+Prediction of the pre-registration (about +1.6%, PASS at every endpoint, magnitude outside the band)
+met exactly. The residual against the EOQ buyer is now lot size only: 800-1,240-unit lots at a 12-period
+planning horizon against 1,854 (K5, the recorded horizon limitation), 1.6% of cost.
+
+## L4. Phase 5 controls under rule B-F (`closure/horizon52_bf_controls.jsonl.gz`, declared benchmark) and the legacy record
+
+| fixture | before (aed5aba) | under B-F | stable | P1 / P0 owned | actions | abstentions | service |
+|---|---|---|---|---|---|---|---|
+| A | +0.81% | +0.81% | yes (.22) | 153 / 3 | 43 -> 43 | 21 -> 21 | .989 |
+| Q | +0.17% | +0.17% | yes (.04) | 72 / 84 | 20 -> 20 | 1 -> 2 | .991 |
+| T | -0.28% | -0.57% | yes (.76) | 153 / 3 | 154 -> 155 | 0 | .999 |
+| G | -0.76% | -0.67% | yes (.69) | 151 / 5 | 154 | 0 | .998 |
+| I | +0.07% | +0.24% | yes (.45) | 153 / 3 | 155 -> 156 | 0 | 1.000 |
+| P | +0.29% | +0.59% | yes (.19) | 152 / 4 | 108 -> 117 | 20 -> 22 | .992 |
+| C | +0.39% | +0.13% | yes (.14) | 153 / 3 | 141 -> 155 | 0 | 1.000 |
+| O | +0.13% | +0.13% | yes (.14) | 108 / 48 | 132 | 18 | .980 |
+
+Every declared-benchmark control passed; A's and Q's behaviour was identical review for review; genuine
+protection kept its P0 ownership (Q 84, O 48 of 156). The legacy twelve-week record
+(`fixtures_product_defaults_bf.jsonl`): 17 / 20, with Q +0.85% -> **+3.11%** and service .980 -> **.965**
+against its .98 target (A intact: 7 / 33 interventions, +0.27%; T -1.83%; B -10.78%).
+
+## L5. Why B-F is rejected (the Q trace; `closure/gate_trace_Q_volatile_demand_high_target_4100{1,2,3}_legacy.json`)
+
+Per-review outcomes of the two legacy Q records differ at two reviews only. Seed 41002 review 8: waived
+(P1-owned, identity stress, benefit established, target met on the fitted worlds), accepted on the
+not-worse fallback, and it bought the incumbent's own quantity (155.7 against 155.8): no effect. Seed
+41003 review 8, four periods left in the shrinking horizon: waived, accepted, bought 44 units instead of
+the incumbent's 155 on an ex-ante estimate that met the .98 target on the three fitted worlds, and the
+volatile truth (sd .4 of demand) spiked the next week: review-9 service .962 -> .541, 59 unmet units,
+that seed +6.4%. Seed 41001 identical. So the whole legacy Q regression is one waived acceptance, and it
+shows the incumbent-level floor doing ordinary service work on a volatile, high-target SKU: guarding
+against an optimistic three-world ex-ante service estimate, not against a disruption. The predicate cannot
+separate that from B's case with current state; a volatility or target criterion would be a tuned
+threshold, and the one-fix rule forbids a second attempt. The pre-registration (section 4) named legacy
+Q service at or above .98 as a control and section 5 the consequence: **B-F is reverted**, the
+incumbent-level floor stands on every review, `tests/unit/test_zaad_confirmation_floor.py` records the
+standing behaviour on the B snapshot, and every run record and trace is kept. On the declared benchmark
+alone B-F would have frozen P1 (B +1.60%, every control unchanged); it is not adopted because the rule
+that closes B is the same rule that, on the volatile fixture, removes a service guard the evidence says
+is still needed.
+
+Residual B diagnosis (stage "if B still fails"): B +2.66% = about 1.06 pp from the seven retained ~100-unit
+incumbent orders (the floor: measured as the B-F difference, 2.66 -> 1.60) + about 1.6 pp from lots at
+about 55% of the 18.6-week EOQ at a twelve-period planning horizon (K5, the recorded horizon sweep;
++0.15 / +0.59% at 16 / 20 periods under a floor relief, at 2-5x the solve time) + 0 from cadence,
+terminal treatment (K7 tables reconcile), candidate completeness (the deferral and the lot are both
+generated), MOQ / MOV / freight (none on B). Both remedies are pre-registered and evidenced; each needs
+authorization: a floor rule that also leaves volatile high-target SKUs guarded, or an economic-visibility
+horizon with its runtime cost.
+
+## L6. Final code, P0 isolation, freeze gate and verdict
+
+Final code = `aed5aba` product behaviour (rule T-A, lot-sizing terminal valuation) with rule B-F reverted
+and mechanical lint / typing fixes only (ruff: `zaad/full` clean; mypy: 19 errors, all pre-dating this
+pass, 4 at the P0 freeze and 15 from earlier P1 passes in `settlement.py` / `economics.py`; bandit clean
+at CI severity). Bit-identity of the final code with the T-A-only record: B and T, three seeds each, 52
+rolling reviews, cost to the cent and every order identical (`closure/horizon52_final_l_identity.jsonl.gz`),
+so `P1_FINAL_RESULT_TABLE_tAonly.md` remains the authoritative A-T. P0 six-cell arm on the final code,
+run alone (`closure/p0_arm_router_final_l.json`): **120 / 120 decision-identical** (cell 21 identical in
+this draw), owners 100% P0 on every cell, no P1 class added, starvation zero. Unit suite 1,513 passed,
+2 skipped (3 record tests replace the 7 B-F tests); invariants 720 / 720; `git diff --check` clean.
+
+| freeze requirement | state |
+|---|---|
+| B passes | **NO: +2.66%** (B-F closed it to +1.60% but failed the Q legacy service control and is reverted) |
+| all valid fixtures pass | 16 / 17 (B) |
+| T remains closed | yes, -0.28% |
+| A / Q controls valid | yes on the declared benchmark (and unchanged by the reverted rule) |
+| P0 semantically frozen | yes, 120 / 120 |
+| tests, invariants, economics, freight / load | clean, 720 / 720, reconcile, clean |
+| no benchmark change, no fixture-specific code, clean committed tree | yes |
+| Validation7 / 8 (not present as directories), holdout4, Network Twin, frontend, Vercel | untouched |
+
+**Verdict: P1 CORE ARCHITECTURE PASS — B REMAINS OPEN** (incumbent-level confirmation floor on P1-owned
+purchasing reviews, and planning horizon shorter than the economic lot cycle; the three candidate rules
+tried in passes K and L are recorded with their evidence and rejected). Not frozen. Optimizer engineering
+stops here pending authorization. P2 NOT STARTED — P1 FREEZE GATE NOT MET. Repository consolidation not
+begun (gated on the freeze).

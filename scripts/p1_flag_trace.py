@@ -14,7 +14,6 @@ import sys
 from scripts.p1_fixtures import build
 from zaad.full.contracts import Request
 from zaad.full.evaluation import long_truth
-from zaad.full.ownership import planner_owner
 from zaad.full.planner import protection_profile, supply_profiles
 from zaad.full.replay import replay
 from zaad.full.worlds import forecast_all
@@ -65,8 +64,6 @@ def main():
         records = []
         for t, r in enumerate(kept):
             rows = rows_for(r)
-            fits = forecast_all(r)
-            prot = protection_profile(r, fits, supply_profiles(r))
             records.append({"review": t, "rows": rows,
                             "purchases": [(p["source"], round(p["quantity"], 1)) for p in out["reviews"][t]["purchases"]] if t < len(out["reviews"]) else None,
                             "owner": (out["reviews"][t].get("orchestration") or {}).get("planner_owner") if t < len(out["reviews"]) else None})
