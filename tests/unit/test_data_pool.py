@@ -8,7 +8,6 @@ product name survives into the pool, the test fails.
 
 from __future__ import annotations
 
-import json
 
 import pandas as pd
 import pytest

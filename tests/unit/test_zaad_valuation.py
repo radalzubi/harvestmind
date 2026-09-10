@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from zaad.full.fixtures_p1 import p1_request
-from zaad.full.model import Solution, solve
+from zaad.full.model import Solution
 from zaad.full.planner import evaluate
 from zaad.full.settlement import settle
 from zaad.full.valuation import common_candidate_value, expected_inventory_path
@@ -40,7 +40,8 @@ def test_deterministic_demand_reproduces_the_mean_path_settlement():
 
 def test_common_value_agrees_with_a_broad_expectation_and_ranks_like_it():
     req = p1_request(opening_units=100., demand=100.)
-    fits = forecast_all(req); worlds = draw(req, 991, 300)
+    fits = forecast_all(req)
+    worlds = draw(req, 991, 300)
     lean = plan({("src_A", t): 100. for t in range(11)})
     protected = plan({("src_A", 0): 112., **{("src_A", t): 100. for t in range(1, 11)}})
     values, sampled = {}, {}

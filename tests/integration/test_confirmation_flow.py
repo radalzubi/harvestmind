@@ -157,7 +157,6 @@ def test_corpus_stats_endpoint(client):
     session = _extract(client)
     c.post("/intake/confirm", json=_confirm_payload(session))
     import training.data_accumulator as acc
-    import training.quality_checker as qc
     # stats endpoint reads the default roots; call the functions directly
     # against the test root for determinism
     stats = acc.corpus_stats(acc.CORPUS_ROOT)

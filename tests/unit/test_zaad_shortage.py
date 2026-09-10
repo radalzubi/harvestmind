@@ -80,10 +80,10 @@ def test_reproducible_and_no_nans_on_degenerate_fits():
 
 # ---------------------------------------------------------------- adversarial behaviour of the surrogate in the model
 
-from zaad.full.contracts import Request
-from zaad.full.fixtures_p1 import p1_request
-from zaad.full.model import solve
-from zaad.full.worlds import draw, forecast_all
+from zaad.full.contracts import Request  # noqa: E402  (section import after the fixtures above)
+from zaad.full.fixtures_p1 import p1_request  # noqa: E402  (section import after the fixtures above)
+from zaad.full.model import solve  # noqa: E402  (section import after the fixtures above)
+from zaad.full.worlds import draw, forecast_all  # noqa: E402  (section import after the fixtures above)
 
 
 def _det(req, **kw):

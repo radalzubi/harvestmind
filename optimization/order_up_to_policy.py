@@ -13,7 +13,6 @@ a naive replay, before its complexity is justified.
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 from scipy import stats
 

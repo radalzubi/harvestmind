@@ -30,14 +30,14 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from backtesting.roi_calculator import compute_roi
-from backtesting.rolling_origin_engine import BacktestConfig, RollingOriginEngine
-from dashboard.lib.metrics import data_quality_breakdown
-from reports.pilot_summary_generator import (
+from backtesting.roi_calculator import compute_roi  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from backtesting.rolling_origin_engine import BacktestConfig, RollingOriginEngine  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from dashboard.lib.metrics import data_quality_breakdown  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from reports.pilot_summary_generator import (  # noqa: E402  (sys.path set above so the script runs from any cwd)
     PilotSummaryError,
     render_pilot_summary,
 )
-from scripts.stress_test_backtest import SCENARIOS, run_one as stress_run_one
+from scripts.stress_test_backtest import SCENARIOS, run_one as stress_run_one  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
 
 def _slug(name: str) -> str:
@@ -140,7 +140,7 @@ def main() -> None:
     )
 
     try:
-        html = render_pilot_summary(
+        _html = render_pilot_summary(
             roi=roi,
             backtest_df=backtest_df,
             partner_name=args.partner,
@@ -182,7 +182,7 @@ def main() -> None:
         if pdf.exists():
             print(f"  PDF:    {pdf}")
         else:
-            print(f"  PDF:    weasyprint not available — HTML only")
+            print("  PDF:    weasyprint not available — HTML only")
     print("══════════════════════════════════════════════════════════")
 
 

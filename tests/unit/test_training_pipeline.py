@@ -10,7 +10,6 @@ import pandas as pd
 import pytest
 
 from pool.pool_reader import DemandPrior, PoolReader, YieldPrior
-from risk.supplier_distribution import Population
 from training.demand_trainer import (
     evaluate_pool_bootstrap,
     pool_informed_point_forecast,
@@ -18,7 +17,6 @@ from training.demand_trainer import (
 from training.retraining_scheduler import RetrainingScheduler
 from training.yield_trainer import (
     estimate_population_with_pool,
-    population_from_pool,
 )
 
 _TODAY = date(2026, 5, 25)

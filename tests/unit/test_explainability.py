@@ -7,7 +7,6 @@ from datetime import date, timedelta
 import duckdb
 import numpy as np
 import pandas as pd
-import pytest
 
 from optimization.two_stage_sp import TwoStageStochasticLP
 

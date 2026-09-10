@@ -54,7 +54,7 @@ dashboard = [
 ]
 llm = ["anthropic>=1.0"]
 pdf = [
-    "weasyprint>=69.0",
+    "weasyprint>=70.0",  # 70.0 resolves CVE-2026-55073
     "tinycss2>=1.5",
 ]
 dev = [

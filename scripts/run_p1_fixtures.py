@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import time
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -33,10 +32,10 @@ def _build(name: str, seed: int):
         from zaad.full.contracts import Request
         req = req.model_copy(update={k: Request.model_fields[k].default for k in ("stratified_scenarios", "timing_tiebreak", "analytic_shortage")})
     return req
-from zaad.full.economics import COMPONENTS, cost_breakdown, order_waterfall
-from zaad.full.replay import replay
-from zaad.full.tolerance import is_dust
-from zaad.full.worlds import draw, forecast_all
+from zaad.full.economics import COMPONENTS, cost_breakdown, order_waterfall  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from zaad.full.replay import replay  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from zaad.full.tolerance import is_dust  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from zaad.full.worlds import draw, forecast_all  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
 
 def _init(stress: str, gate: str, smoothing: float, scenarios: int = 0, product_defaults: bool = False, terminal: str = "salvage") -> None:
@@ -45,7 +44,7 @@ def _init(stress: str, gate: str, smoothing: float, scenarios: int = 0, product_
 
 
 def run_cell(name: str, policy: str, seed: int) -> dict:
-    from zaad.full.planner import protection_profile, supply_profiles   # noqa: local import for workers
+    from zaad.full.planner import protection_profile, supply_profiles   # local import for the worker processes
     req = _build(name, seed)
     truth = draw(req, seed + 10000, 1)[0]
     started = time.time()
@@ -69,8 +68,10 @@ def run_cell(name: str, policy: str, seed: int) -> dict:
     owners, states, p1_added, milps = [], [], 0, 0
     for row in out["reviews"]:
         orch = row.get("orchestration") or {}
-        owners.append(orch.get("planner_owner")); states.append(orch.get("state"))
-        p1_added += len(orch.get("p1_classes_added") or []); milps += orch.get("milps_attempted") or 0
+        owners.append(orch.get("planner_owner"))
+        states.append(orch.get("state"))
+        p1_added += len(orch.get("p1_classes_added") or [])
+        milps += orch.get("milps_attempted") or 0
         st = row["settlement"]
         s_ = d_ = 0.
         for x in st["service_by_period"]:

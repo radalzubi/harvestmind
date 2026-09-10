@@ -24,7 +24,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from backtesting.rolling_origin_engine import BacktestConfig, RollingOriginEngine
+from backtesting.rolling_origin_engine import BacktestConfig, RollingOriginEngine  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
 DEFAULT_DB = ROOT / "harvestmind.duckdb"
 
@@ -128,8 +128,8 @@ def main():
 
     print("\n" + "═" * 78)
     print(" HarvestMind Baseline Degradation Stress Test")
-    print(f" Real partners' historical-data quality is rarely 'perfect'. As the")
-    print(f" naive baseline degrades, the stochastic optimiser's advantage grows.")
+    print(" Real partners' historical-data quality is rarely 'perfect'. As the")
+    print(" naive baseline degrades, the stochastic optimiser's advantage grows.")
     print("═" * 78)
 
     results = []

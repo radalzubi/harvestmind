@@ -118,7 +118,7 @@ REQUIRED_KPI_FIELDS = [
 def check_summary_json() -> dict:
     if not SUMMARY_JSON.exists():
         return check("backtest_summary.json", False,
-                     f"missing — run scripts/build_dashboard_summary.py")
+                     "missing — run scripts/build_dashboard_summary.py")
     try:
         data = json.loads(SUMMARY_JSON.read_text())
     except Exception as e:
@@ -247,9 +247,9 @@ def main() -> None:
     # Summary
     n_pass = sum(1 for r in results if r["ok"])
     n_fail = sum(1 for r in results if not r["ok"])
-    print(f"\n══════════════════════════════════════════════════════════")
+    print("\n══════════════════════════════════════════════════════════")
     print(f"  {n_pass}/{len(results)} passed   ({n_fail} failed)")
-    print(f"══════════════════════════════════════════════════════════")
+    print("══════════════════════════════════════════════════════════")
 
     sys.exit(0 if n_fail == 0 else 1)
 

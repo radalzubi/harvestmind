@@ -1,20 +1,19 @@
 """P1 phase 1: supplier-order economics carried identically by the model and by settlement, every
 cost component reconciling, and no behaviour change when the new terms are absent."""
-from __future__ import annotations
+from __future__ import annotations  # noqa: E402  (section import after the fixtures above)
 
-import math
-from statistics import mean
+import math  # noqa: E402  (section import after the fixtures above)
 
-import numpy as np
+import numpy as np  # noqa: E402  (section import after the fixtures above)
 
-import pytest
-from pydantic import ValidationError
+import pytest  # noqa: E402  (section import after the fixtures above)
+from pydantic import ValidationError  # noqa: E402  (section import after the fixtures above)
 
-from zaad.full.contracts import FreightTier, SupplierTerms
-from zaad.full.fixtures_p1 import NOW, p1_request
-from zaad.full.model import Solution, solve
-from zaad.full.settlement import PhysicalViolation, settle
-from zaad.full.worlds import draw
+from zaad.full.contracts import FreightTier, SupplierTerms  # noqa: E402  (section import after the fixtures above)
+from zaad.full.fixtures_p1 import NOW, p1_request  # noqa: E402  (section import after the fixtures above)
+from zaad.full.model import Solution, solve  # noqa: E402  (section import after the fixtures above)
+from zaad.full.settlement import PhysicalViolation, settle  # noqa: E402  (section import after the fixtures above)
+from zaad.full.worlds import draw  # noqa: E402  (section import after the fixtures above)
 
 
 def plan(purchases: dict) -> Solution:
@@ -119,11 +118,11 @@ def test_no_supplier_terms_means_no_new_rows_or_costs():
 
 # ---------------------------------------------------------------- phases 2-8
 
-from zaad.full.economics import (NO_MATERIAL_IMPROVEMENT, cost_breakdown, materiality, missing_data_fallbacks, next_replenishment,
+from zaad.full.economics import (NO_MATERIAL_IMPROVEMENT, cost_breakdown, materiality, missing_data_fallbacks, next_replenishment,  # noqa: E402  (section import after the fixtures above)
                                  order_waterfall, provenance, reconcile, supplier_order_view)
-from zaad.full.planner import plan as plan_review, protection_profile, supply_profiles
-from zaad.full.policies import apply_mov, baseline_plan, lot_round
-from zaad.full.worlds import forecast_all
+from zaad.full.planner import plan as plan_review, protection_profile, supply_profiles  # noqa: E402  (section import after the fixtures above)
+from zaad.full.policies import apply_mov, baseline_plan, lot_round  # noqa: E402  (section import after the fixtures above)
+from zaad.full.worlds import forecast_all  # noqa: E402  (section import after the fixtures above)
 
 
 def waterfall(req, purchases, **kw):
@@ -314,7 +313,7 @@ def test_timing_tiebreak_prefers_later_commitment_when_the_economics_are_indiffe
 
 # ---------------------------------------------------------------- closure pass
 
-from zaad.full.model import effective_smoothing, explicit_order_economics
+from zaad.full.model import effective_smoothing, explicit_order_economics  # noqa: E402  (section import after the fixtures above)
 
 
 def test_per_period_stratification_is_a_latin_hypercube_with_equal_weights():
@@ -359,7 +358,8 @@ def test_per_period_stratification_preserves_the_marginal_and_manufactures_no_ta
     assert max(longest_run(p) for p in b) <= max(longest_run(p) for p in a) + 1
     # tail coverage improves by construction: more periods with some world in the upper tercile
     q79 = np.quantile(a, .79)
-    cov = lambda arr: (arr.reshape(-1, 3, req.horizon).max(axis=1) > q79).mean()
+    def cov(arr):
+        return (arr.reshape(-1, 3, req.horizon).max(axis=1) > q79).mean()
     assert cov(b) > cov(a)
 
 

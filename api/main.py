@@ -1,4 +1,4 @@
-"""HarvestMind FastAPI application."""
+"""ZAAD API application (repository name harvestmind is the internal, historical name)."""
 from __future__ import annotations
 
 import logging
@@ -129,7 +129,7 @@ def health():
     """Liveness plus security posture, so a deployment can be checked from
     outside rather than trusted. Never includes secrets or paths."""
     from api.dependencies import auth_posture
-    return {"status": "ok", "service": "harvestmind-api", **auth_posture()}
+    return {"status": "ok", "service": "zaad-api", **auth_posture()}
 
 
 @app.get("/ready")

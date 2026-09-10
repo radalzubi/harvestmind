@@ -7,10 +7,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-import duckdb
+import duckdb  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
-from scripts.setup_db import setup_db
-from synthetic.generator import SyntheticGenerator
+from scripts.setup_db import setup_db  # noqa: E402
+from synthetic.generator import SyntheticGenerator  # noqa: E402
 
 
 def main() -> None:

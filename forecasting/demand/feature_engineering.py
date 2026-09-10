@@ -99,7 +99,7 @@ FEATURE_COLS = [
     "product_code", "buyer_code",
     "iso_week", "month", "quarter",
     "week_sin", "week_cos", "month_sin", "month_cos",
-    *[f"lag_{l}w" for l in LAG_WEEKS],
+    *[f"lag_{lag}w" for lag in LAG_WEEKS],
     *[f"roll_mean_{w}w" for w in ROLLING_WINDOWS],
     *[f"roll_std_{w}w" for w in ROLLING_WINDOWS],
     "prod_lag_1w", "prod_lag_4w", "prod_roll_mean_8w",

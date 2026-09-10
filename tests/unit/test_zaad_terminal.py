@@ -1,14 +1,13 @@
 """Finite-horizon continuation value of residual stock (evaluation only, `zaad/full/terminal.py`)."""
 from __future__ import annotations
 
-import numpy as np
 import pytest
 
 from zaad.full.contracts import Request
 from zaad.full.fixtures_p1 import p1_request
 from zaad.full.replay import replay
 from zaad.full.terminal import continuation_value
-from zaad.full.worlds import draw, forecast_all
+from zaad.full.worlds import draw
 from scripts.p1_fixtures import build
 
 PRODUCT = {k: Request.model_fields[k].default for k in ("stratified_scenarios", "timing_tiebreak", "analytic_shortage")}
@@ -91,12 +90,17 @@ def test_7_derived_value_agrees_with_extended_horizon_consumption_on_fixture_c()
     truth = draw(req, 41001 + 10000, 1)[0]
     out = replay(req, truth, 11, "reorder_point")
     term = out["terminal_continuation"]
-    sku = req.skus[0]; price, salvage = sku.asset_value, sku.terminal_value
+    sku = req.skus[0]
+    price, salvage = sku.asset_value, sku.terminal_value
     h = req.locations[0].holding_per_value_period + req.liquidity.cost_of_capital_per_period
     ext = draw(req.model_copy(update={"horizon": 12}), 41001 + 20000, 1)[0]
     stock, consumed, held = term["units"], 0., 0.
     for t in range(12):
-        d = ext.demand[req.services[0].id][t]; take = min(stock, d); consumed += take; stock -= take; held += stock
+        d = ext.demand[req.services[0].id][t]
+        take = min(stock, d)
+        consumed += take
+        stock -= take
+        held += stock
     empirical = consumed * price - held * h * price + stock * salvage
     assert term["units"] > 0
     assert abs(term["continuation_credit"] - empirical) <= .01 * term["salvage_credit"] + 5.
@@ -107,8 +111,9 @@ def test_8_same_policy_under_a_longer_window_moves_continuously():
     period of operating cost, not by a lot's salvage haircut."""
     req = build("C_moq_four_weeks", 41001).model_copy(update=PRODUCT)
     truth = draw(req, 41001 + 10000, 1)[0]
-    a = replay(req, truth, 10, "reorder_point"); b = replay(req, truth, 11, "reorder_point")
-    price, salvage = req.skus[0].asset_value, req.skus[0].terminal_value
+    a = replay(req, truth, 10, "reorder_point")
+    b = replay(req, truth, 11, "reorder_point")
+    price = req.skus[0].asset_value
     step_continuation = b["economic_cost_continuation"] - a["economic_cost_continuation"]
     step_salvage = b["economic_cost"] - a["economic_cost"]
     one_period = 100. * price

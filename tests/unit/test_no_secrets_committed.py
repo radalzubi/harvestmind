@@ -87,13 +87,7 @@ def test_no_obvious_secrets_in_tracked_files():
 
 def test_env_file_not_tracked():
     """The real .env must never be tracked."""
-    out = subprocess.check_output(
-        ["git", "ls-files", "--error-unmatch", ".env"],
-        cwd=ROOT, text=True, stderr=subprocess.STDOUT,
-    ).strip() if False else ""
-    # The above one-liner branch is intentionally unreachable; we use a
-    # subprocess invocation that returns non-zero when the file isn't
-    # tracked, and translate that to "good".
+    # `git ls-files --error-unmatch` returns non-zero when the file is not tracked; that is "good".
     try:
         subprocess.check_output(
             ["git", "ls-files", "--error-unmatch", ".env"],

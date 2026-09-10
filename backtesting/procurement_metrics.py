@@ -17,14 +17,14 @@ def compute_spot_premium(
         return {}
 
     total_vol = po_df["qty_committed_kg"].sum()
-    spot = po_df[po_df["is_spot_purchase"] == True]
+    spot = po_df[po_df["is_spot_purchase"].eq(True)]
     spot_vol = spot["qty_committed_kg"].sum()
     spot_pct = round(spot_vol / total_vol * 100, 2) if total_vol > 0 else 0.0
 
     spot_cost = (spot["qty_committed_kg"] * spot["price_per_kg"]).sum()
     avg_spot_premium = float(spot["spot_premium_pct"].mean()) if len(spot) > 0 else 0.0
 
-    contract = po_df[po_df["is_spot_purchase"] == False]
+    contract = po_df[po_df["is_spot_purchase"].eq(False)]
     contract_cost = (contract["qty_committed_kg"] * contract["price_per_kg"].fillna(2.0)).sum()
 
     return {

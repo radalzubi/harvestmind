@@ -19,8 +19,12 @@ def _req(rule="v8", deficit=.2):
     class Service:  # minimal duck type of the request the screen reads
         def __init__(self): self.id, self.target = "retail_A", .95
     class Req:
-        joint_recovery_rule = rule; joint_recovery_deficit = deficit; service_tolerance = .01
-        services = [Service()]; transfers = []; stock = []
+        joint_recovery_rule = rule
+        joint_recovery_deficit = deficit
+        service_tolerance = .01
+        services = [Service()]
+        transfers = []
+        stock = []
     return Req()
 
 

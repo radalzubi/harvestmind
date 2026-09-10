@@ -130,7 +130,7 @@ def test_health_ok(full_client):
     r = full_client.get("/health")
     assert r.status_code == 200
     body = r.json()
-    assert body["status"] == "ok" and body["service"] == "harvestmind-api"
+    assert body["status"] == "ok" and body["service"] == "zaad-api"
     assert {"env", "auth_enforced"} <= set(body)      # security posture is reported
 
 

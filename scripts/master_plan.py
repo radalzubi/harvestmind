@@ -54,22 +54,21 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from backtesting.roi_calculator import (
-    BENCHMARK_SCENARIOS,
+from backtesting.roi_calculator import (  # noqa: E402  (sys.path set above so the script runs from any cwd)
     SUBSCRIPTION_TIERS,
     benchmark_scenarios,
     compute_roi,
     _resolve_tier_pricing,
 )
-from backtesting.rolling_origin_engine import BacktestConfig, RollingOriginEngine
-from dashboard.lib.carbon_metrics import backfill_estimated_co2e, carbon_summary
-from dashboard.lib.fsma_metrics import fsma_coverage_score
-from dashboard.lib.metrics import data_quality_breakdown
-from reports.audit_package import AUDIT_TYPES, generate_audit_package
-from reports.grant_export import generate_grant_csv
-from reports.pilot_summary_generator import render_pilot_summary
-from scripts.stress_test_backtest import SCENARIOS as STRESS_SCENARIOS
-from scripts.stress_test_backtest import run_one as stress_run_one
+from backtesting.rolling_origin_engine import BacktestConfig, RollingOriginEngine  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from dashboard.lib.carbon_metrics import backfill_estimated_co2e, carbon_summary  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from dashboard.lib.fsma_metrics import fsma_coverage_score  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from dashboard.lib.metrics import data_quality_breakdown  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from reports.audit_package import generate_audit_package  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from reports.grant_export import generate_grant_csv  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from reports.pilot_summary_generator import render_pilot_summary  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from scripts.stress_test_backtest import SCENARIOS as STRESS_SCENARIOS  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from scripts.stress_test_backtest import run_one as stress_run_one  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
 
 # Tier → orchestration profile.

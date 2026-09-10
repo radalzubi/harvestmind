@@ -25,12 +25,12 @@ import duckdb
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from ingestion.usda_ams_connector import (
+from ingestion.usda_ams_connector import (  # noqa: E402  (sys.path set above so the script runs from any cwd)
     TARGET_COMMODITIES,
     TARGET_MARKETS,
     fetch_and_store as fetch_prices_and_store,
 )
-from ingestion.usda_food_hub_directory import (
+from ingestion.usda_food_hub_directory import (  # noqa: E402  (sys.path set above so the script runs from any cwd)
     DEFAULT_STATES,
     fetch_and_store as fetch_hubs_and_store,
 )

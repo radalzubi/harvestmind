@@ -8,7 +8,6 @@ import duckdb
 import pytest
 
 from ingestion.usda_ams_connector import (
-    COMMODITY_TO_PRODUCT,
     LBS_PER_KG,
     TARGET_COMMODITIES,
     TARGET_MARKETS,

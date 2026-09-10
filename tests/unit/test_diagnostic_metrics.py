@@ -14,7 +14,6 @@ from __future__ import annotations
 from datetime import date
 
 import duckdb
-import pandas as pd
 import pytest
 
 # Reference date shared across all tests

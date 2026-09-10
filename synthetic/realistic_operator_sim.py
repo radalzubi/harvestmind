@@ -98,9 +98,12 @@ def build_dataset(conn: duckdb.DuckDBPyConnection) -> None:
     n_suppliers = 25
     sup = []
     for s in range(n_suppliers):
-        if s < 17:      true_fill = rng.uniform(0.92, 0.985)   # reliable majority
-        elif s < 22:    true_fill = rng.uniform(0.82, 0.90)    # mediocre
-        else:           true_fill = rng.uniform(0.62, 0.80)    # problematic few
+        if s < 17:      # reliable majority
+            true_fill = rng.uniform(0.92, 0.985)
+        elif s < 22:    # mediocre
+            true_fill = rng.uniform(0.82, 0.90)
+        else:           # problematic few
+            true_fill = rng.uniform(0.62, 0.80)
         # volatility: some reliable-mean suppliers are swingy
         vol = rng.uniform(0.02, 0.06) if s < 20 else rng.uniform(0.10, 0.20)
         sup.append(dict(sid=f"S{s+1:03d}", name=f"Supplier {s+1:02d}",
@@ -124,9 +127,12 @@ def build_dataset(conn: duckdb.DuckDBPyConnection) -> None:
     # others absorb more of the shortfall. Concentrates buyer risk realistically.
     buyer_priority = {}
     for i, (bid, _) in enumerate(buyers):
-        if i < 9:    buyer_priority[bid] = rng.uniform(1.05, 1.15)   # priority accounts
-        elif i < 12: buyer_priority[bid] = rng.uniform(0.95, 1.02)   # standard
-        else:        buyer_priority[bid] = rng.uniform(0.78, 0.90)   # routinely shorted
+        if i < 9:       # priority accounts
+            buyer_priority[bid] = rng.uniform(1.05, 1.15)
+        elif i < 12:    # standard
+            buyer_priority[bid] = rng.uniform(0.95, 1.02)
+        else:           # routinely shorted
+            buyer_priority[bid] = rng.uniform(0.78, 0.90)
 
     order_rows = []
     oid = 0
@@ -166,7 +172,8 @@ def build_dataset(conn: duckdb.DuckDBPyConnection) -> None:
     for c in ["requested_quantity", "fulfilled_quantity", "substituted_quantity"]:
         orders_df[c] = (orders_df[c] * scale).round(1)
     conn.register("orders_df", orders_df)
-    cols=",".join(orders_df.columns); conn.execute(f"INSERT INTO stg_buyer_orders ({cols}) SELECT {cols} FROM orders_df")
+    cols = ",".join(orders_df.columns)
+    conn.execute(f"INSERT INTO stg_buyer_orders ({cols}) SELECT {cols} FROM orders_df")
 
     # ── Supplier deliveries (weekly per supplier-product) ──────────────────
     deliv_rows = []
@@ -193,7 +200,8 @@ def build_dataset(conn: duckdb.DuckDBPyConnection) -> None:
         "delivery_date", "ordered_quantity", "delivered_quantity", "accepted_quantity",
         "rejected_quantity", "unit_cost", "quality_grade", "lot_id"])
     conn.register("deliv_df", deliv_df)
-    cols=",".join(deliv_df.columns); conn.execute(f"INSERT INTO stg_supplier_deliveries ({cols}) SELECT {cols} FROM deliv_df")
+    cols = ",".join(deliv_df.columns)
+    conn.execute(f"INSERT INTO stg_supplier_deliveries ({cols}) SELECT {cols} FROM deliv_df")
 
     # ── Inventory lots (current snapshot at AS_OF) ─────────────────────────
     lot_rows = []
@@ -207,9 +215,12 @@ def build_dataset(conn: duckdb.DuckDBPyConnection) -> None:
             qty = round(on_hand_total / n_lots, 1)
             # expiry spread: most fresh, ~12% near-expiry, ~4% expired
             r = rng.random()
-            if r < 0.04:    exp = AS_OF - timedelta(days=int(rng.integers(1, 4)))      # expired
-            elif r < 0.16:  exp = AS_OF + timedelta(days=int(rng.integers(0, 4)))      # near-expiry
-            else:           exp = AS_OF + timedelta(days=int(rng.integers(5, meta["shelf"] + 5)))
+            if r < 0.04:        # expired
+                exp = AS_OF - timedelta(days=int(rng.integers(1, 4)))
+            elif r < 0.16:      # near-expiry
+                exp = AS_OF + timedelta(days=int(rng.integers(0, 4)))
+            else:
+                exp = AS_OF + timedelta(days=int(rng.integers(5, meta["shelf"] + 5)))
             si = prod_suppliers[pname][0]
             committed = round(qty * rng.uniform(0.0, 0.4), 1)
             # occasionally drop lot_id / supplier to model traceability gaps (~8%)
@@ -223,7 +234,8 @@ def build_dataset(conn: duckdb.DuckDBPyConnection) -> None:
         "unit", "arrival_date", "expiration_date", "warehouse_location",
         "quality_grade", "committed_quantity"])
     conn.register("lots_df", lots_df)
-    cols=",".join(lots_df.columns); conn.execute(f"INSERT INTO stg_inventory_lots ({cols}) SELECT {cols} FROM lots_df")
+    cols = ",".join(lots_df.columns)
+    conn.execute(f"INSERT INTO stg_inventory_lots ({cols}) SELECT {cols} FROM lots_df")
 
     # ── Waste adjustments (calibrated to ~7% of throughput by cost) ────────
     total_cogs_period = float((deliv_df["accepted_quantity"] * deliv_df["unit_cost"]).sum())
@@ -250,7 +262,8 @@ def build_dataset(conn: duckdb.DuckDBPyConnection) -> None:
         "adjustment_id", "date", "product_id", "product_name", "lot_id",
         "quantity_lost", "reason", "estimated_value_lost"])
     conn.register("waste_df", waste_df)
-    cols=",".join(waste_df.columns); conn.execute(f"INSERT INTO stg_waste_adjustments ({cols}) SELECT {cols} FROM waste_df")
+    cols = ",".join(waste_df.columns)
+    conn.execute(f"INSERT INTO stg_waste_adjustments ({cols}) SELECT {cols} FROM waste_df")
 
 
 def main() -> None:
@@ -314,7 +327,7 @@ def main() -> None:
     print(f"  Spoilage / waste  ....... {m(waste_yr)}/yr   real cash, {waste_yr/(cogs*ANNUALIZE)*100:.1f}% of cost of goods")
     print(f"  Missed orders  .......... {m(short_rev_yr)}/yr   revenue at risk (fill rate {fill*100:.0f}%)")
     print(f"     -> lost profit on those misses, at {MARGIN*100:.0f}% margin:  ~{m(short_margin_yr)}/yr")
-    print(f"  ---------------------------------------------------------------")
+    print("  ---------------------------------------------------------------")
     print(f"  Economic loss (cash waste + lost margin):  ~{m(economic_loss_yr)}/yr")
     print()
     print("  WHERE IT'S CONCENTRATED (what you'd act on)")

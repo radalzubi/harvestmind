@@ -65,9 +65,10 @@ ARMS = {
 }
 
 
-def main():
-    arm = sys.argv[1]
-    cells = [int(x) for x in sys.argv[2:]] or [15, 16, 20, 21, 90, 108]
+def run_cells(arm: str, cells: list[int], write: bool = True) -> dict:
+    """Replay the P0 cells under an arm and return one row per cell (the six-cell gate record);
+    `write` stores it as closure/p0_arm_<arm>.json. The canonical regression calls this with
+    write=False to compare one cell against the recorded arm."""
     settings = dict(ARMS[arm])
     switch = settings.pop("_switch", None)
     if switch is not None:
@@ -150,7 +151,15 @@ def main():
               f"joint={row['joint_required']}req/{row['joint_built']}built/{row['joint_chosen']}chosen abst={row['abstentions']} "
               f"owners={row['owners']} p1_added={row['p1_classes_added']} "
               f"lat p50={row['lat_p50']:.2f} p90={row['lat_p90']:.1f} p95={row['lat_p95']:.1f} max={row['lat_max']:.1f} wall={wall:.0f}s", flush=True)
+    if write:
         json.dump(out, open(f"docs/zaad_full/evidence/p1/closure/p0_arm_{arm}.json", "w"), indent=1, default=float)
+    return out
+
+
+def main():
+    arm = sys.argv[1]
+    cells = [int(x) for x in sys.argv[2:]] or [15, 16, 20, 21, 90, 108]
+    run_cells(arm, cells)
 
 
 if __name__ == "__main__":

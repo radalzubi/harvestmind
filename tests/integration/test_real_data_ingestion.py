@@ -6,7 +6,6 @@ pipeline against synthetic CSVs that mirror Local Line / QuickBooks shapes.
 
 from __future__ import annotations
 
-import csv
 from pathlib import Path
 
 import duckdb
@@ -132,7 +131,7 @@ def test_duplicate_rows_skipped(conn):
         "order_date": ["2025-06-02"],
     })
     n1 = _ingest_one(conn, df, "orders", "fact_orders")
-    n2 = _ingest_one(conn, df, "orders", "fact_orders")  # second insert
+    _ingest_one(conn, df, "orders", "fact_orders")  # second insert
     final = conn.execute("SELECT COUNT(*) FROM fact_orders WHERE order_id='O-DUP'").fetchone()[0]
     assert n1 == 1
     assert final == 1   # idempotent on PK
