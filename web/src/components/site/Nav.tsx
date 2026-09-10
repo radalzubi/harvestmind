@@ -4,19 +4,25 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
+import { ArrowRight } from "lucide-react";
 import { Logo } from "./Logo";
 import { useLocale } from "@/lib/i18n";
 
+/** EN / عربي as one pill; the active language is the solid half. */
 export function LangToggle({ className }: { className?: string }) {
-  const { locale, setLocale, t } = useLocale();
+  const { locale, setLocale } = useLocale();
   return (
-    <button type="button" className={clsx("lang-toggle", className)} onClick={() => setLocale(locale === "ar" ? "en" : "ar")}
-      aria-label={locale === "ar" ? "Switch to English" : "التبديل إلى العربية"} lang={locale === "ar" ? "en" : "ar"}>
-      {t.nav.lang}
-    </button>
+    <div className={clsx("lang-pill", className)} role="group" aria-label="Language">
+      <button type="button" className={locale === "en" ? "on" : ""} onClick={() => setLocale("en")} lang="en" aria-pressed={locale === "en"}>EN</button>
+      <button type="button" className={locale === "ar" ? "on" : ""} onClick={() => setLocale("ar")} lang="ar" aria-pressed={locale === "ar"}>عربي</button>
+    </div>
   );
 }
 
+/**
+ * Three places to go, one thing to do. "Open workspace" covers both entering
+ * a key and starting a new workspace; the get-started flow asks which.
+ */
 export function Nav() {
   const pathname = usePathname() || "/";
   const { t } = useLocale();
@@ -32,8 +38,8 @@ export function Nav() {
 
   const links = [
     { href: "/product", label: t.nav.product },
+    { href: "/how-it-works", label: t.nav.how },
     { href: "/sectors", label: t.nav.sectors },
-    { href: "/security", label: t.nav.security },
     { href: "/about", label: t.nav.about },
   ];
 
@@ -48,18 +54,18 @@ export function Nav() {
         </nav>
         <div className="site-cta">
           <LangToggle />
-          <Link href="/get-started?mode=key" className="btn btn-ghost">{t.nav.enterKey}</Link>
-          <Link href="/get-started" className="btn btn-primary">{t.nav.getStarted}</Link>
+          <Link href="/get-started" className="btn btn-primary">{t.nav.open} <ArrowRight size={14} className="dir-icon" /></Link>
         </div>
-        <LangToggle className="lang-toggle-mobile" />
+        <LangToggle className="lang-pill-mobile" />
         <button className="site-burger" aria-label={open ? t.nav.menuClose : t.nav.menuOpen} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
           <span /><span />
         </button>
       </div>
       <div className="site-drawer">
         {links.map((l) => <Link key={l.href} href={l.href}>{l.label}</Link>)}
-        <Link href="/get-started?mode=key">{t.nav.enterKey}</Link>
-        <Link href="/get-started" className="btn btn-primary" style={{ marginTop: 8 }}>{t.nav.getStarted}</Link>
+        <Link href="/resources">{t.nav.resources}</Link>
+        <Link href="/security">{t.nav.security}</Link>
+        <Link href="/get-started" className="btn btn-primary" style={{ marginTop: 8 }}>{t.nav.open} <ArrowRight size={14} className="dir-icon" /></Link>
       </div>
     </header>
   );
