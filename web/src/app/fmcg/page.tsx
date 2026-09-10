@@ -21,7 +21,7 @@ export default function FmcgPage() {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [mode, setMode] = useState("safe");
+  const [mode, setMode] = useState("canonical");
   const [horizon, setHorizon] = useState(12);
   const [service, setService] = useState(0.97);
   const [open, setOpen] = useState<number | null>(null);
@@ -66,7 +66,7 @@ export default function FmcgPage() {
         <div className="flex gap-4 flex-wrap items-end">
           <label className="text-sm">Mode
             <select className="block border rounded px-2 py-1" value={mode} onChange={(e) => setMode(e.target.value)}>
-              {["safe", "adaptive", "stochastic", "deterministic", "order_up_to", "incumbent"].map((m) => <option key={m}>{m}</option>)}
+              {["canonical", "safe", "adaptive", "stochastic", "deterministic", "order_up_to", "incumbent"].map((m) => <option key={m}>{m === "canonical" ? "canonical (frozen ZAAD P1)" : `${m} (legacy)`}</option>)}
             </select></label>
           <label className="text-sm">Horizon (weeks)
             <input className="block border rounded px-2 py-1 w-24" type="number" min={4} max={26} value={horizon}

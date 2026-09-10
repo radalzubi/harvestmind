@@ -11,8 +11,9 @@ license = { text = "Proprietary" }
 authors = [{ name = "HarvestMind Team", email = "team@harvestmind.io" }]
 
 dependencies = [
+    "reportlab>=4.2",
     "pyomo>=6.7",
-    "highspy>=1.7",
+    "highspy>=1.14,<1.16",  # frozen P0 / P1 decisions reproduced on 1.14.0 and 1.15.1; a newer minor needs the frozen regression first
     "mlforecast>=0.13",
     "lightgbm>=4.3",
     "hierarchicalforecast>=0.4",
@@ -48,12 +49,12 @@ dependencies = [
 dashboard = [
     "streamlit>=1.57",
     "plotly>=5.20",
-    "gitpython>=3.1.58",
-    "tornado>=6.5.7",
+    "gitpython>=3.1.59",
+    "tornado>=6.5.8",
 ]
-llm = ["anthropic>=0.40"]
+llm = ["anthropic>=1.0"]
 pdf = [
-    "weasyprint>=69.0",
+    "weasyprint>=70.0",  # 70.0 resolves CVE-2026-55073
     "tinycss2>=1.5",
 ]
 dev = [
@@ -62,6 +63,11 @@ dev = [
     "pytest-cov>=4.0",
     "black>=24.0",
     "ruff==0.15.12",
+    "hypothesis>=6.100",
+    "mypy>=1.10",
+    "bandit>=1.7",
+    "pip-audit>=2.7",
+    "packaging>=23.0",
 ]
 
 [project.scripts]

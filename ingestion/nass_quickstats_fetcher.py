@@ -87,6 +87,8 @@ def fetch_county_yields(
             value = float(str(r.get("Value", "")).replace(",", ""))
         except ValueError:
             continue  # suppressed cells: "(D)", "(Z)"
+        county_fips: str | None
+        county_name: str | None
         if state_level:
             county_name, county_fips = "STATE TOTAL", None
         else:
@@ -166,7 +168,7 @@ def fetch_and_store(
             "commodity, yield_value, yield_unit, util_practice, source"
         )
         conn.execute(
-            f"INSERT OR IGNORE INTO fact_county_yields ({cols}) "
+            f"INSERT OR IGNORE INTO fact_county_yields ({cols}) "  # nosec B608 - cols from schema constant
             f"SELECT {cols} FROM df"
         )
         total += len(df)

@@ -1,0 +1,358 @@
+{
+ "status": "YES_WITH_CONDITIONS",
+ "git_commit": "d5240eb2dd9d4fcafecc9f8d805d21f278084f4d",
+ "tests": {
+  "passed": 1354,
+  "failed": 0,
+  "skipped": 1,
+  "xfailed": 0
+ },
+ "coverage": {
+  "total_pct": 81.8,
+  "by_package_pct": {
+   "api": 79.7,
+   "backtesting": 80.9,
+   "domain": 88.2,
+   "ingestion": 84.3,
+   "optimization": 91.4,
+   "risk": 92.3,
+   "synthetic": 56.6
+  }
+ },
+ "security": {
+  "critical_open": 0,
+  "high_open": 0,
+  "medium_open": 0,
+  "dependency_audit": {
+   "vulnerable_packages": [
+    "bleach",
+    "click",
+    "cryptography",
+    "gitpython",
+    "idna",
+    "jupyter-server",
+    "jupyterlab",
+    "mistune",
+    "msgpack",
+    "notebook",
+    "paramiko",
+    "pillow",
+    "pip",
+    "pydantic-settings",
+    "pypdf2",
+    "python-multipart",
+    "setuptools",
+    "soupsieve",
+    "starlette",
+    "tornado",
+    "urllib3"
+   ],
+   "advisories": 134
+  }
+ },
+ "agriculture": {
+  "validated": true,
+  "basis": "real public demand (US Census) and port data (IMF PortWatch); invariants recomputed from solved models"
+ },
+ "fmcg": {
+  "validated": true,
+  "basis": "SYNTHETIC CALIBRATED closed-loop counterfactuals; no operator data"
+ },
+ "benchmarks": {
+  "closed_loop": {
+   "A_stable": {
+    "sp_vs_deterministic_median_pct": -30.992952981907063,
+    "sp_vs_deterministic_win_rate": 0.0,
+    "sp_vs_order_up_to_median_pct": -29.924428270632465,
+    "selected_vs_deterministic_median_pct": -3.457257192694232,
+    "service": {
+     "naive_forecast": 1.0,
+     "seasonal_naive": 1.0,
+     "static_safety": 1.0,
+     "min_max": 0.9815997192144224,
+     "order_up_to": 0.9999577202544925,
+     "deterministic_sp": 0.9869408392230102,
+     "stochastic_sp": 0.9992403903117348,
+     "selected": 0.9999187554897965
+    },
+    "selections": {
+     "order_up_to": 20,
+     "deterministic_sp": 10
+    }
+   },
+   "B_volatile_retail": {
+    "sp_vs_deterministic_median_pct": 13.788288858699238,
+    "sp_vs_deterministic_win_rate": 1.0,
+    "sp_vs_order_up_to_median_pct": -14.144438947960076,
+    "selected_vs_deterministic_median_pct": 34.68119351266466,
+    "service": {
+     "naive_forecast": 0.9691221465274045,
+     "seasonal_naive": 0.9663727867447407,
+     "static_safety": 0.9998164515994894,
+     "min_max": 0.9476490524437192,
+     "order_up_to": 0.9804928517336879,
+     "deterministic_sp": 0.9341922898398962,
+     "stochastic_sp": 0.9822641385504342,
+     "selected": 0.9793205802220544
+    },
+    "selections": {
+     "order_up_to": 19,
+     "stochastic_sp": 4,
+     "deterministic_sp": 7
+    }
+   },
+   "C_constrained_supplier": {
+    "sp_vs_deterministic_median_pct": -36.32010823965771,
+    "sp_vs_deterministic_win_rate": 0.0,
+    "sp_vs_order_up_to_median_pct": -38.856147314173946,
+    "selected_vs_deterministic_median_pct": 6.651405328914772,
+    "service": {
+     "naive_forecast": 0.9708551780487161,
+     "seasonal_naive": 0.9804046525250435,
+     "static_safety": 0.9990969794594002,
+     "min_max": 0.9593269057183621,
+     "order_up_to": 0.9931179971873799,
+     "deterministic_sp": 0.9710613511551686,
+     "stochastic_sp": 0.9949671383466708,
+     "selected": 0.9933339964298239
+    },
+    "selections": {
+     "order_up_to": 25,
+     "deterministic_sp": 3,
+     "stochastic_sp": 2
+    }
+   },
+   "D_importer": {
+    "sp_vs_deterministic_median_pct": -7.0982638615133125,
+    "sp_vs_deterministic_win_rate": 0.0,
+    "sp_vs_order_up_to_median_pct": -42.02716537893843,
+    "selected_vs_deterministic_median_pct": 24.433716278306868,
+    "service": {
+     "naive_forecast": 0.9115766975133981,
+     "seasonal_naive": 0.91319018248603,
+     "static_safety": 0.9214785214778828,
+     "min_max": 0.885945273115119,
+     "order_up_to": 0.9168445582176346,
+     "deterministic_sp": 0.8726821111014424,
+     "stochastic_sp": 0.880410981258425,
+     "selected": 0.9168445582176346
+    },
+    "selections": {
+     "order_up_to": 30
+    }
+   },
+   "E_mixed_portfolio": {
+    "sp_vs_deterministic_median_pct": 9.443226520418373,
+    "sp_vs_deterministic_win_rate": 1.0,
+    "sp_vs_order_up_to_median_pct": -32.91104548393001,
+    "selected_vs_deterministic_median_pct": 31.58850963487677,
+    "service": {
+     "naive_forecast": 0.9963853863355207,
+     "seasonal_naive": 0.9947899319748592,
+     "static_safety": 1.0,
+     "min_max": 0.9759679207476644,
+     "order_up_to": 0.9973128096245802,
+     "deterministic_sp": 0.9608477216700981,
+     "stochastic_sp": 0.9946419460640303,
+     "selected": 0.9934656040013411
+    },
+    "selections": {
+     "order_up_to": 28,
+     "deterministic_sp": 2
+    }
+   },
+   "F_disruption": {
+    "sp_vs_deterministic_median_pct": 14.170624969092104,
+    "sp_vs_deterministic_win_rate": 0.6666666666666666,
+    "sp_vs_order_up_to_median_pct": -27.03275465921717,
+    "selected_vs_deterministic_median_pct": 31.606416846572827,
+    "service": {
+     "naive_forecast": 0.9993836873485415,
+     "seasonal_naive": 0.9975876323973452,
+     "static_safety": 1.0,
+     "min_max": 0.9785578008642263,
+     "order_up_to": 0.9979420602281841,
+     "deterministic_sp": 0.9715225635253388,
+     "stochastic_sp": 0.997214238376106,
+     "selected": 0.9953382852651822
+    },
+    "selections": {
+     "order_up_to": 21,
+     "deterministic_sp": 9
+    }
+   }
+  },
+  "open_loop": {
+   "A_stable": -13.5809218702902,
+   "B_volatile_retail": -5.824613361874823,
+   "C_constrained_supplier": -13.764076677516016,
+   "D_importer": -3.129446612310385,
+   "E_mixed_portfolio": -21.231072623796486,
+   "F_disruption": -18.66929709050092
+  },
+  "stress_cells": 30,
+  "performance": {
+   "skus=10,scen=30,H=12,LP": {
+    "p50": 0.4779058750718832,
+    "min": 0.458899041172117,
+    "max": 0.5607528332620859,
+    "n": 3
+   },
+   "skus=100,scen=30,H=12,LP": {
+    "p50": 6.045939875300974,
+    "min": 5.945570582989603,
+    "max": 6.624938915949315,
+    "n": 3
+   },
+   "skus=100,scen=30,H=12,MILP": {
+    "p50": 9.684564458206296,
+    "min": 9.540332625154406,
+    "max": 9.793610208202153,
+    "n": 3
+   },
+   "skus=1000,scen=20,H=8,LP": {
+    "p50": 46.985092020593584,
+    "min": 46.34857587516308,
+    "max": 47.62160816602409,
+    "n": 2
+   },
+   "skus=500,scen=20,H=8,MILP": {
+    "p50": 19.769778021145612,
+    "min": 19.35687725013122,
+    "max": 20.182678792160004,
+    "n": 2
+   }
+  },
+  "safe_selected": {
+   "calm_deep_cover": {
+    "sp_vs_incumbent_median_pct": -25.093244667621,
+    "sp_worst_pct": -34.36496791584289,
+    "safe_vs_incumbent_median_pct": 2.0998173345077453,
+    "safe_worst_pct": -0.980769448890448,
+    "safe_fill_diff_pt": -0.0588767160785079,
+    "selections": {
+     "incumbent": 12,
+     "deterministic_sp": 9,
+     "order_up_to": 1,
+     "stochastic_sp": 2
+    }
+   },
+   "calm_thin_cover": {
+    "sp_vs_incumbent_median_pct": 0.13368213984619748,
+    "sp_worst_pct": -9.551354218202471,
+    "safe_vs_incumbent_median_pct": 0.8895702550182149,
+    "safe_worst_pct": 0.7792365885210085,
+    "safe_fill_diff_pt": -0.3968684551238666,
+    "selections": {
+     "incumbent": 13,
+     "deterministic_sp": 9,
+     "order_up_to": 1,
+     "stochastic_sp": 1
+    }
+   },
+   "volatile": {
+    "sp_vs_incumbent_median_pct": -53.11777421424715,
+    "sp_worst_pct": -67.82185874844005,
+    "safe_vs_incumbent_median_pct": 0.1554529230770091,
+    "safe_worst_pct": 0.0,
+    "safe_fill_diff_pt": -0.005081074650681305,
+    "selections": {
+     "incumbent": 22,
+     "order_up_to": 2
+    }
+   },
+   "constrained": {
+    "sp_vs_incumbent_median_pct": -20.092672954016273,
+    "sp_worst_pct": -33.37183630946991,
+    "safe_vs_incumbent_median_pct": 0.0,
+    "safe_worst_pct": 0.0,
+    "safe_fill_diff_pt": 0.0,
+    "selections": {
+     "incumbent": 23,
+     "deterministic_sp": 1
+    }
+   },
+   "importer": {
+    "sp_vs_incumbent_median_pct": -13.133884989531975,
+    "sp_worst_pct": -22.166887565324757,
+    "safe_vs_incumbent_median_pct": 0.0,
+    "safe_worst_pct": 0.0,
+    "safe_fill_diff_pt": 0.0,
+    "selections": {
+     "incumbent": 24
+    }
+   },
+   "mixed": {
+    "sp_vs_incumbent_median_pct": -43.76645170110904,
+    "sp_worst_pct": -52.5230931567995,
+    "safe_vs_incumbent_median_pct": 0.14464794741641285,
+    "safe_worst_pct": -27.597736692990825,
+    "safe_fill_diff_pt": -0.40244484845155526,
+    "selections": {
+     "incumbent": 21,
+     "deterministic_sp": 3
+    }
+   },
+   "disruption": {
+    "sp_vs_incumbent_median_pct": -46.78463529960734,
+    "sp_worst_pct": -54.31405321056988,
+    "safe_vs_incumbent_median_pct": 0.5690780020167852,
+    "safe_worst_pct": 0.191956466884234,
+    "safe_fill_diff_pt": 0.0376357814986239,
+    "selections": {
+     "incumbent": 20,
+     "deterministic_sp": 1,
+     "order_up_to": 2,
+     "stochastic_sp": 1
+    }
+   },
+   "calm_high_carry": {
+    "sp_vs_incumbent_median_pct": 58.86096414108243,
+    "sp_worst_pct": 49.544716918428044,
+    "safe_vs_incumbent_median_pct": 13.675942737551372,
+    "safe_worst_pct": 2.4899928829285147,
+    "safe_fill_diff_pt": -0.0332606178374939,
+    "selections": {
+     "incumbent": 10,
+     "deterministic_sp": 8,
+     "stochastic_sp": 3,
+     "order_up_to": 3
+    }
+   },
+   "volatile_high_carry": {
+    "sp_vs_incumbent_median_pct": -46.14111443560349,
+    "sp_worst_pct": -48.17011976886332,
+    "safe_vs_incumbent_median_pct": -3.4281340621735037,
+    "safe_worst_pct": -4.430136489726836,
+    "safe_fill_diff_pt": 0.042499426642717,
+    "selections": {
+     "incumbent": 21,
+     "deterministic_sp": 2,
+     "order_up_to": 1
+    }
+   }
+  }
+ },
+ "remaining_blockers": [
+  {
+   "priority": "P0",
+   "item": "no end-to-end validation on a real operator's order and receipt records; all FMCG results are SYNTHETIC CALIBRATED"
+  },
+  {
+   "priority": "P1",
+   "item": "Docker image is built and smoke-tested in CI only; not verified on this host (no daemon)"
+  },
+  {
+   "priority": "P2",
+   "item": "line fill and order fill are measured in settlement but cannot be enforced by a product-level LP; unit fill floors are enforced"
+  },
+  {
+   "priority": "P2",
+   "item": "the produce schema and legacy API keep *_kg column names; responses carry unit-neutral quantity/unit fields, the database rename is deferred"
+  },
+  {
+   "priority": "P2",
+   "item": "isolation is one DuckDB per operator by design; a shared-database deployment is not offered"
+  }
+ ]
+}

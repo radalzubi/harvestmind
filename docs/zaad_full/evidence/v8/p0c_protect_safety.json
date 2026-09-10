@@ -1,0 +1,338 @@
+{
+ "15|V7_full": {
+  "service": 0.9831789625660835,
+  "tail": 0.7897370320760438,
+  "p10": 1.0,
+  "breach_reviews": 1,
+  "worst_unmet": 4.205259358479124,
+  "total_unmet": 4.205259358479124,
+  "inventory": 102.03793502570882,
+  "cost": 1677.0211530673892,
+  "wall": 12.974829082842916,
+  "policies": {
+   "protected_network": 3,
+   "joint_recovery": 3,
+   "stochastic_network": 4,
+   "deterministic_network": 1,
+   "projected_base_stock_proxy": 1
+  }
+ },
+ "15|V8_escalated": {
+  "service": 0.9801335414977753,
+  "tail": 0.7897370320760438,
+  "p10": 0.9619322366461477,
+  "breach_reviews": 1,
+  "worst_unmet": 4.205259358479124,
+  "total_unmet": 4.96661462555617,
+  "inventory": 46.05861496455202,
+  "cost": 1678.3632802908276,
+  "wall": 4.534677041694522,
+  "policies": {
+   "protected_network": 2,
+   "projected_base_stock_proxy": 4,
+   "cvar_network": 3,
+   "deterministic_network": 1,
+   "stochastic_network": 1,
+   "stress_network": 1
+  }
+ },
+ "15|V8_forced_hedge": {
+  "service": 0.9801335414977753,
+  "tail": 0.7897370320760438,
+  "p10": 0.9619322366461477,
+  "breach_reviews": 1,
+  "worst_unmet": 4.205259358479124,
+  "total_unmet": 4.96661462555617,
+  "inventory": 46.05861496455202,
+  "cost": 1678.3632802908276,
+  "wall": 4.565983584150672,
+  "policies": {
+   "protected_network": 2,
+   "projected_base_stock_proxy": 4,
+   "cvar_network": 3,
+   "deterministic_network": 1,
+   "stochastic_network": 1,
+   "stress_network": 1
+  }
+ },
+ "16|V7_full": {
+  "service": 0.972,
+  "tail": 0.65,
+  "p10": 1.0,
+  "breach_reviews": 1,
+  "worst_unmet": 7.0,
+  "total_unmet": 7.0,
+  "inventory": 212.2278778553251,
+  "cost": 1521.4747998451976,
+  "wall": 7.259762208908796,
+  "policies": {
+   "joint_recovery": 6,
+   "hedged_network": 1,
+   "stochastic_network": 1,
+   "cvar_network": 1,
+   "deterministic_network": 2,
+   "projected_base_stock_proxy": 1
+  }
+ },
+ "16|V8_escalated": {
+  "service": 0.972,
+  "tail": 0.65,
+  "p10": 1.0,
+  "breach_reviews": 1,
+  "worst_unmet": 7.0,
+  "total_unmet": 7.0,
+  "inventory": 134.48500241457242,
+  "cost": 1515.0302829472525,
+  "wall": 5.3853778331540525,
+  "policies": {
+   "projected_base_stock_proxy": 5,
+   "hedged_network": 1,
+   "stochastic_network": 3,
+   "deterministic_network": 2,
+   "cvar_network": 1
+  }
+ },
+ "16|V8_forced_hedge": {
+  "service": 0.972,
+  "tail": 0.65,
+  "p10": 1.0,
+  "breach_reviews": 1,
+  "worst_unmet": 7.0,
+  "total_unmet": 7.0,
+  "inventory": 134.48500241457242,
+  "cost": 1515.0302829472525,
+  "wall": 5.468696291092783,
+  "policies": {
+   "projected_base_stock_proxy": 5,
+   "hedged_network": 1,
+   "stochastic_network": 3,
+   "deterministic_network": 2,
+   "cvar_network": 1
+  }
+ },
+ "20|V7_full": {
+  "service": 0.8274375636470318,
+  "tail": 0.0,
+  "p10": 0.20423371679689872,
+  "breach_reviews": 5,
+  "worst_unmet": 21.485689646483735,
+  "total_unmet": 66.78166286859866,
+  "inventory": 187.0005053013883,
+  "cost": 2600.8626032317,
+  "wall": 127.31940708402544,
+  "policies": {
+   "deterministic_network": 5,
+   "projected_base_stock_proxy": 5,
+   "cvar_network": 1,
+   "joint_recovery": 2,
+   "stochastic_network": 3,
+   "protected_network": 2,
+   "hedged_network": 2
+  }
+ },
+ "20|V8_escalated": {
+  "service": 0.8274375636470318,
+  "tail": 0.0,
+  "p10": 0.20423371679689872,
+  "breach_reviews": 5,
+  "worst_unmet": 21.485689646483735,
+  "total_unmet": 66.78166286859866,
+  "inventory": 184.93308262767633,
+  "cost": 2617.2789698467923,
+  "wall": 70.47160958312452,
+  "policies": {
+   "deterministic_network": 9,
+   "projected_base_stock_proxy": 5,
+   "cvar_network": 1,
+   "joint_recovery": 2,
+   "stochastic_network": 3
+  }
+ },
+ "20|V8_forced_hedge": {
+  "service": 0.8274375636470318,
+  "tail": 0.0,
+  "p10": 0.20423371679689872,
+  "breach_reviews": 5,
+  "worst_unmet": 21.485689646483735,
+  "total_unmet": 66.78166286859866,
+  "inventory": 184.93308262767633,
+  "cost": 2617.2789698467923,
+  "wall": 79.34002658259124,
+  "policies": {
+   "deterministic_network": 9,
+   "projected_base_stock_proxy": 5,
+   "cvar_network": 1,
+   "joint_recovery": 2,
+   "stochastic_network": 3
+  }
+ },
+ "21|V7_full": {
+  "service": 0.6662312611171574,
+  "tail": 0.0,
+  "p10": 0.0,
+  "breach_reviews": 7,
+  "worst_unmet": 27.0,
+  "total_unmet": 129.1685019476601,
+  "inventory": 120.57544762865393,
+  "cost": 3126.9962965602767,
+  "wall": 125.03640629118308,
+  "policies": {
+   "deterministic_network": 3,
+   "projected_base_stock_proxy": 9,
+   "joint_recovery": 3,
+   "stochastic_network": 3,
+   "cvar_network": 2
+  }
+ },
+ "21|V8_escalated": {
+  "service": 0.6662312611171574,
+  "tail": 0.0,
+  "p10": 0.0,
+  "breach_reviews": 7,
+  "worst_unmet": 27.0,
+  "total_unmet": 129.1685019476601,
+  "inventory": 57.329599082002744,
+  "cost": 3120.3537150355387,
+  "wall": 83.61081620818004,
+  "policies": {
+   "deterministic_network": 2,
+   "projected_base_stock_proxy": 12,
+   "joint_recovery": 1,
+   "stochastic_network": 3,
+   "protected_network": 2
+  }
+ },
+ "21|V8_forced_hedge": {
+  "service": 0.6662312611171574,
+  "tail": 0.0,
+  "p10": 0.0,
+  "breach_reviews": 7,
+  "worst_unmet": 27.0,
+  "total_unmet": 129.1685019476601,
+  "inventory": 58.96575270331299,
+  "cost": 3119.0238479705476,
+  "wall": 93.36973762512207,
+  "policies": {
+   "deterministic_network": 3,
+   "projected_base_stock_proxy": 11,
+   "joint_recovery": 1,
+   "stochastic_network": 2,
+   "protected_network": 2,
+   "cvar_network": 1
+  }
+ },
+ "90|V7_full": {
+  "service": 0.8630415533059169,
+  "tail": 0.0,
+  "p10": 0.21990257827554363,
+  "breach_reviews": 4,
+  "worst_unmet": 22.0,
+  "total_unmet": 70.12272470737054,
+  "inventory": 211.727462116387,
+  "cost": 3315.6210018728507,
+  "wall": 269.80228979187086,
+  "policies": {
+   "deterministic_network": 6,
+   "projected_base_stock_proxy": 7,
+   "cvar_network": 3,
+   "joint_recovery": 5,
+   "stochastic_network": 2,
+   "hedged_network": 2,
+   "stress_network": 1
+  }
+ },
+ "90|V8_escalated": {
+  "service": 0.8630415533059169,
+  "tail": 0.0,
+  "p10": 0.21990257827554363,
+  "breach_reviews": 4,
+  "worst_unmet": 22.0,
+  "total_unmet": 70.12272470737054,
+  "inventory": 87.53885032867295,
+  "cost": 3293.479668531426,
+  "wall": 169.2739822906442,
+  "policies": {
+   "deterministic_network": 3,
+   "projected_base_stock_proxy": 17,
+   "cvar_network": 3,
+   "joint_recovery": 1,
+   "stochastic_network": 2
+  }
+ },
+ "90|V8_forced_hedge": {
+  "service": 0.8603772821903038,
+  "tail": 0.0,
+  "p10": 0.21990257827554363,
+  "breach_reviews": 5,
+  "worst_unmet": 22.0,
+  "total_unmet": 71.48683151856443,
+  "inventory": 86.6111959216324,
+  "cost": 3293.878586455852,
+  "wall": 182.12823229189962,
+  "policies": {
+   "deterministic_network": 2,
+   "projected_base_stock_proxy": 15,
+   "cvar_network": 5,
+   "joint_recovery": 1,
+   "stochastic_network": 2,
+   "stress_network": 1
+  }
+ },
+ "108|V7_full": {
+  "service": 0.8783565629444118,
+  "tail": 0.0,
+  "p10": 0.22059065024599678,
+  "breach_reviews": 4,
+  "worst_unmet": 22.0,
+  "total_unmet": 69.9449763069632,
+  "inventory": 152.9798124118438,
+  "cost": 3680.454754210206,
+  "wall": 376.6526307500899,
+  "policies": {
+   "deterministic_network": 5,
+   "projected_base_stock_proxy": 10,
+   "stochastic_network": 2,
+   "protected_network": 1,
+   "cvar_network": 6,
+   "joint_recovery": 5,
+   "hedged_network": 1
+  }
+ },
+ "108|V8_escalated": {
+  "service": 0.8783565629444118,
+  "tail": 0.0,
+  "p10": 0.22059065024599678,
+  "breach_reviews": 4,
+  "worst_unmet": 22.0,
+  "total_unmet": 69.9449763069632,
+  "inventory": 140.33788642074342,
+  "cost": 3683.912420409815,
+  "wall": 258.4400844173506,
+  "policies": {
+   "deterministic_network": 6,
+   "projected_base_stock_proxy": 14,
+   "stochastic_network": 5,
+   "cvar_network": 3,
+   "protected_network": 2
+  }
+ },
+ "108|V8_forced_hedge": {
+  "service": 0.8783565629444118,
+  "tail": 0.0,
+  "p10": 0.22059065024599678,
+  "breach_reviews": 4,
+  "worst_unmet": 22.0,
+  "total_unmet": 69.9449763069632,
+  "inventory": 140.33788642074336,
+  "cost": 3683.912420409815,
+  "wall": 271.4247422502376,
+  "policies": {
+   "deterministic_network": 6,
+   "projected_base_stock_proxy": 14,
+   "stochastic_network": 3,
+   "cvar_network": 3,
+   "protected_network": 2,
+   "hedged_network": 2
+  }
+ }
+}

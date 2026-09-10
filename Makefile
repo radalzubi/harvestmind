@@ -54,3 +54,9 @@ help:
 	@echo "  make demo        Full end-to-end demo (< 90s)"
 	@echo "  make lint        Run ruff + black checks"
 	@echo "  make clean       Remove generated files and DB"
+
+commercial-validate:
+	./scripts/commercial_validate.sh
+
+commercial-validate-full:
+	./scripts/commercial_validate.sh --full

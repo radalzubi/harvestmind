@@ -1,0 +1,50 @@
+
+==============================================================================
+DISRUPTION PRESETS vs MEASURED ARRIVALS (IMF PortWatch AIS)
+==============================================================================
+
+1. CHOKEPOINT TRANSITS, daily calls averaged by month
+   chokepoint                pre_crisis    covid_peak    ever_given     calm_2022  red_sea_2024  red_sea_late
+   Suez Canal                      1.00          0.98          1.05          1.27          0.80          0.75
+   Bab el-Mandeb Strait            1.00          1.00          1.05          1.25          0.66          0.64
+   Cape of Good Hope               1.00          1.11          1.04          0.92          1.75          1.87
+   Strait of Hormuz                1.00          1.11          1.18          1.37          1.30          0.96
+   (ratios to each chokepoint's own 2019 baseline)
+
+2. ROUTE ARRIVAL SHORTFALL, relative proxy, 1.00 = trailing norm
+   route       port            pre_crisis    covid_peak    ever_given     calm_2022  red_sea_2024  red_sea_late
+   aqaba       Aqaba                    -         0.990         0.917         0.962         0.743         0.957
+   saudi_land  Jeddah                   -         1.000         0.963         0.908         0.904         0.941
+   syria_land  Latakia                  -         0.806         0.701         0.771         0.736         0.922
+   iraq_land   Umm Qasr                 -         0.916         0.760         1.000         0.915         0.933
+
+3. PRESET ASSUMPTION vs MEASURED WORST SUSTAINED WINDOW
+   A preset can only be judged against a window in which its event
+   ACTUALLY HAPPENED. A tail scenario that did not occur in 2019-2026
+   is untested, not refuted, and is marked so rather than scored.
+
+   preset                     assumed  measured  verdict     basis
+   red_sea_houthi                0.75     0.743  consistent  red Sea crisis, Dec 2023 onward
+   aqaba_congestion              0.80     0.743  consistent  Iraq transit surge through Aqaba
+   saudi_land_disruption         0.60     0.904  UNTESTED    event absent from 2019-2026
+   northern_land_disruption      0.65     0.736  consistent  chronic Syria/Iraq overland instability
+   all_land_disruption           0.50     0.736  UNTESTED    event absent from 2019-2026
+   regional_escalation           0.45     0.736  UNTESTED    event absent from 2019-2026
+
+   'measured' is the worst event-window mean arrival ratio on any
+   affected route. Arrivals are NOT fills; this bounds the order of
+   magnitude, it does not measure the preset.
+
+4. DISRUPTION FREQUENCY AND DURATION vs the simulator's regime
+   simulator assumes: 13.8% of weeks disrupted, mean run 3.6 weeks
+   route         months  % disrupted  mean run (mo)  max run
+   aqaba             79       17.7%            1.8        3
+   saudi_land        79       10.1%            1.6        2
+   syria_land        79       38.0%            3.3        7
+   iraq_land         79       16.5%            1.6        3
+
+   A month below 85% of its trailing norm counts as disrupted.
+   Monthly runs are not directly comparable to weekly ones: a run
+   of 1 month spans 4.3 weeks, so the simulator's 3.6-week mean is
+   SHORTER than anything this measurement can resolve.
+

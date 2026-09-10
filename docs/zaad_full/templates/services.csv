@@ -1,0 +1,2 @@
+known_at,id,sku,location,customer,target,selling_price,sla_per_unmet,metric
+"""2026-08-31T00:00:00Z""","""retail_A""","""A""","""branch""","""customer""",0.95,10.0,1.0,"""unit_fill"""

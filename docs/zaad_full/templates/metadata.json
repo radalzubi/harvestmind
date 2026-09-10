@@ -1,0 +1,53 @@
+{
+  "schema_version": "zaad.network.v2",
+  "operator_id": "synthetic_zaad",
+  "as_of": "2026-09-01T00:00:00Z",
+  "currency": "USD",
+  "period_days": 7,
+  "horizon": 6,
+  "signals": [],
+  "liquidity": {
+    "known_at": "2026-08-31T00:00:00Z",
+    "opening_cash": 2000.0,
+    "minimum_cash": 100.0,
+    "credit_limit": 1000.0,
+    "opening_debt": 0.0,
+    "interest_per_period": 0.002,
+    "known_receivables": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "other_payments": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "stresses": [
+    {
+      "name": "tail",
+      "fill_multiplier": 0.8,
+      "extra_lead_days": 14,
+      "demand_multiplier": 1.1,
+      "recovery_period": 6,
+      "shared_failure": true,
+      "affected_resources": []
+    }
+  ],
+  "seed": 12001,
+  "scenarios": 3,
+  "max_solve_seconds": 15.0,
+  "solver": "highs",
+  "downside_cost_tolerance": 0.05,
+  "service_tolerance": 0.01,
+  "force_unit_fills": false,
+  "mode": "RECOVER",
+  "evidence_label": "SYNTHETIC"
+}

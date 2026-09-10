@@ -29,7 +29,8 @@ def weekly_weather_frame(
     where = "WHERE county_fips = ?" if county_fips else ""
     params = [county_fips] if county_fips else []
     df = conn.execute(
-        f"""
+        (  # nosec B608 - filters parameterised
+            f"""
         SELECT DATE_TRUNC('week', obs_date)          AS week_start,
                AVG(tavg_c)                           AS tavg_c,
                SUM(precip_mm)                        AS precip_mm,
@@ -42,7 +43,7 @@ def weekly_weather_frame(
         {where}
         GROUP BY 1
         ORDER BY 1
-        """,
+        """),  # nosec B608 - filters parameterised
         params,
     ).df()
     if df.empty:

@@ -1,0 +1,42 @@
+
+=== review 1 budget=5.0s wall=20.6s state=PROTECT selected=projected_base_stock_proxy
+  stochastic_network     status=FEASIBLE_TIME_LIMIT  secs=5.1 gap=0.03728306367776049 bound=2393.9104046440034 nodes=238 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=5.0s residual=3.637978807091713e-12 int_viol=6.517084023186839e-15 bound_viol=1.1368683772161603e-13 frac_ints>1e-6=0 >1e-9=0 fun=2486.6191861017774 gap=0.03728306367776049 nodes=238
+  cvar_network           status=NO_FEASIBLE_SOLUTION secs=5.0 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=5.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  protected_network      status=NO_FEASIBLE_SOLUTION secs=5.0 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=5.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  hedged_network         status=NO_FEASIBLE_SOLUTION secs=5.0 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=1 elapsed=5.0s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  stress_network         status=INFEASIBLE           secs=0.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=2 elapsed=0.1s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  outcomes: {'stochastic_network': ('PHYSICALLY_VALID_FTL', 'feasible, unproved, physically valid'), 'protected_network': ('NO_INCUMBENT', 'no feasible incumbent inside the solve budget'), 'hedged_network': ('NO_INCUMBENT', 'no feasible incumbent inside the solve budget'), 'stress_network': ('INFEAS
+
+=== review 1 budget=20.0s wall=80.6s state=PROTECT selected=projected_base_stock_proxy
+  stochastic_network     status=FEASIBLE_TIME_LIMIT  secs=20.0 gap=0.025513011620068218 bound=2393.9104046440034 nodes=2868 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=20.0s residual=1.3983481039758772e-11 int_viol=1.3988810110276972e-14 bound_viol=4.263256414560601e-14 frac_ints>1e-6=0 >1e-9=0 fun=2456.5852937901604 gap=0.025513011620068218 nodes=2868
+  cvar_network           status=FEASIBLE_TIME_LIMIT  secs=20.0 gap=0.02023576068007878 bound=2897.4864982168338 nodes=1777 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=20.0s residual=8.185452315956354e-12 int_viol=8.215650382226158e-15 bound_viol=1.0658141036401503e-13 frac_ints>1e-6=0 >1e-9=0 fun=2957.3303269652415 gap=0.02023576068007878 nodes=1777
+  protected_network      status=FEASIBLE_TIME_LIMIT  secs=20.0 gap=0.025916254320557823 bound=2393.9104046444404 nodes=1278 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=20.0s residual=5.7980287238024175e-12 int_viol=5.773159728050814e-15 bound_viol=1.2434497875801753e-13 frac_ints>1e-6=0 >1e-9=0 fun=2457.602249562887 gap=0.025916254320557823 nodes=1278
+  hedged_network         status=FEASIBLE_TIME_LIMIT  secs=20.0 gap=0.03421486676003956 bound=2407.5408486441443 nodes=714 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=20.0s residual=5.4569682106375694e-12 int_viol=4.440892098500626e-15 bound_viol=4.618527782440651e-14 frac_ints>1e-6=0 >1e-9=0 fun=2492.8327904235434 gap=0.03421486676003956 nodes=714
+  stress_network         status=INFEASIBLE           secs=0.1 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=2 elapsed=0.1s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  outcomes: {'stochastic_network': ('PHYSICALLY_VALID_FTL', 'feasible, unproved, physically valid'), 'protected_network': ('PHYSICALLY_VALID_FTL', 'feasible, unproved, physically valid'), 'hedged_network': ('PHYSICALLY_VALID_FTL', 'feasible, unproved, physically valid'), 'stress_network': ('INFEASIB
+=== scaled budget
+
+=== review 1 budget=scaleds wall=65.9s state=PROTECT selected=projected_base_stock_proxy
+  stochastic_network     status=FEASIBLE_TIME_LIMIT  secs=16.3 gap=0.025513011620068218 bound=2393.9104046440034 nodes=2064 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=16.3s residual=1.3983481039758772e-11 int_viol=1.3988810110276972e-14 bound_viol=4.263256414560601e-14 frac_ints>1e-6=0 >1e-9=0 fun=2456.5852937901604 gap=0.025513011620068218 nodes=2064
+  cvar_network           status=FEASIBLE_TIME_LIMIT  secs=16.3 gap=0.02031898235893445 bound=2897.4864982168338 nodes=891 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=16.3s residual=1.375610736431554e-11 int_viol=1.3766765505351941e-14 bound_viol=1.1635137298071643e-13 frac_ints>1e-6=0 >1e-9=0 fun=2957.5815454642316 gap=0.02031898235893445 nodes=891
+  protected_network      status=FEASIBLE_TIME_LIMIT  secs=16.4 gap=0.02620972539135106 bound=2393.9104046444404 nodes=268 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=16.3s residual=8.29913915367797e-12 int_viol=2.463000617037719e-14 bound_viol=4.920668940799336e-13 frac_ints>1e-6=0 >1e-9=0 fun=2458.342896889698 gap=0.02620972539135106 nodes=268
+  hedged_network         status=FEASIBLE_TIME_LIMIT  secs=16.4 gap=0.03421486676003956 bound=2407.5408486441443 nodes=88 phys_valid=True failures=[]
+      solve[cost] status=1 elapsed=16.3s residual=5.4569682106375694e-12 int_viol=4.440892098500626e-15 bound_viol=4.618527782440651e-14 frac_ints>1e-6=0 >1e-9=0 fun=2492.8327904235434 gap=0.03421486676003956 nodes=88
+  stress_network         status=INFEASIBLE           secs=0.2 gap=None bound=None nodes=None phys_valid=False failures=[]
+      solve[cost] status=2 elapsed=0.1s residual=None int_viol=None bound_viol=None frac_ints>1e-6=None >1e-9=None fun=None gap=None nodes=None
+  outcomes: {'stochastic_network': ('PHYSICALLY_VALID_FTL', 'feasible, unproved, physically valid'), 'protected_network': ('PHYSICALLY_VALID_FTL', 'feasible, unproved, physically valid'), 'hedged_network': ('PHYSICALLY_VALID_FTL', 'feasible, unproved, physically valid'), 'stress_network': ('INFEASIB
+
+[exited with code 0]

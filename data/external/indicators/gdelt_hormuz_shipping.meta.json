@@ -1,0 +1,7 @@
+{
+ "fetched_at": "2026-09-04T14:17:12.518441+00:00",
+ "source": "GDELT DOC 2.0 timelinevol",
+ "url": "https://api.gdeltproject.org/api/v2/doc/doc?query=%28%22Strait%20of%20Hormuz%22%20OR%20Hormuz%29%20shipping&mode=timelinevol&timespan=24m&format=json",
+ "rows": 699,
+ "provenance": "REAL_PUBLIC"
+}

@@ -42,7 +42,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from backtesting.rolling_origin_engine import BacktestConfig, RollingOriginEngine
+from backtesting.rolling_origin_engine import BacktestConfig, RollingOriginEngine  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
 DEFAULT_DB = ROOT / "harvestmind.duckdb"
 DEFAULT_OUT = ROOT / "web" / "src" / "lib" / "backtest_summary.json"

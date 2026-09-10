@@ -1,0 +1,1772 @@
+{
+ "name": "P_high_opening_stock",
+ "seed": 41001,
+ "status": "COMPLETE",
+ "reviews": [
+  {
+   "review": 0,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 600.0,
+     "pipeline_units": 0,
+     "inherited_on_hand": 600.0,
+     "mu": 98.92307692307692,
+     "window": 2,
+     "protection_units": 14.872879896543491,
+     "lean_baseline_units": 14.557513210073521,
+     "incremental_protection_units": 0.3153666864699698,
+     "ratio_protection_to_lean": 1.021663499934298,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.40366705622736
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 1,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 501.7531777804732,
+     "pipeline_units": 0,
+     "inherited_on_hand": 501.7531777804732,
+     "mu": 99.24975555534822,
+     "window": 2,
+     "protection_units": 14.87028713753814,
+     "lean_baseline_units": 14.437755263687734,
+     "incremental_protection_units": 0.43253187385040626,
+     "ratio_protection_to_lean": 1.0299583879869652,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.93726637438417
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 2,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 409.40116489411804,
+     "pipeline_units": 0,
+     "inherited_on_hand": 409.40116489411804,
+     "mu": 99.27683346968323,
+     "window": 2,
+     "protection_units": 14.715076231033562,
+     "lean_baseline_units": 14.50072351204296,
+     "incremental_protection_units": 0.21435271899060204,
+     "ratio_protection_to_lean": 1.0147822085437723,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 213.0543904514094
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 3,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 305.2595333414196,
+     "pipeline_units": 0,
+     "inherited_on_hand": 305.2595333414196,
+     "mu": 100.36465128142926,
+     "window": 2,
+     "protection_units": 14.630822896292585,
+     "lean_baseline_units": 14.449968708027134,
+     "incremental_protection_units": 0.1808541882654513,
+     "ratio_protection_to_lean": 1.0125158878832023,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 215.17927127088566
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     112.4
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 4,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 306.9640828625035,
+     "pipeline_units": 0,
+     "inherited_on_hand": 197.18802889994015,
+     "mu": 100.21630546923537,
+     "window": 2,
+     "protection_units": 14.729511314763144,
+     "lean_baseline_units": 14.553110944566852,
+     "incremental_protection_units": 0.1764003701962924,
+     "ratio_protection_to_lean": 1.0121211451536518,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 214.98572188303757
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     100.2
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 5,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 301.90614497602263,
+     "pipeline_units": 0,
+     "inherited_on_hand": 95.01133379163228,
+     "mu": 99.76835893910521,
+     "window": 2,
+     "protection_units": 14.619379639514262,
+     "lean_baseline_units": 14.444771297514565,
+     "incremental_protection_units": 0.1746083419996971,
+     "ratio_protection_to_lean": 1.0120879963000688,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 213.981489175725
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     99.8
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 6,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 303.8072907984323,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.02081169103879,
+     "window": 2,
+     "protection_units": 14.536091904194585,
+     "lean_baseline_units": 14.363517046222203,
+     "incremental_protection_units": 0.17257485797238203,
+     "ratio_protection_to_lean": 1.0120148051077624,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.40514042829977
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     308.8
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 7,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 519.3343096554463,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.82251476777525,
+     "window": 2,
+     "protection_units": 14.84300112265136,
+     "lean_baseline_units": 14.64864892666505,
+     "incremental_protection_units": 0.19435219598631015,
+     "ratio_protection_to_lean": 1.0132675850830535,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.29367846221555
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 8,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 413.22774165835733,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.13840461370515,
+     "window": 2,
+     "protection_units": 14.874810758531824,
+     "lean_baseline_units": 14.659389225869685,
+     "incremental_protection_units": 0.21542153266213937,
+     "ratio_protection_to_lean": 1.0146951233331045,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.93619845327999
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 9,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 314.98091943883054,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.00354478443798,
+     "window": 2,
+     "protection_units": 14.76430161660961,
+     "lean_baseline_units": 14.550828142847749,
+     "incremental_protection_units": 0.21347347376186043,
+     "ratio_protection_to_lean": 1.014670881386692,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.5579177117237
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 10,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 226.55877944125643,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.2667863227129,
+     "window": 2,
+     "protection_units": 15.39981586001277,
+     "lean_baseline_units": 14.811603247066756,
+     "incremental_protection_units": 0.5882126129460143,
+     "ratio_protection_to_lean": 1.0397129603820912,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.34517589249256
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     191.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 11,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 325.1134713486704,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.8350229720948,
+     "window": 2,
+     "protection_units": 15.393215219432207,
+     "lean_baseline_units": 14.93751104796702,
+     "incremental_protection_units": 0.4557041714651877,
+     "ratio_protection_to_lean": 1.0305073696683362,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 208.60755699215662
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 12,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 222.93677624036252,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.46399951888772,
+     "window": 2,
+     "protection_units": 15.393969342439734,
+     "lean_baseline_units": 14.851128352518861,
+     "incremental_protection_units": 0.5428409899208724,
+     "ratio_protection_to_lean": 1.0365521714603458,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.7791273902943
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 13,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 130.60395144003294,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.48960142660538,
+     "window": 2,
+     "protection_units": 15.390711769966126,
+     "lean_baseline_units": 14.883519473128905,
+     "incremental_protection_units": 0.5071922968372213,
+     "ratio_protection_to_lean": 1.0340774436955533,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.86272232633965
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     81.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 14,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 110.70933859612,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.65228941643524,
+     "window": 2,
+     "protection_units": 15.263098344827306,
+     "lean_baseline_units": 14.779433257891784,
+     "incremental_protection_units": 0.4836650869355221,
+     "ratio_protection_to_lean": 1.0327255503303727,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.08401209076226
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     105.6
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 15,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 116.69011009159651,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.9596188439327,
+     "window": 2,
+     "protection_units": 15.3132093413559,
+     "lean_baseline_units": 14.701258735446649,
+     "incremental_protection_units": 0.6119506059092519,
+     "ratio_protection_to_lean": 1.0416257285802173,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.62049642331206
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     80.5
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 16,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 98.33392827561896,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.5144572449227,
+     "window": 2,
+     "protection_units": 15.036686903223222,
+     "lean_baseline_units": 14.597398446376662,
+     "incremental_protection_units": 0.43928845684656004,
+     "ratio_protection_to_lean": 1.0300936128078082,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.62631293622206
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     97.5
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 17,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 95.23192149643813,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.69341403373556,
+     "window": 2,
+     "protection_units": 17.402666435893874,
+     "lean_baseline_units": 14.820609667376099,
+     "incremental_protection_units": 2.5820567685177753,
+     "ratio_protection_to_lean": 1.1742206850101136,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.20743773484722
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     217.1
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 18,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 211.61634555237936,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.32581769433081,
+     "window": 2,
+     "protection_units": 19.343064362058747,
+     "lean_baseline_units": 15.028641905481,
+     "incremental_protection_units": 4.314422456577747,
+     "ratio_protection_to_lean": 1.2870799958979833,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 211.68027729414263
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     98.3
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 19,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 207.42818074436087,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 104.87804556124395,
+     "window": 2,
+     "protection_units": 15.994228635493778,
+     "lean_baseline_units": 14.976839043268036,
+     "incremental_protection_units": 1.0173895922257419,
+     "ratio_protection_to_lean": 1.0679308623993693,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 224.73293016575593
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     18.4
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 20,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 117.05779422251848,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 107.38708971342682,
+     "window": 2,
+     "protection_units": 15.861207916880801,
+     "lean_baseline_units": 15.085957432818761,
+     "incremental_protection_units": 0.77525048406204,
+     "ratio_protection_to_lean": 1.0513888818468704,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 229.8601368596724
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     219.7
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 21,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 222.28357677563795,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 107.3870897134268,
+     "window": 2,
+     "protection_units": 15.839004807044251,
+     "lean_baseline_units": 15.260595480211071,
+     "incremental_protection_units": 0.5784093268331798,
+     "ratio_protection_to_lean": 1.0379021465828921,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 230.03477490706467
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     107.4
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 22,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 237.78332805168156,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 102.36900140906107,
+     "window": 2,
+     "protection_units": 16.08127747986907,
+     "lean_baseline_units": 15.343157015201657,
+     "incremental_protection_units": 0.7381204646674124,
+     "ratio_protection_to_lean": 1.0481074699252637,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 220.0811598333238
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 23,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 143.4432679296057,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.86357491775135,
+     "window": 2,
+     "protection_units": 16.43492385304154,
+     "lean_baseline_units": 15.303941093868254,
+     "incremental_protection_units": 1.1309827591732855,
+     "ratio_protection_to_lean": 1.0739014056729759,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 217.03109092937095
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     76.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 24,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 111.88057768090914,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.36176608731478,
+     "window": 2,
+     "protection_units": 16.420036760020036,
+     "lean_baseline_units": 15.306329689415113,
+     "incremental_protection_units": 1.1137070706049226,
+     "ratio_protection_to_lean": 1.0727612101139499,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 216.02986186404468
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     110.1
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 25,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 121.3519527543338,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.28238246014067,
+     "window": 2,
+     "protection_units": 16.399871284095894,
+     "lean_baseline_units": 15.196415737799887,
+     "incremental_protection_units": 1.2034555462960075,
+     "ratio_protection_to_lean": 1.0791933813249466,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.76118065808123
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     79.6
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 26,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 95.90663607901412,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.20189121920579,
+     "window": 2,
+     "protection_units": 16.461424434471382,
+     "lean_baseline_units": 15.134811735064522,
+     "incremental_protection_units": 1.3266126994068603,
+     "ratio_protection_to_lean": 1.0876530691381743,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 215.5385941734761
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     123.2
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 27,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 120.93896193234151,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 102.60818435833454,
+     "window": 2,
+     "protection_units": 16.45726442652219,
+     "lean_baseline_units": 15.099469686470483,
+     "incremental_protection_units": 1.3577947400517072,
+     "ratio_protection_to_lean": 1.0899233395771726,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 220.31583840313957
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     86.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 28,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 110.60798910400995,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.55161431016009,
+     "window": 2,
+     "protection_units": 16.588266808343317,
+     "lean_baseline_units": 15.059719696254744,
+     "incremental_protection_units": 1.5285471120885727,
+     "ratio_protection_to_lean": 1.1014990413446215,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 214.16294831657493
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     109.3
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 29,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 114.20137116532659,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 101.02282043297032,
+     "window": 2,
+     "protection_units": 15.58754103925256,
+     "lean_baseline_units": 15.019793435960565,
+     "incremental_protection_units": 0.5677476032919948,
+     "ratio_protection_to_lean": 1.0377999608125559,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 217.0654343019012
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     101.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 30,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 107.94430939842246,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 101.51322247390706,
+     "window": 2,
+     "protection_units": 14.99403681472094,
+     "lean_baseline_units": 14.973002908701732,
+     "incremental_protection_units": 0.02103390601920907,
+     "ratio_protection_to_lean": 1.0014047887486206,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 217.99944785651587
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     101.5
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 31,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 110.77366403262285,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 99.55161431016006,
+     "window": 2,
+     "protection_units": 14.920559165853557,
+     "lean_baseline_units": 14.903580235165064,
+     "incremental_protection_units": 0.01697893068849332,
+     "ratio_protection_to_lean": 1.00113925180531,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 214.0068088554852
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     206.1
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 32,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 210.99308651373815,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.93350082277544,
+     "window": 2,
+     "protection_units": 14.846580560662158,
+     "lean_baseline_units": 14.829102286393603,
+     "incremental_protection_units": 0.017478274268555083,
+     "ratio_protection_to_lean": 1.001178646821028,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 216.6961039319445
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     5.6
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 33,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 108.56847033770669,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.89486556368198,
+     "window": 2,
+     "protection_units": 14.855382976197895,
+     "lean_baseline_units": 14.882798120164287,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9981579308040704,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 216.67252924752825
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     105.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 34,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 101.74755493478588,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 100.70182758753108,
+     "window": 2,
+     "protection_units": 14.930062312219047,
+     "lean_baseline_units": 14.93079907697419,
+     "incremental_protection_units": 0.0,
+     "ratio_protection_to_lean": 0.9999506547003048,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 216.33445425203635
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     112.7
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 35,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 108.38955115502783,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 101.90192384628143,
+     "window": 2,
+     "protection_units": 14.952864452663492,
+     "lean_baseline_units": 14.929359798067923,
+     "incremental_protection_units": 0.02350465459556972,
+     "ratio_protection_to_lean": 1.0015743913277924,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 218.7332074906308
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     100.5
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 36,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 99.2696226959399,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 102.9441076065898,
+     "window": 2,
+     "protection_units": 14.993723931557778,
+     "lean_baseline_units": 14.979700025131951,
+     "incremental_protection_units": 0.014023906425826738,
+     "ratio_protection_to_lean": 1.0009361940761363,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 220.86791523831155
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     112.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 37,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 110.24990024419512,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 102.63115190364245,
+     "window": 2,
+     "protection_units": 14.91637618857645,
+     "lean_baseline_units": 14.906345926128814,
+     "incremental_protection_units": 0.010030262447635607,
+     "ratio_protection_to_lean": 1.000672885393734,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 220.1686497334137
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     225.8
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 38,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 242.21854520439553,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 101.60208030410011,
+     "window": 2,
+     "protection_units": 15.020480531419437,
+     "lean_baseline_units": 15.01688688393681,
+     "incremental_protection_units": 0.0035936474826279152,
+     "ratio_protection_to_lean": 1.000239307088773,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 218.22104749213705
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     191.7
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 39,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 337.3295698886993,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 98.6929546619921,
+     "window": 2,
+     "protection_units": 15.013062777441164,
+     "lean_baseline_units": 14.983750998893457,
+     "incremental_protection_units": 0.02931177854770617,
+     "ratio_protection_to_lean": 1.0019562376970808,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 212.36966032287768
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     98.7
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 40,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 343.5666854003141,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 94.2903382739058,
+     "window": 2,
+     "protection_units": 15.089234659356743,
+     "lean_baseline_units": 15.060496777371533,
+     "incremental_protection_units": 0.028737881985209768,
+     "ratio_protection_to_lean": 1.0019081629517288,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 203.64117332518313
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 41,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 251.2825245364914,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 91.78261651130192,
+     "window": 2,
+     "protection_units": 15.1105440389933,
+     "lean_baseline_units": 15.078185238792303,
+     "incremental_protection_units": 0.03235880020099735,
+     "ratio_protection_to_lean": 1.0021460672944742,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 198.64341826139616
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     91.8
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 42,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 241.68721388474012,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.52871807644556,
+     "window": 2,
+     "protection_units": 15.070310731916225,
+     "lean_baseline_units": 15.040573661495316,
+     "incremental_protection_units": 0.029737070420909006,
+     "ratio_protection_to_lean": 1.0019771234189716,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 210.09800981438644
+    }
+   ],
+   "purchases": [],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 43,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 151.40923043100054,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 108.0,
+     "window": 2,
+     "protection_units": 17.69847669955234,
+     "lean_baseline_units": 15.21355654938705,
+     "incremental_protection_units": 2.4849201501652907,
+     "ratio_protection_to_lean": 1.1633359130784844,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 231.21355654938705
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     108.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 44,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 165.6156342229973,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 106.0,
+     "window": 2,
+     "protection_units": 18.19331016068115,
+     "lean_baseline_units": 15.2259080047729,
+     "incremental_protection_units": 2.9674021559082497,
+     "ratio_protection_to_lean": 1.1948916383166148,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 227.2259080047729
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     106.0
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 45,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 179.40575427679659,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 94.31134796617835,
+     "window": 2,
+     "protection_units": 15.245245272272141,
+     "lean_baseline_units": 15.228721428327399,
+     "incremental_protection_units": 0.016523843944742822,
+     "ratio_protection_to_lean": 1.001085044730939,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 203.85141736068408
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     94.3
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 46,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 172.95900175491911,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 97.12314955257557,
+     "window": 2,
+     "protection_units": 17.45463605294084,
+     "lean_baseline_units": 15.17624272067276,
+     "incremental_protection_units": 2.278393332268081,
+     "ratio_protection_to_lean": 1.150128946551738,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 209.42254182582388
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     97.1
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 47,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 176.57062269250383,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 95.9228196954785,
+     "window": 2,
+     "protection_units": 17.448361926065633,
+     "lean_baseline_units": 15.189442504728174,
+     "incremental_protection_units": 2.2589194213374597,
+     "ratio_protection_to_lean": 1.1487164140905306,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 207.03508189568515
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     95.9
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 48,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 159.00173149342524,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 96.2622748271887,
+     "window": 2,
+     "protection_units": 20.088899022896936,
+     "lean_baseline_units": 15.32568671149264,
+     "incremental_protection_units": 4.7632123114042955,
+     "ratio_protection_to_lean": 1.3107992745168404,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 207.85023636587005
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     96.3
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 49,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 163.86281175088166,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 94.82097905668573,
+     "window": 2,
+     "protection_units": 20.07768562219032,
+     "lean_baseline_units": 15.432190105665345,
+     "incremental_protection_units": 4.645495516524974,
+     "ratio_protection_to_lean": 1.301026327742007,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 205.0741482190368
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     94.8
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 50,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 167.20792948634394,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 93.80840644709406,
+     "window": 2,
+     "protection_units": 17.43148405391042,
+     "lean_baseline_units": 15.535023907222051,
+     "incremental_protection_units": 1.8964601466883693,
+     "ratio_protection_to_lean": 1.1220764227988556,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 203.15183680141016
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     93.8
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  {
+   "review": 51,
+   "rows": [
+    {
+     "sku": "A",
+     "location": "branch",
+     "on_hand": 168.9175124161389,
+     "pipeline_units": 0,
+     "inherited_on_hand": null,
+     "mu": 93.72176187292536,
+     "window": 2,
+     "protection_units": 17.43170738977315,
+     "lean_baseline_units": 15.63766111948986,
+     "incremental_protection_units": 1.794046270283289,
+     "ratio_protection_to_lean": 1.1147259974861135,
+     "drivers": {},
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "regime": "LEAN",
+     "flags": [],
+     "risk_active": false,
+     "decaying": false,
+     "active_drivers": [],
+     "lean_base_stock_units": 203.08118486534056
+    }
+   ],
+   "purchases": [
+    [
+     "src_A",
+     93.7
+    ]
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  }
+ ]
+}

@@ -1,0 +1,28 @@
+# P1 authoritative final result table (final code; pre-fix record beside it, never overwritten)
+
+Legacy: eleven rolling reviews of a shrinking twelve-period plan, realised ledger (declared salvage). Declared benchmark: constant rolling twelve-period planning horizon, 52 reviews, landed-cost continuation of the residual (pre-registered in `P1_BENCHMARK_PREREGISTRATION.md`). PRE-FIX = `de4e771` product policy; FINAL-CODE = lot-sizing terminal valuation on P1-owned reviews with the consistent ledger key. Seed means over 41001-41003; ZAAD against the best baseline.
+
+| fixture | legacy PRE-FIX delta | legacy FINAL delta | legacy FINAL verdict | declared PRE-FIX delta @52 | **declared FINAL @52** (ZAAD / best baseline) | FINAL verdict | stable (max dev 40..52) | service | unmet | avg inv units | purchases | orders (ZAAD / best base) | freight | carrying | terminal credit (landed) | P1 / P0 owned reviews | actions | abstentions |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| A_no_terms_good_incumbent | +0.43% | +0.23% | PASS | +0.87% | **+0.80%** (26,642 / incumbent 26,431) | PASS | yes (0.22 pp) | 0.989 | 55.1 | 17 | 25,733 | 51.3 / 52.0 | 0 | 13 | 543 | 153 / 3 | 41 | 17 |
+| B_fixed_order_cost_replace_sold | -10.70% | +6.17% | FAIL ['zaad_not_worse'] | +2.49% | **+1.30%** (28,013 / economic_lot 27,654) | PASS at 52 and at every endpoint 40..52; magnitude not converged (class E) | NO (1.71 pp) | 1.000 | 0.0 | 985 | 31,677 | 3.7 / 3.0 | 0 | 736 | 6,067 | 153 / 3 | 156 | 0 |
+| C_moq_four_weeks | +3.61% | +0.69% | PASS | +0.30% | **+0.45%** (26,551 / reorder_point 26,431) | PASS | yes (0.24 pp) | 1.000 | 0.0 | 340 | 27,310 | 12.7 / 14.0 | 0 | 254 | 1,763 | 153 / 3 | 147 | 0 |
+| D_case_multiple | -0.58% | -0.67% | PASS | +0.63% | **+0.66%** (26,434 / incumbent 26,261) | PASS | yes (0.18 pp) | 0.995 | 24.7 | 32 | 25,920 | 52.0 / 52.0 | 0 | 24 | 569 | 153 / 3 | 78 | 6 |
+| E_pallet_multiple | -0.00% | +0.00% | PASS | -0.10% | **-0.04%** (27,890 / incumbent 27,901) | PASS | yes (0.09 pp) | 1.000 | 1.8 | 109 | 26,333 | 26.3 / 26.7 | 1,580 | 81 | 877 | 153 / 3 | 40 | 7 |
+| F_mov_two_skus | +0.24% | -0.85% | PASS | +0.72% | **+0.68%** (53,017 / periodic:2 52,657) | PASS | yes (0.17 pp) | 1.000 | 3.5 | 662 | 56,317 | 26.0 / 26.0 | 0 | 495 | 5,340 | 153 / 3 | 124 | 0 |
+| G_freight_tiers | -10.01% | -0.14% | PASS | +6.18% | **-1.77%** (62,296 / economic_lot 63,421) | PASS | yes (0.52 pp) | 0.999 | 7.4 | 1166 | 58,785 | 6.7 / 7.0 | 9,533 | 872 | 9,154 | 153 / 3 | 155 | 0 |
+| H_per_pallet_freight | -3.73% | -4.84% | PASS | -1.27% | **-2.14%** (29,628 / periodic:2 30,277) | PASS | yes (0.16 pp) | 0.997 | 13.0 | 125 | 26,162 | 32.0 / 26.0 | 3,320 | 93 | 861 | 153 / 3 | 127 | 28 |
+| I_max_pallets_ftl_cap | +0.53% | +0.16% | PASS | +7.14% | **+0.11%** (40,706 / economic_lot 40,662) | PASS | yes (0.18 pp) | 0.999 | 6.1 | 334 | 27,000 | 12.0 / 12.0 | 13,200 | 250 | 2,371 | 153 / 3 | 156 | 0 |
+| J_net60_cost_of_capital | -11.06% | +0.57% | PASS | +0.15% | **+1.35%** (27,824 / economic_lot 27,454) | PASS at 52 and at every endpoint 40..52; magnitude not converged (class E) | NO (1.13 pp) | 1.000 | 2.1 | 557 | 30,540 | 6.7 / 5.0 | 0 | 417 | 4,968 | 153 / 3 | 138 | 0 |
+| K_deposit_early_cash | -11.20% | +2.46% | FAIL ['zaad_not_worse'] | +0.15% | **+0.39%** (27,573 / economic_lot 27,467) | PASS at 52 and at every endpoint 40..52; magnitude not converged (class E) | NO (1.10 pp) | 1.000 | 0.0 | 548 | 29,296 | 6.0 / 5.0 | 0 | 410 | 3,853 | 153 / 3 | 154 | 0 |
+| L_high_holding_rate | -10.16% | +2.63% | FAIL ['zaad_not_worse'] | +0.81% | **-0.04%** (27,922 / economic_lot 27,933) | PASS | yes (0.49 pp) | 1.000 | 0.0 | 469 | 28,574 | 6.7 / 6.0 | 0 | 702 | 3,103 | 153 / 3 | 156 | 0 |
+| M_order_calendar_wednesday | -0.54% | -1.07% | PASS | +0.05% | **+0.02%** (26,778 / incumbent 26,773) | PASS | yes (0.16 pp) | 0.988 | 64.1 | 83 | 26,560 | 50.7 / 52.0 | 0 | 62 | 1,395 | 14 / 142 | 135 | 3 |
+| N_long_lead_21_days | -0.71% | -1.45% | FAIL ['categories'] | +1.07% | **+0.40%** (26,593 / incumbent 26,488) | proven invalid (kept); cost within tolerance | yes (0.13 pp) | 0.991 | 45.0 | 36 | 25,767 | 51.0 / 52.0 | 0 | 27 | 1,513 | 152 / 4 | 20 | 45 |
+| O_low_opening_stock | +0.46% | +0.64% | PASS | +0.09% | **+0.30%** (27,087 / reorder_point 27,006) | PASS | yes (0.08 pp) | 0.979 | 108.6 | 79 | 26,404 | 39.0 / 52.0 | 0 | 59 | 834 | 119 / 37 | 126 | 24 |
+| P_high_opening_stock | +0.29% | +1.09% | PASS | +0.16% | **+0.29%** (26,470 / reorder_point 26,394) | PASS | yes (0.18 pp) | 0.994 | 28.6 | 95 | 24,003 | 41.3 / 47.7 | 0 | 71 | 962 | 152 / 4 | 107 | 29 |
+| Q_volatile_demand_high_target | +0.85% | +0.85% | PASS | +0.19% | **+0.19%** (25,581 / incumbent 25,532) | PASS | yes (0.04 pp) | 0.991 | 45.9 | 73 | 24,973 | 49.3 / 51.7 | 0 | 55 | 771 | 72 / 84 | 19 | 0 |
+| R_asymmetric_prices_mov | -0.05% | +0.04% | FAIL ['categories'] | +0.65% | **+0.36%** (290,577 / incumbent 289,535) | proven invalid (kept); cost within tolerance | yes (0.06 pp) | 0.994 | 58.3 | 75 | 288,741 | 49.3 / 52.0 | 0 | 246 | 10,081 | 152 / 4 | 26 | 93 |
+| S_cash_constrained | +0.26% | +6.58% | FAIL ['zaad_not_worse'] | invalid | INVALID at 52 (all five policies complete only to W = 12; diagnostic there +3.72%) | PROVEN INVALID at the declared benchmark | - | | | | | | | | | | | |
+| T_combined_realistic | -11.47% | -4.10% | PASS | +6.87% | **-0.13%** (63,526 / economic_lot 63,612) | PASS | yes (0.84 pp) | 1.000 | 0.0 | 1132 | 57,640 | 6.7 / 6.7 | 9,533 | 1,016 | 7,783 | 153 / 3 | 154 | 0 |
+
+Runtime, final rolling run, ZAAD reviews: n 3010, p50 1.29 s, p90 4.19 s, p95 5.87 s, max 79.3 s.

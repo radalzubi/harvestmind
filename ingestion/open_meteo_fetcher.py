@@ -21,6 +21,8 @@ network is unavailable — same posture as the other connectors.
 
 from __future__ import annotations
 
+from typing import cast, Any
+
 from datetime import date, timedelta
 
 import pandas as pd
@@ -49,7 +51,7 @@ def geocode(name: str, timeout: int = 20) -> tuple[float, float] | None:
     try:
         resp = requests.get(
             GEOCODE_URL,
-            params={"name": name, "count": 1, "language": "en", "format": "json"},
+            params=cast(dict[str, Any], {"name": name, "count": 1, "language": "en", "format": "json"}),
             timeout=timeout,
         )
         resp.raise_for_status()
@@ -80,7 +82,7 @@ def fetch_history(
     end = end_date or (date.today() - timedelta(days=5))
     start = start_date or (end - timedelta(days=3653))
 
-    params = {
+    params: dict[str, Any] = {
         "latitude": latitude,
         "longitude": longitude,
         "start_date": start.isoformat(),
@@ -140,7 +142,7 @@ def fetch_forecast(
     """
     import requests
 
-    params = {
+    params: dict[str, Any] = {
         "latitude": latitude,
         "longitude": longitude,
         "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum",
@@ -204,7 +206,7 @@ def fetch_and_store_forecast(
         "drought_monitor_cat, enso_oni_index, gdd_base10"
     )
     conn.execute(
-        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"
+        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"  # nosec B608 - cols from schema constant
     )
     return len(df)
 
@@ -238,6 +240,6 @@ def fetch_and_store(
         "drought_monitor_cat, enso_oni_index, gdd_base10"
     )
     conn.execute(
-        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"
+        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"  # nosec B608 - cols from schema constant
     )
     return len(df)

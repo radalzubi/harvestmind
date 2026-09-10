@@ -1,0 +1,627 @@
+{
+  "version": "zaad-benchmark-v1",
+  "classification": "SYNTHETIC THROUGHOUT",
+  "source_sha256": "365cac6fe33a40c372daf829d640b1c131ce22a6315832722a922e41917bccb7",
+  "cells": [
+    {
+      "cell": "C000",
+      "family": "normal",
+      "target": 0.85,
+      "cover": 0.1,
+      "variant": "stable"
+    },
+    {
+      "cell": "C001",
+      "family": "normal",
+      "target": 0.85,
+      "cover": 1.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C002",
+      "family": "normal",
+      "target": 0.85,
+      "cover": 2.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C003",
+      "family": "normal",
+      "target": 0.85,
+      "cover": 4.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C004",
+      "family": "normal",
+      "target": 0.85,
+      "cover": 7.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C005",
+      "family": "normal",
+      "target": 0.9,
+      "cover": 0.1,
+      "variant": "stable"
+    },
+    {
+      "cell": "C006",
+      "family": "normal",
+      "target": 0.9,
+      "cover": 1.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C007",
+      "family": "normal",
+      "target": 0.9,
+      "cover": 2.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C008",
+      "family": "normal",
+      "target": 0.9,
+      "cover": 4.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C009",
+      "family": "normal",
+      "target": 0.9,
+      "cover": 7.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C010",
+      "family": "normal",
+      "target": 0.93,
+      "cover": 0.1,
+      "variant": "stable"
+    },
+    {
+      "cell": "C011",
+      "family": "normal",
+      "target": 0.93,
+      "cover": 1.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C012",
+      "family": "normal",
+      "target": 0.93,
+      "cover": 2.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C013",
+      "family": "normal",
+      "target": 0.93,
+      "cover": 4.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C014",
+      "family": "normal",
+      "target": 0.93,
+      "cover": 7.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C015",
+      "family": "normal",
+      "target": 0.95,
+      "cover": 0.1,
+      "variant": "stable"
+    },
+    {
+      "cell": "C016",
+      "family": "normal",
+      "target": 0.95,
+      "cover": 1.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C017",
+      "family": "normal",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C018",
+      "family": "normal",
+      "target": 0.95,
+      "cover": 4.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C019",
+      "family": "normal",
+      "target": 0.95,
+      "cover": 7.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C020",
+      "family": "normal",
+      "target": 0.97,
+      "cover": 0.1,
+      "variant": "stable"
+    },
+    {
+      "cell": "C021",
+      "family": "normal",
+      "target": 0.97,
+      "cover": 1.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C022",
+      "family": "normal",
+      "target": 0.97,
+      "cover": 2.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C023",
+      "family": "normal",
+      "target": 0.97,
+      "cover": 4.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C024",
+      "family": "normal",
+      "target": 0.97,
+      "cover": 7.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C025",
+      "family": "normal",
+      "target": 0.98,
+      "cover": 0.1,
+      "variant": "stable"
+    },
+    {
+      "cell": "C026",
+      "family": "normal",
+      "target": 0.98,
+      "cover": 1.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C027",
+      "family": "normal",
+      "target": 0.98,
+      "cover": 2.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C028",
+      "family": "normal",
+      "target": 0.98,
+      "cover": 4.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C029",
+      "family": "normal",
+      "target": 0.98,
+      "cover": 7.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C030",
+      "family": "normal",
+      "target": 0.99,
+      "cover": 0.1,
+      "variant": "stable"
+    },
+    {
+      "cell": "C031",
+      "family": "normal",
+      "target": 0.99,
+      "cover": 1.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C032",
+      "family": "normal",
+      "target": 0.99,
+      "cover": 2.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C033",
+      "family": "normal",
+      "target": 0.99,
+      "cover": 4.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C034",
+      "family": "normal",
+      "target": 0.99,
+      "cover": 7.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C035",
+      "family": "normal",
+      "target": 0.995,
+      "cover": 0.1,
+      "variant": "stable"
+    },
+    {
+      "cell": "C036",
+      "family": "normal",
+      "target": 0.995,
+      "cover": 1.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C037",
+      "family": "normal",
+      "target": 0.995,
+      "cover": 2.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C038",
+      "family": "normal",
+      "target": 0.995,
+      "cover": 4.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C039",
+      "family": "normal",
+      "target": 0.995,
+      "cover": 7.0,
+      "variant": "stable"
+    },
+    {
+      "cell": "C040",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "seasonal"
+    },
+    {
+      "cell": "C041",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "intermittent20"
+    },
+    {
+      "cell": "C042",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "intermittent50"
+    },
+    {
+      "cell": "C043",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "promotion"
+    },
+    {
+      "cell": "C044",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "structural_shift"
+    },
+    {
+      "cell": "C045",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "variable_supply"
+    },
+    {
+      "cell": "C046",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "long_lead"
+    },
+    {
+      "cell": "C047",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "short_fill"
+    },
+    {
+      "cell": "C048",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "high_margin"
+    },
+    {
+      "cell": "C049",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "low_margin"
+    },
+    {
+      "cell": "C050",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "critical"
+    },
+    {
+      "cell": "C051",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "perishable"
+    },
+    {
+      "cell": "C052",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "misallocated"
+    },
+    {
+      "cell": "C053",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "small_scale"
+    },
+    {
+      "cell": "C054",
+      "family": "normal_ofat",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "large_scale"
+    },
+    {
+      "cell": "C055",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "no_disruption"
+    },
+    {
+      "cell": "C056",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "early_warning"
+    },
+    {
+      "cell": "C057",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "mild"
+    },
+    {
+      "cell": "C058",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "moderate"
+    },
+    {
+      "cell": "C059",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "severe"
+    },
+    {
+      "cell": "C060",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "recovery"
+    },
+    {
+      "cell": "C061",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "false_alarm"
+    },
+    {
+      "cell": "C062",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "late_news"
+    },
+    {
+      "cell": "C063",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "already_protected"
+    },
+    {
+      "cell": "C064",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "shared_route"
+    },
+    {
+      "cell": "C065",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "closed_port"
+    },
+    {
+      "cell": "C066",
+      "family": "disruption",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "no_alternative"
+    },
+    {
+      "cell": "C067",
+      "family": "signal_ablation",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "history_only"
+    },
+    {
+      "cell": "C068",
+      "family": "signal_ablation",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "port"
+    },
+    {
+      "cell": "C069",
+      "family": "signal_ablation",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "ais"
+    },
+    {
+      "cell": "C070",
+      "family": "signal_ablation",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "news"
+    },
+    {
+      "cell": "C071",
+      "family": "signal_ablation",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "freight"
+    },
+    {
+      "cell": "C072",
+      "family": "signal_ablation",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "weather"
+    },
+    {
+      "cell": "C073",
+      "family": "signal_ablation",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "combined"
+    },
+    {
+      "cell": "C074",
+      "family": "control",
+      "target": 0.95,
+      "cover": 2.0,
+      "variant": "force_unit_fills"
+    }
+  ],
+  "holdout_seeds": [
+    9101,
+    9102,
+    9103,
+    9104,
+    9105
+  ],
+  "development_seeds": [
+    8101
+  ],
+  "baselines": [
+    "incumbent",
+    "base_stock",
+    "service_target",
+    "deterministic_constrained",
+    "expected_search",
+    "cvar_search",
+    "route_aware",
+    "zaad_gated"
+  ],
+  "policies": [
+    {
+      "name": "incumbent",
+      "buffer": 0,
+      "alternative_share": 0,
+      "risk_aware": false
+    },
+    {
+      "name": "base_stock",
+      "buffer": 1,
+      "alternative_share": 0,
+      "risk_aware": false
+    },
+    {
+      "name": "lean",
+      "buffer": 0,
+      "alternative_share": 0,
+      "risk_aware": true
+    },
+    {
+      "name": "balanced",
+      "buffer": 1,
+      "alternative_share": 0,
+      "risk_aware": true
+    },
+    {
+      "name": "protected",
+      "buffer": 2,
+      "alternative_share": 0,
+      "risk_aware": true
+    },
+    {
+      "name": "high_protection",
+      "buffer": 3,
+      "alternative_share": 0,
+      "risk_aware": true
+    },
+    {
+      "name": "route_split",
+      "buffer": 1,
+      "alternative_share": 0.5,
+      "risk_aware": true
+    },
+    {
+      "name": "alternate",
+      "buffer": 1,
+      "alternative_share": 1,
+      "risk_aware": true
+    },
+    {
+      "name": "route_protect",
+      "buffer": 2,
+      "alternative_share": 0.5,
+      "risk_aware": true
+    },
+    {
+      "name": "alternate_protect",
+      "buffer": 2,
+      "alternative_share": 1,
+      "risk_aware": true
+    }
+  ],
+  "horizon": 12,
+  "selection_scenarios": 24,
+  "economics": "opening assets + accepted purchase - closing assets + premiums + hold + disposal + lost selling revenue",
+  "holdout": "Independent future demand/supply generator, not selection scenarios. Five paths/cell.",
+  "signal_warning": "Synthetic feed ablations are mechanistic tests; no real predictive feed value established.",
+  "matrix_scope": "40 target-stock factorial cells plus one-factor stress cases; NOT all-factor cross-product",
+  "rules": [
+    "all runs retained",
+    "statistics.median",
+    "same first-stage information and physical settlement",
+    "no retuning after final holdout",
+    "fallback to incumbent recorded not counted as candidate win"
+  ]
+}

@@ -1,0 +1,254 @@
+"""Versioned full network API. Authenticated durable shadow workflow; no PO writes."""
+from __future__ import annotations
+
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+import threading
+from typing import Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request as HTTPRequest
+from pydantic import Field, ValidationError, model_validator
+from starlette.concurrency import run_in_threadpool
+
+from api.dependencies import get_conn, require_operator
+from api.routers.zaad import bounded_rate
+from zaad.contracts import Record
+from zaad.full.contracts import Request
+from zaad.full.planner import plan
+from zaad.full.jobs import JobRunner, JobStore, QuotaExceeded
+from zaad.full.shadow import ShadowConflict, ShadowLedger
+
+router = APIRouter(prefix="/api/zaad/network", tags=["zaad-network-shadow"])
+_slots = threading.BoundedSemaphore(1)
+_runner: JobRunner | None = None
+_runner_lock = threading.Lock()
+
+
+def runner() -> JobRunner:
+    """One bounded runner per process; storage is dedicated, never the training database."""
+    global _runner
+    path = os.getenv("ZAAD_JOB_STORE")
+    if not path:
+        raise HTTPException(503, "Configure dedicated ZAAD_JOB_STORE storage for asynchronous planning jobs.")
+    with _runner_lock:
+        if _runner is None or _runner.store.path != Path(path):
+            _runner = JobRunner(JobStore(Path(path)))
+        return _runner
+
+
+LARGE_LIMITS = {"skus": 200, "sources": 400, "services": 200, "horizon": 26, "scenarios": 32, "stresses": 12}
+
+
+async def large_payload(request: HTTPRequest) -> Request:
+    """The asynchronous path accepts what /plan refuses, up to the bounded limits above."""
+    if request.headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+        raise HTTPException(415, "application/json required")
+    body = bytearray()
+    async for chunk in request.stream():
+        if len(body) + len(chunk) > 16 * 1024 * 1024:
+            raise HTTPException(413, "Snapshots over 16 MiB are outside the asynchronous job envelope.")
+        body.extend(chunk)
+    try:
+        result = Request.model_validate_json(body)
+    except ValidationError as exc:
+        raise HTTPException(422, [{"loc": list(e["loc"]), "msg": e["msg"], "type": e["type"]}
+                                 for e in exc.errors(include_input=False, include_context=False)]) from exc
+    if (len(result.skus) > LARGE_LIMITS["skus"] or len(result.sources) > LARGE_LIMITS["sources"]
+            or len(result.services) > LARGE_LIMITS["services"] or result.horizon > LARGE_LIMITS["horizon"]
+            or result.scenarios > LARGE_LIMITS["scenarios"] or len(result.stresses) > LARGE_LIMITS["stresses"]):
+        raise HTTPException(413, f"Asynchronous job limit exceeded: {LARGE_LIMITS}")
+    return result
+
+
+def ledger() -> ShadowLedger:
+    path = os.getenv("ZAAD_SHADOW_LEDGER")
+    if not path:
+        raise HTTPException(503, "Configure dedicated ZAAD_SHADOW_LEDGER storage; training databases are never used.")
+    return ShadowLedger(Path(path))
+
+
+def authenticated(operator: str | None = Depends(require_operator)) -> str:
+    if operator is None:
+        raise HTTPException(401, "Persistent shadow records require authentication, including in development.")
+    return operator
+
+
+async def payload(request: HTTPRequest) -> Request:
+    if request.headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+        raise HTTPException(415, "application/json required")
+    body = bytearray()
+    async for chunk in request.stream():
+        if len(body) + len(chunk) > 2 * 1024 * 1024:
+            raise HTTPException(413, "Use offline planning for snapshots over 2 MiB.")
+        body.extend(chunk)
+    try:
+        result = Request.model_validate_json(body)
+    except ValidationError as exc:
+        raise HTTPException(422, [{"loc": list(e["loc"]), "msg": e["msg"], "type": e["type"]}
+                                 for e in exc.errors(include_input=False, include_context=False)]) from exc
+    if len(result.skus) > 20 or len(result.sources) > 40 or len(result.services) > 20 or result.horizon > 12 or result.scenarios > 4 or len(result.stresses) > 4:
+        raise HTTPException(413, "Interactive network limit exceeded; use offline batch planning.")
+    if result.max_solve_seconds * (10 + len(result.services)) > 180:
+        raise HTTPException(422, "Aggregate requested solver time exceeds 180 seconds; lower max_solve_seconds.")
+    return result
+
+
+async def compute(req):
+    if not _slots.acquire(blocking=False):
+        raise HTTPException(429, "Network planner busy; retry shortly.")
+    try:
+        return await run_in_threadpool(plan, req)
+    finally:
+        _slots.release()
+
+
+@router.get("/schema")
+def schema():
+    return Request.model_json_schema()
+
+
+@router.get("/fixture", dependencies=[Depends(bounded_rate)])
+def fixture(case: Literal["normal", "transfer", "substitution", "recovery", "cash", "understock"] = "normal"):
+    from zaad.full.demo import example
+    return example(case)
+
+
+@router.post("/plan", dependencies=[Depends(bounded_rate)])
+async def recommend(request: HTTPRequest, operator: str | None = Depends(require_operator)):
+    req = await payload(request)
+    if operator is not None and req.operator_id != operator:
+        raise HTTPException(403, "Operator mismatch")
+    return await compute(req)
+
+
+def _workspace_request(conn, operator: str, horizon: int, service_target: float, skus: str | None, max_solve_seconds: float):
+    from zaad.full.workspace import WorkspaceError, build_request
+    subset = [x.strip() for x in skus.split(",") if x.strip()] if skus else None
+    try:
+        return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds)
+    except WorkspaceError as exc:
+        raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
+
+
+@router.get("/request/from-workspace", dependencies=[Depends(bounded_rate)])
+def workspace_request(operator: str = Depends(authenticated), conn=Depends(get_conn), horizon: int = Query(12, ge=4, le=26),
+                      service_target: float = Query(.95, gt=.5, le=1.), skus: str | None = Query(None, description="comma-separated subset"),
+                      max_solve_seconds: float = Query(15., gt=0, le=120)):
+    """The frozen contract built from the operator's own vault (the canonical customer-data path), with
+    the build report: rows read, compact dimensions, fitted supplier fill and lead with sample sizes,
+    provenance, warnings and the leakage guard. No plan is run."""
+    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds)
+    return {"request": req.model_dump(mode="json"), "build": build}
+
+
+@router.post("/plan/from-workspace", dependencies=[Depends(bounded_rate)])
+async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(get_conn), horizon: int = Query(12, ge=4, le=26),
+                         service_target: float = Query(.95, gt=.5, le=1.), skus: str | None = Query(None, description="comma-separated subset"),
+                         max_solve_seconds: float = Query(15., gt=0, le=120), commit_window_weeks: int = Query(4, ge=1, le=8),
+                         shape: Literal["network", "purchase_plan"] = Query("purchase_plan")):
+    """Plan the operator's workspace with the frozen P1 optimizer: vault -> compact Request -> plan.
+    `shape=purchase_plan` returns the workspace purchase-plan rows (approval stays with the operator,
+    never an executable order); `shape=network` returns the full network report with the build."""
+    from zaad.full.workspace import to_purchase_plan
+    req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds)
+    report = await compute(req)
+    if shape == "network":
+        return {"report": report, "build": build, "executable_purchase_order": False}
+    return to_purchase_plan(req, report, build, commit_window_weeks=commit_window_weeks, run_id=str(report.get("input_fingerprint", "")))
+
+
+@router.post("/shadow", dependencies=[Depends(bounded_rate)])
+async def record(request: HTTPRequest, operator: str = Depends(authenticated)):
+    req = await payload(request)
+    if req.operator_id != operator:
+        raise HTTPException(403, "Operator mismatch")
+    storage = ledger()  # fail before costly work if durable storage is unavailable
+    report = await compute(req)
+    identity = await run_in_threadpool(storage.save, req, report, operator)
+    return {"decision_id": identity, "report": report, "executable_purchase_order": False}
+
+
+@router.get("/shadow/{decision_id}", dependencies=[Depends(bounded_rate)])
+def read(decision_id: str, operator: str = Depends(authenticated)):
+    try:
+        return ledger().get(decision_id, operator)
+    except KeyError as exc:
+        raise HTTPException(404, "Decision not found") from exc
+
+
+class Review(Record):
+    status: Literal["APPROVED", "REJECTED"]
+    information_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
+    version: int = Field(ge=1)
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+@router.post("/shadow/{decision_id}/review", dependencies=[Depends(bounded_rate)])
+def review(decision_id: str, body: Review, operator: str = Depends(authenticated)):
+    try:
+        return ledger().review(decision_id, operator, body.status, body.information_hash, body.version, body.reason)
+    except KeyError as exc:
+        raise HTTPException(404, "Decision not found") from exc
+    except ShadowConflict as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+class Outcome(Record):
+    observed_at: datetime
+    service_unit_fill: float = Field(ge=0, le=1)
+    realized_cost: float
+    evidence_reference: str = Field(min_length=1, max_length=1000)
+    note: str = Field(max_length=2000)
+
+    @model_validator(mode="after")
+    def observed_clock(self):
+        if self.observed_at.tzinfo is None or self.observed_at > datetime.now(timezone.utc):
+            raise ValueError("outcome needs an aware, already observed timestamp")
+        return self
+
+
+@router.post("/shadow/{decision_id}/outcome", dependencies=[Depends(bounded_rate)])
+def outcome(decision_id: str, body: Outcome, operator: str = Depends(authenticated)):
+    try:
+        ledger().outcome(decision_id, operator, body.model_dump(mode="json"))
+    except KeyError as exc:
+        raise HTTPException(404, "Decision not found") from exc
+    return {"recorded": True, "used_for_training": False}
+
+
+@router.post("/jobs", dependencies=[Depends(bounded_rate)], status_code=202)
+async def submit_job(request: HTTPRequest, operator: str = Depends(authenticated)):
+    """Queue a large planning run. Small requests should use /plan, which answers inline."""
+    req = await large_payload(request)
+    if req.operator_id != operator:
+        raise HTTPException(403, "Operator mismatch")
+    run = runner()
+    try:
+        identity = run.submit(operator, req)
+    except QuotaExceeded as exc:
+        raise HTTPException(429, str(exc)) from exc
+    return {"job_id": identity, "status": "QUEUED", "timeout_s": run.timeout_for(req),
+            "executable_purchase_order": False, "approval_required": True}
+
+
+@router.get("/jobs")
+def list_jobs(operator: str = Depends(authenticated)):
+    """Status reads are cheap SQLite lookups scoped to the caller; they are not rate limited so polling works."""
+    return {"jobs": runner().store.list(operator)}
+
+
+@router.get("/jobs/{job_id}")
+def read_job(job_id: str, operator: str = Depends(authenticated)):
+    try:
+        return runner().store.get(job_id, operator)
+    except KeyError as exc:
+        raise HTTPException(404, "Job not found") from exc
+
+
+@router.delete("/jobs/{job_id}", dependencies=[Depends(bounded_rate)])
+def cancel_job(job_id: str, operator: str = Depends(authenticated)):
+    try:
+        return runner().cancel(job_id, operator)
+    except KeyError as exc:
+        raise HTTPException(404, "Job not found") from exc

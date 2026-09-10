@@ -721,10 +721,10 @@ def correlated_yield_scenarios(
     if pol.mode == "equicorrelated":
         # Convert the tau target once to the latent parameter the copula
         # actually consumes.
-        latent_rho = float(kendall_to_latent(float(pol.kendall_tau)))
+        latent_rho = float(kendall_to_latent(float(pol.kendall_tau or 0.0)))
         correlation = equicorrelation_matrix(n_ent, latent_rho)
         diagnostics.update(correlation_source="operator_supplied_tau",
-                           target_kendall_tau=float(pol.kendall_tau),
+                           target_kendall_tau=float(pol.kendall_tau or 0.0),
                            mean_latent_correlation=round(latent_rho, 4),
                            shrinkage_weight=0.0)
 
@@ -758,6 +758,7 @@ def correlated_yield_scenarios(
 
             # Shrink on the RANK scale, where zero means independence for
             # every copula, then convert once to the latent parameter.
+            assert cov is not None
             w = recommended_shrinkage(cov["n_joint_periods"], n_ent)
             tau = shrink_correlation(raw_tau, target_rho=0.0, weight=w)
 

@@ -1,0 +1,32 @@
+{
+  "gated": {
+    "runs": 33,
+    "complete": 33,
+    "service_breaches": 19,
+    "paired_completes": 0,
+    "median_vs_base_stock_pct": null,
+    "min": null,
+    "max": null,
+    "cost_losses": 0
+  },
+  "gated_v6": {
+    "runs": 33,
+    "complete": 33,
+    "service_breaches": 16,
+    "paired_completes": 0,
+    "median_vs_base_stock_pct": null,
+    "min": null,
+    "max": null,
+    "cost_losses": 0
+  },
+  "echelon_base_stock": {
+    "runs": 33,
+    "complete": 32,
+    "service_breaches": 19,
+    "paired_completes": 0,
+    "median_vs_base_stock_pct": null,
+    "min": null,
+    "max": null,
+    "cost_losses": 0
+  }
+}

@@ -27,8 +27,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from backtesting.roi_calculator import benchmark_scenarios
-from backtesting.rolling_origin_engine import BacktestConfig, RollingOriginEngine
+from backtesting.roi_calculator import benchmark_scenarios  # noqa: E402  (sys.path set above so the script runs from any cwd)
+from backtesting.rolling_origin_engine import BacktestConfig, RollingOriginEngine  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
 
 DEFAULT_DB = ROOT / "harvestmind.duckdb"
@@ -102,8 +102,8 @@ def _print_fill_rate(df: pd.DataFrame) -> None:
     print(" Fill Rate Analysis")
     print(" " + "─" * 60)
     print(f"   Pre-software observed baseline (regional food hub):  {floor:.0f}–{ceiling:.0f}%")
-    print(f"   [source: inference from institutional SLA gap analysis,")
-    print(f"    McKinsey 3–8 pt improvement implies pre-software 89–94%]")
+    print("   [source: inference from institutional SLA gap analysis,")
+    print("    McKinsey 3–8 pt improvement implies pre-software 89–94%]")
     print()
     print(f"   HarvestMind optimized fill rate (this backtest):     {fill:.1f}%")
     print(f"   Lift vs. {floor:.0f}% floor:    {fill - floor:+.1f} pts")
@@ -169,7 +169,7 @@ def _print_verdict(df: pd.DataFrame, supported: bool, msg: str) -> None:
     print(" VERDICT")
     print("══════════════════════════════════════════════════════════════")
     print(f"   ROI range across scenarios:    {lo:.2f}× – {hi:.2f}×")
-    print(f"   Commercial claim to partners:  \"1.5–2.0× ROI on real data\"")
+    print("   Commercial claim to partners:  \"1.5–2.0× ROI on real data\"")
     print(f"   Status: {'SUPPORTED' if supported else 'NEEDS REVISION'}")
     print()
     print(f"   {msg}")
@@ -254,7 +254,7 @@ def main() -> None:
     }, indent=2, default=str))
 
     print()
-    print(f" Output:")
+    print(" Output:")
     print(f"   {csv_path}")
     print(f"   {json_path}")
     print()

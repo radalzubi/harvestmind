@@ -1,0 +1,8 @@
+  25 arg-type
+  17 index
+  12 assignment
+   6 operator
+   3 attr-defined
+   2 call-overload
+   1 var-annotated
+   1 dict-item

@@ -1,0 +1,16 @@
+# gitleaks configuration for the canonical ZAAD repository (CI job "secret scan").
+# Default rules apply. One documented, scoped allowlist; never a blanket ignore.
+title = "zaad"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = """Historical false positive: a pip-audit report committed at 5895f184 and removed at 3c03787
+(artifacts/baseline/pip_audit.json) contained an objects.githubusercontent.com presigned download URL
+whose X-Amz-Credential carries GitHub's public S3 access key id for repository-file downloads (a
+five-minute presigned link from 2023-06-27), not a repository credential. The allowlist matches that
+host's presigned-URL credential parameter and that path only; history is not rewritten."""
+regexTarget = "match"
+regexes = ['''objects\.githubusercontent\.com/[^\s"']*X-Amz-Credential=AKIA[0-9A-Z]{16}%2F''']
+paths = ['''^artifacts/baseline/pip_audit\.json$''']

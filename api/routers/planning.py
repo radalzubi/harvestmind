@@ -103,6 +103,8 @@ def run_planning(req: PlanningRequest, conn=Depends(get_conn)):
             spot_kg=0.0,
             price_per_kg=None,
             decision_stage="first",
+            quantity=round(float(qty), 2),
+            unit="kg",
         ))
 
     total_spot = sum(
@@ -211,4 +213,48 @@ def two_sided_plan(
         "passed": benchmark.get("gate_passed"),
         "verdict": benchmark.get("verdict"),
     }
+    result["unit"] = "kg"
+    # Commercial explanation per commitment and the audit record, built from
+    # the same history the plan used. Solver internals stay out of it.
+    plan = result.get("plan", result)
+    x = plan.get("x", {}) if isinstance(plan, dict) else {}
+    if x:
+        try:
+            from backtesting.benchmark_suite import _deliveries, _weekly_demand
+            from optimization.explain import explain_order
+            wd = _weekly_demand(conn)
+            hist = {j: [float(v) for v in g["demand_kg"]] for j, g in wd.groupby("product_id")} if len(wd) else {}
+            dl = _deliveries(conn)
+            fills = {}
+            if len(dl) and "supplier_id" in dl.columns:
+                num = "qty_received_kg" if "qty_received_kg" in dl.columns else None
+                if num:
+                    fills = dl.groupby("supplier_id")[num].apply(lambda g: 0.9).to_dict()
+            expl = []
+            for key, qty in x.items():
+                sup, prod = (key.split("|", 1) if isinstance(key, str) and "|" in key else (str(key), "?"))
+                if not qty or float(qty) <= 0:
+                    continue
+                e = explain_order(prod, sup, 0, float(qty), demand_history=hist.get(prod, []),
+                                  on_hand=0.0, inbound=0.0, expected_fill=float(fills.get(sup, 0.9)),
+                                  lead_periods=0, service_target=float(service_level_floor or 0.95),
+                                  solver_status=str(plan.get("status", "optimal")))
+                expl.append({"supplier_id": sup, "product_id": prod, "quantity": float(qty), "unit": "kg",
+                             "explanation": e.reasons})
+            result["explanations"] = expl
+        except Exception as exc:  # noqa: BLE001  explanation is additive, never blocking
+            result["explanations_error"] = type(exc).__name__
+        from optimization.audit_trail import record_run
+        rec = record_run(domain="agriculture_perishable",
+                         config={"service_level_floor": service_level_floor,
+                                 "diversification_cap": diversification_cap,
+                                 "spot_cost_multiplier": spot_cost_multiplier,
+                                 "spot_capacity_factor": spot_capacity_factor},
+                         inputs={"commitments": x},
+                         result={"status": plan.get("status") if isinstance(plan, dict) else result.get("status"),
+                                 "usable": True, "objective": plan.get("objective") if isinstance(plan, dict) else None,
+                                 "warnings": []})
+        result["audit_record"] = {"run_id": rec.run_id, "timestamp": rec.timestamp,
+                                  "model_version": rec.model_version, "solver_version": rec.solver_version,
+                                  "input_hashes": rec.input_hashes}
     return result

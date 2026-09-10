@@ -6,10 +6,10 @@ import Link from "next/link";
  */
 export function Logo({ size = 22, href = "/", muted = false }: { size?: number; href?: string | null; muted?: boolean }) {
   const mark = (
-    <span className={muted ? "wordmark wordmark-muted" : "wordmark"} style={{ fontSize: size }} aria-label="zaad">
+    <span className={muted ? "wordmark wordmark-muted" : "wordmark"} style={{ fontSize: size }} aria-label="ZAAD">
       zaad<span className="wordmark-seed" aria-hidden />
     </span>
   );
   if (href === null) return mark;
-  return <Link href={href} className="wordmark-link" aria-label="zaad home">{mark}</Link>;
+  return <Link href={href} className="wordmark-link" aria-label="ZAAD home">{mark}</Link>;
 }

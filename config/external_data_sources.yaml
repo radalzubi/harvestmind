@@ -1,0 +1,119 @@
+# Research registry, not a promise of installed adapters or cleared contracts.
+# Rights evidence reviewed 2026-09-05. Unknown never means allowed.
+schema_version: 1
+reviewed_at: '2026-09-05'
+default_network_enabled: false
+providers:
+  noaa_nws:
+    deployment_status: ACTIVE
+    activation_scope: verified_on_demand_adapter_not_background_monitor
+    status: bounded_adapter
+    endpoint: https://api.weather.gov/alerts/active
+    allowed_hosts: [api.weather.gov]
+    documentation: https://www.weather.gov/documentation/services-web-api
+    license_status: open_verified
+    commercial_use: allowed
+    redistribution: allowed_with_source
+    training_rights: government_alert_data_only
+    historical_vintages_verified: false
+    auth: identifying_user_agent
+    timeout_seconds: 10
+    max_response_bytes: 4000000
+    max_records: 2000
+    quota: unpublished
+    retention: organization_policy
+    coverage: US_weather_alerts_not_global_port_closures
+  portwatch:
+    deployment_status: RESEARCH-ONLY
+    status: legal_review
+    endpoint: https://services9.arcgis.com/weJ1QsnbMYJlCHdG/arcgis/rest/services/Daily_Ports_Data/FeatureServer/0/query
+    documentation: https://portwatch.imf.org/pages/data-and-methodology
+    terms: https://www.imf.org/en/about/copyright-and-terms
+    license_status: legal_review
+    commercial_use: permission_required
+    redistribution: unknown
+    derived_redistribution: unknown
+    training_rights: unknown
+    retention: unknown
+    historical_vintages_verified: false
+    auth: none_for_public_layer
+    max_records_per_page: 1000
+    quota: unknown
+  marinetraffic_kpler:
+    deployment_status: PAID-CREDENTIAL-REQUIRED
+    status: contract_required
+    documentation: https://www.kpler.com/product/maritime/data-services
+    terms: https://www.kpler.com/company/terms-of-use
+    license_status: unknown
+    auth: contract_credential
+    pricing: quotation_required
+    retention: contract_required
+    commercial_use: contract_required
+    derived_redistribution: written_permission_required
+    training_rights: unknown
+    historical_vintages_verified: false
+  vesselfinder:
+    deployment_status: PAID-CREDENTIAL-REQUIRED
+    status: contract_required
+    documentation: https://api.vesselfinder.com/docs/
+    terms: https://www.vesselfinder.com/terms
+    license_status: unknown
+    training_rights: denied_unless_written
+    redistribution: denied_unless_written
+    retention: contract_required
+    auth: api_key
+    historical_vintages_verified: false
+  freightos_fbx:
+    deployment_status: PAID-CREDENTIAL-REQUIRED
+    status: contract_required
+    documentation: https://apidocs.freightos.com/reference/get_fbx-data
+    terms: https://www.freightos.com/freightos-data-terms-conditions/
+    license_status: unknown
+    commercial_use: purchase_order_scope
+    redistribution: purchase_order_scope
+    training_rights: unknown
+    retention: unknown
+    historical_vintages_verified: false
+  gdelt_project:
+    deployment_status: PUBLIC-AVAILABLE
+    status: discovery_only_no_adapter
+    terms: https://gdeltproject.org/about.html#termsofuse
+    license_status: open_verified
+    commercial_use: released_datasets_with_attribution
+    redistribution: released_datasets_with_attribution
+    training_rights: released_dataset_only_not_linked_articles
+    historical_vintages_verified: false
+    quota: verify_current_endpoint
+  ecmwf_open:
+    deployment_status: PUBLIC-AVAILABLE
+    status: adapter_pending
+    documentation: https://www.ecmwf.int/en/forecasts/datasets/open-data
+    license_status: open_verified
+    commercial_use: cc_by_4_with_ecmwf_terms
+    redistribution: cc_by_4_with_ecmwf_terms
+    historical_vintages_verified: false
+    public_archive_runs: 12
+    auth: public_subset_none
+    retention: permitted_subset_with_attribution
+  official_port_notices:
+    deployment_status: RESEARCH-ONLY
+    status: per_authority_review
+    license_status: unknown
+    historical_vintages_verified: false
+    commercial_use: metadata_review
+    raw_redistribution: unknown
+    training_rights: unknown
+    retention: authority_specific
+  sanctions_lists:
+    deployment_status: PUBLIC-AVAILABLE
+    status: compliance_review_not_legal_clearance
+    sources:
+      ofac: https://ofac.treasury.gov/sanctions-list-service
+      un: https://main.un.org/securitycouncil/en/content/un-sc-consolidated-list
+      eu: https://finance.ec.europa.eu/eu-and-world/sanctions-restrictive-measures/overview-sanctions-and-related-resources_en
+      uk: https://www.gov.uk/government/publications/the-uk-sanctions-list
+    license_status: legal_review
+    training_rights: not_approved
+    retention: legal_and_privacy_policy
+    historical_vintages_verified: false
+    missing_status: unknown_blocks_route_promotion

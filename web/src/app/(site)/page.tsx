@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import { HomeContent } from "@/components/site/HomeContent";
+import { JsonLd } from "@/components/site/JsonLd";
+import { HOME_DESCRIPTION, HOME_TITLE, organizationJsonLd, pageMetadata, websiteJsonLd } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "zaad · purchasing decisions for businesses that import what they sell",
-  description: "Upload a year of history. See how you order today, what a gated optimizer would have done on that same history, and the risk on your supply lanes now.",
-};
+// The homepage title carries the brand once, concisely; the layout template is not applied here.
+export const metadata: Metadata = { ...pageMetadata({ title: HOME_TITLE, description: HOME_DESCRIPTION, path: "/" }), title: { absolute: HOME_TITLE } };
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
-  return <HomeContent qa={sp?.motion === "off"} />;
+  return (
+    <>
+      <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />
+      <HomeContent qa={sp?.motion === "off"} />
+    </>
+  );
 }

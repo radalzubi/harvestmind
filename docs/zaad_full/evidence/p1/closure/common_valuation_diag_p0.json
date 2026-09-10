@@ -1,0 +1,6246 @@
+[
+ {
+  "cell": 15,
+  "review": 0,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 6.777,
+    "sampled_cost": 1703.5049982017488,
+    "feasible": true,
+    "common": 1566.9712561716203,
+    "expected_shortage_units": 1.3977897866670501,
+    "burden": 36.721200823495195
+   },
+   "base_stock": {
+    "p0": 6.777,
+    "sampled_cost": 1703.5049982017488,
+    "feasible": true,
+    "common": 1566.9712561716203,
+    "expected_shortage_units": 1.3977897866670501,
+    "burden": 36.721200823495195
+   },
+   "deterministic_network": {
+    "p0": 12.916,
+    "sampled_cost": 1667.6220047948466,
+    "feasible": true,
+    "common": 1527.3806081534908,
+    "expected_shortage_units": 3.9688739066877785,
+    "burden": 30.83766867325011
+   },
+   "stochastic_network": {
+    "p0": 3.279,
+    "sampled_cost": 1582.8805825590694,
+    "feasible": true,
+    "common": 1558.8836585693136,
+    "expected_shortage_units": 11.36364631344405,
+    "burden": 105.08577820446477
+   },
+   "cvar_network": {
+    "p0": 3.279,
+    "sampled_cost": 1576.6487438579188,
+    "feasible": true,
+    "common": 1539.3767333255537,
+    "expected_shortage_units": 5.734744890824982,
+    "burden": 157.99034279998688
+   },
+   "protected_network": {
+    "p0": 3.279,
+    "sampled_cost": 1582.8805825590694,
+    "feasible": true,
+    "common": 1558.8836585693139,
+    "expected_shortage_units": 11.36364631344405,
+    "burden": 105.08577820446477
+   },
+   "hedged_network": {
+    "p0": 4.788,
+    "sampled_cost": 1583.1905716252163,
+    "feasible": true,
+    "common": 1534.309484758025,
+    "expected_shortage_units": 2.827769347044436,
+    "burden": 203.53576699247228
+   }
+  },
+  "agree": false,
+  "gap": 31.503050415822827
+ },
+ {
+  "cell": 15,
+  "review": 1,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "protected_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 54.36,
+    "sampled_cost": 1970.0503025800608,
+    "feasible": false,
+    "common": 1741.788660267884,
+    "expected_shortage_units": 8.210262692624829,
+    "burden": 78.92225900013827
+   },
+   "base_stock": {
+    "p0": 54.36,
+    "sampled_cost": 1970.0503025800608,
+    "feasible": false,
+    "common": 1741.788660267884,
+    "expected_shortage_units": 8.210262692624829,
+    "burden": 78.92225900013827
+   },
+   "deterministic_network": {
+    "p0": 27.942,
+    "sampled_cost": 1929.8680998386037,
+    "feasible": false,
+    "common": 1700.2359363810328,
+    "expected_shortage_units": 14.842759705844932,
+    "burden": 51.19996228210626
+   },
+   "stochastic_network": {
+    "p0": 40.66,
+    "sampled_cost": 1844.095306539653,
+    "feasible": true,
+    "common": 1765.7171746776676,
+    "expected_shortage_units": 7.7552645878700694,
+    "burden": 323.6541366109984
+   },
+   "cvar_network": {
+    "p0": 40.66,
+    "sampled_cost": 1846.118349312187,
+    "feasible": true,
+    "common": 1780.4140277885165,
+    "expected_shortage_units": 7.7552645878700694,
+    "burden": 341.8719006768399
+   },
+   "protected_network": {
+    "p0": 40.66,
+    "sampled_cost": 1844.095306539653,
+    "feasible": true,
+    "common": 1765.7171746776678,
+    "expected_shortage_units": 7.7552645878700694,
+    "burden": 323.65413661099836
+   }
+  },
+  "agree": false,
+  "gap": 2.2737367544323206e-13
+ },
+ {
+  "cell": 15,
+  "review": 2,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 30.252,
+    "sampled_cost": 1617.3011947582693,
+    "feasible": true,
+    "common": 1451.5099909409232,
+    "expected_shortage_units": 0.7883138420440885,
+    "burden": 53.13926195271141
+   },
+   "base_stock": {
+    "p0": 30.252,
+    "sampled_cost": 1617.3011947582693,
+    "feasible": true,
+    "common": 1451.5099909409232,
+    "expected_shortage_units": 0.7883138420440885,
+    "burden": 53.13926195271141
+   },
+   "deterministic_network": {
+    "p0": 21.895,
+    "sampled_cost": 1589.929365090446,
+    "feasible": true,
+    "common": 1413.845837329623,
+    "expected_shortage_units": 6.0350971040291475,
+    "burden": 13.890220461267512
+   },
+   "stochastic_network": {
+    "p0": 40.031,
+    "sampled_cost": 1527.4102235414593,
+    "feasible": true,
+    "common": 1430.6890909932185,
+    "expected_shortage_units": 7.528321292380435,
+    "burden": 142.60959060595243
+   },
+   "cvar_network": {
+    "p0": 34.632,
+    "sampled_cost": 1530.2122490495012,
+    "feasible": true,
+    "common": 1422.7211949973162,
+    "expected_shortage_units": 4.7754668267690334,
+    "burden": 132.4129901646276
+   },
+   "protected_network": {
+    "p0": 40.031,
+    "sampled_cost": 1527.4102235414593,
+    "feasible": true,
+    "common": 1430.6890909932185,
+    "expected_shortage_units": 7.528321292380435,
+    "burden": 142.60959060595243
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 15,
+  "review": 3,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 15.946,
+    "sampled_cost": 1525.8411420959278,
+    "feasible": true,
+    "common": 1252.3629490584296,
+    "expected_shortage_units": 2.4622138757297103,
+    "burden": 24.701682004442286
+   },
+   "base_stock": {
+    "p0": 15.946,
+    "sampled_cost": 1525.8411420959278,
+    "feasible": true,
+    "common": 1252.3629490584296,
+    "expected_shortage_units": 2.4622138757297103,
+    "burden": 24.701682004442286
+   },
+   "deterministic_network": {
+    "p0": 14.62,
+    "sampled_cost": 1495.484964637731,
+    "feasible": false,
+    "common": 1226.7806086240512,
+    "expected_shortage_units": 7.0845792285192095,
+    "burden": 20.409600468295242
+   },
+   "stochastic_network": {
+    "p0": 15.052,
+    "sampled_cost": 1404.9836061969934,
+    "feasible": true,
+    "common": 1222.5235149414643,
+    "expected_shortage_units": 1.7588425156095728,
+    "burden": 77.84874342336882
+   },
+   "cvar_network": {
+    "p0": 15.052,
+    "sampled_cost": 1404.9836061969934,
+    "feasible": true,
+    "common": 1222.523514941464,
+    "expected_shortage_units": 1.7588425156095728,
+    "burden": 77.84874342336877
+   },
+   "protected_network": {
+    "p0": 15.052,
+    "sampled_cost": 1404.9836061969934,
+    "feasible": true,
+    "common": 1222.523514941464,
+    "expected_shortage_units": 1.7588425156095728,
+    "burden": 77.8487434233688
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 15,
+  "review": 4,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "protected_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 9.152,
+    "sampled_cost": 1051.73157515012,
+    "feasible": true,
+    "common": 915.6611052827344,
+    "expected_shortage_units": 1.8439972180425122,
+    "burden": 72.80304819612913
+   },
+   "base_stock": {
+    "p0": 9.152,
+    "sampled_cost": 1051.73157515012,
+    "feasible": true,
+    "common": 915.6611052827344,
+    "expected_shortage_units": 1.8439972180425122,
+    "burden": 72.80304819612913
+   },
+   "deterministic_network": {
+    "p0": 8.293,
+    "sampled_cost": 1010.1698646122145,
+    "feasible": false,
+    "common": 884.6291430688278,
+    "expected_shortage_units": 6.571547907947204,
+    "burden": 52.90545571066703
+   },
+   "stochastic_network": {
+    "p0": 7.453,
+    "sampled_cost": 978.9154598670079,
+    "feasible": true,
+    "common": 885.311227365092,
+    "expected_shortage_units": 6.79988834533782,
+    "burden": 95.81701594441166
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 983.1143412269244,
+    "feasible": true,
+    "common": 879.6762476239887,
+    "expected_shortage_units": 2.565642705613375,
+    "burden": 109.68321906012461
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 980.7574012162402,
+    "feasible": true,
+    "common": 880.5218203477008,
+    "expected_shortage_units": 5.271329528110774,
+    "burden": 95.80962871654292
+   }
+  },
+  "agree": false,
+  "gap": 0.8455727237120527
+ },
+ {
+  "cell": 15,
+  "review": 5,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 35.828,
+    "sampled_cost": 1209.8767073471313,
+    "feasible": false,
+    "common": 925.315994691409,
+    "expected_shortage_units": 2.7177183476341664,
+    "burden": 14.106867793630494
+   },
+   "base_stock": {
+    "p0": 35.828,
+    "sampled_cost": 1209.8767073471313,
+    "feasible": false,
+    "common": 925.315994691409,
+    "expected_shortage_units": 2.7177183476341664,
+    "burden": 14.106867793630494
+   },
+   "deterministic_network": {
+    "p0": 23.173,
+    "sampled_cost": 1188.1253022737505,
+    "feasible": false,
+    "common": 877.1904956927917,
+    "expected_shortage_units": 6.184645770574791,
+    "burden": 1.1420032461364615
+   },
+   "stochastic_network": {
+    "p0": 27.378,
+    "sampled_cost": 1132.4084527633584,
+    "feasible": true,
+    "common": 916.3784470540313,
+    "expected_shortage_units": 2.1442616624988173,
+    "burden": 102.18009777263471
+   },
+   "cvar_network": {
+    "p0": 27.378,
+    "sampled_cost": 1139.5175849045827,
+    "feasible": true,
+    "common": 928.7243884866906,
+    "expected_shortage_units": 2.1360035130052153,
+    "burden": 124.14002419206717
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 15,
+  "review": 6,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 23.961,
+    "sampled_cost": 961.954093725298,
+    "feasible": true,
+    "common": 795.0328447083825,
+    "expected_shortage_units": 1.3299034416602724,
+    "burden": 43.09042190675215
+   },
+   "base_stock": {
+    "p0": 23.961,
+    "sampled_cost": 961.954093725298,
+    "feasible": true,
+    "common": 795.0328447083825,
+    "expected_shortage_units": 1.3299034416602724,
+    "burden": 43.09042190675215
+   },
+   "deterministic_network": {
+    "p0": 21.676,
+    "sampled_cost": 911.891572723061,
+    "feasible": false,
+    "common": 743.7518854279639,
+    "expected_shortage_units": 3.7301391311789738,
+    "burden": 33.42405040875352
+   },
+   "stochastic_network": {
+    "p0": 17.847,
+    "sampled_cost": 902.4306553567006,
+    "feasible": true,
+    "common": 748.189289079841,
+    "expected_shortage_units": 3.180009130025566,
+    "burden": 39.31401368856053
+   },
+   "cvar_network": {
+    "p0": 17.847,
+    "sampled_cost": 905.5775125312598,
+    "feasible": true,
+    "common": 757.3944002971037,
+    "expected_shortage_units": 1.230488333939578,
+    "burden": 63.26202054569195
+   },
+   "protected_network": {
+    "p0": 17.847,
+    "sampled_cost": 902.4306553567006,
+    "feasible": true,
+    "common": 748.189289079841,
+    "expected_shortage_units": 3.1800091300255646,
+    "burden": 39.314013688560536
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 15,
+  "review": 7,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 38.962,
+    "sampled_cost": 960.9263675706472,
+    "feasible": false,
+    "common": 724.0418552159906,
+    "expected_shortage_units": 2.3354293732630182,
+    "burden": 23.67720531550696
+   },
+   "base_stock": {
+    "p0": 38.962,
+    "sampled_cost": 960.9263675706472,
+    "feasible": false,
+    "common": 724.0418552159906,
+    "expected_shortage_units": 2.3354293732630182,
+    "burden": 23.67720531550696
+   },
+   "deterministic_network": {
+    "p0": 24.005,
+    "sampled_cost": 936.1872914364128,
+    "feasible": false,
+    "common": 671.6982855162755,
+    "expected_shortage_units": 6.647276824230863,
+    "burden": 2.0442479472284703
+   },
+   "stochastic_network": {
+    "p0": 38.618,
+    "sampled_cost": 898.2062577332375,
+    "feasible": true,
+    "common": 681.0239260024224,
+    "expected_shortage_units": 1.8820283389814394,
+    "burden": 58.678288095913665
+   },
+   "cvar_network": {
+    "p0": 38.618,
+    "sampled_cost": 898.2062577332376,
+    "feasible": true,
+    "common": 681.0239260024224,
+    "expected_shortage_units": 1.8820283389814394,
+    "burden": 58.678288095913615
+   },
+   "protected_network": {
+    "p0": 39.965,
+    "sampled_cost": 901.3485585911337,
+    "feasible": true,
+    "common": 689.8289594625126,
+    "expected_shortage_units": 1.7355940677691606,
+    "burden": 67.63233580066178
+   }
+  },
+  "agree": false,
+  "gap": 0.0
+ },
+ {
+  "cell": 15,
+  "review": 8,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 21.088,
+    "sampled_cost": 650.9507447686178,
+    "feasible": true,
+    "common": 559.2648582189015,
+    "expected_shortage_units": 0.7936160687971117,
+    "burden": 70.96153476335185
+   },
+   "base_stock": {
+    "p0": 21.088,
+    "sampled_cost": 650.9507447686178,
+    "feasible": true,
+    "common": 559.2648582189015,
+    "expected_shortage_units": 0.7936160687971117,
+    "burden": 70.96153476335185
+   },
+   "deterministic_network": {
+    "p0": 17.635,
+    "sampled_cost": 580.9079063359757,
+    "feasible": true,
+    "common": 507.0543742969147,
+    "expected_shortage_units": 4.826559363141242,
+    "burden": 42.414845457098856
+   },
+   "stochastic_network": {
+    "p0": 58.998,
+    "sampled_cost": 575.1586586787016,
+    "feasible": true,
+    "common": 504.6718167470218,
+    "expected_shortage_units": 2.4980372447181134,
+    "burden": 121.01111269689164
+   },
+   "cvar_network": {
+    "p0": 58.998,
+    "sampled_cost": 575.1586586787016,
+    "feasible": true,
+    "common": 504.6718167470218,
+    "expected_shortage_units": 2.4980372447181134,
+    "burden": 121.01111269689164
+   },
+   "protected_network": {
+    "p0": 58.998,
+    "sampled_cost": 575.1586586787016,
+    "feasible": true,
+    "common": 504.6718167470218,
+    "expected_shortage_units": 2.4980372447181134,
+    "burden": 121.01111269689164
+   }
+  },
+  "agree": false,
+  "gap": 2.3825575498929084
+ },
+ {
+  "cell": 15,
+  "review": 9,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 26.889,
+    "sampled_cost": 552.5977346441628,
+    "feasible": true,
+    "common": 431.2268371424855,
+    "expected_shortage_units": 0.5148988168186213,
+    "burden": 63.19632622007606
+   },
+   "base_stock": {
+    "p0": 26.889,
+    "sampled_cost": 552.5977346441628,
+    "feasible": true,
+    "common": 431.2268371424855,
+    "expected_shortage_units": 0.5148988168186213,
+    "burden": 63.19632622007606
+   },
+   "deterministic_network": {
+    "p0": 17.278,
+    "sampled_cost": 515.9422719202171,
+    "feasible": false,
+    "common": 375.104621786806,
+    "expected_shortage_units": 4.126188201752704,
+    "burden": 43.019981492573095
+   },
+   "stochastic_network": {
+    "p0": 25.883,
+    "sampled_cost": 501.67014169356617,
+    "feasible": true,
+    "common": 384.98259200893466,
+    "expected_shortage_units": 0.5069327983508768,
+    "burden": 62.125189665628135
+   },
+   "cvar_network": {
+    "p0": 26.169,
+    "sampled_cost": 502.0658284949456,
+    "feasible": true,
+    "common": 387.7406095802849,
+    "expected_shortage_units": 0.4814252415289164,
+    "burden": 63.01915558732905
+   },
+   "protected_network": {
+    "p0": 25.883,
+    "sampled_cost": 501.6701416935663,
+    "feasible": true,
+    "common": 384.98259200893466,
+    "expected_shortage_units": 0.506932798350877,
+    "burden": 62.125189665628135
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 15,
+  "review": 10,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stress_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stress_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 29.988,
+    "sampled_cost": 333.05197845434225,
+    "feasible": true,
+    "common": 304.5085200955224,
+    "expected_shortage_units": 0.13512123883153096,
+    "burden": 40.34826657259524
+   },
+   "base_stock": {
+    "p0": 29.988,
+    "sampled_cost": 333.05197845434225,
+    "feasible": true,
+    "common": 304.5085200955224,
+    "expected_shortage_units": 0.13512123883153096,
+    "burden": 40.34826657259524
+   },
+   "deterministic_network": {
+    "p0": 14.025,
+    "sampled_cost": 264.0756972597,
+    "feasible": false,
+    "common": 246.45372473514394,
+    "expected_shortage_units": 3.12007459767352,
+    "burden": 23.843283964743378
+   },
+   "stochastic_network": {
+    "p0": 23.441,
+    "sampled_cost": 258.68186697289343,
+    "feasible": true,
+    "common": 247.1957931879328,
+    "expected_shortage_units": 0.5947926894674647,
+    "burden": 28.79371933456264
+   },
+   "cvar_network": {
+    "p0": 24.413,
+    "sampled_cost": 259.52397478651426,
+    "feasible": true,
+    "common": 247.8355783103039,
+    "expected_shortage_units": 0.5018300431942869,
+    "burden": 29.925415650842577
+   },
+   "protected_network": {
+    "p0": 23.441,
+    "sampled_cost": 258.68186697289343,
+    "feasible": true,
+    "common": 247.1957931879328,
+    "expected_shortage_units": 0.594792689467465,
+    "burden": 28.79371933456264
+   },
+   "hedged_network": {
+    "p0": 23.441,
+    "sampled_cost": 258.68186697289343,
+    "feasible": true,
+    "common": 247.1957931879328,
+    "expected_shortage_units": 0.594792689467465,
+    "burden": 28.79371933456264
+   },
+   "stress_network": {
+    "p0": 23.441,
+    "sampled_cost": 258.68186697289343,
+    "feasible": true,
+    "common": 247.19579318793274,
+    "expected_shortage_units": 0.5947926894674654,
+    "burden": 28.793719334562635
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 15,
+  "review": 11,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "incumbent",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 44.942,
+    "sampled_cost": 230.1560866601489,
+    "feasible": false,
+    "common": 220.2158212185449,
+    "expected_shortage_units": 3.1118172402296285,
+    "burden": 0.7095344389360806
+   },
+   "base_stock": {
+    "p0": 44.942,
+    "sampled_cost": 230.1560866601489,
+    "feasible": false,
+    "common": 220.2158212185449,
+    "expected_shortage_units": 3.1118172402296285,
+    "burden": 0.7095344389360806
+   },
+   "joint_recovery": {
+    "p0": 0,
+    "sampled_cost": 137.66021993313524,
+    "feasible": false,
+    "common": 131.72814585283135,
+    "expected_shortage_units": 3.1118172402296285,
+    "burden": 0.7095344389360806
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 20,
+  "review": 0,
+  "state": "NO_ACTION",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 5.939,
+    "sampled_cost": 2315.287790645454,
+    "feasible": true,
+    "common": 2302.1874261122016,
+    "expected_shortage_units": 2.6116971241108504,
+    "burden": 28.120346400488824
+   },
+   "base_stock": {
+    "p0": 5.939,
+    "sampled_cost": 2315.287790645454,
+    "feasible": true,
+    "common": 2302.1874261122016,
+    "expected_shortage_units": 2.6116971241108504,
+    "burden": 28.120346400488824
+   },
+   "deterministic_network": {
+    "p0": 11.318,
+    "sampled_cost": 2303.3017840599314,
+    "feasible": true,
+    "common": 2284.1530044749206,
+    "expected_shortage_units": 5.57991042583017,
+    "burden": 25.00603629549946
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 1,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 39.24,
+    "sampled_cost": 2602.4010970584795,
+    "feasible": true,
+    "common": 2546.0656240068665,
+    "expected_shortage_units": 2.733539603934989,
+    "burden": 100.82801435173388
+   },
+   "base_stock": {
+    "p0": 39.24,
+    "sampled_cost": 2602.4010970584795,
+    "feasible": true,
+    "common": 2546.0656240068665,
+    "expected_shortage_units": 2.733539603934989,
+    "burden": 100.82801435173388
+   },
+   "deterministic_network": {
+    "p0": 24.392,
+    "sampled_cost": 2607.14401524434,
+    "feasible": true,
+    "common": 2538.244903952473,
+    "expected_shortage_units": 10.31487040901462,
+    "burden": 67.31891264733399
+   },
+   "stochastic_network": {
+    "p0": 28.612,
+    "sampled_cost": 2523.19079427418,
+    "feasible": true,
+    "common": 2528.627416224198,
+    "expected_shortage_units": 1.8532571270458882,
+    "burden": 106.05880543114631
+   },
+   "cvar_network": {
+    "p0": 28.612,
+    "sampled_cost": 2523.1907942741796,
+    "feasible": true,
+    "common": 2528.627416224197,
+    "expected_shortage_units": 1.8532571270458877,
+    "burden": 106.05880543114634
+   },
+   "protected_network": {
+    "p0": 28.094,
+    "sampled_cost": 2529.1082199671328,
+    "feasible": true,
+    "common": 2543.4435403807724,
+    "expected_shortage_units": 2.762697420257396,
+    "burden": 122.23014498728578
+   },
+   "hedged_network": {
+    "p0": 27.333,
+    "sampled_cost": 2542.9076086693253,
+    "feasible": true,
+    "common": 2546.3398683595565,
+    "expected_shortage_units": 4.771111456782516,
+    "burden": 99.59573894622226
+   }
+  },
+  "agree": false,
+  "gap": 9.617487728276046
+ },
+ {
+  "cell": 20,
+  "review": 2,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 25.152,
+    "sampled_cost": 2727.0901892482198,
+    "feasible": false,
+    "common": 2245.016982709438,
+    "expected_shortage_units": 18.540553762496657,
+    "burden": 105.64543596795312
+   },
+   "base_stock": {
+    "p0": 25.152,
+    "sampled_cost": 2727.0901892482198,
+    "feasible": false,
+    "common": 2245.016982709438,
+    "expected_shortage_units": 18.540553762496657,
+    "burden": 105.64543596795312
+   },
+   "deterministic_network": {
+    "p0": 8.898,
+    "sampled_cost": 2778.196312081884,
+    "feasible": false,
+    "common": 2209.704808977391,
+    "expected_shortage_units": 26.51329627031504,
+    "burden": 51.093825875109694
+   },
+   "joint_recovery": {
+    "p0": 26.308,
+    "sampled_cost": 2612.696418920223,
+    "feasible": false,
+    "common": 2339.6567399457663,
+    "expected_shortage_units": 18.619855219175783,
+    "burden": 190.39908249203864
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 20,
+  "review": 3,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "PENDING_REVIEW",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 0.758,
+    "sampled_cost": 2076.2969929649594,
+    "feasible": false,
+    "common": 1898.7858842060484,
+    "expected_shortage_units": 21.28624439396326,
+    "burden": 41.59420111626151
+   },
+   "base_stock": {
+    "p0": 0.758,
+    "sampled_cost": 2076.2969929649594,
+    "feasible": false,
+    "common": 1898.7858842060484,
+    "expected_shortage_units": 21.28624439396326,
+    "burden": 41.59420111626151
+   },
+   "joint_recovery": {
+    "p0": 33.856,
+    "sampled_cost": 2018.0169863600422,
+    "feasible": false,
+    "common": 1912.1807418353055,
+    "expected_shortage_units": 21.134281348154996,
+    "burden": 163.69803864003222
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 20,
+  "review": 4,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1657.9595845921187,
+    "feasible": false,
+    "common": 1439.1039657277383,
+    "expected_shortage_units": 13.800193829012054,
+    "burden": 20.56746082352194
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1657.9595845921187,
+    "feasible": false,
+    "common": 1439.1039657277383,
+    "expected_shortage_units": 13.800193829012054,
+    "burden": 20.56746082352194
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 1628.773045733778,
+    "feasible": false,
+    "common": 1399.9850202084447,
+    "expected_shortage_units": 9.980723707974594,
+    "burden": 33.331046251846985
+   },
+   "stochastic_network": {
+    "p0": 2.607,
+    "sampled_cost": 1578.610493174815,
+    "feasible": true,
+    "common": 1393.2616355341695,
+    "expected_shortage_units": 2.3397206088362363,
+    "burden": 45.435850517361544
+   },
+   "cvar_network": {
+    "p0": 8.915,
+    "sampled_cost": 1577.4192325542883,
+    "feasible": true,
+    "common": 1404.6365568779659,
+    "expected_shortage_units": 1.1099192381112424,
+    "burden": 65.38797595821917
+   },
+   "protected_network": {
+    "p0": 2.607,
+    "sampled_cost": 1578.6104931748146,
+    "feasible": true,
+    "common": 1393.2616355341695,
+    "expected_shortage_units": 2.3397206088362354,
+    "burden": 45.435850517361565
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 5,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2132.7217710480286,
+    "feasible": false,
+    "common": 1650.0757270020697,
+    "expected_shortage_units": 15.202758571366187,
+    "burden": 19.66012282718844
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2132.7217710480286,
+    "feasible": false,
+    "common": 1650.0757270020697,
+    "expected_shortage_units": 15.202758571366187,
+    "burden": 19.66012282718844
+   },
+   "deterministic_network": {
+    "p0": 0.277,
+    "sampled_cost": 2074.9668402842385,
+    "feasible": false,
+    "common": 1596.9681023196222,
+    "expected_shortage_units": 9.516163191999514,
+    "burden": 25.430945500761293
+   },
+   "stochastic_network": {
+    "p0": 23.052,
+    "sampled_cost": 1938.0210113569815,
+    "feasible": true,
+    "common": 1669.7233610789892,
+    "expected_shortage_units": 0.24922552824827038,
+    "burden": 178.28612970627032
+   },
+   "cvar_network": {
+    "p0": 23.304,
+    "sampled_cost": 1936.9112239925958,
+    "feasible": true,
+    "common": 1672.5976108724394,
+    "expected_shortage_units": 0.2534828230695809,
+    "burden": 177.06284260604772
+   },
+   "protected_network": {
+    "p0": 23.052,
+    "sampled_cost": 1938.021011356982,
+    "feasible": true,
+    "common": 1669.723361078998,
+    "expected_shortage_units": 0.24922552824827038,
+    "burden": 178.28612970627452
+   }
+  },
+  "agree": false,
+  "gap": 2.87424979345019
+ },
+ {
+  "cell": 20,
+  "review": 6,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1906.015698140473,
+    "feasible": false,
+    "common": 1885.4157733617512,
+    "expected_shortage_units": 50.3361124331843,
+    "burden": 27.692499790697134
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1906.015698140473,
+    "feasible": false,
+    "common": 1885.4157733617512,
+    "expected_shortage_units": 50.3361124331843,
+    "burden": 27.692499790697134
+   },
+   "deterministic_network": {
+    "p0": 22.656,
+    "sampled_cost": 1694.8388228133585,
+    "feasible": true,
+    "common": 1595.3398315215793,
+    "expected_shortage_units": 12.109457519980678,
+    "burden": 92.621825904128
+   },
+   "stochastic_network": {
+    "p0": 18.308,
+    "sampled_cost": 1622.041153831407,
+    "feasible": true,
+    "common": 1663.2847381215101,
+    "expected_shortage_units": 24.36313025765297,
+    "burden": 274.50536703919045
+   },
+   "cvar_network": {
+    "p0": 18.308,
+    "sampled_cost": 1622.0411538314072,
+    "feasible": true,
+    "common": 1663.2847381215106,
+    "expected_shortage_units": 24.36313025765297,
+    "burden": 274.50536703919045
+   },
+   "protected_network": {
+    "p0": 18.308,
+    "sampled_cost": 1622.041153831407,
+    "feasible": true,
+    "common": 1663.2847381215106,
+    "expected_shortage_units": 24.36313025765297,
+    "burden": 274.5053670391904
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 7,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "PENDING_REVIEW",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 4.413,
+    "sampled_cost": 1797.2638187564808,
+    "feasible": false,
+    "common": 1792.1123861818332,
+    "expected_shortage_units": 51.89422830873469,
+    "burden": 54.02725181659797
+   },
+   "base_stock": {
+    "p0": 4.413,
+    "sampled_cost": 1797.2638187564808,
+    "feasible": false,
+    "common": 1792.1123861818332,
+    "expected_shortage_units": 51.89422830873469,
+    "burden": 54.02725181659797
+   },
+   "joint_recovery": {
+    "p0": 15.58,
+    "sampled_cost": 1564.426846547272,
+    "feasible": false,
+    "common": 1602.2358318923475,
+    "expected_shortage_units": 37.15075023369998,
+    "burden": 159.4192449046233
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 20,
+  "review": 8,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0.716,
+    "sampled_cost": 1746.1654326157172,
+    "feasible": false,
+    "common": 1755.5334677255032,
+    "expected_shortage_units": 53.50902809247624,
+    "burden": 17.970754558571183
+   },
+   "base_stock": {
+    "p0": 0.716,
+    "sampled_cost": 1746.1654326157172,
+    "feasible": false,
+    "common": 1755.5334677255032,
+    "expected_shortage_units": 53.50902809247624,
+    "burden": 17.970754558571183
+   },
+   "deterministic_network": {
+    "p0": 25.105,
+    "sampled_cost": 1545.8898633044516,
+    "feasible": true,
+    "common": 1510.1595322773583,
+    "expected_shortage_units": 22.87389030179498,
+    "burden": 57.305886800111274
+   },
+   "stochastic_network": {
+    "p0": 53.115,
+    "sampled_cost": 1543.2774998060668,
+    "feasible": true,
+    "common": 1549.7686618853388,
+    "expected_shortage_units": 33.5120986482134,
+    "burden": 104.5645450319197
+   },
+   "cvar_network": {
+    "p0": 65.23,
+    "sampled_cost": 1547.1306433247046,
+    "feasible": true,
+    "common": 1512.2094598881342,
+    "expected_shortage_units": 19.659400643223403,
+    "burden": 166.19555542484778
+   },
+   "protected_network": {
+    "p0": 58.509,
+    "sampled_cost": 1544.0564622664347,
+    "feasible": true,
+    "common": 1519.1544432935402,
+    "expected_shortage_units": 24.973275407609954,
+    "burden": 135.3281620306633
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 9,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1909.930978147534,
+    "feasible": false,
+    "common": 1619.451909598108,
+    "expected_shortage_units": 44.40984173629699,
+    "burden": 61.22874165916598
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1909.930978147534,
+    "feasible": false,
+    "common": 1619.451909598108,
+    "expected_shortage_units": 44.40984173629699,
+    "burden": 61.22874165916598
+   },
+   "deterministic_network": {
+    "p0": 24.438,
+    "sampled_cost": 1712.145814325544,
+    "feasible": false,
+    "common": 1365.1713060490783,
+    "expected_shortage_units": 12.771838133804973,
+    "burden": 114.16128493257844
+   },
+   "stochastic_network": {
+    "p0": 70.884,
+    "sampled_cost": 1654.3499047645973,
+    "feasible": true,
+    "common": 1487.0760181055407,
+    "expected_shortage_units": 24.815467983928055,
+    "burden": 223.52727537289394
+   },
+   "cvar_network": {
+    "p0": 70.884,
+    "sampled_cost": 1671.202090234036,
+    "feasible": true,
+    "common": 1539.0612029311906,
+    "expected_shortage_units": 24.809743351267677,
+    "burden": 248.10850938176276
+   },
+   "protected_network": {
+    "p0": 70.884,
+    "sampled_cost": 1660.1852750663277,
+    "feasible": true,
+    "common": 1504.584210652807,
+    "expected_shortage_units": 24.809743351267677,
+    "burden": 232.0389668194046
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 10,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1633.2485099409223,
+    "feasible": false,
+    "common": 1521.2135496502133,
+    "expected_shortage_units": 38.89221678307151,
+    "burden": 101.41906966591624
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1633.2485099409223,
+    "feasible": false,
+    "common": 1521.2135496502133,
+    "expected_shortage_units": 38.89221678307151,
+    "burden": 101.41906966591624
+   },
+   "deterministic_network": {
+    "p0": 1.236,
+    "sampled_cost": 1424.4713711069303,
+    "feasible": true,
+    "common": 1275.5330905640847,
+    "expected_shortage_units": 10.190578924886184,
+    "burden": 136.1478374775482
+   },
+   "stochastic_network": {
+    "p0": 38.816,
+    "sampled_cost": 1360.9323887089568,
+    "feasible": true,
+    "common": 1317.462003301667,
+    "expected_shortage_units": 17.330114503150458,
+    "burden": 235.90973614060232
+   },
+   "cvar_network": {
+    "p0": 38.816,
+    "sampled_cost": 1360.9323887089572,
+    "feasible": true,
+    "common": 1317.462003301667,
+    "expected_shortage_units": 17.330114503150458,
+    "burden": 235.90973614060235
+   },
+   "protected_network": {
+    "p0": 38.816,
+    "sampled_cost": 1360.9323887089568,
+    "feasible": true,
+    "common": 1317.4620033016668,
+    "expected_shortage_units": 17.330114503150458,
+    "burden": 235.9097361406023
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 11,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1889.5207434568629,
+    "feasible": false,
+    "common": 1570.4542321114084,
+    "expected_shortage_units": 45.656848195837675,
+    "burden": 77.56522388890751
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1889.5207434568629,
+    "feasible": false,
+    "common": 1570.4542321114084,
+    "expected_shortage_units": 45.656848195837675,
+    "burden": 77.56522388890751
+   },
+   "deterministic_network": {
+    "p0": 22.926,
+    "sampled_cost": 1637.1605899808883,
+    "feasible": false,
+    "common": 1275.3046020083639,
+    "expected_shortage_units": 9.736428996565866,
+    "burden": 96.94719743344972
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 1522.7340322878174,
+    "feasible": true,
+    "common": 1402.729101814528,
+    "expected_shortage_units": 17.084390975821275,
+    "burden": 215.90412093755003
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 1522.7340322878174,
+    "feasible": true,
+    "common": 1402.729101814528,
+    "expected_shortage_units": 17.084390975821275,
+    "burden": 215.90412093755003
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 1522.7340322878174,
+    "feasible": true,
+    "common": 1402.729101814528,
+    "expected_shortage_units": 17.084390975821275,
+    "burden": 215.90412093755003
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 12,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1346.048587795346,
+    "feasible": false,
+    "common": 1296.0797007120964,
+    "expected_shortage_units": 38.58213494772207,
+    "burden": 92.02945934142363
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1346.048587795346,
+    "feasible": false,
+    "common": 1296.0797007120964,
+    "expected_shortage_units": 38.58213494772207,
+    "burden": 92.02945934142363
+   },
+   "deterministic_network": {
+    "p0": 24.916,
+    "sampled_cost": 1182.7667648845697,
+    "feasible": true,
+    "common": 1045.8388824831638,
+    "expected_shortage_units": 9.467422738222428,
+    "burden": 154.10823571152318
+   },
+   "stochastic_network": {
+    "p0": 95.809,
+    "sampled_cost": 1110.65807407978,
+    "feasible": true,
+    "common": 1082.9918985776014,
+    "expected_shortage_units": 13.146234461311437,
+    "burden": 258.72023886019815
+   },
+   "cvar_network": {
+    "p0": 100.0,
+    "sampled_cost": 1108.7520106507,
+    "feasible": true,
+    "common": 1083.3683869669048,
+    "expected_shortage_units": 13.282106048063518,
+    "burden": 263.1824802447246
+   },
+   "protected_network": {
+    "p0": 95.809,
+    "sampled_cost": 1110.6580740797797,
+    "feasible": true,
+    "common": 1082.9918985776017,
+    "expected_shortage_units": 13.14623446131144,
+    "burden": 258.7202388601983
+   }
+  },
+  "agree": false,
+  "gap": 37.15301609443759
+ },
+ {
+  "cell": 20,
+  "review": 13,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 827.8657746642344,
+    "feasible": true,
+    "common": 786.2048201096799,
+    "expected_shortage_units": 3.3261882581250557,
+    "burden": 329.12359150793634
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 827.8657746642344,
+    "feasible": true,
+    "common": 786.2048201096799,
+    "expected_shortage_units": 3.3261882581250557,
+    "burden": 329.12359150793634
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 781.5589819848706,
+    "feasible": true,
+    "common": 730.3538897484495,
+    "expected_shortage_units": 3.3261882581250557,
+    "burden": 327.40449871673445
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 783.6792603077713,
+    "feasible": true,
+    "common": 764.5639054191388,
+    "expected_shortage_units": 3.3261882581250557,
+    "burden": 331.33389050839475
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 783.6792603077713,
+    "feasible": true,
+    "common": 764.5639054191388,
+    "expected_shortage_units": 3.3261882581250557,
+    "burden": 331.33389050839475
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 783.6792603077713,
+    "feasible": true,
+    "common": 764.5639054191388,
+    "expected_shortage_units": 3.3261882581250557,
+    "burden": 331.33389050839475
+   },
+   "hedged_network": {
+    "p0": 10.653,
+    "sampled_cost": 772.8258104590615,
+    "feasible": true,
+    "common": 737.6949524932083,
+    "expected_shortage_units": 1.1961735588547382,
+    "burden": 363.26151223405117
+   },
+   "stress_network": {
+    "p0": 10.653,
+    "sampled_cost": 772.8258104590615,
+    "feasible": true,
+    "common": 737.6949524932083,
+    "expected_shortage_units": 1.1961735588547382,
+    "burden": 363.26151223405117
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 14,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 632.5901004084232,
+    "feasible": true,
+    "common": 637.7743190419716,
+    "expected_shortage_units": 1.0298157421909075,
+    "burden": 329.336129931447
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 632.5901004084232,
+    "feasible": true,
+    "common": 637.7743190419716,
+    "expected_shortage_units": 1.0298157421909075,
+    "burden": 329.336129931447
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 592.2882767404176,
+    "feasible": true,
+    "common": 598.433683353229,
+    "expected_shortage_units": 1.0298157421909075,
+    "burden": 329.336129931447
+   },
+   "stochastic_network": {
+    "p0": 5.932,
+    "sampled_cost": 594.0344457581225,
+    "feasible": true,
+    "common": 606.7204926242936,
+    "expected_shortage_units": 0.4771993839331171,
+    "burden": 344.1774576718874
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 593.0693695829907,
+    "feasible": true,
+    "common": 609.9326200764721,
+    "expected_shortage_units": 1.0298157421909075,
+    "burden": 329.336129931447
+   },
+   "protected_network": {
+    "p0": 5.932,
+    "sampled_cost": 594.0344457581225,
+    "feasible": true,
+    "common": 606.7204926242936,
+    "expected_shortage_units": 0.4771993839331171,
+    "burden": 344.1774576718874
+   },
+   "hedged_network": {
+    "p0": 0,
+    "sampled_cost": 592.2882767404176,
+    "feasible": true,
+    "common": 598.433683353229,
+    "expected_shortage_units": 1.0298157421909075,
+    "burden": 329.336129931447
+   },
+   "stress_network": {
+    "p0": 0,
+    "sampled_cost": 592.2882767404176,
+    "feasible": true,
+    "common": 598.433683353229,
+    "expected_shortage_units": 1.0298157421909075,
+    "burden": 329.336129931447
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 15,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 550.5093682831598,
+    "feasible": true,
+    "common": 565.8363560385136,
+    "expected_shortage_units": 1.6044981444388033,
+    "burden": 243.2074477117768
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 550.5093682831598,
+    "feasible": true,
+    "common": 565.8363560385136,
+    "expected_shortage_units": 1.6044981444388033,
+    "burden": 243.2074477117768
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 496.6719511243624,
+    "feasible": true,
+    "common": 514.993755693917,
+    "expected_shortage_units": 1.6044981444388033,
+    "burden": 239.7579144755764
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 496.6719511243624,
+    "feasible": true,
+    "common": 514.993755693917,
+    "expected_shortage_units": 1.6044981444388033,
+    "burden": 239.7579144755764
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 496.6719511243624,
+    "feasible": true,
+    "common": 514.993755693917,
+    "expected_shortage_units": 1.6044981444388033,
+    "burden": 239.7579144755764
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 496.6719511243624,
+    "feasible": true,
+    "common": 514.993755693917,
+    "expected_shortage_units": 1.6044981444388033,
+    "burden": 239.7579144755764
+   },
+   "hedged_network": {
+    "p0": 0,
+    "sampled_cost": 496.6719511243624,
+    "feasible": true,
+    "common": 514.993755693917,
+    "expected_shortage_units": 1.6044981444388033,
+    "burden": 239.7579144755764
+   },
+   "stress_network": {
+    "p0": 0,
+    "sampled_cost": 496.6719511243624,
+    "feasible": true,
+    "common": 514.993755693917,
+    "expected_shortage_units": 1.6044981444388033,
+    "burden": 239.7579144755764
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 16,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 462.4802137057813,
+    "feasible": true,
+    "common": 479.1421181875141,
+    "expected_shortage_units": 2.0937404251003127,
+    "burden": 190.78571170137096
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 462.4802137057813,
+    "feasible": true,
+    "common": 479.1421181875141,
+    "expected_shortage_units": 2.0937404251003127,
+    "burden": 190.78571170137096
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 399.35117508531516,
+    "feasible": true,
+    "common": 421.79409893434615,
+    "expected_shortage_units": 2.0937404251003127,
+    "burden": 187.37094423056803
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 399.35117508531516,
+    "feasible": true,
+    "common": 421.79409893434615,
+    "expected_shortage_units": 2.0937404251003127,
+    "burden": 187.37094423056803
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 399.35117508531516,
+    "feasible": true,
+    "common": 421.79409893434615,
+    "expected_shortage_units": 2.0937404251003127,
+    "burden": 187.37094423056803
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 399.35117508531516,
+    "feasible": true,
+    "common": 421.79409893434615,
+    "expected_shortage_units": 2.0937404251003127,
+    "burden": 187.37094423056803
+   },
+   "hedged_network": {
+    "p0": 0,
+    "sampled_cost": 399.35117508531516,
+    "feasible": true,
+    "common": 421.79409893434615,
+    "expected_shortage_units": 2.0937404251003127,
+    "burden": 187.37094423056803
+   },
+   "stress_network": {
+    "p0": 0,
+    "sampled_cost": 399.35117508531516,
+    "feasible": true,
+    "common": 421.79409893434615,
+    "expected_shortage_units": 2.0937404251003127,
+    "burden": 187.37094423056803
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 17,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 342.6760922866147,
+    "feasible": true,
+    "common": 357.0636416219212,
+    "expected_shortage_units": 0.4168582288360039,
+    "burden": 183.70447160333646
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 342.6760922866147,
+    "feasible": true,
+    "common": 357.0636416219212,
+    "expected_shortage_units": 0.4168582288360039,
+    "burden": 183.70447160333646
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 301.43661302406275,
+    "feasible": true,
+    "common": 314.4545454026214,
+    "expected_shortage_units": 0.4168582288360039,
+    "burden": 183.26727078293465
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 301.43661302406275,
+    "feasible": true,
+    "common": 314.4545454026214,
+    "expected_shortage_units": 0.4168582288360039,
+    "burden": 183.26727078293465
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 301.43661302406275,
+    "feasible": true,
+    "common": 314.4545454026214,
+    "expected_shortage_units": 0.4168582288360039,
+    "burden": 183.26727078293465
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 301.43661302406275,
+    "feasible": true,
+    "common": 314.4545454026214,
+    "expected_shortage_units": 0.4168582288360039,
+    "burden": 183.26727078293465
+   },
+   "hedged_network": {
+    "p0": 0,
+    "sampled_cost": 301.43661302406275,
+    "feasible": true,
+    "common": 314.4545454026214,
+    "expected_shortage_units": 0.4168582288360039,
+    "burden": 183.26727078293465
+   },
+   "stress_network": {
+    "p0": 0,
+    "sampled_cost": 301.43661302406275,
+    "feasible": true,
+    "common": 314.4545454026214,
+    "expected_shortage_units": 0.4168582288360039,
+    "burden": 183.26727078293465
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 18,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 1.336,
+    "sampled_cost": 270.2737038584065,
+    "feasible": true,
+    "common": 258.10837545989295,
+    "expected_shortage_units": 0.24211725056485445,
+    "burden": 97.59251632475984
+   },
+   "base_stock": {
+    "p0": 1.336,
+    "sampled_cost": 270.2737038584065,
+    "feasible": true,
+    "common": 258.10837545989295,
+    "expected_shortage_units": 0.24211725056485445,
+    "burden": 97.59251632475984
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 223.16237929970694,
+    "feasible": true,
+    "common": 214.2882706661705,
+    "expected_shortage_units": 0.24211725056485445,
+    "burden": 95.4157192139707
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 223.16237929970694,
+    "feasible": true,
+    "common": 214.2882706661705,
+    "expected_shortage_units": 0.24211725056485445,
+    "burden": 95.4157192139707
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 223.16237929970694,
+    "feasible": true,
+    "common": 214.2882706661705,
+    "expected_shortage_units": 0.24211725056485445,
+    "burden": 95.4157192139707
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 223.16237929970694,
+    "feasible": true,
+    "common": 214.2882706661705,
+    "expected_shortage_units": 0.24211725056485445,
+    "burden": 95.4157192139707
+   },
+   "hedged_network": {
+    "p0": 0,
+    "sampled_cost": 223.16237929970694,
+    "feasible": true,
+    "common": 214.2882706661705,
+    "expected_shortage_units": 0.24211725056485445,
+    "burden": 95.4157192139707
+   },
+   "stress_network": {
+    "p0": 0,
+    "sampled_cost": 223.16237929970694,
+    "feasible": true,
+    "common": 214.2882706661705,
+    "expected_shortage_units": 0.24211725056485445,
+    "burden": 95.4157192139707
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 20,
+  "review": 19,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 18.554,
+    "sampled_cost": 147.32433899167216,
+    "feasible": true,
+    "common": 149.94894196477324,
+    "expected_shortage_units": 0.0,
+    "burden": 75.09090381164093
+   },
+   "base_stock": {
+    "p0": 18.554,
+    "sampled_cost": 147.32433899167216,
+    "feasible": true,
+    "common": 149.94894196477324,
+    "expected_shortage_units": 0.0,
+    "burden": 75.09090381164093
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 110.22835743208057,
+    "feasible": true,
+    "common": 113.8555349265776,
+    "expected_shortage_units": 0.0,
+    "burden": 75.09090381164093
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 110.22835743208057,
+    "feasible": true,
+    "common": 113.8555349265776,
+    "expected_shortage_units": 0.0,
+    "burden": 75.09090381164093
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 110.22835743208057,
+    "feasible": true,
+    "common": 113.8555349265776,
+    "expected_shortage_units": 0.0,
+    "burden": 75.09090381164093
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 110.22835743208057,
+    "feasible": true,
+    "common": 113.8555349265776,
+    "expected_shortage_units": 0.0,
+    "burden": 75.09090381164093
+   },
+   "hedged_network": {
+    "p0": 0,
+    "sampled_cost": 110.22835743208057,
+    "feasible": true,
+    "common": 113.8555349265776,
+    "expected_shortage_units": 0.0,
+    "burden": 75.09090381164093
+   },
+   "stress_network": {
+    "p0": 0,
+    "sampled_cost": 110.22835743208057,
+    "feasible": true,
+    "common": 113.8555349265776,
+    "expected_shortage_units": 0.0,
+    "burden": 75.09090381164093
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 21,
+  "review": 0,
+  "state": "NO_ACTION",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 5.939,
+    "sampled_cost": 2315.287790645454,
+    "feasible": true,
+    "common": 2302.1874261122016,
+    "expected_shortage_units": 2.6116971241108504,
+    "burden": 28.120346400488824
+   },
+   "base_stock": {
+    "p0": 5.939,
+    "sampled_cost": 2315.287790645454,
+    "feasible": true,
+    "common": 2302.1874261122016,
+    "expected_shortage_units": 2.6116971241108504,
+    "burden": 28.120346400488824
+   },
+   "deterministic_network": {
+    "p0": 11.318,
+    "sampled_cost": 2303.3017840599314,
+    "feasible": true,
+    "common": 2284.1530044749206,
+    "expected_shortage_units": 5.57991042583017,
+    "burden": 25.00603629549946
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 21,
+  "review": 1,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 39.24,
+    "sampled_cost": 2602.4010970584795,
+    "feasible": true,
+    "common": 2546.0656240068665,
+    "expected_shortage_units": 2.733539603934989,
+    "burden": 100.82801435173388
+   },
+   "base_stock": {
+    "p0": 39.24,
+    "sampled_cost": 2602.4010970584795,
+    "feasible": true,
+    "common": 2546.0656240068665,
+    "expected_shortage_units": 2.733539603934989,
+    "burden": 100.82801435173388
+   },
+   "deterministic_network": {
+    "p0": 24.392,
+    "sampled_cost": 2607.14401524434,
+    "feasible": true,
+    "common": 2538.244903952473,
+    "expected_shortage_units": 10.31487040901462,
+    "burden": 67.31891264733399
+   },
+   "stochastic_network": {
+    "p0": 28.612,
+    "sampled_cost": 2523.19079427418,
+    "feasible": true,
+    "common": 2528.627416224198,
+    "expected_shortage_units": 1.8532571270458882,
+    "burden": 106.05880543114631
+   },
+   "cvar_network": {
+    "p0": 28.612,
+    "sampled_cost": 2523.1907942741796,
+    "feasible": true,
+    "common": 2528.627416224197,
+    "expected_shortage_units": 1.8532571270458877,
+    "burden": 106.05880543114634
+   },
+   "protected_network": {
+    "p0": 27.923,
+    "sampled_cost": 2527.9606056431708,
+    "feasible": true,
+    "common": 2547.7945738309663,
+    "expected_shortage_units": 3.173320244402377,
+    "burden": 106.763167673393
+   },
+   "hedged_network": {
+    "p0": 27.333,
+    "sampled_cost": 2542.9076086693253,
+    "feasible": true,
+    "common": 2546.3398683595565,
+    "expected_shortage_units": 4.771111456782516,
+    "burden": 99.59573894622226
+   }
+  },
+  "agree": false,
+  "gap": 9.617487728276046
+ },
+ {
+  "cell": 21,
+  "review": 2,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 25.152,
+    "sampled_cost": 2727.0901892482198,
+    "feasible": false,
+    "common": 2245.016982709438,
+    "expected_shortage_units": 18.540553762496657,
+    "burden": 105.64543596795312
+   },
+   "base_stock": {
+    "p0": 25.152,
+    "sampled_cost": 2727.0901892482198,
+    "feasible": false,
+    "common": 2245.016982709438,
+    "expected_shortage_units": 18.540553762496657,
+    "burden": 105.64543596795312
+   },
+   "deterministic_network": {
+    "p0": 8.898,
+    "sampled_cost": 2778.196312081884,
+    "feasible": false,
+    "common": 2209.704808977391,
+    "expected_shortage_units": 26.51329627031504,
+    "burden": 51.093825875109694
+   },
+   "joint_recovery": {
+    "p0": 26.308,
+    "sampled_cost": 2612.696418920223,
+    "feasible": false,
+    "common": 2339.6567399457663,
+    "expected_shortage_units": 18.619855219175783,
+    "burden": 190.39908249203864
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 21,
+  "review": 3,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "PENDING_REVIEW",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 0.758,
+    "sampled_cost": 2076.2969929649594,
+    "feasible": false,
+    "common": 1898.7858842060484,
+    "expected_shortage_units": 21.28624439396326,
+    "burden": 41.59420111626151
+   },
+   "base_stock": {
+    "p0": 0.758,
+    "sampled_cost": 2076.2969929649594,
+    "feasible": false,
+    "common": 1898.7858842060484,
+    "expected_shortage_units": 21.28624439396326,
+    "burden": 41.59420111626151
+   },
+   "joint_recovery": {
+    "p0": 33.856,
+    "sampled_cost": 2018.0169863600422,
+    "feasible": false,
+    "common": 1912.1807418353055,
+    "expected_shortage_units": 21.134281348154996,
+    "burden": 163.69803864003222
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 21,
+  "review": 4,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1410.8927923459153,
+    "feasible": false,
+    "common": 1355.2661354174934,
+    "expected_shortage_units": 35.7148579398234,
+    "burden": 100.47963199609923
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1410.8927923459153,
+    "feasible": false,
+    "common": 1355.2661354174934,
+    "expected_shortage_units": 35.7148579398234,
+    "burden": 100.47963199609923
+   },
+   "joint_recovery": {
+    "p0": 22.352,
+    "sampled_cost": 1278.224213524615,
+    "feasible": false,
+    "common": 1300.4046551614188,
+    "expected_shortage_units": 33.39274143975124,
+    "burden": 112.52197247072287
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 21,
+  "review": 5,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "PENDING_REVIEW",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1921.7473567559018,
+    "feasible": false,
+    "common": 1601.19131911841,
+    "expected_shortage_units": 68.00358016322969,
+    "burden": 9.487453799781132
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1921.7473567559018,
+    "feasible": false,
+    "common": 1601.19131911841,
+    "expected_shortage_units": 68.00358016322969,
+    "burden": 9.487453799781132
+   },
+   "joint_recovery": {
+    "p0": 42.376,
+    "sampled_cost": 1650.5556275364777,
+    "feasible": false,
+    "common": 1364.777265953977,
+    "expected_shortage_units": 19.439809500002223,
+    "burden": 107.30769556559909
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 21,
+  "review": 6,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "PENDING_REVIEW",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1623.7323699625267,
+    "feasible": false,
+    "common": 1545.216565699624,
+    "expected_shortage_units": 98.30919146278197,
+    "burden": 90.25769074291142
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1623.7323699625267,
+    "feasible": false,
+    "common": 1545.216565699624,
+    "expected_shortage_units": 98.30919146278197,
+    "burden": 90.25769074291142
+   },
+   "joint_recovery": {
+    "p0": 27.27,
+    "sampled_cost": 1221.2777632992638,
+    "feasible": false,
+    "common": 1102.0092612569786,
+    "expected_shortage_units": 23.489960960637863,
+    "burden": 102.92486790341991
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 21,
+  "review": 7,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "protected_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "joint_recovery",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1604.2491880334126,
+    "feasible": false,
+    "common": 1495.4738948871297,
+    "expected_shortage_units": 97.82500920138882,
+    "burden": 40.049594775308975
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1604.2491880334126,
+    "feasible": false,
+    "common": 1495.4738948871297,
+    "expected_shortage_units": 97.82500920138882,
+    "burden": 40.049594775308975
+   },
+   "stochastic_network": {
+    "p0": 24.967,
+    "sampled_cost": 1219.7989138526443,
+    "feasible": true,
+    "common": 1092.4009945243433,
+    "expected_shortage_units": 16.516877658604724,
+    "burden": 235.1018746686172
+   },
+   "cvar_network": {
+    "p0": 24.967,
+    "sampled_cost": 1219.7989138526445,
+    "feasible": true,
+    "common": 1092.4009945243436,
+    "expected_shortage_units": 16.51687765860472,
+    "burden": 235.1018746686172
+   },
+   "protected_network": {
+    "p0": 24.967,
+    "sampled_cost": 1219.7989138526443,
+    "feasible": true,
+    "common": 1092.4009945243433,
+    "expected_shortage_units": 16.516877658604724,
+    "burden": 235.10187466861717
+   },
+   "joint_recovery": {
+    "p0": 70.543,
+    "sampled_cost": 1181.1283520497186,
+    "feasible": true,
+    "common": 1078.9937221168786,
+    "expected_shortage_units": 14.162701983217469,
+    "burden": 303.4201638557797
+   }
+  },
+  "agree": false,
+  "gap": 13.407272407464689
+ },
+ {
+  "cell": 21,
+  "review": 8,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "joint_recovery",
+  "status": "PENDING_REVIEW",
+  "common_best": "joint_recovery",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1733.7661506920967,
+    "feasible": false,
+    "common": 1680.49265468807,
+    "expected_shortage_units": 138.49203175880848,
+    "burden": 30.523416055384654
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1733.7661506920967,
+    "feasible": false,
+    "common": 1680.49265468807,
+    "expected_shortage_units": 138.49203175880848,
+    "burden": 30.523416055384654
+   },
+   "stochastic_network": {
+    "p0": 24.285,
+    "sampled_cost": 1158.1787381162758,
+    "feasible": true,
+    "common": 988.0148328088729,
+    "expected_shortage_units": 16.477461010897382,
+    "burden": 130.93154509602925
+   },
+   "cvar_network": {
+    "p0": 24.285,
+    "sampled_cost": 1158.1787381162758,
+    "feasible": true,
+    "common": 988.0148328088732,
+    "expected_shortage_units": 16.477461010897382,
+    "burden": 130.93154509602925
+   },
+   "protected_network": {
+    "p0": 24.285,
+    "sampled_cost": 1158.1787381162758,
+    "feasible": true,
+    "common": 988.0148328088729,
+    "expected_shortage_units": 16.477461010897382,
+    "burden": 130.93154509602925
+   },
+   "joint_recovery": {
+    "p0": 24.285,
+    "sampled_cost": 1158.1787381162756,
+    "feasible": true,
+    "common": 988.0148328088727,
+    "expected_shortage_units": 16.477461010897382,
+    "burden": 130.93154509602923
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 21,
+  "review": 9,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "joint_recovery",
+  "status": "PENDING_REVIEW",
+  "common_best": "protected_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1710.7950026472045,
+    "feasible": false,
+    "common": 1395.5899123896627,
+    "expected_shortage_units": 117.67340378574883,
+    "burden": 26.33114494267756
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1710.7950026472045,
+    "feasible": false,
+    "common": 1395.5899123896627,
+    "expected_shortage_units": 117.67340378574883,
+    "burden": 26.33114494267756
+   },
+   "deterministic_network": {
+    "p0": 13.235,
+    "sampled_cost": 1301.3515378626594,
+    "feasible": false,
+    "common": 792.7184696221697,
+    "expected_shortage_units": 11.949551469981147,
+    "burden": 106.81569256778762
+   },
+   "stochastic_network": {
+    "p0": 29.317,
+    "sampled_cost": 1181.43281692572,
+    "feasible": true,
+    "common": 809.1746272436898,
+    "expected_shortage_units": 0.010795076403655221,
+    "burden": 199.58672126102428
+   },
+   "cvar_network": {
+    "p0": 29.317,
+    "sampled_cost": 1186.322216630147,
+    "feasible": true,
+    "common": 811.6323778511547,
+    "expected_shortage_units": 0.03924062561575532,
+    "burden": 188.98343313509838
+   },
+   "protected_network": {
+    "p0": 29.317,
+    "sampled_cost": 1181.4328169257196,
+    "feasible": true,
+    "common": 809.1746272436895,
+    "expected_shortage_units": 0.010795076403655216,
+    "burden": 199.58672126102428
+   },
+   "joint_recovery": {
+    "p0": 88.013,
+    "sampled_cost": 1114.8972798400605,
+    "feasible": true,
+    "common": 829.7542956574547,
+    "expected_shortage_units": 0.02821438296285107,
+    "burden": 402.91459379745174
+   }
+  },
+  "agree": false,
+  "gap": 20.579668413765148
+ },
+ {
+  "cell": 21,
+  "review": 10,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "protected_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1122.2802722647932,
+    "feasible": false,
+    "common": 1256.9262634547356,
+    "expected_shortage_units": 112.81666809974233,
+    "burden": 95.58427297159514
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1122.2802722647932,
+    "feasible": false,
+    "common": 1256.9262634547356,
+    "expected_shortage_units": 112.81666809974233,
+    "burden": 95.58427297159514
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 864.0266261402267,
+    "feasible": true,
+    "common": 675.7910124441563,
+    "expected_shortage_units": 10.150670903121913,
+    "burden": 162.53183861195643
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 795.0010102750448,
+    "feasible": true,
+    "common": 726.6672676540171,
+    "expected_shortage_units": 21.59497379113349,
+    "burden": 169.91777071723055
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 795.0010102750448,
+    "feasible": true,
+    "common": 726.667267654017,
+    "expected_shortage_units": 21.594973791133487,
+    "burden": 169.91777071723052
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 795.0010102750448,
+    "feasible": true,
+    "common": 726.6672676540171,
+    "expected_shortage_units": 21.594973791133487,
+    "burden": 169.91777071723052
+   },
+   "hedged_network": {
+    "p0": 38.042,
+    "sampled_cost": 791.1593710769597,
+    "feasible": true,
+    "common": 687.4260375430447,
+    "expected_shortage_units": 0.19360416848139722,
+    "burden": 496.89544873315015
+   },
+   "joint_recovery": {
+    "p0": 62.952,
+    "sampled_cost": 821.9692639574416,
+    "feasible": true,
+    "common": 740.3417866355376,
+    "expected_shortage_units": 0.0003174406170977363,
+    "burden": 619.2325254485122
+   }
+  },
+  "agree": false,
+  "gap": 50.8762552098608
+ },
+ {
+  "cell": 21,
+  "review": 11,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "joint_recovery",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1348.3887888690551,
+    "feasible": false,
+    "common": 1267.1043426947056,
+    "expected_shortage_units": 116.01536643033697,
+    "burden": 46.15259335759915
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1348.3887888690551,
+    "feasible": false,
+    "common": 1267.1043426947056,
+    "expected_shortage_units": 116.01536643033697,
+    "burden": 46.15259335759915
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 959.300974483552,
+    "feasible": false,
+    "common": 661.0549183330536,
+    "expected_shortage_units": 10.291280378386663,
+    "burden": 80.164725056222
+   },
+   "stochastic_network": {
+    "p0": 18.878,
+    "sampled_cost": 856.9036208264023,
+    "feasible": true,
+    "common": 630.6492150207544,
+    "expected_shortage_units": 3.978146798958823,
+    "burden": 142.9200336158353
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 868.5347734726624,
+    "feasible": true,
+    "common": 633.3174103920076,
+    "expected_shortage_units": 4.408817252056106,
+    "burden": 107.79779377756918
+   },
+   "protected_network": {
+    "p0": 18.878,
+    "sampled_cost": 856.9036208264022,
+    "feasible": true,
+    "common": 630.6492150207544,
+    "expected_shortage_units": 3.978146798958819,
+    "burden": 142.9200336158353
+   },
+   "joint_recovery": {
+    "p0": 45.227,
+    "sampled_cost": 793.2315696286905,
+    "feasible": true,
+    "common": 651.9654188162126,
+    "expected_shortage_units": 4.521993846738972,
+    "burden": 320.61136689989235
+   }
+  },
+  "agree": false,
+  "gap": 21.31620379545825
+ },
+ {
+  "cell": 21,
+  "review": 12,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 561.0866133744072,
+    "feasible": true,
+    "common": 407.0790756096756,
+    "expected_shortage_units": 0.12425329789743643,
+    "burden": 340.55840453388146
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 561.0866133744072,
+    "feasible": true,
+    "common": 407.0790756096756,
+    "expected_shortage_units": 0.12425329789743643,
+    "burden": 340.55840453388146
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 555.0162930451156,
+    "feasible": true,
+    "common": 402.52021222011564,
+    "expected_shortage_units": 0.12425329789743643,
+    "burden": 340.55840453388146
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 555.0162930451156,
+    "feasible": true,
+    "common": 402.52021222011564,
+    "expected_shortage_units": 0.12425329789743643,
+    "burden": 340.55840453388146
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 555.0162930451156,
+    "feasible": true,
+    "common": 402.52021222011564,
+    "expected_shortage_units": 0.12425329789743643,
+    "burden": 340.55840453388146
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 555.0162930451156,
+    "feasible": true,
+    "common": 402.52021222011564,
+    "expected_shortage_units": 0.12425329789743643,
+    "burden": 340.55840453388146
+   },
+   "hedged_network": {
+    "p0": 15.836,
+    "sampled_cost": 583.1006292351426,
+    "feasible": true,
+    "common": 456.99594295177764,
+    "expected_shortage_units": 9.8148243427615e-07,
+    "burden": 443.88935800817745
+   },
+   "stress_network": {
+    "p0": 30.7,
+    "sampled_cost": 609.6092478753717,
+    "feasible": true,
+    "common": 507.9762501953435,
+    "expected_shortage_units": 0.0,
+    "burden": 540.8792646748425
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 21,
+  "review": 13,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 707.8662648217804,
+    "feasible": false,
+    "common": 617.2787821109214,
+    "expected_shortage_units": 13.410514808137602,
+    "burden": 205.7749998947961
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 707.8662648217804,
+    "feasible": false,
+    "common": 617.2787821109214,
+    "expected_shortage_units": 13.410514808137602,
+    "burden": 205.7749998947961
+   },
+   "deterministic_network": {
+    "p0": 3.634,
+    "sampled_cost": 717.6034355168496,
+    "feasible": false,
+    "common": 606.5219882630827,
+    "expected_shortage_units": 6.166445175048992,
+    "burden": 221.62429457646263
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 690.1462169103366,
+    "feasible": true,
+    "common": 606.1542220074564,
+    "expected_shortage_units": 7.277475993959587,
+    "burden": 231.86883549956116
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 690.1462169103366,
+    "feasible": true,
+    "common": 606.1542220074564,
+    "expected_shortage_units": 7.277475993959587,
+    "burden": 231.86883549956116
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 709.9432708397542,
+    "feasible": true,
+    "common": 620.3769597604216,
+    "expected_shortage_units": 4.935383572544139,
+    "burden": 245.89719834222186
+   },
+   "hedged_network": {
+    "p0": 52.441,
+    "sampled_cost": 940.7741273788886,
+    "feasible": true,
+    "common": 845.3105783392664,
+    "expected_shortage_units": 0.017441955406998357,
+    "burden": 312.6207468970266
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 21,
+  "review": 14,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 723.4538834224892,
+    "feasible": false,
+    "common": 738.705816508633,
+    "expected_shortage_units": 18.624853931138794,
+    "burden": 119.60530448352272
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 723.4538834224892,
+    "feasible": false,
+    "common": 738.705816508633,
+    "expected_shortage_units": 18.624853931138794,
+    "burden": 119.60530448352272
+   },
+   "deterministic_network": {
+    "p0": 9.574,
+    "sampled_cost": 736.2041361416123,
+    "feasible": false,
+    "common": 703.8713799478625,
+    "expected_shortage_units": 9.179675577529055,
+    "burden": 135.98555108228757
+   },
+   "stochastic_network": {
+    "p0": 16.622,
+    "sampled_cost": 687.1308701893258,
+    "feasible": true,
+    "common": 690.3791540925724,
+    "expected_shortage_units": 10.929404650315483,
+    "burden": 139.75357220021348
+   },
+   "cvar_network": {
+    "p0": 6.259,
+    "sampled_cost": 683.8818819388387,
+    "feasible": true,
+    "common": 687.7092204760022,
+    "expected_shortage_units": 11.173661423091268,
+    "burden": 127.47150845397289
+   },
+   "protected_network": {
+    "p0": 19.463,
+    "sampled_cost": 697.6094020626904,
+    "feasible": true,
+    "common": 700.6105315829086,
+    "expected_shortage_units": 9.720057669641179,
+    "burden": 144.30433678285618
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 21,
+  "review": 15,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 759.922686241597,
+    "feasible": false,
+    "common": 646.3515502901082,
+    "expected_shortage_units": 17.281606858419266,
+    "burden": 85.9002824602239
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 759.922686241597,
+    "feasible": false,
+    "common": 646.3515502901082,
+    "expected_shortage_units": 17.281606858419266,
+    "burden": 85.9002824602239
+   },
+   "deterministic_network": {
+    "p0": 12.133,
+    "sampled_cost": 669.6920868492244,
+    "feasible": false,
+    "common": 617.0915247465806,
+    "expected_shortage_units": 7.528519833411712,
+    "burden": 110.72524109842962
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 614.529799759023,
+    "feasible": true,
+    "common": 620.5542125633832,
+    "expected_shortage_units": 6.752276855001838,
+    "burden": 114.05126688348778
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 616.9637712821931,
+    "feasible": true,
+    "common": 623.6466708657541,
+    "expected_shortage_units": 6.402003950852664,
+    "burden": 114.06520768681264
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 614.529799759023,
+    "feasible": true,
+    "common": 620.5542125633832,
+    "expected_shortage_units": 6.752276855001838,
+    "burden": 114.05126688348778
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 21,
+  "review": 16,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 22.214,
+    "sampled_cost": 945.1328911669867,
+    "feasible": false,
+    "common": 870.3158088538808,
+    "expected_shortage_units": 19.63380860552811,
+    "burden": 19.316728981328325
+   },
+   "base_stock": {
+    "p0": 22.214,
+    "sampled_cost": 945.1328911669867,
+    "feasible": false,
+    "common": 870.3158088538808,
+    "expected_shortage_units": 19.63380860552811,
+    "burden": 19.316728981328325
+   },
+   "deterministic_network": {
+    "p0": 40.209,
+    "sampled_cost": 996.5432349301396,
+    "feasible": false,
+    "common": 879.2255593882788,
+    "expected_shortage_units": 6.597511376600252,
+    "burden": 34.249688905689425
+   },
+   "joint_recovery": {
+    "p0": 100.0,
+    "sampled_cost": 1320.2792729202058,
+    "feasible": false,
+    "common": 1143.7747164845694,
+    "expected_shortage_units": 0.13104851798966627,
+    "burden": 76.6224916968781
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 21,
+  "review": 17,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 11.466,
+    "sampled_cost": 523.1354611949668,
+    "feasible": true,
+    "common": 501.387631593562,
+    "expected_shortage_units": 2.810470245130393,
+    "burden": 74.89449376837902
+   },
+   "base_stock": {
+    "p0": 11.466,
+    "sampled_cost": 523.1354611949668,
+    "feasible": true,
+    "common": 501.387631593562,
+    "expected_shortage_units": 2.810470245130393,
+    "burden": 74.89449376837902
+   },
+   "deterministic_network": {
+    "p0": 12.319,
+    "sampled_cost": 406.82615774278605,
+    "feasible": true,
+    "common": 401.97219641441404,
+    "expected_shortage_units": 5.487000153204136,
+    "burden": 69.04224967403978
+   },
+   "stochastic_network": {
+    "p0": 10.964,
+    "sampled_cost": 385.7287637451486,
+    "feasible": true,
+    "common": 393.67265144051686,
+    "expected_shortage_units": 7.680349453759397,
+    "burden": 64.99190356258327
+   },
+   "cvar_network": {
+    "p0": 10.964,
+    "sampled_cost": 385.7287637451486,
+    "feasible": true,
+    "common": 393.6726514405169,
+    "expected_shortage_units": 7.6803494537594,
+    "burden": 64.99190356258327
+   },
+   "protected_network": {
+    "p0": 14.149,
+    "sampled_cost": 390.15498167507695,
+    "feasible": true,
+    "common": 395.74680317813187,
+    "expected_shortage_units": 6.899518710467549,
+    "burden": 66.88563621415928
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 21,
+  "review": 18,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 22.59,
+    "sampled_cost": 404.0157338392547,
+    "feasible": true,
+    "common": 358.9747731157972,
+    "expected_shortage_units": 1.095425806249884,
+    "burden": 48.09762414566251
+   },
+   "base_stock": {
+    "p0": 22.59,
+    "sampled_cost": 404.0157338392547,
+    "feasible": true,
+    "common": 358.9747731157972,
+    "expected_shortage_units": 1.095425806249884,
+    "burden": 48.09762414566251
+   },
+   "deterministic_network": {
+    "p0": 5.175,
+    "sampled_cost": 256.07633276854835,
+    "feasible": false,
+    "common": 241.1303984616927,
+    "expected_shortage_units": 4.349719754723246,
+    "burden": 28.0082493014553
+   },
+   "stochastic_network": {
+    "p0": 10.11,
+    "sampled_cost": 260.72027754940916,
+    "feasible": true,
+    "common": 248.88095462079067,
+    "expected_shortage_units": 3.052605346293979,
+    "burden": 30.117379843377908
+   },
+   "cvar_network": {
+    "p0": 10.11,
+    "sampled_cost": 260.72027754940916,
+    "feasible": true,
+    "common": 248.88095462079067,
+    "expected_shortage_units": 3.052605346293979,
+    "burden": 30.117379843377908
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 21,
+  "review": 19,
+  "state": "NO_ACTION",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 30.025,
+    "sampled_cost": 183.25009473549468,
+    "feasible": true,
+    "common": 148.60751191945772,
+    "expected_shortage_units": 0.11035810284055891,
+    "burden": 38.044504141981086
+   },
+   "base_stock": {
+    "p0": 30.025,
+    "sampled_cost": 183.25009473549468,
+    "feasible": true,
+    "common": 148.60751191945772,
+    "expected_shortage_units": 0.11035810284055891,
+    "burden": 38.044504141981086
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 102.44861350145203,
+    "feasible": true,
+    "common": 105.27807438816393,
+    "expected_shortage_units": 0.11035810284055891,
+    "burden": 38.044504141981086
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 0,
+  "state": "NO_ACTION",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 5.939,
+    "sampled_cost": 2977.3004616056414,
+    "feasible": true,
+    "common": 2988.1399687566354,
+    "expected_shortage_units": 3.4587021154270245,
+    "burden": 45.5713072609956
+   },
+   "base_stock": {
+    "p0": 5.939,
+    "sampled_cost": 2977.3004616056414,
+    "feasible": true,
+    "common": 2988.1399687566354,
+    "expected_shortage_units": 3.4587021154270245,
+    "burden": 45.5713072609956
+   },
+   "deterministic_network": {
+    "p0": 11.318,
+    "sampled_cost": 2957.220583396583,
+    "feasible": true,
+    "common": 2970.9674842321183,
+    "expected_shortage_units": 6.602515761079032,
+    "burden": 35.30580521099511
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 1,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 39.258,
+    "sampled_cost": 3053.586545930747,
+    "feasible": true,
+    "common": 3336.748689510854,
+    "expected_shortage_units": 3.554351045788236,
+    "burden": 291.0648640248698
+   },
+   "base_stock": {
+    "p0": 39.258,
+    "sampled_cost": 3053.586545930747,
+    "feasible": true,
+    "common": 3336.748689510854,
+    "expected_shortage_units": 3.554351045788236,
+    "burden": 291.0648640248698
+   },
+   "deterministic_network": {
+    "p0": 24.401,
+    "sampled_cost": 2980.4666275778945,
+    "feasible": true,
+    "common": 3333.6788417729204,
+    "expected_shortage_units": 12.067716465976902,
+    "burden": 221.077467929861
+   },
+   "stochastic_network": {
+    "p0": 39.258,
+    "sampled_cost": 3017.453585613096,
+    "feasible": true,
+    "common": 3301.9376564821746,
+    "expected_shortage_units": 3.554351045788236,
+    "burden": 291.0648640248698
+   },
+   "cvar_network": {
+    "p0": 20.043,
+    "sampled_cost": 2920.767658699852,
+    "feasible": true,
+    "common": 3738.616728295154,
+    "expected_shortage_units": 89.27788706556666,
+    "burden": 43.009935635806634
+   },
+   "protected_network": {
+    "p0": 20.321,
+    "sampled_cost": 2936.749865939098,
+    "feasible": true,
+    "common": 3744.580872831735,
+    "expected_shortage_units": 91.55573630325532,
+    "burden": 59.59436949616645
+   },
+   "hedged_network": {
+    "p0": 39.258,
+    "sampled_cost": 3017.453585613096,
+    "feasible": true,
+    "common": 3301.9376564821746,
+    "expected_shortage_units": 3.554351045788236,
+    "burden": 291.0648640248698
+   }
+  },
+  "agree": false,
+  "gap": 31.74118529074576
+ },
+ {
+  "cell": 90,
+  "review": 2,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "protected_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 14.526,
+    "sampled_cost": 2938.1428238270187,
+    "feasible": true,
+    "common": 2930.106413937908,
+    "expected_shortage_units": 18.6002602149916,
+    "burden": 206.88650595731374
+   },
+   "base_stock": {
+    "p0": 14.526,
+    "sampled_cost": 2938.1428238270187,
+    "feasible": true,
+    "common": 2930.106413937908,
+    "expected_shortage_units": 18.6002602149916,
+    "burden": 206.88650595731374
+   },
+   "deterministic_network": {
+    "p0": 3.577,
+    "sampled_cost": 2923.966476494199,
+    "feasible": false,
+    "common": 2892.0553751797815,
+    "expected_shortage_units": 27.22592459189743,
+    "burden": 106.01749839993523
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 2891.6541631746168,
+    "feasible": true,
+    "common": 2936.0115439185256,
+    "expected_shortage_units": 25.418986608705683,
+    "burden": 124.37781641689645
+   },
+   "cvar_network": {
+    "p0": 14.22,
+    "sampled_cost": 2891.559794223686,
+    "feasible": true,
+    "common": 2940.0642434580013,
+    "expected_shortage_units": 23.737331501967954,
+    "burden": 155.24969160379322
+   },
+   "protected_network": {
+    "p0": 9.776,
+    "sampled_cost": 2889.661248099619,
+    "feasible": true,
+    "common": 2924.9347478513446,
+    "expected_shortage_units": 21.838680943289653,
+    "burden": 141.92525134717394
+   },
+   "hedged_network": {
+    "p0": 0,
+    "sampled_cost": 2889.623638898544,
+    "feasible": true,
+    "common": 2938.1401356719853,
+    "expected_shortage_units": 22.334745516015676,
+    "burden": 148.06065056694376
+   }
+  },
+  "agree": false,
+  "gap": 11.076796067181021
+ },
+ {
+  "cell": 90,
+  "review": 3,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0.744,
+    "sampled_cost": 3173.930860487956,
+    "feasible": false,
+    "common": 2589.747099952272,
+    "expected_shortage_units": 22.161000614869806,
+    "burden": 25.000822182385484
+   },
+   "base_stock": {
+    "p0": 0.744,
+    "sampled_cost": 3173.930860487956,
+    "feasible": false,
+    "common": 2589.747099952272,
+    "expected_shortage_units": 22.161000614869806,
+    "burden": 25.000822182385484
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 3274.978309067217,
+    "feasible": false,
+    "common": 2578.4032387333136,
+    "expected_shortage_units": 32.72416655836109,
+    "burden": 8.716801033168249
+   },
+   "stochastic_network": {
+    "p0": 23.222,
+    "sampled_cost": 2949.778274134956,
+    "feasible": true,
+    "common": 2703.2061784395382,
+    "expected_shortage_units": 21.127632300662732,
+    "burden": 147.77061094543063
+   },
+   "cvar_network": {
+    "p0": 21.462,
+    "sampled_cost": 2951.304727257788,
+    "feasible": true,
+    "common": 2701.972577779836,
+    "expected_shortage_units": 21.127632700570697,
+    "burden": 129.17179033151913
+   },
+   "protected_network": {
+    "p0": 23.222,
+    "sampled_cost": 2949.778274134956,
+    "feasible": true,
+    "common": 2703.2061784395382,
+    "expected_shortage_units": 21.127632300662732,
+    "burden": 147.77061094543063
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 4,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "protected_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "protected_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2902.879935836183,
+    "feasible": false,
+    "common": 2289.6657399554138,
+    "expected_shortage_units": 18.26863610854433,
+    "burden": 57.261630174468756
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2902.879935836183,
+    "feasible": false,
+    "common": 2289.6657399554138,
+    "expected_shortage_units": 18.26863610854433,
+    "burden": 57.261630174468756
+   },
+   "deterministic_network": {
+    "p0": 3.356,
+    "sampled_cost": 2833.6453042492526,
+    "feasible": false,
+    "common": 2250.103864284927,
+    "expected_shortage_units": 12.731644304238658,
+    "burden": 62.164746870176614
+   },
+   "stochastic_network": {
+    "p0": 12.506,
+    "sampled_cost": 2722.24962222942,
+    "feasible": true,
+    "common": 2308.026239954548,
+    "expected_shortage_units": 0.7731061208502079,
+    "burden": 135.50452948520177
+   },
+   "cvar_network": {
+    "p0": 2.618,
+    "sampled_cost": 2731.671111084955,
+    "feasible": true,
+    "common": 2329.457965396939,
+    "expected_shortage_units": 4.236409956169428,
+    "burden": 141.20190084161794
+   },
+   "protected_network": {
+    "p0": 12.506,
+    "sampled_cost": 2722.0205296931667,
+    "feasible": true,
+    "common": 2307.4705458238873,
+    "expected_shortage_units": 0.800467334007616,
+    "burden": 134.66150877798538
+   },
+   "hedged_network": {
+    "p0": 23.781,
+    "sampled_cost": 2715.9571223701946,
+    "feasible": true,
+    "common": 2435.2047355191953,
+    "expected_shortage_units": 1.9440252270943688e-05,
+    "burden": 298.04982533882344
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 5,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "hedged_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 24.666,
+    "sampled_cost": 2817.6051761123335,
+    "feasible": false,
+    "common": 2575.8015582773946,
+    "expected_shortage_units": 23.243093026604846,
+    "burden": 11.188624554752037
+   },
+   "base_stock": {
+    "p0": 24.666,
+    "sampled_cost": 2817.6051761123335,
+    "feasible": false,
+    "common": 2575.8015582773946,
+    "expected_shortage_units": 23.243093026604846,
+    "burden": 11.188624554752037
+   },
+   "deterministic_network": {
+    "p0": 18.12,
+    "sampled_cost": 2756.8144703851335,
+    "feasible": false,
+    "common": 2498.5147887015255,
+    "expected_shortage_units": 11.34674939131521,
+    "burden": 28.794960116667195
+   },
+   "stochastic_network": {
+    "p0": 22.971,
+    "sampled_cost": 2630.1016917164325,
+    "feasible": true,
+    "common": 2492.956718231445,
+    "expected_shortage_units": 3.706163920989209,
+    "burden": 97.47458527409718
+   },
+   "cvar_network": {
+    "p0": 22.971,
+    "sampled_cost": 2629.097264049905,
+    "feasible": true,
+    "common": 2514.6630103049165,
+    "expected_shortage_units": 7.133756587056086,
+    "burden": 166.4908513605583
+   },
+   "protected_network": {
+    "p0": 22.971,
+    "sampled_cost": 2630.0940120952127,
+    "feasible": true,
+    "common": 2493.6773696018195,
+    "expected_shortage_units": 3.7090260569360227,
+    "burden": 97.41318171102859
+   },
+   "hedged_network": {
+    "p0": 36.206,
+    "sampled_cost": 2652.399499672616,
+    "feasible": true,
+    "common": 2501.102694171359,
+    "expected_shortage_units": 1.5926759543848408,
+    "burden": 88.37714904900383
+   }
+  },
+  "agree": false,
+  "gap": 8.145975939914024
+ },
+ {
+  "cell": 90,
+  "review": 6,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "protected_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 9.078,
+    "sampled_cost": 2701.106194030428,
+    "feasible": false,
+    "common": 2412.8967226558952,
+    "expected_shortage_units": 28.438512618950618,
+    "burden": 47.73811703357782
+   },
+   "base_stock": {
+    "p0": 9.078,
+    "sampled_cost": 2701.106194030428,
+    "feasible": false,
+    "common": 2412.8967226558952,
+    "expected_shortage_units": 28.438512618950618,
+    "burden": 47.73811703357782
+   },
+   "deterministic_network": {
+    "p0": 4.736,
+    "sampled_cost": 2694.3637656877017,
+    "feasible": false,
+    "common": 2346.566456454429,
+    "expected_shortage_units": 23.101242036688948,
+    "burden": 63.17877894953167
+   },
+   "stochastic_network": {
+    "p0": 48.006,
+    "sampled_cost": 2547.772638949661,
+    "feasible": true,
+    "common": 2392.3783427321014,
+    "expected_shortage_units": 16.028807270331466,
+    "burden": 206.69034850151647
+   },
+   "cvar_network": {
+    "p0": 48.006,
+    "sampled_cost": 2555.078576426273,
+    "feasible": true,
+    "common": 2405.3751883894247,
+    "expected_shortage_units": 14.34808004517997,
+    "burden": 221.02883774626682
+   },
+   "protected_network": {
+    "p0": 48.006,
+    "sampled_cost": 2547.772638949661,
+    "feasible": true,
+    "common": 2392.378342732101,
+    "expected_shortage_units": 16.028807270331463,
+    "burden": 206.69034850151647
+   }
+  },
+  "agree": false,
+  "gap": 4.547473508864641e-13
+ },
+ {
+  "cell": 90,
+  "review": 7,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2540.5745935497803,
+    "feasible": false,
+    "common": 2410.8252515136874,
+    "expected_shortage_units": 63.874071984862525,
+    "burden": 87.28300197210076
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2540.5745935497803,
+    "feasible": false,
+    "common": 2410.8252515136874,
+    "expected_shortage_units": 63.874071984862525,
+    "burden": 87.28300197210076
+   },
+   "stochastic_network": {
+    "p0": 23.699,
+    "sampled_cost": 2404.292925142405,
+    "feasible": true,
+    "common": 2394.023822820253,
+    "expected_shortage_units": 59.83982530567947,
+    "burden": 241.75062418828756
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 2395.5653687029035,
+    "feasible": true,
+    "common": 2367.431506840339,
+    "expected_shortage_units": 53.46639259768348,
+    "burden": 255.1831048769001
+   },
+   "protected_network": {
+    "p0": 25.316,
+    "sampled_cost": 2403.510607984146,
+    "feasible": true,
+    "common": 2374.913534799147,
+    "expected_shortage_units": 54.936441582480725,
+    "burden": 257.8188396175316
+   }
+  },
+  "agree": false,
+  "gap": 26.59231597991402
+ },
+ {
+  "cell": 90,
+  "review": 8,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 3042.9887487195556,
+    "feasible": false,
+    "common": 2469.5595683677393,
+    "expected_shortage_units": 61.115569049452574,
+    "burden": 28.909204145181693
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 3042.9887487195556,
+    "feasible": false,
+    "common": 2469.5595683677393,
+    "expected_shortage_units": 61.115569049452574,
+    "burden": 28.909204145181693
+   },
+   "deterministic_network": {
+    "p0": 19.566,
+    "sampled_cost": 2737.9308819156986,
+    "feasible": false,
+    "common": 2172.99353759264,
+    "expected_shortage_units": 16.726483090642567,
+    "burden": 43.69161566056997
+   },
+   "stochastic_network": {
+    "p0": 22.56,
+    "sampled_cost": 2614.7712691760644,
+    "feasible": true,
+    "common": 2216.3602156172983,
+    "expected_shortage_units": 8.040367951285155,
+    "burden": 109.72324675447067
+   },
+   "cvar_network": {
+    "p0": 31.16,
+    "sampled_cost": 2611.312186463569,
+    "feasible": true,
+    "common": 2244.16366391447,
+    "expected_shortage_units": 7.8390621646579906,
+    "burden": 132.38017381880974
+   },
+   "protected_network": {
+    "p0": 22.56,
+    "sampled_cost": 2614.0840857324515,
+    "feasible": true,
+    "common": 2221.8914999246,
+    "expected_shortage_units": 7.527405044321526,
+    "burden": 116.30947424428989
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 9,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "protected_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2956.5154602403536,
+    "feasible": false,
+    "common": 2542.241291615327,
+    "expected_shortage_units": 59.093482821523224,
+    "burden": 67.2809379329961
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2956.5154602403536,
+    "feasible": false,
+    "common": 2542.241291615327,
+    "expected_shortage_units": 59.093482821523224,
+    "burden": 67.2809379329961
+   },
+   "deterministic_network": {
+    "p0": 16.852,
+    "sampled_cost": 2651.331669435583,
+    "feasible": false,
+    "common": 2239.1856588597993,
+    "expected_shortage_units": 15.038147458131743,
+    "burden": 99.92261651726506
+   },
+   "stochastic_network": {
+    "p0": 42.691,
+    "sampled_cost": 2549.432254376242,
+    "feasible": true,
+    "common": 2367.372937584977,
+    "expected_shortage_units": 18.623963755090468,
+    "burden": 252.56019234708992
+   },
+   "cvar_network": {
+    "p0": 42.691,
+    "sampled_cost": 2549.432254376242,
+    "feasible": true,
+    "common": 2367.3729375849766,
+    "expected_shortage_units": 18.623963755090454,
+    "burden": 252.56019234708975
+   },
+   "protected_network": {
+    "p0": 42.691,
+    "sampled_cost": 2549.432254376241,
+    "feasible": true,
+    "common": 2367.3729375849775,
+    "expected_shortage_units": 18.623963755090454,
+    "burden": 252.56019234708936
+   }
+  },
+  "agree": false,
+  "gap": 9.094947017729282e-13
+ },
+ {
+  "cell": 90,
+  "review": 10,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2514.3266989982258,
+    "feasible": false,
+    "common": 2417.796116133687,
+    "expected_shortage_units": 55.81218298718234,
+    "burden": 109.437154504197
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2514.3266989982258,
+    "feasible": false,
+    "common": 2417.796116133687,
+    "expected_shortage_units": 55.81218298718234,
+    "burden": 109.437154504197
+   },
+   "deterministic_network": {
+    "p0": 9.076,
+    "sampled_cost": 2328.1084911160106,
+    "feasible": true,
+    "common": 2132.83044385829,
+    "expected_shortage_units": 14.08321973083584,
+    "burden": 169.67189403657684
+   },
+   "stochastic_network": {
+    "p0": 100.0,
+    "sampled_cost": 2314.050684344772,
+    "feasible": true,
+    "common": 2318.4526032407493,
+    "expected_shortage_units": 39.545369639748664,
+    "burden": 315.1796892518462
+   },
+   "cvar_network": {
+    "p0": 100.0,
+    "sampled_cost": 2319.649331899537,
+    "feasible": true,
+    "common": 2324.4688334672755,
+    "expected_shortage_units": 40.467858503638006,
+    "burden": 365.2770522324968
+   },
+   "protected_network": {
+    "p0": 100.0,
+    "sampled_cost": 2314.050684344772,
+    "feasible": true,
+    "common": 2318.4526032407493,
+    "expected_shortage_units": 39.54536963974865,
+    "burden": 315.1796892518462
+   },
+   "hedged_network": {
+    "p0": 100.0,
+    "sampled_cost": 2303.541424743615,
+    "feasible": true,
+    "common": 2234.071815457991,
+    "expected_shortage_units": 5.880664127819587,
+    "burden": 477.7452391189036
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 11,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "protected_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2578.110201232961,
+    "feasible": false,
+    "common": 2534.0231746208706,
+    "expected_shortage_units": 63.124066234867165,
+    "burden": 66.04766547494822
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2578.110201232961,
+    "feasible": false,
+    "common": 2534.0231746208706,
+    "expected_shortage_units": 63.124066234867165,
+    "burden": 66.04766547494822
+   },
+   "deterministic_network": {
+    "p0": 26.266,
+    "sampled_cost": 2445.8286106134365,
+    "feasible": false,
+    "common": 2192.4153962070955,
+    "expected_shortage_units": 13.861229389105036,
+    "burden": 174.73919399709794
+   },
+   "stochastic_network": {
+    "p0": 15.253,
+    "sampled_cost": 2461.3051798422903,
+    "feasible": true,
+    "common": 2437.891355951559,
+    "expected_shortage_units": 40.33774729664105,
+    "burden": 173.15482168279235
+   },
+   "cvar_network": {
+    "p0": 31.404,
+    "sampled_cost": 2464.0427997528886,
+    "feasible": true,
+    "common": 2422.7366628780233,
+    "expected_shortage_units": 29.864223616526697,
+    "burden": 224.52186567112165
+   },
+   "protected_network": {
+    "p0": 15.253,
+    "sampled_cost": 2461.3051798422903,
+    "feasible": true,
+    "common": 2437.8913559515595,
+    "expected_shortage_units": 40.33774729664108,
+    "burden": 173.15482168279226
+   }
+  },
+  "agree": false,
+  "gap": 15.154693073536237
+ },
+ {
+  "cell": 90,
+  "review": 12,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2191.270965273823,
+    "feasible": false,
+    "common": 2177.5397415095845,
+    "expected_shortage_units": 54.70893655689617,
+    "burden": 110.28729820255671
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2191.270965273823,
+    "feasible": false,
+    "common": 2177.5397415095845,
+    "expected_shortage_units": 54.70893655689617,
+    "burden": 110.28729820255671
+   },
+   "deterministic_network": {
+    "p0": 25.115,
+    "sampled_cost": 2067.414656555578,
+    "feasible": false,
+    "common": 1904.5849861623972,
+    "expected_shortage_units": 17.823955051725218,
+    "burden": 215.5386840618556
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 2045.8597003749596,
+    "feasible": true,
+    "common": 2134.005053967389,
+    "expected_shortage_units": 35.945464966962426,
+    "burden": 358.5679753136389
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 2041.614049739686,
+    "feasible": true,
+    "common": 2133.026348519023,
+    "expected_shortage_units": 36.291008352623805,
+    "burden": 349.9299071506461
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 2045.8597003749596,
+    "feasible": true,
+    "common": 2134.005053967389,
+    "expected_shortage_units": 35.945464966962426,
+    "burden": 358.5679753136389
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 13,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 9.769,
+    "sampled_cost": 1862.1288602245345,
+    "feasible": false,
+    "common": 1906.9520647132729,
+    "expected_shortage_units": 49.30048847823656,
+    "burden": 105.50497699858883
+   },
+   "base_stock": {
+    "p0": 9.769,
+    "sampled_cost": 1862.1288602245345,
+    "feasible": false,
+    "common": 1906.9520647132729,
+    "expected_shortage_units": 49.30048847823656,
+    "burden": 105.50497699858883
+   },
+   "stochastic_network": {
+    "p0": 24.39,
+    "sampled_cost": 1648.1291339205177,
+    "feasible": true,
+    "common": 1895.9989152398116,
+    "expected_shortage_units": 57.96564770643853,
+    "burden": 133.8817521115127
+   },
+   "cvar_network": {
+    "p0": 24.39,
+    "sampled_cost": 1699.1303720071667,
+    "feasible": true,
+    "common": 1905.2857079578282,
+    "expected_shortage_units": 60.843180970208614,
+    "burden": 156.57655336036075
+   },
+   "protected_network": {
+    "p0": 24.39,
+    "sampled_cost": 1648.1291339205177,
+    "feasible": true,
+    "common": 1895.9989152398116,
+    "expected_shortage_units": 57.96564770643853,
+    "burden": 133.8817521115127
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 14,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 15.306,
+    "sampled_cost": 1555.2916016995912,
+    "feasible": false,
+    "common": 1391.1182410913236,
+    "expected_shortage_units": 7.027044229079135,
+    "burden": 71.37369465709882
+   },
+   "base_stock": {
+    "p0": 15.306,
+    "sampled_cost": 1555.2916016995912,
+    "feasible": false,
+    "common": 1391.1182410913236,
+    "expected_shortage_units": 7.027044229079135,
+    "burden": 71.37369465709882
+   },
+   "deterministic_network": {
+    "p0": 10.149,
+    "sampled_cost": 1570.7006796256424,
+    "feasible": false,
+    "common": 1376.8481848575557,
+    "expected_shortage_units": 12.007195997897703,
+    "burden": 59.594034890361975
+   },
+   "stochastic_network": {
+    "p0": 25.333,
+    "sampled_cost": 1428.527569908089,
+    "feasible": true,
+    "common": 1416.256880847777,
+    "expected_shortage_units": 22.165921618673988,
+    "burden": 155.8365491814386
+   },
+   "cvar_network": {
+    "p0": 25.333,
+    "sampled_cost": 1424.7097248863497,
+    "feasible": true,
+    "common": 1427.207348710895,
+    "expected_shortage_units": 23.63996530606027,
+    "burden": 130.78909144426612
+   }
+  },
+  "agree": false,
+  "gap": 10.950467863118092
+ },
+ {
+  "cell": 90,
+  "review": 15,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 21.971,
+    "sampled_cost": 1637.1628051842954,
+    "feasible": false,
+    "common": 1256.6035367707452,
+    "expected_shortage_units": 2.9178521715729873,
+    "burden": 82.22492628544673
+   },
+   "base_stock": {
+    "p0": 21.971,
+    "sampled_cost": 1637.1628051842954,
+    "feasible": false,
+    "common": 1256.6035367707452,
+    "expected_shortage_units": 2.9178521715729873,
+    "burden": 82.22492628544673
+   },
+   "deterministic_network": {
+    "p0": 13.542,
+    "sampled_cost": 1666.1934405602724,
+    "feasible": false,
+    "common": 1249.4603754179452,
+    "expected_shortage_units": 11.461543567031997,
+    "burden": 70.15282751110888
+   },
+   "stochastic_network": {
+    "p0": 32.698,
+    "sampled_cost": 1442.1843054621356,
+    "feasible": true,
+    "common": 1250.2462357922534,
+    "expected_shortage_units": 0.6230212758268726,
+    "burden": 167.82356999469914
+   },
+   "cvar_network": {
+    "p0": 42.022,
+    "sampled_cost": 1437.1846980134862,
+    "feasible": true,
+    "common": 1262.1337542169124,
+    "expected_shortage_units": 0.12485820961530918,
+    "burden": 183.9614932583888
+   },
+   "protected_network": {
+    "p0": 32.698,
+    "sampled_cost": 1442.1843054621356,
+    "feasible": true,
+    "common": 1250.246235792254,
+    "expected_shortage_units": 0.6230212758268726,
+    "burden": 167.82356999469934
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 16,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "PENDING_REVIEW",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 22.299,
+    "sampled_cost": 1442.5968352412146,
+    "feasible": false,
+    "common": 1160.4188702693027,
+    "expected_shortage_units": 2.714123581523956,
+    "burden": 44.731324309466565
+   },
+   "base_stock": {
+    "p0": 22.299,
+    "sampled_cost": 1442.5968352412146,
+    "feasible": false,
+    "common": 1160.4188702693027,
+    "expected_shortage_units": 2.714123581523956,
+    "burden": 44.731324309466565
+   },
+   "deterministic_network": {
+    "p0": 13.869,
+    "sampled_cost": 1451.895969354498,
+    "feasible": false,
+    "common": 1156.4743371420245,
+    "expected_shortage_units": 11.205519601383987,
+    "burden": 29.799795678675792
+   },
+   "joint_recovery": {
+    "p0": 33.018,
+    "sampled_cost": 1289.4051292724894,
+    "feasible": false,
+    "common": 1139.6745397861796,
+    "expected_shortage_units": 5.464157626945928,
+    "burden": 198.88086363272427
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 90,
+  "review": 17,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 1.977,
+    "sampled_cost": 1145.604974184995,
+    "feasible": false,
+    "common": 1028.2908016864903,
+    "expected_shortage_units": 2.3626679106384714,
+    "burden": 67.76117472881083
+   },
+   "base_stock": {
+    "p0": 1.977,
+    "sampled_cost": 1145.604974184995,
+    "feasible": false,
+    "common": 1028.2908016864903,
+    "expected_shortage_units": 2.3626679106384714,
+    "burden": 67.76117472881083
+   },
+   "deterministic_network": {
+    "p0": 3.894,
+    "sampled_cost": 1150.9656800073071,
+    "feasible": false,
+    "common": 1025.381345597664,
+    "expected_shortage_units": 10.425493025679332,
+    "burden": 48.69764465772488
+   },
+   "stochastic_network": {
+    "p0": 100.0,
+    "sampled_cost": 987.405206884859,
+    "feasible": true,
+    "common": 1017.2118662694463,
+    "expected_shortage_units": 4.182370321288767,
+    "burden": 258.72564768142803
+   },
+   "cvar_network": {
+    "p0": 100.0,
+    "sampled_cost": 987.4052068848592,
+    "feasible": true,
+    "common": 1017.211866269447,
+    "expected_shortage_units": 4.182370321288763,
+    "burden": 258.72564768142803
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 18,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": true,
+  "chosen": "joint_recovery",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 21.278,
+    "sampled_cost": 1112.468111045397,
+    "feasible": false,
+    "common": 925.4680976748048,
+    "expected_shortage_units": 1.988554421331632,
+    "burden": 72.99428089544872
+   },
+   "base_stock": {
+    "p0": 21.278,
+    "sampled_cost": 1112.468111045397,
+    "feasible": false,
+    "common": 925.4680976748048,
+    "expected_shortage_units": 1.988554421331632,
+    "burden": 72.99428089544872
+   },
+   "deterministic_network": {
+    "p0": 13.378,
+    "sampled_cost": 1089.5526118253874,
+    "feasible": false,
+    "common": 923.6858650411443,
+    "expected_shortage_units": 9.771487582845323,
+    "burden": 42.8957039307991
+   },
+   "joint_recovery": {
+    "p0": 72.939,
+    "sampled_cost": 1040.5812686587176,
+    "feasible": false,
+    "common": 905.0881755134835,
+    "expected_shortage_units": 1.25751308062121,
+    "burden": 146.97227746983245
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 90,
+  "review": 19,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 16.428,
+    "sampled_cost": 920.4886562018421,
+    "feasible": false,
+    "common": 799.8123186750865,
+    "expected_shortage_units": 1.506513149544422,
+    "burden": 43.949001881515294
+   },
+   "base_stock": {
+    "p0": 16.428,
+    "sampled_cost": 920.4886562018421,
+    "feasible": false,
+    "common": 799.8123186750865,
+    "expected_shortage_units": 1.506513149544422,
+    "burden": 43.949001881515294
+   },
+   "deterministic_network": {
+    "p0": 11.149,
+    "sampled_cost": 950.565833133623,
+    "feasible": false,
+    "common": 789.1569792192432,
+    "expected_shortage_units": 8.144281053578194,
+    "burden": 28.702656814302806
+   },
+   "stochastic_network": {
+    "p0": 39.861,
+    "sampled_cost": 791.4009829429788,
+    "feasible": true,
+    "common": 775.0935070209043,
+    "expected_shortage_units": 1.0515963699134159,
+    "burden": 173.63741735247734
+   },
+   "cvar_network": {
+    "p0": 39.861,
+    "sampled_cost": 791.4009829429791,
+    "feasible": true,
+    "common": 775.0935070209055,
+    "expected_shortage_units": 1.0515963699134159,
+    "burden": 173.63741735247729
+   }
+  },
+  "agree": false,
+  "gap": 1.1368683772161603e-12
+ },
+ {
+  "cell": 90,
+  "review": 20,
+  "state": "NO_ACTION",
+  "recovery_mode": false,
+  "chosen": "incumbent",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "incumbent",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 648.2645706502309,
+    "feasible": true,
+    "common": 653.7795604731239,
+    "expected_shortage_units": 1.3061293346468035,
+    "burden": 111.4852991378408
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 648.2645706502309,
+    "feasible": true,
+    "common": 653.7795604731239,
+    "expected_shortage_units": 1.3061293346468035,
+    "burden": 111.4852991378408
+   },
+   "deterministic_network": {
+    "p0": 11.22,
+    "sampled_cost": 628.0534480270785,
+    "feasible": false,
+    "common": 633.6434384308936,
+    "expected_shortage_units": 5.458055775385882,
+    "burden": 108.78299943862392
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 21,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 15.511,
+    "sampled_cost": 610.3371050609022,
+    "feasible": false,
+    "common": 558.7737367523094,
+    "expected_shortage_units": 0.9228521453096451,
+    "burden": 63.391898271873956
+   },
+   "base_stock": {
+    "p0": 15.511,
+    "sampled_cost": 610.3371050609022,
+    "feasible": false,
+    "common": 558.7737367523094,
+    "expected_shortage_units": 0.9228521453096451,
+    "burden": 63.391898271873956
+   },
+   "deterministic_network": {
+    "p0": 14.884,
+    "sampled_cost": 613.8445345099171,
+    "feasible": false,
+    "common": 534.210234185434,
+    "expected_shortage_units": 4.982695662313457,
+    "burden": 43.02972324986442
+   },
+   "stochastic_network": {
+    "p0": 25.459,
+    "sampled_cost": 547.18567103745,
+    "feasible": true,
+    "common": 530.9384593480715,
+    "expected_shortage_units": 0.5348217313414009,
+    "burden": 109.75760347741243
+   },
+   "cvar_network": {
+    "p0": 25.459,
+    "sampled_cost": 547.18567103745,
+    "feasible": true,
+    "common": 530.9384593480715,
+    "expected_shortage_units": 0.5348217313414009,
+    "burden": 109.75760347741237
+   }
+  },
+  "agree": false,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 22,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 7.358,
+    "sampled_cost": 530.5856178914321,
+    "feasible": false,
+    "common": 446.81490251721425,
+    "expected_shortage_units": 0.6356276594074728,
+    "burden": 82.19179880641111
+   },
+   "base_stock": {
+    "p0": 7.358,
+    "sampled_cost": 530.5856178914321,
+    "feasible": false,
+    "common": 446.81490251721425,
+    "expected_shortage_units": 0.6356276594074728,
+    "burden": 82.19179880641111
+   },
+   "deterministic_network": {
+    "p0": 10.701,
+    "sampled_cost": 470.3696893168401,
+    "feasible": false,
+    "common": 418.28672879345237,
+    "expected_shortage_units": 4.04881679678674,
+    "burden": 71.72422847097806
+   },
+   "stochastic_network": {
+    "p0": 37.52,
+    "sampled_cost": 411.2777948165261,
+    "feasible": true,
+    "common": 416.150909545186,
+    "expected_shortage_units": 2.016600534765611,
+    "burden": 112.61727073316938
+   },
+   "cvar_network": {
+    "p0": 37.52,
+    "sampled_cost": 411.2777948165261,
+    "feasible": true,
+    "common": 416.15090954518587,
+    "expected_shortage_units": 2.016600534765611,
+    "burden": 112.61727073316938
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 23,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": true,
+  "chosen": "incumbent",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 27.587,
+    "sampled_cost": 466.06086224533124,
+    "feasible": false,
+    "common": 351.6845838443111,
+    "expected_shortage_units": 0.6281881961540354,
+    "burden": 30.59935568844515
+   },
+   "base_stock": {
+    "p0": 27.587,
+    "sampled_cost": 466.06086224533124,
+    "feasible": false,
+    "common": 351.6845838443111,
+    "expected_shortage_units": 0.6281881961540354,
+    "burden": 30.59935568844515
+   },
+   "deterministic_network": {
+    "p0": 16.143,
+    "sampled_cost": 405.97283141222584,
+    "feasible": false,
+    "common": 323.4598357103276,
+    "expected_shortage_units": 3.9338849781473835,
+    "burden": 14.341689588680707
+   },
+   "joint_recovery": {
+    "p0": 14.878,
+    "sampled_cost": 402.83512301048637,
+    "feasible": false,
+    "common": 327.4609306134976,
+    "expected_shortage_units": 4.81995811211203,
+    "burden": 12.47456518843651
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 90,
+  "review": 24,
+  "state": "NO_ACTION",
+  "recovery_mode": false,
+  "chosen": "incumbent",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "incumbent",
+  "candidates": {
+   "incumbent": {
+    "p0": 13.504,
+    "sampled_cost": 254.7806379545588,
+    "feasible": true,
+    "common": 223.83670780219356,
+    "expected_shortage_units": 0.04953890121232117,
+    "burden": 60.86455634674207
+   },
+   "base_stock": {
+    "p0": 13.504,
+    "sampled_cost": 254.7806379545588,
+    "feasible": true,
+    "common": 223.83670780219356,
+    "expected_shortage_units": 0.04953890121232117,
+    "burden": 60.86455634674207
+   },
+   "deterministic_network": {
+    "p0": 1.11,
+    "sampled_cost": 231.3463890319565,
+    "feasible": false,
+    "common": 193.44822044958462,
+    "expected_shortage_units": 2.1905164693095807,
+    "burden": 42.57372612615651
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 90,
+  "review": 25,
+  "state": "NO_ACTION",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 27.939,
+    "sampled_cost": 125.70590715709028,
+    "feasible": true,
+    "common": 140.41643853761215,
+    "expected_shortage_units": 0.492592668182985,
+    "burden": 36.773535236695714
+   },
+   "base_stock": {
+    "p0": 27.939,
+    "sampled_cost": 125.70590715709028,
+    "feasible": true,
+    "common": 140.41643853761215,
+    "expected_shortage_units": 0.492592668182985,
+    "burden": 36.773535236695714
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 86.22137712228641,
+    "feasible": true,
+    "common": 100.3172133301035,
+    "expected_shortage_units": 0.492592668182985,
+    "burden": 36.773535236695714
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 0,
+  "state": "NO_ACTION",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 5.939,
+    "sampled_cost": 3457.808456727383,
+    "feasible": true,
+    "common": 3445.3450055935314,
+    "expected_shortage_units": 3.995658425341986,
+    "burden": 20.790035126338715
+   },
+   "base_stock": {
+    "p0": 5.939,
+    "sampled_cost": 3457.808456727383,
+    "feasible": true,
+    "common": 3445.3450055935314,
+    "expected_shortage_units": 3.995658425341986,
+    "burden": 20.790035126338715
+   },
+   "deterministic_network": {
+    "p0": 11.318,
+    "sampled_cost": 3451.7380283332923,
+    "feasible": true,
+    "common": 3428.5681869546743,
+    "expected_shortage_units": 7.227488862436639,
+    "burden": 19.367546110792013
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 1,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "incumbent",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 39.05,
+    "sampled_cost": 4163.063419903784,
+    "feasible": true,
+    "common": 3861.7648851552563,
+    "expected_shortage_units": 4.233446372970745,
+    "burden": 66.54250471651035
+   },
+   "base_stock": {
+    "p0": 39.05,
+    "sampled_cost": 4163.063419903784,
+    "feasible": true,
+    "common": 3861.7648851552563,
+    "expected_shortage_units": 4.233446372970745,
+    "burden": 66.54250471651035
+   },
+   "deterministic_network": {
+    "p0": 24.292,
+    "sampled_cost": 4166.072063121485,
+    "feasible": false,
+    "common": 3859.886855182358,
+    "expected_shortage_units": 13.19706889144034,
+    "burden": 34.31944164361897
+   },
+   "stochastic_network": {
+    "p0": 39.05,
+    "sampled_cost": 4128.545791064557,
+    "feasible": true,
+    "common": 3827.0985240737746,
+    "expected_shortage_units": 4.233446372970745,
+    "burden": 66.54250471651035
+   },
+   "cvar_network": {
+    "p0": 39.05,
+    "sampled_cost": 4128.545791064557,
+    "feasible": true,
+    "common": 3827.0985240737746,
+    "expected_shortage_units": 4.233446372970745,
+    "burden": 66.54250471651035
+   },
+   "protected_network": {
+    "p0": 27.976,
+    "sampled_cost": 4103.946630436179,
+    "feasible": true,
+    "common": 3843.842803796069,
+    "expected_shortage_units": 3.7351532888600185,
+    "burden": 93.10327786429663
+   }
+  },
+  "agree": false,
+  "gap": 34.66636108148168
+ },
+ {
+  "cell": 108,
+  "review": 2,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "protected_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 14.51,
+    "sampled_cost": 3712.9458847007177,
+    "feasible": false,
+    "common": 3422.660767592052,
+    "expected_shortage_units": 18.657262575003468,
+    "burden": 233.2544936443834
+   },
+   "base_stock": {
+    "p0": 14.51,
+    "sampled_cost": 3712.9458847007177,
+    "feasible": false,
+    "common": 3422.660767592052,
+    "expected_shortage_units": 18.657262575003468,
+    "burden": 233.2544936443834
+   },
+   "deterministic_network": {
+    "p0": 3.655,
+    "sampled_cost": 3709.4874603297067,
+    "feasible": false,
+    "common": 3388.9094436970063,
+    "expected_shortage_units": 28.206539274281354,
+    "burden": 152.33647855684478
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 3638.3397658686704,
+    "feasible": true,
+    "common": 3539.017370022102,
+    "expected_shortage_units": 20.230184782856732,
+    "burden": 277.800622179095
+   },
+   "cvar_network": {
+    "p0": 7.107,
+    "sampled_cost": 3633.235353820738,
+    "feasible": true,
+    "common": 3540.2684603842085,
+    "expected_shortage_units": 19.02693058606319,
+    "burden": 291.0592591557151
+   },
+   "protected_network": {
+    "p0": 8.185,
+    "sampled_cost": 3634.8694608594624,
+    "feasible": true,
+    "common": 3536.914335674023,
+    "expected_shortage_units": 19.33373645734803,
+    "burden": 286.7726897754682
+   }
+  },
+  "agree": false,
+  "gap": 2.103034348079291
+ },
+ {
+  "cell": 108,
+  "review": 3,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "hedged_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0.907,
+    "sampled_cost": 2847.7486323221556,
+    "feasible": false,
+    "common": 3057.191637479661,
+    "expected_shortage_units": 22.56647407246414,
+    "burden": 195.89507990051908
+   },
+   "base_stock": {
+    "p0": 0.907,
+    "sampled_cost": 2847.7486323221556,
+    "feasible": false,
+    "common": 3057.191637479661,
+    "expected_shortage_units": 22.56647407246414,
+    "burden": 195.89507990051908
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 2877.4238770165966,
+    "feasible": false,
+    "common": 3050.0547552399116,
+    "expected_shortage_units": 34.01628001417406,
+    "burden": 153.71766439823762
+   },
+   "stochastic_network": {
+    "p0": 4.659,
+    "sampled_cost": 2727.5534264740836,
+    "feasible": true,
+    "common": 3082.6940815664093,
+    "expected_shortage_units": 40.96471833291658,
+    "burden": 103.68160270103209
+   },
+   "cvar_network": {
+    "p0": 14.227,
+    "sampled_cost": 2701.7196274437465,
+    "feasible": true,
+    "common": 3072.597435398506,
+    "expected_shortage_units": 36.74223776145803,
+    "burden": 113.16917513449404
+   },
+   "protected_network": {
+    "p0": 16.935,
+    "sampled_cost": 2727.7799631102043,
+    "feasible": true,
+    "common": 3107.096492343124,
+    "expected_shortage_units": 43.29840986929792,
+    "burden": 116.89465364078345
+   },
+   "hedged_network": {
+    "p0": 7.609,
+    "sampled_cost": 2826.308468504302,
+    "feasible": true,
+    "common": 3064.483960584555,
+    "expected_shortage_units": 21.5847673538253,
+    "burden": 219.16015179071923
+   }
+  },
+  "agree": false,
+  "gap": 18.21012098185429
+ },
+ {
+  "cell": 108,
+  "review": 4,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "protected_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2990.7055082803804,
+    "feasible": false,
+    "common": 2658.4272637441536,
+    "expected_shortage_units": 20.570384396566727,
+    "burden": 40.05711940507689
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2990.7055082803804,
+    "feasible": false,
+    "common": 2658.4272637441536,
+    "expected_shortage_units": 20.570384396566727,
+    "burden": 40.05711940507689
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 2944.266665065341,
+    "feasible": false,
+    "common": 2613.2090401112864,
+    "expected_shortage_units": 13.726138283770643,
+    "burden": 46.78019159395813
+   },
+   "stochastic_network": {
+    "p0": 1.937,
+    "sampled_cost": 2898.9218379588656,
+    "feasible": true,
+    "common": 2605.744044283649,
+    "expected_shortage_units": 2.6932423664510883,
+    "burden": 81.26985311431162
+   },
+   "cvar_network": {
+    "p0": 10.135,
+    "sampled_cost": 2925.476883572432,
+    "feasible": true,
+    "common": 2635.2920204456154,
+    "expected_shortage_units": 7.105863698618998,
+    "burden": 79.87594020999674
+   },
+   "protected_network": {
+    "p0": 4.206,
+    "sampled_cost": 2906.8615626329824,
+    "feasible": true,
+    "common": 2643.5568431130587,
+    "expected_shortage_units": 3.7119420774391947,
+    "burden": 98.30725591137137
+   }
+  },
+  "agree": false,
+  "gap": 37.81279882940953
+ },
+ {
+  "cell": 108,
+  "review": 5,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "incumbent",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 17.754,
+    "sampled_cost": 3157.293734535205,
+    "feasible": true,
+    "common": 3019.1493982689594,
+    "expected_shortage_units": 28.240211237680448,
+    "burden": 50.73073870238374
+   },
+   "base_stock": {
+    "p0": 17.754,
+    "sampled_cost": 3157.293734535205,
+    "feasible": true,
+    "common": 3019.1493982689594,
+    "expected_shortage_units": 28.240211237680448,
+    "burden": 50.73073870238374
+   },
+   "deterministic_network": {
+    "p0": 14.624,
+    "sampled_cost": 3102.7854833832066,
+    "feasible": true,
+    "common": 2916.7372766367826,
+    "expected_shortage_units": 12.338022386514794,
+    "burden": 79.71420477456918
+   },
+   "stochastic_network": {
+    "p0": 16.428,
+    "sampled_cost": 3063.501487963356,
+    "feasible": true,
+    "common": 3016.3180709168646,
+    "expected_shortage_units": 31.022594696630684,
+    "burden": 123.25862110505479
+   },
+   "cvar_network": {
+    "p0": 16.428,
+    "sampled_cost": 3072.965605660893,
+    "feasible": true,
+    "common": 3016.962108741768,
+    "expected_shortage_units": 28.603588505907585,
+    "burden": 163.33328352763291
+   },
+   "protected_network": {
+    "p0": 16.428,
+    "sampled_cost": 3062.95135293072,
+    "feasible": true,
+    "common": 3012.324550483607,
+    "expected_shortage_units": 28.18704906143115,
+    "burden": 138.5964823698995
+   },
+   "hedged_network": {
+    "p0": 17.754,
+    "sampled_cost": 3118.488609828955,
+    "feasible": true,
+    "common": 2989.141427537637,
+    "expected_shortage_units": 1.563094605215108,
+    "burden": 181.8564646700954
+   }
+  },
+  "agree": false,
+  "gap": 102.41212163217688
+ },
+ {
+  "cell": 108,
+  "review": 6,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "incumbent",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 21.753,
+    "sampled_cost": 3014.5861045779166,
+    "feasible": true,
+    "common": 3003.0663187829373,
+    "expected_shortage_units": 33.44595229538739,
+    "burden": 86.48485700392061
+   },
+   "base_stock": {
+    "p0": 21.753,
+    "sampled_cost": 3014.5861045779166,
+    "feasible": true,
+    "common": 3003.0663187829373,
+    "expected_shortage_units": 33.44595229538739,
+    "burden": 86.48485700392061
+   },
+   "deterministic_network": {
+    "p0": 13.833,
+    "sampled_cost": 3020.8209429966073,
+    "feasible": true,
+    "common": 2891.092496473214,
+    "expected_shortage_units": 19.088086217665307,
+    "burden": 121.6009029367315
+   },
+   "stochastic_network": {
+    "p0": 42.183,
+    "sampled_cost": 2932.222134059725,
+    "feasible": true,
+    "common": 3077.3961561973915,
+    "expected_shortage_units": 56.31589641340712,
+    "burden": 94.68122201030945
+   },
+   "cvar_network": {
+    "p0": 40.468,
+    "sampled_cost": 2931.5815150905355,
+    "feasible": true,
+    "common": 3076.9051076488827,
+    "expected_shortage_units": 56.57146798100355,
+    "burden": 93.06857582599991
+   },
+   "protected_network": {
+    "p0": 42.183,
+    "sampled_cost": 2932.222134059724,
+    "feasible": true,
+    "common": 3077.3961561973915,
+    "expected_shortage_units": 56.3158964134071,
+    "burden": 94.68122201030893
+   }
+  },
+  "agree": false,
+  "gap": 111.97382230972335
+ },
+ {
+  "cell": 108,
+  "review": 7,
+  "state": "PROTECT",
+  "recovery_mode": true,
+  "chosen": "incumbent",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 19.444,
+    "sampled_cost": 3699.565470434895,
+    "feasible": false,
+    "common": 3176.308468953728,
+    "expected_shortage_units": 70.45935453621017,
+    "burden": 25.427087706564325
+   },
+   "base_stock": {
+    "p0": 19.444,
+    "sampled_cost": 3699.565470434895,
+    "feasible": false,
+    "common": 3176.308468953728,
+    "expected_shortage_units": 70.45935453621017,
+    "burden": 25.427087706564325
+   },
+   "joint_recovery": {
+    "p0": 23.387,
+    "sampled_cost": 3596.455775702868,
+    "feasible": false,
+    "common": 3194.570846491617,
+    "expected_shortage_units": 83.11006032772026,
+    "burden": 64.22011562404859
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 108,
+  "review": 8,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 2.627,
+    "sampled_cost": 3782.973158090867,
+    "feasible": false,
+    "common": 3051.2720034590734,
+    "expected_shortage_units": 67.76078759285878,
+    "burden": 23.94843572940716
+   },
+   "base_stock": {
+    "p0": 2.627,
+    "sampled_cost": 3782.973158090867,
+    "feasible": false,
+    "common": 3051.2720034590734,
+    "expected_shortage_units": 67.76078759285878,
+    "burden": 23.94843572940716
+   },
+   "deterministic_network": {
+    "p0": 24.227,
+    "sampled_cost": 3537.7892517863615,
+    "feasible": false,
+    "common": 2794.9698672696327,
+    "expected_shortage_units": 30.11981149407966,
+    "burden": 41.97106332153576
+   },
+   "stochastic_network": {
+    "p0": 40.701,
+    "sampled_cost": 3384.607244724023,
+    "feasible": true,
+    "common": 2928.8829997541693,
+    "expected_shortage_units": 16.055482411249308,
+    "burden": 211.44175169253114
+   },
+   "cvar_network": {
+    "p0": 40.701,
+    "sampled_cost": 3357.608708788932,
+    "feasible": true,
+    "common": 2938.2641523249167,
+    "expected_shortage_units": 16.1750379857555,
+    "burden": 212.19513374493908
+   },
+   "protected_network": {
+    "p0": 40.701,
+    "sampled_cost": 3386.2730514491927,
+    "feasible": true,
+    "common": 2934.803612990315,
+    "expected_shortage_units": 16.02296779906353,
+    "burden": 216.19116795601494
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 9,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 3179.551441356612,
+    "feasible": false,
+    "common": 3031.387240153151,
+    "expected_shortage_units": 69.95010374516713,
+    "burden": 65.49891943457567
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 3179.551441356612,
+    "feasible": false,
+    "common": 3031.387240153151,
+    "expected_shortage_units": 69.95010374516713,
+    "burden": 65.49891943457567
+   },
+   "deterministic_network": {
+    "p0": 17.128,
+    "sampled_cost": 2977.9720849161354,
+    "feasible": true,
+    "common": 2689.9537539132743,
+    "expected_shortage_units": 16.763527756993362,
+    "burden": 144.91643780549316
+   },
+   "stochastic_network": {
+    "p0": 4.896,
+    "sampled_cost": 2999.0902270395077,
+    "feasible": true,
+    "common": 2978.753001974101,
+    "expected_shortage_units": 61.125788770573095,
+    "burden": 256.3820045452566
+   },
+   "cvar_network": {
+    "p0": 4.896,
+    "sampled_cost": 2975.4792296190008,
+    "feasible": true,
+    "common": 2963.383413978303,
+    "expected_shortage_units": 59.41133215704512,
+    "burden": 287.8059225187482
+   },
+   "protected_network": {
+    "p0": 4.896,
+    "sampled_cost": 2999.090227039508,
+    "feasible": true,
+    "common": 2978.7530019741066,
+    "expected_shortage_units": 61.12578877057341,
+    "burden": 256.38200454525736
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 10,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "protected_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2802.6916894343526,
+    "feasible": false,
+    "common": 3036.4489804204104,
+    "expected_shortage_units": 66.82293034074046,
+    "burden": 100.16866345683395
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2802.6916894343526,
+    "feasible": false,
+    "common": 3036.4489804204104,
+    "expected_shortage_units": 66.82293034074046,
+    "burden": 100.16866345683395
+   },
+   "deterministic_network": {
+    "p0": 24.58,
+    "sampled_cost": 2700.190149701086,
+    "feasible": true,
+    "common": 2723.1790060436565,
+    "expected_shortage_units": 16.311590041900466,
+    "burden": 240.36419950515878
+   },
+   "stochastic_network": {
+    "p0": 17.527,
+    "sampled_cost": 2626.5417814235498,
+    "feasible": true,
+    "common": 2986.11429965732,
+    "expected_shortage_units": 65.79343536055416,
+    "burden": 216.29157664776764
+   },
+   "cvar_network": {
+    "p0": 17.527,
+    "sampled_cost": 2626.5417814235498,
+    "feasible": true,
+    "common": 2986.1142996573217,
+    "expected_shortage_units": 65.79343536055435,
+    "burden": 216.29157664776776
+   },
+   "protected_network": {
+    "p0": 17.527,
+    "sampled_cost": 2626.541781423549,
+    "feasible": true,
+    "common": 2986.114299657331,
+    "expected_shortage_units": 65.7934353605552,
+    "burden": 216.29157664776724
+   }
+  },
+  "agree": false,
+  "gap": 262.9352936136743
+ },
+ {
+  "cell": 108,
+  "review": 11,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 24.297,
+    "sampled_cost": 3329.807302642172,
+    "feasible": false,
+    "common": 3232.8789588857016,
+    "expected_shortage_units": 76.40380884620286,
+    "burden": 92.31976766403496
+   },
+   "base_stock": {
+    "p0": 24.297,
+    "sampled_cost": 3329.807302642172,
+    "feasible": false,
+    "common": 3232.8789588857016,
+    "expected_shortage_units": 76.40380884620286,
+    "burden": 92.31976766403496
+   },
+   "stochastic_network": {
+    "p0": 35.778,
+    "sampled_cost": 3102.9756688821312,
+    "feasible": true,
+    "common": 2987.55390340354,
+    "expected_shortage_units": 43.82470423979898,
+    "burden": 322.3884598246713
+   },
+   "cvar_network": {
+    "p0": 35.778,
+    "sampled_cost": 3098.067460018517,
+    "feasible": true,
+    "common": 3023.322566972323,
+    "expected_shortage_units": 49.42584676292914,
+    "burden": 271.8857168748015
+   },
+   "protected_network": {
+    "p0": 35.778,
+    "sampled_cost": 3102.9756688821317,
+    "feasible": true,
+    "common": 2987.55390340354,
+    "expected_shortage_units": 43.82470423979897,
+    "burden": 322.38845982467126
+   }
+  },
+  "agree": false,
+  "gap": 35.76866356878281
+ },
+ {
+  "cell": 108,
+  "review": 12,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2843.5159026228275,
+    "feasible": false,
+    "common": 2753.191951745333,
+    "expected_shortage_units": 63.28618606635649,
+    "burden": 64.76182491230949
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2843.5159026228275,
+    "feasible": false,
+    "common": 2753.191951745333,
+    "expected_shortage_units": 63.28618606635649,
+    "burden": 64.76182491230949
+   },
+   "deterministic_network": {
+    "p0": 25.105,
+    "sampled_cost": 2595.6367823411856,
+    "feasible": true,
+    "common": 2455.167174539302,
+    "expected_shortage_units": 20.169804613823086,
+    "burden": 116.06283125898797
+   },
+   "stochastic_network": {
+    "p0": 23.917,
+    "sampled_cost": 2548.5881503724177,
+    "feasible": true,
+    "common": 2602.4941728821896,
+    "expected_shortage_units": 41.28413040694438,
+    "burden": 211.14074702471655
+   },
+   "cvar_network": {
+    "p0": 23.917,
+    "sampled_cost": 2537.1628624829327,
+    "feasible": true,
+    "common": 2596.2156760050607,
+    "expected_shortage_units": 41.09215444186847,
+    "burden": 261.9840886106856
+   },
+   "protected_network": {
+    "p0": 23.917,
+    "sampled_cost": 2548.588150372418,
+    "feasible": true,
+    "common": 2602.4941728821896,
+    "expected_shortage_units": 41.28413040694438,
+    "burden": 211.14074702471635
+   },
+   "hedged_network": {
+    "p0": 100.0,
+    "sampled_cost": 2480.8307840187285,
+    "feasible": true,
+    "common": 2513.068950612804,
+    "expected_shortage_units": 20.001153127159668,
+    "burden": 384.24772686827055
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 13,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2264.7872966598943,
+    "feasible": false,
+    "common": 2377.9090615158457,
+    "expected_shortage_units": 53.67800070198311,
+    "burden": 68.23586646662477
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2264.7872966598943,
+    "feasible": false,
+    "common": 2377.9090615158457,
+    "expected_shortage_units": 53.67800070198311,
+    "burden": 68.23586646662477
+   },
+   "deterministic_network": {
+    "p0": 16.227,
+    "sampled_cost": 2098.9063000212855,
+    "feasible": true,
+    "common": 2114.030287160705,
+    "expected_shortage_units": 15.662611829748288,
+    "burden": 158.71795032532933
+   },
+   "stochastic_network": {
+    "p0": 25.133,
+    "sampled_cost": 2033.4800505501455,
+    "feasible": true,
+    "common": 2317.531548474985,
+    "expected_shortage_units": 58.676863263525526,
+    "burden": 212.55428332449353
+   },
+   "cvar_network": {
+    "p0": 1.268,
+    "sampled_cost": 2021.3161726803296,
+    "feasible": true,
+    "common": 2320.036299380097,
+    "expected_shortage_units": 59.602712807106066,
+    "burden": 206.3140367525334
+   },
+   "protected_network": {
+    "p0": 25.133,
+    "sampled_cost": 2033.4800505501455,
+    "feasible": true,
+    "common": 2317.531548474985,
+    "expected_shortage_units": 58.67686326352554,
+    "burden": 212.55428332449355
+   },
+   "hedged_network": {
+    "p0": 50.501,
+    "sampled_cost": 2029.630193078097,
+    "feasible": true,
+    "common": 2264.6102004114678,
+    "expected_shortage_units": 35.247379549827315,
+    "burden": 252.93428097706104
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 14,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "protected_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "incumbent",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1864.204160574348,
+    "feasible": true,
+    "common": 1829.3637489306996,
+    "expected_shortage_units": 9.496470078840915,
+    "burden": 110.23761617579697
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1864.204160574348,
+    "feasible": true,
+    "common": 1829.3637489306996,
+    "expected_shortage_units": 9.496470078840915,
+    "burden": 110.23761617579697
+   },
+   "deterministic_network": {
+    "p0": 0.765,
+    "sampled_cost": 1916.649407120858,
+    "feasible": false,
+    "common": 1830.2174703085739,
+    "expected_shortage_units": 15.26440111713913,
+    "burden": 113.21853291372504
+   },
+   "stochastic_network": {
+    "p0": 6.471,
+    "sampled_cost": 1621.8453276045352,
+    "feasible": true,
+    "common": 1930.412219733859,
+    "expected_shortage_units": 39.05366963110961,
+    "burden": 166.5990648164624
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 1620.1528935488363,
+    "feasible": true,
+    "common": 1928.4995944306438,
+    "expected_shortage_units": 38.973156096631314,
+    "burden": 166.79523248183975
+   },
+   "protected_network": {
+    "p0": 6.471,
+    "sampled_cost": 1621.845327604535,
+    "feasible": true,
+    "common": 1930.4122197338588,
+    "expected_shortage_units": 39.0536696311096,
+    "burden": 166.59906481646237
+   },
+   "hedged_network": {
+    "p0": 18.468,
+    "sampled_cost": 1604.828291801876,
+    "feasible": true,
+    "common": 1930.9904697888867,
+    "expected_shortage_units": 38.1284433980213,
+    "burden": 216.7965634912237
+   }
+  },
+  "agree": false,
+  "gap": 101.04847080315926
+ },
+ {
+  "cell": 108,
+  "review": 15,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 19.744,
+    "sampled_cost": 2077.2274477792353,
+    "feasible": false,
+    "common": 1809.9729358700024,
+    "expected_shortage_units": 9.878055065034152,
+    "burden": 77.14419590471061
+   },
+   "base_stock": {
+    "p0": 19.744,
+    "sampled_cost": 2077.2274477792353,
+    "feasible": false,
+    "common": 1809.9729358700024,
+    "expected_shortage_units": 9.878055065034152,
+    "burden": 77.14419590471061
+   },
+   "deterministic_network": {
+    "p0": 13.257,
+    "sampled_cost": 2074.3673144452887,
+    "feasible": false,
+    "common": 1796.7150642657114,
+    "expected_shortage_units": 14.184360065500284,
+    "burden": 78.94671500779054
+   },
+   "stochastic_network": {
+    "p0": 65.112,
+    "sampled_cost": 1906.897185209785,
+    "feasible": true,
+    "common": 1784.5824881166782,
+    "expected_shortage_units": 1.8324939686944792,
+    "burden": 157.9473891846251
+   },
+   "cvar_network": {
+    "p0": 65.112,
+    "sampled_cost": 1906.897185209785,
+    "feasible": true,
+    "common": 1784.5824881166784,
+    "expected_shortage_units": 1.8324939686944792,
+    "burden": 157.9473891846251
+   },
+   "protected_network": {
+    "p0": 65.112,
+    "sampled_cost": 1906.897185209785,
+    "feasible": true,
+    "common": 1784.5824881166782,
+    "expected_shortage_units": 1.8324939686944792,
+    "burden": 157.9473891846251
+   }
+  },
+  "agree": false,
+  "gap": 2.2737367544323206e-13
+ },
+ {
+  "cell": 108,
+  "review": 16,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 2006.226203413614,
+    "feasible": false,
+    "common": 1585.4922013727805,
+    "expected_shortage_units": 3.792676196572285,
+    "burden": 73.17895973373736
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 2006.226203413614,
+    "feasible": false,
+    "common": 1585.4922013727805,
+    "expected_shortage_units": 3.792676196572285,
+    "burden": 73.17895973373736
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 2033.3130543126651,
+    "feasible": false,
+    "common": 1589.4618487423327,
+    "expected_shortage_units": 13.482294980829575,
+    "burden": 67.61743819545141
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 1743.2368776395078,
+    "feasible": true,
+    "common": 1573.1752338841898,
+    "expected_shortage_units": 1.2194256352194301,
+    "burden": 175.34599724385947
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 1743.9368597771618,
+    "feasible": true,
+    "common": 1571.0417801974374,
+    "expected_shortage_units": 1.5067922049991962,
+    "burden": 179.9477748472321
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 1743.2368776395078,
+    "feasible": true,
+    "common": 1573.1752338841895,
+    "expected_shortage_units": 1.2194256352194301,
+    "burden": 175.3459972438595
+   },
+   "hedged_network": {
+    "p0": 90.502,
+    "sampled_cost": 1736.3114106093306,
+    "feasible": true,
+    "common": 1598.7940806046524,
+    "expected_shortage_units": 1.3510651245643024,
+    "burden": 351.07449947976664
+   }
+  },
+  "agree": false,
+  "gap": 2.1334536867523184
+ },
+ {
+  "cell": 108,
+  "review": 17,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1802.1142971306326,
+    "feasible": false,
+    "common": 1474.9439925212682,
+    "expected_shortage_units": 3.5713597069048193,
+    "burden": 102.76442410126907
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1802.1142971306326,
+    "feasible": false,
+    "common": 1474.9439925212682,
+    "expected_shortage_units": 3.5713597069048193,
+    "burden": 102.76442410126907
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 1837.7390348071513,
+    "feasible": false,
+    "common": 1473.8107236913243,
+    "expected_shortage_units": 12.952793680513562,
+    "burden": 82.83622442576385
+   },
+   "stochastic_network": {
+    "p0": 47.137,
+    "sampled_cost": 1533.170000152343,
+    "feasible": true,
+    "common": 1462.891733115586,
+    "expected_shortage_units": 6.466096435837876,
+    "burden": 252.76724173463572
+   },
+   "cvar_network": {
+    "p0": 21.286,
+    "sampled_cost": 1540.9254115068793,
+    "feasible": true,
+    "common": 1451.0877102914833,
+    "expected_shortage_units": 5.2289876334658025,
+    "burden": 202.01980050029547
+   },
+   "protected_network": {
+    "p0": 47.137,
+    "sampled_cost": 1533.170000152343,
+    "feasible": true,
+    "common": 1462.8917331155856,
+    "expected_shortage_units": 6.466096435837876,
+    "burden": 252.7672417346355
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 18,
+  "state": "PROTECT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 10.547,
+    "sampled_cost": 1837.1368529925405,
+    "feasible": false,
+    "common": 1375.4886803907473,
+    "expected_shortage_units": 3.2471578895059947,
+    "burden": 82.32830913065631
+   },
+   "base_stock": {
+    "p0": 10.547,
+    "sampled_cost": 1837.1368529925405,
+    "feasible": false,
+    "common": 1375.4886803907473,
+    "expected_shortage_units": 3.2471578895059947,
+    "burden": 82.32830913065631
+   },
+   "deterministic_network": {
+    "p0": 8.132,
+    "sampled_cost": 1865.2398230367967,
+    "feasible": false,
+    "common": 1380.9111583744723,
+    "expected_shortage_units": 12.867631069810813,
+    "burden": 73.34034599220999
+   },
+   "stochastic_network": {
+    "p0": 100.0,
+    "sampled_cost": 1543.1717101005338,
+    "feasible": true,
+    "common": 1354.5461215209966,
+    "expected_shortage_units": 3.852441113825646,
+    "burden": 195.5106403805838
+   },
+   "cvar_network": {
+    "p0": 100.0,
+    "sampled_cost": 1544.661219205297,
+    "feasible": true,
+    "common": 1354.554737322034,
+    "expected_shortage_units": 3.96658190681579,
+    "burden": 185.47200139247641
+   },
+   "protected_network": {
+    "p0": 100.0,
+    "sampled_cost": 1543.1717101005338,
+    "feasible": true,
+    "common": 1354.5461215209968,
+    "expected_shortage_units": 3.852441113825657,
+    "burden": 195.51064038058385
+   }
+  },
+  "agree": false,
+  "gap": 0.008615801037421988
+ },
+ {
+  "cell": 108,
+  "review": 19,
+  "state": "CAPITAL_OPTIMIZATION",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1293.8996455393426,
+    "feasible": false,
+    "common": 1209.3167650592536,
+    "expected_shortage_units": 2.8301881452885773,
+    "burden": 177.6841944830027
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1293.8996455393426,
+    "feasible": false,
+    "common": 1209.3167650592536,
+    "expected_shortage_units": 2.8301881452885773,
+    "burden": 177.6841944830027
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 1305.4390705221635,
+    "feasible": false,
+    "common": 1200.2155816582633,
+    "expected_shortage_units": 9.492200152707262,
+    "burden": 166.26981417108377
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 1115.135808987422,
+    "feasible": true,
+    "common": 1191.800201622691,
+    "expected_shortage_units": 6.851001004537693,
+    "burden": 266.2427733183113
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 1115.135808987422,
+    "feasible": true,
+    "common": 1191.800201622691,
+    "expected_shortage_units": 6.851001004537693,
+    "burden": 266.2427733183113
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 1115.135808987422,
+    "feasible": true,
+    "common": 1191.800201622691,
+    "expected_shortage_units": 6.851001004537693,
+    "burden": 266.2427733183113
+   },
+   "joint_recovery": {
+    "p0": 0,
+    "sampled_cost": 1268.5584117659403,
+    "feasible": true,
+    "common": 1301.3395867389168,
+    "expected_shortage_units": 2.3057308130767967e-05,
+    "burden": 596.4444242970993
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 20,
+  "state": "CAPITAL_OPTIMIZATION",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1427.0798566630656,
+    "feasible": false,
+    "common": 1062.9397707149205,
+    "expected_shortage_units": 2.54578056767164,
+    "burden": 138.46118140798424
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1427.0798566630656,
+    "feasible": false,
+    "common": 1062.9397707149205,
+    "expected_shortage_units": 2.54578056767164,
+    "burden": 138.46118140798424
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 1428.3142130791957,
+    "feasible": false,
+    "common": 1054.0965213464513,
+    "expected_shortage_units": 9.048772008155726,
+    "burden": 128.11383794668274
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 1101.5171626899205,
+    "feasible": true,
+    "common": 1048.8720573422152,
+    "expected_shortage_units": 0.7056959911906834,
+    "burden": 284.0505133939355
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 1094.7345034536181,
+    "feasible": true,
+    "common": 1044.2704359966704,
+    "expected_shortage_units": 0.7080264281876794,
+    "burden": 262.25678319125257
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 1101.5171626899205,
+    "feasible": true,
+    "common": 1048.8720573422152,
+    "expected_shortage_units": 0.7056959911906834,
+    "burden": 284.0505133939355
+   },
+   "joint_recovery": {
+    "p0": 29.611,
+    "sampled_cost": 1169.4584134594147,
+    "feasible": true,
+    "common": 1100.431673797747,
+    "expected_shortage_units": 0.007294789194031031,
+    "burden": 368.7464926718775
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 21,
+  "state": "CAPITAL_OPTIMIZATION",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 1321.2580396139463,
+    "feasible": false,
+    "common": 965.3063435186037,
+    "expected_shortage_units": 2.1777100844505477,
+    "burden": 102.12244734631997
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 1321.2580396139463,
+    "feasible": false,
+    "common": 965.3063435186037,
+    "expected_shortage_units": 2.1777100844505477,
+    "burden": 102.12244734631997
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 1335.421311470739,
+    "feasible": false,
+    "common": 955.4476803061474,
+    "expected_shortage_units": 8.804416354381924,
+    "burden": 87.70159701280167
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 1099.6798745467734,
+    "feasible": true,
+    "common": 1015.9294587784509,
+    "expected_shortage_units": 0.4690862612326543,
+    "burden": 282.43069601797964
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 1099.6798745467736,
+    "feasible": true,
+    "common": 1015.9294587784509,
+    "expected_shortage_units": 0.4690862612326543,
+    "burden": 282.43069601797964
+   },
+   "protected_network": {
+    "p0": 0,
+    "sampled_cost": 1099.6798745467734,
+    "feasible": true,
+    "common": 1015.9294587784509,
+    "expected_shortage_units": 0.4690862612326543,
+    "burden": 282.43069601797964
+   },
+   "joint_recovery": {
+    "p0": 49.508,
+    "sampled_cost": 1139.360646346614,
+    "feasible": true,
+    "common": 1045.5698740513212,
+    "expected_shortage_units": 2.969193270349887e-06,
+    "burden": 407.94688511653584
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 22,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 0,
+    "sampled_cost": 932.6892598973752,
+    "feasible": false,
+    "common": 866.0179132208503,
+    "expected_shortage_units": 1.8757926233756588,
+    "burden": 85.15992538699439
+   },
+   "base_stock": {
+    "p0": 0,
+    "sampled_cost": 932.6892598973752,
+    "feasible": false,
+    "common": 866.0179132208503,
+    "expected_shortage_units": 1.8757926233756588,
+    "burden": 85.15992538699439
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 936.7621969131363,
+    "feasible": false,
+    "common": 853.730322807946,
+    "expected_shortage_units": 8.329583924944767,
+    "burden": 68.88865659003368
+   },
+   "stochastic_network": {
+    "p0": 0.524,
+    "sampled_cost": 861.4771982283211,
+    "feasible": true,
+    "common": 842.3317747600299,
+    "expected_shortage_units": 1.2032088533689826,
+    "burden": 91.3068462070346
+   },
+   "cvar_network": {
+    "p0": 0.524,
+    "sampled_cost": 861.4771982283211,
+    "feasible": true,
+    "common": 842.3317747600299,
+    "expected_shortage_units": 1.2032088533689829,
+    "burden": 91.30684620703461
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 23,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 10.936,
+    "sampled_cost": 950.8851855944507,
+    "feasible": false,
+    "common": 767.9854428589625,
+    "expected_shortage_units": 1.3405351044893106,
+    "burden": 35.352029598624334
+   },
+   "base_stock": {
+    "p0": 10.936,
+    "sampled_cost": 950.8851855944507,
+    "feasible": false,
+    "common": 767.9854428589625,
+    "expected_shortage_units": 1.3405351044893106,
+    "burden": 35.352029598624334
+   },
+   "deterministic_network": {
+    "p0": 7.992,
+    "sampled_cost": 993.4247803883817,
+    "feasible": false,
+    "common": 757.8436895325133,
+    "expected_shortage_units": 7.854717341437168,
+    "burden": 23.436381763566846
+   },
+   "stochastic_network": {
+    "p0": 23.549,
+    "sampled_cost": 794.9682698757414,
+    "feasible": true,
+    "common": 740.3623136017178,
+    "expected_shortage_units": 1.514217935664507,
+    "burden": 89.48279140672963
+   },
+   "cvar_network": {
+    "p0": 23.549,
+    "sampled_cost": 794.9682698757414,
+    "feasible": true,
+    "common": 740.3623136017178,
+    "expected_shortage_units": 1.514217935664507,
+    "burden": 89.48279140672966
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 24,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 1.072,
+    "sampled_cost": 817.8054698884242,
+    "feasible": false,
+    "common": 624.2085940354149,
+    "expected_shortage_units": 0.6961814644326438,
+    "burden": 39.4710352065726
+   },
+   "base_stock": {
+    "p0": 1.072,
+    "sampled_cost": 817.8054698884242,
+    "feasible": false,
+    "common": 624.2085940354149,
+    "expected_shortage_units": 0.6961814644326438,
+    "burden": 39.4710352065726
+   },
+   "deterministic_network": {
+    "p0": 12.612,
+    "sampled_cost": 792.447501197813,
+    "feasible": false,
+    "common": 599.4977455528566,
+    "expected_shortage_units": 4.069926158850691,
+    "burden": 48.10301953671633
+   },
+   "stochastic_network": {
+    "p0": 26.538,
+    "sampled_cost": 652.3151668757367,
+    "feasible": true,
+    "common": 606.5265296289357,
+    "expected_shortage_units": 0.13630261173078861,
+    "burden": 103.4791557507673
+   },
+   "cvar_network": {
+    "p0": 20.307,
+    "sampled_cost": 649.8595261315087,
+    "feasible": true,
+    "common": 604.2448008356963,
+    "expected_shortage_units": 0.19514820037169256,
+    "burden": 103.75746877285783
+   }
+  },
+  "agree": false,
+  "gap": 2.281728793239381
+ },
+ {
+  "cell": 108,
+  "review": 25,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": false,
+  "chosen": "cvar_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "cvar_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 1.852,
+    "sampled_cost": 641.3378643130301,
+    "feasible": false,
+    "common": 551.6577630391312,
+    "expected_shortage_units": 0.6442022914509178,
+    "burden": 72.26601687959135
+   },
+   "base_stock": {
+    "p0": 1.852,
+    "sampled_cost": 641.3378643130301,
+    "feasible": false,
+    "common": 551.6577630391312,
+    "expected_shortage_units": 0.6442022914509178,
+    "burden": 72.26601687959135
+   },
+   "deterministic_network": {
+    "p0": 12.043,
+    "sampled_cost": 609.501072417571,
+    "feasible": false,
+    "common": 528.0487384799536,
+    "expected_shortage_units": 4.113356751802778,
+    "burden": 64.73090941472309
+   },
+   "stochastic_network": {
+    "p0": 0,
+    "sampled_cost": 525.1424135375255,
+    "feasible": true,
+    "common": 521.3451567281147,
+    "expected_shortage_units": 1.3646399793696957,
+    "burden": 119.75177352427536
+   },
+   "cvar_network": {
+    "p0": 0,
+    "sampled_cost": 525.1424135375256,
+    "feasible": true,
+    "common": 521.3451567281146,
+    "expected_shortage_units": 1.3646399793696957,
+    "burden": 119.75177352427535
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 26,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": true,
+  "chosen": "incumbent",
+  "status": "RETAIN_INCUMBENT",
+  "common_best": null,
+  "candidates": {
+   "incumbent": {
+    "p0": 21.447,
+    "sampled_cost": 562.3608430127624,
+    "feasible": false,
+    "common": 464.86677624143164,
+    "expected_shortage_units": 0.4387500227720345,
+    "burden": 49.11486994974771
+   },
+   "base_stock": {
+    "p0": 21.447,
+    "sampled_cost": 562.3608430127624,
+    "feasible": false,
+    "common": 464.86677624143164,
+    "expected_shortage_units": 0.4387500227720345,
+    "burden": 49.11486994974771
+   },
+   "deterministic_network": {
+    "p0": 16.324,
+    "sampled_cost": 528.305869627131,
+    "feasible": false,
+    "common": 439.1405181090821,
+    "expected_shortage_units": 3.913680184170779,
+    "burden": 34.20100365596472
+   },
+   "joint_recovery": {
+    "p0": 22.892,
+    "sampled_cost": 492.4018308721706,
+    "feasible": false,
+    "common": 443.9079667473878,
+    "expected_shortage_units": 5.743846508979255,
+    "burden": 37.873257479494505
+   }
+  },
+  "agree": null,
+  "gap": null
+ },
+ {
+  "cell": 108,
+  "review": 27,
+  "state": "NORMAL_REPLENISHMENT",
+  "recovery_mode": false,
+  "chosen": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "stochastic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 21.318,
+    "sampled_cost": 372.6907757182474,
+    "feasible": false,
+    "common": 359.6681937534177,
+    "expected_shortage_units": 0.24377113246935284,
+    "burden": 72.5021761124759
+   },
+   "base_stock": {
+    "p0": 21.318,
+    "sampled_cost": 372.6907757182474,
+    "feasible": false,
+    "common": 359.6681937534177,
+    "expected_shortage_units": 0.24377113246935284,
+    "burden": 72.5021761124759
+   },
+   "deterministic_network": {
+    "p0": 14.65,
+    "sampled_cost": 333.9919652797231,
+    "feasible": false,
+    "common": 334.02806829516436,
+    "expected_shortage_units": 3.3557266528795378,
+    "burden": 47.99257244349842
+   },
+   "stochastic_network": {
+    "p0": 33.536,
+    "sampled_cost": 295.94623072138893,
+    "feasible": true,
+    "common": 325.68860064558686,
+    "expected_shortage_units": 1.45110534181104,
+    "burden": 83.45722135130102
+   },
+   "cvar_network": {
+    "p0": 33.536,
+    "sampled_cost": 295.94623072138893,
+    "feasible": true,
+    "common": 325.68860064558686,
+    "expected_shortage_units": 1.45110534181104,
+    "burden": 83.45722135130102
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 28,
+  "state": "NO_ACTION",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 1.668,
+    "sampled_cost": 248.19985973990507,
+    "feasible": true,
+    "common": 233.6338604732689,
+    "expected_shortage_units": 0.1151050928285205,
+    "burden": 104.39270836425423
+   },
+   "base_stock": {
+    "p0": 1.668,
+    "sampled_cost": 248.19985973990507,
+    "feasible": true,
+    "common": 233.6338604732689,
+    "expected_shortage_units": 0.1151050928285205,
+    "burden": 104.39270836425423
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 208.41075481814985,
+    "feasible": true,
+    "common": 202.3610995167777,
+    "expected_shortage_units": 0.19071998845462285,
+    "burden": 100.36564206466639
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ },
+ {
+  "cell": 108,
+  "review": 29,
+  "state": "NO_ACTION",
+  "recovery_mode": false,
+  "chosen": "deterministic_network",
+  "status": "PENDING_REVIEW",
+  "common_best": "deterministic_network",
+  "candidates": {
+   "incumbent": {
+    "p0": 13.789,
+    "sampled_cost": 136.9588475010561,
+    "feasible": true,
+    "common": 126.86806033513955,
+    "expected_shortage_units": 0.0,
+    "burden": 74.76957549218355
+   },
+   "base_stock": {
+    "p0": 13.789,
+    "sampled_cost": 136.9588475010561,
+    "feasible": true,
+    "common": 126.86806033513955,
+    "expected_shortage_units": 0.0,
+    "burden": 74.76957549218355
+   },
+   "deterministic_network": {
+    "p0": 0,
+    "sampled_cost": 114.43551050189555,
+    "feasible": true,
+    "common": 106.93594817330515,
+    "expected_shortage_units": 0.0,
+    "burden": 74.76957549218355
+   }
+  },
+  "agree": true,
+  "gap": 0.0
+ }
+]

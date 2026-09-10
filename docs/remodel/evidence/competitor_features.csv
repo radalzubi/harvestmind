@@ -1,0 +1,868 @@
+vendor,category,feature,status,source,accessed,limitation
+GAINS,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,inventory,service_optimization,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,inventory,right_sizing,documented in reviewed source,https://gainsystems.com/case-study/naghi-group-arabian-trading-supplies/,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,execution,replenishment,documented in reviewed source,https://gainsystems.com/case-study/naghi-group-arabian-trading-supplies/,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,finance,working_capital,documented in reviewed source,https://gainsystems.com/case-study/naghi-group-arabian-trading-supplies/,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,evidence,customer_segment,documented in reviewed source,https://gainsystems.com/case-study/naghi-group-arabian-trading-supplies/,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,evidence,customer_outcomes,documented in reviewed source,https://gainsystems.com/case-study/naghi-group-arabian-trading-supplies/,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,evidence,geography,documented in reviewed source,https://gainsystems.com/case-study/naghi-group-arabian-trading-supplies/,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,evidence,MENA_customer,documented in reviewed source,https://gainsystems.com/case-study/naghi-group-arabian-trading-supplies/,2026-09-05,vendor documentation/selected case; not independent capability test
+GAINS,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,inventory,service_optimization,documented in reviewed source,https://www.toolsgroup.com/solutions/inventory-optimization-software/,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,inventory,right_sizing,documented in reviewed source,https://www.toolsgroup.com/solutions/inventory-optimization-software/,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,inventory,MEIO,documented in reviewed source,https://www.toolsgroup.com/solutions/inventory-optimization-software/,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,procurement,lead_times,documented in reviewed source,https://www.toolsgroup.com/solutions/inventory-optimization-software/,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,procurement,fill_uncertainty,documented in reviewed source,https://www.toolsgroup.com/solutions/inventory-optimization-software/,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,finance,working_capital,documented in reviewed source,https://www.toolsgroup.com/solutions/inventory-optimization-software/,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+ToolsGroup,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,inventory,service_optimization,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,inventory,right_sizing,documented in reviewed source,https://www.relexsolutions.com/solutions/fresh-inventory-software/,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,execution,replenishment,documented in reviewed source,https://www.relexsolutions.com/solutions/fresh-inventory-software/,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,finance,margin_impact,documented in reviewed source,https://www.relexsolutions.com/solutions/fresh-inventory-software/,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,evidence,customer_segment,documented in reviewed source,https://www.relexsolutions.com/solutions/fresh-inventory-software/,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+RELEX,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,inventory,service_optimization,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,inventory,right_sizing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,evidence,customer_segment,documented in reviewed source,https://www.netstock.com/pricing/,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,evidence,implementation_time,documented in reviewed source,https://www.netstock.com/pricing/,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,evidence,public_pricing,documented in reviewed source,https://www.netstock.com/pricing/,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Netstock,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,inventory,service_optimization,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,inventory,right_sizing,documented in reviewed source,https://blueyonder.com/customers/conagra,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,finance,inventory_investment,documented in reviewed source,https://blueyonder.com/customers/conagra,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,evidence,customer_segment,documented in reviewed source,https://blueyonder.com/customers/conagra,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,evidence,customer_outcomes,documented in reviewed source,https://blueyonder.com/customers/conagra,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Blue Yonder,evidence,US_customer,documented in reviewed source,https://blueyonder.com/customers/conagra,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,inventory,safety_stock,documented in reviewed source,https://www.kinaxis.com/sites/default/files/resources/Inventory%20management%20-%205%20building%20blocks%20to%20success-2018.pdf,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,inventory,service_optimization,documented in reviewed source,https://www.kinaxis.com/sites/default/files/resources/Inventory%20management%20-%205%20building%20blocks%20to%20success-2018.pdf,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,inventory,right_sizing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,inventory,segmentation,documented in reviewed source,https://www.kinaxis.com/sites/default/files/resources/Inventory%20management%20-%205%20building%20blocks%20to%20success-2018.pdf,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,inventory,MEIO,documented in reviewed source,https://www.kinaxis.com/sites/default/files/resources/Inventory%20management%20-%205%20building%20blocks%20to%20success-2018.pdf,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,execution,ERP_writeback,documented in reviewed source,https://www.kinaxis.com/sites/default/files/resources/Inventory%20management%20-%205%20building%20blocks%20to%20success-2018.pdf,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,resilience,scenarios,documented in reviewed source,https://www.kinaxis.com/sites/default/files/resources/Inventory%20management%20-%205%20building%20blocks%20to%20success-2018.pdf,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Kinaxis,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,inventory,service_optimization,documented in reviewed source,https://o9solutions.com/solutions/merchandise-planning/allocation-replenishment,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,inventory,right_sizing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,execution,replenishment,documented in reviewed source,https://o9solutions.com/solutions/merchandise-planning/allocation-replenishment,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,resilience,scenarios,documented in reviewed source,https://o9solutions.com/solutions/merchandise-planning/allocation-replenishment,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,finance,inventory_investment,documented in reviewed source,https://o9solutions.com/solutions/merchandise-planning/allocation-replenishment,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+o9,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,inventory,safety_stock,documented in reviewed source,https://learning.sap.com/courses/discovering-sap-ibp-harmonized-planning-area/overview-of-inventory-optimization,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,inventory,service_optimization,documented in reviewed source,https://learning.sap.com/courses/discovering-sap-ibp-harmonized-planning-area/overview-of-inventory-optimization,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,inventory,right_sizing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,procurement,lead_times,documented in reviewed source,https://learning.sap.com/courses/discovering-sap-ibp-harmonized-planning-area/overview-of-inventory-optimization,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+SAP,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Oracle Fusion / NetSuite,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,inventory,safety_stock,documented in reviewed source,https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_1155215810.html,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,inventory,reorder_points,documented in reviewed source,https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_1155215810.html,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,inventory,service_optimization,documented in reviewed source,https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_1155215810.html,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,inventory,right_sizing,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,inventory,ABC_XYZ,documented in reviewed source,https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_1155215810.html,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,inventory,segmentation,documented in reviewed source,https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_1155215810.html,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,inventory,excess,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,procurement,lead_times,documented in reviewed source,https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_1155215810.html,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,procurement,diversification,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,execution,replenishment,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,execution,order_generation,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,execution,exceptions,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,execution,human_override,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,finance,working_capital,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,finance,profitability,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,evidence,geography,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Oracle Fusion / NetSuite,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,NetSuite evidence only; not automatically Fusion
+Microsoft,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,inventory,safety_stock,documented in reviewed source,https://learn.microsoft.com/en-us/dynamics365/supply-chain/master-planning/safety-stock-replenishment,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,inventory,service_optimization,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,inventory,right_sizing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,execution,replenishment,documented in reviewed source,https://learn.microsoft.com/en-us/dynamics365/supply-chain/master-planning/safety-stock-replenishment,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Microsoft,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,inventory,service_optimization,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,inventory,right_sizing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,finance,inventory_investment,documented in reviewed source,https://docs.infor.com/scp/latest/en-us/sopolh/sopolhn/pjp1585570643132.html,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Infor,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,inventory,service_optimization,documented in reviewed source,https://www.slimstock.com/solutions/,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,inventory,right_sizing,documented in reviewed source,https://www.slimstock.com/solutions/,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,execution,replenishment,documented in reviewed source,https://www.slimstock.com/solutions/,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Slimstock,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,inventory,service_optimization,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,inventory,right_sizing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,inventory,MEIO,documented in reviewed source,https://gmdhsoftware.com/case-study/food-retailer-inventory-optimization/,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,evidence,customer_segment,documented in reviewed source,https://gmdhsoftware.com/case-study/food-retailer-inventory-optimization/,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,evidence,implementation_time,documented in reviewed source,https://gmdhsoftware.com/case-study/food-retailer-inventory-optimization/,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,evidence,customer_outcomes,documented in reviewed source,https://gmdhsoftware.com/case-study/food-retailer-inventory-optimization/,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,evidence,MENA_customer,documented in reviewed source,https://gmdhsoftware.com/case-study/food-retailer-inventory-optimization/,2026-09-05,vendor documentation/selected case; not independent capability test
+Streamline,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,inventory,service_optimization,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,inventory,right_sizing,documented in reviewed source,https://www.lokad.com/inventory-optimization/,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,procurement,MOQ,documented in reviewed source,https://www.lokad.com/inventory-optimization/,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,finance,profitability,documented in reviewed source,https://www.lokad.com/inventory-optimization/,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Lokad,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,inventory,service_optimization,documented in reviewed source,https://www.logility.com/solutions/inventory/,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,inventory,right_sizing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,inventory,MEIO,documented in reviewed source,https://www.logility.com/solutions/inventory/,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,finance,inventory_investment,documented in reviewed source,https://www.logility.com/solutions/inventory/,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Logility,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,inventory,service_optimization,documented in reviewed source,https://www.e2open.com/planning/multi-echelon-inventory-optimization,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,inventory,right_sizing,documented in reviewed source,https://www.e2open.com/planning/multi-echelon-inventory-optimization,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,inventory,MEIO,documented in reviewed source,https://www.e2open.com/planning/multi-echelon-inventory-optimization,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,finance,stock_service_frontier,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,evidence,customer_segment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+e2open,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,forecasting,statistical_forecasting,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,forecasting,machine_learning,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,forecasting,intermittent_demand,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,forecasting,promotions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,forecasting,seasonality,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,forecasting,new_products,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,inventory,safety_stock,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,inventory,reorder_points,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,inventory,service_optimization,documented in reviewed source,https://www.syncron.com/solutions/service-supply-chain/,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,inventory,right_sizing,documented in reviewed source,https://www.syncron.com/solutions/service-supply-chain/,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,inventory,ABC_XYZ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,inventory,segmentation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,inventory,MEIO,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,inventory,excess,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,inventory,obsolete,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,procurement,supplier_allocation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,procurement,MOQ,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,procurement,case_packs,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,procurement,order_calendars,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,procurement,lead_times,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,procurement,fill_uncertainty,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,procurement,dual_sourcing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,procurement,diversification,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,execution,replenishment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,execution,order_generation,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,execution,planner_workflow,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,execution,exceptions,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,execution,ERP_writeback,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,execution,human_override,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,resilience,supplier_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,resilience,transportation_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,resilience,correlated_failures,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,resilience,geopolitical_risk,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,resilience,route_alternatives,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,resilience,port_disruption,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,resilience,scenarios,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,resilience,resilience_inventory,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,finance,inventory_investment,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,finance,working_capital,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,finance,financing_cost,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,finance,cash_constraints,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,finance,stock_service_frontier,documented in reviewed source,https://www.syncron.com/solutions/service-supply-chain/,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,finance,profitability,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,finance,margin_impact,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,evidence,customer_segment,documented in reviewed source,https://www.syncron.com/solutions/service-supply-chain/,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,evidence,implementation_time,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,evidence,public_pricing,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,evidence,customer_outcomes,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,evidence,geography,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,evidence,MENA_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test
+Syncron,evidence,US_customer,unverified; not evidence of absence,,2026-09-05,vendor documentation/selected case; not independent capability test

@@ -1,0 +1,3106 @@
+{
+ "name": "T_combined_realistic",
+ "seed": 41003,
+ "status": "COMPLETE",
+ "reviews": [
+  {
+   "state": "NO_ACTION",
+   "chosen": "stochastic_network",
+   "feasible": [
+    "incumbent",
+    "base_stock",
+    "deterministic_network",
+    "stochastic_network",
+    "cadence_2_network",
+    "cadence_4_network"
+   ],
+   "recovery_mode": false,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "hedged_cost": 23583.34396002114,
+     "feasible": true,
+     "burden": 3483.3778606809874
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 23263.7485804524,
+     "feasible": true,
+     "burden": 2490.4046684741334
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 960.0,
+      "src_B": 960.0
+     },
+     "hedged_cost": 14809.412023252153,
+     "feasible": true,
+     "burden": 4514.180120840664
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 888.0,
+      "src_B": 1032.0
+     },
+     "hedged_cost": 14529.360293992047,
+     "feasible": true,
+     "burden": 5299.4404261209465
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 576.0,
+      "src_B": 1296.0
+     },
+     "hedged_cost": 14634.036360066064,
+     "feasible": true,
+     "burden": 7458.767067807111
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 768.0,
+      "src_B": 1152.0
+     },
+     "hedged_cost": 14680.527880357342,
+     "feasible": true,
+     "burden": 6063.008558597908
+    }
+   },
+   "owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "status": "PENDING_REVIEW",
+   "selected_policy": "stochastic_network",
+   "reasons": [],
+   "stresses": [
+    {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    }
+   ],
+   "protection": [
+    {
+     "sku": "A",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    },
+    {
+     "sku": "B",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23514.17761002238,
+     "cost_min": 23408.163267748638,
+     "cost_max": 23586.356680325738,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 14565.279457579092,
+     "cost_min": 14384.559747428768,
+     "cost_max": 14801.408574060926,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23366.495591624443,
+      "cost_min": 23267.460295326535,
+      "cost_max": 23546.82853905543,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 14365.73444793849,
+      "cost_min": 14253.89747777654,
+      "cost_max": 14532.934419626283,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "blocking": null,
+   "on_hand": 300.0,
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "executed": [
+    [
+     "src_A",
+     888.0
+    ],
+    [
+     "src_B",
+     1032.0
+    ]
+   ],
+   "end_stock": 100.49447792524396
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "chosen": "deterministic_network",
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "recovery_mode": false,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "hedged_cost": 22831.73378094858,
+     "feasible": true,
+     "burden": 12064.497390633418
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 14990.289185441647,
+     "feasible": false,
+     "burden": 3955.861429233398
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12672.48957645003,
+     "feasible": true,
+     "burden": 6054.1330061091385
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12670.417139294459,
+     "feasible": true,
+     "burden": 6054.1330061091385
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12670.379616849277,
+     "feasible": true,
+     "burden": 6054.1330061091385
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12670.417139294459,
+     "feasible": true,
+     "burden": 6054.1330061091385
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12670.417139294384,
+     "feasible": true,
+     "burden": 6054.1330061091385
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12670.379616849277,
+     "feasible": true,
+     "burden": 6054.1330061091385
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12670.417139294383,
+     "feasible": true,
+     "burden": 6054.133006109148
+    }
+   },
+   "owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "status": "PENDING_REVIEW",
+   "selected_policy": "deterministic_network",
+   "reasons": [],
+   "stresses": [
+    {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    }
+   ],
+   "protection": [
+    {
+     "sku": "A",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    },
+    {
+     "sku": "B",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 22791.578585806994,
+     "cost_min": 22589.46060897457,
+     "cost_max": 23018.15354329892,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 12796.492673800987,
+     "cost_min": 12462.467939041104,
+     "cost_max": 13221.430124041819,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 22922.94091045393,
+      "cost_min": 22885.233206125144,
+      "cost_max": 22964.000691674715,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 12925.445389767943,
+      "cost_min": 12889.608701073808,
+      "cost_max": 12956.648390480852,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "blocking": null,
+   "on_hand": 2015.015713856211,
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "executed": [],
+   "end_stock": 1825.2403561695733
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "chosen": "deterministic_network",
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "recovery_mode": false,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "hedged_cost": 22967.053889159928,
+     "feasible": true,
+     "burden": 11058.765340160382
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 16027.003722153315,
+     "feasible": false,
+     "burden": 3295.428839885903
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13053.556823789013,
+     "feasible": true,
+     "burden": 5807.673329197318
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12997.317646094974,
+     "feasible": true,
+     "burden": 6620.47980632541
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12997.317646094974,
+     "feasible": true,
+     "burden": 6620.47980632541
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12997.317646094974,
+     "feasible": true,
+     "burden": 6620.47980632541
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12997.317646094974,
+     "feasible": true,
+     "burden": 6620.47980632541
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13064.179584580532,
+     "feasible": true,
+     "burden": 8217.291325011045
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 12997.165580259742,
+     "feasible": true,
+     "burden": 6620.479806325409
+    }
+   },
+   "owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "status": "PENDING_REVIEW",
+   "selected_policy": "deterministic_network",
+   "reasons": [],
+   "stresses": [
+    {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    }
+   ],
+   "protection": [
+    {
+     "sku": "A",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    },
+    {
+     "sku": "B",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 22973.829532434116,
+     "cost_min": 22547.827771349817,
+     "cost_max": 23417.318391126777,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13036.479732283937,
+     "cost_min": 12471.782384848852,
+     "cost_max": 13510.27831653525,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23065.838399595865,
+      "cost_min": 22889.826745733775,
+      "cost_max": 23169.298503951017,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13166.061053153215,
+      "cost_min": 13022.158369013947,
+      "cost_max": 13312.571221578062,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "blocking": null,
+   "on_hand": 1825.2403561695733,
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "executed": [],
+   "end_stock": 1627.651941441069
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "chosen": "cadence_2_network",
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "recovery_mode": false,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "hedged_cost": 23429.957301847116,
+     "feasible": true,
+     "burden": 9929.035012068445
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 17676.874339740025,
+     "feasible": false,
+     "burden": 2686.795912964514
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13630.560543860687,
+     "feasible": true,
+     "burden": 5453.959719266296
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13623.43974943909,
+     "feasible": true,
+     "burden": 5453.959719266296
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13651.774047229725,
+     "feasible": true,
+     "burden": 6234.575876152855
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13623.43974943909,
+     "feasible": true,
+     "burden": 5453.959719266296
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13626.134008486195,
+     "feasible": true,
+     "burden": 5453.959719266296
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13651.511549193498,
+     "feasible": true,
+     "burden": 7046.169970554062
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13654.370802827329,
+     "feasible": true,
+     "burden": 6234.57587615285
+    }
+   },
+   "owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "status": "PENDING_REVIEW",
+   "selected_policy": "cadence_2_network",
+   "reasons": [],
+   "stresses": [
+    {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    }
+   ],
+   "protection": [
+    {
+     "sku": "A",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    },
+    {
+     "sku": "B",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23162.258454091258,
+     "cost_min": 23036.30615502948,
+     "cost_max": 23400.452401312272,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13330.900882385438,
+     "cost_min": 13149.650117904588,
+     "cost_max": 13562.96441068179,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23239.2089614972,
+      "cost_min": 23133.486270085814,
+      "cost_max": 23297.085377737738,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13355.18643067713,
+      "cost_min": 13129.755256267563,
+      "cost_max": 13471.917210691761,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "blocking": null,
+   "on_hand": 1627.651941441069,
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "executed": [],
+   "end_stock": 1432.069635693807
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "chosen": "deterministic_network",
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "recovery_mode": false,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "hedged_cost": 23239.93328188402,
+     "feasible": true,
+     "burden": 9064.167584344505
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 18145.869297135905,
+     "feasible": false,
+     "burden": 2304.5725712519
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13533.840703444448,
+     "feasible": true,
+     "burden": 5354.443891617249
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13538.283568741965,
+     "feasible": true,
+     "burden": 5354.443891617528
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13558.581529394634,
+     "feasible": true,
+     "burden": 6972.7441862003725
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13538.283568741965,
+     "feasible": true,
+     "burden": 5354.443891617528
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13677.985433798787,
+     "feasible": true,
+     "burden": 6074.578804686625
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13717.086929855006,
+     "feasible": true,
+     "burden": 6074.578804686625
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13553.714363330915,
+     "feasible": true,
+     "burden": 6972.744186202682
+    }
+   },
+   "owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "status": "PENDING_REVIEW",
+   "selected_policy": "deterministic_network",
+   "reasons": [],
+   "stresses": [
+    {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    }
+   ],
+   "protection": [
+    {
+     "sku": "A",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    },
+    {
+     "sku": "B",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23093.53495339197,
+     "cost_min": 22850.450249848505,
+     "cost_max": 23259.001625347715,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13420.42519269413,
+     "cost_min": 13227.962662987444,
+     "cost_max": 13549.089890551691,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23226.83591976892,
+      "cost_min": 23054.23801645877,
+      "cost_max": 23418.02852981654,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13568.425310406017,
+      "cost_min": 13272.233728227531,
+      "cost_max": 13815.823923096861,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "blocking": null,
+   "on_hand": 1432.069635693807,
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "executed": [],
+   "end_stock": 1222.7783232090635
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "chosen": "stochastic_network",
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "recovery_mode": false,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "hedged_cost": 23129.148069119434,
+     "feasible": true,
+     "burden": 8144.0843756791455
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 18793.097861035083,
+     "feasible": false,
+     "burden": 2073.0505511805636
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13515.27392550954,
+     "feasible": true,
+     "burden": 5235.014033493
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13515.273925509557,
+     "feasible": true,
+     "burden": 5235.0140334929265
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13512.952993613499,
+     "feasible": true,
+     "burden": 5235.014033492999
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13515.273925509557,
+     "feasible": true,
+     "burden": 5235.0140334929265
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13515.27392550954,
+     "feasible": true,
+     "burden": 5235.014033493
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13512.952993613497,
+     "feasible": true,
+     "burden": 5235.014033493
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13512.952993613497,
+     "feasible": true,
+     "burden": 5235.014033493
+    }
+   },
+   "owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "status": "PENDING_REVIEW",
+   "selected_policy": "stochastic_network",
+   "reasons": [],
+   "stresses": [
+    {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    }
+   ],
+   "protection": [
+    {
+     "sku": "A",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    },
+    {
+     "sku": "B",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23050.491105183544,
+     "cost_min": 22864.539574395643,
+     "cost_max": 23232.975806468472,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13512.29051189862,
+     "cost_min": 13341.15858461257,
+     "cost_max": 13686.251559149678,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23099.010810837757,
+      "cost_min": 22963.90444264483,
+      "cost_max": 23171.73888832163,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13380.719874721883,
+      "cost_min": 13348.123828998696,
+      "cost_max": 13420.536292573855,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "blocking": null,
+   "on_hand": 1222.7783232090635,
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "executed": [],
+   "end_stock": 1011.5365277649469
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "chosen": "joint_recovery",
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "recovery_mode": false,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "hedged_cost": 23316.837160440013,
+     "feasible": true,
+     "burden": 7044.329989424469
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 20116.543743861555,
+     "feasible": false,
+     "burden": 1846.1978472900066
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13860.534305543917,
+     "feasible": true,
+     "burden": 4873.660255858421
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13769.131322309358,
+     "feasible": true,
+     "burden": 5744.548122338668
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13769.131322309358,
+     "feasible": true,
+     "burden": 5744.548122338666
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13769.131322309358,
+     "feasible": true,
+     "burden": 5744.548122338668
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13769.131322309355,
+     "feasible": true,
+     "burden": 5744.548122338677
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 1296.0,
+      "src_B": 624.0
+     },
+     "hedged_cost": 13980.99495034422,
+     "feasible": true,
+     "burden": 7255.245265069885
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13771.980076805243,
+     "feasible": true,
+     "burden": 5744.548122338641
+    }
+   },
+   "owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "status": "PENDING_REVIEW",
+   "selected_policy": "joint_recovery",
+   "reasons": [],
+   "stresses": [
+    {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    }
+   ],
+   "protection": [
+    {
+     "sku": "A",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    },
+    {
+     "sku": "B",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23335.02298156488,
+     "cost_min": 22984.860336398266,
+     "cost_max": 23510.7659440193,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13915.484273813205,
+     "cost_min": 13675.695521144678,
+     "cost_max": 14054.50620804903,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "not_worse",
+     "physically_usable": true,
+     "within_downside": false,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23228.297918496104,
+      "cost_min": 22766.57885953435,
+      "cost_max": 23573.994132369466,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13875.72275633277,
+      "cost_min": 13349.966631418632,
+      "cost_max": 14425.386544916071,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 0.9942358689807447,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "blocking": null,
+   "on_hand": 1011.5365277649469,
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "executed": [],
+   "end_stock": 819.8440627320574
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "chosen": "cadence_2_network",
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "recovery_mode": false,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "hedged_cost": 23139.91878166899,
+     "feasible": true,
+     "burden": 6166.3972716695525
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 20613.075813184623,
+     "feasible": false,
+     "burden": 1858.3294371767417
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13683.382428279903,
+     "feasible": true,
+     "burden": 4808.715533002292
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13618.918745726962,
+     "feasible": true,
+     "burden": 5679.955388619223
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13616.663907689546,
+     "feasible": true,
+     "burden": 5679.955388619223
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13618.918745726962,
+     "feasible": true,
+     "burden": 5679.955388619223
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13681.082145214557,
+     "feasible": true,
+     "burden": 4808.715533002292
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 888.0,
+      "src_B": 1032.0
+     },
+     "hedged_cost": 13821.811283696494,
+     "feasible": true,
+     "burden": 6352.19648025262
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13618.918745726965,
+     "feasible": true,
+     "burden": 5679.955388619211
+    }
+   },
+   "owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "status": "PENDING_REVIEW",
+   "selected_policy": "cadence_2_network",
+   "reasons": [],
+   "stresses": [
+    {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    }
+   ],
+   "protection": [
+    {
+     "sku": "A",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    },
+    {
+     "sku": "B",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23209.784976470604,
+     "cost_min": 22901.338274020938,
+     "cost_max": 23371.884886846427,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13739.004872703425,
+     "cost_min": 13455.512186632795,
+     "cost_max": 13912.2808323884,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23047.55802717954,
+      "cost_min": 22864.857431821496,
+      "cost_max": 23294.363584362516,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13674.03522911337,
+      "cost_min": 13375.109216408371,
+      "cost_max": 13885.874586695754,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "blocking": null,
+   "on_hand": 819.8440627320574,
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "executed": [],
+   "end_stock": 624.228381371674
+  },
+  {
+   "state": "CAPITAL_OPTIMIZATION",
+   "chosen": "stochastic_network",
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "cadence_2_network",
+    "cadence_4_network",
+    "joint_recovery"
+   ],
+   "recovery_mode": false,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "hedged_cost": 23067.273153051006,
+     "feasible": true,
+     "burden": 5221.089458726192
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 21467.583637681255,
+     "feasible": false,
+     "burden": 2051.5394391801638
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13682.657235340774,
+     "feasible": true,
+     "burden": 4678.208404074629
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13682.812226609489,
+     "feasible": true,
+     "burden": 4678.208404074626
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13686.381250629338,
+     "feasible": true,
+     "burden": 4678.208404074629
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13682.812226609489,
+     "feasible": true,
+     "burden": 4678.208404074626
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 1104.0,
+      "src_B": 816.0
+     },
+     "hedged_cost": 13826.02304002921,
+     "feasible": true,
+     "burden": 5395.112068747071
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 1032.0,
+      "src_B": 888.0
+     },
+     "hedged_cost": 13824.778893088502,
+     "feasible": true,
+     "burden": 5395.112068747071
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 13682.089040922676,
+     "feasible": true,
+     "burden": 4678.208404074629
+    }
+   },
+   "owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "status": "PENDING_REVIEW",
+   "selected_policy": "stochastic_network",
+   "reasons": [],
+   "stresses": [
+    {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    }
+   ],
+   "protection": [
+    {
+     "sku": "A",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    },
+    {
+     "sku": "B",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23220.756943738517,
+     "cost_min": 23099.07103485793,
+     "cost_max": 23320.37886541306,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 13963.027120757308,
+     "cost_min": 13881.813379790943,
+     "cost_max": 14095.088053903028,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": true,
+     "gate_mode": "strict",
+     "physically_usable": true,
+     "within_downside": true,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23205.33422361565,
+      "cost_min": 22973.57465504649,
+      "cost_max": 23496.630497866536,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 13844.339147126684,
+      "cost_min": 13647.257479424894,
+      "cost_max": 14072.472063981657,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     }
+    }
+   ],
+   "blocking": null,
+   "on_hand": 624.228381371674,
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "executed": [],
+   "end_stock": 426.61771623442206
+  },
+  {
+   "state": "NO_ACTION",
+   "chosen": "deterministic_network",
+   "feasible": [
+    "incumbent",
+    "deterministic_network",
+    "stochastic_network",
+    "cadence_2_network",
+    "cadence_4_network"
+   ],
+   "recovery_mode": false,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 192.0,
+      "src_B": 120.0
+     },
+     "hedged_cost": 23313.894771326894,
+     "feasible": true,
+     "burden": 4202.383189848109
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0": {},
+     "hedged_cost": 22697.96980690622,
+     "feasible": false,
+     "burden": 2275.027432334926
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 1056.0,
+      "src_B": 864.0
+     },
+     "hedged_cost": 14351.733667040691,
+     "feasible": true,
+     "burden": 4447.471839623003
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 1056.0,
+      "src_B": 864.0
+     },
+     "hedged_cost": 14351.733667040691,
+     "feasible": true,
+     "burden": 4447.471839623003
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 1056.0,
+      "src_B": 864.0
+     },
+     "hedged_cost": 14351.733667040691,
+     "feasible": true,
+     "burden": 4447.471839623003
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "p0": {
+      "src_A": 1056.0,
+      "src_B": 864.0
+     },
+     "hedged_cost": 14351.733667040691,
+     "feasible": true,
+     "burden": 4447.471839623003
+    }
+   },
+   "owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "status": "RETAIN_INCUMBENT",
+   "selected_policy": "operator_declared",
+   "reasons": [
+    "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+   ],
+   "stresses": [
+    {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    }
+   ],
+   "protection": [
+    {
+     "sku": "A",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    },
+    {
+     "sku": "B",
+     "regime": "LEAN",
+     "activity": 0.0,
+     "flags": [],
+     "decaying": false
+    }
+   ],
+   "confirmation": {
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 23481.870788606462,
+     "cost_min": 23439.007968757967,
+     "cost_max": 23513.375117847878,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 14777.236402810462,
+     "cost_min": 14635.004451751112,
+     "cost_max": 14868.495030735583,
+     "weighted_service_shortfall": 0.0,
+     "failures": []
+    }
+   },
+   "stress_confirmation": [
+    {
+     "stress": {
+      "name": "nil",
+      "fill_multiplier": 1.0,
+      "extra_lead_days": 0,
+      "demand_multiplier": 1.0,
+      "recovery_period": 12,
+      "shared_failure": true,
+      "affected_resources": []
+     },
+     "pass": false,
+     "gate_mode": "rejected",
+     "physically_usable": true,
+     "within_downside": false,
+     "service_met": true,
+     "incumbent": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 23422.824411299083,
+      "cost_min": 23308.74182679496,
+      "cost_max": 23632.363922398028,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 1.0,
+       "svc_B": 1.0
+      }
+     },
+     "candidate": {
+      "runs": 3,
+      "physical_failures": 0,
+      "cost_mean": 14789.667306151252,
+      "cost_min": 14568.799928854252,
+      "cost_max": 15217.719930124127,
+      "weighted_service_shortfall": 0.0,
+      "failures": [],
+      "service": {
+       "svc_A": 0.9635570128345237,
+       "svc_B": 0.96924203450536
+      }
+     }
+    }
+   ],
+   "blocking": null,
+   "on_hand": 426.61771623442206,
+   "incumbent_orders": [
+    [
+     "src_A",
+     0,
+     192.0
+    ],
+    [
+     "src_A",
+     1,
+     192.0
+    ],
+    [
+     "src_A",
+     2,
+     192.0
+    ],
+    [
+     "src_A",
+     3,
+     192.0
+    ],
+    [
+     "src_A",
+     4,
+     192.0
+    ],
+    [
+     "src_A",
+     5,
+     192.0
+    ],
+    [
+     "src_A",
+     6,
+     192.0
+    ],
+    [
+     "src_A",
+     7,
+     192.0
+    ],
+    [
+     "src_A",
+     8,
+     192.0
+    ],
+    [
+     "src_A",
+     9,
+     192.0
+    ],
+    [
+     "src_A",
+     10,
+     192.0
+    ],
+    [
+     "src_A",
+     11,
+     192.0
+    ],
+    [
+     "src_B",
+     0,
+     120.0
+    ],
+    [
+     "src_B",
+     1,
+     120.0
+    ],
+    [
+     "src_B",
+     2,
+     120.0
+    ],
+    [
+     "src_B",
+     3,
+     120.0
+    ],
+    [
+     "src_B",
+     4,
+     120.0
+    ],
+    [
+     "src_B",
+     5,
+     120.0
+    ],
+    [
+     "src_B",
+     6,
+     120.0
+    ],
+    [
+     "src_B",
+     7,
+     120.0
+    ],
+    [
+     "src_B",
+     8,
+     120.0
+    ],
+    [
+     "src_B",
+     9,
+     120.0
+    ],
+    [
+     "src_B",
+     10,
+     120.0
+    ],
+    [
+     "src_B",
+     11,
+     120.0
+    ]
+   ],
+   "executed": [
+    [
+     "src_A",
+     192.0
+    ],
+    [
+     "src_B",
+     120.0
+    ]
+   ],
+   "end_stock": 229.0070510971702
+  }
+ ]
+}

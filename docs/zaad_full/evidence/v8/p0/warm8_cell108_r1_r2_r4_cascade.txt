@@ -1,0 +1,26 @@
+=== review 1 arm=warm     wall=153s state=PROTECT selected=stochastic_network required=3/3 starved=[] infeasible=0
+    service retail_A target=0.950 expected=0.9649493445343761 incumbent=0.9574466887342582
+    deterministic_network  OPTIMAL              secs=   0.1 gap=0.0 nodes=1 valid=True warm=-
+    stochastic_network     FEASIBLE_TIME_LIMIT  secs=  38.0 gap=0.0133 nodes=1817 valid=True warm=True/improved/comp=0.3s/solver_ok=True
+    cvar_network           FEASIBLE_TIME_LIMIT  secs=  38.0 gap=0.0342 nodes=1125 valid=True warm=True/improved/comp=0.3s/solver_ok=True
+    protected_network      FEASIBLE_TIME_LIMIT  secs=  38.0 gap=0.0152 nodes=1227 valid=True warm=True/improved/comp=10.6s/solver_ok=True
+    hedged_network         NO_FEASIBLE_SOLUTION secs=  38.0 gap=None nodes=None valid=False warm=False/rejected/comp=22.8s/solver_ok=False
+    stress_network         INFEASIBLE           secs=   0.3 gap=None nodes=None valid=False warm=False/rejected/comp=0.2s/solver_ok=False
+=== review 2 arm=warm     wall=143s state=PROTECT selected=projected_base_stock_proxy required=3/3 starved=[] infeasible=0
+    service retail_A target=0.950 expected=0.9458007664590141 incumbent=0.9458007664590141
+    deterministic_network  OPTIMAL              secs=   0.1 gap=0.0 nodes=1 valid=True warm=-
+    stochastic_network     FEASIBLE_TIME_LIMIT  secs=  35.4 gap=0.0032 nodes=671 valid=True warm=True/improved/comp=7.8s/solver_ok=True
+    cvar_network           FEASIBLE_TIME_LIMIT  secs=  35.4 gap=0.0112 nodes=584 valid=True warm=True/improved/comp=14.0s/solver_ok=True
+    protected_network      FEASIBLE_TIME_LIMIT  secs=  35.4 gap=0.0015 nodes=1103 valid=True warm=True/improved/comp=6.7s/solver_ok=True
+    hedged_network         NO_FEASIBLE_SOLUTION secs=  35.5 gap=None nodes=None valid=False warm=False/rejected/comp=21.3s/solver_ok=False
+    stress_network         INFEASIBLE           secs=   0.1 gap=None nodes=None valid=False warm=False/rejected/comp=0.1s/solver_ok=False
+=== review 4 arm=warm     wall=123s state=PROTECT selected=projected_base_stock_proxy required=3/3 starved=[] infeasible=0
+    service retail_A target=0.950 expected=0.9520917640870578 incumbent=0.9520917640870578
+    deterministic_network  OPTIMAL              secs=   0.0 gap=0.0 nodes=1 valid=True warm=-
+    stochastic_network     FEASIBLE_TIME_LIMIT  secs=  30.6 gap=0.023 nodes=642 valid=True warm=True/improved/comp=4.7s/solver_ok=True
+    cvar_network           FEASIBLE_TIME_LIMIT  secs=  30.6 gap=0.0362 nodes=842 valid=True warm=True/improved/comp=7.7s/solver_ok=True
+    protected_network      FEASIBLE_TIME_LIMIT  secs=  30.6 gap=0.0213 nodes=238 valid=True warm=True/improved/comp=6.2s/solver_ok=True
+    hedged_network         NO_FEASIBLE_SOLUTION secs=  30.6 gap=None nodes=None valid=False warm=False/rejected/comp=18.3s/solver_ok=False
+    stress_network         INFEASIBLE           secs=   0.1 gap=None nodes=None valid=False warm=False/rejected/comp=0.1s/solver_ok=False
+
+[exited with code 0]

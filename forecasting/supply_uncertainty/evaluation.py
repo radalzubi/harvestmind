@@ -224,7 +224,7 @@ def pit_values(y: np.ndarray, samples: np.ndarray) -> np.ndarray:
     return np.array([float((s[i] <= y[i]).mean()) for i in range(len(y))])
 
 
-def pit_uniformity(pit: np.ndarray, n_bins: int = 10) -> dict[str, float]:
+def pit_uniformity(pit: np.ndarray, n_bins: int = 10) -> dict[str, float | str]:
     """Summarise PIT uniformity, with a plain reading of the shape."""
     p = np.asarray(pit, dtype=float)
     p = p[np.isfinite(p)]

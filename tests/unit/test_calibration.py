@@ -12,12 +12,10 @@ from __future__ import annotations
 import duckdb
 import numpy as np
 import pytest
-from scipy import stats
 
 from risk.calibration import calibration_report, pit_values
 from risk.supplier_distribution import (
     Population,
-    estimate_population,
     service_linked_quantile,
     supplier_distribution,
 )

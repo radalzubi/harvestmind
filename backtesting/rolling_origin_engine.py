@@ -367,11 +367,21 @@ class RollingOriginEngine:
                     horizon_period_mean["demand_kg"] * self.cfg.horizon_weeks
                 )
                 demand_scen = self._yield_to_demand_scenarios(scen_df, horizon_period_mean)
+                # Newsvendor objective, priced with the SAME per-kg waste and
+                # lost-sale costs _score settles with. The default objective
+                # charges procurement on every committed kg and then charges
+                # waste on the unsold ones, which double-counts overage and
+                # biases the SP toward under-committing relative to the
+                # economics it is scored against.
+                _prods = list(demand_scen["product_id"].unique())
                 sp_result = TwoStageStochasticLP(
                     n_scenarios=self.cfg.n_scenarios,
                     solver=self.cfg.solver,
                     lost_sale_per_kg_usd=self.cfg.lost_sale_per_kg_usd,
                     spot_capacity_factor=self.cfg.spot_capacity_factor,
+                    newsvendor_objective=True,
+                    waste_cost_by_product={j: self.cfg.waste_cost_per_kg for j in _prods},
+                    unmet_cost_by_product={j: self.cfg.lost_sale_per_kg_usd for j in _prods},
                 ).solve(demand_scenarios=demand_scen, supply=train_supply)
                 _score(
                     self._result_to_commitments(sp_result, train_supply, is_sp=True),

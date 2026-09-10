@@ -1,0 +1,1496 @@
+{
+ "15": {
+  "service": 0.9801335414977753,
+  "tail": 0.7897370320760438,
+  "p10": 0.9619322366461477,
+  "breach_reviews": 1,
+  "worst_unmet": 4.205259358479124,
+  "total_unmet": 4.96661462555617,
+  "inventory": 46.05861496455202,
+  "cost": 1678.3632802908276,
+  "wall": 4.897578042000532,
+  "reviews": 12,
+  "required_requested": 36,
+  "required_completed": 32,
+  "required_starved": 0,
+  "required_infeasible": 4,
+  "required_starved_names": {},
+  "optional_requested": 36,
+  "optional_completed": 14,
+  "optional_skipped": 0,
+  "not_applicable": 0,
+  "milps_attempted": 97,
+  "ftl_valid": 0,
+  "ftl_invalid": 0,
+  "no_incumbent": 0,
+  "physical_invalid": 0,
+  "joint_built": 1,
+  "joint_chosen": 0,
+  "joint_required": 0,
+  "lat_p50": 0.1354331667535007,
+  "lat_p90": 0.48909991700202227,
+  "lat_p95": 1.3169901249930263,
+  "lat_max": 1.79913358297199,
+  "states": {
+   "PROTECT": 12
+  },
+  "chosen": {
+   "protected_network": 2,
+   "projected_base_stock_proxy": 4,
+   "cvar_network": 3,
+   "deterministic_network": 1,
+   "stochastic_network": 1,
+   "stress_network": 1
+  },
+  "per_review": [
+   {
+    "state": "PROTECT",
+    "selected": "protected_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 1.79913358297199
+   },
+   {
+    "state": "PROTECT",
+    "selected": "protected_network",
+    "service": 0.7897370320760438,
+    "unmet": 4.205259358479124,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 1.3169901249930263
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.48909991700202227
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.35349337523803115
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.35031658271327615
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.9619322366461477,
+    "unmet": 0.7613552670770467,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.1354331667535007
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.13790537463501096
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.09041708381846547
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.06490133283659816
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.06616899976506829
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stress_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.060902416706085205
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.01644300017505884
+   }
+  ]
+ },
+ "16": {
+  "service": 0.972,
+  "tail": 0.65,
+  "p10": 1.0,
+  "breach_reviews": 1,
+  "worst_unmet": 7.0,
+  "total_unmet": 7.0,
+  "inventory": 134.48500241457242,
+  "cost": 1515.0302829472525,
+  "wall": 5.639574666041881,
+  "reviews": 12,
+  "required_requested": 36,
+  "required_completed": 30,
+  "required_starved": 0,
+  "required_infeasible": 6,
+  "required_starved_names": {},
+  "optional_requested": 36,
+  "optional_completed": 14,
+  "optional_skipped": 0,
+  "not_applicable": 0,
+  "milps_attempted": 98,
+  "ftl_valid": 0,
+  "ftl_invalid": 0,
+  "no_incumbent": 0,
+  "physical_invalid": 0,
+  "joint_built": 2,
+  "joint_chosen": 0,
+  "joint_required": 0,
+  "lat_p50": 0.12577137490734458,
+  "lat_p90": 0.7009280421771109,
+  "lat_p95": 0.9073185003362596,
+  "lat_max": 2.5756694162264466,
+  "states": {
+   "PROTECT": 12
+  },
+  "chosen": {
+   "projected_base_stock_proxy": 5,
+   "hedged_network": 1,
+   "stochastic_network": 3,
+   "deterministic_network": 2,
+   "cvar_network": 1
+  },
+  "per_review": [
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 2.5756694162264466
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.65,
+    "unmet": 7.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.7009280421771109
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.9073185003362596
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.26059458404779434
+   },
+   {
+    "state": "PROTECT",
+    "selected": "hedged_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.3280802499502897
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.49229954229667783
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.12577137490734458
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.07921837503090501
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.07009412487968802
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.04700187500566244
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.019626667257398367
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.016738917212933302
+   }
+  ]
+ },
+ "20": {
+  "service": 0.9201980115414439,
+  "tail": 0.0,
+  "p10": 0.23258165953163423,
+  "breach_reviews": 3,
+  "worst_unmet": 14.0,
+  "total_unmet": 30.883369533461263,
+  "inventory": 191.1326992228489,
+  "cost": 2466.4208218580998,
+  "wall": 142.63955408427864,
+  "reviews": 20,
+  "required_requested": 58,
+  "required_completed": 53,
+  "required_starved": 0,
+  "required_infeasible": 5,
+  "required_starved_names": {},
+  "optional_requested": 57,
+  "optional_completed": 33,
+  "optional_skipped": 0,
+  "not_applicable": 0,
+  "milps_attempted": 157,
+  "ftl_valid": 6,
+  "ftl_invalid": 0,
+  "no_incumbent": 0,
+  "physical_invalid": 0,
+  "joint_built": 2,
+  "joint_chosen": 1,
+  "joint_required": 0,
+  "lat_p50": 0.18314041662961245,
+  "lat_p90": 20.293083916883916,
+  "lat_p95": 29.670823082793504,
+  "lat_max": 65.60621787514538,
+  "states": {
+   "NO_ACTION": 1,
+   "PROTECT": 19
+  },
+  "chosen": {
+   "deterministic_network": 12,
+   "projected_base_stock_proxy": 2,
+   "joint_recovery": 1,
+   "protected_network": 1,
+   "stochastic_network": 3,
+   "cvar_network": 1
+  },
+  "per_review": [
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.30784383323043585
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 65.60621787514538
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.23258165953163423,
+    "unmet": 13.046111787962218,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 29.670823082793504
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 0.0,
+    "unmet": 14.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 20.293083916883916
+   },
+   {
+    "state": "PROTECT",
+    "selected": "protected_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 15.996570999734104
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 4.1492672907188535
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.48475879058241844
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 3.326905209105462
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 0.7742789561471151,
+    "unmet": 3.837257745499043,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 1.8437182498164475
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.1965282908640802
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.18314041662961245
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.11731104180216789
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.13471345882862806
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.08533116709440947
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.07510045822709799
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.04541754117235541
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.02887341706082225
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.02452395809814334
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.02043879171833396
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.020268875174224377
+   }
+  ]
+ },
+ "21": {
+  "service": 0.759570770573741,
+  "tail": 0.0,
+  "p10": 0.0,
+  "breach_reviews": 5,
+  "worst_unmet": 27.0,
+  "total_unmet": 93.04611178796222,
+  "inventory": 146.2402057688128,
+  "cost": 3618.796880551216,
+  "wall": 155.8439050000161,
+  "reviews": 20,
+  "required_requested": 63,
+  "required_completed": 47,
+  "required_starved": 0,
+  "required_infeasible": 16,
+  "required_starved_names": {},
+  "optional_requested": 52,
+  "optional_completed": 18,
+  "optional_skipped": 0,
+  "not_applicable": 0,
+  "milps_attempted": 159,
+  "ftl_valid": 7,
+  "ftl_invalid": 0,
+  "no_incumbent": 0,
+  "physical_invalid": 0,
+  "joint_built": 12,
+  "joint_chosen": 6,
+  "joint_required": 8,
+  "lat_p50": 0.6007462502457201,
+  "lat_p90": 20.465969459153712,
+  "lat_p95": 29.671535207889974,
+  "lat_max": 65.58889104239643,
+  "states": {
+   "NO_ACTION": 2,
+   "PROTECT": 17,
+   "NORMAL_REPLENISHMENT": 1
+  },
+  "chosen": {
+   "deterministic_network": 2,
+   "projected_base_stock_proxy": 8,
+   "joint_recovery": 6,
+   "protected_network": 1,
+   "cvar_network": 2,
+   "stochastic_network": 1
+  },
+  "per_review": [
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.29768041614443064
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 65.58889104239643
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.23258165953163423,
+    "unmet": 13.046111787962218,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 29.671535207889974
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 0.0,
+    "unmet": 14.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 20.465969459153712
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 0.0,
+    "unmet": 19.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 14.01504237530753
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 0.0,
+    "unmet": 20.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 15.13358633313328
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 0.0,
+    "unmet": 27.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.9579387921839952
+   },
+   {
+    "state": "PROTECT",
+    "selected": "protected_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 2.2400146247819066
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 3.475580499973148
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 1.9858295409940183
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.6501964167691767
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.6007462502457201
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.18457325035706162
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.12475149985402822
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.1136550409719348
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.13869708310812712
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "REQUIRED",
+    "starved": [],
+    "latency": 0.06638950016349554
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.0676907910965383
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.01926495786756277
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.013298208359628916
+   }
+  ]
+ },
+ "90": {
+  "service": 0.8630415533059169,
+  "tail": 0.0,
+  "p10": 0.21990257827554363,
+  "breach_reviews": 4,
+  "worst_unmet": 22.0,
+  "total_unmet": 70.12272470737054,
+  "inventory": 124.06746674173363,
+  "cost": 3360.1667807369117,
+  "wall": 512.2669643745758,
+  "reviews": 26,
+  "required_requested": 67,
+  "required_completed": 58,
+  "required_starved": 0,
+  "required_infeasible": 9,
+  "required_starved_names": {},
+  "optional_requested": 59,
+  "optional_completed": 22,
+  "optional_skipped": 0,
+  "not_applicable": 0,
+  "milps_attempted": 182,
+  "ftl_valid": 13,
+  "ftl_invalid": 0,
+  "no_incumbent": 2,
+  "physical_invalid": 0,
+  "joint_built": 5,
+  "joint_chosen": 2,
+  "joint_required": 0,
+  "lat_p50": 0.6834752094000578,
+  "lat_p90": 79.31684699980542,
+  "lat_p95": 90.3019838752225,
+  "lat_max": 113.58234287519008,
+  "states": {
+   "NO_ACTION": 4,
+   "PROTECT": 18,
+   "NORMAL_REPLENISHMENT": 3,
+   "CAPITAL_OPTIMIZATION": 1
+  },
+  "chosen": {
+   "deterministic_network": 8,
+   "projected_base_stock_proxy": 10,
+   "protected_network": 1,
+   "cvar_network": 3,
+   "joint_recovery": 2,
+   "stochastic_network": 2
+  },
+  "per_review": [
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.6843427079729736
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 113.58234287519008
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.23175915759939933,
+    "unmet": 13.060094320810212,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 104.67784104216844
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.0,
+    "unmet": 14.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 90.3019838752225
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 79.31684699980542
+   },
+   {
+    "state": "PROTECT",
+    "selected": "protected_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 56.03588237520307
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 0.21990257827554363,
+    "unmet": 21.062630386560322,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 14.683175582904369
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 0.0,
+    "unmet": 22.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 18.54885633289814
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 6.2080082087777555
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 18.900646541733295
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 2.4874191246926785
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 3.6251876251772046
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.7675393340177834
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.5159260001964867
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.33458412485197186
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.6834752094000578
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.17858879175037146
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.16200104216113687
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.17336345789954066
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.12497108289971948
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.10102895786985755
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.06208200007677078
+   },
+   {
+    "state": "CAPITAL_OPTIMIZATION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "OPTIONAL",
+    "starved": [],
+    "latency": 0.030350000131875277
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.01560608297586441
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.013723500072956085
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.01189604215323925
+   }
+  ]
+ },
+ "108": {
+  "service": 0.8783565629444118,
+  "tail": 0.0,
+  "p10": 0.22059065024599678,
+  "breach_reviews": 4,
+  "worst_unmet": 22.0,
+  "total_unmet": 69.9449763069632,
+  "inventory": 142.35772029067536,
+  "cost": 3691.955177835978,
+  "wall": 900.7341815843247,
+  "reviews": 30,
+  "required_requested": 78,
+  "required_completed": 70,
+  "required_starved": 4,
+  "required_infeasible": 4,
+  "required_starved_names": {
+   "stochastic_network": 1,
+   "protected_network": 3
+  },
+  "optional_requested": 66,
+  "optional_completed": 29,
+  "optional_skipped": 0,
+  "not_applicable": 0,
+  "milps_attempted": 206,
+  "ftl_valid": 13,
+  "ftl_invalid": 0,
+  "no_incumbent": 12,
+  "physical_invalid": 0,
+  "joint_built": 5,
+  "joint_chosen": 1,
+  "joint_required": 0,
+  "lat_p50": 2.152186708059162,
+  "lat_p90": 122.80385245895013,
+  "lat_p95": 133.374294874724,
+  "lat_max": 152.91164666693658,
+  "states": {
+   "NO_ACTION": 3,
+   "PROTECT": 18,
+   "CAPITAL_OPTIMIZATION": 3,
+   "NORMAL_REPLENISHMENT": 6
+  },
+  "chosen": {
+   "deterministic_network": 5,
+   "projected_base_stock_proxy": 13,
+   "joint_recovery": 1,
+   "stochastic_network": 4,
+   "cvar_network": 6,
+   "protected_network": 1
+  },
+  "per_review": [
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 1.1364415003918111
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [
+     "stochastic_network",
+     "protected_network"
+    ],
+    "latency": 152.91164666693658
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.24112212567028757,
+    "unmet": 12.900923863605112,
+    "joint": false,
+    "joint_class": null,
+    "starved": [
+     "protected_network"
+    ],
+    "latency": 142.9398001669906
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.0,
+    "unmet": 14.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 133.374294874724
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [
+     "protected_network"
+    ],
+    "latency": 122.80385245895013
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 113.54298850009218
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 0.22059065024599678,
+    "unmet": 21.044052443358087,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 62.491209500003606
+   },
+   {
+    "state": "PROTECT",
+    "selected": "joint_recovery",
+    "service": 0.0,
+    "unmet": 22.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 34.75574933271855
+   },
+   {
+    "state": "PROTECT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 24.772396333049983
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 22.27813958423212
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 2.152186708059162
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 45.85769125027582
+   },
+   {
+    "state": "PROTECT",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 14.611535207834095
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 8.760482625104487
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 2.551234666723758
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 6.115064582787454
+   },
+   {
+    "state": "PROTECT",
+    "selected": "protected_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 4.4003545003943145
+   },
+   {
+    "state": "PROTECT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 2.0895176674239337
+   },
+   {
+    "state": "PROTECT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 1.9016368328593671
+   },
+   {
+    "state": "CAPITAL_OPTIMIZATION",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "OPTIONAL",
+    "starved": [],
+    "latency": 0.251224625390023
+   },
+   {
+    "state": "CAPITAL_OPTIMIZATION",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "OPTIONAL",
+    "starved": [],
+    "latency": 0.2026804997585714
+   },
+   {
+    "state": "CAPITAL_OPTIMIZATION",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": "OPTIONAL",
+    "starved": [],
+    "latency": 0.2159483339637518
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.10839612502604723
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "cvar_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.17151591600850224
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.10179174970835447
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.05739395786076784
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "projected_base_stock_proxy",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": true,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.07002308266237378
+   },
+   {
+    "state": "NORMAL_REPLENISHMENT",
+    "selected": "stochastic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.03432912519201636
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.017399542033672333
+   },
+   {
+    "state": "NO_ACTION",
+    "selected": "deterministic_network",
+    "service": 1.0,
+    "unmet": 0.0,
+    "joint": false,
+    "joint_class": null,
+    "starved": [],
+    "latency": 0.012080874759703875
+   }
+  ]
+ }
+}

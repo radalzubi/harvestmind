@@ -4,6 +4,10 @@ These are **separate projects** with separate markets, separate prospects
 and separate outreach. They share the mathematical core and nothing else.
 Do not mix their materials, their prospect lists, or their claims.
 
+**September 2026 Project B audit:** [commercial remodel](../remodel/README.md).
+It corrects pipeline/evidence-gate defects and separates vendor market evidence
+from synthetic results. It does not establish customer savings for either project.
+
 ---
 
 ## Project A — Agriculture (US, primary)

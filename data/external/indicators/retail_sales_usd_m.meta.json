@@ -1,0 +1,7 @@
+{
+ "fetched_at": "2026-09-04T14:14:18.944849+00:00",
+ "source": "FRED RSXFS",
+ "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=RSXFS",
+ "rows": 415,
+ "provenance": "REAL_PUBLIC"
+}

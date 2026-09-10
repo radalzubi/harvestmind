@@ -1,4 +1,15 @@
-# HarvestMind
+# ZAAD
+
+Repository: `radalzubi/harvestmind` (unchanged). Company/product: **ZAAD** —
+[zaadsupply.com](https://zaadsupply.com).
+
+**New inventory/resilience prototype:** start at
+[docs/zaad_next/README.md](docs/zaad_next/README.md). Includes the isolated
+`/zaad` workspace, current-source adapter, 3,000-row frozen synthetic sweep,
+and retained failures. Verdict: **NEEDS FURTHER ENGINEERING**; not an
+autonomous procurement system or real-operator validation.
+
+## Existing supply-planning foundation
 
 **Stochastic supply planning for perishable food operators** — distributors,
 aggregators, and food hubs. Upload the operational CSVs you already have and
@@ -6,11 +17,54 @@ get a dollar-quantified diagnostic, calibrated probabilistic forecasts, and a
 recommendation for how much to commit to each supplier and buyer *before*
 supply is confirmed.
 
-> Status: the engine is built and gate-tested, but every result so far comes
-> from a calibrated synthetic operator. No real operator's records have touched
-> any layer. See `docs/PILOT_READINESS.md`.
+> Status: evidence includes synthetic operators and simulated decisions driven
+> by public aggregate series. No real operator's records or realized customer
+> savings have validated the engine. See `docs/remodel/README.md` and the
+> historical `docs/PILOT_READINESS.md`.
+
+### Commercial evidence audit (September 2026)
+
+See [the commercial remodel and market verdict](docs/remodel/README.md) for
+the pipeline correction, stricter policy confirmation, service-target
+experiments, every synthetic run, competitor evidence and paid-pilot plan.
+These experiments are **not customer savings validation**. Retaining the
+incumbent is allowed; “no-harm” is not a future performance guarantee.
 
 ---
+
+
+## Two operating domains
+
+HarvestMind runs one optimization engine in two markets. `domain/` holds
+the only code that knows them apart:
+
+| | agriculture (perishable produce) | FMCG (shelf-stable distribution) |
+|---|---|---|
+| unit | kg | each / case / pallet |
+| supply risk | yield on a commitment | fill and lead time on an order |
+| over-buying costs | spoilage | capital |
+| ordering | continuous | whole lots, MOQ (MILP) |
+
+FMCG operators upload their exports to `stg_fmcg_*` and call `POST /fmcg/plan` (Next.js `/fmcg`, Streamlit page 09).
+Before any candidate runs, the **adaptive state layer** (`adaptive/`) estimates the operating state from the operator's own supply and demand history plus public logistics signals: regime probabilities (not a label), a stress score with named components, change points that need two bad receipts rather than one, and per-SKU hysteresis. The state sets the optimizer's *posture* — scenario width, CVaR weight, regret budget, how far it may move from the incumbent, how much it is charged for churn, how long orders stay executable, and which candidates the safe gate may even consider. It runs in three modes on one continuous mapping: **efficiency** (calm: the optimizer minimises ordinary expected cost with the trust region off and every candidate admitted, protected only by the evidence gate), **balanced**, and **protection** (tight trust region, downside-weighted, short commit window). Public leading indicators (IMF PortWatch chokepoints and ports, NY Fed GSCPI, FRED freight, fuel, retail and sentiment series, GDELT shipping coverage) feed a per-lane outlook so the posture can move before the first short delivery; whether they lead is tested on real history, not assumed. `GET /fmcg/state` shows it; `POST /fmcg/plan` returns it with every plan (`docs/optimization/ADAPTIVE_DECISION_ENGINE.md`, validation in `docs/validation/ADAPTIVE_ENGINE_VALIDATION.md`).
+
+The default FMCG mode is **SAFE_SELECTED** (`mode=safe`): the operator's own policy is the incumbent, candidates are backtested on the operator's history in multiple leakage-free folds with recorded supplier outcomes, and a candidate displaces the incumbent only when its conservative lower bound on improvement clears a threshold, service is non-inferior, downside regret is within budget, and it is confirmed on held-out folds. `mode_run=incumbent` with `No candidate cleared the conservative improvement threshold` is a successful result (`docs/optimization/SAFE_ADAPTIVE_OPTIMIZER.md`).
+
+The earlier mode, **SELECTED**: order-up-to, the deterministic
+and the stochastic optimizer are backtested on the operator's own trailing
+history and the winner is run, because the stochastic model earns its keep
+only when conditions bind (see `docs/validation/COMMERCIAL_MODEL_VALIDATION.md`).
+
+## Is it releasable?
+
+```bash
+./scripts/commercial_validate.sh          # gates, minutes
+./scripts/commercial_validate.sh --full   # plus simulation matrices
+```
+
+writes `artifacts/commercial_readiness.json`. The current verdict and the
+open blockers are in `COMMERCIAL_READINESS.md`. Architecture and dependency
+map: `docs/ARCHITECTURE.md`. Mathematics: `docs/MATH_SPEC.md`.
 
 ## What It Does
 

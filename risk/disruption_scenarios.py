@@ -93,6 +93,24 @@ class DisruptionScenario:
 
 
 # ── Presets ────────────────────────────────────────────────────────────────
+# WHAT MEASUREMENT HAS SETTLED, as of the PortWatch validation in
+# scripts/validate_disruption_presets.py (data 2019-01 to 2026-08):
+#
+#   red_sea_houthi            was 0.85, measured 0.743 -> REVISED to 0.75
+#   aqaba_congestion          0.80 vs measured 0.743   -> consistent
+#   northern_land_disruption  0.65 vs measured 0.736   -> consistent
+#   saudi_land_disruption     UNTESTED: no Saudi land closure occurred
+#   all_land_disruption       UNTESTED: never occurred
+#   regional_escalation       UNTESTED: never occurred
+#
+# The three untested presets are neither confirmed nor refuted. They
+# describe tails that did not happen in the measured window, and an
+# operator should read them as priced hypotheticals, not forecasts.
+#
+# `assumed` remains True on every one of them. PortWatch measures tonnage
+# ARRIVED; a fill rate is tonnage arrived over tonnage ORDERED, and no
+# public source publishes the denominator. Measurement narrowed the range;
+# it did not turn an assumption into an observation.
 # Calibrated for JORDAN, whose exposure differs from the GCC. Jordan imports
 # through Aqaba on the Red Sea, not through Hormuz. Its wheat and barley
 # arrive from Romania and Montenegro via Suez. Hormuz matters to Jordan
@@ -113,16 +131,32 @@ RED_SEA_HOUTHI = DisruptionScenario(
     description=(
         "Threat to Red Sea and Suez transits serving Aqaba. Jordan's grain "
         "and much containerised food arrive this way; importers have "
-        "rerouted in response to attacks on shipping."),
-    fill_multiplier=0.85,
+        "rerouted in response to attacks on shipping. Aqaba sits INSIDE "
+        "Bab el-Mandeb, so the Cape of Good Hope reroute that protects "
+        "Europe-bound cargo is not available for the final leg into "
+        "Jordan: a ship calling at Aqaba must pass the strait either way. "
+        "That asymmetry is why Jordan's exposure here is worse than a "
+        "European importer's, not better."),
+    # REVISED DOWNWARD after measurement. The original 0.85 was a stated
+    # guess. IMF PortWatch AIS then measured Aqaba arrivals at 0.743 of
+    # their trailing norm through Dec 2023 - Dec 2024, and Aqaba container
+    # port calls at 0.53 of the pre-crisis mean, while Bab el-Mandeb
+    # transits fell to 0.66 and stayed there for over two years. 0.85 was
+    # optimistic against every one of those. 0.75 is set at the measured
+    # arrival ratio, which is the most defensible of the three because it
+    # is tonnage landed rather than ships counted.
+    fill_multiplier=0.75,
     fill_variance_inflation=1.8,
     recourse_cost_multiplier=1.80,
     recourse_capacity_factor=0.15,
     landed_cost_multiplier=1.15,
-    affected_routes=("red_sea", "suez"),
+    affected_routes=("red_sea", "suez", "aqaba"),
     source=(
-        "Red Sea route to Europe reported at 49% of pre-crisis capacity; "
-        "Jordanian importers rerouting in response to Houthi threats"),
+        "IMF PortWatch AIS: Aqaba import tonnage 0.743 of trailing norm "
+        "Dec 2023-Dec 2024 and container calls 0.53 of pre-crisis; Bab "
+        "el-Mandeb transits 0.66 of 2019 baseline and still 0.64 through "
+        "mid-2026; Cape of Good Hope transits 1.75-1.87x, the measured "
+        "reroute. Still ASSUMED: arrivals are not fills."),
 )
 
 AQABA_CONGESTION = DisruptionScenario(

@@ -24,16 +24,16 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from ingestion.column_mapper import (
+from ingestion.column_mapper import (  # noqa: E402  (sys.path set above so the script runs from any cwd)
     align_to_table_schema,
     auto_map_columns,
     detect_and_convert_units,
     infer_missing_columns,
 )
-from ingestion.csv_ingestor import ingest_csv
+from ingestion.csv_ingestor import ingest_csv  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
 # Reuse validator helpers
-from scripts.validate_real_data import detect_schema, validate_file
+from scripts.validate_real_data import detect_schema, validate_file  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
 
 SCHEMA_TO_TABLE = {

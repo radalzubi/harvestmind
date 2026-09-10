@@ -15,12 +15,12 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 import pandas as pd
-import streamlit as st
+import streamlit as st  # noqa: E402  streamlit page config precedes imports
 
-from dashboard.components.cards import section
-from dashboard.components.empty import db_unavailable
-from dashboard.lib import db, metrics, theme
-from dashboard.lib.formatters import fmt_currency, fmt_currency_range, fmt_date_range, fmt_percent
+from dashboard.components.cards import section  # noqa: E402  streamlit page config precedes imports
+from dashboard.components.empty import db_unavailable  # noqa: E402  streamlit page config precedes imports
+from dashboard.lib import db, metrics, theme  # noqa: E402  streamlit page config precedes imports
+from dashboard.lib.formatters import fmt_currency, fmt_currency_range, fmt_date_range, fmt_percent  # noqa: E402  streamlit page config precedes imports
 
 theme.apply(page_title="Report Export")
 
@@ -164,9 +164,9 @@ with c2:
                     st.session_state["report_filename"] = f"{filename_base}_report.html"
                     st.success("Report generated.")
             except ROIReportError as e:
-                st.error(f"Report not generated: {e}")
+                st.error(f"Report not generated ({type(e).__name__}). See the server log.")
             except Exception as e:
-                st.error(f"Failed: {type(e).__name__}: {e}")
+                st.error(f"Failed ({type(e).__name__}). See the server log.")
     if "report_html" in st.session_state:
         st.download_button(
             "Download HTML",

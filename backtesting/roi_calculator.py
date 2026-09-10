@@ -222,7 +222,7 @@ def _resolve_avg_produce_price_kg(conn=None) -> float:
 
     placeholders = ", ".join(["?"] * len(_FTL_COMMODITIES_LC))
     sql = (
-        "SELECT AVG(price_per_kg) FROM fact_usda_prices "
+        "SELECT AVG(price_per_kg) FROM fact_usda_prices "  # nosec B608 - placeholders only; values parameterised
         f"WHERE LOWER(commodity) IN ({placeholders}) "
         "AND price_per_kg IS NOT NULL "
         "AND price_per_kg > 0 "

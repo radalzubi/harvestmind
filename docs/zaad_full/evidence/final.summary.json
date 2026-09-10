@@ -1,0 +1,72 @@
+{
+  "base_stock": {
+    "runs": 425,
+    "complete": 415,
+    "service_breaches": 283,
+    "paired_completes": 415,
+    "median_vs_base_stock_pct": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "cost_losses": 0
+  },
+  "order_up_to": {
+    "runs": 425,
+    "complete": 415,
+    "service_breaches": 369,
+    "paired_completes": 415,
+    "median_vs_base_stock_pct": -2.601864289775545,
+    "min": -19.367852529329436,
+    "max": 16.962011504826954,
+    "cost_losses": 359
+  },
+  "deterministic": {
+    "runs": 425,
+    "complete": 404,
+    "service_breaches": 370,
+    "paired_completes": 404,
+    "median_vs_base_stock_pct": -0.654067090686814,
+    "min": -14.130006039164568,
+    "max": 25.94612085855677,
+    "cost_losses": 240
+  },
+  "stochastic": {
+    "runs": 425,
+    "complete": 410,
+    "service_breaches": 300,
+    "paired_completes": 409,
+    "median_vs_base_stock_pct": 2.11373757736159,
+    "min": -12.040821507648621,
+    "max": 27.323077001449498,
+    "cost_losses": 73
+  },
+  "robust": {
+    "runs": 425,
+    "complete": 412,
+    "service_breaches": 191,
+    "paired_completes": 412,
+    "median_vs_base_stock_pct": 3.448690717657836,
+    "min": -28.46653372329785,
+    "max": 35.79308865888098,
+    "cost_losses": 55
+  },
+  "frozen_forecast": {
+    "runs": 425,
+    "complete": 405,
+    "service_breaches": 327,
+    "paired_completes": 405,
+    "median_vs_base_stock_pct": 0.9671896881374326,
+    "min": -43.86120824544119,
+    "max": 23.77773346765433,
+    "cost_losses": 162
+  },
+  "gated": {
+    "runs": 425,
+    "complete": 415,
+    "service_breaches": 284,
+    "paired_completes": 415,
+    "median_vs_base_stock_pct": 1.3060610526234846,
+    "min": -9.33295785881169,
+    "max": 21.20969158488282,
+    "cost_losses": 13
+  }
+}

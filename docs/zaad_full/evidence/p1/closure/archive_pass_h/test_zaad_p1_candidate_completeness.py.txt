@@ -1,0 +1,231 @@
+"""P1 candidate-set completeness: the NO_ACTION intervention escalation (`no_action_escalation`).
+
+Adversarial coverage of the request mode: default off leaves the P0 candidate set untouched; when on,
+the existing stochastic class is built through the ordinary path (bit-identical to the screen requesting
+it), only at NO_ACTION, only when the deterministic check proposes an intervention, at most one extra
+solve, recorded (never a silent skip), and with selector, gates, materiality and recovery unchanged."""
+from __future__ import annotations
+
+import pytest
+
+import zaad.full.planner as P
+import zaad.full.screen as S
+from zaad.full.contracts import Request
+from zaad.full.model import Solution
+from zaad.full.planner import _intervenes, plan
+from zaad.full.replay import replay
+from zaad.full.worlds import draw
+from scripts.p1_fixtures import build
+
+PRODUCT = {k: Request.model_fields[k].default for k in ("stratified_scenarios", "timing_tiebreak", "analytic_shortage")}
+
+
+def _sol(purchases, status="OPTIMAL"):
+    return Solution(status, purchases, {}, {}, {}, None, [], 0., 0, 0, None, 0., [])
+
+
+@pytest.fixture(scope="module")
+def requests():
+    """Review snapshots of fixture P (six weeks of stock, replace-sold incumbent) at product defaults:
+    review 0 is CAPITAL_OPTIMIZATION, review 4 is NO_ACTION with the deterministic check proposing to
+    buy nothing while the incumbent replaces what sold."""
+    req = build("P_high_opening_stock", 41001).model_copy(update=PRODUCT)
+    truth = draw(req, 41001 + 10000, 1)[0]
+    kept: list = []
+    replay(req, truth, 5, "gated", keep_requests=kept)
+    return kept
+
+
+def _traced(req, **patch):
+    P.TRACE = {}
+    try:
+        rep = plan(req.model_copy(update=patch) if patch else req)
+        t = dict(P.TRACE)
+    finally:
+        P.TRACE = None
+    return rep, t
+
+
+@pytest.fixture(scope="module")
+def no_action(requests):
+    req = requests[4]
+    rep, t = _traced(req)
+    assert t["state"] == "NO_ACTION", t["state"]
+    return req
+
+
+def test_request_field_defaults_off_and_is_boolean(no_action):
+    assert Request.model_fields["no_action_escalation"].default is False
+    assert no_action.no_action_escalation is False
+    with pytest.raises(Exception):
+        no_action.model_copy(update={"no_action_escalation": "yes"}).model_validate(no_action.model_dump())
+
+
+def test_default_off_keeps_the_p0_candidate_set_at_no_action(no_action):
+    rep, t = _traced(no_action)
+    o = rep["orchestration"]
+    assert o["state"] == "NO_ACTION"
+    assert o["candidate_classes_requested"] == ["deterministic_network"]
+    assert o["escalated"] == []
+    assert "stochastic_network" in o["candidate_classes_skipped"]
+    assert "stochastic_network" not in o["candidates_built"]
+    assert set(t["candidates"]) == {"incumbent", "base_stock", "deterministic_network"}
+
+
+def test_escalation_builds_the_existing_stochastic_class_when_the_check_intervenes(no_action):
+    rep, t = _traced(no_action, no_action_escalation=True)
+    o = rep["orchestration"]
+    assert o["state"] == "NO_ACTION"
+    assert t["candidates"]["deterministic_network"]["p0_purchases"] != t["candidates"]["incumbent"]["p0_purchases"]
+    assert "stochastic_network" in o["candidates_built"]
+    assert o["escalated"] == ["stochastic_network: the NO_ACTION deterministic check proposes an intervention"]
+    assert o["classification"]["stochastic_network"] == "REQUIRED"
+    assert o["outcomes"]["stochastic_network"]["outcome"] in ("SOLVED", "PHYSICALLY_VALID_FTL")
+
+
+def test_escalated_stochastic_candidate_is_bit_identical_to_the_screen_requesting_it(no_action):
+    _, esc = _traced(no_action, no_action_escalation=True)
+    saved = dict(S.MINIMUM_SAFE)
+    try:
+        S.MINIMUM_SAFE["NO_ACTION"] = ("deterministic_network", "stochastic_network")
+        rep_ref, ref = _traced(no_action)
+    finally:
+        S.MINIMUM_SAFE.clear(); S.MINIMUM_SAFE.update(saved)
+    assert rep_ref["orchestration"]["escalated"] == []
+    a, b = esc["candidates"]["stochastic_network"], ref["candidates"]["stochastic_network"]
+    assert a["status"] == b["status"]
+    assert a["purchases"] == b["purchases"]           # exact, not approximate
+    assert a["cost_by_world"] == b["cost_by_world"]
+    assert esc["chosen"] == ref["chosen"]
+
+
+def test_escalation_is_not_a_skip_and_carries_a_recorded_reason(no_action):
+    rep, _ = _traced(no_action, no_action_escalation=True)
+    o = rep["orchestration"]
+    assert "stochastic_network" not in o["candidate_classes_skipped"]
+    assert not any(x["candidate"] == "stochastic_network" and x["outcome"] == "not_requested" for x in o["omissions"])
+    assert "stochastic_network" in o["candidate_classes_requested"]
+
+
+def test_escalation_costs_exactly_one_extra_milp(no_action):
+    base, _ = _traced(no_action)
+    esc, _ = _traced(no_action, no_action_escalation=True)
+    assert esc["orchestration"]["milps_attempted"] - base["orchestration"]["milps_attempted"] == 1
+    assert set(esc["orchestration"]["candidates_built"]) - set(base["orchestration"]["candidates_built"]) == {"stochastic_network"}
+
+
+def test_deterministic_candidate_and_worlds_are_unchanged_by_escalation(no_action):
+    _, base = _traced(no_action)
+    _, esc = _traced(no_action, no_action_escalation=True)
+    assert base["candidates"]["deterministic_network"]["purchases"] == esc["candidates"]["deterministic_network"]["purchases"]
+    assert base["worlds"] == esc["worlds"]
+    assert base["candidates"]["incumbent"]["purchases"] == esc["candidates"]["incumbent"]["purchases"]
+
+
+def test_no_escalation_when_the_deterministic_check_agrees_with_the_incumbent(no_action, monkeypatch):
+    monkeypatch.setattr(P, "_intervenes", lambda candidate, incumbent: False)
+    rep, t = _traced(no_action, no_action_escalation=True)
+    assert rep["orchestration"]["escalated"] == []
+    assert "stochastic_network" not in rep["orchestration"]["candidates_built"]
+    assert rep["orchestration"]["candidate_classes_requested"] == ["deterministic_network"]
+
+
+def test_intervention_rule_is_period_zero_only_and_numerical():
+    inc = _sol({("s", 0): 100., ("s", 1): 100.})
+    assert _intervenes(_sol({("s", 0): 100., ("s", 1): 100.}), inc) is False
+    assert _intervenes(_sol({("s", 0): 100. + 1e-9, ("s", 1): 0.}), inc) is False    # later periods are not executable
+    assert _intervenes(_sol({("s", 0): 99., ("s", 1): 100.}), inc) is True
+    assert _intervenes(_sol({("s", 0): 0.}), inc) is True                            # "order nothing" is an intervention
+    assert _intervenes(_sol({("t", 0): 100.}), inc) is True                          # a different source is one too
+    assert _intervenes(_sol({}), _sol({})) is False
+    assert _intervenes(None, inc) is False
+    assert _intervenes(_sol({("s", 0): 0.}, status="INFEASIBLE"), inc) is False
+    assert _intervenes(_sol({("s", 0): 0.}, status="NO_FEASIBLE_SOLUTION"), inc) is False
+
+
+def test_no_escalation_outside_no_action(requests):
+    req = requests[0]
+    rep, t = _traced(req, no_action_escalation=True)
+    assert t["state"] != "NO_ACTION"
+    assert rep["orchestration"]["escalated"] == []
+    assert "stochastic_network" in rep["orchestration"]["candidate_classes_requested"]     # already part of that state's set
+
+
+def test_no_double_request_when_the_screen_already_asks_for_the_stochastic_class(no_action):
+    saved = dict(S.MINIMUM_SAFE)
+    try:
+        S.MINIMUM_SAFE["NO_ACTION"] = ("deterministic_network", "stochastic_network")
+        rep, _ = _traced(no_action, no_action_escalation=True)
+    finally:
+        S.MINIMUM_SAFE.clear(); S.MINIMUM_SAFE.update(saved)
+    assert rep["orchestration"]["escalated"] == []
+    assert rep["orchestration"]["candidate_classes_requested"].count("stochastic_network") == 1
+
+
+def test_no_effect_when_adaptive_escalation_is_off(no_action):
+    rep, _ = _traced(no_action, no_action_escalation=True, adaptive_escalation=False)
+    assert rep["orchestration"]["state"] == "ESCALATE_UNKNOWN"
+    assert rep["orchestration"]["escalated"] == []
+    assert "stochastic_network" in rep["orchestration"]["candidate_classes_requested"]
+
+
+def test_selection_falls_back_to_the_p0_set_when_the_escalated_candidate_is_infeasible(no_action, monkeypatch):
+    real = P.solve
+
+    def failing(req, worlds, *a, **k):
+        if len(worlds) > 1 and "expected_shortage" not in k and "cvar_weight" not in k and "service_risk" not in k and "service_first" not in k:
+            return Solution("INFEASIBLE", {}, {}, {}, {}, None, [], 0., 0, 0, None, None, ["diagnostic: stochastic infeasible"])
+        return real(req, worlds, *a, **k)
+    monkeypatch.setattr(P, "solve", failing)
+    esc, _ = _traced(no_action, no_action_escalation=True)
+    monkeypatch.setattr(P, "solve", real)
+    base, _ = _traced(no_action)
+    assert esc["orchestration"]["outcomes"]["stochastic_network"]["outcome"] == "INFEASIBLE"
+    assert esc["orchestration"]["required_candidate_starved"] == 0        # INFEASIBLE is an answer, not starvation
+    assert esc["selected_policy"] == base["selected_policy"] and esc["status"] == base["status"]
+    assert esc["actions"] == base["actions"]
+
+
+def test_the_materiality_gate_still_applies_to_the_escalated_candidate(no_action):
+    rep, t = _traced(no_action, no_action_escalation=True, materiality_cost_fraction=.1, materiality_inventory_fraction=.1, materiality_service=.1)
+    assert "stochastic_network" in rep["orchestration"]["candidates_built"]
+    assert rep["economics"]["materiality"] is not None
+    assert rep["status"] == "RETAIN_INCUMBENT" and any("NO MATERIAL IMPROVEMENT" in str(r) for r in rep["reasons"])
+
+
+def test_escalated_candidate_faces_the_same_gates_and_worlds(no_action):
+    rep, t = _traced(no_action, no_action_escalation=True)
+    s = t["candidates"]["stochastic_network"]
+    assert len(s["cost_by_world"]) == no_action.scenarios == len(t["worlds"])
+    assert len(t["candidates"]["deterministic_network"]["cost_by_world"]) == no_action.scenarios
+    if t["chosen"] == "stochastic_network":
+        assert "stochastic_network" in t["candidate_gates"]
+    assert set(rep["orchestration"]["classification"]) >= {"deterministic_network", "stochastic_network"}
+
+
+def test_replay_logs_each_escalation_and_fires_only_where_the_check_intervenes(requests):
+    req = requests[0].model_copy(update={"no_action_escalation": True})
+    truth = draw(req, 41001 + 10000, 1)[0]
+    traces = []
+    orig = P.plan
+
+    def traced(r):
+        P.TRACE = {}
+        rep = orig(r)
+        traces.append((dict(P.TRACE), rep)); P.TRACE = None
+        return rep
+    import zaad.full.replay as R
+    P.plan = traced; R.plan = traced
+    try:
+        out = replay(req, truth, 5, "gated")
+    finally:
+        P.plan = orig; R.plan = orig
+    logged = [row["orchestration"]["escalated"] for row in out["reviews"]]
+    expected = []
+    for t, rep in traces:
+        d, i = t["candidates"]["deterministic_network"], t["candidates"]["incumbent"]
+        fires = (t["state"] == "NO_ACTION" and d["status"] in ("OPTIMAL", "FEASIBLE_TIME_LIMIT")
+                 and any(abs(d["p0_purchases"].get(k, 0.) - i["p0_purchases"].get(k, 0.)) > 1e-6 for k in set(d["p0_purchases"]) | set(i["p0_purchases"])))
+        expected.append(["stochastic_network: the NO_ACTION deterministic check proposes an intervention"] if fires else [])
+    assert logged == expected
+    assert sum(1 for e in logged if e) >= 1

@@ -1,0 +1,550 @@
+[
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "incumbent",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 19994.264608810445,
+  "continuation": 16664.231130217904,
+  "residual_units": 6960.958424813137
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "incumbent",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 20513.64984686399,
+  "continuation": 17392.551243681424,
+  "residual_units": 6826.5407736989755
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "incumbent",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 20443.41803975738,
+  "continuation": 17406.1732054881,
+  "residual_units": 6844.641280711254
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "reorder_point",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 11728.000000580514,
+  "continuation": 11461.152579874819,
+  "residual_units": 271.8619255420747
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "reorder_point",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 12292.96846366573,
+  "continuation": 12163.865892373253,
+  "residual_units": 130.32022512940355
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "reorder_point",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 12207.40655081353,
+  "continuation": 12058.002217741563,
+  "residual_units": 151.08499993762476
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "periodic:2",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 11728.000000580514,
+  "continuation": 11461.152579874819,
+  "residual_units": 271.8619255420747
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "periodic:2",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 12721.149507057255,
+  "continuation": 12213.601093050493,
+  "residual_units": 527.498144815233
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "periodic:2",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 12665.930291580815,
+  "continuation": 12143.82684513992,
+  "residual_units": 543.8829939768434
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "economic_lot",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 11728.000000580514,
+  "continuation": 11461.152579874819,
+  "residual_units": 271.8619255420747
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "economic_lot",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 12292.96846366573,
+  "continuation": 12163.865892373253,
+  "residual_units": 130.32022512940355
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "economic_lot",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 12207.40655081353,
+  "continuation": 12058.002217741563,
+  "residual_units": 151.08499993762476
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "gated",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 11663.625812561027,
+  "continuation": 11517.933836126194,
+  "residual_units": 147.16131062757526
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "gated",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 12446.414491252324,
+  "continuation": 12226.20964051113,
+  "residual_units": 223.79572001414996
+ },
+ {
+  "fixture": "C_moq_four_weeks",
+  "policy": "gated",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 12218.385318767301,
+  "continuation": 12046.224315336493,
+  "residual_units": 174.40042558203888
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "incumbent",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 33400.69190139059,
+  "continuation": 33266.59963187109,
+  "residual_units": 135.33494116986571
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "incumbent",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 34131.41864095504,
+  "continuation": 34017.56903465382,
+  "residual_units": 114.79442687506209
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "incumbent",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 33925.682933638716,
+  "continuation": 33827.64911398913,
+  "residual_units": 98.75185537008763
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "reorder_point",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 33400.69190139059,
+  "continuation": 33266.59963187109,
+  "residual_units": 135.33494116986571
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "reorder_point",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 34131.41864095504,
+  "continuation": 34017.56903465382,
+  "residual_units": 114.79442687506209
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "reorder_point",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 33925.682933638716,
+  "continuation": 33827.64911398913,
+  "residual_units": 98.75185537008763
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "periodic:2",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 24310.73812774023,
+  "continuation": 24072.347924105907,
+  "residual_units": 242.375966827306
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "periodic:2",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 25600.151340817054,
+  "continuation": 25386.36057641001,
+  "residual_units": 217.17224839317524
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "periodic:2",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 25491.747849778527,
+  "continuation": 25297.86856632727,
+  "residual_units": 196.72884801171654
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "economic_lot",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 17780.15541113115,
+  "continuation": 17643.639393091544,
+  "residual_units": 137.8044474925289
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "economic_lot",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 20095.891804338917,
+  "continuation": 19639.659134702346,
+  "residual_units": 472.2203282108962
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "economic_lot",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 20040.939340174005,
+  "continuation": 19609.04437050142,
+  "residual_units": 446.5786182004701
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "gated",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 19742.79145860141,
+  "continuation": 19607.26484932569,
+  "residual_units": 136.79627728363795
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "gated",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 20339.000266357885,
+  "continuation": 20223.37635703464,
+  "residual_units": 116.59865059701426
+ },
+ {
+  "fixture": "I_max_pallets_ftl_cap",
+  "policy": "gated",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 20316.489532816457,
+  "continuation": 20182.80571884217,
+  "residual_units": 135.0261897099597
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "incumbent",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 13828.502363014913,
+  "continuation": 13725.320402162693,
+  "residual_units": 103.91462107175654
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "incumbent",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 15225.334385378846,
+  "continuation": 15168.172946529188,
+  "residual_units": 57.39765769708355
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "incumbent",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 14816.790156769472,
+  "continuation": 14761.921506636767,
+  "residual_units": 55.0921248903593
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "reorder_point",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 13828.502363014913,
+  "continuation": 13725.320402162693,
+  "residual_units": 103.91462107175654
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "reorder_point",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 15225.334385378846,
+  "continuation": 15168.172946529188,
+  "residual_units": 57.39765769708355
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "reorder_point",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 14816.790156769472,
+  "continuation": 14761.921506636767,
+  "residual_units": 55.0921248903593
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "periodic:2",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 12912.901845907074,
+  "continuation": 12674.511642272751,
+  "residual_units": 242.375966827306
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "periodic:2",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 13586.321495282353,
+  "continuation": 13392.77786308308,
+  "residual_units": 196.30655184408008
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "periodic:2",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 13499.191422751544,
+  "continuation": 13305.312139300288,
+  "residual_units": 196.72884801171654
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "economic_lot",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 11964.858013327195,
+  "continuation": 11832.225488782911,
+  "residual_units": 133.84803215705332
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "economic_lot",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 12772.677769994916,
+  "continuation": 12511.704414371849,
+  "residual_units": 266.0481129440834
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "economic_lot",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 13025.47959485091,
+  "continuation": 12717.541187291354,
+  "residual_units": 315.2559509010338
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "gated",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 12381.14272292777,
+  "continuation": 12250.852177151464,
+  "residual_units": 131.46313196736273
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "gated",
+  "seed": 41002,
+  "status": "ABSTAIN",
+  "failure": [
+   "ABSTAIN",
+   "operator_declared",
+   "mode=LEAN",
+   "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+   "Incumbent itself has no verified feasible projection; no executable fallback is fabricated."
+  ]
+ },
+ {
+  "fixture": "S_cash_constrained",
+  "policy": "gated",
+  "seed": 41003,
+  "status": "ABSTAIN",
+  "failure": [
+   "ABSTAIN",
+   "operator_declared",
+   "mode=LEAN",
+   "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+   "Incumbent itself has no verified feasible projection; no executable fallback is fabricated."
+  ]
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "incumbent",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 12156.04652272739,
+  "continuation": 11568.057024413562,
+  "residual_units": 613.5283376546854
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "incumbent",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 12700.21729371356,
+  "continuation": 12177.511782919477,
+  "residual_units": 543.916487763192
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "incumbent",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 12605.395435080023,
+  "continuation": 12081.570308122351,
+  "residual_units": 545.7549027650598
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "reorder_point",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 11509.753543712886,
+  "continuation": 11375.66127419338,
+  "residual_units": 135.33494116986571
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "reorder_point",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 12208.639799649844,
+  "continuation": 12094.790193348626,
+  "residual_units": 114.79442687506209
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "reorder_point",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 12056.333569977869,
+  "continuation": 11958.299750328284,
+  "residual_units": 98.75185537008763
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "periodic:2",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 11656.68311072898,
+  "continuation": 11418.292907094656,
+  "residual_units": 242.375966827306
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "periodic:2",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 12339.122699466154,
+  "continuation": 12125.33193505911,
+  "residual_units": 217.17224839317524
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "periodic:2",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 12241.061433798352,
+  "continuation": 12047.182150347096,
+  "residual_units": 196.72884801171654
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "economic_lot",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 11509.753543712886,
+  "continuation": 11375.66127419338,
+  "residual_units": 135.33494116986571
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "economic_lot",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 12208.639799649844,
+  "continuation": 12094.790193348626,
+  "residual_units": 114.79442687506209
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "economic_lot",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 12056.333569977869,
+  "continuation": 11958.299750328284,
+  "residual_units": 98.75185537008763
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "gated",
+  "seed": 41001,
+  "status": "COMPLETE",
+  "realized": 11532.73012963796,
+  "continuation": 11390.260781038387,
+  "residual_units": 143.87376655578203
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "gated",
+  "seed": 41002,
+  "status": "COMPLETE",
+  "realized": 12293.780430896804,
+  "continuation": 12155.912204400747,
+  "residual_units": 139.25863754351099
+ },
+ {
+  "fixture": "P_high_opening_stock",
+  "policy": "gated",
+  "seed": 41003,
+  "status": "COMPLETE",
+  "realized": 12173.71365650249,
+  "continuation": 12060.577950842047,
+  "residual_units": 114.09415036760974
+ }
+]

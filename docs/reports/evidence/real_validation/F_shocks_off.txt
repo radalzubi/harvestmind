@@ -1,0 +1,48 @@
+
+==============================================================================
+COMMERCIAL OPTIMIZER — BACKTEST ON REAL PUBLIC DATA
+==============================================================================
+  demand path   US Census MWTS NAICS 4244 via FRED (real, NSA)
+  supply shocks DISABLED (control arm, all fills at base)
+  cross-section synthetic; idio CV = 0.25
+  scenarios     seasonal growth bootstrap
+  opening cover 1.0 months   horizon 12 months
+  warehouse cap 2.0 months (real wholesaler I/S mean 1.26, p90 1.35)
+  window        2019-01 .. 2026-06  (90 months, 7 seeds)
+
+  INFLATION        eval mid 2022-01..2023-06  n=126  (real supply shocks)
+      mean realized supply shock  1.000
+      SP vs naive order-up-to    median  +14.76%   wins 110/126
+      SP vs fill-aware determ.   median  +20.78%   wins 121/126
+      SP vs cautious p90         median  +46.43%   wins 125/126
+      service:  naive 93.5%   det_mean 89.8%   det_p90 83.9%   sp 93.6%
+
+  RED_SEA_WAR      eval mid 2023-11..2026-01  n=187  (real supply shocks)
+      mean realized supply shock  1.000
+      SP vs naive order-up-to    median  +20.24%   wins 171/187
+      SP vs fill-aware determ.   median   +1.88%   wins 113/187
+      SP vs cautious p90         median  +29.08%   wins 182/187
+      service:  naive 98.6%   det_mean 96.8%   det_p90 92.5%   sp 98.0%
+
+  UNCLASSIFIED     eval mid 2023-07..2023-10  n=24  (real supply shocks)
+      mean realized supply shock  1.000
+      SP vs naive order-up-to    median  +12.80%   wins 19/24
+      SP vs fill-aware determ.   median   -2.13%   wins 11/24
+      SP vs cautious p90         median  +33.81%   wins 23/24
+      service:  naive 97.8%   det_mean 95.1%   det_p90 90.0%   sp 98.6%
+
+------------------------------------------------------------------------------
+  POOLED  (337 admissible folds)
+    SP vs naive order-up-to    median  +18.04%  IQR [+9.74, +23.53]  wins 300/337
+    SP vs fill-aware determ.   median   +6.29%  IQR [-0.88, +17.24]  wins 245/337
+    SP vs cautious p90         median  +37.12%  IQR [+25.59, +45.96]  wins 330/337
+    service:  naive 96.7%   det_mean 94.1%   det_p90 89.1%   sp 96.4%
+
+    SP vs fill-aware determ., split by how hard the month was
+    (stratum set by the BASELINE's cost split, not SP's)
+      binding  n=291  median   +8.51%  wins 232/291   shortage > 20% of baseline cost
+      slack    n=46   median   -6.31%  wins 13/46   holding-dominated, easy month
+    folds suppressed by guard: 6
+    per-fold rows -> outputs/real_validation/folds_flat.csv  (337 folds)
+------------------------------------------------------------------------------
+

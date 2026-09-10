@@ -1,0 +1,22 @@
+{
+  "gated_pr24": {
+    "runs": 26,
+    "complete": 26,
+    "service_breaches": 13,
+    "paired_completes": 0,
+    "median_vs_base_stock_pct": null,
+    "min": null,
+    "max": null,
+    "cost_losses": 0
+  },
+  "gated": {
+    "runs": 26,
+    "complete": 26,
+    "service_breaches": 13,
+    "paired_completes": 0,
+    "median_vs_base_stock_pct": null,
+    "min": null,
+    "max": null,
+    "cost_losses": 0
+  }
+}

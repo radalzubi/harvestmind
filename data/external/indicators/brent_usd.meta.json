@@ -1,0 +1,7 @@
+{
+ "fetched_at": "2026-09-04T14:14:18.026013+00:00",
+ "source": "FRED DCOILBRENTEU",
+ "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU",
+ "rows": 9967,
+ "provenance": "REAL_PUBLIC"
+}

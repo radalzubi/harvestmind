@@ -1,0 +1,34 @@
+{
+ "branch": "claude/zaad-holdout3",
+ "commit": "a104117916036ce6c79608782e146a7f92e91292",
+ "stacked_on": "claude/zaad-false-protection a104117 -> PR 31 -> PR 30 -> PR 25 -> PR 24 -> PR 23",
+ "source_hash": "e36930db23731f95abb4a45c87c080ac9ba7608ffdf85a3a6bda5ff7876b2b1f",
+ "split": "holdout3",
+ "seeds": [
+  28001,
+  28002
+ ],
+ "cells": 56,
+ "matrix": "reliability",
+ "methods_to_run": [
+  "base_stock",
+  "stochastic",
+  "robust",
+  "protected",
+  "gated_pr24",
+  "gated_pr30",
+  "gated"
+ ],
+ "request_defaults": {
+  "engine_profile": "reliability",
+  "protection_decay": true,
+  "service_risk_level": 0.5,
+  "stress_weight": 0.2,
+  "scenarios": 3,
+  "horizon": 12,
+  "max_solve_seconds": 5.0
+ },
+ "prior_evidence_rows_with_holdout_seeds": [],
+ "frozen_at": "2026-09-06T17:37:22Z",
+ "rule": "no engine, gate or parameter change after this record; results are reported as they land, adverse or not"
+}

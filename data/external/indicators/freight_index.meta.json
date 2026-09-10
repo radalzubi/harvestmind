@@ -1,0 +1,7 @@
+{
+ "fetched_at": "2026-09-04T14:14:17.767002+00:00",
+ "source": "FRED TSIFRGHT",
+ "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=TSIFRGHT",
+ "rows": 318,
+ "provenance": "REAL_PUBLIC"
+}

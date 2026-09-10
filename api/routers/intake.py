@@ -15,6 +15,7 @@ Security: table parameter is validated against the staging allowlist.
 
 from __future__ import annotations
 
+import io
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -48,6 +49,25 @@ def _reject_if_too_large(contents: bytes, filename: str | None) -> None:
 # ── Staging table allowlist ───────────────────────────────────────────────────
 
 STAGING_TABLES: dict[str, dict[str, Any]] = {
+    # ── FMCG (eaches; see db/migrations/013_fmcg_staging.sql) ──────────────
+    "stg_fmcg_skus": {"required_cols": {"sku", "unit_cost"}, "date_cols": [],
+                      "description": "FMCG SKU master with pack structure"},
+    "stg_fmcg_orders": {"required_cols": {"sku", "qty_ordered", "order_date"},
+                        "date_cols": ["order_date", "requested_delivery_date"],
+                        "description": "FMCG customer order lines"},
+    "stg_fmcg_purchase_orders": {"required_cols": {"po_id", "sku", "qty_ordered", "po_date"},
+                                 "date_cols": ["po_date", "expected_delivery_date"],
+                                 "description": "FMCG purchase orders"},
+    "stg_fmcg_receipts": {"required_cols": {"po_id", "qty_received", "receipt_date"},
+                          "date_cols": ["receipt_date"], "description": "FMCG supplier receipts"},
+    "stg_fmcg_inventory": {"required_cols": {"sku", "on_hand", "snapshot_date"},
+                           "date_cols": ["snapshot_date"], "description": "FMCG inventory snapshots"},
+    "stg_fmcg_promotions": {"required_cols": {"sku", "week_start", "uplift"},
+                            "date_cols": ["week_start"], "description": "FMCG promotion calendar"},
+    "stg_fmcg_suppliers": {"required_cols": {"supplier_id"}, "date_cols": [],
+                           "description": "FMCG supplier master with route/manufacturer tags and capacity"},
+    "stg_fmcg_economics": {"required_cols": {"key", "value"}, "date_cols": [],
+                           "description": "FMCG economic parameters with provenance"},
     "stg_products": {
         "required_cols": {"product_name"},
         "date_cols": [],
@@ -122,10 +142,23 @@ async def upload_csv(
     table: str,
     file: UploadFile = File(...),
     operator_id: str | None = None,
+    force: bool = False,
+    anonymize: bool = True,
     conn=Depends(get_conn),
     authed: str | None = Depends(require_operator),
 ):
     """Upload a CSV file into a staging table.
+
+    ``anonymize=true`` (default) replaces identifier columns with keyed
+    hashes and drops free-text name/contact columns BEFORE the file
+    reaches the vault, using a per-operator secret held only in the
+    registry (see docs/security/DATA_HANDLING.md). Files anonymised
+    client-side with scripts/anonymize_export.py pass through unchanged.
+    With HARVESTMIND_REQUIRE_ANONYMIZED=1 a raw file is refused.
+
+    ``force=true`` loads a file whose exact content was already uploaded;
+    otherwise a repeat is refused with a rejection report, so a retry or a
+    double click cannot double the staged quantities.
 
     Returns:
         table          target table name
@@ -152,6 +185,7 @@ async def upload_csv(
 
     warnings: list[str] = []
     errors: list[str] = []
+    anonymization: dict | None = None
 
     # Operator-scoped path: copy the raw original into the vault FIRST
     # (write-once ground truth), then process against the vault DB.
@@ -163,11 +197,43 @@ async def upload_csv(
         from infrastructure.operator_registry import (
             OperatorNotFoundError, OperatorRegistry,
         )
-        from infrastructure.vault_storage import store_raw_upload
+        from infrastructure.vault_storage import (
+            DuplicateUploadError, store_raw_upload,
+        )
         try:
             registry = OperatorRegistry()
-            store_raw_upload(registry, operator_id,
-                             file.filename or "upload.csv", contents)
+            import os as _os
+
+            import pandas as _pd
+
+            from ingestion.anonymize import anonymize_csv_bytes, looks_anonymized
+            try:
+                _already = looks_anonymized(_pd.read_csv(io.BytesIO(contents), nrows=200))
+            except Exception:  # noqa: BLE001
+                _already = False
+            if anonymize and not _already:
+                secret = registry.anonymization_secret(operator_id)
+                contents, rep = anonymize_csv_bytes(contents, secret)
+                anonymization = {**rep.as_dict(), "mode": "server"}
+            elif _already:
+                anonymization = {"mode": "client", "note": "file arrived pseudonymised; stored as received"}
+            elif _os.environ.get("HARVESTMIND_REQUIRE_ANONYMIZED", "").strip() in ("1", "true", "yes"):
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                    detail="raw identifiers refused: anonymise the export "
+                                           "(anonymize=true or scripts/anonymize_export.py)")
+            else:
+                anonymization = {"mode": "none", "warning": "raw identifiers stored at operator's request"}
+            try:
+                store_raw_upload(registry, operator_id,
+                                 file.filename or "upload.csv", contents,
+                                 allow_duplicate=force)
+            except DuplicateUploadError as dup:
+                return {
+                    "table": table, "rows_inserted": 0, "warnings": [],
+                    "errors": [f"{dup}. Nothing was loaded. Clear the table "
+                               f"or re-send with force=true if this repeat "
+                               f"is deliberate."],
+                }
             vault_dbm = DBManager(registry)
             conn = vault_dbm.get_operator_connection(operator_id)
         except (OperatorNotFoundError, FileNotFoundError):
@@ -189,7 +255,7 @@ async def upload_csv(
         except Exception as e:
             raise HTTPException(
                 status_code=422,
-                detail=f"Could not parse CSV: {e}",
+                detail=f"Could not parse CSV ({type(e).__name__}); check the delimiter, encoding and header row",
             )
 
         raw_cols = list(preview.columns)
@@ -216,6 +282,28 @@ async def upload_csv(
 
         # Apply column map for checks
         mapped_df = full_df.rename(columns=col_map)
+
+        # Columns the staging table cannot hold are dropped with a warning
+        # rather than passed to the insert, which previously surfaced as a
+        # DuckDB binder error and a 500. The operator sees which columns
+        # were ignored; nothing is silently reinterpreted.
+        try:
+            known_cols = {row[1] for row in conn.execute(
+                f"PRAGMA table_info('{table}')").fetchall()}  # nosec B608 - table allowlisted
+        except Exception:  # noqa: BLE001
+            known_cols = set()
+        if known_cols:
+            extra = [c for c in mapped_df.columns if c not in known_cols]
+            if extra:
+                warnings.append(
+                    f"Ignored {len(extra)} column(s) not in {table}: "
+                    f"{extra[:8]}{' ...' if len(extra) > 8 else ''}")
+                mapped_df = mapped_df.drop(columns=extra)
+                full_df = full_df.drop(columns=[c for c in full_df.columns
+                                                 if col_map.get(c, c) in extra])
+                # legacy path re-reads the temp file: rewrite it without the
+                # dropped columns so both paths see the same frame
+                full_df.to_csv(tmp_path, index=False)
 
         # Check for all-null required columns after mapping
         for req in meta["required_cols"]:
@@ -273,7 +361,7 @@ async def upload_csv(
                         ins_df[dcol], errors="coerce").dt.date
             ins_df = stamp_lineage(
                 ins_df, operator_id=operator_id,
-                upload_session_id=upload_session_id,
+                upload_session_id=upload_session_id or "",
                 source_file=file.filename or "upload.csv")
             assert_lineage_present(ins_df)
             rows_inserted = insert_from_df(conn, table, ins_df,
@@ -292,6 +380,7 @@ async def upload_csv(
             "table": table,
             "description": meta["description"],
             "rows_inserted": rows_inserted,
+            "anonymization": anonymization,
             "warnings": warnings,
             "errors": errors,
         }
@@ -327,6 +416,10 @@ def load_sample_data(conn=Depends(get_conn)):
     errors: list[str] = []
 
     for table, meta in STAGING_TABLES.items():
+        if table.startswith("stg_fmcg_"):
+            # FMCG samples live under data/samples/fmcg/ and are uploaded
+            # through the FMCG flow; this demo loader is the produce onboarding.
+            continue
         csv_path = samples_dir / f"{table}.csv"
         if not csv_path.exists():
             errors.append(f"Sample file not found: {csv_path.name}")
@@ -363,7 +456,7 @@ def load_sample_data(conn=Depends(get_conn)):
 def clear_staging_table(table: str, conn=Depends(get_conn)):
     """Truncate a staging table to allow clean re-upload."""
     _validate_staging_table(table)
-    conn.execute(f"DELETE FROM {table}")  # noqa: S608  table is allowlisted
+    conn.execute(f"DELETE FROM {table}")  # noqa: S608  table is allowlisted  # nosec B608 - table allowlisted by _validate_staging_table
     return {"table": table, "status": "cleared"}
 
 
@@ -373,7 +466,7 @@ def intake_status(conn=Depends(get_conn)):
     result: dict[str, Any] = {}
     for table, meta in STAGING_TABLES.items():
         try:
-            row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()  # noqa: S608
+            row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()  # noqa: S608  # nosec B608 - table allowlisted by _validate_staging_table
             count = int(row[0]) if row else 0
         except Exception:
             count = 0
@@ -382,12 +475,25 @@ def intake_status(conn=Depends(get_conn)):
             "row_count": count,
             "loaded": count > 0,
         }
+    # Two table families, one per operating domain. "all loaded" is asked
+    # per family: a produce operator never uploads FMCG tables and vice
+    # versa, so a single flag across both would never be true.
+    families = {
+        "produce": [t for t in result if not t.startswith("stg_fmcg_")],
+        "fmcg": [t for t in result if t.startswith("stg_fmcg_")],
+    }
+    fam = {name: {"tables": ts,
+                  "any_loaded": any(result[t]["loaded"] for t in ts),
+                  "all_loaded": all(result[t]["loaded"] for t in ts)}
+           for name, ts in families.items()}
     any_loaded = any(v["loaded"] for v in result.values())
-    all_loaded = all(v["loaded"] for v in result.values())
     return {
         "tables": result,
+        "families": fam,
         "any_data_loaded": any_loaded,
-        "all_tables_loaded": all_loaded,
+        # Legacy flag: the produce family, which is what every existing
+        # caller meant by "all tables".
+        "all_tables_loaded": fam["produce"]["all_loaded"],
     }
 
 
@@ -437,8 +543,10 @@ async def extract_files(
             _reject_if_too_large(content, f.filename)
             if registry is not None:
                 from infrastructure.vault_storage import store_raw_upload
-                store_raw_upload(registry, operator_id,
-                                 f.filename or "upload.bin", content)
+                # Nothing loads until the mapping is confirmed, so re-sending
+                # the same file is a re-read, not a double load.
+                store_raw_upload(registry, operator_id or "",
+                                 f.filename or "upload.bin", content, allow_duplicate=True)
             suffix = _P(f.filename or "upload.csv").suffix or ".csv"
             with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
                 tmp.write(content)
@@ -446,11 +554,11 @@ async def extract_files(
 
         from ingestion.llm_extractor import extract as llm_extract
         try:
-            result = llm_extract(tmp_paths)
+            result = llm_extract(list(tmp_paths))
         except ValueError as e:   # unsupported file type etc.
             raise HTTPException(
                 status_code=422,
-                detail=str(e))
+                detail=f"Confirmation failed ({type(e).__name__})")
         payload = result.model_dump()
         # original filenames, not temp names, for the UI
         payload["source_files"] = [f.filename for f in files]
@@ -566,7 +674,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
                                 detail=f"Unknown operator {operator_id!r}")
         frames = {
             t: stamp_lineage(df, operator_id=operator_id,
-                             upload_session_id=session_id,
+                             upload_session_id=str(session_id or ""),
                              source_file=",".join(
                                  session.get("source_files", [])) or "extract")
             for t, df in frames.items()
@@ -602,7 +710,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
         if vault_dbm is not None:
             vault_dbm.close_all()
 
-    log_confirmation(session_id, accepted_rows, corrections)
+    log_confirmation(str(session_id or ""), accepted_rows, corrections)
 
     # Vault copy of the confirmed snapshot (operator-scoped sessions/)
     pool_result = None
@@ -611,7 +719,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
             import json as _json
             from infrastructure.vault_storage import store_session_snapshot
             store_session_snapshot(
-                registry, operator_id, session_id,
+                registry, operator_id, str(session_id or ""),
                 _json.dumps({"session_id": session_id,
                              "rows": accepted_rows,
                              "corrections": corrections}, default=str))
@@ -629,8 +737,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
     # operator corrections are the gold labels (Phase 4 accumulator).
     try:
         from training.data_accumulator import record_confirmed_session
-        record_confirmed_session(
-            session_id,
+        record_confirmed_session(str(session_id or ""),
             mock_mode=bool(session.get("mock_mode", True)),
             prompt_version=session.get("prompt_version", "unknown"),
             raw_input_sample=", ".join(session.get("source_files", [])),
@@ -651,3 +758,44 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
         "sufficiency_warnings": session.get("sufficiency_warnings", []),
         "pool_contribution": pool_result,
     }
+
+
+# ── Synthetic sample for commercial workspaces ───────────────────────────────
+def load_fmcg_sample_into(conn, seed: int = 7, archetype: str = "E_mixed_portfolio") -> dict:
+    """Load a labelled SYNTHETIC distributor history (mixed lanes, promotions,
+    a constrained supplier) into the FMCG staging tables. Replaces any
+    existing FMCG data in the vault. Never real operator data."""
+    import pandas as pd
+
+    from synthetic.fmcg.distributor_sim import build_history
+    h = build_history(archetype, seed=seed)
+    skus = h.skus[["sku", "supplier_id", "unit_cost", "unit_price", "units_per_case", "moq_units", "category"]]
+    orders = h.order_lines.merge(h.customer_orders[["order_id", "customer_id", "order_date"]], on="order_id")
+    orders = orders[["order_id", "customer_id", "order_date", "sku", "qty_ordered"]]
+    inv = h.inventory_snapshots.rename(columns={"week_start": "snapshot_date"})[["snapshot_date", "sku", "on_hand", "in_transit"]]
+    sup = h.suppliers[["supplier_id"]].copy()
+    sup["route"] = ["aqaba" if i % 2 == 0 else "road_saudi" for i in range(len(sup))]
+    sup["origin_iso3"] = ["DEU" if i % 2 == 0 else "SAU" for i in range(len(sup))]
+    frames = (("stg_fmcg_skus", skus), ("stg_fmcg_orders", orders),
+              ("stg_fmcg_purchase_orders", h.purchase_orders[["po_id", "po_date", "supplier_id", "sku", "qty_ordered", "unit_cost"]]),
+              ("stg_fmcg_receipts", h.receipts[["po_id", "receipt_date", "sku", "qty_received"]]),
+              ("stg_fmcg_inventory", inv), ("stg_fmcg_suppliers", sup))
+    loaded: dict = {}
+    for table, df in frames:
+        conn.execute(f"DELETE FROM {table}")  # nosec B608 - table names are literals above
+        frame = df.copy()
+        for c in frame.columns:
+            if "date" in c:
+                frame[c] = pd.to_datetime(frame[c]).dt.date
+        conn.register("_sample_df", frame)
+        cols = ", ".join(frame.columns)
+        conn.execute(f"INSERT INTO {table} ({cols}) SELECT {cols} FROM _sample_df")  # nosec B608 - literals
+        conn.unregister("_sample_df")
+        loaded[table] = int(len(frame))
+    return {"tables": loaded, "total_rows": int(sum(loaded.values())), "classification": "SYNTHETIC CALIBRATED",
+            "note": "a made-up distributor with mixed lanes and a constrained supplier; replaces existing FMCG data"}
+
+
+@router.post("/load-sample-fmcg", status_code=status.HTTP_200_OK)
+def load_sample_fmcg(seed: int = 7, conn=Depends(get_conn)):
+    return load_fmcg_sample_into(conn, seed=seed)

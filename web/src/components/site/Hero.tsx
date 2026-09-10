@@ -42,7 +42,7 @@ export function Hero() {
   const up = (d: number) => ({
     initial: qa ? false : { opacity: 0, y: 26, filter: "blur(6px)" },
     animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-    transition: { duration: 0.9, delay: d, ease },
+    transition: { duration: 0.8, delay: d, ease },
   });
   return (
     <section className="hero">
@@ -55,16 +55,16 @@ export function Hero() {
       </div>
       <div className="wrap hero-inner">
         <motion.p className="eyebrow" {...up(0.05)}>{h.eyebrow}</motion.p>
-        <motion.h1 className="display" {...up(0.18)}>
+        <motion.h1 className="display" {...up(0.14)}>
           {h.h1a}<br /><span className="display-muted">{h.h1b}</span>
         </motion.h1>
-        <motion.p className="lede hero-lede" {...up(0.34)}>{h.lede}</motion.p>
-        <motion.div className="cta-row" {...up(0.48)}>
+        <motion.p className="lede hero-lede" {...up(0.26)}>{h.lede}</motion.p>
+        <motion.div className="cta-row" {...up(0.36)}>
           <Magnetic><Link href="/get-started" className="btn btn-primary btn-lg">{h.cta} <ArrowRight size={16} className="dir-icon" /></Link></Magnetic>
-          <Link href="/product" className="btn btn-ghost btn-lg">{h.how}</Link>
+          <Link href="/how-it-works" className="btn btn-ghost btn-lg">{h.how}</Link>
         </motion.div>
       </div>
-      <motion.a href="#moment" className="hero-cue" aria-label="Scroll" initial={qa ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4, duration: 1 }}>
+      <motion.a href="#moment" className="hero-cue" aria-label="Scroll" initial={qa ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1, duration: 0.8 }}>
         <span /><i />
       </motion.a>
       <div className="hero-vignette" aria-hidden />

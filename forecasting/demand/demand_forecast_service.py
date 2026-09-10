@@ -228,7 +228,7 @@ def _product_point_forecasts(
         if r == "croston" or lgbm_model is None:
             try:
                 fc = select_and_fit(np.asarray(vals, float), horizon=1)
-                point[p] = float(max(fc.point, 0.0))
+                point[p] = float(max(fc.mean, 0.0))
                 model_used[p] = f"intermittent_{fc.model}"
                 continue
             except Exception:
@@ -330,7 +330,7 @@ def forecast_demand(
         })
 
     return DemandForecast(
-        as_of=as_of, horizon_weeks=horizon_weeks, products=products,
+        as_of=str(as_of or ""), horizon_weeks=horizon_weeks, products=products,
         model_info={
             "status": "ok",
             "n_products": len(products),

@@ -48,8 +48,10 @@ class TestCroston:
 
     def test_lower_demand_rate_for_sparser_series(self):
         """Sparser demand → lower demand rate. Earlier bug made all series converge to rate≈1."""
-        sparse = np.zeros(40); sparse[[5, 25]] = 50.0           # 2 events in 40 periods
-        dense = np.zeros(40); dense[[5, 10, 15, 20, 25, 30, 35]] = 50.0  # 7 events
+        sparse = np.zeros(40)
+        sparse[[5, 25]] = 50.0           # 2 events in 40 periods
+        dense = np.zeros(40)
+        dense[[5, 10, 15, 20, 25, 30, 35]] = 50.0  # 7 events
         rate_sparse = croston(sparse).demand_rate
         rate_dense = croston(dense).demand_rate
         assert rate_sparse < rate_dense

@@ -6,6 +6,8 @@ Produces point forecasts with conformal prediction intervals.
 
 from __future__ import annotations
 
+from typing import Any
+
 import json
 from pathlib import Path
 
@@ -42,7 +44,7 @@ class LGBMDemandModel:
         self.colsample_bytree = colsample_bytree
         self.conformal_alpha = conformal_alpha
         self.seed = seed
-        self._model = None
+        self._model: Any = None
         self._feature_cols: list[str] = []
         self._calibration_residuals: np.ndarray = np.array([])
 
@@ -89,7 +91,7 @@ class LGBMDemandModel:
         X_val = val_df[self._feature_cols]
         y_val = val_df[TARGET_COL]
 
-        params = {
+        params: dict[str, Any] = {
             "objective": "tweedie",
             "tweedie_variance_power": 1.5,
             "n_estimators": self.n_estimators,

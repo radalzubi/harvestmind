@@ -1,0 +1,146 @@
+{
+  "status": "insufficient verified eligible buying-group counts; not a numerical TAM estimate",
+  "currency": "USD",
+  "ACV_sensitivity": [
+    6000,
+    12000,
+    18000,
+    25000,
+    36000,
+    50000,
+    75000,
+    100000
+  ],
+  "markets": [
+    {
+      "country": "Saudi Arabia",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "UAE",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Jordan",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Egypt",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Kuwait",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Qatar",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Oman",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Bahrain",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Morocco",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Iraq",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Lebanon",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Algeria",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Tunisia",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "Palestine",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    },
+    {
+      "country": "US",
+      "eligible_buying_groups": null,
+      "TAM": null,
+      "SAM": null,
+      "SOM": null
+    }
+  ],
+  "GCC": [
+    "Saudi Arabia",
+    "UAE",
+    "Kuwait",
+    "Qatar",
+    "Oman",
+    "Bahrain"
+  ],
+  "MENA_scope": [
+    "Saudi Arabia",
+    "UAE",
+    "Jordan",
+    "Egypt",
+    "Kuwait",
+    "Qatar",
+    "Oman",
+    "Bahrain",
+    "Morocco",
+    "Iraq",
+    "Lebanon",
+    "Algeria",
+    "Tunisia",
+    "Palestine"
+  ],
+  "aggregation": "deduplicate buying groups; GCC is a subset of this MENA definition"
+}

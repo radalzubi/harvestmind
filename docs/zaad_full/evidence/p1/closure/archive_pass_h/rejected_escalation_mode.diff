@@ -1,0 +1,203 @@
+diff --git a/scripts/p1_p0_arms.py b/scripts/p1_p0_arms.py
+index 8a61b12..0213e0a 100644
+--- a/scripts/p1_p0_arms.py
++++ b/scripts/p1_p0_arms.py
+@@ -47,6 +47,8 @@ ARMS = {
+     # per-period LHS sampler (P1 final closure): the representation arm above is rerun under it as "lhs"
+     "lhs": {"stratified_scenarios": True},
+     "analytic_shortage": {"analytic_shortage": True},
++    # candidate-set completeness pass: NO_ACTION intervention escalation at product defaults otherwise
++    "escalation": {"no_action_escalation": True},
+ }
+ 
+ 
+@@ -109,6 +111,8 @@ def main():
+             "joint_built": sum(1 for x in o if "joint_recovery" in x["candidates_built"]),
+             "joint_chosen": sum(1 for _, rep in reps if rep.get("selected_policy") == "joint_recovery"),
+             "states": dict(collections.Counter(x["state"] for x in o)),
++            "stochastic_escalations": sum(1 for x in o for e in (x.get("escalated") or []) if e.startswith("stochastic_network")),
++            "milps_attempted": sum(x.get("milps_attempted", 0) for x in o),
+             "chosen": dict(collections.Counter(rep.get("selected_policy") or "?" for _, rep in reps)),
+             "statuses": dict(collections.Counter(rep.get("status") for _, rep in reps)),
+             "abstentions": sum(1 for _, rep in reps if any("NO MATERIAL IMPROVEMENT" in str(x) for x in rep.get("reasons", []))),
+@@ -122,6 +126,7 @@ def main():
+               f"unmet={row['total_unmet']:6.1f} worst={row['worst_unmet']:5.1f} inv={row['inventory']:6.1f} cost={round(row['cost'] or 0)} "
+               f"req={row['required_completed']}/{row['required_requested']} starved={row['required_starved']} infeas={row['required_infeasible']} "
+               f"joint={row['joint_required']}req/{row['joint_built']}built/{row['joint_chosen']}chosen abst={row['abstentions']} "
++              f"esc={row['stochastic_escalations']} milps={row['milps_attempted']} "
+               f"lat p50={row['lat_p50']:.2f} p90={row['lat_p90']:.1f} p95={row['lat_p95']:.1f} max={row['lat_max']:.1f} wall={wall:.0f}s", flush=True)
+         json.dump(out, open(f"docs/zaad_full/evidence/p1/closure/p0_arm_{arm}.json", "w"), indent=1, default=float)
+ 
+diff --git a/scripts/p1_targeted.py b/scripts/p1_targeted.py
+index da52ab6..abcda80 100644
+--- a/scripts/p1_targeted.py
++++ b/scripts/p1_targeted.py
+@@ -15,12 +15,13 @@ if __name__ == "__main__":
+     ap.add_argument("--scenarios", type=int, default=0, help="diagnostic world-count override (0 = fixture's own)")
+     ap.add_argument("--fixtures", default="")
+     ap.add_argument("--product-defaults", action="store_true")
++    ap.add_argument("--escalate", action="store_true", help="request mode: NO_ACTION intervention escalation")
+     a = ap.parse_args()
+     import scripts.run_p1_fixtures as R
+     names = [n for n in a.fixtures.split(",") if n] or TARGET
+     jobs = [(n, p, s) for n in names for p in POLICIES for s in SEEDS]
+     t0 = time.time(); cells = []
+-    with ProcessPoolExecutor(a.workers, initializer=R._init, initargs=("none", "default", 0., a.scenarios, a.product_defaults)) as pool:
++    with ProcessPoolExecutor(a.workers, initializer=R._init, initargs=("none", "default", 0., a.scenarios, a.product_defaults, a.escalate)) as pool:
+         for c in pool.map(run_cell, *zip(*jobs)):
+             cells.append(c)
+     json.dump(cells, open(f"docs/zaad_full/evidence/p1/closure/{a.tag}.json", "w"), indent=1, default=float)
+@@ -31,5 +32,7 @@ if __name__ == "__main__":
+         print(f"{r['fixture'][:28]:28s} {'PASS' if r['pass'] else 'FAIL'} zaad {c['gated']:7.0f} best-base {bb:7.0f} delta {100*(c['gated']-bb)/bb:+5.2f}% "
+               f"svc {mean(x['service'] for x in g):.3f} breaches {mean(x['breaches'] for x in g):.1f} unmet {mean(x['unmet_units'] for x in g):.1f} inv {mean(x['avg_inventory_units'] for x in g):.0f} "
+               f"actions {sum(x['actions'] for x in g)}/{11*len(g)} abst {sum(x['abstentions'] for x in g)} cats {sorted({k for x in g for k in x['categories']})} "
+-              f"fails {[k for k, v in r['checks'].items() if not v]}")
++              f"fails {[k for k, v in r['checks'].items() if not v]} "
++              f"esc {sum(x.get('stochastic_escalations', 0) for x in g)} milps {sum(x.get('milps_attempted', 0) for x in g)} "
++              f"wall {sum(x['seconds'] for x in g):.0f}s")
+     print("seconds", round(time.time() - t0))
+diff --git a/scripts/run_p1_fixtures.py b/scripts/run_p1_fixtures.py
+index 549da30..08c91c8 100644
+--- a/scripts/run_p1_fixtures.py
++++ b/scripts/run_p1_fixtures.py
+@@ -20,6 +20,7 @@ GATE_ARM = "default"
+ SMOOTHING_ARM = 0.
+ SCENARIOS_ARM = 0     # 0 = the fixture's own scenario count; >0 is a diagnostic override (world-count trade-off)
+ PRODUCT_DEFAULTS = False
++ESCALATE_ARM = False   # request mode: NO_ACTION intervention escalation (P1 candidate-set completeness)
+ 
+ 
+ def _build(name: str, seed: int):
+@@ -31,6 +32,8 @@ def _build(name: str, seed: int):
+     if PRODUCT_DEFAULTS:
+         from zaad.full.contracts import Request
+         req = req.model_copy(update={k: Request.model_fields[k].default for k in ("stratified_scenarios", "timing_tiebreak", "analytic_shortage")})
++    if ESCALATE_ARM:
++        req = req.model_copy(update={"no_action_escalation": True})
+     return req
+ from zaad.full.economics import COMPONENTS, cost_breakdown, order_waterfall
+ from zaad.full.replay import replay
+@@ -38,9 +41,9 @@ from zaad.full.tolerance import is_dust
+ from zaad.full.worlds import draw, forecast_all
+ 
+ 
+-def _init(stress: str, gate: str, smoothing: float, scenarios: int = 0, product_defaults: bool = False) -> None:
+-    global STRESS_ARM, GATE_ARM, SMOOTHING_ARM, SCENARIOS_ARM, PRODUCT_DEFAULTS
+-    STRESS_ARM, GATE_ARM, SMOOTHING_ARM, SCENARIOS_ARM, PRODUCT_DEFAULTS = stress, gate, smoothing, scenarios, product_defaults
++def _init(stress: str, gate: str, smoothing: float, scenarios: int = 0, product_defaults: bool = False, escalate: bool = False) -> None:
++    global STRESS_ARM, GATE_ARM, SMOOTHING_ARM, SCENARIOS_ARM, PRODUCT_DEFAULTS, ESCALATE_ARM
++    STRESS_ARM, GATE_ARM, SMOOTHING_ARM, SCENARIOS_ARM, PRODUCT_DEFAULTS, ESCALATE_ARM = stress, gate, smoothing, scenarios, product_defaults, escalate
+ 
+ 
+ def run_cell(name: str, policy: str, seed: int) -> dict:
+@@ -65,7 +68,11 @@ def run_cell(name: str, policy: str, seed: int) -> dict:
+     per_review_service = []
+     solver_seconds = []
+     retained_reasons: list[str] = []
++    states, escalations, milps = [], 0, 0
+     for row in out["reviews"]:
++        orch = row.get("orchestration") or {}
++        states.append(orch.get("state")); milps += orch.get("milps_attempted") or 0
++        escalations += sum(1 for e in (orch.get("escalated") or []) if e.startswith("stochastic_network"))
+         st = row["settlement"]
+         s_ = d_ = 0.
+         for x in st["service_by_period"]:
+@@ -117,7 +124,7 @@ def run_cell(name: str, policy: str, seed: int) -> dict:
+         "components": components, "total_modeled_cost": out["economic_cost"], "ledger": out["ledger"],
+         "working_capital": mean(cash_deployed), "actions": actions, "abstentions": abstentions,
+         "categories": sorted(categories), "wall_seconds_per_review": solver_seconds, "per_review_service": per_review_service,
+-        "review_outcomes": retained_reasons})
++        "review_outcomes": retained_reasons, "screen_states": states, "stochastic_escalations": escalations, "milps_attempted": milps})
+     return cell
+ 
+ 
+@@ -206,12 +213,15 @@ def main():
+     ap.add_argument("--gate", default="default", choices=("default", "target", "incumbent"))
+     ap.add_argument("--smoothing", type=float, default=0.)
+     ap.add_argument("--product-defaults", action="store_true", help="drop the declared P1 fixture settings (stratified worlds, tie-break) and run at product defaults")
++    ap.add_argument("--escalate", action="store_true", help="request mode: NO_ACTION intervention escalation (no_action_escalation=True)")
+     a = ap.parse_args()
++    global ESCALATE_ARM
++    ESCALATE_ARM = a.escalate
+     global STRESS_ARM, GATE_ARM, SMOOTHING_ARM
+     STRESS_ARM, GATE_ARM, SMOOTHING_ARM = a.stress, a.gate, a.smoothing
+     global PRODUCT_DEFAULTS
+     PRODUCT_DEFAULTS = a.product_defaults
+-    arm = a.stress + ("" if a.gate == "default" else "_gate_" + a.gate) + ("" if a.smoothing == 0 else f"_smoothing_{a.smoothing:g}") + ("_product_defaults" if a.product_defaults else "")
++    arm = a.stress + ("" if a.gate == "default" else "_gate_" + a.gate) + ("" if a.smoothing == 0 else f"_smoothing_{a.smoothing:g}") + ("_product_defaults" if a.product_defaults else "") + ("_escalate" if a.escalate else "")
+     names = [n for n in a.fixtures.split(",") if n] or list(FIXTURES)
+     policies = [p for p in a.policies.split(",") if p]
+     jobs = [(n, p, s) for n in names for p in policies for s in SEEDS]
+@@ -219,7 +229,7 @@ def main():
+     out.parent.mkdir(parents=True, exist_ok=True)
+     cells = []
+     started = time.time()
+-    with ProcessPoolExecutor(a.workers, initializer=_init, initargs=(a.stress, a.gate, a.smoothing, 0, a.product_defaults)) as pool, out.open("w") as f:
++    with ProcessPoolExecutor(a.workers, initializer=_init, initargs=(a.stress, a.gate, a.smoothing, 0, a.product_defaults, a.escalate)) as pool, out.open("w") as f:
+         for cell in pool.map(run_cell, *zip(*jobs)):
+             cells.append(cell)
+             f.write(json.dumps(cell, allow_nan=False, default=float) + "\n")
+diff --git a/zaad/full/contracts.py b/zaad/full/contracts.py
+index 381a1b7..9dd007c 100644
+--- a/zaad/full/contracts.py
++++ b/zaad/full/contracts.py
+@@ -462,6 +462,16 @@ class Request(Record):
+     # (+2.04% -> +0.10%) but on the frozen P0 six-cell set, lean reviews only, it moved cells 20,
+     # 21 and 90 outside their recorded bands (P1 close-out, final economic closure).
+     analytic_shortage: bool = False
++    # Intervention escalation of the NO_ACTION candidate set (P1 candidate-set completeness).
++    # The NO_ACTION state builds only the mean-world (deterministic) candidate as a cheap check
++    # that nothing improves the incumbent. When that check itself proposes an intervention (its
++    # executable period-0 order differs from the incumbent's), the review is no longer "nothing
++    # to do": a change is being weighed under demand uncertainty, and the candidate set escalates
++    # to the NORMAL_REPLENISHMENT minimum (deterministic + stochastic) before selection. When the
++    # deterministic check agrees with the incumbent, no extra solve is made. The stochastic class
++    # is the existing one, built by the same solve; selector, gates and recovery are unchanged.
++    # Scope is a state and a plan comparison: it never depends on a fixture, cell or seed.
++    no_action_escalation: bool = False
+     service_tolerance: float = Field(ge=0, le=.1)
+     force_unit_fills: bool = False
+     # How review-by-review demand refits treat a detected level change. "symmetric" is the frozen
+diff --git a/zaad/full/planner.py b/zaad/full/planner.py
+index 9c169bc..fce205f 100644
+--- a/zaad/full/planner.py
++++ b/zaad/full/planner.py
+@@ -184,6 +184,15 @@ def _service_value(req: Request, rows: list[dict], service) -> float | None:
+     return served / demand if demand else 1.0
+ 
+ 
++def _intervenes(candidate: Solution | None, incumbent: Solution) -> bool:
++    """Does a candidate's executable (period-0) order differ from the incumbent's? Numerical
++    tolerance only; no economic threshold is applied here."""
++    if candidate is None or not candidate.usable_plan:
++        return False
++    keys = {k for k in candidate.purchases if k[1] == 0} | {k for k in incumbent.purchases if k[1] == 0}
++    return any(abs(candidate.purchases.get(k, 0.) - incumbent.purchases.get(k, 0.)) > 1e-6 for k in keys)
++
++
+ def service_ok(req, rows):
+     if not rows or any(not row["usable"] for row in rows):
+         return False
+@@ -721,6 +730,14 @@ def plan(req: Request) -> dict:
+         # applying the surrogate there moved P0 cells 21 and 108 (six-cell arm, final closure).
+         candidates["deterministic_network"] = solve(req, deterministic, service_floor=True, seed=incumbent,
+                                                     expected_shortage=(fits if (lean_review and req.analytic_shortage) else None), **v6)
++    if (req.no_action_escalation and screen_result["state"] == "NO_ACTION" and "stochastic_network" not in requested
++            and _intervenes(candidates.get("deterministic_network"), incumbent)):
++        # Intervention escalation (P1 candidate-set completeness): the NO_ACTION check proposes to
++        # change the executable order, so the review escalates to the NORMAL_REPLENISHMENT minimum
++        # set. The existing stochastic class is requested through the same path as everywhere else.
++        required.append("stochastic_network")
++        requested.append("stochastic_network")
++        compute["escalated"] = compute.get("escalated", []) + ["stochastic_network: the NO_ACTION deterministic check proposes an intervention"]
+     if wanted("stochastic_network"):
+         candidates["stochastic_network"] = solve(req, selection, service_floor=True, seed=incumbent, **v6)
+     if wanted("cvar_network"):
+@@ -1378,6 +1395,7 @@ def plan(req: Request) -> dict:
+                 **screen_result,
+                 **_completeness(req, candidates, selection_rows, compute),
+                 "candidate_classes_requested": compute["requested"],
++                "escalated": list(compute.get("escalated", [])),
+                 "candidate_classes_skipped": sorted(set(compute["skipped"])),
+                 "candidates_built": sorted(n for n in candidates if n not in ("incumbent", "base_stock")),
+                 "milps_attempted": sum(1 for c in candidates.values() if c.solve_seconds),

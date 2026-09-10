@@ -45,7 +45,10 @@ export async function apiFetch<T = unknown>(path: string, init?: RequestInit): P
     let detail = `HTTP ${res.status}`;
     try {
       const body = await res.json();
-      detail = body.detail ?? detail;
+      if (typeof body.detail === "string") detail = body.detail;
+      else if (Array.isArray(body.detail)) detail = body.detail.map((e: { loc?: unknown[]; msg?: string }) =>
+        `${e.loc?.join(".") || "request"}: ${e.msg || "Invalid input"}`).join("; ");
+      else if (body.detail != null) detail = JSON.stringify(body.detail);
     } catch {}
     throw new Error(detail);
   }

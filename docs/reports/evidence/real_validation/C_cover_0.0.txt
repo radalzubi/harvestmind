@@ -1,0 +1,75 @@
+
+==============================================================================
+COMMERCIAL OPTIMIZER — BACKTEST ON REAL PUBLIC DATA
+==============================================================================
+  demand path   US Census MWTS NAICS 4244 via FRED (real, NSA)
+  supply shocks IMF PortWatch AIS, per-route ports (real)
+  cross-section synthetic; idio CV = 0.25
+  opening cover 0.0 months   horizon 12 months
+  warehouse cap 2.0 months (real wholesaler I/S mean 1.26, p90 1.35)
+  window        1994-01 .. 2026-06  (390 months, 3 seeds)
+
+  NORMAL_1990S     eval mid 1997-07..2000-11  n=33  (real demand only)
+      SP vs naive order-up-to    median  +17.67%   wins 24/33
+      SP vs fill-aware determ.   median   +7.61%   wins 27/33
+      SP vs cautious p90         median  +37.46%   wins 33/33
+      service:  naive 97.3%   det_mean 90.3%   det_p90 84.6%   sp 91.3%
+
+  NORMAL_2000S     eval mid 2003-03..2007-03  n=39  (real demand only)
+      SP vs naive order-up-to    median  +33.70%   wins 37/39
+      SP vs fill-aware determ.   median   +8.25%   wins 33/39
+      SP vs cautious p90         median  +42.59%   wins 39/39
+      service:  naive 98.0%   det_mean 91.8%   det_p90 86.1%   sp 93.0%
+
+  GFC              eval mid 2007-07..2010-11  n=32  (real demand only)
+      SP vs naive order-up-to    median  +25.63%   wins 28/32
+      SP vs fill-aware determ.   median   +4.24%   wins 24/32
+      SP vs cautious p90         median  +37.68%   wins 32/32
+      service:  naive 97.1%   det_mean 90.7%   det_p90 85.4%   sp 92.1%
+
+  NORMAL_2010S     eval mid 2012-03..2019-11  n=72  (real demand only)
+      SP vs naive order-up-to    median  +24.04%   wins 60/72
+      SP vs fill-aware determ.   median   +8.64%   wins 57/72
+      SP vs cautious p90         median  +38.38%   wins 72/72
+      service:  naive 97.3%   det_mean 90.5%   det_p90 85.0%   sp 91.7%
+
+  COVID            eval mid 2020-03..2021-03  n=11  (real supply shocks)
+      mean realized supply shock  0.974
+      SP vs naive order-up-to    median  +43.42%   wins 11/11
+      SP vs fill-aware determ.   median   +3.47%   wins 6/11
+      SP vs cautious p90         median  +34.42%   wins 11/11
+      service:  naive 98.0%   det_mean 92.8%   det_p90 87.8%   sp 92.6%
+
+  INFLATION        eval mid 2021-07..2023-03  n=18  (real supply shocks)
+      mean realized supply shock  0.955
+      SP vs naive order-up-to    median   -8.79%   wins 5/18
+      SP vs fill-aware determ.   median  +18.04%   wins 18/18
+      SP vs cautious p90         median  +38.52%   wins 18/18
+      service:  naive 92.1%   det_mean 82.5%   det_p90 76.2%   sp 84.7%
+
+  RED_SEA_WAR      eval mid 2023-11..2025-11  n=21  (real supply shocks)
+      mean realized supply shock  0.911
+      SP vs naive order-up-to    median   +3.79%   wins 13/21
+      SP vs fill-aware determ.   median   +7.74%   wins 18/21
+      SP vs cautious p90         median  +33.92%   wins 21/21
+      service:  naive 95.0%   det_mean 87.9%   det_p90 82.3%   sp 88.9%
+
+  UNCLASSIFIED     eval mid 2001-03..2023-07  n=30  (real demand only)
+      SP vs naive order-up-to    median  +32.27%   wins 24/30
+      SP vs fill-aware determ.   median  +11.41%   wins 22/30
+      SP vs cautious p90         median  +42.07%   wins 30/30
+      service:  naive 97.7%   det_mean 91.4%   det_p90 85.7%   sp 92.6%
+
+------------------------------------------------------------------------------
+  POOLED  (256 admissible folds)
+    SP vs naive order-up-to    median  +23.44%  IQR [+3.72, +36.71]  wins 202/256
+    SP vs fill-aware determ.   median   +8.01%  IQR [+1.85, +15.21]  wins 205/256
+    SP vs cautious p90         median  +38.40%  IQR [+31.41, +45.73]  wins 256/256
+    service:  naive 96.9%   det_mean 90.1%   det_p90 84.5%   sp 91.3%
+
+    SP vs fill-aware determ., split by how hard the month was
+    (stratum set by the BASELINE's cost split, not SP's)
+      binding  n=256  median   +8.01%  wins 205/256   shortage > 20% of baseline cost
+    folds suppressed by guard: 2
+------------------------------------------------------------------------------
+

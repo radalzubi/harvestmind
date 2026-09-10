@@ -15,6 +15,9 @@ import pandas as pd
 # before the SQL is constructed — prevents identifier injection through the
 # `table` argument when called from automated pipelines.
 ALLOWED_TABLES: frozenset[str] = frozenset({
+    "stg_fmcg_suppliers", "stg_fmcg_economics",
+    "stg_fmcg_skus", "stg_fmcg_orders", "stg_fmcg_purchase_orders",
+    "stg_fmcg_receipts", "stg_fmcg_inventory", "stg_fmcg_promotions",
     "fact_orders",
     "fact_order_lines",
     "fact_purchase_orders",
@@ -46,6 +49,31 @@ _IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
 COLUMN_MAPS: dict[str, dict[str, str]] = {
+    "stg_fmcg_skus": {"SKU": "sku", "Item": "sku", "Item Code": "sku", "Description": "sku_name",
+                      "Supplier": "supplier_id", "Cost": "unit_cost", "Unit Cost": "unit_cost",
+                      "Price": "unit_price", "Units per Case": "units_per_case", "Case Pack": "units_per_case",
+                      "MOQ": "moq_units", "Shelf Life (days)": "shelf_life_days"},
+    "stg_fmcg_orders": {"Order ID": "order_id", "Customer": "customer_id", "Customer ID": "customer_id",
+                        "Order Date": "order_date", "Requested Delivery": "requested_delivery_date",
+                        "SKU": "sku", "Item": "sku", "Qty": "qty_ordered", "Quantity": "qty_ordered",
+                        "Qty Ordered": "qty_ordered", "Qty Shipped": "qty_shipped", "Channel": "channel"},
+    "stg_fmcg_purchase_orders": {"PO": "po_id", "PO Number": "po_id", "PO Date": "po_date",
+                                 "Supplier": "supplier_id", "SKU": "sku", "Item": "sku",
+                                 "Qty": "qty_ordered", "Qty Ordered": "qty_ordered", "Unit Cost": "unit_cost",
+                                 "Expected Delivery": "expected_delivery_date"},
+    "stg_fmcg_receipts": {"Receipt": "receipt_id", "PO": "po_id", "PO Number": "po_id",
+                          "Receipt Date": "receipt_date", "Received Date": "receipt_date",
+                          "SKU": "sku", "Qty Received": "qty_received", "Received": "qty_received",
+                          "Qty Rejected": "qty_rejected"},
+    "stg_fmcg_inventory": {"Date": "snapshot_date", "Snapshot Date": "snapshot_date", "SKU": "sku",
+                           "Location": "location_id", "Warehouse": "location_id", "On Hand": "on_hand",
+                           "In Transit": "in_transit"},
+    "stg_fmcg_promotions": {"SKU": "sku", "Week": "week_start", "Week Start": "week_start",
+                            "Uplift": "uplift", "Multiplier": "uplift"},
+    "stg_fmcg_suppliers": {"Supplier": "supplier_id", "Supplier ID": "supplier_id", "Name": "supplier_name",
+                           "Route": "route", "Port": "route", "Carrier": "route", "Manufacturer": "manufacturer",
+                           "Capacity per Week": "capacity_per_week", "Promised Lead (weeks)": "lead_time_promised_weeks"},
+    "stg_fmcg_economics": {"Key": "key", "Parameter": "key", "Value": "value", "Provenance": "provenance", "Note": "note"},
     "orders": {
         "Order ID": "order_id",
         "Buyer": "buyer_id",
@@ -219,19 +247,19 @@ def ingest_csv(
         return 0
 
     if if_exists == "replace":
-        conn.execute(f"DELETE FROM {table}")  # noqa: S608  table is allowlisted
+        conn.execute(f"DELETE FROM {table}")  # noqa: S608  table is allowlisted  # nosec B608 - table allowlisted
 
     if if_exists == "ignore":
         # Position-based insert — requires UNIQUE/PK constraints on the table.
         # SELECT * passes all DataFrame columns by position; DuckDB raises if
         # column counts mismatch, which is the correct behaviour for normalized tables.
-        conn.execute(f"INSERT OR IGNORE INTO {table} SELECT * FROM df")  # noqa: S608
+        conn.execute(f"INSERT OR IGNORE INTO {table} SELECT * FROM df")  # noqa: S608  # nosec B608 - table allowlisted
     else:
         # For "append" and "replace" (after DELETE): use explicit column names so
         # that schema columns with DEFAULT values (e.g. imported_at) are not
         # required in the CSV and receive their defaults automatically.
         cols = ", ".join(f'"{c}"' for c in df.columns)
-        conn.execute(f'INSERT INTO {table} ({cols}) SELECT {cols} FROM df')  # noqa: S608
+        conn.execute(f'INSERT INTO {table} ({cols}) SELECT {cols} FROM df')  # noqa: S608  # nosec B608 - table allowlisted
     return n
 
 

@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import api.main as api_main
-import api.routers.intake as intake_router
+
 import ingestion.extraction_sessions as sessions
 from infrastructure.operator_registry import OperatorRegistry
 from infrastructure.vault_storage import store_raw_upload
@@ -75,7 +75,13 @@ def test_upload_with_operator_id_lands_in_vault_with_lineage(registry):
     # raw copy in the vault
     uploads = list((registry.vault_dir(op.operator_id) / "uploads").iterdir())
     assert len(uploads) == 1
-    assert uploads[0].read_text() == CLEAN_CSV
+    # The vault holds the PSEUDONYMISED original: keyed hashes in place of
+    # names, numbers and dates untouched, and the response says so.
+    stored = uploads[0].read_text()
+    assert "City Bistro" not in stored and "Roma Tomatoes" not in stored
+    assert "2026-05-04,2026-05-04,120,100,2.5" in stored
+    assert r.json()["anonymization"]["mode"] == "server"
+    assert set(r.json()["anonymization"]["hashed_columns"]) == {"buyer_name", "product_name"}
 
     # row in the VAULT db with full lineage
     from infrastructure.db_manager import DBManager

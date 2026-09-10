@@ -1,5 +1,18 @@
 # AGENTS.md
 
+## ZAAD inventory/resilience prototype boundary
+
+New work under `zaad/`, `/api/zaad` and web `/zaad` is isolated from legacy
+FMCG/LP adapters. Read `docs/zaad_next/MATHEMATICAL_SPEC.md` and
+`IMPLEMENTATION_STATUS.md` before changing it. The final source/config is
+frozen in `docs/zaad_next/evidence/preregistered_manifest.json`; the current
+holdout is consumed. Never tune on its results and call the same seeds fresh.
+Available stock must serve demand, every policy must share physical/ledger
+rules, and future actual receipts must never enter the planner's pending book.
+Calibrated risk, Oracle parity, real-operator savings and no-harm guarantees
+are not established. Keep the NEEDS FURTHER ENGINEERING verdict visible until
+new evidence actually supports a change. No automatic purchase-order writes.
+
 Entry point for coding agents (Codex, Claude Code, etc.) working in this
 repository. Read this before making changes.
 
@@ -150,14 +163,33 @@ regression even if tests still pass.
 
 - Do not fabricate citations, DOIs, benchmark numbers, data availability,
   package capabilities, or statistical guarantees.
-- All validation to date is on a **calibrated synthetic operator** (~$8M, 28
-  products, 52 weeks). No real operator data has touched any layer. Do not
-  describe results as validated on real data.
+- Evidence includes **synthetic operators** and simulated decisions driven by
+  public aggregate demand/port series. No real operator data or realized
+  customer savings have validated the engine. Label the input and decision
+  evidence separately; do not call aggregate-proxy replay operator validation.
 - Do not put real or mock operator data into any database used for training.
 - Keep assumptions labelled as assumptions. The 15-30% savings recovery band
   is sourced from USDA SR-77 and is explicitly not measured.
 
 ## CI
+
+### Commercial audit invariants (September 2026)
+
+- Read `docs/remodel/ROOT_CAUSE.md` and MATH_SPEC §28 before extending the
+  commercial policy path. Dated pipeline must reach every planner.
+- Planner-visible expected open POs and private realized future receipts are
+  different data. Never expose eventual fill/arrival to the next review before
+  it is observed. Supplier training events must be dated by availability.
+- Nested folds use only dated prior supply evidence and standardized stock,
+  not a reconstruction using current stock or later demand. Rebase event dates.
+- Confirmation repeats cost, service, regret, completeness and solver-quality
+  gates. A relaxed or unusable live solve cannot be promoted.
+- The state-evidence bypass is experimental and defaults off. The service
+  frontier is an experimental candidate, not an automatic service reduction.
+- Aggregate horizon service can borrow from future periods; the separate
+  per-period variant is stricter but still only expected service, not OTIF.
+- Historical reports remain historical. Use the causal evidence directory in
+  `docs/remodel/` and retain failed/rejected experiments with explicit labels.
 
 `.github/workflows/ci.yml` runs on pull requests:
 
@@ -166,5 +198,6 @@ regression even if tests still pass.
   debt report
 - **next build** — only when `web/` changes
 
-All three must be green before merge. Current baseline: **1035 tests passing,
-81% coverage.**
+All three must be green before merge. Latest local commercial audit:
+**1393 passed, 1 skipped**. Coverage was not remeasured in that audit; the
+earlier 81% figure belongs to its earlier test baseline, not this one.

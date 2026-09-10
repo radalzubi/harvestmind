@@ -1,0 +1,118 @@
+{
+  "source_sha256": "1e0cc780f47a375b9edf9f3d5e7b69170196345217675bfdfbfad46b0e992584",
+  "total_runs": 16,
+  "aggregates": [
+    {
+      "family": "normal",
+      "baseline": "incumbent",
+      "n": 2,
+      "median_pct": 0.0,
+      "range_pct": [
+        0.0,
+        0.0
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "base_stock",
+      "n": 2,
+      "median_pct": 1.0356710439757613,
+      "range_pct": [
+        0.7106841046395231,
+        1.3606579833119994
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "service_target",
+      "n": 2,
+      "median_pct": 0.8902997638553841,
+      "range_pct": [
+        0.5201929558561447,
+        1.2604065718546236
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "deterministic_constrained",
+      "n": 2,
+      "median_pct": 0.8902997638553841,
+      "range_pct": [
+        0.5201929558561447,
+        1.2604065718546236
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "expected_search",
+      "n": 2,
+      "median_pct": 0.8829237524826492,
+      "range_pct": [
+        0.5457466530135365,
+        1.2201008519517618
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "cvar_search",
+      "n": 2,
+      "median_pct": 0.7061389796483355,
+      "range_pct": [
+        0.4019091273472847,
+        1.0103688319493864
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "route_aware",
+      "n": 2,
+      "median_pct": 0.8829237524826492,
+      "range_pct": [
+        0.5457466530135365,
+        1.2201008519517618
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 0
+    },
+    {
+      "family": "normal",
+      "baseline": "zaad_gated",
+      "n": 2,
+      "median_pct": 0.8829237524826492,
+      "range_pct": [
+        0.5457466530135365,
+        1.2201008519517618
+      ],
+      "losses": 0,
+      "service_breaches": 0,
+      "abstentions": 0,
+      "changes": 2
+    }
+  ]
+}

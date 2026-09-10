@@ -1,0 +1,3400 @@
+{
+ "base": {
+  "by_dimension": {
+   "alternative": {
+    "none": {
+     "base_stock": {
+      "avoidable": 6,
+      "breaches": 25,
+      "median_inventory_periods": 0.7202042630337898,
+      "runs": 35
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 20,
+      "median_inventory_periods": 1.2600102645111875,
+      "runs": 35
+     },
+     "gated_pr24": {
+      "avoidable": 6,
+      "breaches": 25,
+      "median_inventory_periods": 0.7202042630337898,
+      "runs": 35
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 19,
+      "median_inventory_periods": 1.2093356898751098,
+      "runs": 35
+     }
+    },
+    "route": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 0.8685114045166891,
+      "runs": 4
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 0.900093294696348,
+      "runs": 4
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 0.8685114045166891,
+      "runs": 4
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 0.9679481323615314,
+      "runs": 4
+     }
+    },
+    "shared_route": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 4.8799269534100596,
+      "runs": 7
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 4.029314763588714,
+      "runs": 7
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 3.11742617548954,
+      "runs": 7
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 3.9720749655780665,
+      "runs": 7
+     }
+    },
+    "substitution": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 0,
+      "median_inventory_periods": 6.056240095123619,
+      "runs": 4
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 0,
+      "median_inventory_periods": 6.641462354242352,
+      "runs": 4
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 0,
+      "median_inventory_periods": 5.667941868075625,
+      "runs": 4
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 0,
+      "median_inventory_periods": 6.337893246372705,
+      "runs": 4
+     }
+    },
+    "supplier": {
+     "base_stock": {
+      "avoidable": 1,
+      "breaches": 4,
+      "median_inventory_periods": 0.36690872193580043,
+      "runs": 7
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 0.4788950047944821,
+      "runs": 7
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 0.35675213713462056,
+      "runs": 7
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 0.4888247150674295,
+      "runs": 7
+     }
+    },
+    "transfer": {
+     "base_stock": {
+      "avoidable": 2,
+      "breaches": 4,
+      "median_inventory_periods": 6.027320416435157,
+      "runs": 8
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 4.741538820073152,
+      "runs": 8
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 5.450177989107946,
+      "runs": 8
+     },
+     "gated_pr30": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 5.162514636669821,
+      "runs": 8
+     }
+    },
+    "transfer_constrained": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 4.290308247689004,
+      "runs": 7
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 3.7542287866725697,
+      "runs": 7
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 4.290308247689004,
+      "runs": 7
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 3.1311225763047297,
+      "runs": 7
+     }
+    }
+   },
+   "demand": {
+    "decrease": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 8.218368722247995,
+      "runs": 4
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 8.13370856567716,
+      "runs": 4
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 7.6690377936479,
+      "runs": 4
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 8.43490484372502,
+      "runs": 4
+     }
+    },
+    "gradual": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 5,
+      "median_inventory_periods": 2.904599020116994,
+      "runs": 5
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 5,
+      "median_inventory_periods": 2.1247202904133213,
+      "runs": 5
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 5,
+      "median_inventory_periods": 2.150786097267707,
+      "runs": 5
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 5,
+      "median_inventory_periods": 2.295078789825806,
+      "runs": 5
+     }
+    },
+    "increase": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 0.23079296214272796,
+      "runs": 1
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 0.44912017547796684,
+      "runs": 1
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 0.23079296214272796,
+      "runs": 1
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 0.5414847906405326,
+      "runs": 1
+     }
+    },
+    "intermittent": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 5.645774068976472,
+      "runs": 5
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 5.753059423253571,
+      "runs": 5
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 4.9434578467155115,
+      "runs": 5
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 5.042652220725805,
+      "runs": 5
+     }
+    },
+    "intermittent_spiky": {
+     "base_stock": {
+      "avoidable": 1,
+      "breaches": 1,
+      "median_inventory_periods": 26.393812376392212,
+      "runs": 7
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 0,
+      "median_inventory_periods": 27.897970365347227,
+      "runs": 7
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 0,
+      "median_inventory_periods": 26.091722719805205,
+      "runs": 7
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 0,
+      "median_inventory_periods": 28.093326917636887,
+      "runs": 7
+     }
+    },
+    "promotion": {
+     "base_stock": {
+      "avoidable": 2,
+      "breaches": 4,
+      "median_inventory_periods": 1.1710387946623069,
+      "runs": 4
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 1.5798221976440492,
+      "runs": 4
+     },
+     "gated_pr24": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 1.2357700851386593,
+      "runs": 4
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 1.5859709410110416,
+      "runs": 4
+     }
+    },
+    "promotion_recovery": {
+     "base_stock": {
+      "avoidable": 2,
+      "breaches": 2,
+      "median_inventory_periods": 1.598059042959612,
+      "runs": 3
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 0,
+      "median_inventory_periods": 2.0394481912614895,
+      "runs": 3
+     },
+     "gated_pr24": {
+      "avoidable": 2,
+      "breaches": 2,
+      "median_inventory_periods": 1.4556207132534469,
+      "runs": 3
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 0,
+      "median_inventory_periods": 1.9728428258519135,
+      "runs": 3
+     }
+    },
+    "spike": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 0.5495831216344347,
+      "runs": 2
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 0.7467497969966279,
+      "runs": 2
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 0.5583794172235106,
+      "runs": 2
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 0.8489478619466369,
+      "runs": 2
+     }
+    },
+    "stable": {
+     "base_stock": {
+      "avoidable": 3,
+      "breaches": 19,
+      "median_inventory_periods": 0.36690872193580043,
+      "runs": 32
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 17,
+      "median_inventory_periods": 0.7828056789381044,
+      "runs": 32
+     },
+     "gated_pr24": {
+      "avoidable": 2,
+      "breaches": 18,
+      "median_inventory_periods": 0.36690872193580043,
+      "runs": 32
+     },
+     "gated_pr30": {
+      "avoidable": 1,
+      "breaches": 17,
+      "median_inventory_periods": 0.8056246162322752,
+      "runs": 32
+     }
+    },
+    "surge_recovery": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 0.7202042630337898,
+      "runs": 2
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 1.227140297249378,
+      "runs": 2
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 0.7202042630337898,
+      "runs": 2
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 1.2927913852086361,
+      "runs": 2
+     }
+    },
+    "temporary_spike": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 1.0491670746515058,
+      "runs": 1
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 1.277717529309014,
+      "runs": 1
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 1.0491670746515058,
+      "runs": 1
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 1.1522678470554593,
+      "runs": 1
+     }
+    },
+    "unknown_promotion": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 2.1858623341609316,
+      "runs": 2
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 1.7376811833280872,
+      "runs": 2
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 1.7289545362204415,
+      "runs": 2
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 2.184511937621905,
+      "runs": 2
+     }
+    },
+    "volatile": {
+     "base_stock": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 3.173503488418616,
+      "runs": 4
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 2.988856158108602,
+      "runs": 4
+     },
+     "gated_pr24": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 2.1537202187571856,
+      "runs": 4
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 3.016627707492317,
+      "runs": 4
+     }
+    }
+   },
+   "inventory": {
+    "balanced": {
+     "base_stock": {
+      "avoidable": 7,
+      "breaches": 31,
+      "median_inventory_periods": 0.8645253852519293,
+      "runs": 51
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 25,
+      "median_inventory_periods": 1.6152154494341249,
+      "runs": 51
+     },
+     "gated_pr24": {
+      "avoidable": 6,
+      "breaches": 30,
+      "median_inventory_periods": 0.8645253852519293,
+      "runs": 51
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 24,
+      "median_inventory_periods": 1.790154539292844,
+      "runs": 51
+     }
+    },
+    "high": {
+     "base_stock": {
+      "avoidable": 2,
+      "breaches": 9,
+      "median_inventory_periods": 2.904599020116994,
+      "runs": 15
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 8,
+      "median_inventory_periods": 2.9414597336910884,
+      "runs": 15
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 7,
+      "median_inventory_periods": 2.7523190046687915,
+      "runs": 15
+     },
+     "gated_pr30": {
+      "avoidable": 1,
+      "breaches": 8,
+      "median_inventory_periods": 2.612539926680676,
+      "runs": 15
+     }
+    },
+    "low": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 2.1567944334628737,
+      "runs": 6
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 3.080688590994291,
+      "runs": 6
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 1.9928791937189976,
+      "runs": 6
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 3.1192619134392654,
+      "runs": 6
+     }
+    }
+   },
+   "network": {
+    "central_branches": {
+     "base_stock": {
+      "avoidable": 4,
+      "breaches": 9,
+      "median_inventory_periods": 1.9822097022810525,
+      "runs": 10
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 6,
+      "median_inventory_periods": 2.120650211105043,
+      "runs": 10
+     },
+     "gated_pr24": {
+      "avoidable": 2,
+      "breaches": 7,
+      "median_inventory_periods": 2.453790357391192,
+      "runs": 10
+     },
+     "gated_pr30": {
+      "avoidable": 1,
+      "breaches": 6,
+      "median_inventory_periods": 2.0881010671017948,
+      "runs": 10
+     }
+    },
+    "single": {
+     "base_stock": {
+      "avoidable": 5,
+      "breaches": 30,
+      "median_inventory_periods": 0.6435843069251428,
+      "runs": 50
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 26,
+      "median_inventory_periods": 1.2236477465547246,
+      "runs": 50
+     },
+     "gated_pr24": {
+      "avoidable": 4,
+      "breaches": 29,
+      "median_inventory_periods": 0.6523806025142187,
+      "runs": 50
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 25,
+      "median_inventory_periods": 1.1808017684652845,
+      "runs": 50
+     }
+    },
+    "two_locations": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 5,
+      "median_inventory_periods": 5.673316537340413,
+      "runs": 12
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 5,
+      "median_inventory_periods": 5.889368472579914,
+      "runs": 12
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 5,
+      "median_inventory_periods": 5.407097502348054,
+      "runs": 12
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 5,
+      "median_inventory_periods": 5.467430795648939,
+      "runs": 12
+     }
+    }
+   },
+   "supply": {
+    "closure_recovery": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 2.4654528297797476,
+      "runs": 5
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 1.2103969268446633,
+      "runs": 5
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 1.7918500027872666,
+      "runs": 5
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 3,
+      "median_inventory_periods": 1.8324964530744103,
+      "runs": 5
+     }
+    },
+    "correlated": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 7,
+      "median_inventory_periods": 1.190014262024831,
+      "runs": 7
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 7,
+      "median_inventory_periods": 1.236898566264786,
+      "runs": 7
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 7,
+      "median_inventory_periods": 1.190014262024831,
+      "runs": 7
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 7,
+      "median_inventory_periods": 1.3704247599176862,
+      "runs": 7
+     }
+    },
+    "deterioration_recovery": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 2.904599020116994,
+      "runs": 6
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 2.6782894607153622,
+      "runs": 6
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 2.451552550968249,
+      "runs": 6
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 4,
+      "median_inventory_periods": 2.515176493332973,
+      "runs": 6
+     }
+    },
+    "fill": {
+     "base_stock": {
+      "avoidable": 1,
+      "breaches": 2,
+      "median_inventory_periods": 4.8799269534100596,
+      "runs": 3
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 4.029314763588714,
+      "runs": 3
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 4.4217691152603695,
+      "runs": 3
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 1,
+      "median_inventory_periods": 3.9720749655780665,
+      "runs": 3
+     }
+    },
+    "lead": {
+     "base_stock": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 2.823628298559822,
+      "runs": 5
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 3.7542287866725697,
+      "runs": 5
+     },
+     "gated_pr24": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 1.4556207132534469,
+      "runs": 5
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 3.296379737903289,
+      "runs": 5
+     }
+    },
+    "partial": {
+     "base_stock": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 0.9279424408775834,
+      "runs": 3
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 1.4325038602448832,
+      "runs": 3
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 1.006125131442336,
+      "runs": 3
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 1.4427057531812244,
+      "runs": 3
+     }
+    },
+    "severe": {
+     "base_stock": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 0.5470085470085471,
+      "runs": 3
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 0.5632880231279102,
+      "runs": 3
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 0.5470085470085471,
+      "runs": 3
+     },
+     "gated_pr30": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 0.5654715048053767,
+      "runs": 3
+     }
+    },
+    "stable": {
+     "base_stock": {
+      "avoidable": 5,
+      "breaches": 19,
+      "median_inventory_periods": 1.2980750287026925,
+      "runs": 40
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 15,
+      "median_inventory_periods": 1.67117799223867,
+      "runs": 40
+     },
+     "gated_pr24": {
+      "avoidable": 5,
+      "breaches": 19,
+      "median_inventory_periods": 1.314735903144849,
+      "runs": 40
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 14,
+      "median_inventory_periods": 1.6729154254795517,
+      "runs": 40
+     }
+    }
+   },
+   "target": {
+    "0.9": {
+     "base_stock": {
+      "avoidable": 2,
+      "breaches": 7,
+      "median_inventory_periods": 2.864113659338408,
+      "runs": 14
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 6,
+      "median_inventory_periods": 2.717473395777488,
+      "runs": 14
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 5,
+      "median_inventory_periods": 2.719692919270746,
+      "runs": 14
+     },
+     "gated_pr30": {
+      "avoidable": 1,
+      "breaches": 6,
+      "median_inventory_periods": 2.954459832291983,
+      "runs": 14
+     }
+    },
+    "0.95": {
+     "base_stock": {
+      "avoidable": 6,
+      "breaches": 26,
+      "median_inventory_periods": 0.8215771016848705,
+      "runs": 44
+     },
+     "gated": {
+      "avoidable": 1,
+      "breaches": 21,
+      "median_inventory_periods": 1.5024290321761145,
+      "runs": 44
+     },
+     "gated_pr24": {
+      "avoidable": 6,
+      "breaches": 26,
+      "median_inventory_periods": 0.8230639912246283,
+      "runs": 44
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 20,
+      "median_inventory_periods": 1.5527416046915108,
+      "runs": 44
+     }
+    },
+    "0.97": {
+     "base_stock": {
+      "avoidable": 1,
+      "breaches": 3,
+      "median_inventory_periods": 2.904599020116994,
+      "runs": 5
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 2.1247202904133213,
+      "runs": 5
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 2.150786097267707,
+      "runs": 5
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 2,
+      "median_inventory_periods": 2.295078789825806,
+      "runs": 5
+     }
+    },
+    "0.99": {
+     "base_stock": {
+      "avoidable": 0,
+      "breaches": 8,
+      "median_inventory_periods": 3.711063071779685,
+      "runs": 9
+     },
+     "gated": {
+      "avoidable": 0,
+      "breaches": 8,
+      "median_inventory_periods": 3.3400328013570695,
+      "runs": 9
+     },
+     "gated_pr24": {
+      "avoidable": 0,
+      "breaches": 8,
+      "median_inventory_periods": 3.711063071779685,
+      "runs": 9
+     },
+     "gated_pr30": {
+      "avoidable": 0,
+      "breaches": 8,
+      "median_inventory_periods": 3.1311225763047297,
+      "runs": 9
+     }
+    }
+   }
+  },
+  "methods": {
+   "base_stock": {
+    "avoidable_breaches": 9,
+    "breach_classes": {
+     "AVOIDABLE": 9,
+     "ECONOMIC_TRADEOFF": 0,
+     "MET": 28,
+     "MODEL_FAILURE": 27,
+     "UNAVOIDABLE": 8
+    },
+    "complete": 72,
+    "cost_losses_vs_reference": 0,
+    "emergency_review_share": 0.19212962962962962,
+    "failed_or_incomplete": [],
+    "false_protection_benign_inventory_periods": 0.3676979832514399,
+    "mean_weighted_shortfall": 0.10100358793137043,
+    "median_inventory_periods": 1.451403193587792,
+    "median_recovery_periods": 3.0,
+    "median_saving_vs_reference_pct": 0.0,
+    "median_service": 0.9235824516869001,
+    "median_weighted_shortfall": 0.032919725328363236,
+    "median_working_capital": 131.81247573517612,
+    "paired_cost_vs_reference": 72,
+    "runs": 72,
+    "service_breaches": 44,
+    "worst_saving_vs_reference_pct": 0.0
+   },
+   "gated": {
+    "avoidable_breaches": 2,
+    "breach_classes": {
+     "AVOIDABLE": 2,
+     "ECONOMIC_TRADEOFF": 0,
+     "MET": 35,
+     "MODEL_FAILURE": 27,
+     "UNAVOIDABLE": 8
+    },
+    "complete": 72,
+    "cost_losses_vs_reference": 22,
+    "emergency_review_share": 0.29398148148148145,
+    "failed_or_incomplete": [],
+    "false_protection_benign_inventory_periods": 0.5493000457833489,
+    "mean_weighted_shortfall": 0.0719291887993551,
+    "median_inventory_periods": 1.8472866836238087,
+    "median_recovery_periods": 2,
+    "median_saving_vs_reference_pct": 2.5830043394116684,
+    "median_service": 0.9566128641842402,
+    "median_weighted_shortfall": 0.001991559894787165,
+    "median_working_capital": 178.14875402709407,
+    "paired_cost_vs_reference": 72,
+    "runs": 72,
+    "service_breaches": 37,
+    "worst_saving_vs_reference_pct": -16.55319426881613
+   },
+   "gated_pr24": {
+    "avoidable_breaches": 6,
+    "breach_classes": {
+     "AVOIDABLE": 6,
+     "ECONOMIC_TRADEOFF": 0,
+     "MET": 31,
+     "MODEL_FAILURE": 27,
+     "UNAVOIDABLE": 8
+    },
+    "complete": 72,
+    "cost_losses_vs_reference": 9,
+    "emergency_review_share": 0.22453703703703703,
+    "failed_or_incomplete": [],
+    "false_protection_benign_inventory_periods": 0.36690872193580043,
+    "mean_weighted_shortfall": 0.09195745097792901,
+    "median_inventory_periods": 1.451538805292395,
+    "median_recovery_periods": 2.5,
+    "median_saving_vs_reference_pct": 0.37981428660377153,
+    "median_service": 0.9295340824874547,
+    "median_weighted_shortfall": 0.021307827845540084,
+    "median_working_capital": 129.88298461952405,
+    "paired_cost_vs_reference": 72,
+    "runs": 72,
+    "service_breaches": 41,
+    "worst_saving_vs_reference_pct": -1.1707935047174862
+   },
+   "gated_pr30": {
+    "avoidable_breaches": 1,
+    "breach_classes": {
+     "AVOIDABLE": 1,
+     "ECONOMIC_TRADEOFF": 0,
+     "MET": 36,
+     "MODEL_FAILURE": 27,
+     "UNAVOIDABLE": 8
+    },
+    "complete": 72,
+    "cost_losses_vs_reference": 26,
+    "emergency_review_share": 0.2974537037037037,
+    "failed_or_incomplete": [],
+    "false_protection_benign_inventory_periods": 0.612638297404985,
+    "mean_weighted_shortfall": 0.07359420204803899,
+    "median_inventory_periods": 1.9326935965724414,
+    "median_recovery_periods": 2.0,
+    "median_saving_vs_reference_pct": 0.8533036165297256,
+    "median_service": 0.9571715630218909,
+    "median_weighted_shortfall": 0.0007598485299886715,
+    "median_working_capital": 184.2591161617591,
+    "paired_cost_vs_reference": 72,
+    "runs": 72,
+    "service_breaches": 36,
+    "worst_saving_vs_reference_pct": -16.533754185072034
+   }
+  },
+  "pairs": {
+   "gated_vs_gated_pr24": {
+    "cost_losses": 28,
+    "cost_wins": 43,
+    "service_losses": 22,
+    "service_wins": 37,
+    "ties": 1
+   },
+   "gated_vs_protected": {
+    "cost_losses": 0,
+    "cost_wins": 0,
+    "service_losses": 0,
+    "service_wins": 0,
+    "ties": 0
+   },
+   "protected_vs_stochastic": {
+    "cost_losses": 0,
+    "cost_wins": 0,
+    "service_losses": 0,
+    "service_wins": 0,
+    "ties": 0
+   }
+  },
+  "rows": 288
+ },
+ "methods": {
+  "base_stock": {
+   "action_cost": {
+    "max": 74.53206643818547,
+    "median": 0.0,
+    "min": 0.0,
+    "n": 72
+   },
+   "avoidable_breaches": 9,
+   "breach_classes": {
+    "AVOIDABLE": 9,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 28,
+    "MODEL_FAILURE": 27,
+    "UNAVOIDABLE": 8
+   },
+   "complete": 72,
+   "cost": {
+    "max": 4991.2289106539965,
+    "median": 1614.9752531570925,
+    "min": 619.8007960602697,
+    "n": 72
+   },
+   "cost_losses_vs_reference": 0,
+   "disruption_cell_inventory_periods": {
+    "max": 26.393812376392212,
+    "median": 1.190014262024831,
+    "min": 0.14089113949574433,
+    "n": 21
+   },
+   "economic_tradeoff_breaches": 0,
+   "emergency_review_share": 0.19212962962962962,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.3676979832514399,
+   "holding_cost": {
+    "max": 136.05969229074228,
+    "median": 12.961519427592373,
+    "min": 1.6484263321002088,
+    "n": 72
+   },
+   "inventory_periods": {
+    "max": 32.255746567917306,
+    "median": 1.451403193587792,
+    "min": 0.14089113949574433,
+    "n": 72
+   },
+   "mean_weighted_shortfall": 0.10100358793137043,
+   "median_inventory_periods": 1.451403193587792,
+   "median_recovery_periods": 3.0,
+   "median_saving_vs_reference_pct": 0.0,
+   "median_service": 0.9235824516869001,
+   "median_weighted_shortfall": 0.032919725328363236,
+   "median_working_capital": 131.81247573517612,
+   "model_failure_breaches": 27,
+   "paired_cost_vs_reference": 72,
+   "quiet_cell_excess_vs_baseline_periods": {
+    "max": 0.0,
+    "median": 0.0,
+    "min": 0.0,
+    "n": 17
+   },
+   "quiet_cell_inventory_periods": {
+    "max": 4.469472824499903,
+    "median": 0.3676979832514399,
+    "min": 0.2901989070208563,
+    "n": 17
+   },
+   "recovery_periods": {
+    "max": 12,
+    "median": 3.0,
+    "min": 1,
+    "n": 56
+   },
+   "regret_vs_best_pct": {
+    "max": 30.304101433143888,
+    "median": 3.4715935860886438,
+    "min": 0.0,
+    "n": 72
+   },
+   "runs": 72,
+   "service": {
+    "max": 1.0,
+    "median": 0.9235824516869001,
+    "min": 0.4531675987462485,
+    "n": 72
+   },
+   "service_breaches": 44,
+   "shortage_cost": {
+    "max": 2876.088681832115,
+    "median": 258.04074406889833,
+    "min": 0.0,
+    "n": 72
+   },
+   "stockout_periods": {
+    "max": 12,
+    "median": 3.0,
+    "min": 0,
+    "n": 72
+   },
+   "unavoidable_breaches": 8,
+   "working_capital": {
+    "max": 967.6723970375192,
+    "median": 131.81247573517612,
+    "min": 13.736886100835074,
+    "n": 72
+   },
+   "worst_saving_vs_reference_pct": 0.0
+  },
+  "gated": {
+   "action_cost": {
+    "max": 80.6847984828279,
+    "median": 0.0,
+    "min": 0.0,
+    "n": 72
+   },
+   "avoidable_breaches": 2,
+   "breach_classes": {
+    "AVOIDABLE": 2,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 35,
+    "MODEL_FAILURE": 27,
+    "UNAVOIDABLE": 8
+   },
+   "complete": 72,
+   "cost": {
+    "max": 4475.817534801048,
+    "median": 1542.0123236054067,
+    "min": 592.9346531148128,
+    "n": 72
+   },
+   "cost_losses_vs_reference": 22,
+   "disruption_cell_inventory_periods": {
+    "max": 29.974137313148727,
+    "median": 2.201852230948597,
+    "min": 0.1426147765249729,
+    "n": 21
+   },
+   "economic_tradeoff_breaches": 0,
+   "emergency_review_share": 0.29398148148148145,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.5493000457833489,
+   "holding_cost": {
+    "max": 163.63488792435425,
+    "median": 16.507637749086484,
+    "min": 1.6685928853421828,
+    "n": 72
+   },
+   "inventory_periods": {
+    "max": 29.974137313148727,
+    "median": 1.8472866836238087,
+    "min": 0.1426147765249729,
+    "n": 72
+   },
+   "mean_weighted_shortfall": 0.0719291887993551,
+   "median_inventory_periods": 1.8472866836238087,
+   "median_recovery_periods": 2,
+   "median_saving_vs_reference_pct": 2.5830043394116684,
+   "median_service": 0.9566128641842402,
+   "median_weighted_shortfall": 0.001991559894787165,
+   "median_working_capital": 178.14875402709407,
+   "model_failure_breaches": 27,
+   "paired_cost_vs_reference": 72,
+   "quiet_cell_excess_vs_baseline_periods": {
+    "max": 0.44179164879874655,
+    "median": 0.09338160723860023,
+    "min": -1.5541796500883875,
+    "n": 17
+   },
+   "quiet_cell_inventory_periods": {
+    "max": 3.218203095908583,
+    "median": 0.5493000457833489,
+    "min": 0.3168117339459901,
+    "n": 17
+   },
+   "recovery_periods": {
+    "max": 12,
+    "median": 2,
+    "min": 1,
+    "n": 51
+   },
+   "regret_vs_best_pct": {
+    "max": 22.26465802241476,
+    "median": 0.20469934822756894,
+    "min": 0.0,
+    "n": 72
+   },
+   "runs": 72,
+   "service": {
+    "max": 1.0,
+    "median": 0.9566128641842402,
+    "min": 0.48482288237395726,
+    "n": 72
+   },
+   "service_breaches": 37,
+   "shortage_cost": {
+    "max": 2036.6186827370093,
+    "median": 112.1521827765838,
+    "min": 0.0,
+    "n": 72
+   },
+   "stockout_periods": {
+    "max": 14,
+    "median": 2.0,
+    "min": 0,
+    "n": 72
+   },
+   "unavoidable_breaches": 8,
+   "working_capital": {
+    "max": 1008.0319048078887,
+    "median": 178.14875402709407,
+    "min": 13.904940711184857,
+    "n": 72
+   },
+   "worst_saving_vs_reference_pct": -16.55319426881613
+  },
+  "gated_pr24": {
+   "action_cost": {
+    "max": 74.53206643818547,
+    "median": 0.0,
+    "min": 0.0,
+    "n": 72
+   },
+   "avoidable_breaches": 6,
+   "breach_classes": {
+    "AVOIDABLE": 6,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 31,
+    "MODEL_FAILURE": 27,
+    "UNAVOIDABLE": 8
+   },
+   "complete": 72,
+   "cost": {
+    "max": 4981.701699725165,
+    "median": 1571.3586462414478,
+    "min": 619.8007960602697,
+    "n": 72
+   },
+   "cost_losses_vs_reference": 9,
+   "disruption_cell_inventory_periods": {
+    "max": 34.110538227174025,
+    "median": 1.190014262024831,
+    "min": 0.14089113949574433,
+    "n": 21
+   },
+   "economic_tradeoff_breaches": 0,
+   "emergency_review_share": 0.22453703703703703,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.36690872193580043,
+   "holding_cost": {
+    "max": 135.66858519694927,
+    "median": 14.81656870659937,
+    "min": 1.6484263321002088,
+    "n": 72
+   },
+   "inventory_periods": {
+    "max": 34.110538227174025,
+    "median": 1.451538805292395,
+    "min": 0.11691462567683271,
+    "n": 72
+   },
+   "mean_weighted_shortfall": 0.09195745097792901,
+   "median_inventory_periods": 1.451538805292395,
+   "median_recovery_periods": 2.5,
+   "median_saving_vs_reference_pct": 0.37981428660377153,
+   "median_service": 0.9295340824874547,
+   "median_weighted_shortfall": 0.021307827845540084,
+   "median_working_capital": 129.88298461952405,
+   "model_failure_breaches": 27,
+   "paired_cost_vs_reference": 72,
+   "quiet_cell_excess_vs_baseline_periods": {
+    "max": 0.0,
+    "median": 0.0,
+    "min": -0.3302648256137166,
+    "n": 17
+   },
+   "quiet_cell_inventory_periods": {
+    "max": 4.3755543593857835,
+    "median": 0.36690872193580043,
+    "min": 0.2901989070208563,
+    "n": 17
+   },
+   "recovery_periods": {
+    "max": 13,
+    "median": 2.5,
+    "min": 1,
+    "n": 58
+   },
+   "regret_vs_best_pct": {
+    "max": 20.813118121813538,
+    "median": 0.9499391505526438,
+    "min": 0.0,
+    "n": 72
+   },
+   "runs": 72,
+   "service": {
+    "max": 1.0,
+    "median": 0.9295340824874547,
+    "min": 0.44261855861398247,
+    "n": 72
+   },
+   "service_breaches": 41,
+   "shortage_cost": {
+    "max": 2911.6674236131967,
+    "median": 205.3976787976577,
+    "min": 0.0,
+    "n": 72
+   },
+   "stockout_periods": {
+    "max": 13,
+    "median": 3.0,
+    "min": 0,
+    "n": 72
+   },
+   "unavoidable_breaches": 8,
+   "working_capital": {
+    "max": 1023.3161468152208,
+    "median": 129.88298461952405,
+    "min": 11.662233911264062,
+    "n": 72
+   },
+   "worst_saving_vs_reference_pct": -1.1707935047174862
+  },
+  "gated_pr30": {
+   "action_cost": {
+    "max": 80.28465965234692,
+    "median": 0.0,
+    "min": 0.0,
+    "n": 72
+   },
+   "avoidable_breaches": 1,
+   "breach_classes": {
+    "AVOIDABLE": 1,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 36,
+    "MODEL_FAILURE": 27,
+    "UNAVOIDABLE": 8
+   },
+   "complete": 72,
+   "cost": {
+    "max": 4960.978444176493,
+    "median": 1535.8910270887727,
+    "min": 681.6804353882623,
+    "n": 72
+   },
+   "cost_losses_vs_reference": 26,
+   "disruption_cell_inventory_periods": {
+    "max": 27.983121614859492,
+    "median": 2.203359308351676,
+    "min": 0.15512245059083782,
+    "n": 21
+   },
+   "economic_tradeoff_breaches": 0,
+   "emergency_review_share": 0.2974537037037037,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.612638297404985,
+   "holding_cost": {
+    "max": 182.4745679874541,
+    "median": 18.8847438938935,
+    "min": 1.8149326719128025,
+    "n": 72
+   },
+   "inventory_periods": {
+    "max": 39.49052429597847,
+    "median": 1.9326935965724414,
+    "min": 0.15512245059083782,
+    "n": 72
+   },
+   "mean_weighted_shortfall": 0.07359420204803899,
+   "median_inventory_periods": 1.9326935965724414,
+   "median_recovery_periods": 2.0,
+   "median_saving_vs_reference_pct": 0.8533036165297256,
+   "median_service": 0.9571715630218909,
+   "median_weighted_shortfall": 0.0007598485299886715,
+   "median_working_capital": 184.2591161617591,
+   "model_failure_breaches": 27,
+   "paired_cost_vs_reference": 72,
+   "quiet_cell_excess_vs_baseline_periods": {
+    "max": 0.429507429547209,
+    "median": 0.1219159931316291,
+    "min": -1.5320612458990124,
+    "n": 17
+   },
+   "quiet_cell_inventory_periods": {
+    "max": 3.2059188766570452,
+    "median": 0.612638297404985,
+    "min": 0.4482092362226079,
+    "n": 17
+   },
+   "recovery_periods": {
+    "max": 12,
+    "median": 2.0,
+    "min": 1,
+    "n": 52
+   },
+   "regret_vs_best_pct": {
+    "max": 22.244265314983533,
+    "median": 0.3117429623625665,
+    "min": 0.0,
+    "n": 72
+   },
+   "runs": 72,
+   "service": {
+    "max": 1.0,
+    "median": 0.9571715630218909,
+    "min": 0.4885014559107737,
+    "n": 72
+   },
+   "service_breaches": 36,
+   "shortage_cost": {
+    "max": 2551.637835428687,
+    "median": 112.11435457246867,
+    "min": 0.0,
+    "n": 72
+   },
+   "stockout_periods": {
+    "max": 13,
+    "median": 2.0,
+    "min": 0,
+    "n": 72
+   },
+   "unavoidable_breaches": 8,
+   "working_capital": {
+    "max": 1184.715728879354,
+    "median": 184.2591161617591,
+    "min": 15.124438932606688,
+    "n": 72
+   },
+   "worst_saving_vs_reference_pct": -16.533754185072034
+  }
+ },
+ "pairs": {
+  "gated_pr30_vs_gated_pr24": {
+   "cost_losses": 35,
+   "cost_wins": 36,
+   "inventory_higher": 59,
+   "inventory_lower": 12,
+   "service_losses": 17,
+   "service_wins": 41
+  },
+  "gated_vs_base_stock": {
+   "cost_losses": 22,
+   "cost_wins": 49,
+   "inventory_higher": 51,
+   "inventory_lower": 20,
+   "service_losses": 15,
+   "service_wins": 43
+  },
+  "gated_vs_gated_pr24": {
+   "cost_losses": 28,
+   "cost_wins": 43,
+   "inventory_higher": 54,
+   "inventory_lower": 17,
+   "service_losses": 22,
+   "service_wins": 37
+  },
+  "gated_vs_gated_pr30": {
+   "cost_losses": 29,
+   "cost_wins": 42,
+   "inventory_higher": 26,
+   "inventory_lower": 45,
+   "service_losses": 34,
+   "service_wins": 22
+  },
+  "gated_vs_robust": {
+   "cost_losses": 0,
+   "cost_wins": 0,
+   "inventory_higher": 0,
+   "inventory_lower": 0,
+   "service_losses": 0,
+   "service_wins": 0
+  },
+  "protected_vs_stochastic": {
+   "cost_losses": 0,
+   "cost_wins": 0,
+   "inventory_higher": 0,
+   "inventory_lower": 0,
+   "service_losses": 0,
+   "service_wins": 0
+  },
+  "robust_vs_stochastic": {
+   "cost_losses": 0,
+   "cost_wins": 0,
+   "inventory_higher": 0,
+   "inventory_lower": 0,
+   "service_losses": 0,
+   "service_wins": 0
+  }
+ },
+ "recovery": {},
+ "regimes": {
+  "alternative": {
+   "none": {
+    "base_stock": {
+     "avoidable": 6,
+     "breaches": 25,
+     "median_cost": 1684.6484177662119,
+     "median_inventory_periods": 0.7202042630337898,
+     "median_service": 0.9203176018959242,
+     "runs": 35
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 20,
+     "median_cost": 1611.3429813395978,
+     "median_inventory_periods": 1.2600102645111875,
+     "median_service": 0.9562078781267349,
+     "runs": 35
+    },
+    "gated_pr24": {
+     "avoidable": 6,
+     "breaches": 25,
+     "median_cost": 1684.6484177662119,
+     "median_inventory_periods": 0.7202042630337898,
+     "median_service": 0.9203176018959242,
+     "runs": 35
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 19,
+     "median_cost": 1613.2935795802691,
+     "median_inventory_periods": 1.2093356898751098,
+     "median_service": 0.9564804764491898,
+     "runs": 35
+    }
+   },
+   "route": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 1460.768288754367,
+     "median_inventory_periods": 0.8685114045166891,
+     "median_service": 0.788266193310994,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 1463.4308506302764,
+     "median_inventory_periods": 0.900093294696348,
+     "median_service": 0.7940680233222631,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 1447.5145894195318,
+     "median_inventory_periods": 0.8685114045166891,
+     "median_service": 0.788266193310994,
+     "runs": 4
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 1473.0478449173283,
+     "median_inventory_periods": 0.9679481323615314,
+     "median_service": 0.7973251299331603,
+     "runs": 4
+    }
+   },
+   "shared_route": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1796.522629020567,
+     "median_inventory_periods": 4.8799269534100596,
+     "median_service": 0.9712351894924612,
+     "runs": 7
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1531.780194682174,
+     "median_inventory_periods": 4.029314763588714,
+     "median_service": 0.9583333002253026,
+     "runs": 7
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1579.0222601114745,
+     "median_inventory_periods": 3.11742617548954,
+     "median_service": 0.9723274057294461,
+     "runs": 7
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1501.670989445722,
+     "median_inventory_periods": 3.9720749655780665,
+     "median_service": 0.958052110871961,
+     "runs": 7
+    }
+   },
+   "substitution": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 0,
+     "median_cost": 1342.7270626995519,
+     "median_inventory_periods": 6.056240095123619,
+     "median_service": 1.0,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 0,
+     "median_cost": 1267.084501248358,
+     "median_inventory_periods": 6.641462354242352,
+     "median_service": 1.0,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 0,
+     "median_cost": 1245.0083085493163,
+     "median_inventory_periods": 5.667941868075625,
+     "median_service": 1.0,
+     "runs": 4
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 0,
+     "median_cost": 1244.434614815879,
+     "median_inventory_periods": 6.337893246372705,
+     "median_service": 1.0,
+     "runs": 4
+    }
+   },
+   "supplier": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 4,
+     "median_cost": 2634.7401980149075,
+     "median_inventory_periods": 0.36690872193580043,
+     "median_service": 0.8406477325810351,
+     "runs": 7
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 2638.494821276734,
+     "median_inventory_periods": 0.4788950047944821,
+     "median_service": 0.9054738321611457,
+     "runs": 7
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 2516.2820420879657,
+     "median_inventory_periods": 0.35675213713462056,
+     "median_service": 0.9048483419440463,
+     "runs": 7
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 2633.368035310657,
+     "median_inventory_periods": 0.4888247150674295,
+     "median_service": 0.9209042500678475,
+     "runs": 7
+    }
+   },
+   "transfer": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 4,
+     "median_cost": 1372.9555642482283,
+     "median_inventory_periods": 6.027320416435157,
+     "median_service": 0.953970867873061,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 1338.4731578347187,
+     "median_inventory_periods": 4.741538820073152,
+     "median_service": 0.9723807009385799,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 1330.7327353155274,
+     "median_inventory_periods": 5.450177989107946,
+     "median_service": 0.9912344644047424,
+     "runs": 8
+    },
+    "gated_pr30": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 1337.856391149168,
+     "median_inventory_periods": 5.162514636669821,
+     "median_service": 0.9741281046134742,
+     "runs": 8
+    }
+   },
+   "transfer_constrained": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1681.257411101671,
+     "median_inventory_periods": 4.290308247689004,
+     "median_service": 0.8851905720127058,
+     "runs": 7
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1681.2574111016716,
+     "median_inventory_periods": 3.7542287866725697,
+     "median_service": 0.945033029238489,
+     "runs": 7
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1681.257411101671,
+     "median_inventory_periods": 4.290308247689004,
+     "median_service": 0.8851905720127058,
+     "runs": 7
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1681.2574111016716,
+     "median_inventory_periods": 3.1311225763047297,
+     "median_service": 0.9499850269235077,
+     "runs": 7
+    }
+   }
+  },
+  "demand": {
+   "decrease": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 1050.8669559253194,
+     "median_inventory_periods": 8.218368722247995,
+     "median_service": 0.9667696944444444,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 989.2300619914458,
+     "median_inventory_periods": 8.13370856567716,
+     "median_service": 0.9782879698274771,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 997.4319472730676,
+     "median_inventory_periods": 7.6690377936479,
+     "median_service": 0.9807512507817386,
+     "runs": 4
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 1035.794209949166,
+     "median_inventory_periods": 8.43490484372502,
+     "median_service": 0.9749925134617539,
+     "runs": 4
+    }
+   },
+   "gradual": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_cost": 3906.087748475717,
+     "median_inventory_periods": 2.904599020116994,
+     "median_service": 0.8406477325810351,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_cost": 3753.0278207506935,
+     "median_inventory_periods": 2.1247202904133213,
+     "median_service": 0.8625622669568703,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_cost": 3790.9059750323963,
+     "median_inventory_periods": 2.150786097267707,
+     "median_service": 0.8406477325810351,
+     "runs": 5
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_cost": 3808.7359609891723,
+     "median_inventory_periods": 2.295078789825806,
+     "median_service": 0.839863254174643,
+     "runs": 5
+    }
+   },
+   "increase": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 2345.555150265607,
+     "median_inventory_periods": 0.23079296214272796,
+     "median_service": 0.8854073710296734,
+     "runs": 1
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 2362.5083523445896,
+     "median_inventory_periods": 0.44912017547796684,
+     "median_service": 0.8851950533197762,
+     "runs": 1
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 2345.555150265607,
+     "median_inventory_periods": 0.23079296214272796,
+     "median_service": 0.8854073710296734,
+     "runs": 1
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 2315.2787144380695,
+     "median_inventory_periods": 0.5414847906405326,
+     "median_service": 0.9095981460545847,
+     "runs": 1
+    }
+   },
+   "intermittent": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 1302.3809363330333,
+     "median_inventory_periods": 5.645774068976472,
+     "median_service": 1.0,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 1305.2367277978626,
+     "median_inventory_periods": 5.753059423253571,
+     "median_service": 1.0,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 1268.9173417032564,
+     "median_inventory_periods": 4.9434578467155115,
+     "median_service": 0.9912344668884533,
+     "runs": 5
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 1275.290745763732,
+     "median_inventory_periods": 5.042652220725805,
+     "median_service": 0.9939636560286854,
+     "runs": 5
+    }
+   },
+   "intermittent_spiky": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 1,
+     "median_cost": 725.7257373510363,
+     "median_inventory_periods": 26.393812376392212,
+     "median_service": 1.0,
+     "runs": 7
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 0,
+     "median_cost": 690.9203577815704,
+     "median_inventory_periods": 27.897970365347227,
+     "median_service": 1.0,
+     "runs": 7
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 0,
+     "median_cost": 725.7257373510363,
+     "median_inventory_periods": 26.091722719805205,
+     "median_service": 1.0,
+     "runs": 7
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 0,
+     "median_cost": 753.0954957292598,
+     "median_inventory_periods": 28.093326917636887,
+     "median_service": 1.0,
+     "runs": 7
+    }
+   },
+   "promotion": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 4,
+     "median_cost": 1971.3135397560054,
+     "median_inventory_periods": 1.1710387946623069,
+     "median_service": 0.8351360446546171,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 1831.6743853409275,
+     "median_inventory_periods": 1.5798221976440492,
+     "median_service": 0.9262078966060902,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 1931.2404854344961,
+     "median_inventory_periods": 1.2357700851386593,
+     "median_service": 0.8712943077996143,
+     "runs": 4
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 1833.0337192610332,
+     "median_inventory_periods": 1.5859709410110416,
+     "median_service": 0.934692276503935,
+     "runs": 4
+    }
+   },
+   "promotion_recovery": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 2,
+     "median_cost": 2678.2431317272412,
+     "median_inventory_periods": 1.598059042959612,
+     "median_service": 0.9250569385794737,
+     "runs": 3
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 0,
+     "median_cost": 2623.0760106087096,
+     "median_inventory_periods": 2.0394481912614895,
+     "median_service": 0.9807806975223173,
+     "runs": 3
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 2,
+     "median_cost": 2652.04340221569,
+     "median_inventory_periods": 1.4556207132534469,
+     "median_service": 0.9250569385794737,
+     "runs": 3
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 0,
+     "median_cost": 2631.436469913939,
+     "median_inventory_periods": 1.9728428258519135,
+     "median_service": 0.9763595207123152,
+     "runs": 3
+    }
+   },
+   "spike": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 1935.9941902063913,
+     "median_inventory_periods": 0.5495831216344347,
+     "median_service": 0.7530379383524649,
+     "runs": 2
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 1912.5530276272814,
+     "median_inventory_periods": 0.7467497969966279,
+     "median_service": 0.7589208525432309,
+     "runs": 2
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 1930.593208473477,
+     "median_inventory_periods": 0.5583794172235106,
+     "median_service": 0.7447327560708419,
+     "runs": 2
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 1914.185088242078,
+     "median_inventory_periods": 0.8489478619466369,
+     "median_service": 0.7672211540938434,
+     "runs": 2
+    }
+   },
+   "stable": {
+    "base_stock": {
+     "avoidable": 3,
+     "breaches": 19,
+     "median_cost": 1478.1664642268186,
+     "median_inventory_periods": 0.36690872193580043,
+     "median_service": 0.9362255406033175,
+     "runs": 32
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 17,
+     "median_cost": 1403.460167894756,
+     "median_inventory_periods": 0.7828056789381044,
+     "median_service": 0.9581620196477387,
+     "runs": 32
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 18,
+     "median_cost": 1458.2976582382557,
+     "median_inventory_periods": 0.36690872193580043,
+     "median_service": 0.9521610125725055,
+     "runs": 32
+    },
+    "gated_pr30": {
+     "avoidable": 1,
+     "breaches": 17,
+     "median_cost": 1403.4470349033272,
+     "median_inventory_periods": 0.8056246162322752,
+     "median_service": 0.9578799958809967,
+     "runs": 32
+    }
+   },
+   "surge_recovery": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2979.9127919103116,
+     "median_inventory_periods": 0.7202042630337898,
+     "median_service": 0.9138429474473493,
+     "runs": 2
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2988.8479315213963,
+     "median_inventory_periods": 1.227140297249378,
+     "median_service": 0.9042558780303875,
+     "runs": 2
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2956.9351159708112,
+     "median_inventory_periods": 0.7202042630337898,
+     "median_service": 0.9138429474473493,
+     "runs": 2
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2914.081665345968,
+     "median_inventory_periods": 1.2927913852086361,
+     "median_service": 0.9378419873575863,
+     "runs": 2
+    }
+   },
+   "temporary_spike": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 2635.983046088249,
+     "median_inventory_periods": 1.0491670746515058,
+     "median_service": 0.9227553504815833,
+     "runs": 1
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 2630.8966597022963,
+     "median_inventory_periods": 1.277717529309014,
+     "median_service": 0.9122188147349723,
+     "runs": 1
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 2614.3655045537944,
+     "median_inventory_periods": 1.0491670746515058,
+     "median_service": 0.9227553504815833,
+     "runs": 1
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 2622.0537349628166,
+     "median_inventory_periods": 1.1522678470554593,
+     "median_service": 0.9143558695692237,
+     "runs": 1
+    }
+   },
+   "unknown_promotion": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2131.5767167690037,
+     "median_inventory_periods": 2.1858623341609316,
+     "median_service": 0.7258675176479259,
+     "runs": 2
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2055.8477911276104,
+     "median_inventory_periods": 1.7376811833280872,
+     "median_service": 0.7410641885954229,
+     "runs": 2
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2039.5792563329262,
+     "median_inventory_periods": 1.7289545362204415,
+     "median_service": 0.7438131153459098,
+     "runs": 2
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2105.4697915032402,
+     "median_inventory_periods": 2.184511937621905,
+     "median_service": 0.7264221711734247,
+     "runs": 2
+    }
+   },
+   "volatile": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 1692.6213191988786,
+     "median_inventory_periods": 3.173503488418616,
+     "median_service": 0.8231677873814511,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 1610.7163280020718,
+     "median_inventory_periods": 2.988856158108602,
+     "median_service": 0.8444066753956725,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 1565.260623393558,
+     "median_inventory_periods": 2.1537202187571856,
+     "median_service": 0.8298168371970192,
+     "runs": 4
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 1625.4112332744203,
+     "median_inventory_periods": 3.016627707492317,
+     "median_service": 0.8464191486190261,
+     "runs": 4
+    }
+   }
+  },
+  "inventory": {
+   "balanced": {
+    "base_stock": {
+     "avoidable": 7,
+     "breaches": 31,
+     "median_cost": 1591.9934609750767,
+     "median_inventory_periods": 0.8645253852519293,
+     "median_service": 0.9227553504815833,
+     "runs": 51
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 25,
+     "median_cost": 1465.5455896897977,
+     "median_inventory_periods": 1.6152154494341249,
+     "median_service": 0.9581620196477386,
+     "runs": 51
+    },
+    "gated_pr24": {
+     "avoidable": 6,
+     "breaches": 30,
+     "median_cost": 1563.6950323714211,
+     "median_inventory_periods": 0.8645253852519293,
+     "median_service": 0.9244095528922169,
+     "runs": 51
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 24,
+     "median_cost": 1403.7304734431739,
+     "median_inventory_periods": 1.790154539292844,
+     "median_service": 0.9578973421674014,
+     "runs": 51
+    }
+   },
+   "high": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 9,
+     "median_cost": 1578.0063853453119,
+     "median_inventory_periods": 2.904599020116994,
+     "median_service": 0.9335393888888888,
+     "runs": 15
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 8,
+     "median_cost": 1788.8950417077476,
+     "median_inventory_periods": 2.9414597336910884,
+     "median_service": 0.9138679629647448,
+     "runs": 15
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_cost": 1551.4989866756414,
+     "median_inventory_periods": 2.7523190046687915,
+     "median_service": 0.9562804968305929,
+     "runs": 15
+    },
+    "gated_pr30": {
+     "avoidable": 1,
+     "breaches": 8,
+     "median_cost": 1788.5966691951935,
+     "median_inventory_periods": 2.612539926680676,
+     "median_service": 0.9410079401842915,
+     "runs": 15
+    }
+   },
+   "low": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1777.4482994901746,
+     "median_inventory_periods": 2.1567944334628737,
+     "median_service": 0.8969324447983333,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1585.230450751748,
+     "median_inventory_periods": 3.080688590994291,
+     "median_service": 0.9617169467591826,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1767.5394240502783,
+     "median_inventory_periods": 1.9928791937189976,
+     "median_service": 0.8987916108760718,
+     "runs": 6
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 1586.6217244844972,
+     "median_inventory_periods": 3.1192619134392654,
+     "median_service": 0.9614196386494984,
+     "runs": 6
+    }
+   }
+  },
+  "network": {
+   "central_branches": {
+    "base_stock": {
+     "avoidable": 4,
+     "breaches": 9,
+     "median_cost": 1682.9529144339415,
+     "median_inventory_periods": 1.9822097022810525,
+     "median_service": 0.8547564469697075,
+     "runs": 10
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 6,
+     "median_cost": 1640.265592407551,
+     "median_inventory_periods": 2.120650211105043,
+     "median_service": 0.952641398643063,
+     "runs": 10
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 7,
+     "median_cost": 1586.0463551620683,
+     "median_inventory_periods": 2.453790357391192,
+     "median_service": 0.9186040274159946,
+     "runs": 10
+    },
+    "gated_pr30": {
+     "avoidable": 1,
+     "breaches": 6,
+     "median_cost": 1680.984406459344,
+     "median_inventory_periods": 2.0881010671017948,
+     "median_service": 0.9524434429375419,
+     "runs": 10
+    }
+   },
+   "single": {
+    "base_stock": {
+     "avoidable": 5,
+     "breaches": 30,
+     "median_cost": 1614.9752531570925,
+     "median_inventory_periods": 0.6435843069251428,
+     "median_service": 0.9239061445305286,
+     "runs": 50
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 26,
+     "median_cost": 1508.8950211092185,
+     "median_inventory_periods": 1.2236477465547246,
+     "median_service": 0.9581620196477387,
+     "runs": 50
+    },
+    "gated_pr24": {
+     "avoidable": 4,
+     "breaches": 29,
+     "median_cost": 1589.5656435559388,
+     "median_inventory_periods": 0.6523806025142187,
+     "median_service": 0.9239061445305286,
+     "runs": 50
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 25,
+     "median_cost": 1513.1428826040944,
+     "median_inventory_periods": 1.1808017684652845,
+     "median_service": 0.9579747265196812,
+     "runs": 50
+    }
+   },
+   "two_locations": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_cost": 1515.755714542062,
+     "median_inventory_periods": 5.673316537340413,
+     "median_service": 0.959949285457816,
+     "runs": 12
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_cost": 1432.7974329780318,
+     "median_inventory_periods": 5.889368472579914,
+     "median_service": 0.9603100422642312,
+     "runs": 12
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_cost": 1504.9183033964778,
+     "median_inventory_periods": 5.407097502348054,
+     "median_service": 0.9817809338252388,
+     "runs": 12
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_cost": 1485.6336635680084,
+     "median_inventory_periods": 5.467430795648939,
+     "median_service": 0.9497432257006216,
+     "runs": 12
+    }
+   }
+  },
+  "supply": {
+   "closure_recovery": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 3661.943613827759,
+     "median_inventory_periods": 2.4654528297797476,
+     "median_service": 0.5560906495088571,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 3067.5138875697444,
+     "median_inventory_periods": 1.2103969268446633,
+     "median_service": 0.7163302784491855,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 3652.5295483520235,
+     "median_inventory_periods": 1.7918500027872666,
+     "median_service": 0.5505992555003554,
+     "runs": 5
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 3,
+     "median_cost": 3249.2151542700467,
+     "median_inventory_periods": 1.8324964530744103,
+     "median_service": 0.6335588423527736,
+     "runs": 5
+    }
+   },
+   "correlated": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_cost": 1838.55549540252,
+     "median_inventory_periods": 1.190014262024831,
+     "median_service": 0.6440028548324082,
+     "runs": 7
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_cost": 1885.882185214365,
+     "median_inventory_periods": 1.236898566264786,
+     "median_service": 0.669056830867784,
+     "runs": 7
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_cost": 1831.5080909043713,
+     "median_inventory_periods": 1.190014262024831,
+     "median_service": 0.6661611874001782,
+     "runs": 7
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 7,
+     "median_cost": 1872.3389532009212,
+     "median_inventory_periods": 1.3704247599176862,
+     "median_service": 0.6709252681317094,
+     "runs": 7
+    }
+   },
+   "deterioration_recovery": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 2699.115877126032,
+     "median_inventory_periods": 2.904599020116994,
+     "median_service": 0.8406477325810351,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 2660.304508693066,
+     "median_inventory_periods": 2.6782894607153622,
+     "median_service": 0.8646579535000163,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 2680.5011230347163,
+     "median_inventory_periods": 2.451552550968249,
+     "median_service": 0.8406477325810351,
+     "runs": 6
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 4,
+     "median_cost": 2662.3074225521677,
+     "median_inventory_periods": 2.515176493332973,
+     "median_service": 0.8538263737504213,
+     "runs": 6
+    }
+   },
+   "fill": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 2,
+     "median_cost": 1515.6896700897025,
+     "median_inventory_periods": 4.8799269534100596,
+     "median_service": 0.9712351894924612,
+     "runs": 3
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 1465.5455896897977,
+     "median_inventory_periods": 4.029314763588714,
+     "median_service": 0.9974877557615679,
+     "runs": 3
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 1515.6896700897025,
+     "median_inventory_periods": 4.4217691152603695,
+     "median_service": 0.9840198800381108,
+     "runs": 3
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 1,
+     "median_cost": 1456.1747004763652,
+     "median_inventory_periods": 3.9720749655780665,
+     "median_service": 1.0,
+     "runs": 3
+    }
+   },
+   "lead": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 1637.9570453391086,
+     "median_inventory_periods": 2.823628298559822,
+     "median_service": 0.7768738300581995,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 1346.2398120519306,
+     "median_inventory_periods": 3.7542287866725697,
+     "median_service": 0.9743589743589743,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 1615.4362547404564,
+     "median_inventory_periods": 1.4556207132534469,
+     "median_service": 0.7906383774709186,
+     "runs": 5
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 1348.7180531715799,
+     "median_inventory_periods": 3.296379737903289,
+     "median_service": 0.9743589743589743,
+     "runs": 5
+    }
+   },
+   "partial": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 2214.5667177309674,
+     "median_inventory_periods": 0.9279424408775834,
+     "median_service": 0.8851905720127058,
+     "runs": 3
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2126.714620100126,
+     "median_inventory_periods": 1.4325038602448832,
+     "median_service": 0.9173203764441443,
+     "runs": 3
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2120.1667177309673,
+     "median_inventory_periods": 1.006125131442336,
+     "median_service": 0.8851905720127058,
+     "runs": 3
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2139.1638925137004,
+     "median_inventory_periods": 1.4427057531812244,
+     "median_service": 0.9209042500678475,
+     "runs": 3
+    }
+   },
+   "severe": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 2109.0532612771694,
+     "median_inventory_periods": 0.5470085470085471,
+     "median_service": 0.4671537812654703,
+     "runs": 3
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 2058.5243785657,
+     "median_inventory_periods": 0.5632880231279102,
+     "median_service": 0.4871647023471792,
+     "runs": 3
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2109.0532612771694,
+     "median_inventory_periods": 0.5470085470085471,
+     "median_service": 0.4671537812654703,
+     "runs": 3
+    },
+    "gated_pr30": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 2034.667271066191,
+     "median_inventory_periods": 0.5654715048053767,
+     "median_service": 0.503467535740074,
+     "runs": 3
+    }
+   },
+   "stable": {
+    "base_stock": {
+     "avoidable": 5,
+     "breaches": 19,
+     "median_cost": 1386.285162583678,
+     "median_inventory_periods": 1.2980750287026925,
+     "median_service": 0.9734790681522794,
+     "runs": 40
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 15,
+     "median_cost": 1373.1688575461817,
+     "median_inventory_periods": 1.67117799223867,
+     "median_service": 0.9640902020955857,
+     "runs": 40
+    },
+    "gated_pr24": {
+     "avoidable": 5,
+     "breaches": 19,
+     "median_cost": 1363.19618857144,
+     "median_inventory_periods": 1.314735903144849,
+     "median_service": 0.9731186025699206,
+     "runs": 40
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 14,
+     "median_cost": 1374.3674177287144,
+     "median_inventory_periods": 1.6729154254795517,
+     "median_service": 0.9659816268960095,
+     "runs": 40
+    }
+   }
+  },
+  "target": {
+   "0.9": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 7,
+     "median_cost": 1801.879441036506,
+     "median_inventory_periods": 2.864113659338408,
+     "median_service": 0.8986144607730276,
+     "runs": 14
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 6,
+     "median_cost": 1729.0416225916258,
+     "median_inventory_periods": 2.717473395777488,
+     "median_service": 0.9096708975629453,
+     "runs": 14
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "median_cost": 1586.0463551620683,
+     "median_inventory_periods": 2.719692919270746,
+     "median_service": 0.9588914991970351,
+     "runs": 14
+    },
+    "gated_pr30": {
+     "avoidable": 1,
+     "breaches": 6,
+     "median_cost": 1734.6540355061052,
+     "median_inventory_periods": 2.954459832291983,
+     "median_service": 0.9309560951260695,
+     "runs": 14
+    }
+   },
+   "0.95": {
+    "base_stock": {
+     "avoidable": 6,
+     "breaches": 26,
+     "median_cost": 1584.9999231601942,
+     "median_inventory_periods": 0.8215771016848705,
+     "median_service": 0.9235824516869001,
+     "runs": 44
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 21,
+     "median_cost": 1508.8950211092185,
+     "median_inventory_periods": 1.5024290321761145,
+     "median_service": 0.9574059041806324,
+     "runs": 44
+    },
+    "gated_pr24": {
+     "avoidable": 6,
+     "breaches": 26,
+     "median_cost": 1557.5970095235311,
+     "median_inventory_periods": 0.8230639912246283,
+     "median_service": 0.9239061445305286,
+     "runs": 44
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 20,
+     "median_cost": 1513.1428826040944,
+     "median_inventory_periods": 1.5527416046915108,
+     "median_service": 0.9578626495945921,
+     "runs": 44
+    }
+   },
+   "0.97": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 3,
+     "median_cost": 2078.8678168917536,
+     "median_inventory_periods": 2.904599020116994,
+     "median_service": 0.9138429474473493,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2116.3487518658108,
+     "median_inventory_periods": 2.1247202904133213,
+     "median_service": 0.9796034858577672,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2083.125046854445,
+     "median_inventory_periods": 2.150786097267707,
+     "median_service": 0.9736837688078066,
+     "runs": 5
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 2,
+     "median_cost": 2128.251076350456,
+     "median_inventory_periods": 2.295078789825806,
+     "median_service": 0.9796178642498276,
+     "runs": 5
+    }
+   },
+   "0.99": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 8,
+     "median_cost": 1566.2204494747796,
+     "median_inventory_periods": 3.711063071779685,
+     "median_service": 0.9244095528922169,
+     "runs": 9
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 8,
+     "median_cost": 1403.3968292286045,
+     "median_inventory_periods": 3.3400328013570695,
+     "median_service": 0.9641362593176629,
+     "runs": 9
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 8,
+     "median_cost": 1544.9367342774046,
+     "median_inventory_periods": 3.711063071779685,
+     "median_service": 0.9244095528922169,
+     "runs": 9
+    },
+    "gated_pr30": {
+     "avoidable": 0,
+     "breaches": 8,
+     "median_cost": 1469.5963376902948,
+     "median_inventory_periods": 3.1311225763047297,
+     "median_service": 0.9692912476366082,
+     "runs": 9
+    }
+   }
+  }
+ },
+ "rows": 288,
+ "selector": {
+  "gated": {
+   "review_mode": {
+    "ALLOCATE": 147,
+    "LEAN": 554,
+    "PROTECT": 323
+   },
+   "review_policy": {
+    "cvar_network": 120,
+    "deterministic_network": 108,
+    "hedged_network": 112,
+    "joint_recovery": 63,
+    "projected_base_stock_proxy": 403,
+    "protected_network": 2,
+    "stochastic_network": 194,
+    "stress_network": 22
+   },
+   "review_status": {
+    "PENDING_REVIEW": 621,
+    "RETAIN_INCUMBENT": 403
+   }
+  },
+  "gated_pr24": {
+   "review_mode": {
+    "ALLOCATE": 172,
+    "LEAN": 852
+   },
+   "review_policy": {
+    "cvar_network": 5,
+    "deterministic_network": 59,
+    "joint_recovery": 41,
+    "projected_base_stock_proxy": 828,
+    "stochastic_network": 51,
+    "stress_network": 40
+   },
+   "review_status": {
+    "PENDING_REVIEW": 196,
+    "RETAIN_INCUMBENT": 828
+   }
+  },
+  "gated_pr30": {
+   "review_mode": {
+    "ALLOCATE": 141,
+    "LEAN": 374,
+    "PROTECT": 509
+   },
+   "review_policy": {
+    "cvar_network": 90,
+    "deterministic_network": 118,
+    "hedged_network": 124,
+    "joint_recovery": 73,
+    "projected_base_stock_proxy": 409,
+    "protected_network": 33,
+    "stochastic_network": 158,
+    "stress_network": 19
+   },
+   "review_status": {
+    "PENDING_REVIEW": 615,
+    "RETAIN_INCUMBENT": 409
+   }
+  }
+ },
+ "worst_cells": {
+  "base_stock": {
+   "inventory": [
+    {
+     "alternative": "transfer",
+     "cell": 36,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 32.255746567917306,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "none",
+     "cell": 66,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 31.405216551050614,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "substitution",
+     "cell": 37,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 26.922413234583974,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "transfer",
+     "cell": 53,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 26.393812376392212,
+     "seed": 29001,
+     "service": 0.5555555555555556,
+     "supply": "fill"
+    },
+    {
+     "alternative": "shared_route",
+     "cell": 54,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 22.750626103142096,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "deterioration_recovery"
+    }
+   ],
+   "service": [
+    {
+     "alternative": "route",
+     "cell": 49,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.4671537812654703,
+     "supply": "severe",
+     "target": 0.99
+    },
+    {
+     "alternative": "none",
+     "cell": 21,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.4531675987462485,
+     "supply": "closure_recovery",
+     "target": 0.95
+    },
+    {
+     "alternative": "supplier",
+     "cell": 42,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.4531675987462485,
+     "supply": "closure_recovery",
+     "target": 0.95
+    },
+    {
+     "alternative": "none",
+     "cell": 17,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.46494004359584606,
+     "supply": "severe",
+     "target": 0.95
+    },
+    {
+     "alternative": "transfer",
+     "cell": 53,
+     "class": "AVOIDABLE",
+     "demand": "intermittent_spiky",
+     "seed": 29001,
+     "service": 0.5555555555555556,
+     "supply": "fill",
+     "target": 0.97
+    }
+   ]
+  },
+  "gated": {
+   "inventory": [
+    {
+     "alternative": "transfer",
+     "cell": 53,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 29.974137313148727,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "fill"
+    },
+    {
+     "alternative": "transfer",
+     "cell": 36,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 29.186948273834943,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "none",
+     "cell": 66,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 28.4731235242128,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "substitution",
+     "cell": 37,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 27.897970365347227,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "shared_route",
+     "cell": 54,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 24.586144019704605,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "deterioration_recovery"
+    }
+   ],
+   "service": [
+    {
+     "alternative": "route",
+     "cell": 49,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.48482288237395726,
+     "supply": "severe",
+     "target": 0.99
+    },
+    {
+     "alternative": "none",
+     "cell": 17,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.4871647023471792,
+     "supply": "severe",
+     "target": 0.95
+    },
+    {
+     "alternative": "supplier",
+     "cell": 42,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.535972047678968,
+     "supply": "closure_recovery",
+     "target": 0.95
+    },
+    {
+     "alternative": "shared_route",
+     "cell": 63,
+     "class": "MODEL_FAILURE",
+     "demand": "unknown_promotion",
+     "seed": 29001,
+     "service": 0.5889249708913327,
+     "supply": "correlated",
+     "target": 0.9
+    },
+    {
+     "alternative": "none",
+     "cell": 19,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.6518827789161559,
+     "supply": "correlated",
+     "target": 0.95
+    }
+   ]
+  },
+  "gated_pr24": {
+   "inventory": [
+    {
+     "alternative": "transfer",
+     "cell": 53,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 34.110538227174025,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "fill"
+    },
+    {
+     "alternative": "transfer",
+     "cell": 36,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 32.255746567917306,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "none",
+     "cell": 66,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 31.405216551050614,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "substitution",
+     "cell": 37,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 26.091722719805205,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "shared_route",
+     "cell": 54,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 22.751317349331195,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "deterioration_recovery"
+    }
+   ],
+   "service": [
+    {
+     "alternative": "route",
+     "cell": 49,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.4671537812654703,
+     "supply": "severe",
+     "target": 0.99
+    },
+    {
+     "alternative": "supplier",
+     "cell": 42,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.44261855861398247,
+     "supply": "closure_recovery",
+     "target": 0.95
+    },
+    {
+     "alternative": "none",
+     "cell": 21,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.4446531093321847,
+     "supply": "closure_recovery",
+     "target": 0.95
+    },
+    {
+     "alternative": "none",
+     "cell": 17,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.46494004359584606,
+     "supply": "severe",
+     "target": 0.95
+    },
+    {
+     "alternative": "none",
+     "cell": 35,
+     "class": "UNAVOIDABLE",
+     "demand": "intermittent",
+     "seed": 29001,
+     "service": 0.5722805623202868,
+     "supply": "stable",
+     "target": 0.95
+    }
+   ]
+  },
+  "gated_pr30": {
+   "inventory": [
+    {
+     "alternative": "transfer",
+     "cell": 36,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 39.49052429597847,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "substitution",
+     "cell": 37,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 34.41087634668343,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "none",
+     "cell": 66,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 34.307053155850696,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "stable"
+    },
+    {
+     "alternative": "shared_route",
+     "cell": 54,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 28.093326917636887,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "deterioration_recovery"
+    },
+    {
+     "alternative": "transfer",
+     "cell": 53,
+     "demand": "intermittent_spiky",
+     "inventory_periods": 27.983121614859492,
+     "seed": 29001,
+     "service": 1.0,
+     "supply": "fill"
+    }
+   ],
+   "service": [
+    {
+     "alternative": "route",
+     "cell": 49,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.503467535740074,
+     "supply": "severe",
+     "target": 0.99
+    },
+    {
+     "alternative": "none",
+     "cell": 17,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.4885014559107737,
+     "supply": "severe",
+     "target": 0.95
+    },
+    {
+     "alternative": "supplier",
+     "cell": 42,
+     "class": "MODEL_FAILURE",
+     "demand": "stable",
+     "seed": 29001,
+     "service": 0.559933542212731,
+     "supply": "closure_recovery",
+     "target": 0.95
+    },
+    {
+     "alternative": "none",
+     "cell": 35,
+     "class": "UNAVOIDABLE",
+     "demand": "intermittent",
+     "seed": 29001,
+     "service": 0.5722805623202868,
+     "supply": "stable",
+     "target": 0.95
+    },
+    {
+     "alternative": "shared_route",
+     "cell": 63,
+     "class": "MODEL_FAILURE",
+     "demand": "unknown_promotion",
+     "seed": 29001,
+     "service": 0.557406039693047,
+     "supply": "correlated",
+     "target": 0.9
+    }
+   ]
+  }
+ }
+}

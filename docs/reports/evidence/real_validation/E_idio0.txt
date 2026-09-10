@@ -1,0 +1,75 @@
+
+==============================================================================
+COMMERCIAL OPTIMIZER — BACKTEST ON REAL PUBLIC DATA
+==============================================================================
+  demand path   US Census MWTS NAICS 4244 via FRED (real, NSA)
+  supply shocks IMF PortWatch AIS, per-route ports (real)
+  cross-section synthetic; idio CV = 0.0
+  opening cover 1.0 months   horizon 12 months
+  warehouse cap 2.0 months (real wholesaler I/S mean 1.26, p90 1.35)
+  window        1994-01 .. 2026-06  (390 months, 3 seeds)
+
+  NORMAL_1990S     eval mid 1997-07..2000-11  n=33  (real demand only)
+      SP vs naive order-up-to    median   -7.13%   wins 12/33
+      SP vs fill-aware determ.   median  -23.46%   wins 5/33
+      SP vs cautious p90         median  +47.75%   wins 33/33
+      service:  naive 99.9%   det_mean 99.6%   det_p90 92.6%   sp 99.2%
+
+  NORMAL_2000S     eval mid 2003-03..2007-03  n=39  (real demand only)
+      SP vs naive order-up-to    median   -6.33%   wins 13/39
+      SP vs fill-aware determ.   median  -22.01%   wins 9/39
+      SP vs cautious p90         median  +30.80%   wins 39/39
+      service:  naive 99.9%   det_mean 99.7%   det_p90 94.1%   sp 99.6%
+
+  GFC              eval mid 2007-07..2010-11  n=33  (real demand only)
+      SP vs naive order-up-to    median   +1.39%   wins 17/33
+      SP vs fill-aware determ.   median  -10.69%   wins 11/33
+      SP vs cautious p90         median  +31.38%   wins 24/33
+      service:  naive 99.4%   det_mean 99.0%   det_p90 94.4%   sp 99.4%
+
+  NORMAL_2010S     eval mid 2012-03..2019-11  n=72  (real demand only)
+      SP vs naive order-up-to    median   -4.37%   wins 33/72
+      SP vs fill-aware determ.   median  -10.06%   wins 26/72
+      SP vs cautious p90         median  +42.00%   wins 72/72
+      service:  naive 99.5%   det_mean 98.9%   det_p90 92.9%   sp 99.3%
+
+  COVID            eval mid 2020-03..2021-03  n=12  (real supply shocks)
+      mean realized supply shock  0.972
+      SP vs naive order-up-to    median  +14.08%   wins 8/12
+      SP vs fill-aware determ.   median   +4.36%   wins 7/12
+      SP vs cautious p90         median  +19.76%   wins 10/12
+      service:  naive 99.8%   det_mean 99.6%   det_p90 96.7%   sp 99.0%
+
+  INFLATION        eval mid 2021-07..2023-03  n=18  (real supply shocks)
+      mean realized supply shock  0.955
+      SP vs naive order-up-to    median  +34.01%   wins 18/18
+      SP vs fill-aware determ.   median  +36.17%   wins 18/18
+      SP vs cautious p90         median  +62.56%   wins 18/18
+      service:  naive 91.5%   det_mean 90.2%   det_p90 83.5%   sp 93.3%
+
+  RED_SEA_WAR      eval mid 2023-11..2025-11  n=21  (real supply shocks)
+      mean realized supply shock  0.911
+      SP vs naive order-up-to    median  +10.75%   wins 14/21
+      SP vs fill-aware determ.   median   +7.79%   wins 12/21
+      SP vs cautious p90         median  +47.67%   wins 20/21
+      service:  naive 96.2%   det_mean 95.4%   det_p90 89.3%   sp 96.1%
+
+  UNCLASSIFIED     eval mid 2001-03..2023-07  n=30  (real demand only)
+      SP vs naive order-up-to    median   +1.78%   wins 16/30
+      SP vs fill-aware determ.   median  -11.22%   wins 10/30
+      SP vs cautious p90         median  +39.79%   wins 29/30
+      service:  naive 99.6%   det_mean 99.3%   det_p90 93.8%   sp 99.5%
+
+------------------------------------------------------------------------------
+  POOLED  (258 admissible folds)
+    SP vs naive order-up-to    median   +1.10%  IQR [-12.96, +16.74]  wins 131/258
+    SP vs fill-aware determ.   median   -9.93%  IQR [-30.40, +13.75]  wins 98/258
+    SP vs cautious p90         median  +43.01%  IQR [+24.15, +56.90]  wins 245/258
+    service:  naive 98.8%   det_mean 98.3%   det_p90 92.6%   sp 98.7%
+
+    SP vs fill-aware determ., split by how hard the month was
+    (stratum set by the BASELINE's cost split, not SP's)
+      binding  n=88   median  +17.66%  wins 69/88   shortage > 20% of baseline cost
+      slack    n=170  median  -21.76%  wins 29/170   holding-dominated, easy month
+------------------------------------------------------------------------------
+

@@ -1,0 +1,54 @@
+{
+ "rows": [
+  {
+   "label": "fitted (1,000 single-world truth-style draws)",
+   "mean": 98.86734320759513,
+   "sd": 6.044363372260068,
+   "q50": 98.74018153591018,
+   "q79": 104.66465446985994,
+   "q90": 107.30354849855881,
+   "q95": 108.62486948065568,
+   "q99": 109.99941472226662,
+   "lag1_autocorr": -0.1099224508465744
+  },
+  {
+   "label": "iid 3-world draws",
+   "mean": 98.9491861708605,
+   "sd": 6.099168295231791,
+   "q50": 98.99135254196702,
+   "q79": 104.87567627306258,
+   "q90": 107.39040188358096,
+   "q95": 108.72925447892679,
+   "q99": 110.0147668729059,
+   "lag1_autocorr": -0.09738557067957189,
+   "tail_frequency_above_ref_q95": 0.05458333333333333,
+   "tail_run_max": 3,
+   "tail_run_mean": 1.0752393980848154,
+   "tail_runs_ge3_per_world": 0.005833333333333334,
+   "periods_with_a_world_above_ref_q79": 0.5233333333333333,
+   "periods_with_a_world_above_ref_q90": 0.28
+  },
+  {
+   "label": "per-period LHS 3-world draws",
+   "mean": 98.89307233649451,
+   "sd": 6.0922447076820445,
+   "q50": 98.9243050607314,
+   "q79": 104.80778062621104,
+   "q90": 107.25746543046719,
+   "q95": 108.66933770658,
+   "q99": 109.98668396965098,
+   "lag1_autocorr": -0.09957571852013655,
+   "tail_frequency_above_ref_q95": 0.051597222222222225,
+   "tail_run_max": 3,
+   "tail_run_mean": 1.0830903790087463,
+   "tail_runs_ge3_per_world": 0.005,
+   "periods_with_a_world_above_ref_q79": 0.6514583333333334,
+   "periods_with_a_world_above_ref_q90": 0.29333333333333333
+  }
+ ],
+ "supply_streams_identical_50_seeds": true,
+ "truth_paths_identical_50_seeds": true,
+ "weights": [
+  0.333333
+ ]
+}

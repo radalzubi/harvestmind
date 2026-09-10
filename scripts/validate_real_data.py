@@ -20,7 +20,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -28,7 +28,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from ingestion.column_mapper import auto_map_columns
+from ingestion.column_mapper import auto_map_columns  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
 
 # ── File-name → target schema ─────────────────────────────────────────────────

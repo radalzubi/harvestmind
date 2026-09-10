@@ -28,13 +28,14 @@ treat the directory as the dataset.
 
 from __future__ import annotations
 
+import re
+
 import json
 import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
 from pydantic import BaseModel
 
@@ -78,6 +79,18 @@ def _bucket_reason(raw: Any) -> str:
         if any(w in text for w in words):
             return bucket
     return "over_commitment"
+
+
+
+_IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def _assert_ident(name: str) -> str:
+    """operator ids come from the registry, never from a request, but a
+    schema name interpolated into SQL is validated regardless."""
+    if not _IDENT_RE.match(str(name)):
+        raise ValueError(f"invalid identifier {name!r}")
+    return str(name)
 
 
 class PoolContributor:
@@ -167,7 +180,9 @@ class PoolContributor:
             signals_dropped_k_anonymity=dropped)
 
     def _demand_signals(self, conn, operator_id: str, region: str) -> dict:
-        q = f"""
+        operator_id = _assert_ident(operator_id)
+        q = (  # nosec B608 - operator_id validated by _assert_ident, not user input
+            f"""
             SELECT COALESCE(p.category, 'uncategorized') AS category,
                    DATE_TRUNC('week', COALESCE(o.delivery_date, o.order_date)) AS week_start,
                    SUM(o.requested_quantity) AS demand
@@ -177,14 +192,15 @@ class PoolContributor:
             WHERE o.requested_quantity IS NOT NULL
               AND COALESCE(o.delivery_date, o.order_date) IS NOT NULL
             GROUP BY 1, 2
-        """
+        """)  # nosec B608 - operator_id validated by _assert_ident, not user input
         df = conn.execute(q).df()
         rows, dropped = [], 0
         if not df.empty:
             # The k-anonymity count MUST use the same filter as the signal
             # query above — otherwise NULL-quantity/date rows inflate the
             # count and a signal built on < K underlying rows can slip through.
-            counts = conn.execute(f"""
+            counts = conn.execute(  # nosec B608 - operator_id validated by _assert_ident, not user input
+                f"""
                 SELECT COALESCE(p.category, 'uncategorized') AS category,
                        COUNT(*) AS n
                 FROM {operator_id}.stg_buyer_orders o
@@ -193,7 +209,7 @@ class PoolContributor:
                 WHERE o.requested_quantity IS NOT NULL
                   AND COALESCE(o.delivery_date, o.order_date) IS NOT NULL
                 GROUP BY 1
-            """).df().set_index("category")["n"].to_dict()
+            """).df().set_index("category")["n"].to_dict()  # nosec B608 - operator_id validated by _assert_ident, not user input
             for cat, g in df.groupby("category"):
                 if counts.get(cat, 0) < K_ANONYMITY_FLOOR:
                     dropped += 1
@@ -217,7 +233,9 @@ class PoolContributor:
         return {"df": pd.DataFrame(rows), "_dropped": dropped}
 
     def _yield_signals(self, conn, operator_id: str, region: str) -> dict:
-        q = f"""
+        operator_id = _assert_ident(operator_id)
+        q = (  # nosec B608 - operator_id validated by _assert_ident, not user input
+            f"""
             SELECT COALESCE(p.category, 'uncategorized') AS category,
                    d.ordered_quantity AS ordered,
                    COALESCE(d.accepted_quantity, d.delivered_quantity) AS accepted
@@ -225,7 +243,7 @@ class PoolContributor:
             LEFT JOIN {operator_id}.stg_products p
                    ON d.product_id = p.product_id
             WHERE d.ordered_quantity IS NOT NULL AND d.ordered_quantity > 0
-        """
+        """)  # nosec B608 - operator_id validated by _assert_ident, not user input
         df = conn.execute(q).df()
         rows, dropped = [], 0
         if not df.empty:
@@ -246,23 +264,26 @@ class PoolContributor:
         return {"df": pd.DataFrame(rows), "_dropped": dropped}
 
     def _waste_signals(self, conn, operator_id: str) -> dict:
-        q = f"""
+        operator_id = _assert_ident(operator_id)
+        q = (  # nosec B608 - operator_id validated by _assert_ident, not user input
+            f"""
             SELECT COALESCE(p.category, 'uncategorized') AS category,
                    w.quantity_lost, w.reason
             FROM {operator_id}.stg_waste_adjustments w
             LEFT JOIN {operator_id}.stg_products p
                    ON w.product_id = p.product_id
             WHERE w.quantity_lost IS NOT NULL
-        """
+        """)  # nosec B608 - operator_id validated by _assert_ident, not user input
         waste = conn.execute(q).df()
-        delivered = conn.execute(f"""
+        delivered = conn.execute(  # nosec B608 - operator_id validated by _assert_ident, not user input
+            f"""
             SELECT COALESCE(p.category, 'uncategorized') AS category,
                    SUM(COALESCE(d.accepted_quantity, d.delivered_quantity)) AS total
             FROM {operator_id}.stg_supplier_deliveries d
             LEFT JOIN {operator_id}.stg_products p
                    ON d.product_id = p.product_id
             GROUP BY 1
-        """).df()
+        """).df()  # nosec B608 - operator_id validated by _assert_ident, not user input
         totals = delivered.set_index("category")["total"].to_dict() \
             if not delivered.empty else {}
         rows, dropped = [], 0

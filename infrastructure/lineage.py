@@ -55,6 +55,6 @@ def trace_row(conn, table: str, where_sql: str) -> list[dict]:
     matching rows — the audit path from any number to its upload."""
     cols = ", ".join(LINEAGE_COLUMNS)
     rows = conn.execute(
-        f"SELECT {cols}, COUNT(*) AS n FROM {table} "  # noqa: S608
+        f"SELECT {cols}, COUNT(*) AS n FROM {table} "  # noqa: S608  # nosec B608 - internal caller passes constant where_sql
         f"WHERE {where_sql} GROUP BY {cols}").fetchall()
     return [dict(zip([*LINEAGE_COLUMNS, "n_rows"], r)) for r in rows]

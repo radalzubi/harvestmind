@@ -1,0 +1,1080 @@
+{
+ "1|frozen": {
+  "wall": 152.91734779113904,
+  "state": "PROTECT",
+  "selected": "projected_base_stock_proxy",
+  "starved": [
+   "stochastic_network",
+   "protected_network"
+  ],
+  "required": 3,
+  "done": 1,
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.15092458296567202,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.15092458296567202,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.06254566693678498,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "stochastic_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 38.014364041853696,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "cvar_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 38.04028529068455,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "protected_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 38.0153331249021,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "hedged_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 38.04107391694561,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "stress_network": {
+    "status": "INFEASIBLE",
+    "solve_seconds": 0.12398429214954376,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   }
+  },
+  "network_service": [
+   {
+    "service": "retail_A",
+    "location": "branch",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9574466887342582,
+    "incumbent_achieved": 0.9574466887342582,
+    "selected_achieved": 0.9574466887342582
+   }
+  ]
+ },
+ "1|highspy": {
+  "wall": 153.3093226668425,
+  "state": "PROTECT",
+  "selected": "projected_base_stock_proxy",
+  "starved": [
+   "protected_network"
+  ],
+  "required": 3,
+  "done": 2,
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.17873720917850733,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.17873720917850733,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.06516500003635883,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "stochastic_network": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "solve_seconds": 38.011001999955624,
+    "achieved_gap": 0.04531200227823705,
+    "nodes": 313,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "cvar_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 38.011348667088896,
+    "achieved_gap": null,
+    "nodes": 889,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "protected_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 38.01193166617304,
+    "achieved_gap": null,
+    "nodes": 1135,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "hedged_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 38.04274949990213,
+    "achieved_gap": null,
+    "nodes": 927,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "stress_network": {
+    "status": "INFEASIBLE",
+    "solve_seconds": 0.11861600028350949,
+    "achieved_gap": null,
+    "nodes": 0,
+    "physically_validated": false,
+    "warm_start": null
+   }
+  },
+  "network_service": [
+   {
+    "service": "retail_A",
+    "location": "branch",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9574466887342582,
+    "incumbent_achieved": 0.9574466887342582,
+    "selected_achieved": 0.9574466887342582
+   }
+  ]
+ },
+ "1|warm": {
+  "wall": 153.02018616674468,
+  "state": "PROTECT",
+  "selected": "stochastic_network",
+  "starved": [
+   "protected_network"
+  ],
+  "required": 3,
+  "done": 2,
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.1661605411209166,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.1661605411209166,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.07081358321011066,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "stochastic_network": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "solve_seconds": 38.01784687489271,
+    "achieved_gap": 0.01329803912833595,
+    "nodes": 1552,
+    "physically_validated": true,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 29,
+     "accepted": true,
+     "reason": "completed by the formulation",
+     "completion_seconds": 0.2986293751746416,
+     "completion_status": "highspy HighsModelStatus.kOptimal",
+     "seed_status": "HighsStatus.kOk",
+     "seed_objective": 4022.030769283301,
+     "solver_accepted": true,
+     "phase1_objective": 3951.1593424054918,
+     "phase1_status": 1,
+     "outcome": "improved",
+     "final_objective": 3951.1593424054918,
+     "model_variables": 8293,
+     "solve_seconds": 38.0178497498855,
+     "highs_integrality_violation": 1.7763568394002505e-15,
+     "highs_primal_infeasibility": 4.021671884402167e-12
+    }
+   },
+   "cvar_network": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "solve_seconds": 38.02729487512261,
+    "achieved_gap": 0.03420866662706243,
+    "nodes": 1005,
+    "physically_validated": true,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 29,
+     "accepted": true,
+     "reason": "completed by the formulation",
+     "completion_seconds": 0.34108725003898144,
+     "completion_status": "highspy HighsModelStatus.kOptimal",
+     "seed_status": "HighsStatus.kOk",
+     "seed_objective": 4917.698360020355,
+     "solver_accepted": true,
+     "phase1_objective": 4885.737161566366,
+     "phase1_status": 1,
+     "outcome": "improved",
+     "final_objective": 4885.737161566366,
+     "model_variables": 8297,
+     "solve_seconds": 38.0272994171828,
+     "highs_integrality_violation": 0.0,
+     "highs_primal_infeasibility": 1.1253220577600587e-12
+    }
+   },
+   "protected_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 38.01335291704163,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 29,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 11 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.16150208422914147,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 1,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 8297,
+     "solve_seconds": 38.013355209026486,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   },
+   "hedged_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 38.036906958092004,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 29,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 11 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.21119537483900785,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 1,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 11034,
+     "solve_seconds": 38.036913875024766,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   },
+   "stress_network": {
+    "status": "INFEASIBLE",
+    "solve_seconds": 0.20865562511608005,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 29,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 11 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.094329291023314,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 2,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 11029,
+     "solve_seconds": 0.2086576670408249,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   }
+  },
+  "network_service": [
+   {
+    "service": "retail_A",
+    "location": "branch",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9649493445343761,
+    "incumbent_achieved": 0.9574466887342582,
+    "selected_achieved": 0.9649493445343761
+   }
+  ]
+ },
+ "2|frozen": {
+  "wall": 142.94355641724542,
+  "state": "PROTECT",
+  "selected": "projected_base_stock_proxy",
+  "starved": [
+   "protected_network"
+  ],
+  "required": 3,
+  "done": 2,
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.5543542923405766,
+    "achieved_gap": 0.0,
+    "nodes": 24,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.5543542923405766,
+    "achieved_gap": 0.0,
+    "nodes": 24,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.05616362486034632,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "stochastic_network": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "solve_seconds": 35.44269762514159,
+    "achieved_gap": 0.01712442826435627,
+    "nodes": 1375,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "cvar_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 35.43603049963713,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "protected_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 35.43467600038275,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "hedged_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 35.45381033420563,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "stress_network": {
+    "status": "INFEASIBLE",
+    "solve_seconds": 0.07181858317926526,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   }
+  },
+  "network_service": [
+   {
+    "service": "retail_A",
+    "location": "branch",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9458007664590141,
+    "incumbent_achieved": 0.9458007664590141,
+    "selected_achieved": 0.9458007664590141
+   }
+  ]
+ },
+ "2|highspy": {
+  "wall": 213.89405129197985,
+  "state": "PROTECT",
+  "selected": "projected_base_stock_proxy",
+  "starved": [
+   "stochastic_network",
+   "protected_network"
+  ],
+  "required": 3,
+  "done": 1,
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.7450899169780314,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.7450899169780314,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.056384208146482706,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "stochastic_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 35.447995542082936,
+    "achieved_gap": null,
+    "nodes": 678,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "cvar_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 35.433512332849205,
+    "achieved_gap": null,
+    "nodes": 801,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "protected_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 35.43186162458733,
+    "achieved_gap": null,
+    "nodes": 324,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "hedged_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 35.44542320771143,
+    "achieved_gap": null,
+    "nodes": 133,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "stress_network": {
+    "status": "INFEASIBLE",
+    "solve_seconds": 0.0681102923117578,
+    "achieved_gap": null,
+    "nodes": 0,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "joint_recovery": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "solve_seconds": 35.45816541695967,
+    "achieved_gap": 0.9082750427254612,
+    "nodes": 1323,
+    "physically_validated": true,
+    "warm_start": null
+   }
+  },
+  "network_service": [
+   {
+    "service": "retail_A",
+    "location": "branch",
+    "requested": 0.95,
+    "jointly_feasible": 0.7712807274116024,
+    "expected_achieved": 0.9458007664590141,
+    "incumbent_achieved": 0.9458007664590141,
+    "selected_achieved": 0.9458007664590141
+   }
+  ]
+ },
+ "2|warm": {
+  "wall": 143.00432649999857,
+  "state": "PROTECT",
+  "selected": "projected_base_stock_proxy",
+  "starved": [
+   "protected_network"
+  ],
+  "required": 3,
+  "done": 2,
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.5489340419881046,
+    "achieved_gap": 0.0,
+    "nodes": 24,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.5489340419881046,
+    "achieved_gap": 0.0,
+    "nodes": 24,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.056903833989053965,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "stochastic_network": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "solve_seconds": 35.442285999655724,
+    "achieved_gap": 0.01712442826435627,
+    "nodes": 1473,
+    "physically_validated": true,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 29,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 11 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.10925495764240623,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": 3643.422538130012,
+     "phase1_status": 1,
+     "outcome": "rejected",
+     "final_objective": 3643.422538130012,
+     "model_variables": 7608,
+     "solve_seconds": 35.44228774961084,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   },
+   "cvar_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 35.43911820789799,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 29,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 11 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.11476891674101353,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 1,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 7612,
+     "solve_seconds": 35.439122416079044,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   },
+   "protected_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 35.437569125089794,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 29,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 11 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.1082760002464056,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 1,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 7612,
+     "solve_seconds": 35.437570959329605,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   },
+   "hedged_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 35.47417908301577,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 29,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 11 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.13731129234656692,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 1,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 10121,
+     "solve_seconds": 35.474181207828224,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   },
+   "stress_network": {
+    "status": "INFEASIBLE",
+    "solve_seconds": 0.10930662509053946,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 29,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 11 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.037436208222061396,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 2,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 10116,
+     "solve_seconds": 0.10930941719561815,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   }
+  },
+  "network_service": [
+   {
+    "service": "retail_A",
+    "location": "branch",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9458007664590141,
+    "incumbent_achieved": 0.9458007664590141,
+    "selected_achieved": 0.9458007664590141
+   }
+  ]
+ },
+ "4|frozen": {
+  "wall": 122.80853858310729,
+  "state": "PROTECT",
+  "selected": "projected_base_stock_proxy",
+  "starved": [
+   "protected_network"
+  ],
+  "required": 3,
+  "done": 2,
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.10605866694822907,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.10605866694822907,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.046204875223338604,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "stochastic_network": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "solve_seconds": 30.55727987503633,
+    "achieved_gap": 0.03597084525490749,
+    "nodes": 1228,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "cvar_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 30.559209665749222,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "protected_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 30.56543937511742,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "hedged_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 30.569359832908958,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "stress_network": {
+    "status": "INFEASIBLE",
+    "solve_seconds": 0.0643490832298994,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": null
+   }
+  },
+  "network_service": [
+   {
+    "service": "retail_A",
+    "location": "branch",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9520917640870578,
+    "incumbent_achieved": 0.9520917640870578,
+    "selected_achieved": 0.9520917640870578
+   }
+  ]
+ },
+ "4|highspy": {
+  "wall": 123.00432929163799,
+  "state": "PROTECT",
+  "selected": "projected_base_stock_proxy",
+  "starved": [
+   "stochastic_network"
+  ],
+  "required": 3,
+  "done": 2,
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.10673991683870554,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.10673991683870554,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.04525974998250604,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "stochastic_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 30.5507779577747,
+    "achieved_gap": null,
+    "nodes": 559,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "cvar_network": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "solve_seconds": 30.56870104186237,
+    "achieved_gap": 0.050110096503733575,
+    "nodes": 1319,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "protected_network": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "solve_seconds": 30.56529049994424,
+    "achieved_gap": 0.022481031583028478,
+    "nodes": 667,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "hedged_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 30.567695667035878,
+    "achieved_gap": null,
+    "nodes": 630,
+    "physically_validated": false,
+    "warm_start": null
+   },
+   "stress_network": {
+    "status": "INFEASIBLE",
+    "solve_seconds": 0.0700147501192987,
+    "achieved_gap": null,
+    "nodes": 0,
+    "physically_validated": false,
+    "warm_start": null
+   }
+  },
+  "network_service": [
+   {
+    "service": "retail_A",
+    "location": "branch",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9520917640870578,
+    "incumbent_achieved": 0.9520917640870578,
+    "selected_achieved": 0.9520917640870578
+   }
+  ]
+ },
+ "4|warm": {
+  "wall": 122.80614708410576,
+  "state": "PROTECT",
+  "selected": "projected_base_stock_proxy",
+  "starved": [
+   "protected_network"
+  ],
+  "required": 3,
+  "done": 2,
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.10561720887199044,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.10561720887199044,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.047077333088964224,
+    "achieved_gap": 0.0,
+    "nodes": 1,
+    "physically_validated": true,
+    "warm_start": null
+   },
+   "stochastic_network": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "solve_seconds": 30.568274499848485,
+    "achieved_gap": 0.03597084525490749,
+    "nodes": 1228,
+    "physically_validated": true,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 28,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 9 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.03393312497064471,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": 2714.0028007910696,
+     "phase1_status": 1,
+     "outcome": "rejected",
+     "final_objective": 2714.0028007910696,
+     "model_variables": 6866,
+     "solve_seconds": 30.56827716715634,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   },
+   "cvar_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 30.552531083114445,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 28,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 9 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.03504766710102558,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 1,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 6870,
+     "solve_seconds": 30.55253304215148,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   },
+   "protected_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 30.55378529196605,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 28,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 9 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.0349929160438478,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 1,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 6870,
+     "solve_seconds": 30.553787416778505,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   },
+   "hedged_network": {
+    "status": "NO_FEASIBLE_SOLUTION",
+    "solve_seconds": 30.56495845830068,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 28,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 9 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.0347937080077827,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 1,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 9133,
+     "solve_seconds": 30.56496037496254,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   },
+   "stress_network": {
+    "status": "INFEASIBLE",
+    "solve_seconds": 0.09196033282205462,
+    "achieved_gap": null,
+    "nodes": null,
+    "physically_validated": false,
+    "warm_start": {
+     "supplied": true,
+     "source": "OPTIMAL",
+     "controls_seeded": 28,
+     "accepted": false,
+     "reason": "pinned controls are not feasible for this formulation within 9 s (highspy HighsModelStatus.kInfeasible)",
+     "completion_seconds": 0.03231462463736534,
+     "completion_status": "highspy HighsModelStatus.kInfeasible",
+     "seed_status": null,
+     "seed_objective": null,
+     "solver_accepted": false,
+     "phase1_objective": null,
+     "phase1_status": 2,
+     "outcome": "rejected",
+     "final_objective": null,
+     "model_variables": 9128,
+     "solve_seconds": 0.09196149976924062,
+     "highs_integrality_violation": null,
+     "highs_primal_infeasibility": null
+    }
+   }
+  },
+  "network_service": [
+   {
+    "service": "retail_A",
+    "location": "branch",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9520917640870578,
+    "incumbent_achieved": 0.9520917640870578,
+    "selected_achieved": 0.9520917640870578
+   }
+  ]
+ }
+}

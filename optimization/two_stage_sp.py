@@ -92,7 +92,6 @@ class TwoStageStochasticLP:
         fill draws enter as coefficients, not variables.
         """
         import pyomo.environ as pyo
-        from pyomo.opt import SolverFactory
 
         if aggregate_weeks:
             demand_scenarios = (
@@ -259,17 +258,22 @@ class TwoStageStochasticLP:
         # from this supplier would be worth".
         model.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 
-        solver_factory = SolverFactory("appsi_highs" if self.solver == "highs" else self.solver)
-        solver_factory.options["time_limit"] = self.time_limit_s
-        results = solver_factory.solve(model, tee=False)
+        from optimization.solve_status import run_solver
+        outcome = run_solver(model, solver=self.solver, time_limit_s=self.time_limit_s)
+        status = outcome.status
+        usable = outcome.usable
+        obj_val = float(pyo.value(model.obj)) if usable else None
 
-        status = str(results.solver.termination_condition)
-        obj_val = pyo.value(model.obj) if status in ("optimal","locallyOptimal") else None
-
-        x_vals = {k: pyo.value(v) for k, v in model.x.items()}
-        s_vals = {(j,w): pyo.value(model.s[j,w]) for j in model.J for w in model.W}
-        w_vals = {(j,w): pyo.value(model.w[j,w]) for j in model.J for w in model.W}
-        u_vals = {(j,w): pyo.value(model.u[j,w]) for j in model.J for w in model.W}
+        # An unsolved model has no decision. Returning zeros here would look
+        # exactly like "commit nothing", which is a real recommendation, so
+        # the dictionaries are left EMPTY and ``usable`` is False.
+        if usable:
+            x_vals = {k: pyo.value(v) for k, v in model.x.items()}
+            s_vals = {(j,w): pyo.value(model.s[j,w]) for j in model.J for w in model.W}
+            w_vals = {(j,w): pyo.value(model.w[j,w]) for j in model.J for w in model.W}
+            u_vals = {(j,w): pyo.value(model.u[j,w]) for j in model.J for w in model.W}
+        else:
+            x_vals, s_vals, w_vals, u_vals = {}, {}, {}, {}
 
         # Shadow prices on supply capacity (sign-normalized: positive =
         # one more kg of capacity would reduce expected cost by this much).
@@ -289,6 +293,9 @@ class TwoStageStochasticLP:
 
         return {
             "status": status,
+            "usable": usable,
+            "runtime_s": outcome.runtime_s,
+            "warnings": list(outcome.warnings),
             "objective": obj_val,
             "x": x_vals,
             "spot": s_vals,
@@ -325,16 +332,15 @@ class TwoStageStochasticLP:
         for (i, j) in model.x:
             model.x[i, j].fix(float(x_fixed.get((i, j), 0.0)))
 
-        from pyomo.opt import SolverFactory
-        solver = SolverFactory("appsi_highs" if self.solver == "highs" else self.solver)
-        solver.options["time_limit"] = self.time_limit_s
-        res = solver.solve(model, tee=False)
-        status = str(res.solver.termination_condition)
+        from optimization.solve_status import run_solver
+        outcome = run_solver(model, solver=self.solver, time_limit_s=self.time_limit_s)
         return {
-            "status": status,
-            "objective": (pyo.value(model.obj)
-                          if status in ("optimal", "locallyOptimal") else None),
-            "x": {k: pyo.value(v) for k, v in model.x.items()},
+            "status": outcome.status,
+            "usable": outcome.usable,
+            "warnings": list(outcome.warnings),
+            "objective": float(pyo.value(model.obj)) if outcome.usable else None,
+            "x": ({k: pyo.value(v) for k, v in model.x.items()}
+                  if outcome.usable else {}),
         }
 
     def compute_vss(

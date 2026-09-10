@@ -22,9 +22,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-import duckdb
-import numpy as np
-import pandas as pd
+import duckdb  # noqa: E402  (sys.path set above so the script runs from any cwd)
+import numpy as np  # noqa: E402  (sys.path set above so the script runs from any cwd)
+import pandas as pd  # noqa: E402  (sys.path set above so the script runs from any cwd)
 
 
 def section(title: str) -> None:
@@ -281,15 +281,15 @@ def main() -> None:
             print(f"  ROI Multiple:              {roi.get('roi_multiple',0):>10.1f}×")
             print(f"  Payback Period:            {roi.get('payback_months',0):>10.1f} months")
     elif bt_rows:
-        print(f"\n  (Only 1 model solved — need ≥2 for ROI comparison)")
+        print("\n  (Only 1 model solved — need ≥2 for ROI comparison)")
 
     elapsed = time.time() - t_start
     print(f"\n{'═' * 60}")
     print(f"  Demo complete in {elapsed:.1f}s")
     if elapsed > 90:
-        print(f"  ⚠  Target was <90s — consider reducing n_scenarios")
+        print("  ⚠  Target was <90s — consider reducing n_scenarios")
     else:
-        print(f"  ✓ Under 90-second target")
+        print("  ✓ Under 90-second target")
     print(f"{'═' * 60}\n")
 
     conn.close()

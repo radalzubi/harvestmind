@@ -1,0 +1,7 @@
+{
+ "fetched_at": "2026-09-04T23:49:57.588442+00:00",
+ "source": "World Bank LPI overall score",
+ "url": "https://api.worldbank.org/v2/country/all/indicator/LP.LPI.OVRL.XQ?format=json&per_page=2000&date=2018:2023",
+ "rows": 207,
+ "provenance": "REAL_PUBLIC"
+}

@@ -9,7 +9,6 @@ that only knows one trick. Every check reports what it excluded and why.
 from __future__ import annotations
 
 import hashlib
-import json
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +21,8 @@ CLASS_BALANCE_MAX_SHARE = 0.80
 def _input_hash(entry: dict) -> str:
     return hashlib.md5(
         (str(entry.get("operator_id")) +
-         str(entry.get("raw_input_sample"))).encode()).hexdigest()
+         str(entry.get("raw_input_sample"))).encode(),
+        usedforsecurity=False).hexdigest()
 
 
 def check_corpus(root: Path | None = None) -> dict[str, Any]:

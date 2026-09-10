@@ -102,4 +102,4 @@ def test_high_risk_sorted_first(db):
     recs = safe_commit_recommendations(db, as_of_date=_TODAY, lead_time_days=3)
     levels = [r["risk_level"] for r in recs]
     order = {"High": 0, "Medium": 1, "Low": 2}
-    assert [order[l] for l in levels] == sorted(order[l] for l in levels)
+    assert [order[level] for level in levels] == sorted(order[level] for level in levels)

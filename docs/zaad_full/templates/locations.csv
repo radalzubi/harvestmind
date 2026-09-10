@@ -1,0 +1,2 @@
+known_at,id,kind,capacity_volume,holding_per_value_period,receiving_calendar
+"""2026-08-31T00:00:00Z""","""branch""","""branch""",1000.0,0.01,"""daily"""

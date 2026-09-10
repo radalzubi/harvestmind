@@ -129,14 +129,16 @@ SECURITY_HEADERS = {
 def test_health_ok(full_client):
     r = full_client.get("/health")
     assert r.status_code == 200
-    assert r.json() == {"status": "ok", "service": "harvestmind-api"}
+    body = r.json()
+    assert body["status"] == "ok" and body["service"] == "zaad-api"
+    assert {"env", "auth_enforced"} <= set(body)      # security posture is reported
 
 
 def test_root_ok(full_client):
     r = full_client.get("/")
     assert r.status_code == 200
     body = r.json()
-    assert body["name"] == "HarvestMind"
+    assert body["name"] == "Zaad Supply"
     assert body["docs"] == "/docs"
 
 
@@ -540,10 +542,11 @@ def test_intake_status_shape(staging_client):
     body = r.json()
     assert "tables" in body
     assert body["any_data_loaded"] is False
-    assert set(body["tables"]) == {
-        "stg_products", "stg_supplier_deliveries", "stg_inventory_lots",
-        "stg_buyer_orders", "stg_waste_adjustments",
-    }
+    produce = {"stg_products", "stg_supplier_deliveries", "stg_inventory_lots",
+               "stg_buyer_orders", "stg_waste_adjustments"}
+    assert produce <= set(body["tables"])
+    # FMCG staging tables are listed alongside (migration 013).
+    assert {"stg_fmcg_skus", "stg_fmcg_orders"} <= set(body["tables"])
 
 
 def test_intake_oversized_upload_returns_413(staging_client, monkeypatch):

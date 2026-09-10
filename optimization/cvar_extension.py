@@ -188,6 +188,9 @@ class CVaRStochasticLP:
         solver_factory = SolverFactory(
             "appsi_highs" if self.solver == "highs" else self.solver)
         solver_factory.options["time_limit"] = self.time_limit_s
+        if self.solver == "highs":
+            from optimization.solve_status import highs_options
+            solver_factory.options.update(highs_options())
         results = solver_factory.solve(model, tee=False)
 
         status = str(results.solver.termination_condition)

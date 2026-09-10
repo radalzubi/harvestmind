@@ -1,0 +1,4079 @@
+{
+ "arm": "p0_defaults",
+ "cell": 15,
+ "reviews": [
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38001:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       23.607206681816656,
+       18.380999045834116,
+       23.607206681816656,
+       20.093128769089684,
+       20.17024946800199,
+       20.66715496700324,
+       20.467775412232427,
+       18.415505549933215,
+       22.632660907526848,
+       16.760535955368194,
+       23.15084016066324,
+       16.760535955368194
+      ]
+     },
+     "fills": {
+      "main:0": 0.8308849861022644,
+      "main:1": 0.8858527053951474,
+      "main:2": 0.7863793783544438,
+      "main:3": 0.8095226257428325
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38001:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       20.202667548405508,
+       22.912658979853205,
+       20.315099225202555,
+       23.27673794438878,
+       15.371120017946435,
+       22.315834483479627,
+       23.189239313975918,
+       22.261045224935927,
+       18.493344211893252,
+       22.07301309383714,
+       23.02077676621971,
+       17.19683640462866
+      ]
+     },
+     "fills": {
+      "main:0": 0.9499657263892133,
+      "main:1": 0.9942749564432753,
+      "main:2": 0.9812138982933769,
+      "main:3": 0.9568605076313409
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38001:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       20.54944917662227,
+       21.103488570947924,
+       23.63827487398327,
+       21.73255792951204,
+       23.83217974373191,
+       21.740142066000576,
+       19.837381724150372,
+       20.055524698044135,
+       20.1954883010869,
+       20.1954883010869,
+       22.451457555846453,
+       18.474636551550358
+      ]
+     },
+     "fills": {
+      "main:0": 0.775905319717703,
+      "main:1": 0.8457332013683624,
+      "main:2": 0.8504191537157267,
+      "main:3": 0.7808532466463418
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 6.777058861907698
+     },
+     "purchases": {
+      "main:0": 6.777058861907698,
+      "main:1": 24.297014867643796,
+      "main:2": 24.297014867643796,
+      "main:3": 24.297014867643796,
+      "main:4": 24.297014867643796,
+      "main:5": 24.297014867643796,
+      "main:6": 24.297014867643796,
+      "main:7": 24.297014867643796,
+      "main:8": 24.297014867643796,
+      "main:9": 24.297014867643796,
+      "main:10": 24.297014867643796,
+      "main:11": 24.297014867643796
+     },
+     "cost_by_world": [
+      1539.948640009255,
+      1507.7544759726618,
+      1696.0172692916938
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      0.9525936401152708
+     ],
+     "service_stat": 0.9839390641364071,
+     "hedged_cost": 1703.5049982017488,
+     "exposure": 44.11741352807453,
+     "burden": 36.721200823495195,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 6.777058861907698
+     },
+     "purchases": {
+      "main:0": 6.777058861907698,
+      "main:1": 24.297014867643796,
+      "main:2": 24.297014867643796,
+      "main:3": 24.297014867643796,
+      "main:4": 24.297014867643796,
+      "main:5": 24.297014867643796,
+      "main:6": 24.297014867643796,
+      "main:7": 24.297014867643796,
+      "main:8": 24.297014867643796,
+      "main:9": 24.297014867643796,
+      "main:10": 24.297014867643796,
+      "main:11": 24.297014867643796
+     },
+     "cost_by_world": [
+      1539.948640009255,
+      1507.7544759726618,
+      1696.0172692916938
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      0.9525936401152708
+     ],
+     "service_stat": 0.9839390641364071,
+     "hedged_cost": 1703.5049982017488,
+     "exposure": 44.11741352807453,
+     "burden": 36.721200823495195,
+     "well_solved": true,
+     "feasible": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 12.916110536759811
+     },
+     "purchases": {
+      "main:0": 12.916110536759811,
+      "main:1": 12.916110536759811,
+      "main:2": 24.297014867643796,
+      "main:3": 24.297014867643796,
+      "main:4": 24.297014867643796,
+      "main:5": 24.297014867643796,
+      "main:6": 24.297014867643796,
+      "main:7": 24.297014867643796,
+      "main:8": 24.297014867643796,
+      "main:9": 24.297014867643796,
+      "main:10": 24.297014867643796
+     },
+     "cost_by_world": [
+      1515.2996750073028,
+      1445.1064733964072,
+      1681.5949672885858
+     ],
+     "service_by_world": [
+      0.9799375345867812,
+      1.0,
+      0.9334377317817689
+     ],
+     "service_stat": 0.9708956537802879,
+     "hedged_cost": 1667.6220047948466,
+     "exposure": 79.94605597983258,
+     "burden": 30.83766867325011,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 3.279409395220983
+     },
+     "purchases": {
+      "main:0": 3.279409395220983,
+      "main:1": 26.8197243277501,
+      "main:2": 26.81972432775011,
+      "main:3": 22.587602294408153,
+      "main:4": 22.587602294408153,
+      "main:5": 100.0,
+      "main:9": 28.910896409921467
+     },
+     "cost_by_world": [
+      1409.4938243908218,
+      1418.880810029068,
+      1538.9898063649966
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      0.9630257120359724
+     ],
+     "service_stat": 0.9874733755336581,
+     "hedged_cost": 1582.8805825590694,
+     "exposure": 34.40909523493218,
+     "burden": 105.08577820446477,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 3.279409395220984
+     },
+     "purchases": {
+      "main:0": 3.279409395220984,
+      "main:1": 53.091681826570735,
+      "main:2": 53.09168182657073,
+      "main:5": 100.0,
+      "main:9": 28.910896409921474
+     },
+     "cost_by_world": [
+      1435.0119135203095,
+      1433.8917713857843,
+      1479.236271384505
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      0.9999999999999972
+     ],
+     "service_stat": 0.9999999999999991,
+     "hedged_cost": 1576.6487438579188,
+     "exposure": 2.683483065387312e-12,
+     "burden": 157.99034279998688,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 3.279409395220984
+     },
+     "purchases": {
+      "main:0": 3.279409395220984,
+      "main:1": 26.819724327750098,
+      "main:2": 26.819724327750098,
+      "main:3": 22.587602294408175,
+      "main:4": 22.58760229440815,
+      "main:5": 100.0,
+      "main:9": 28.910896409921477
+     },
+     "cost_by_world": [
+      1409.493824390822,
+      1418.880810029068,
+      1538.9898063649969
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      0.9630257120359724
+     ],
+     "service_stat": 0.9874733755336581,
+     "hedged_cost": 1582.8805825590694,
+     "exposure": 34.40909523493213,
+     "burden": 105.08577820446477,
+     "well_solved": true,
+     "feasible": true
+    },
+    "hedged_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 4.7881696692374565
+     },
+     "purchases": {
+      "main:0": 4.7881696692374565,
+      "main:1": 36.55377110229336,
+      "main:2": 36.55377110229346,
+      "main:3": 33.347320034580314,
+      "main:4": 33.347320034580314,
+      "main:5": 98.89205489307615
+     },
+     "cost_by_world": [
+      1458.9763354719737,
+      1448.9113050216606,
+      1510.3921788065884
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      0.9999999999999999
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 1583.1905716252163,
+     "exposure": 1.1723955140041653e-13,
+     "burden": 203.53576699247228,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "base_stock",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "hedged_network"
+   ],
+   "chosen": "stochastic_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {
+    "main": 3.279409395220983
+   },
+   "candidate_gates": {
+    "stochastic_network": "accepted"
+   },
+   "on_hand": 40.0,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.4125000000000002,
+     "protection_units": 7.028088581414927,
+     "lean": 6.759018735127677
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 3.279409395220983,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 1.3049252749944529,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 1.97448412022653,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 0.0
+     },
+     "need": 8.33301385640938
+    }
+   ],
+   "settlement": {
+    "unmet": 0.0,
+    "demand": 27.0,
+    "end_stock": 13.0,
+    "received": 0.0,
+    "cost": 154.85190722858772
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38002:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       15.227952611214658,
+       20.046031820042447,
+       15.227952611214658,
+       15.227952611214658,
+       20.046031820042447,
+       20.046031820042447,
+       15.227952611214658,
+       20.046031820042447,
+       20.046031820042447,
+       15.227952611214658,
+       15.227952611214658
+      ]
+     },
+     "fills": {
+      "main:0": 0.8793887698529175,
+      "main:1": 0.8405570091039127,
+      "main:2": 0.8467985050405012,
+      "main:3": 0.7903147733540985
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38002:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       21.67414096767353,
+       28.531775124522984,
+       28.531775124522984,
+       28.531775124522984,
+       28.531775124522984,
+       28.531775124522984,
+       28.531775124522984,
+       21.67414096767353,
+       21.67414096767353,
+       28.531775124522984,
+       28.531775124522984
+      ]
+     },
+     "fills": {
+      "main:0": 0.7017118232988966,
+      "main:1": 0.8919343706705489,
+      "main:2": 0.7585691733480545,
+      "main:3": 1.0
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38002:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       27.170940193368857,
+       27.170940193368857,
+       27.170940193368857,
+       35.767745382634,
+       27.170940193368857,
+       27.170940193368857,
+       27.170940193368857,
+       27.170940193368857,
+       27.170940193368857,
+       35.767745382634,
+       27.170940193368857
+      ]
+     },
+     "fills": {
+      "main:0": 0.7182620198048797,
+      "main:1": 0.7872119247403427,
+      "main:2": 0.966382923874032,
+      "main:3": 0.8730504347690997
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 54.35959976090463
+     },
+     "purchases": {
+      "main:0": 54.35959976090463,
+      "main:1": 18.578334627593687,
+      "main:2": 27.94178547764875,
+      "main:3": 27.94178547764875,
+      "main:4": 27.94178547764875,
+      "main:5": 27.94178547764875,
+      "main:6": 27.94178547764875,
+      "main:7": 27.94178547764875,
+      "main:8": 27.94178547764875,
+      "main:9": 27.94178547764875,
+      "main:10": 27.94178547764875
+     },
+     "cost_by_world": [
+      1416.9741734278332,
+      2008.1699914874985,
+      2319.1039106982234
+     ],
+     "service_by_world": [
+      1.0,
+      0.9029402414282051,
+      0.8228764428476903
+     ],
+     "service_stat": 0.894563125781959,
+     "hedged_cost": 1970.0503025800608,
+     "exposure": 309.64817070508866,
+     "burden": 78.92225900013827,
+     "well_solved": true,
+     "feasible": false
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 54.35959976090463
+     },
+     "purchases": {
+      "main:0": 54.35959976090463,
+      "main:1": 18.578334627593687,
+      "main:2": 27.94178547764875,
+      "main:3": 27.94178547764875,
+      "main:4": 27.94178547764875,
+      "main:5": 27.94178547764875,
+      "main:6": 27.94178547764875,
+      "main:7": 27.94178547764875,
+      "main:8": 27.94178547764875,
+      "main:9": 27.94178547764875,
+      "main:10": 27.94178547764875
+     },
+     "cost_by_world": [
+      1416.9741734278332,
+      2008.1699914874985,
+      2319.1039106982234
+     ],
+     "service_by_world": [
+      1.0,
+      0.9029402414282051,
+      0.8228764428476903
+     ],
+     "service_stat": 0.894563125781959,
+     "hedged_cost": 1970.0503025800608,
+     "exposure": 309.64817070508866,
+     "burden": 78.92225900013827,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 27.94178547764875
+     },
+     "purchases": {
+      "main:0": 27.94178547764875,
+      "main:1": 27.941785477648754,
+      "main:2": 27.94178547764875,
+      "main:3": 27.94178547764875,
+      "main:4": 27.94178547764875,
+      "main:5": 27.94178547764875,
+      "main:6": 27.94178547764875,
+      "main:7": 27.94178547764875,
+      "main:8": 27.941785477648754,
+      "main:9": 27.94178547764875
+     },
+     "cost_by_world": [
+      1341.6425370252562,
+      1985.7590830604606,
+      2303.3567215041867
+     ],
+     "service_by_world": [
+      1.0,
+      0.8682081552100839,
+      0.7861638558469218
+     ],
+     "service_stat": 0.8673578775101478,
+     "hedged_cost": 1929.8680998386037,
+     "exposure": 389.54484275099276,
+     "burden": 51.19996228210626,
+     "well_solved": true,
+     "feasible": false
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 40.66024566949583
+     },
+     "purchases": {
+      "main:0": 40.66024566949583,
+      "main:1": 31.98864856286795,
+      "main:2": 82.67273091647576,
+      "main:3": 82.67273091647576,
+      "main:4": 82.67273091647576
+     },
+     "cost_by_world": [
+      1454.6948466753065,
+      1868.992259395075,
+      2000.8036588437863
+     ],
+     "service_by_world": [
+      1.0,
+      0.97995271410321,
+      0.9439102458603467
+     ],
+     "service_stat": 0.9705250561661162,
+     "hedged_cost": 1844.095306539653,
+     "exposure": 86.56233891117819,
+     "burden": 323.6541366109984,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 40.66024566949583
+     },
+     "purchases": {
+      "main:0": 40.66024566949583,
+      "main:1": 31.98864856286795,
+      "main:2": 84.9744197913719,
+      "main:3": 84.9744197913719,
+      "main:4": 84.9744197913719
+     },
+     "cost_by_world": [
+      1470.1984155283403,
+      1883.7788010197642,
+      1969.436077368766
+     ],
+     "service_by_world": [
+      1.0,
+      0.97995271410321,
+      0.9640077916523447
+     ],
+     "service_stat": 0.9784560418929023,
+     "hedged_cost": 1846.118349312187,
+     "exposure": 63.270532886002364,
+     "burden": 341.8719006768399,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 40.66024566949583
+     },
+     "purchases": {
+      "main:0": 40.66024566949583,
+      "main:1": 31.98864856286795,
+      "main:2": 82.67273091647569,
+      "main:3": 82.67273091647579,
+      "main:4": 82.67273091647579
+     },
+     "cost_by_world": [
+      1454.6948466753063,
+      1868.9922593950748,
+      2000.8036588437863
+     ],
+     "service_by_world": [
+      1.0,
+      0.97995271410321,
+      0.9439102458603467
+     ],
+     "service_stat": 0.9705250561661162,
+     "hedged_cost": 1844.095306539653,
+     "exposure": 86.56233891117829,
+     "burden": 323.65413661099836,
+     "well_solved": true,
+     "feasible": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    }
+   },
+   "feasible": [
+    "stochastic_network",
+    "cvar_network",
+    "protected_network"
+   ],
+   "chosen": "protected_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [
+    "Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the economic downside tolerance (service-first acceptance)."
+   ],
+   "final_p0_purchases": {
+    "main": 40.66024566949583
+   },
+   "candidate_gates": {
+    "protected_network": "accepted"
+   },
+   "on_hand": 15.794740641520875,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.5625,
+     "protection_units": 15.7895361198225,
+     "lean": 9.800763163856631
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 40.66024566949583,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 7.960523946349191,
+      "DEMAND_CYCLE": 23.755264587870066,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 8.944457135276572,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 0.0
+     },
+     "need": 47.50532465404176
+    }
+   ],
+   "settlement": {
+    "unmet": 4.205259358479125,
+    "demand": 20.0,
+    "end_stock": 0.0,
+    "received": 0.0,
+    "cost": 218.3783951024531
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38003:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       28.224289966036903,
+       21.440560104183312,
+       21.440560104183312,
+       20.90688145632363,
+       28.224289966036903,
+       20.90688145632363,
+       21.440560104183312,
+       28.224289966036903,
+       20.90688145632363,
+       28.224289966036903
+      ]
+     },
+     "fills": {
+      "main:0": 0.933649070430622,
+      "main:1": 0.7978192247919371,
+      "main:2": 0.8819497255896366,
+      "main:3": 0.9248606158334495
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38003:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       20.825194666108693,
+       20.825194666108693,
+       28.114012799246737,
+       20.825194666108693,
+       21.35678813948451,
+       20.825194666108693,
+       28.114012799246737,
+       21.35678813948451,
+       28.114012799246737,
+       28.114012799246737
+      ]
+     },
+     "fills": {
+      "main:0": 0.8304364869285603,
+      "main:1": 0.9966871911778356,
+      "main:2": 0.874028001365951,
+      "main:3": 0.816778542284584
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38003:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       25.427612762071018,
+       19.316066423180736,
+       25.427612762071018,
+       18.8352687126452,
+       25.427612762071018,
+       25.427612762071018,
+       18.8352687126452,
+       19.316066423180736,
+       18.8352687126452,
+       25.427612762071018
+      ]
+     },
+     "fills": {
+      "main:0": 0.766117685283998,
+      "main:1": 1.0,
+      "main:2": 0.963608457598574,
+      "main:3": 0.6799154746831074
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 30.251741441288516
+     },
+     "purchases": {
+      "main:0": 30.251741441288516,
+      "main:1": 26.68891473381905,
+      "main:2": 26.68891473381905,
+      "main:3": 26.68891473381905,
+      "main:4": 26.68891473381905,
+      "main:5": 26.68891473381905,
+      "main:6": 26.68891473381905,
+      "main:7": 26.68891473381905,
+      "main:8": 26.68891473381905,
+      "main:9": 26.68891473381905
+     },
+     "cost_by_world": [
+      1481.9113840228767,
+      1481.5614789050146,
+      1440.803510660039
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 1617.3011947582693,
+     "exposure": 0.0,
+     "burden": 53.13926195271141,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 30.251741441288516
+     },
+     "purchases": {
+      "main:0": 30.251741441288516,
+      "main:1": 26.68891473381905,
+      "main:2": 26.68891473381905,
+      "main:3": 26.68891473381905,
+      "main:4": 26.68891473381905,
+      "main:5": 26.68891473381905,
+      "main:6": 26.68891473381905,
+      "main:7": 26.68891473381905,
+      "main:8": 26.68891473381905,
+      "main:9": 26.68891473381905
+     },
+     "cost_by_world": [
+      1481.9113840228767,
+      1481.5614789050146,
+      1440.803510660039
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 1617.3011947582693,
+     "exposure": 0.0,
+     "burden": 53.13926195271141,
+     "well_solved": true,
+     "feasible": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 21.894787859142625
+     },
+     "purchases": {
+      "main:0": 21.894787859142625,
+      "main:1": 21.894787859142625,
+      "main:2": 26.688914733819058,
+      "main:3": 26.688914733819058,
+      "main:4": 26.688914733819058,
+      "main:5": 26.688914733819054,
+      "main:6": 26.688914733819054,
+      "main:7": 26.688914733819054,
+      "main:8": 26.688914733819054
+     },
+     "cost_by_world": [
+      1460.2134492422051,
+      1476.336582146645,
+      1391.1540388352175
+     ],
+     "service_by_world": [
+      0.9680522910963641,
+      0.9620762877262822,
+      0.9863088206066123
+     ],
+     "service_stat": 0.9718098784520931,
+     "hedged_cost": 1589.929365090446,
+     "exposure": 72.42554184845831,
+     "burden": 13.890220461267512,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 40.031001166487115
+     },
+     "purchases": {
+      "main:0": 40.031001166487115,
+      "main:1": 40.031001166487115,
+      "main:2": 40.031001166487115,
+      "main:5": 100.0,
+      "main:6": 4.962483383920452
+     },
+     "cost_by_world": [
+      1423.9385943415662,
+      1352.6864189939329,
+      1333.874486263451
+     ],
+     "service_by_world": [
+      0.9752537292872331,
+      1.0,
+      1.0
+     ],
+     "service_stat": 0.9915260068819806,
+     "hedged_cost": 1527.4102235414593,
+     "exposure": 21.771227277245835,
+     "burden": 142.60959060595243,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 34.631774451856884
+     },
+     "purchases": {
+      "main:0": 34.631774451856884,
+      "main:1": 34.631774451856884,
+      "main:2": 34.631774451856884,
+      "main:3": 21.6768272867232,
+      "main:5": 100.0,
+      "main:6": 4.962483383920452
+     },
+     "cost_by_world": [
+      1386.5362722751672,
+      1368.7314166308443,
+      1361.4934399617243
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 1530.2122490495012,
+     "exposure": 0.0,
+     "burden": 132.4129901646276,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 40.031001166487115
+     },
+     "purchases": {
+      "main:0": 40.031001166487115,
+      "main:1": 40.031001166487115,
+      "main:2": 40.031001166487115,
+      "main:5": 100.0,
+      "main:6": 4.962483383920452
+     },
+     "cost_by_world": [
+      1423.9385943415662,
+      1352.6864189939329,
+      1333.874486263451
+     ],
+     "service_by_world": [
+      0.9752537292872331,
+      1.0,
+      1.0
+     ],
+     "service_stat": 0.9915260068819806,
+     "hedged_cost": 1527.4102235414593,
+     "exposure": 21.771227277245835,
+     "burden": 142.60959060595243,
+     "well_solved": true,
+     "feasible": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "base_stock",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network"
+   ],
+   "chosen": "deterministic_network",
+   "recovery_mode": false,
+   "accepted": false,
+   "status": "RETAIN_INCUMBENT",
+   "reasons": [
+    "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+   ],
+   "final_p0_purchases": {
+    "main": 30.251741441288516
+   },
+   "candidate_gates": {
+    "deterministic_network": "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+    "stochastic_network": "stress gate: rejected",
+    "protected_network": "stress gate: rejected",
+    "cvar_network": "no positive hedged benefit against the incumbent",
+    "base_stock": "no positive hedged benefit against the incumbent"
+   },
+   "on_hand": 30.588115774187383,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.46875,
+     "protection_units": 12.571162727789407,
+     "lean": 9.487447895876564
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 30.251741441288516,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 14.41890367630604,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 12.571162727789407,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 3.2616750371930685
+     },
+     "need": 26.990066404095447
+    }
+   ],
+   "settlement": {
+    "unmet": 0.0,
+    "demand": 17.0,
+    "end_stock": 13.588115774187383,
+    "received": 0.0,
+    "cost": 156.2708396749966
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38004:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       21.775433852071778,
+       21.233419835727858,
+       21.233419835727858,
+       18.04840686036868,
+       28.66511677823261,
+       28.66511677823261,
+       21.775433852071778,
+       21.775433852071778,
+       18.04840686036868
+      ]
+     },
+     "fills": {
+      "main:0": 0.8054974078349986,
+      "main:1": 0.786754078132668,
+      "main:2": 0.8502552686242977,
+      "main:3": 0.8199317182531126
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38004:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       20.446319359247077,
+       20.968241487716877,
+       27.602531134983554,
+       20.968241487716877,
+       27.602531134983554,
+       17.379371455360015,
+       27.602531134983554,
+       27.602531134983554,
+       20.446319359247077
+      ]
+     },
+     "fills": {
+      "main:0": 0.6435856812324072,
+      "main:1": 0.7305725157786511,
+      "main:2": 0.7694479679823769,
+      "main:3": 0.9649120969163683
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38004:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       26.621758919203796,
+       19.719821421632442,
+       20.223198630438876,
+       16.761848208387576,
+       19.719821421632442,
+       26.621758919203796,
+       19.719821421632442,
+       19.719821421632442,
+       16.761848208387576
+      ]
+     },
+     "fills": {
+      "main:0": 0.699678135185249,
+      "main:1": 0.7440517544136607,
+      "main:2": 0.7764948957269577,
+      "main:3": 0.8753088058698851
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 15.945559843916776
+     },
+     "purchases": {
+      "main:0": 15.945559843916776,
+      "main:1": 25.03586540463377,
+      "main:2": 25.03586540463377,
+      "main:3": 25.03586540463377,
+      "main:4": 25.03586540463377,
+      "main:5": 25.03586540463377,
+      "main:6": 25.03586540463377,
+      "main:7": 25.03586540463377,
+      "main:8": 25.03586540463377
+     },
+     "cost_by_world": [
+      1324.094837913345,
+      1471.2033498125813,
+      1219.3511400016307
+     ],
+     "service_by_world": [
+      0.9678395569159328,
+      0.9093015948335085,
+      1.0
+     ],
+     "service_stat": 0.9572130847417651,
+     "hedged_cost": 1525.8411420959278,
+     "exposure": 93.77171152271889,
+     "burden": 24.701682004442286,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 15.945559843916776
+     },
+     "purchases": {
+      "main:0": 15.945559843916776,
+      "main:1": 25.03586540463377,
+      "main:2": 25.03586540463377,
+      "main:3": 25.03586540463377,
+      "main:4": 25.03586540463377,
+      "main:5": 25.03586540463377,
+      "main:6": 25.03586540463377,
+      "main:7": 25.03586540463377,
+      "main:8": 25.03586540463377
+     },
+     "cost_by_world": [
+      1324.094837913345,
+      1471.2033498125813,
+      1219.3511400016307
+     ],
+     "service_by_world": [
+      0.9678395569159328,
+      0.9093015948335085,
+      1.0
+     ],
+     "service_stat": 0.9572130847417651,
+     "hedged_cost": 1525.8411420959278,
+     "exposure": 93.77171152271889,
+     "burden": 24.701682004442286,
+     "well_solved": true,
+     "feasible": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 14.620401952155087
+     },
+     "purchases": {
+      "main:0": 14.620401952155087,
+      "main:1": 14.620401952155087,
+      "main:2": 25.781970645180767,
+      "main:3": 25.781970645180756,
+      "main:4": 25.781970645180756,
+      "main:5": 25.781970645180756,
+      "main:6": 25.781970645180756,
+      "main:7": 25.781970645180756
+     },
+     "cost_by_world": [
+      1307.884258720796,
+      1439.3994234194165,
+      1191.343982960469
+     ],
+     "service_by_world": [
+      0.935068862452424,
+      0.8837117485052984,
+      0.9675255081086508
+     ],
+     "service_stat": 0.9270648649099489,
+     "hedged_cost": 1495.484964637731,
+     "exposure": 159.84448531186177,
+     "burden": 20.409600468295242,
+     "well_solved": true,
+     "feasible": false
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 15.05223441459572
+     },
+     "purchases": {
+      "main:0": 15.05223441459572,
+      "main:1": 27.251019380425635,
+      "main:2": 27.251019380425635,
+      "main:3": 69.52358673833814,
+      "main:4": 10.087029281137186,
+      "main:6": 46.18887925645314
+     },
+     "cost_by_world": [
+      1239.0200888230297,
+      1238.4431573637332,
+      1175.388751357245
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 1404.9836061969934,
+     "exposure": 6.5133084111342514e-15,
+     "burden": 77.84874342336882,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 15.05223441459572
+     },
+     "purchases": {
+      "main:0": 15.05223441459572,
+      "main:1": 27.251019380425635,
+      "main:2": 27.251019380425635,
+      "main:3": 69.52358673833804,
+      "main:4": 10.087029281137292,
+      "main:6": 46.18887925645314
+     },
+     "cost_by_world": [
+      1239.0200888230297,
+      1238.4431573637332,
+      1175.3887513572447
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 1404.9836061969934,
+     "exposure": 0.0,
+     "burden": 77.84874342336877,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 15.05223441459574
+     },
+     "purchases": {
+      "main:0": 15.05223441459574,
+      "main:1": 27.251019380425618,
+      "main:2": 27.251019380425635,
+      "main:3": 69.52358673833815,
+      "main:4": 10.087029281137148,
+      "main:6": 46.18887925645314
+     },
+     "cost_by_world": [
+      1239.0200888230297,
+      1238.443157363733,
+      1175.3887513572447
+     ],
+     "service_by_world": [
+      0.9999999999999999,
+      1.0,
+      1.0
+     ],
+     "service_stat": 0.9999999999999998,
+     "hedged_cost": 1404.9836061969934,
+     "exposure": 1.4329278504495355e-13,
+     "burden": 77.8487434233688,
+     "well_solved": true,
+     "feasible": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "base_stock",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network"
+   ],
+   "chosen": "cvar_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {
+    "main": 15.05223441459572
+   },
+   "candidate_gates": {
+    "cvar_network": "accepted"
+   },
+   "on_hand": 39.4208436558697,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.75,
+     "protection_units": 11.989277057695855,
+     "lean": 10.141487479078158
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 15.05223441459572,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 2.834420932000363,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 11.989277057695855,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 0.22853642489950232
+     },
+     "need": 14.823697989696214
+    }
+   ],
+   "settlement": {
+    "unmet": 0.0,
+    "demand": 14.0,
+    "end_stock": 25.420843655869703,
+    "received": 0.0,
+    "cost": 125.19752392780751
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38005:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       16.589870450922962,
+       11.612909315646073,
+       16.589870450922962,
+       16.589870450922962,
+       16.589870450922962,
+       22.396325108745998,
+       11.612909315646073,
+       11.612909315646073
+      ]
+     },
+     "fills": {
+      "main:0": 0.872539436264518,
+      "main:1": 0.6621071276582737,
+      "main:2": 0.8945057678106028,
+      "main:3": 0.8637854693438561
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38005:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       20.07726385790457,
+       27.104306208171167,
+       20.589765306329234,
+       27.104306208171167,
+       14.054084700533199,
+       14.054084700533199,
+       14.054084700533199,
+       27.104306208171167
+      ]
+     },
+     "fills": {
+      "main:0": 0.698398155256632,
+      "main:1": 0.7959596703193067,
+      "main:2": 0.8730634119246148,
+      "main:3": 0.9267368149174704
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38005:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       18.318862815852,
+       12.50402060446465,
+       18.318862815852,
+       12.50402060446465,
+       12.50402060446465,
+       17.86288657780664,
+       12.50402060446465,
+       24.114896880038966
+      ]
+     },
+     "fills": {
+      "main:0": 0.7543312451775003,
+      "main:1": 0.7085209736415807,
+      "main:2": 0.9091664727132833,
+      "main:3": 0.8864459509262157
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 9.15243969765887
+     },
+     "purchases": {
+      "main:0": 9.15243969765887,
+      "main:1": 20.5138175199065,
+      "main:2": 20.513817519906496,
+      "main:3": 20.513817519906496,
+      "main:4": 20.513817519906496,
+      "main:5": 20.513817519906496,
+      "main:6": 20.513817519906496,
+      "main:7": 20.513817519906496
+     },
+     "cost_by_world": [
+      833.5115796562827,
+      1109.5307229208245,
+      853.0063955950698
+     ],
+     "service_by_world": [
+      1.0,
+      0.9024814172302856,
+      1.0
+     ],
+     "service_stat": 0.9615558777776158,
+     "hedged_cost": 1051.73157515012,
+     "exposure": 58.692021303838864,
+     "burden": 72.80304819612913,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 9.15243969765887
+     },
+     "purchases": {
+      "main:0": 9.15243969765887,
+      "main:1": 20.5138175199065,
+      "main:2": 20.513817519906496,
+      "main:3": 20.513817519906496,
+      "main:4": 20.513817519906496,
+      "main:5": 20.513817519906496,
+      "main:6": 20.513817519906496,
+      "main:7": 20.513817519906496
+     },
+     "cost_by_world": [
+      833.5115796562827,
+      1109.5307229208245,
+      853.0063955950698
+     ],
+     "service_by_world": [
+      1.0,
+      0.9024814172302856,
+      1.0
+     ],
+     "service_stat": 0.9615558777776158,
+     "hedged_cost": 1051.73157515012,
+     "exposure": 58.692021303838864,
+     "burden": 72.80304819612913,
+     "well_solved": true,
+     "feasible": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 8.293309394022833
+     },
+     "purchases": {
+      "main:0": 8.293309394022833,
+      "main:1": 8.293309394022833,
+      "main:2": 20.93227426687365,
+      "main:3": 20.932274266873648,
+      "main:4": 20.932274266873648,
+      "main:5": 20.932274266873648,
+      "main:6": 20.932274266873648
+     },
+     "cost_by_world": [
+      765.6709845942132,
+      1113.517210217305,
+      785.5178580981891
+     ],
+     "service_by_world": [
+      1.0,
+      0.8417919220960481,
+      1.0
+     ],
+     "service_stat": 0.937630649351511,
+     "hedged_cost": 1010.1698646122145,
+     "exposure": 95.21828163464535,
+     "burden": 52.90545571066703,
+     "well_solved": true,
+     "feasible": false
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 7.4533171314102145
+     },
+     "purchases": {
+      "main:0": 7.4533171314102145,
+      "main:1": 7.453317131410209,
+      "main:2": 31.04506023041486,
+      "main:3": 36.50136978260512,
+      "main:4": 36.50136978260512
+     },
+     "cost_by_world": [
+      767.6087025373512,
+      1029.3040284318265,
+      781.7020274947292
+     ],
+     "service_by_world": [
+      1.0,
+      0.8879339521109364,
+      1.0
+     ],
+     "service_stat": 0.9558209243852474,
+     "hedged_cost": 978.9154598670079,
+     "exposure": 67.44748214475318,
+     "burden": 95.81701594441166,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "main:1": 25.86784993524792,
+      "main:2": 31.04506023041486,
+      "main:3": 36.50136978260512,
+      "main:4": 36.50136978260512
+     },
+     "cost_by_world": [
+      804.328382857836,
+      983.4282037261132,
+      812.0435499990782
+     ],
+     "service_by_world": [
+      1.0,
+      0.9455172086753959,
+      1.0
+     ],
+     "service_stat": 0.9785216004046542,
+     "hedged_cost": 983.1143412269244,
+     "exposure": 32.790726221560206,
+     "burden": 109.68321906012461,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {
+      "main:1": 17.770195827368784,
+      "main:2": 31.04506023041486,
+      "main:3": 36.50136978260511,
+      "main:4": 36.50136978260511
+     },
+     "cost_by_world": [
+      781.2484197439874,
+      1011.4101039890936,
+      790.3542069864096
+     ],
+     "service_by_world": [
+      1.0,
+      0.9062499999999998,
+      1.0
+     ],
+     "service_stat": 0.963041541868389,
+     "hedged_cost": 980.7574012162402,
+     "exposure": 56.42388189980685,
+     "burden": 95.80962871654292,
+     "well_solved": true,
+     "feasible": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "base_stock",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network"
+   ],
+   "chosen": "protected_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [
+    "Cheaper candidate failed the gate; the next qualified candidate passed independent and stress confirmation."
+   ],
+   "final_p0_purchases": {},
+   "candidate_gates": {
+    "protected_network": "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+    "stochastic_network": "stress gate: rejected",
+    "cvar_network": "accepted"
+   },
+   "on_hand": 38.23864473292295,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.75,
+     "protection_units": 12.207181222910032,
+     "lean": 11.05942329044135
+    }
+   ],
+   "economics_orders": [],
+   "settlement": {
+    "unmet": 0.0,
+    "demand": 19.0,
+    "end_stock": 19.238644732922953,
+    "received": 0.0,
+    "cost": 115.20057696956911
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38006:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       27.02899153780861,
+       19.020401452531985,
+       27.02899153780861,
+       19.020401452531985,
+       17.01825393121283,
+       27.02899153780861,
+       20.021475213191565
+      ]
+     },
+     "fills": {
+      "main:0": 0.852853973257375,
+      "main:1": 0.8589852291239154,
+      "main:2": 0.7854587015376552,
+      "main:3": 0.6889901116003244
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38006:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       29.072362762159074,
+       18.304820998396455,
+       18.304820998396455,
+       29.072362762159074,
+       29.072362762159074,
+       21.53508352752524,
+       29.072362762159074
+      ]
+     },
+     "fills": {
+      "main:0": 0.8042902107093354,
+      "main:1": 0.7959626972418204,
+      "main:2": 0.866216913894631,
+      "main:3": 0.8437995522552251
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38006:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       20.886554127664795,
+       17.3116654927792,
+       20.366665285622588,
+       19.34833202134146,
+       27.494998135590492,
+       20.886554127664795,
+       20.886554127664795
+      ]
+     },
+     "fills": {
+      "main:0": 0.7295613493140296,
+      "main:1": 0.6466704639482719,
+      "main:2": 0.9504068127498491,
+      "main:3": 0.9006263347819652
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 35.828360282189045
+     },
+     "purchases": {
+      "main:0": 35.828360282189045,
+      "main:1": 22.734883182469556,
+      "main:2": 22.734883182469552,
+      "main:3": 22.734883182469552,
+      "main:4": 22.734883182469552,
+      "main:5": 22.734883182469552,
+      "main:6": 22.734883182469552
+     },
+     "cost_by_world": [
+      1090.1460209359425,
+      1309.6197537953492,
+      1021.287705564034
+     ],
+     "service_by_world": [
+      0.9116046434236481,
+      0.8067115122590359,
+      0.9488842075661165
+     ],
+     "service_stat": 0.884793117680975,
+     "hedged_cost": 1209.8767073471313,
+     "exposure": 201.8275989037623,
+     "burden": 14.106867793630494,
+     "well_solved": true,
+     "feasible": false
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 35.828360282189045
+     },
+     "purchases": {
+      "main:0": 35.828360282189045,
+      "main:1": 22.734883182469556,
+      "main:2": 22.734883182469552,
+      "main:3": 22.734883182469552,
+      "main:4": 22.734883182469552,
+      "main:5": 22.734883182469552,
+      "main:6": 22.734883182469552
+     },
+     "cost_by_world": [
+      1090.1460209359425,
+      1309.6197537953492,
+      1021.287705564034
+     ],
+     "service_by_world": [
+      0.9116046434236481,
+      0.8067115122590359,
+      0.9488842075661165
+     ],
+     "service_stat": 0.884793117680975,
+     "hedged_cost": 1209.8767073471313,
+     "exposure": 201.8275989037623,
+     "burden": 14.106867793630494,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 23.17332074836709
+     },
+     "purchases": {
+      "main:0": 23.17332074836709,
+      "main:1": 23.17332074836709,
+      "main:2": 23.198646948037936,
+      "main:3": 23.198646948037933,
+      "main:4": 23.19864694803793,
+      "main:5": 23.19864694803793
+     },
+     "cost_by_world": [
+      1086.051278873218,
+      1295.9503610499025,
+      997.1167275858058
+     ],
+     "service_by_world": [
+      0.8518303975702691,
+      0.7590816766744857,
+      0.8991102242870942
+     ],
+     "service_stat": 0.8325332706973363,
+     "hedged_cost": 1188.1253022737505,
+     "exposure": 293.3801105547442,
+     "burden": 1.1420032461364615,
+     "well_solved": true,
+     "feasible": false
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 27.377895508088013
+     },
+     "purchases": {
+      "main:0": 27.377895508088013,
+      "main:1": 27.377895508088013,
+      "main:2": 100.0,
+      "main:5": 12.526228758460965
+     },
+     "cost_by_world": [
+      1045.5868435306936,
+      1148.02230331874,
+      940.2153682838909
+     ],
+     "service_by_world": [
+      0.9501154435301191,
+      0.91715560326541,
+      0.9888035427485751
+     ],
+     "service_stat": 0.95,
+     "hedged_cost": 1132.4084527633584,
+     "exposure": 87.59355120159917,
+     "burden": 102.18009777263471,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 27.377895508088013
+     },
+     "purchases": {
+      "main:0": 27.377895508088013,
+      "main:1": 27.377895508088013,
+      "main:2": 100.0,
+      "main:3": 17.692075660661274
+     },
+     "cost_by_world": [
+      1069.9040020616092,
+      1126.105211365197,
+      949.2655907598893
+     ],
+     "service_by_world": [
+      0.9501154435301191,
+      0.9436250497325946,
+      0.9888035427485751
+     ],
+     "service_stat": 0.9596637511914556,
+     "hedged_cost": 1139.5175849045827,
+     "exposure": 70.6639055058333,
+     "burden": 124.14002419206717,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    }
+   },
+   "feasible": [
+    "stochastic_network",
+    "cvar_network"
+   ],
+   "chosen": "stochastic_network",
+   "recovery_mode": false,
+   "accepted": false,
+   "status": "RETAIN_INCUMBENT",
+   "reasons": [
+    "Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the economic downside tolerance (service-first acceptance).",
+    "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+   ],
+   "final_p0_purchases": {
+    "main": 35.828360282189045
+   },
+   "candidate_gates": {
+    "stochastic_network": "Incumbent misses a requested service target under independent confirmation; the candidate meets every target within the economic downside tolerance (service-first acceptance).; Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+    "cvar_network": "no positive hedged benefit against the incumbent"
+   },
+   "on_hand": 19.238644732922953,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.75,
+     "protection_units": 12.193560517562553,
+     "lean": 10.51204488073068
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 35.828360282189045,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 19.154815667690105,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 12.193560517562553,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 4.479984096936388
+     },
+     "need": 31.348376185252658
+    }
+   ],
+   "settlement": {
+    "unmet": 0.7613552670770467,
+    "demand": 20.0,
+    "end_stock": 0.0,
+    "received": 0.0,
+    "cost": 179.5206651223331
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38007:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       17.01103006247712,
+       27.01751833452248,
+       27.01751833452248,
+       20.012976544090726,
+       20.012976544090726,
+       14.00908358086351
+      ]
+     },
+     "fills": {
+      "main:0": 0.856937519127464,
+      "main:1": 0.8805583877367368,
+      "main:2": 0.8467892098990312,
+      "main:3": 0.9429366280875183
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38007:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       14.845808661596251,
+       20.14788318359491,
+       14.845808661596251,
+       28.631202418792768,
+       21.208298087994642,
+       21.749670835080394
+      ]
+     },
+     "fills": {
+      "main:0": 0.6901798305966372,
+      "main:1": 0.7584015244876464,
+      "main:2": 0.6642554475633176,
+      "main:3": 0.7967661462670297
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38007:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       17.279356111173165,
+       17.279356111173165,
+       18.18879590649807,
+       24.554874473772394,
+       18.18879590649807,
+       12.732157134548649
+      ]
+     },
+     "fills": {
+      "main:0": 0.7824516613897664,
+      "main:1": 0.955843808248603,
+      "main:2": 0.9147272879381692,
+      "main:3": 0.778347216252522
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 23.96080697925117
+     },
+     "purchases": {
+      "main:0": 23.96080697925117,
+      "main:1": 23.333893367491058,
+      "main:2": 23.333893367491058,
+      "main:3": 23.333893367491058,
+      "main:4": 23.333893367491058,
+      "main:5": 23.333893367491058
+     },
+     "cost_by_world": [
+      797.1135889850872,
+      901.9599428091474,
+      718.850395451277
+     ],
+     "service_by_world": [
+      0.9881201868198669,
+      0.9468475728186392,
+      1.0
+     ],
+     "service_stat": 0.9776164994608405,
+     "hedged_cost": 961.954093725298,
+     "exposure": 29.1139521894051,
+     "burden": 43.09042190675215,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 23.96080697925117
+     },
+     "purchases": {
+      "main:0": 23.96080697925117,
+      "main:1": 23.333893367491058,
+      "main:2": 23.333893367491058,
+      "main:3": 23.333893367491058,
+      "main:4": 23.333893367491058,
+      "main:5": 23.333893367491058
+     },
+     "cost_by_world": [
+      797.1135889850872,
+      901.9599428091474,
+      718.850395451277
+     ],
+     "service_by_world": [
+      0.9881201868198669,
+      0.9468475728186392,
+      1.0
+     ],
+     "service_stat": 0.9776164994608405,
+     "hedged_cost": 961.954093725298,
+     "exposure": 29.1139521894051,
+     "burden": 43.09042190675215,
+     "well_solved": true,
+     "feasible": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 21.67612478769794
+     },
+     "purchases": {
+      "main:0": 21.67612478769794,
+      "main:1": 21.67612478769794,
+      "main:2": 21.676124787697944,
+      "main:3": 21.676124787697944,
+      "main:4": 21.676124787697944
+     },
+     "cost_by_world": [
+      771.5468531303842,
+      862.5482545374475,
+      661.6151542830208
+     ],
+     "service_by_world": [
+      0.9495742167901192,
+      0.8930801355879104,
+      1.0
+     ],
+     "service_stat": 0.9456198219417052,
+     "hedged_cost": 911.891572723061,
+     "exposure": 70.73164902293603,
+     "burden": 33.42405040875352,
+     "well_solved": true,
+     "feasible": false
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 17.84739734425366
+     },
+     "purchases": {
+      "main:0": 17.84739734425366,
+      "main:1": 32.99969732143144,
+      "main:2": 21.224094968801264,
+      "main:3": 21.224094968801264,
+      "main:4": 17.050752029537975
+     },
+     "cost_by_world": [
+      729.1944169169443,
+      854.1449608230743,
+      662.0221062208916
+     ],
+     "service_by_world": [
+      1.0,
+      0.9073574776251905,
+      1.0
+     ],
+     "service_stat": 0.9682875432170207,
+     "hedged_cost": 902.4306553567006,
+     "exposure": 41.24801431183565,
+     "burden": 39.31401368856053,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 17.84739734425377
+     },
+     "purchases": {
+      "main:0": 17.84739734425377,
+      "main:1": 53.409853944488326,
+      "main:3": 25.483797310692385,
+      "main:4": 25.483797310692392
+     },
+     "cost_by_world": [
+      750.0175749782459,
+      794.3108103262115,
+      681.80868433078
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 905.5775125312598,
+     "exposure": 0.0,
+     "burden": 63.26202054569195,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 17.84739734425366
+     },
+     "purchases": {
+      "main:0": 17.84739734425366,
+      "main:1": 32.99969732143143,
+      "main:2": 21.224094968801285,
+      "main:3": 21.224094968801268,
+      "main:4": 17.050752029537975
+     },
+     "cost_by_world": [
+      729.1944169169442,
+      854.1449608230743,
+      662.0221062208916
+     ],
+     "service_by_world": [
+      1.0,
+      0.9073574776251906,
+      1.0
+     ],
+     "service_stat": 0.9682875432170208,
+     "hedged_cost": 902.4306553567006,
+     "exposure": 41.24801431183561,
+     "burden": 39.314013688560536,
+     "well_solved": true,
+     "feasible": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "base_stock",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network"
+   ],
+   "chosen": "stochastic_network",
+   "recovery_mode": false,
+   "accepted": false,
+   "status": "RETAIN_INCUMBENT",
+   "reasons": [
+    "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+   ],
+   "final_p0_purchases": {
+    "main": 23.96080697925117
+   },
+   "candidate_gates": {
+    "stochastic_network": "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery.",
+    "protected_network": "stress gate: rejected",
+    "cvar_network": "stress gate: rejected",
+    "base_stock": "no positive hedged benefit against the incumbent"
+   },
+   "on_hand": 28.73444399393278,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.75,
+     "protection_units": 10.91932447959134,
+     "lean": 9.984062588289909
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 23.96080697925117,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 10.554278627707262,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 10.91932447959134,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 2.487203871952568
+     },
+     "need": 21.4736031072986
+    }
+   ],
+   "settlement": {
+    "unmet": 0.0,
+    "demand": 27.0,
+    "end_stock": 1.7344439939327785,
+    "received": 0.0,
+    "cost": 179.2038225461028
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38008:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       19.626953790758478,
+       27.944878537342394,
+       19.626953790758478,
+       27.944878537342394,
+       27.944878537342394
+      ]
+     },
+     "fills": {
+      "main:0": 0.7825349411568349,
+      "main:1": 0.8489143066414999,
+      "main:2": 0.7906891526515761,
+      "main:3": 0.77818934544033
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38008:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       31.96844665565172,
+       21.70429522179002,
+       22.452887903390213,
+       31.96844665565172,
+       22.452887903390213
+      ]
+     },
+     "fills": {
+      "main:0": 0.8610000980229375,
+      "main:1": 0.8198558428736425,
+      "main:2": 0.8717871545449828,
+      "main:3": 0.8192087581493351
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38008:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       20.76505195113374,
+       23.03763529593071,
+       22.26954678731156,
+       22.26954678731156,
+       23.03763529593071
+      ]
+     },
+     "fills": {
+      "main:0": 0.8307744246080442,
+      "main:1": 0.8366058834180093,
+      "main:2": 0.8180477558412389,
+      "main:3": 0.7949203439519157
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 38.96199204318439
+     },
+     "purchases": {
+      "main:0": 38.96199204318439,
+      "main:1": 24.36027143948439,
+      "main:2": 24.36027143948439,
+      "main:3": 24.36027143948439,
+      "main:4": 24.36027143948439
+     },
+     "cost_by_world": [
+      880.4126500449269,
+      897.7145923163757,
+      752.3548709252441
+     ],
+     "service_by_world": [
+      0.9121406054451972,
+      0.9008111297437156,
+      1.0
+     ],
+     "service_stat": 0.9348977555432901,
+     "hedged_cost": 960.9263675706472,
+     "exposure": 87.13206622954914,
+     "burden": 23.67720531550696,
+     "well_solved": true,
+     "feasible": false
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 38.96199204318439
+     },
+     "purchases": {
+      "main:0": 38.96199204318439,
+      "main:1": 24.36027143948439,
+      "main:2": 24.36027143948439,
+      "main:3": 24.36027143948439,
+      "main:4": 24.36027143948439
+     },
+     "cost_by_world": [
+      880.4126500449269,
+      897.7145923163757,
+      752.3548709252441
+     ],
+     "service_by_world": [
+      0.9121406054451972,
+      0.9008111297437156,
+      1.0
+     ],
+     "service_stat": 0.9348977555432901,
+     "hedged_cost": 960.9263675706472,
+     "exposure": 87.13206622954914,
+     "burden": 23.67720531550696,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 24.00478459164117
+     },
+     "purchases": {
+      "main:0": 24.00478459164117,
+      "main:1": 24.004784591641172,
+      "main:2": 24.004784591641165,
+      "main:3": 24.004784591641172
+     },
+     "cost_by_world": [
+      880.6999010935942,
+      917.2505945373416,
+      730.6753795092048
+     ],
+     "service_by_world": [
+      0.8100674906785288,
+      0.7953262421590067,
+      0.9124747606975395
+     ],
+     "service_stat": 0.83604351544287,
+     "hedged_cost": 936.1872914364128,
+     "exposure": 219.43740020661483,
+     "burden": 2.0442479472284703,
+     "well_solved": true,
+     "feasible": false
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 38.61821414057487
+     },
+     "purchases": {
+      "main:0": 38.61821414057487,
+      "main:1": 38.61821414057487,
+      "main:2": 38.61821414057487
+     },
+     "cost_by_world": [
+      804.1956602250211,
+      831.0990906464723,
+      702.1285924741862
+     ],
+     "service_by_world": [
+      0.9458679545580386,
+      0.9304342498636284,
+      1.0
+     ],
+     "service_stat": 0.9568657852167176,
+     "hedged_cost": 898.2062577332375,
+     "exposure": 57.73031775817986,
+     "burden": 58.678288095913665,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 38.618214140574864
+     },
+     "purchases": {
+      "main:0": 38.618214140574864,
+      "main:1": 38.618214140574864,
+      "main:2": 38.618214140574864
+     },
+     "cost_by_world": [
+      804.1956602250214,
+      831.0990906464724,
+      702.1285924741862
+     ],
+     "service_by_world": [
+      0.9458679545580385,
+      0.9304342498636283,
+      1.0
+     ],
+     "service_stat": 0.9568657852167175,
+     "hedged_cost": 898.2062577332376,
+     "exposure": 57.73031775817998,
+     "burden": 58.678288095913615,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 39.96453390608118
+     },
+     "purchases": {
+      "main:0": 39.96453390608118,
+      "main:1": 39.964533906081165,
+      "main:2": 39.964533906081165
+     },
+     "cost_by_world": [
+      790.0569920316049,
+      839.2736544399988,
+      710.6531368807268
+     ],
+     "service_by_world": [
+      0.9723608572987102,
+      0.9304342498636284,
+      1.0
+     ],
+     "service_stat": 0.9657995920065877,
+     "hedged_cost": 901.3485585911337,
+     "exposure": 45.773417479348936,
+     "burden": 67.63233580066178,
+     "well_solved": true,
+     "feasible": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    }
+   },
+   "feasible": [
+    "stochastic_network",
+    "cvar_network",
+    "protected_network"
+   ],
+   "chosen": "cvar_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {
+    "main": 38.618214140574864
+   },
+   "candidate_gates": {
+    "cvar_network": "accepted"
+   },
+   "on_hand": 22.88684915332224,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.75,
+     "protection_units": 14.935413867651912,
+     "lean": 11.186802778975299
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 38.618214140574864,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 18.2407831406128,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 14.935413867651912,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 5.442017132310154
+     },
+     "need": 33.17619700826471
+    }
+   ],
+   "settlement": {
+    "unmet": 0.0,
+    "demand": 22.0,
+    "end_stock": 0.8868491533222382,
+    "received": 0.0,
+    "cost": 167.50650081832129
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38009:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       21.285732902391658,
+       24.312797809330817,
+       16.745135541982922,
+       24.312797809330817
+      ]
+     },
+     "fills": {
+      "main:0": 0.8798261545254681,
+      "main:1": 0.8144459933702873,
+      "main:2": 0.9498256317669175,
+      "main:3": 0.8901527907815885
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38009:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       21.932474986155807,
+       19.898823901830376,
+       17.836420767700115,
+       19.898823901830376
+      ]
+     },
+     "fills": {
+      "main:0": 0.9315309301720504,
+      "main:1": 0.8217595853257117,
+      "main:2": 0.8919501227993926,
+      "main:3": 0.7751895838620876
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    },
+    {
+     "name": "fitted:38009:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       23.03269657393715,
+       15.863481819436018,
+       30.20191132843828,
+       20.165010672136695
+      ]
+     },
+     "fills": {
+      "main:0": 0.8703814355131687,
+      "main:1": 0.8531515928669738,
+      "main:2": 0.7642061913971576,
+      "main:3": 0.893538206457115
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3,
+      "main:3": 4
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 21.08784099231939
+     },
+     "purchases": {
+      "main:0": 21.08784099231939,
+      "main:1": 24.375146867081703,
+      "main:2": 24.375146867081703,
+      "main:3": 24.375146867081703
+     },
+     "cost_by_world": [
+      553.5600157154946,
+      537.7329221095322,
+      578.3953032889891
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 650.9507447686178,
+     "exposure": 0.0,
+     "burden": 70.96153476335185,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 21.08784099231939
+     },
+     "purchases": {
+      "main:0": 21.08784099231939,
+      "main:1": 24.375146867081703,
+      "main:2": 24.375146867081703,
+      "main:3": 24.375146867081703
+     },
+     "cost_by_world": [
+      553.5600157154946,
+      537.7329221095322,
+      578.3953032889891
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 650.9507447686178,
+     "exposure": 0.0,
+     "burden": 70.96153476335185,
+     "well_solved": true,
+     "feasible": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 17.6352308611169
+     },
+     "purchases": {
+      "main:0": 17.6352308611169,
+      "main:1": 17.6352308611169,
+      "main:2": 17.6352308611169
+     },
+     "cost_by_world": [
+      494.7214871936486,
+      452.11315618218697,
+      553.6931720934161
+     ],
+     "service_by_world": [
+      0.97559289160438,
+      1.0,
+      0.9162129781492891
+     ],
+     "service_stat": 0.9624475744325283,
+     "hedged_cost": 580.9079063359757,
+     "exposure": 35.1784512007045,
+     "burden": 42.414845457098856,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 58.998207809799396
+     },
+     "purchases": {
+      "main:0": 58.998207809799396
+     },
+     "cost_by_world": [
+      494.1702843932573,
+      454.71053718468363,
+      506.52184891501656
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 575.1586586787016,
+     "exposure": 0.0,
+     "burden": 121.01111269689164,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 58.998207809799396
+     },
+     "purchases": {
+      "main:0": 58.998207809799396
+     },
+     "cost_by_world": [
+      494.1702843932573,
+      454.71053718468363,
+      506.52184891501656
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 575.1586586787016,
+     "exposure": 0.0,
+     "burden": 121.01111269689164,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 58.998207809799396
+     },
+     "purchases": {
+      "main:0": 58.998207809799396
+     },
+     "cost_by_world": [
+      494.1702843932573,
+      454.71053718468363,
+      506.52184891501656
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 575.1586586787016,
+     "exposure": 0.0,
+     "burden": 121.01111269689164,
+     "well_solved": true,
+     "feasible": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "base_stock",
+    "deterministic_network",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network"
+   ],
+   "chosen": "deterministic_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {
+    "main": 17.6352308611169
+   },
+   "candidate_gates": {
+    "deterministic_network": "accepted"
+   },
+   "on_hand": 37.9121555877507,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.75,
+     "protection_units": 14.95443788071081,
+     "lean": 10.772769951420507
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 17.6352308611169,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 3.5346286735248853,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 14.100602187592013,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 0.0
+     },
+     "need": 18.48906655423569
+    }
+   ],
+   "settlement": {
+    "unmet": 0.0,
+    "demand": 17.0,
+    "end_stock": 20.912155587750703,
+    "received": 0.0,
+    "cost": 154.9159634400101
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38010:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       10.271789402642696,
+       17.87751517441833,
+       26.750861908156576
+      ]
+     },
+     "fills": {
+      "main:0": 0.7835909379730371,
+      "main:1": 0.7870345496659594,
+      "main:2": 0.8630352654070121
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3
+     }
+    },
+    {
+     "name": "fitted:38010:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       20.83772094537932,
+       22.427997893084505,
+       33.55993652702079
+      ]
+     },
+     "fills": {
+      "main:0": 0.8493600772274098,
+      "main:1": 0.8524984375638974,
+      "main:2": 0.807504201594761
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3
+     }
+    },
+    {
+     "name": "fitted:38010:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       15.439518990734378,
+       29.34498359054086,
+       29.34498359054086
+      ]
+     },
+     "fills": {
+      "main:0": 0.7932816576454992,
+      "main:1": 0.823256442295578,
+      "main:2": 0.8957121472797097
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2,
+      "main:2": 3
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 26.888625398006454
+     },
+     "purchases": {
+      "main:0": 26.888625398006454,
+      "main:1": 24.22937993818457,
+      "main:2": 24.22937993818457
+     },
+     "cost_by_world": [
+      410.2694538960143,
+      495.1620223716804,
+      481.4541005889226
+     ],
+     "service_by_world": [
+      1.0,
+      0.986427249920911,
+      0.9924058119663536
+     ],
+     "service_stat": 0.9921999160857748,
+     "hedged_cost": 552.5977346441628,
+     "exposure": 5.887525148135787,
+     "burden": 63.19632622007606,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 26.888625398006454
+     },
+     "purchases": {
+      "main:0": 26.888625398006454,
+      "main:1": 24.22937993818457,
+      "main:2": 24.22937993818457
+     },
+     "cost_by_world": [
+      410.2694538960143,
+      495.1620223716804,
+      481.4541005889226
+     ],
+     "service_by_world": [
+      1.0,
+      0.986427249920911,
+      0.9924058119663536
+     ],
+     "service_stat": 0.9921999160857748,
+     "hedged_cost": 552.5977346441628,
+     "exposure": 5.887525148135787,
+     "burden": 63.19632622007606,
+     "well_solved": true,
+     "feasible": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 17.278492383487084
+     },
+     "purchases": {
+      "main:0": 17.278492383487084,
+      "main:1": 17.278492383487084
+     },
+     "cost_by_world": [
+      328.7010050392035,
+      511.79500601880113,
+      498.4989577913601
+     ],
+     "service_by_world": [
+      1.0,
+      0.8030499128527376,
+      0.8123707692831276
+     ],
+     "service_stat": 0.858931604619804,
+     "hedged_cost": 515.9422719202171,
+     "exposure": 106.478819271853,
+     "burden": 43.019981492573095,
+     "well_solved": true,
+     "feasible": false
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 25.882594238161502
+     },
+     "purchases": {
+      "main:0": 25.882594238161502,
+      "main:1": 25.882594238161506
+     },
+     "cost_by_world": [
+      366.86199390967363,
+      442.2912806705352,
+      437.0462681575966
+     ],
+     "service_by_world": [
+      1.0,
+      0.9936498359363481,
+      1.0
+     ],
+     "service_stat": 0.9976301047538931,
+     "hedged_cost": 501.67014169356617,
+     "exposure": 1.788803558184173,
+     "burden": 62.125189665628135,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 26.169254681217332
+     },
+     "purchases": {
+      "main:0": 26.169254681217332,
+      "main:1": 26.169254681217332
+     },
+     "cost_by_world": [
+      368.1333928496006,
+      439.975644589177,
+      438.26581874217516
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 502.0658284949456,
+     "exposure": 0.0,
+     "burden": 63.01915558732905,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 25.882594238161502
+     },
+     "purchases": {
+      "main:0": 25.882594238161502,
+      "main:1": 25.882594238161502
+     },
+     "cost_by_world": [
+      366.86199390967363,
+      442.29128067053523,
+      437.04626815759667
+     ],
+     "service_by_world": [
+      1.0,
+      0.9936498359363481,
+      1.0
+     ],
+     "service_stat": 0.9976301047538931,
+     "hedged_cost": 501.6701416935663,
+     "exposure": 1.788803558184199,
+     "burden": 62.125189665628135,
+     "well_solved": true,
+     "feasible": true
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "base_stock",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network"
+   ],
+   "chosen": "stochastic_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {
+    "main": 25.882594238161502
+   },
+   "candidate_gates": {
+    "stochastic_network": "accepted"
+   },
+   "on_hand": 32.28928646051263,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.75,
+     "protection_units": 15.3426625193829,
+     "lean": 10.908025599054112
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 25.882594238161502,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 8.412819374635404,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 15.3426625193829,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 2.127112344143198
+     },
+     "need": 23.755481894018303
+    }
+   ],
+   "settlement": {
+    "unmet": 0.0,
+    "demand": 26.0,
+    "end_stock": 6.289286460512624,
+    "received": 0.0,
+    "cost": 179.26915816371658
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38011:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       23.927243247087016,
+       23.927243247087016
+      ]
+     },
+     "fills": {
+      "main:0": 0.7652128696983282,
+      "main:1": 0.83001856243438
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2
+     }
+    },
+    {
+     "name": "fitted:38011:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       20.96864747037032,
+       29.636479622017383
+      ]
+     },
+     "fills": {
+      "main:0": 0.8473936759088543,
+      "main:1": 0.8132511490479123
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2
+     }
+    },
+    {
+     "name": "fitted:38011:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       19.629215993684394,
+       15.752062180862849
+      ]
+     },
+     "fills": {
+      "main:0": 0.6309269377227457,
+      "main:1": 0.639377214153945
+     },
+     "arrival": {
+      "main:0": 1,
+      "main:1": 2
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 29.988269385359906
+     },
+     "purchases": {
+      "main:0": 29.988269385359906,
+      "main:1": 24.73845624191692
+     },
+     "cost_by_world": [
+      338.0138347353405,
+      340.9513769644835,
+      323.73091452068127
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 333.05197845434225,
+     "exposure": 0.0,
+     "burden": 40.34826657259524,
+     "well_solved": true,
+     "feasible": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 29.988269385359906
+     },
+     "purchases": {
+      "main:0": 29.988269385359906,
+      "main:1": 24.73845624191692
+     },
+     "cost_by_world": [
+      338.0138347353405,
+      340.9513769644835,
+      323.73091452068127
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 333.05197845434225,
+     "exposure": 0.0,
+     "burden": 40.34826657259524,
+     "well_solved": true,
+     "feasible": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 14.02513855438107
+     },
+     "purchases": {
+      "main:0": 14.02513855438107
+     },
+     "cost_by_world": [
+      303.4734785923784,
+      321.1998858318176,
+      211.0640225160835
+     ],
+     "service_by_world": [
+      0.8494415357919567,
+      0.826046452159748,
+      1.0
+     ],
+     "service_stat": 0.8803964978264841,
+     "hedged_cost": 264.0756972597,
+     "exposure": 58.695411091735316,
+     "burden": 23.843283964743378,
+     "well_solved": true,
+     "feasible": false
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 23.440685884195055
+     },
+     "purchases": {
+      "main:0": 23.440685884195055
+     },
+     "cost_by_world": [
+      274.12200152809123,
+      283.3368587922781,
+      237.50135971115432
+     ],
+     "service_by_world": [
+      1.0,
+      0.9837118058686426,
+      1.0
+     ],
+     "service_stat": 0.9938414476825658,
+     "hedged_cost": 258.68186697289343,
+     "exposure": 3.02230915845035,
+     "burden": 28.79371933456264,
+     "well_solved": true,
+     "feasible": true
+    },
+    "cvar_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 24.413393325324797
+     },
+     "purchases": {
+      "main:0": 24.413393325324797
+     },
+     "cost_by_world": [
+      276.33725436908384,
+      279.4252807549147,
+      240.23256520697007
+     ],
+     "service_by_world": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "service_stat": 1.0,
+     "hedged_cost": 259.52397478651426,
+     "exposure": 0.0,
+     "burden": 29.925415650842577,
+     "well_solved": true,
+     "feasible": true
+    },
+    "protected_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 23.44068588419505
+     },
+     "purchases": {
+      "main:0": 23.44068588419505
+     },
+     "cost_by_world": [
+      274.12200152809123,
+      283.3368587922781,
+      237.5013597111543
+     ],
+     "service_by_world": [
+      0.9999999999999999,
+      0.9837118058686426,
+      1.0
+     ],
+     "service_stat": 0.9938414476825658,
+     "hedged_cost": 258.68186697289343,
+     "exposure": 3.0223091584503763,
+     "burden": 28.79371933456264,
+     "well_solved": true,
+     "feasible": true
+    },
+    "hedged_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 23.44068588419505
+     },
+     "purchases": {
+      "main:0": 23.44068588419505
+     },
+     "cost_by_world": [
+      274.12200152809123,
+      283.3368587922781,
+      237.5013597111543
+     ],
+     "service_by_world": [
+      0.9999999999999999,
+      0.9837118058686426,
+      1.0
+     ],
+     "service_stat": 0.9938414476825658,
+     "hedged_cost": 258.68186697289343,
+     "exposure": 3.0223091584503763,
+     "burden": 28.79371933456264,
+     "well_solved": true,
+     "feasible": true
+    },
+    "stress_network": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 23.440685884195048
+     },
+     "purchases": {
+      "main:0": 23.440685884195048
+     },
+     "cost_by_world": [
+      274.12200152809123,
+      283.3368587922782,
+      237.5013597111543
+     ],
+     "service_by_world": [
+      0.9999999999999999,
+      0.9837118058686425,
+      1.0
+     ],
+     "service_stat": 0.9938414476825658,
+     "hedged_cost": 258.68186697289343,
+     "exposure": 3.022309158450389,
+     "burden": 28.793719334562635,
+     "well_solved": true,
+     "feasible": true
+    }
+   },
+   "feasible": [
+    "incumbent",
+    "base_stock",
+    "stochastic_network",
+    "cvar_network",
+    "protected_network",
+    "hedged_network",
+    "stress_network"
+   ],
+   "chosen": "stress_network",
+   "recovery_mode": false,
+   "accepted": true,
+   "status": "PENDING_REVIEW",
+   "reasons": [],
+   "final_p0_purchases": {
+    "main": 23.440685884195048
+   },
+   "candidate_gates": {
+    "stress_network": "accepted"
+   },
+   "on_hand": 29.91737198103204,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.75,
+     "protection_units": 14.751932624116941,
+     "lean": 11.265819149328674
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 23.440685884195048,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 11.811815141829804,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 11.628870742365244,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 0.0
+     },
+     "need": 26.563747765946744
+    }
+   ],
+   "settlement": {
+    "unmet": 0.0,
+    "demand": 28.0,
+    "end_stock": 1.9173719810320407,
+    "received": 0.0,
+    "cost": 191.70650538886787
+   },
+   "truth_demand": null
+  },
+  {
+   "state": "PROTECT",
+   "lean_profile": false,
+   "lean_review": false,
+   "worlds": [
+    {
+     "name": "fitted:38012:0",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       22.46507394416883
+      ]
+     },
+     "fills": {
+      "main:0": 0.8532915166300961
+     },
+     "arrival": {
+      "main:0": 1
+     }
+    },
+    {
+     "name": "fitted:38012:1",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       20.127243912032775
+      ]
+     },
+     "fills": {
+      "main:0": 0.8976984962829335
+     },
+     "arrival": {
+      "main:0": 1
+     }
+    },
+    {
+     "name": "fitted:38012:2",
+     "weight": 0.3333333333333333,
+     "demand": {
+      "retail_A": [
+       21.9688341241048
+      ]
+     },
+     "fills": {
+      "main:0": 0.8549461307272227
+     },
+     "arrival": {
+      "main:0": 1
+     }
+    }
+   ],
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 44.94176640212619
+     },
+     "purchases": {
+      "main:0": 44.94176640212619
+     },
+     "cost_by_world": [
+      208.59567581153635,
+      177.89796371001222,
+      202.8395926698771
+     ],
+     "service_by_world": [
+      0.9148852403723904,
+      1.0,
+      0.9355509927967982
+     ],
+     "service_stat": 0.9484522996352366,
+     "hedged_cost": 230.1560866601489,
+     "exposure": 12.202589364110866,
+     "burden": 0.7095344389360806,
+     "well_solved": true,
+     "feasible": false
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "p0_purchases": {
+      "main": 44.94176640212619
+     },
+     "purchases": {
+      "main:0": 44.94176640212619
+     },
+     "cost_by_world": [
+      208.59567581153635,
+      177.89796371001222,
+      202.8395926698771
+     ],
+     "service_by_world": [
+      0.9148852403723904,
+      1.0,
+      0.9355509927967982
+     ],
+     "service_stat": 0.9484522996352366,
+     "hedged_cost": 230.1560866601489,
+     "exposure": 12.202589364110866,
+     "burden": 0.7095344389360806,
+     "well_solved": true,
+     "feasible": false
+    },
+    "deterministic_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stochastic_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "cvar_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "protected_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "hedged_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "stress_network": {
+     "status": "INFEASIBLE",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [],
+     "service_by_world": [],
+     "service_stat": null,
+     "hedged_cost": null,
+     "exposure": null,
+     "burden": null,
+     "well_solved": false,
+     "feasible": false
+    },
+    "joint_recovery": {
+     "status": "OPTIMAL",
+     "p0_purchases": {},
+     "purchases": {},
+     "cost_by_world": [
+      123.79802593349058,
+      101.0832262566936,
+      118.33938791278625
+     ],
+     "service_by_world": [
+      0.9148852403723904,
+      1.0,
+      0.9355509927967982
+     ],
+     "service_stat": 0.9484522996352366,
+     "hedged_cost": 137.66021993313524,
+     "exposure": 12.202589364110866,
+     "burden": 0.7095344389360806,
+     "well_solved": true,
+     "feasible": false
+    }
+   },
+   "feasible": [],
+   "chosen": "incumbent",
+   "recovery_mode": true,
+   "accepted": false,
+   "status": "RETAIN_INCUMBENT",
+   "reasons": [
+    "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained.",
+    "Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+   ],
+   "final_p0_purchases": {
+    "main": 44.94176640212619
+   },
+   "candidate_gates": {
+    "incumbent": "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained.; Out-of-model stress confirmation rejected physical feasibility, downside risk, or required service recovery."
+   },
+   "on_hand": 20.552964575394423,
+   "pipeline": [],
+   "protection": [
+    {
+     "regime": "PROTECT",
+     "activity": 0.75,
+     "protection_units": 14.312204543759046,
+     "lean": 11.985839136198184
+    }
+   ],
+   "economics_orders": [
+    {
+     "q": 44.94176640212619,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 2.1907030662347395,
+      "DEMAND_CYCLE": 0.0,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 14.312204543759046,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 28.438858792132407
+     },
+     "need": 16.502907609993787
+    }
+   ],
+   "settlement": {
+    "unmet": 0.0,
+    "demand": 13.0,
+    "end_stock": 7.552964575394423,
+    "received": 0.0,
+    "cost": 171.91548319743046
+   },
+   "truth_demand": null
+  }
+ ],
+ "economic_cost": 1678.3632802908276
+}

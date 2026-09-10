@@ -1,0 +1,9 @@
+=== review 1 state=PROTECT wall=114s selected=projected_base_stock_proxy target_vector_feasible=True recovery_mode=False
+   service retail_A     target=0.950 jointly_feasible=None incumbent=0.9557036930153435 expected=0.9557036930153435
+   stochastic_network     FEASIBLE_TIME_LIMIT  secs=28.3 gap=0.043073270970376824 valid=True
+   cvar_network           FEASIBLE_TIME_LIMIT  secs=28.3 gap=0.04965565947519253 valid=True
+   protected_network      FEASIBLE_TIME_LIMIT  secs=28.3 gap=0.02356430503839219 valid=True
+   hedged_network         FEASIBLE_TIME_LIMIT  secs=28.3 gap=0.0485121818784067 valid=True
+   stress_network         INFEASIBLE           secs=0.1 gap=None valid=False
+   outcomes: {'stochastic_network': 'PHYSICALLY_VALID_FTL', 'protected_network': 'PHYSICALLY_VALID_FTL', 'hedged_network': 'PHYSICALLY_VALID_FTL', 'stress_network': 'INFEASIBLE', 'cvar_network': 'PHYS
+

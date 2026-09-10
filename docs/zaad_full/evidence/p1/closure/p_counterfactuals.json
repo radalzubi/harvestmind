@@ -1,0 +1,88 @@
+{
+ "arms": [
+  {
+   "arm": "baseline reorder_point (through ZAAD settlement, F8)",
+   "cost": 5786.383280027695,
+   "service": 0.9928761216292162,
+   "unmet": 7.948455378556294,
+   "per_seed": [
+    5562.732003332402,
+    5895.040913896726,
+    5901.376922853957
+   ]
+  },
+  {
+   "arm": "F0 product defaults",
+   "cost": 5904.475729792872,
+   "service": 0.9777485092047074,
+   "unmet": 24.744637372976587,
+   "per_seed": [
+    5621.044560824897,
+    6019.423974278446,
+    6072.958654275271
+   ]
+  },
+  {
+   "arm": "F1 deterministic candidate not built",
+   "cost": 5799.822384741358,
+   "service": 0.9907930820590733,
+   "unmet": 10.288608228755871,
+   "per_seed": [
+    5563.045121997926,
+    5895.298429783226,
+    5941.123602442924
+   ]
+  },
+  {
+   "arm": "F2 deterministic built and evaluated but cannot win",
+   "cost": 5799.822384741358,
+   "service": 0.9907930820590733,
+   "unmet": 10.288608228755871,
+   "per_seed": [
+    5563.045121997926,
+    5895.298429783226,
+    5941.123602442924
+   ]
+  },
+  {
+   "arm": "F7 stochastic candidate forced (deterministic, base stock, incumbent unselectable)",
+   "cost": 5753.094391596754,
+   "service": 0.9966981771003238,
+   "unmet": 3.7112538187592086,
+   "per_seed": [
+    5575.47400141745,
+    5776.035988049872,
+    5907.77318532294
+   ]
+  },
+  {
+   "arm": "F6 incumbent action forced (replace_sold rule)",
+   "cost": 6282.326151538248,
+   "service": 1.0,
+   "unmet": 0.0,
+   "per_seed": [
+    6140.737134658466,
+    6316.987812375375,
+    6389.253507580905
+   ]
+  },
+  {
+   "arm": "F5 product defaults, residual at full value",
+   "cost": 5707.657059804087,
+   "per_seed": [
+    5449.411199535659,
+    5801.960272615922,
+    5871.59970726068
+   ]
+  },
+  {
+   "arm": "F5 baseline, residual at full value",
+   "cost": 5671.569193890716,
+   "per_seed": [
+    5445.057018909886,
+    5771.998359509214,
+    5797.652203253046
+   ]
+  }
+ ]
+}

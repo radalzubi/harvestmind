@@ -1,0 +1,43 @@
+
+> web@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.2.4 (webpack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1408ms
+  Running TypeScript ...
+  Finished TypeScript in 1644ms ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/21) ...
+  Generating static pages using 11 workers (5/21) 
+  Generating static pages using 11 workers (10/21) 
+  Generating static pages using 11 workers (15/21) 
+✓ Generating static pages using 11 workers (21/21) in 283ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /access
+├ ○ /admin
+├ ○ /atp
+├ ○ /backtest
+├ ○ /data-quality
+├ ○ /fmcg
+├ ○ /forecasts
+├ ○ /inventory
+├ ○ /loss
+├ ○ /partners
+├ ○ /performance
+├ ○ /recommendations
+├ ○ /reports
+├ ○ /supply-risk
+├ ○ /traceability
+├ ○ /upload
+└ ○ /upload/confirm
+
+
+○  (Static)  prerendered as static content
+

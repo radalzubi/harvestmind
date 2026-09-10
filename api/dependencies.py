@@ -12,16 +12,79 @@ from fastapi import Depends, Header, HTTPException, Request
 ROOT = Path(__file__).resolve().parents[1]
 
 
+_ENFORCED_ENVS = ("pilot", "prod", "production", "staging")
+
+
+def deployment_env() -> str:
+    """HARVESTMIND_ENV: dev (default), pilot, staging or prod."""
+    return os.getenv("HARVESTMIND_ENV", "dev").strip().lower() or "dev"
+
+
+def legacy_planners_enabled() -> bool:
+    """Whether the superseded planning engines (the first ZAAD engine under /api/zaad and the
+    safe-selector purchase plan under /fmcg/plan modes other than canonical) are served.
+
+    FAIL-CLOSED OUTSIDE DEV: the canonical product exposes one planning engine, the frozen P1
+    optimizer (/api/zaad/network and /fmcg/plan?mode=canonical). Set ZAAD_LEGACY_PLANNERS=1 to keep
+    the legacy engines reachable (dev workspaces, migration of the old pages); ZAAD_LEGACY_PLANNERS=0
+    disables them even in dev."""
+    raw = os.getenv("ZAAD_LEGACY_PLANNERS")
+    if raw is not None and raw.strip() != "":
+        return raw.strip().lower() in ("1", "true", "yes")
+    return deployment_env() == "dev"
+
+
+def legacy_planner_gate() -> None:
+    """FastAPI dependency: 410 with the canonical replacement when the legacy engines are off."""
+    if not legacy_planners_enabled():
+        raise HTTPException(status_code=410, detail={
+            "code": "legacy_planner_disabled",
+            "message": "This planning engine is superseded by the frozen ZAAD P1 optimizer.",
+            "canonical": {"workspace_plan": "/api/zaad/network/plan/from-workspace",
+                          "purchase_plan": "/fmcg/plan?mode=canonical", "network_plan": "/api/zaad/network/plan"}})
+
+
 def auth_required() -> bool:
     """Whether the API enforces operator authentication.
 
-    Default OFF (localhost / dev, preserving existing behavior). Set
-    HARVESTMIND_AUTH_REQUIRED=true in any networked/pilot deployment: then
-    every operator-scoped request MUST carry a valid API token and
-    `operator_id` is taken from that token, never from a query/body param.
-    Read live (not cached) so tests and deployments can flip it via env.
+    FAIL-CLOSED OUTSIDE DEV. Authentication is enforced when EITHER
+    HARVESTMIND_AUTH_REQUIRED=true OR HARVESTMIND_ENV names a deployed
+    environment (pilot, staging, prod). An explicit
+    HARVESTMIND_AUTH_REQUIRED=false does NOT switch enforcement off in a
+    deployed environment: the previous behaviour let a networked pilot ship
+    with the dev default, in which any caller could select any operator's
+    vault with ?operator_id=. Dev stays permissive so local work and the
+    test-suite are unchanged. Read live so tests can flip it via env.
     """
+    if deployment_env() in _ENFORCED_ENVS:
+        return True
     return os.getenv("HARVESTMIND_AUTH_REQUIRED", "false").lower() == "true"
+
+
+_LOOPBACK = ("127.0.0.1", "localhost", "::1", "")
+
+
+def assert_safe_to_serve() -> None:
+    """Refuse to start a permissive server on a non-loopback interface.
+
+    The bind host is not visible from inside the app, so the launcher
+    declares it in HARVESTMIND_BIND_HOST (the Dockerfile and compose file
+    do). A dev-mode process bound to 0.0.0.0 is the configuration that
+    would let any network caller pick any operator's vault; it is refused
+    at startup rather than logged.
+    """
+    host = os.getenv("HARVESTMIND_BIND_HOST", "").strip()
+    if host and host not in _LOOPBACK and not auth_required():
+        raise RuntimeError(
+            f"refusing to serve: HARVESTMIND_ENV={deployment_env()!r} is permissive "
+            f"but HARVESTMIND_BIND_HOST={host!r} is not loopback. Set "
+            "HARVESTMIND_ENV=pilot|staging|prod (or HARVESTMIND_AUTH_REQUIRED=true).")
+
+
+def auth_posture() -> dict:
+    """What /health reports so an operator can see the posture, not guess it."""
+    return {"env": deployment_env(), "auth_enforced": auth_required(),
+            "rate_limit_per_min": int(os.getenv("HARVESTMIND_RATE_LIMIT_PER_MIN", "0"))}
 
 
 def _token_from_headers(authorization: str | None, x_api_key: str | None) -> str | None:

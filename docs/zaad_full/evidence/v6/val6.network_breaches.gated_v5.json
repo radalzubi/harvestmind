@@ -1,0 +1,1213 @@
+{
+ "method": "gated_v5",
+ "network_breaches": 60,
+ "primary_causes": {
+  "inventory_at_wrong_echelon": 31,
+  "selector_retained_plan": 23,
+  "scenario_misspecification": 3,
+  "insufficient_total_inventory": 1,
+  "jointly_impossible": 2
+ },
+ "cells": [
+  {
+   "cell": 23,
+   "seed": 35001,
+   "network": "central_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.946,
+   "inventory_periods": 1.88,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 5,
+    "transfer_timing_or_selection": 5,
+    "selector_retained_plan": 1,
+    "jointly_impossible": 1,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 5
+  },
+  {
+   "cell": 35,
+   "seed": 35001,
+   "network": "central_branches",
+   "demand": "intermittent",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.632,
+   "inventory_periods": 4.9,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 4,
+    "transfer_timing_or_selection": 4,
+    "selector_retained_plan": 3,
+    "jointly_impossible": 1
+   },
+   "breach_reviews": 4
+  },
+  {
+   "cell": 35,
+   "seed": 35002,
+   "network": "central_branches",
+   "demand": "intermittent",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.778,
+   "inventory_periods": 3.96,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 4,
+    "transfer_timing_or_selection": 4,
+    "selector_retained_plan": 4,
+    "jointly_impossible": 2,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 4
+  },
+  {
+   "cell": 39,
+   "seed": 35001,
+   "network": "central_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "transfer_constrained",
+   "target": 0.95,
+   "service": 0.685,
+   "inventory_periods": 1.8,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 9,
+    "transfer_capacity": 9,
+    "selector_retained_plan": 9,
+    "jointly_impossible": 8,
+    "benchmark_horizon_artifact": 4
+   },
+   "breach_reviews": 9
+  },
+  {
+   "cell": 39,
+   "seed": 35002,
+   "network": "central_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "transfer_constrained",
+   "target": 0.95,
+   "service": 0.749,
+   "inventory_periods": 1.82,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 9,
+    "transfer_capacity": 9,
+    "selector_retained_plan": 9,
+    "jointly_impossible": 9,
+    "benchmark_horizon_artifact": 4
+   },
+   "breach_reviews": 9
+  },
+  {
+   "cell": 40,
+   "seed": 35001,
+   "network": "central_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.99,
+   "service": 0.946,
+   "inventory_periods": 1.35,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 2,
+    "transfer_timing_or_selection": 2,
+    "selector_retained_plan": 2,
+    "jointly_impossible": 2
+   },
+   "breach_reviews": 4
+  },
+  {
+   "cell": 40,
+   "seed": 35002,
+   "network": "central_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.99,
+   "service": 0.978,
+   "inventory_periods": 1.61,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 1,
+    "transfer_timing_or_selection": 1,
+    "selector_retained_plan": 1
+   },
+   "breach_reviews": 1
+  },
+  {
+   "cell": 48,
+   "seed": 35002,
+   "network": "two_locations",
+   "demand": "volatile",
+   "supply": "deterioration_recovery",
+   "alternative": "substitution",
+   "target": 0.97,
+   "service": 0.924,
+   "inventory_periods": 3.73,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 3,
+    "transfer_timing_or_selection": 3,
+    "selector_retained_plan": 4,
+    "jointly_impossible": 2
+   },
+   "breach_reviews": 4
+  },
+  {
+   "cell": 51,
+   "seed": 35001,
+   "network": "two_locations",
+   "demand": "gradual",
+   "supply": "deterioration_recovery",
+   "alternative": "supplier",
+   "target": 0.97,
+   "service": 0.837,
+   "inventory_periods": 1.64,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 5,
+    "transfer_timing_or_selection": 5,
+    "selector_retained_plan": 4,
+    "jointly_impossible": 3,
+    "insufficient_total_inventory": 1,
+    "order_arrived_too_late": 1,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 7
+  },
+  {
+   "cell": 51,
+   "seed": 35002,
+   "network": "two_locations",
+   "demand": "gradual",
+   "supply": "deterioration_recovery",
+   "alternative": "supplier",
+   "target": 0.97,
+   "service": 0.902,
+   "inventory_periods": 1.38,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 6,
+    "transfer_timing_or_selection": 6,
+    "selector_retained_plan": 4,
+    "jointly_impossible": 2
+   },
+   "breach_reviews": 6
+  },
+  {
+   "cell": 53,
+   "seed": 35001,
+   "network": "central_branches",
+   "demand": "intermittent_spiky",
+   "supply": "fill",
+   "alternative": "transfer",
+   "target": 0.97,
+   "service": 0.736,
+   "inventory_periods": 8.38,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 1,
+    "transfer_timing_or_selection": 1,
+    "selector_retained_plan": 1,
+    "jointly_impossible": 1
+   },
+   "breach_reviews": 1
+  },
+  {
+   "cell": 53,
+   "seed": 35002,
+   "network": "central_branches",
+   "demand": "intermittent_spiky",
+   "supply": "fill",
+   "alternative": "transfer",
+   "target": 0.97,
+   "service": 0.537,
+   "inventory_periods": 5.58,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 2,
+    "transfer_timing_or_selection": 2,
+    "selector_retained_plan": 3,
+    "jointly_impossible": 3
+   },
+   "breach_reviews": 3
+  },
+  {
+   "cell": 54,
+   "seed": 35002,
+   "network": "two_locations",
+   "demand": "intermittent_spiky",
+   "supply": "deterioration_recovery",
+   "alternative": "shared_route",
+   "target": 0.99,
+   "service": 0.782,
+   "inventory_periods": 8.12,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 1,
+    "transfer_timing_or_selection": 1,
+    "selector_retained_plan": 2,
+    "jointly_impossible": 2
+   },
+   "breach_reviews": 2
+  },
+  {
+   "cell": 55,
+   "seed": 35002,
+   "network": "two_locations",
+   "demand": "promotion",
+   "supply": "lead",
+   "alternative": "transfer_constrained",
+   "target": 0.95,
+   "service": 0.916,
+   "inventory_periods": 3.25,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 2,
+    "transfer_capacity": 2,
+    "jointly_impossible": 1,
+    "selector_retained_plan": 1
+   },
+   "breach_reviews": 2
+  },
+  {
+   "cell": 57,
+   "seed": 35001,
+   "network": "central_branches",
+   "demand": "intermittent_spiky",
+   "supply": "closure_recovery",
+   "alternative": "shared_route",
+   "target": 0.9,
+   "service": 0.659,
+   "inventory_periods": 5.42,
+   "primary_cause": "scenario_misspecification",
+   "labels": {
+    "selector_retained_plan": 1,
+    "scenario_misspecification": 2,
+    "jointly_impossible": 1
+   },
+   "breach_reviews": 2
+  },
+  {
+   "cell": 57,
+   "seed": 35002,
+   "network": "central_branches",
+   "demand": "intermittent_spiky",
+   "supply": "closure_recovery",
+   "alternative": "shared_route",
+   "target": 0.9,
+   "service": 0.421,
+   "inventory_periods": 1.89,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "selector_retained_plan": 4,
+    "jointly_impossible": 2,
+    "scenario_misspecification": 4,
+    "insufficient_total_inventory": 2,
+    "order_arrived_too_late": 2
+   },
+   "breach_reviews": 4
+  },
+  {
+   "cell": 62,
+   "seed": 35001,
+   "network": "two_locations",
+   "demand": "decrease",
+   "supply": "correlated",
+   "alternative": "route",
+   "target": 0.99,
+   "service": 0.851,
+   "inventory_periods": 7.32,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 1,
+    "transfer_timing_or_selection": 1,
+    "selector_retained_plan": 3,
+    "jointly_impossible": 3
+   },
+   "breach_reviews": 3
+  },
+  {
+   "cell": 62,
+   "seed": 35002,
+   "network": "two_locations",
+   "demand": "decrease",
+   "supply": "correlated",
+   "alternative": "route",
+   "target": 0.99,
+   "service": 0.926,
+   "inventory_periods": 5.53,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 2,
+    "transfer_timing_or_selection": 2,
+    "selector_retained_plan": 1,
+    "jointly_impossible": 1
+   },
+   "breach_reviews": 2
+  },
+  {
+   "cell": 63,
+   "seed": 35001,
+   "network": "two_locations",
+   "demand": "unknown_promotion",
+   "supply": "correlated",
+   "alternative": "shared_route",
+   "target": 0.9,
+   "service": 0.63,
+   "inventory_periods": 2.22,
+   "primary_cause": "scenario_misspecification",
+   "labels": {
+    "inventory_at_wrong_echelon": 3,
+    "transfer_timing_or_selection": 3,
+    "scenario_misspecification": 5,
+    "selector_retained_plan": 1,
+    "jointly_impossible": 2
+   },
+   "breach_reviews": 5
+  },
+  {
+   "cell": 63,
+   "seed": 35002,
+   "network": "two_locations",
+   "demand": "unknown_promotion",
+   "supply": "correlated",
+   "alternative": "shared_route",
+   "target": 0.9,
+   "service": 0.641,
+   "inventory_periods": 2.19,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 6,
+    "transfer_timing_or_selection": 6,
+    "scenario_misspecification": 6,
+    "selector_retained_plan": 1,
+    "jointly_impossible": 3
+   },
+   "breach_reviews": 6
+  },
+  {
+   "cell": 64,
+   "seed": 35002,
+   "network": "central_branches",
+   "demand": "promotion",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.948,
+   "inventory_periods": 1.7,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 2,
+    "transfer_timing_or_selection": 2
+   },
+   "breach_reviews": 2
+  },
+  {
+   "cell": 66,
+   "seed": 35002,
+   "network": "two_locations",
+   "demand": "intermittent_spiky",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.829,
+   "inventory_periods": 4.12,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 1,
+    "transfer_timing_or_selection": 1,
+    "selector_retained_plan": 1,
+    "jointly_impossible": 1
+   },
+   "breach_reviews": 2
+  },
+  {
+   "cell": 68,
+   "seed": 35001,
+   "network": "central_branches",
+   "demand": "volatile",
+   "supply": "correlated",
+   "alternative": "shared_route",
+   "target": 0.9,
+   "service": 0.773,
+   "inventory_periods": 2.89,
+   "primary_cause": "scenario_misspecification",
+   "labels": {
+    "inventory_at_wrong_echelon": 2,
+    "transfer_timing_or_selection": 2,
+    "selector_retained_plan": 3,
+    "scenario_misspecification": 4,
+    "jointly_impossible": 2,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 4
+  },
+  {
+   "cell": 69,
+   "seed": 35001,
+   "network": "two_locations",
+   "demand": "stable",
+   "supply": "fill",
+   "alternative": "shared_route",
+   "target": 0.99,
+   "service": 0.969,
+   "inventory_periods": 3.85,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 2,
+    "transfer_timing_or_selection": 2,
+    "selector_retained_plan": 1,
+    "jointly_impossible": 1,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 2
+  },
+  {
+   "cell": 70,
+   "seed": 35001,
+   "network": "central_branches",
+   "demand": "stable",
+   "supply": "severe",
+   "alternative": "transfer",
+   "target": 0.9,
+   "service": 0.705,
+   "inventory_periods": 1.9,
+   "primary_cause": "insufficient_total_inventory",
+   "labels": {
+    "insufficient_total_inventory": 5,
+    "order_arrived_too_late": 5,
+    "selector_retained_plan": 5,
+    "jointly_impossible": 5,
+    "benchmark_horizon_artifact": 4
+   },
+   "breach_reviews": 6
+  },
+  {
+   "cell": 70,
+   "seed": 35002,
+   "network": "central_branches",
+   "demand": "stable",
+   "supply": "severe",
+   "alternative": "transfer",
+   "target": 0.9,
+   "service": 0.741,
+   "inventory_periods": 2.15,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "insufficient_total_inventory": 3,
+    "order_arrived_too_late": 3,
+    "selector_retained_plan": 4,
+    "jointly_impossible": 4,
+    "benchmark_horizon_artifact": 4
+   },
+   "breach_reviews": 5
+  },
+  {
+   "cell": 72,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.929,
+   "inventory_periods": 1.62,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 5,
+    "transfer_timing_or_selection": 5,
+    "selector_retained_plan": 4,
+    "jointly_impossible": 1,
+    "benchmark_horizon_artifact": 2
+   },
+   "breach_reviews": 7
+  },
+  {
+   "cell": 72,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.939,
+   "inventory_periods": 1.93,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 6,
+    "transfer_timing_or_selection": 6,
+    "selector_retained_plan": 5,
+    "jointly_impossible": 2
+   },
+   "breach_reviews": 6
+  },
+  {
+   "cell": 73,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.807,
+   "inventory_periods": 1.56,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 5,
+    "transfer_timing_or_selection": 5,
+    "selector_retained_plan": 7,
+    "jointly_impossible": 5,
+    "benchmark_horizon_artifact": 4
+   },
+   "breach_reviews": 8
+  },
+  {
+   "cell": 73,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.851,
+   "inventory_periods": 2.47,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 8,
+    "transfer_timing_or_selection": 8,
+    "selector_retained_plan": 6,
+    "jointly_impossible": 5,
+    "benchmark_horizon_artifact": 4
+   },
+   "breach_reviews": 8
+  },
+  {
+   "cell": 74,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.938,
+   "inventory_periods": 1.62,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "insufficient_total_inventory": 1,
+    "order_arrived_too_late": 1,
+    "selector_retained_plan": 3,
+    "inventory_at_wrong_echelon": 2,
+    "transfer_too_late": 2,
+    "jointly_impossible": 1,
+    "benchmark_horizon_artifact": 2
+   },
+   "breach_reviews": 5
+  },
+  {
+   "cell": 74,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.94,
+   "inventory_periods": 1.65,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 3,
+    "transfer_too_late": 3,
+    "selector_retained_plan": 4,
+    "jointly_impossible": 3,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 4
+  },
+  {
+   "cell": 75,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.852,
+   "inventory_periods": 1.85,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 6,
+    "transfer_too_late": 6,
+    "selector_retained_plan": 8,
+    "jointly_impossible": 6,
+    "benchmark_horizon_artifact": 3
+   },
+   "breach_reviews": 9
+  },
+  {
+   "cell": 75,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.856,
+   "inventory_periods": 2.02,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 3,
+    "transfer_too_late": 3,
+    "selector_retained_plan": 5,
+    "jointly_impossible": 4,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 5
+  },
+  {
+   "cell": 76,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.687,
+   "inventory_periods": 2.6,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 9,
+    "transfer_capacity": 9,
+    "selector_retained_plan": 9,
+    "jointly_impossible": 9,
+    "benchmark_horizon_artifact": 4
+   },
+   "breach_reviews": 9
+  },
+  {
+   "cell": 76,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.731,
+   "inventory_periods": 2.45,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 10,
+    "transfer_capacity": 10,
+    "selector_retained_plan": 10,
+    "jointly_impossible": 10,
+    "benchmark_horizon_artifact": 4
+   },
+   "breach_reviews": 10
+  },
+  {
+   "cell": 77,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.99,
+   "service": 0.919,
+   "inventory_periods": 1.6,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 7,
+    "transfer_timing_or_selection": 7,
+    "selector_retained_plan": 6,
+    "jointly_impossible": 5,
+    "benchmark_horizon_artifact": 3
+   },
+   "breach_reviews": 8
+  },
+  {
+   "cell": 77,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.99,
+   "service": 0.937,
+   "inventory_periods": 1.82,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 6,
+    "transfer_timing_or_selection": 6,
+    "selector_retained_plan": 6,
+    "jointly_impossible": 4,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 6
+  },
+  {
+   "cell": 79,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.99,
+   "service": 0.919,
+   "inventory_periods": 1.6,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 7,
+    "transfer_timing_or_selection": 7,
+    "selector_retained_plan": 7,
+    "jointly_impossible": 6,
+    "benchmark_horizon_artifact": 3
+   },
+   "breach_reviews": 8
+  },
+  {
+   "cell": 79,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.99,
+   "service": 0.937,
+   "inventory_periods": 1.79,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 7,
+    "transfer_timing_or_selection": 7,
+    "selector_retained_plan": 7,
+    "jointly_impossible": 5,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 7
+  },
+  {
+   "cell": 80,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.923,
+   "inventory_periods": 3.21,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 5,
+    "transfer_timing_or_selection": 5,
+    "selector_retained_plan": 6,
+    "jointly_impossible": 3,
+    "benchmark_horizon_artifact": 2
+   },
+   "breach_reviews": 6
+  },
+  {
+   "cell": 81,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.873,
+   "inventory_periods": 1.13,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 6,
+    "transfer_timing_or_selection": 6,
+    "selector_retained_plan": 7,
+    "jointly_impossible": 2,
+    "benchmark_horizon_artifact": 2
+   },
+   "breach_reviews": 7
+  },
+  {
+   "cell": 81,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.885,
+   "inventory_periods": 1.15,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 5,
+    "transfer_timing_or_selection": 5,
+    "selector_retained_plan": 5,
+    "jointly_impossible": 2
+   },
+   "breach_reviews": 6
+  },
+  {
+   "cell": 82,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.933,
+   "inventory_periods": 1.29,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "insufficient_total_inventory": 1,
+    "order_arrived_too_late": 1,
+    "selector_retained_plan": 14,
+    "jointly_impossible": 11,
+    "inventory_at_wrong_echelon": 13,
+    "transfer_timing_or_selection": 13,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 15
+  },
+  {
+   "cell": 82,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.905,
+   "inventory_periods": 1.06,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 8,
+    "transfer_timing_or_selection": 8,
+    "selector_retained_plan": 10,
+    "jointly_impossible": 5,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 13
+  },
+  {
+   "cell": 83,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "deterioration_recovery",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.82,
+   "inventory_periods": 1.25,
+   "primary_cause": "jointly_impossible",
+   "labels": {
+    "inventory_at_wrong_echelon": 10,
+    "transfer_timing_or_selection": 10,
+    "selector_retained_plan": 15,
+    "jointly_impossible": 16,
+    "insufficient_total_inventory": 5,
+    "order_arrived_too_late": 5
+   },
+   "breach_reviews": 16
+  },
+  {
+   "cell": 83,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "deterioration_recovery",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.791,
+   "inventory_periods": 1.1,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 8,
+    "transfer_timing_or_selection": 8,
+    "selector_retained_plan": 14,
+    "insufficient_total_inventory": 4,
+    "order_arrived_too_late": 4,
+    "jointly_impossible": 14,
+    "benchmark_horizon_artifact": 2
+   },
+   "breach_reviews": 16
+  },
+  {
+   "cell": 84,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "closure_recovery",
+   "alternative": "supplier",
+   "target": 0.95,
+   "service": 0.596,
+   "inventory_periods": 1.04,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 6,
+    "transfer_timing_or_selection": 6,
+    "selector_retained_plan": 13,
+    "insufficient_total_inventory": 10,
+    "order_arrived_too_late": 10,
+    "jointly_impossible": 12,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 17
+  },
+  {
+   "cell": 84,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "stable",
+   "supply": "closure_recovery",
+   "alternative": "supplier",
+   "target": 0.95,
+   "service": 0.569,
+   "inventory_periods": 0.92,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 7,
+    "transfer_timing_or_selection": 7,
+    "selector_retained_plan": 16,
+    "insufficient_total_inventory": 12,
+    "order_arrived_too_late": 12,
+    "jointly_impossible": 12,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 20
+  },
+  {
+   "cell": 85,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "promotion_recovery",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.928,
+   "inventory_periods": 2.36,
+   "primary_cause": "jointly_impossible",
+   "labels": {
+    "inventory_at_wrong_echelon": 9,
+    "transfer_timing_or_selection": 9,
+    "jointly_impossible": 10,
+    "selector_retained_plan": 9,
+    "insufficient_total_inventory": 1,
+    "order_arrived_too_late": 1
+   },
+   "breach_reviews": 11
+  },
+  {
+   "cell": 85,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "promotion_recovery",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.807,
+   "inventory_periods": 1.43,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 3,
+    "transfer_timing_or_selection": 3,
+    "selector_retained_plan": 5,
+    "jointly_impossible": 4,
+    "insufficient_total_inventory": 2,
+    "order_arrived_too_late": 2
+   },
+   "breach_reviews": 6
+  },
+  {
+   "cell": 86,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "increase",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.868,
+   "inventory_periods": 1.08,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 13,
+    "transfer_timing_or_selection": 13,
+    "selector_retained_plan": 15,
+    "jointly_impossible": 11,
+    "insufficient_total_inventory": 1,
+    "order_arrived_too_late": 1,
+    "benchmark_horizon_artifact": 3
+   },
+   "breach_reviews": 18
+  },
+  {
+   "cell": 87,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "decrease",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.934,
+   "inventory_periods": 4.97,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 11,
+    "transfer_timing_or_selection": 11,
+    "selector_retained_plan": 11,
+    "jointly_impossible": 9,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 11
+  },
+  {
+   "cell": 87,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "decrease",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.897,
+   "inventory_periods": 5.19,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 9,
+    "transfer_timing_or_selection": 9,
+    "selector_retained_plan": 10,
+    "jointly_impossible": 9,
+    "benchmark_horizon_artifact": 2
+   },
+   "breach_reviews": 11
+  },
+  {
+   "cell": 88,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "volatile",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.89,
+   "inventory_periods": 3.4,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 5,
+    "transfer_timing_or_selection": 5,
+    "selector_retained_plan": 5,
+    "jointly_impossible": 4,
+    "benchmark_horizon_artifact": 3
+   },
+   "breach_reviews": 5
+  },
+  {
+   "cell": 88,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "volatile",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.753,
+   "inventory_periods": 3.66,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 7,
+    "transfer_timing_or_selection": 7,
+    "selector_retained_plan": 7,
+    "jointly_impossible": 6,
+    "benchmark_horizon_artifact": 4
+   },
+   "breach_reviews": 8
+  },
+  {
+   "cell": 89,
+   "seed": 35001,
+   "network": "central_two_branches",
+   "demand": "intermittent",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.708,
+   "inventory_periods": 10.82,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 6,
+    "transfer_timing_or_selection": 6,
+    "selector_retained_plan": 5,
+    "jointly_impossible": 3,
+    "benchmark_horizon_artifact": 1
+   },
+   "breach_reviews": 6
+  },
+  {
+   "cell": 89,
+   "seed": 35002,
+   "network": "central_two_branches",
+   "demand": "intermittent",
+   "supply": "stable",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.768,
+   "inventory_periods": 5.8,
+   "primary_cause": "inventory_at_wrong_echelon",
+   "labels": {
+    "inventory_at_wrong_echelon": 8,
+    "transfer_timing_or_selection": 8,
+    "selector_retained_plan": 8,
+    "jointly_impossible": 6,
+    "benchmark_horizon_artifact": 2
+   },
+   "breach_reviews": 8
+  },
+  {
+   "cell": 95,
+   "seed": 35001,
+   "network": "central_branches",
+   "demand": "stable",
+   "supply": "deterioration_recovery",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.892,
+   "inventory_periods": 1.03,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 6,
+    "transfer_timing_or_selection": 6,
+    "insufficient_total_inventory": 4,
+    "order_arrived_too_late": 4,
+    "selector_retained_plan": 7,
+    "jointly_impossible": 5
+   },
+   "breach_reviews": 10
+  },
+  {
+   "cell": 95,
+   "seed": 35002,
+   "network": "central_branches",
+   "demand": "stable",
+   "supply": "deterioration_recovery",
+   "alternative": "none",
+   "target": 0.95,
+   "service": 0.854,
+   "inventory_periods": 0.87,
+   "primary_cause": "selector_retained_plan",
+   "labels": {
+    "inventory_at_wrong_echelon": 6,
+    "transfer_timing_or_selection": 6,
+    "insufficient_total_inventory": 4,
+    "order_arrived_too_late": 4,
+    "selector_retained_plan": 10,
+    "jointly_impossible": 10
+   },
+   "breach_reviews": 13
+  }
+ ]
+}

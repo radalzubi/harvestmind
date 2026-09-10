@@ -151,7 +151,7 @@ def test_lower_quantile_gives_lower_downside(dist_db):
 
 def test_cold_start_returns_population(dist_db):
     from risk.supplier_distribution import (
-        supplier_fill_distributions, estimate_population, supplier_distribution,
+        estimate_population, supplier_distribution,
         _delivery_fill_rates,
     )
 

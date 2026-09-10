@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import cast, Any
 
 from pydantic import BaseModel
 
@@ -39,6 +39,10 @@ class TrainingStatus(BaseModel):
 
 
 class RetrainingScheduler:
+    def _corpus_path(self):
+        from pathlib import Path
+        return Path(self.corpus_root) if self.corpus_root else None
+
     def __init__(
         self,
         checkpoints_root: str | Path | None = None,
@@ -61,8 +65,8 @@ class RetrainingScheduler:
     def _log_entries(self) -> list[dict]:
         if not self.log_path.exists():
             return []
-        return [json.loads(l) for l in self.log_path.read_text().splitlines()
-                if l.strip()]
+        return [json.loads(line) for line in self.log_path.read_text().splitlines()
+                if line.strip()]
 
     def _counts_at_last_deploy(self, model: str) -> dict[str, int]:
         for e in reversed(self._log_entries()):
@@ -84,14 +88,14 @@ class RetrainingScheduler:
                 "new_deliveries": _n("stg_supplier_deliveries")}
 
     def _new_since_deploy(self, model: str, current: dict[str, int]) -> int:
-        metric = THRESHOLDS[model]["metric"]
+        metric = str(THRESHOLDS[model]["metric"])
         if model == "extraction":
             from training.quality_checker import check_corpus
-            usable = check_corpus(self.corpus_root)["usable_sessions"]
-            last = self._counts_at_last_deploy(model).get("usable_sessions", 0)
+            usable = int(check_corpus(self._corpus_path())["usable_sessions"])
+            last = int(dict(self._counts_at_last_deploy(model)).get("usable_sessions", 0))
             return usable - last
-        last = self._counts_at_last_deploy(model).get(metric, 0)
-        return current.get(metric, 0) - last
+        last = int(dict(self._counts_at_last_deploy(model)).get(metric, 0))
+        return int(current.get(metric, 0)) - last
 
     # ── the loop ─────────────────────────────────────────────────────────
 
@@ -103,18 +107,18 @@ class RetrainingScheduler:
         for model in ("demand", "yield", "extraction"):
             try:
                 new_n = self._new_since_deploy(model, current)
-                threshold = THRESHOLDS[model]["min_new"]
+                threshold = int(cast(int, THRESHOLDS[model]["min_new"]))
                 if model == "extraction":
                     from training.quality_checker import (
                         MIN_SESSIONS_FOR_FINETUNING, check_corpus,
                     )
-                    usable = check_corpus(self.corpus_root)["usable_sessions"]
+                    usable = check_corpus(self._corpus_path())["usable_sessions"]
                     first_run = not any(
                         e.get("model") == model and
                         e.get("decision") == "deployed"
                         for e in self._log_entries())
                     ready = (usable >= MIN_SESSIONS_FOR_FINETUNING
-                             if first_run else new_n > threshold)
+                             if first_run else new_n > int(threshold))
                 else:
                     ready = new_n > threshold
 
@@ -131,8 +135,8 @@ class RetrainingScheduler:
                 decision = self._retrain(model, conn)
                 decision["data_counts"] = {
                     **current,
-                    "usable_sessions": self._usable_sessions()
-                    if model == "extraction" else None,
+                    "usable_sessions": (self._usable_sessions()
+                                        if model == "extraction" else 0),
                 }
                 self._log({"model": model, **decision})
                 results[model] = decision
@@ -145,7 +149,7 @@ class RetrainingScheduler:
 
     def _usable_sessions(self) -> int:
         from training.quality_checker import check_corpus
-        return check_corpus(self.corpus_root)["usable_sessions"]
+        return check_corpus(self._corpus_path())["usable_sessions"]
 
     def _retrain(self, model: str, conn) -> dict[str, Any]:
         if model == "demand":
@@ -155,7 +159,7 @@ class RetrainingScheduler:
             from retraining.pipeline import retrain_yield
             return retrain_yield(conn, self.checkpoints_root)
         from training.extraction_trainer import retrain_extraction
-        return retrain_extraction(self.corpus_root)
+        return retrain_extraction(self._corpus_path())
 
     # ── status (dashboard / admin) ───────────────────────────────────────
 
@@ -176,11 +180,11 @@ class RetrainingScheduler:
                 "current_version": reg.current,
                 "last_retrain": (last_deploy or {}).get("at"),
                 "new_data_since_retrain": new_n,
-                "retrain_threshold": THRESHOLDS[model]["min_new"],
+                "retrain_threshold": int(cast(int, THRESHOLDS[model]["min_new"])),
                 "new_data_needed": max(
-                    0, THRESHOLDS[model]["min_new"] + 1 - new_n),
+                    0, int(cast(int, THRESHOLDS[model]["min_new"])) + 1 - new_n),
             }
-        models["extraction"] = extraction_training_status(self.corpus_root)
+        models["extraction"] = extraction_training_status(self._corpus_path())
 
         try:
             from pool.pool_reader import PoolReader

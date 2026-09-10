@@ -19,7 +19,6 @@ import difflib
 import re
 from typing import Any
 
-import pandas as pd
 
 from ingestion.llm_extractor import (
     ExtractedRow,
@@ -150,6 +149,91 @@ ALIASES: dict[str, dict[str, str]] = {
              "stg_buyer_orders": "order_date"},
     "notes": {},  # recognized but has no staging home — schema gap
 }
+
+# Commercial-goods aliases live in their own table and are MERGED into the
+# produce aliases below, so a header that means something in both families
+# (order date, on hand, warehouse) routes to whichever table the rest of
+# the header row favours.
+_FMCG_ALIASES: dict[str, dict[str, str]] = {
+    "sku": {"stg_fmcg_skus": "sku", "stg_fmcg_orders": "sku", "stg_fmcg_purchase_orders": "sku",
+            "stg_fmcg_receipts": "sku", "stg_fmcg_inventory": "sku"},
+    "item code": {"stg_fmcg_skus": "sku", "stg_fmcg_orders": "sku", "stg_fmcg_purchase_orders": "sku",
+                  "stg_fmcg_receipts": "sku", "stg_fmcg_inventory": "sku"},
+    "item": {"stg_fmcg_skus": "sku", "stg_fmcg_orders": "sku", "stg_fmcg_purchase_orders": "sku",
+             "stg_fmcg_receipts": "sku", "stg_fmcg_inventory": "sku"},
+    "item no": {"stg_fmcg_skus": "sku", "stg_fmcg_purchase_orders": "sku", "stg_fmcg_inventory": "sku"},
+    "article": {"stg_fmcg_skus": "sku", "stg_fmcg_orders": "sku"},
+    "item name": {"stg_fmcg_skus": "sku_name"},
+    "description": {"stg_fmcg_skus": "sku_name"},
+    "po": {"stg_fmcg_purchase_orders": "po_id", "stg_fmcg_receipts": "po_id"},
+    "po number": {"stg_fmcg_purchase_orders": "po_id", "stg_fmcg_receipts": "po_id"},
+    "po no": {"stg_fmcg_purchase_orders": "po_id", "stg_fmcg_receipts": "po_id"},
+    "purchase order": {"stg_fmcg_purchase_orders": "po_id", "stg_fmcg_receipts": "po_id"},
+    "po date": {"stg_fmcg_purchase_orders": "po_date"},
+    "order date": {"stg_fmcg_orders": "order_date", "stg_fmcg_purchase_orders": "po_date", "stg_buyer_orders": "order_date"},
+    "expected date": {"stg_fmcg_purchase_orders": "expected_delivery_date"},
+    "promised date": {"stg_fmcg_purchase_orders": "expected_delivery_date"},
+    "eta": {"stg_fmcg_purchase_orders": "expected_delivery_date"},
+    "receipt date": {"stg_fmcg_receipts": "receipt_date"},
+    "date received": {"stg_fmcg_receipts": "receipt_date"},
+    "grn date": {"stg_fmcg_receipts": "receipt_date"},
+    "grn": {"stg_fmcg_receipts": "receipt_id"},
+    "qty received": {"stg_fmcg_receipts": "qty_received"},
+    "received qty": {"stg_fmcg_receipts": "qty_received"},
+    "qty rejected": {"stg_fmcg_receipts": "qty_rejected"},
+    "qty ordered": {"stg_fmcg_orders": "qty_ordered", "stg_fmcg_purchase_orders": "qty_ordered",
+                    "stg_supplier_deliveries": "ordered_quantity"},
+    "quantity": {"stg_fmcg_orders": "qty_ordered", "stg_fmcg_purchase_orders": "qty_ordered"},
+    "qty": {"stg_fmcg_orders": "qty_ordered", "stg_fmcg_purchase_orders": "qty_ordered"},
+    "qty shipped": {"stg_fmcg_orders": "qty_shipped"},
+    "shipped qty": {"stg_fmcg_orders": "qty_shipped"},
+    "customer id": {"stg_fmcg_orders": "customer_id"},
+    "customer code": {"stg_fmcg_orders": "customer_id"},
+    "sales order": {"stg_fmcg_orders": "order_id"},
+    "so number": {"stg_fmcg_orders": "order_id"},
+    "channel": {"stg_fmcg_orders": "channel"},
+    "on hand": {"stg_fmcg_inventory": "on_hand", "stg_inventory_lots": "quantity_on_hand"},
+    "stock on hand": {"stg_fmcg_inventory": "on_hand"},
+    "qty on hand": {"stg_fmcg_inventory": "on_hand", "stg_inventory_lots": "quantity_on_hand"},
+    "soh": {"stg_fmcg_inventory": "on_hand"},
+    "in transit": {"stg_fmcg_inventory": "in_transit"},
+    "on order": {"stg_fmcg_inventory": "in_transit"},
+    "count date": {"stg_fmcg_inventory": "snapshot_date"},
+    "snapshot date": {"stg_fmcg_inventory": "snapshot_date"},
+    "stock date": {"stg_fmcg_inventory": "snapshot_date"},
+    "warehouse": {"stg_fmcg_inventory": "location_id", "stg_inventory_lots": "warehouse_location"},
+    "location": {"stg_fmcg_inventory": "location_id", "stg_inventory_lots": "warehouse_location"},
+    "units per case": {"stg_fmcg_skus": "units_per_case"},
+    "case pack": {"stg_fmcg_skus": "units_per_case"},
+    "pack size": {"stg_fmcg_skus": "units_per_case"},
+    "pcs per case": {"stg_fmcg_skus": "units_per_case"},
+    "moq": {"stg_fmcg_skus": "moq_units"},
+    "min order": {"stg_fmcg_skus": "moq_units"},
+    "unit price": {"stg_fmcg_skus": "unit_price"},
+    "selling price": {"stg_fmcg_skus": "unit_price"},
+    "sell price": {"stg_fmcg_skus": "unit_price"},
+    "cost price": {"stg_fmcg_skus": "unit_cost", "stg_fmcg_purchase_orders": "unit_cost"},
+    "purchase price": {"stg_fmcg_skus": "unit_cost", "stg_fmcg_purchase_orders": "unit_cost"},
+    "landed cost": {"stg_fmcg_skus": "unit_cost"},
+    "category": {"stg_fmcg_skus": "category", "stg_products": "category"},
+    "abc": {"stg_fmcg_skus": "abc_class"},
+    "shelf life": {"stg_fmcg_skus": "shelf_life_days", "stg_products": "default_shelf_life_days"},
+    "supplier id": {"stg_fmcg_skus": "supplier_id", "stg_fmcg_purchase_orders": "supplier_id", "stg_fmcg_suppliers": "supplier_id"},
+    "supplier code": {"stg_fmcg_skus": "supplier_id", "stg_fmcg_purchase_orders": "supplier_id", "stg_fmcg_suppliers": "supplier_id"},
+    "vendor id": {"stg_fmcg_purchase_orders": "supplier_id", "stg_fmcg_suppliers": "supplier_id"},
+    "vendor code": {"stg_fmcg_purchase_orders": "supplier_id", "stg_fmcg_suppliers": "supplier_id"},
+    "route": {"stg_fmcg_suppliers": "route"},
+    "port": {"stg_fmcg_suppliers": "route"},
+    "lane": {"stg_fmcg_suppliers": "route"},
+    "origin": {"stg_fmcg_suppliers": "origin_iso3"},
+    "country of origin": {"stg_fmcg_suppliers": "origin_iso3"},
+    "country": {"stg_fmcg_suppliers": "origin_iso3"},
+    "lead time": {"stg_fmcg_suppliers": "lead_time_promised_weeks"},
+    "lead time weeks": {"stg_fmcg_suppliers": "lead_time_promised_weeks"},
+
+}
+for _k, _v in _FMCG_ALIASES.items():
+    ALIASES.setdefault(_k, {}).update(_v)
 
 # Columns that signal supplier-master data (no staging home — S/gap).
 SUPPLIER_MASTER_HINTS = ("contact", "email", "phone", "payment terms",

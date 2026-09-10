@@ -72,7 +72,6 @@ def _stress_band(stress_test_df: pd.DataFrame | None) -> tuple[str, str]:
 
     rows = stress_test_df.copy()
     # Find the 30% and 50% rows; fall back to range over all rows if not present
-    by_rate = {round(float(r), 2): r for r in rows["missing_rate"].unique()}
     lo = rows[rows["missing_rate"] == 0.30]
     hi = rows[rows["missing_rate"] == 0.50]
     if lo.empty or hi.empty:

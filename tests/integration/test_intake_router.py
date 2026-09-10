@@ -344,8 +344,9 @@ def test_load_sample_data_status_reflects_loaded_tables(sample_client):
     r = sample_client.get("/intake/status")
     data = r.json()
     assert data["all_tables_loaded"] is True
-    for table_info in data["tables"].values():
-        assert table_info["loaded"] is True
+    assert data["families"]["produce"]["all_loaded"] is True
+    for t in data["families"]["produce"]["tables"]:
+        assert data["tables"][t]["loaded"] is True
 
 
 def test_load_sample_data_diagnostics_computes(sample_client):

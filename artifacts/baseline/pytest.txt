@@ -1,0 +1,120 @@
+........................................................................ [  6%]
+........................................................................ [ 12%]
+........................................................................ [ 19%]
+........................................................................ [ 25%]
+........................................................................ [ 32%]
+........................................................................ [ 38%]
+........................................................................ [ 45%]
+........................................................................ [ 51%]
+........................................................................ [ 58%]
+........................................................................ [ 64%]
+........................................................................ [ 71%]
+........................................................................ [ 77%]
+........................................................................ [ 84%]
+........................................................................ [ 90%]
+........................................................................ [ 97%]
+...............................                                          [100%]
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.14.3-final-0 _______________
+
+Name                                                Stmts   Miss  Cover
+-----------------------------------------------------------------------
+api/__init__.py                                         0      0   100%
+api/dependencies.py                                    97     41    58%
+api/main.py                                            37      1    97%
+api/models/__init__.py                                  0      0   100%
+api/models/schemas.py                                  59      0   100%
+api/routers/__init__.py                                 0      0   100%
+api/routers/admin.py                                   24      0   100%
+api/routers/backtest.py                                39     13    67%
+api/routers/data.py                                    62      2    97%
+api/routers/diagnostics.py                             29      0   100%
+api/routers/forecasts.py                               21     11    48%
+api/routers/fsma.py                                   100      7    93%
+api/routers/intake.py                                 287     39    86%
+api/routers/planning.py                                61     28    54%
+api/routers/pool.py                                    31      2    94%
+api/routers/reports.py                                 53     30    43%
+api/routers/training.py                                27     14    48%
+backtesting/__init__.py                                 0      0   100%
+backtesting/benchmark_suite.py                        320     19    94%
+backtesting/leakage_guard.py                           50      2    96%
+backtesting/policy_comparison.py                       49      0   100%
+backtesting/procurement_metrics.py                     18     11    39%
+backtesting/roi_calculator.py                         114      9    92%
+backtesting/rolling_origin_engine.py                  217     18    92%
+backtesting/service_metrics.py                         35     35     0%
+backtesting/waste_metrics.py                           21     21     0%
+forecasting/__init__.py                                 0      0   100%
+forecasting/demand/__init__.py                          0      0   100%
+forecasting/demand/demand_forecast_service.py         210     34    84%
+forecasting/demand/feature_engineering.py              52      9    83%
+forecasting/demand/forecast_evaluator.py               60      0   100%
+forecasting/demand/hierarchical_reconciler.py          77     14    82%
+forecasting/demand/intermittent_model.py              142      7    95%
+forecasting/demand/lgbm_global_model.py                91      5    95%
+forecasting/supply/__init__.py                          0      0   100%
+forecasting/supply/supplier_reliability_scorer.py      33      0   100%
+forecasting/supply/yield_scenario_generator.py         74      9    88%
+forecasting/supply_uncertainty/__init__.py              6      0   100%
+forecasting/supply_uncertainty/baseline.py            147      5    97%
+forecasting/supply_uncertainty/conformal.py           109      5    95%
+forecasting/supply_uncertainty/contract.py            118      3    97%
+forecasting/supply_uncertainty/evaluation.py          128     29    77%
+forecasting/supply_uncertainty/quantile_model.py      143     18    87%
+ingestion/__init__.py                                   0      0   100%
+ingestion/column_mapper.py                            135     18    87%
+ingestion/csv_ingestor.py                              55      1    98%
+ingestion/drought_monitor_fetcher.py                   40      7    82%
+ingestion/enso_oni_fetcher.py                          35      7    80%
+ingestion/extraction_safeguards.py                    155     16    90%
+ingestion/extraction_sessions.py                      105     12    89%
+ingestion/llm_extractor.py                            204     32    84%
+ingestion/llm_mock_responder.py                       151     21    86%
+ingestion/llm_unstructured.py                          50      0   100%
+ingestion/nass_quickstats_fetcher.py                   57     57     0%
+ingestion/noaa_weather_fetcher.py                      42      0   100%
+ingestion/open_meteo_fetcher.py                        98     26    73%
+ingestion/pipeline.py                                  74     28    62%
+ingestion/usda_ams_connector.py                       127     13    90%
+ingestion/usda_food_hub_directory.py                   51      1    98%
+ingestion/validators.py                                87      2    98%
+ingestion/weather_features.py                          10      0   100%
+optimization/__init__.py                                0      0   100%
+optimization/cvar_extension.py                         99      6    94%
+optimization/gamma_robust_lp.py                        58      2    97%
+optimization/lp_baseline.py                            94     12    87%
+optimization/multi_period_sp.py                       116     11    91%
+optimization/naive_lastyear_policy.py                  54      8    85%
+optimization/order_up_to_policy.py                     15      0   100%
+optimization/recourse_simulator.py                     50      0   100%
+optimization/saa_bounds.py                             86      6    93%
+optimization/scenario_reduction.py                     49      1    98%
+optimization/two_stage_sp.py                          162     11    93%
+optimization/vss_evaluation.py                        140     21    85%
+risk/__init__.py                                        0      0   100%
+risk/calibration.py                                    38      1    97%
+risk/confidence.py                                     16      0   100%
+risk/correlated_scenarios.py                          282     17    94%
+risk/disruption_scenarios.py                           50      1    98%
+risk/safe_commit.py                                    93      6    94%
+risk/scenario_generation.py                           166     31    81%
+risk/shelf_life.py                                     46      1    98%
+risk/supplier_distribution.py                         110      3    97%
+risk/yield_covariates.py                              108      5    95%
+synthetic/__init__.py                                   0      0   100%
+synthetic/archetypes.py                                12      0   100%
+synthetic/commercial/__init__.py                        0      0   100%
+synthetic/commercial/integrated_producer_sim.py        61     61     0%
+synthetic/commercial/jordan_distributor_sim.py         85     85     0%
+synthetic/commercial/jordan_distributor_v2.py         102     67    34%
+synthetic/generate_pilot_dataset.py                    24     24     0%
+synthetic/generator.py                                213     11    95%
+synthetic/indiana_operator_sim.py                     166      3    98%
+synthetic/realistic_operator_sim.py                   204    204     0%
+synthetic/seasonality.py                               17      0   100%
+-----------------------------------------------------------------------
+TOTAL                                                7333   1280    83%
+Coverage JSON written to file artifacts/baseline/coverage.json
+1111 passed in 59.11s
+EXIT 0

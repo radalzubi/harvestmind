@@ -57,7 +57,20 @@ class TestRouteTargeting:
         assert RED_SEA_HOUTHI.applies_to("red_sea") is True
         assert RED_SEA_HOUTHI.applies_to("local_farm") is False
         assert RED_SEA_HOUTHI.adjusted_fill(0.90, "local_farm") == pytest.approx(0.90)
-        assert RED_SEA_HOUTHI.adjusted_fill(0.90, "red_sea") == pytest.approx(0.765)
+        # 0.75 after the PortWatch revision, not the original 0.85 guess.
+        assert RED_SEA_HOUTHI.adjusted_fill(0.90, "red_sea") == pytest.approx(0.675)
+
+    def test_red_sea_reaches_aqaba_itself(self):
+        """Aqaba is INSIDE Bab el-Mandeb, so a Red Sea closure reaches it.
+
+        This once was not true and the omission was silent: the preset
+        listed only 'red_sea' and 'suez', neither of which any simulator
+        ever tags a supplier with, so applying the scenario changed
+        nothing at all. Measured Aqaba arrivals fell to 0.743 of their
+        trailing norm during the crisis, which is not nothing.
+        """
+        assert RED_SEA_HOUTHI.applies_to("aqaba") is True
+        assert RED_SEA_HOUTHI.adjusted_fill(0.93, "aqaba") < 0.93
 
     def test_scenario_with_no_routes_hits_everything(self):
         assert BASELINE.applies_to("anything") is True
@@ -103,12 +116,40 @@ class TestJordanCalibration:
             assert r in ROUTES
 
     def test_severity_ordering_is_monotone(self):
-        order = ["baseline", "red_sea_houthi", "aqaba_congestion",
+        """Severity must increase down the ladder.
+
+        red_sea_houthi and aqaba_congestion swapped places after
+        measurement: the Red Sea crisis put Aqaba arrivals at 0.743 of
+        their trailing norm, while the Iraq transit surge raised Aqaba
+        tonnage to about 1.47x. Congestion is a TIMING shock, so a
+        quantity haircut is the wrong shape for it, and it now sits above
+        the conflict scenario rather than below it.
+        """
+        order = ["baseline", "aqaba_congestion", "red_sea_houthi",
                  "northern_land_disruption", "regional_escalation"]
         worst = [PRESETS[n].fill_multiplier for n in order]
         assert worst == sorted(worst, reverse=True)
         cost = [PRESETS[n].recourse_cost_multiplier for n in order]
         assert cost[0] <= cost[1] and cost[-1] == max(cost)
+
+    def test_every_preset_reaches_at_least_one_real_route(self):
+        """No preset may be silently dead.
+
+        A scenario whose affected_routes name nothing the simulator ever
+        assigns applies to zero suppliers, so running it returns the
+        baseline while looking like a stress test. That is exactly what
+        red_sea_houthi did before the PortWatch validation, and it is the
+        most dangerous failure mode here because it is invisible in the
+        output.
+        """
+        from synthetic.commercial.jordan_distributor_v2 import ROUTE_PROFILE
+        live = set(ROUTE_PROFILE)
+        for name, sc in PRESETS.items():
+            if name == "baseline" or not sc.affected_routes:
+                continue
+            assert live & set(sc.affected_routes), (
+                f"{name} targets {sc.affected_routes}, none of which any "
+                f"supplier is ever tagged with; it would be a no-op")
 
 
 def test_overrides_map_onto_run_benchmark_kwargs():

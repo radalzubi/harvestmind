@@ -39,7 +39,6 @@ from __future__ import annotations
 import os
 import re
 import urllib.parse
-from datetime import date, timedelta
 from typing import Iterable
 
 import pandas as pd

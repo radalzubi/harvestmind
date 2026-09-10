@@ -1,0 +1,76 @@
+
+==============================================================================
+COMMERCIAL OPTIMIZER — BACKTEST ON REAL PUBLIC DATA
+==============================================================================
+  demand path   US Census MWTS NAICS 4244 via FRED (real, NSA)
+  supply shocks IMF PortWatch AIS, per-route ports (real)
+  cross-section synthetic; idio CV = 0.25
+  opening cover 1.0 months   horizon 12 months
+  warehouse cap 2.0 months (real wholesaler I/S mean 1.26, p90 1.35)
+  window        1994-01 .. 2026-06  (390 months, 3 seeds)
+
+  NORMAL_1990S     eval mid 1997-07..2000-11  n=33  (real demand only)
+      SP vs naive order-up-to    median  +16.01%   wins 32/33
+      SP vs fill-aware determ.   median   +0.34%   wins 17/33
+      SP vs cautious p90         median  +29.80%   wins 33/33
+      service:  naive 98.2%   det_mean 96.1%   det_p90 91.6%   sp 96.6%
+
+  NORMAL_2000S     eval mid 2003-03..2007-03  n=39  (real demand only)
+      SP vs naive order-up-to    median  +20.20%   wins 38/39
+      SP vs fill-aware determ.   median   -2.05%   wins 15/39
+      SP vs cautious p90         median  +29.22%   wins 39/39
+      service:  naive 99.0%   det_mean 97.3%   det_p90 93.0%   sp 97.9%
+
+  GFC              eval mid 2007-07..2010-11  n=33  (real demand only)
+      SP vs naive order-up-to    median  +17.19%   wins 31/33
+      SP vs fill-aware determ.   median   -2.26%   wins 16/33
+      SP vs cautious p90         median  +20.47%   wins 30/33
+      service:  naive 98.1%   det_mean 96.4%   det_p90 92.3%   sp 97.1%
+
+  NORMAL_2010S     eval mid 2012-03..2019-11  n=72  (real demand only)
+      SP vs naive order-up-to    median  +17.61%   wins 69/72
+      SP vs fill-aware determ.   median   -0.01%   wins 36/72
+      SP vs cautious p90         median  +29.29%   wins 68/72
+      service:  naive 98.3%   det_mean 96.2%   det_p90 91.9%   sp 96.9%
+
+  COVID            eval mid 2020-03..2021-03  n=11  (real supply shocks)
+      mean realized supply shock  0.974
+      SP vs naive order-up-to    median  +28.86%   wins 10/11
+      SP vs fill-aware determ.   median   +5.33%   wins 8/11
+      SP vs cautious p90         median  +27.52%   wins 10/11
+      service:  naive 98.8%   det_mean 97.4%   det_p90 94.2%   sp 97.3%
+
+  INFLATION        eval mid 2021-07..2023-03  n=18  (real supply shocks)
+      mean realized supply shock  0.955
+      SP vs naive order-up-to    median   +8.94%   wins 15/18
+      SP vs fill-aware determ.   median  +18.48%   wins 16/18
+      SP vs cautious p90         median  +42.22%   wins 18/18
+      service:  naive 92.7%   det_mean 89.1%   det_p90 83.2%   sp 90.9%
+
+  RED_SEA_WAR      eval mid 2023-11..2025-11  n=20  (real supply shocks)
+      mean realized supply shock  0.909
+      SP vs naive order-up-to    median  +13.57%   wins 18/20
+      SP vs fill-aware determ.   median   +9.16%   wins 14/20
+      SP vs cautious p90         median  +35.67%   wins 20/20
+      service:  naive 96.0%   det_mean 93.7%   det_p90 89.0%   sp 94.5%
+
+  UNCLASSIFIED     eval mid 2001-03..2023-07  n=30  (real demand only)
+      SP vs naive order-up-to    median  +20.01%   wins 29/30
+      SP vs fill-aware determ.   median   +1.98%   wins 17/30
+      SP vs cautious p90         median  +28.81%   wins 29/30
+      service:  naive 98.7%   det_mean 97.0%   det_p90 92.7%   sp 97.6%
+
+------------------------------------------------------------------------------
+  POOLED  (256 admissible folds)
+    SP vs naive order-up-to    median  +17.63%  IQR [+10.54, +23.67]  wins 242/256
+    SP vs fill-aware determ.   median   +1.31%  IQR [-7.32, +9.35]  wins 139/256
+    SP vs cautious p90         median  +29.81%  IQR [+19.30, +39.21]  wins 247/256
+    service:  naive 97.9%   det_mean 95.8%   det_p90 91.4%   sp 96.5%
+
+    SP vs fill-aware determ., split by how hard the month was
+    (stratum set by the BASELINE's cost split, not SP's)
+      binding  n=188  median   +4.89%  wins 128/188   shortage > 20% of baseline cost
+      slack    n=68   median  -10.25%  wins 11/68   holding-dominated, easy month
+    folds suppressed by guard: 2
+------------------------------------------------------------------------------
+

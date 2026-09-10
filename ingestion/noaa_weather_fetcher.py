@@ -6,6 +6,8 @@ Token: NOAA_CDO_TOKEN env var (free, request at ncdc.noaa.gov).
 
 from __future__ import annotations
 
+from typing import Any
+
 import os
 from datetime import date, timedelta
 
@@ -40,7 +42,7 @@ def fetch_weather(
     start = start_date or (end - timedelta(days=90))
 
     headers = {"token": token}
-    params = {
+    params: dict[str, Any] = {
         # datasetid is REQUIRED by the CDO API — omitting it returns 400
         # and the graceful except used to swallow that into "0 rows".
         "datasetid": "GHCND",
@@ -114,6 +116,6 @@ def fetch_and_store(conn, days_back: int = 30) -> int:
         "drought_monitor_cat, enso_oni_index, gdd_base10"
     )
     conn.execute(
-        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"
+        f"INSERT OR IGNORE INTO fact_weather_obs ({cols}) SELECT {cols} FROM df"  # nosec B608 - cols from schema constant
     )
     return len(df)

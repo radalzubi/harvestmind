@@ -18,7 +18,7 @@ extraction_sessions.py and the engine.)
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
@@ -168,7 +168,7 @@ def consistency_checks(
 
         # margin inversion: cost above price for the same product → flag
         if p in costs and p in prices:
-            med_c, med_p = float(np.median(costs[p])), float(np.median(prices[p]))
+            med_p = float(np.median(prices[p]))
             c = _num(row.fields.get("unit_cost"))
             if c is not None and c > med_p:
                 row.flags.append(

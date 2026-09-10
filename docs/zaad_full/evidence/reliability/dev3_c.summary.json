@@ -1,0 +1,1243 @@
+{
+ "by_dimension": {
+  "alternative": {
+   "none": {
+    "base_stock": {
+     "avoidable": 12,
+     "breaches": 19,
+     "runs": 26
+    },
+    "gated": {
+     "avoidable": 8,
+     "breaches": 15,
+     "runs": 26
+    },
+    "gated_pr24": {
+     "avoidable": 11,
+     "breaches": 18,
+     "runs": 26
+    },
+    "protected": {
+     "avoidable": 14,
+     "breaches": 21,
+     "runs": 26
+    },
+    "robust": {
+     "avoidable": 1,
+     "breaches": 9,
+     "runs": 25
+    },
+    "stochastic": {
+     "avoidable": 14,
+     "breaches": 21,
+     "runs": 25
+    }
+   },
+   "route": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 10
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 6,
+     "runs": 10
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 10
+    },
+    "protected": {
+     "avoidable": 3,
+     "breaches": 9,
+     "runs": 10
+    },
+    "robust": {
+     "avoidable": 2,
+     "breaches": 7,
+     "runs": 9
+    },
+    "stochastic": {
+     "avoidable": 3,
+     "breaches": 9,
+     "runs": 10
+    }
+   },
+   "substitution": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "protected": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 1,
+     "runs": 4
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 3,
+     "runs": 6
+    }
+   },
+   "supplier": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 8
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 8
+    },
+    "robust": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 8
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 8
+    }
+   },
+   "transfer": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 6
+    },
+    "protected": {
+     "avoidable": 2,
+     "breaches": 5,
+     "runs": 6
+    },
+    "robust": {
+     "avoidable": 1,
+     "breaches": 4,
+     "runs": 5
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 4,
+     "runs": 6
+    }
+   }
+  },
+  "demand": {
+   "decrease": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    },
+    "protected": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    },
+    "stochastic": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    }
+   },
+   "gradual": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 3,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 3,
+     "runs": 4
+    },
+    "protected": {
+     "avoidable": 2,
+     "breaches": 4,
+     "runs": 4
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 4
+    },
+    "stochastic": {
+     "avoidable": 2,
+     "breaches": 4,
+     "runs": 4
+    }
+   },
+   "increase": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    },
+    "protected": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    },
+    "stochastic": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 5
+    }
+   },
+   "intermittent": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 2,
+     "runs": 6
+    },
+    "protected": {
+     "avoidable": 2,
+     "breaches": 3,
+     "runs": 6
+    },
+    "robust": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 6
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 6
+    }
+   },
+   "promotion": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 4,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 2,
+     "breaches": 4,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 4,
+     "runs": 4
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 3,
+     "runs": 4
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 3,
+     "runs": 4
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 3,
+     "runs": 3
+    }
+   },
+   "spike": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 4,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 3,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 4,
+     "runs": 4
+    },
+    "protected": {
+     "avoidable": 2,
+     "breaches": 4,
+     "runs": 4
+    },
+    "robust": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 3
+    },
+    "stochastic": {
+     "avoidable": 2,
+     "breaches": 4,
+     "runs": 4
+    }
+   },
+   "stable": {
+    "base_stock": {
+     "avoidable": 4,
+     "breaches": 9,
+     "runs": 19
+    },
+    "gated": {
+     "avoidable": 2,
+     "breaches": 7,
+     "runs": 19
+    },
+    "gated_pr24": {
+     "avoidable": 4,
+     "breaches": 9,
+     "runs": 19
+    },
+    "protected": {
+     "avoidable": 9,
+     "breaches": 14,
+     "runs": 19
+    },
+    "robust": {
+     "avoidable": 2,
+     "breaches": 7,
+     "runs": 16
+    },
+    "stochastic": {
+     "avoidable": 10,
+     "breaches": 15,
+     "runs": 19
+    }
+   },
+   "temporary_spike": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 2
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 2
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 2
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 2
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 1,
+     "runs": 2
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 2
+    }
+   },
+   "unknown_promotion": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 3,
+     "runs": 3
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 3
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 3
+    },
+    "protected": {
+     "avoidable": 2,
+     "breaches": 3,
+     "runs": 3
+    },
+    "robust": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 3
+    },
+    "stochastic": {
+     "avoidable": 2,
+     "breaches": 3,
+     "runs": 3
+    }
+   },
+   "volatile": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 3,
+     "runs": 4
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    }
+   }
+  },
+  "inventory": {
+   "balanced": {
+    "base_stock": {
+     "avoidable": 9,
+     "breaches": 19,
+     "runs": 33
+    },
+    "gated": {
+     "avoidable": 6,
+     "breaches": 16,
+     "runs": 33
+    },
+    "gated_pr24": {
+     "avoidable": 9,
+     "breaches": 19,
+     "runs": 33
+    },
+    "protected": {
+     "avoidable": 17,
+     "breaches": 27,
+     "runs": 33
+    },
+    "robust": {
+     "avoidable": 2,
+     "breaches": 11,
+     "runs": 29
+    },
+    "stochastic": {
+     "avoidable": 17,
+     "breaches": 27,
+     "runs": 33
+    }
+   },
+   "high": {
+    "base_stock": {
+     "avoidable": 3,
+     "breaches": 13,
+     "runs": 15
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 11,
+     "runs": 15
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 12,
+     "runs": 15
+    },
+    "protected": {
+     "avoidable": 2,
+     "breaches": 11,
+     "runs": 15
+    },
+    "robust": {
+     "avoidable": 3,
+     "breaches": 13,
+     "runs": 15
+    },
+    "stochastic": {
+     "avoidable": 2,
+     "breaches": 11,
+     "runs": 14
+    }
+   },
+   "low": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 7
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    }
+   }
+  },
+  "network": {
+   "central_branches": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 10,
+     "runs": 11
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 9,
+     "runs": 11
+    },
+    "gated_pr24": {
+     "avoidable": 2,
+     "breaches": 10,
+     "runs": 11
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 11
+    },
+    "robust": {
+     "avoidable": 2,
+     "breaches": 9,
+     "runs": 10
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 10
+    }
+   },
+   "single": {
+    "base_stock": {
+     "avoidable": 10,
+     "breaches": 21,
+     "runs": 34
+    },
+    "gated": {
+     "avoidable": 7,
+     "breaches": 18,
+     "runs": 34
+    },
+    "gated_pr24": {
+     "avoidable": 10,
+     "breaches": 21,
+     "runs": 34
+    },
+    "protected": {
+     "avoidable": 16,
+     "breaches": 27,
+     "runs": 34
+    },
+    "robust": {
+     "avoidable": 2,
+     "breaches": 13,
+     "runs": 33
+    },
+    "stochastic": {
+     "avoidable": 15,
+     "breaches": 26,
+     "runs": 34
+    }
+   },
+   "two_locations": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 11
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 11
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 11
+    },
+    "protected": {
+     "avoidable": 3,
+     "breaches": 10,
+     "runs": 11
+    },
+    "robust": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    },
+    "stochastic": {
+     "avoidable": 4,
+     "breaches": 11,
+     "runs": 11
+    }
+   }
+  },
+  "supply": {
+   "correlated": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 7
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 7
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 7
+    },
+    "protected": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 7
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 6,
+     "runs": 6
+    },
+    "stochastic": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 7
+    }
+   },
+   "fill": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 4
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 1,
+     "runs": 4
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 1,
+     "runs": 4
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 4
+    },
+    "robust": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 4
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 2,
+     "runs": 4
+    }
+   },
+   "lead": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 6,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    },
+    "robust": {
+     "avoidable": 1,
+     "breaches": 6,
+     "runs": 7
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 7,
+     "runs": 8
+    }
+   },
+   "partial": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 5
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 5
+    }
+   },
+   "severe": {
+    "base_stock": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 6
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 6
+    },
+    "gated_pr24": {
+     "avoidable": 0,
+     "breaches": 5,
+     "runs": 6
+    },
+    "protected": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 6
+    },
+    "robust": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 6
+    },
+    "stochastic": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 6
+    }
+   },
+   "stable": {
+    "base_stock": {
+     "avoidable": 10,
+     "breaches": 13,
+     "runs": 26
+    },
+    "gated": {
+     "avoidable": 7,
+     "breaches": 10,
+     "runs": 26
+    },
+    "gated_pr24": {
+     "avoidable": 10,
+     "breaches": 13,
+     "runs": 26
+    },
+    "protected": {
+     "avoidable": 17,
+     "breaches": 20,
+     "runs": 26
+    },
+    "robust": {
+     "avoidable": 2,
+     "breaches": 6,
+     "runs": 23
+    },
+    "stochastic": {
+     "avoidable": 17,
+     "breaches": 20,
+     "runs": 25
+    }
+   }
+  },
+  "target": {
+   "0.9": {
+    "base_stock": {
+     "avoidable": 2,
+     "breaches": 6,
+     "runs": 10
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 4,
+     "runs": 10
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 5,
+     "runs": 10
+    },
+    "protected": {
+     "avoidable": 3,
+     "breaches": 7,
+     "runs": 10
+    },
+    "robust": {
+     "avoidable": 2,
+     "breaches": 5,
+     "runs": 9
+    },
+    "stochastic": {
+     "avoidable": 3,
+     "breaches": 7,
+     "runs": 10
+    }
+   },
+   "0.95": {
+    "base_stock": {
+     "avoidable": 9,
+     "breaches": 16,
+     "runs": 28
+    },
+    "gated": {
+     "avoidable": 8,
+     "breaches": 15,
+     "runs": 28
+    },
+    "gated_pr24": {
+     "avoidable": 9,
+     "breaches": 16,
+     "runs": 28
+    },
+    "protected": {
+     "avoidable": 15,
+     "breaches": 21,
+     "runs": 28
+    },
+    "robust": {
+     "avoidable": 3,
+     "breaches": 10,
+     "runs": 25
+    },
+    "stochastic": {
+     "avoidable": 15,
+     "breaches": 21,
+     "runs": 27
+    }
+   },
+   "0.97": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 8
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 7,
+     "runs": 8
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 8
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 8
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 6,
+     "runs": 7
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 8,
+     "runs": 8
+    }
+   },
+   "0.99": {
+    "base_stock": {
+     "avoidable": 1,
+     "breaches": 9,
+     "runs": 10
+    },
+    "gated": {
+     "avoidable": 0,
+     "breaches": 8,
+     "runs": 10
+    },
+    "gated_pr24": {
+     "avoidable": 1,
+     "breaches": 9,
+     "runs": 10
+    },
+    "protected": {
+     "avoidable": 1,
+     "breaches": 9,
+     "runs": 10
+    },
+    "robust": {
+     "avoidable": 0,
+     "breaches": 8,
+     "runs": 10
+    },
+    "stochastic": {
+     "avoidable": 1,
+     "breaches": 9,
+     "runs": 10
+    }
+   }
+  }
+ },
+ "methods": {
+  "base_stock": {
+   "avoidable_breaches": 13,
+   "breach_classes": {
+    "AVOIDABLE": 13,
+    "ECONOMIC_TRADEOFF": 1,
+    "MET": 17,
+    "MODEL_FAILURE": 17,
+    "UNAVOIDABLE": 8
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 0,
+   "emergency_review_share": 0.11607142857142858,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.33274399654586206,
+   "mean_weighted_shortfall": 0.1399154849449352,
+   "median_inventory_periods": 1.3100101621781142,
+   "median_recovery_periods": 2.5,
+   "median_saving_vs_reference_pct": 0.0,
+   "median_service": 0.8595040441700079,
+   "median_weighted_shortfall": 0.09052985023773807,
+   "median_working_capital": 152.96554172488803,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 39,
+   "worst_saving_vs_reference_pct": 0.0
+  },
+  "gated": {
+   "avoidable_breaches": 8,
+   "breach_classes": {
+    "AVOIDABLE": 8,
+    "ECONOMIC_TRADEOFF": 1,
+    "MET": 22,
+    "MODEL_FAILURE": 17,
+    "UNAVOIDABLE": 8
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 14,
+   "emergency_review_share": 0.16964285714285715,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 1.2348974758509164,
+   "mean_weighted_shortfall": 0.1155265529220778,
+   "median_inventory_periods": 1.6774898870726054,
+   "median_recovery_periods": 2,
+   "median_saving_vs_reference_pct": 2.26555759663336,
+   "median_service": 0.9317326670990386,
+   "median_weighted_shortfall": 0.034454491741845616,
+   "median_working_capital": 204.03863048693083,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 34,
+   "worst_saving_vs_reference_pct": -21.920492668333758
+  },
+  "gated_pr24": {
+   "avoidable_breaches": 12,
+   "breach_classes": {
+    "AVOIDABLE": 12,
+    "ECONOMIC_TRADEOFF": 1,
+    "MET": 18,
+    "MODEL_FAILURE": 17,
+    "UNAVOIDABLE": 8
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 2,
+   "emergency_review_share": 0.14732142857142858,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.5671674294756426,
+   "mean_weighted_shortfall": 0.13205975671126843,
+   "median_inventory_periods": 1.2611910561766078,
+   "median_recovery_periods": 2.0,
+   "median_saving_vs_reference_pct": 1.9541670662933233,
+   "median_service": 0.8721611561634786,
+   "median_weighted_shortfall": 0.07447696545418975,
+   "median_working_capital": 150.28396162140888,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 38,
+   "worst_saving_vs_reference_pct": -9.60479700495738
+  },
+  "protected": {
+   "avoidable_breaches": 20,
+   "breach_classes": {
+    "AVOIDABLE": 20,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 11,
+    "MODEL_FAILURE": 17,
+    "UNAVOIDABLE": 8
+   },
+   "complete": 56,
+   "cost_losses_vs_reference": 23,
+   "emergency_review_share": 0.22321428571428573,
+   "failed_or_incomplete": [],
+   "false_protection_benign_inventory_periods": 0.3331133040870738,
+   "mean_weighted_shortfall": 0.11616000515535914,
+   "median_inventory_periods": 1.2369186224245343,
+   "median_recovery_periods": 2.5,
+   "median_saving_vs_reference_pct": 0.7706183592099536,
+   "median_service": 0.878283053341707,
+   "median_weighted_shortfall": 0.06623260883234344,
+   "median_working_capital": 128.45664099766785,
+   "paired_cost_vs_reference": 56,
+   "runs": 56,
+   "service_breaches": 45,
+   "worst_saving_vs_reference_pct": -28.519720811399903
+  },
+  "robust": {
+   "avoidable_breaches": 5,
+   "breach_classes": {
+    "AVOIDABLE": 5,
+    "ECONOMIC_TRADEOFF": 1,
+    "MET": 22,
+    "MODEL_FAILURE": 15,
+    "UNAVOIDABLE": 8
+   },
+   "complete": 51,
+   "cost_losses_vs_reference": 9,
+   "emergency_review_share": 0.3235294117647059,
+   "failed_or_incomplete": [
+    {
+     "cell": 17,
+     "failure": [
+      "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "REQUESTED_SERVICE_INFEASIBLE: lexicographic service-recovery plan"
+     ],
+     "seed": 26001,
+     "status": "TIME_LIMIT"
+    },
+    {
+     "cell": 21,
+     "failure": [
+      "Time limit reached. (HiGHS Status 13: Time limit reached)",
+      "REQUESTED_SERVICE_INFEASIBLE: lexicographic service-recovery plan"
+     ],
+     "seed": 26001,
+     "status": "TIME_LIMIT"
+    },
+    {
+     "cell": 34,
+     "failure": [
+      "Time limit reached. (HiGHS Status 13: Time limit reached)"
+     ],
+     "seed": 26001,
+     "status": "TIME_LIMIT"
+    },
+    {
+     "cell": 37,
+     "failure": [
+      "Time limit reached. (HiGHS Status 13: Time limit reached)"
+     ],
+     "seed": 26001,
+     "status": "TIME_LIMIT"
+    },
+    {
+     "cell": 46,
+     "failure": [
+      "Time limit reached. (HiGHS Status 13: Time limit reached)"
+     ],
+     "seed": 26001,
+     "status": "TIME_LIMIT"
+    }
+   ],
+   "false_protection_benign_inventory_periods": 2.291491843041721,
+   "mean_weighted_shortfall": 0.0792721259599001,
+   "median_inventory_periods": 1.9925626053201981,
+   "median_recovery_periods": 3,
+   "median_saving_vs_reference_pct": 7.029857056798327,
+   "median_service": 0.9276533317273804,
+   "median_weighted_shortfall": 0.006586792126447971,
+   "median_working_capital": 231.05876084004024,
+   "paired_cost_vs_reference": 51,
+   "runs": 56,
+   "service_breaches": 29,
+   "worst_saving_vs_reference_pct": -35.59094653900681
+  },
+  "stochastic": {
+   "avoidable_breaches": 20,
+   "breach_classes": {
+    "AVOIDABLE": 20,
+    "ECONOMIC_TRADEOFF": 0,
+    "MET": 10,
+    "MODEL_FAILURE": 17,
+    "UNAVOIDABLE": 8
+   },
+   "complete": 55,
+   "cost_losses_vs_reference": 15,
+   "emergency_review_share": 0.21818181818181817,
+   "failed_or_incomplete": [
+    {
+     "cell": 49,
+     "failure": [
+      "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+      "REQUESTED_SERVICE_INFEASIBLE: lexicographic service-recovery plan"
+     ],
+     "seed": 26001,
+     "status": "INFEASIBLE"
+    }
+   ],
+   "false_protection_benign_inventory_periods": 0.34658379816880325,
+   "mean_weighted_shortfall": 0.11536318403231181,
+   "median_inventory_periods": 1.0632347731443088,
+   "median_recovery_periods": 2.0,
+   "median_saving_vs_reference_pct": 2.2642821257135792,
+   "median_service": 0.8738165847330361,
+   "median_weighted_shortfall": 0.06736192434624,
+   "median_working_capital": 111.80356806067878,
+   "paired_cost_vs_reference": 55,
+   "runs": 56,
+   "service_breaches": 45,
+   "worst_saving_vs_reference_pct": -24.308671960646254
+  }
+ },
+ "pairs": {
+  "gated_vs_gated_pr24": {
+   "cost_losses": 26,
+   "cost_wins": 24,
+   "service_losses": 11,
+   "service_wins": 31,
+   "ties": 6
+  },
+  "gated_vs_protected": {
+   "cost_losses": 28,
+   "cost_wins": 28,
+   "service_losses": 12,
+   "service_wins": 40,
+   "ties": 0
+  },
+  "protected_vs_stochastic": {
+   "cost_losses": 34,
+   "cost_wins": 21,
+   "service_losses": 25,
+   "service_wins": 26,
+   "ties": 0
+  }
+ },
+ "rows": 336
+}
