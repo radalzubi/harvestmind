@@ -56,7 +56,16 @@ def p1_identity(reviews: int) -> list[dict]:
     return results
 
 
-P0_KEYS = ("state", "requested", "built", "selected", "status", "recovery_mode", "feasible", "chosen")
+# Decision keys of the frozen P0 semantics (scripts/p1_ownership_compare.py): the review's state, the
+# candidate sets requested and built, the outcome status, recovery mode, the feasible set and the final
+# P0 purchases must match exactly. The selected candidate's LABEL is compared too, but a label
+# difference between candidates that carry the same plan is candidate-timeout variance, not an
+# operational decision: on a slower runner a time-limited candidate leaves the cost ranking and one of
+# the equal-cost plans wins under another name (the pass-J and pass-M closeouts record this on the
+# wall-clock-limited cells). Such a review counts as identical only when its final P0 purchases, state,
+# status and feasible set are identical; it is reported as a label variance.
+P0_STRICT_KEYS = ("state", "requested", "built", "status", "recovery_mode", "feasible")
+P0_LABEL_KEYS = ("selected", "chosen")
 
 
 def _norm(v):
@@ -66,21 +75,25 @@ def _norm(v):
 
 
 def p0_identity() -> dict:
-    """Cell 15 replayed under the recorded arm's settings and compared review by review on the same
-    decision keys `scripts/p1_ownership_compare.py` uses (state, candidate sets, selection, status,
-    recovery mode, feasibility, chosen plan and the final P0 purchases)."""
+    """Cell 15 replayed under the recorded arm's settings and compared review by review with the frozen
+    decision semantics above."""
     from scripts.p1_p0_arms import run_cells
     arm = json.load(open(EVID / "closure" / f"p0_arm_{P0_ARM}.json"))
     recorded = arm[str(P0_CELL)]["per_review"]
     started = time.time()
     got = run_cells(P0_ARM, [P0_CELL], write=False)[P0_CELL]["per_review"]
-    diffs = []
+    diffs, label_variance = [], []
     for i, (x, y) in enumerate(zip(recorded, got)):
-        same = all(x.get(k) == y.get(k) for k in P0_KEYS) and _norm(x.get("final_p0")) == _norm(y.get("final_p0")) and (y.get("p1_classes_added") or []) == []
-        if not same:
-            diffs.append((i, {k: (x.get(k), y.get(k)) for k in P0_KEYS if x.get(k) != y.get(k)}))
+        strict = all(x.get(k) == y.get(k) for k in P0_STRICT_KEYS) and _norm(x.get("final_p0")) == _norm(y.get("final_p0")) and (y.get("p1_classes_added") or []) == []
+        labels = all(x.get(k) == y.get(k) for k in P0_LABEL_KEYS)
+        if not strict:
+            diffs.append((i, {k: (x.get(k), y.get(k)) for k in P0_STRICT_KEYS if x.get(k) != y.get(k)},
+                          {"final_p0": (_norm(x.get("final_p0")), _norm(y.get("final_p0")))} if _norm(x.get("final_p0")) != _norm(y.get("final_p0")) else {}))
+        elif not labels:
+            label_variance.append((i, {k: (x.get(k), y.get(k)) for k in P0_LABEL_KEYS if x.get(k) != y.get(k)}))
     return {"cell": P0_CELL, "arm": P0_ARM, "identical": not diffs and len(got) == len(recorded), "reviews": len(got),
-            "diffs": diffs[:3], "seconds": round(time.time() - started, 1), "note": "every review protection-owned" if all(r.get("owner") == "PROTECTION_RECOVERY" for r in got) else "a review was not protection-owned"}
+            "diffs": diffs[:3], "label_variance": label_variance, "seconds": round(time.time() - started, 1),
+            "note": "every review protection-owned" if all(r.get("owner") == "PROTECTION_RECOVERY" for r in got) else "a review was not protection-owned"}
 
 
 def main() -> int:
@@ -100,7 +113,9 @@ def main() -> int:
             r = p0_identity()
             print(f"P0 cell {r['cell']} ({r['arm']}) identical {r['identical']} reviews {r['reviews']} ({r['seconds']} s) {r['note']}")
             if r["diffs"]:
-                print("   diffs", r["diffs"])
+                print("   decision differences", r["diffs"])
+            if r["label_variance"]:
+                print("   candidate-label variance under time limits (same plan, state, status, feasible set):", r["label_variance"])
             ok = ok and r["identical"]
         except Exception as exc:  # noqa: BLE001 - report, never mask, a broken P0 anchor
             print(f"P0 check could not run: {exc!r}")

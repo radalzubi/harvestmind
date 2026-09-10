@@ -13,7 +13,7 @@ authors = [{ name = "HarvestMind Team", email = "team@harvestmind.io" }]
 dependencies = [
     "reportlab>=4.2",
     "pyomo>=6.7",
-    "highspy>=1.7",
+    "highspy>=1.14,<1.16",  # frozen P0 / P1 decisions reproduced on 1.14.0 and 1.15.1; a newer minor needs the frozen regression first
     "mlforecast>=0.13",
     "lightgbm>=4.3",
     "hierarchicalforecast>=0.4",

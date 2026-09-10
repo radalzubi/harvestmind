@@ -118,9 +118,12 @@ class Linear:
         has_x = int(info.primal_solution_status) == int(highspy.kSolutionStatusFeasible)
         x = np.asarray(h.getSolution().col_value, dtype=float) if has_x else None
         S = highspy.HighsModelStatus
+        # highspy 1.15 dropped the deprecated alias kHighsInterrupt (same status as kInterrupt);
+        # 1.14 carries both. Read it defensively so a non-optimal status never raises.
+        interrupt_alias = getattr(S, "kHighsInterrupt", S.kInterrupt)
         if model_status == S.kOptimal:
             status = 0
-        elif model_status in (S.kTimeLimit, S.kIterationLimit, S.kSolutionLimit, S.kInterrupt, S.kHighsInterrupt):
+        elif model_status in (S.kTimeLimit, S.kIterationLimit, S.kSolutionLimit, S.kInterrupt, interrupt_alias):
             status = 1
         elif model_status == S.kInfeasible:
             status = 2

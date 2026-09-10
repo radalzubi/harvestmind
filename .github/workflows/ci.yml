@@ -119,6 +119,11 @@ jobs:
     name: secret scan (gitleaks)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      # gitleaks-action lists the pull request's commits to scan exactly the range under review;
+      # that read needs pull-requests: read (the first PR run failed 403 without it). Still no write.
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -190,8 +195,11 @@ jobs:
           PY
           )"
       - name: Validate compose file
+        # compose.pilot.yml refuses to interpolate without the admin key; a placeholder is enough to
+        # validate the file (it is not a secret and never leaves the runner).
         env:
           POSTGRES_PASSWORD: ci-only
+          HARVESTMIND_ADMIN_KEY: ci-placeholder-not-a-secret
         run: docker compose -f compose.pilot.yml config -q
 
   frontend:
