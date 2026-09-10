@@ -113,7 +113,7 @@ Removal is a later step, after the legacy modes have no consumer (`docs/ZAAD_REP
 | #19 adaptive decision engine (site, Vercel production) | CANONICAL SITE SOURCE until Vercel is repointed; content merged | after Vercel tracks `main` or `zaad/canonical` |
 | #39 Network Twin V1 | DEFERRED, untouched | no |
 
-No PR was merged, closed or deleted. No branch was deleted. Nothing was pushed.
+Dispositions executed 2026-09-10 after the merge of #40 (see "Release line closed"): the listed PRs are closed, no branch was deleted.
 
 ## Untouched
 
@@ -140,7 +140,8 @@ unrun), PR #39 / `claude/zaad-network-twin-v1`, Vercel, every other worktree. P2
 Pushed and verified on origin: `claude/zaad-industry-standard-v8` -> `2e30721`, `claude/zaad-cycle-stock-p1`
 -> `56e998f`, tags `p0-frozen`=`2e30721`, `p1-frozen-product`=`f7e1e62`, `p1-frozen`=`12db66c`,
 `pre-canonical-integration`=`56e998f`, and `zaad/canonical`. Canonical PR: **#40**
-(https://github.com/radalzubi/harvestmind/pull/40), `zaad/canonical` -> `main`, open, head `7cf0431`.
+(https://github.com/radalzubi/harvestmind/pull/40), `zaad/canonical` -> `main`, **merged 2026-09-10 11:57 UTC**
+(merge commit `f7ff600`, no squash) from head `9a8d266` (= `7cf0431` + this ledger).
 
 Remote CI on PR #40, job by job (the workflow of `.github/workflows/ci.yml`):
 
@@ -149,15 +150,16 @@ Remote CI on PR #40, job by job (the workflow of `.github/workflows/ci.yml`):
 | 1 | `653b86c` | cancelled by run 2 | pass | **fail** (highspy 1.15 alias) | pass | **fail** (403: pull-requests read) | **fail** (label variance on cell 15) | **fail** (compose needs the admin-key placeholder; image smoke itself passed) | pass |
 | 2 | `1ca2eb9` | cancelled at the 30-min budget (an unbounded 60-SKU plan under coverage) | pass | pass | pass | **fail** (one historical presigned-URL key id) | pass | **pass** | pass |
 | 3 | `4bc8c4a` | **fail**: 1,809 passed, 1 failed (`test_no_obvious_secrets_in_tracked_files` on the literal key id in `.gitleaks.toml`) | pass | pass | pass | pass | pass | pass | pass |
-| 4 | `7cf0431` | not started | not started | not started | not started | not started | not started | not started | not started |
+| 4 | `7cf0431`, `9a8d266` | not started (billing) | not started | not started | not started | not started | not started | not started | not started |
+| 4 rerun ([34462761422](https://github.com/radalzubi/harvestmind/actions/runs/34462761422)) | `9a8d266` | **pass**: 1,810 passed, 2 skipped (36 min) | pass | pass | pass | pass | **pass** | **pass** | pass |
 
 Run 4 (three attempts, and the push-triggered run on the same commit) did not schedule a single job:
-GitHub annotates every job "The job was not started because recent account payments have failed or
+GitHub annotated every job "The job was not started because recent account payments have failed or
 your spending limit needs to be increased" (private repository; runs 1-3 consumed about 116
-job-minutes). This is an account billing state, outside the repository. `7cf0431` differs from
-`4bc8c4a` only in `.gitleaks.toml` (the allowlist expressed by pattern and path instead of the
-literal key id); the full suite at `7cf0431` passes locally (1,810 passed, 2 skipped) and the
-repository's tracked-secrets test passes on it.
+job-minutes). The owner restored Actions billing and raised the budget; the rerun of the latest PR
+run (`gh run rerun 34462761422`, head `9a8d266`, identical code to `7cf0431`) scheduled every job and
+every job passed. The stale "not started" check runs of the push-triggered run on the same commit were
+left as they are (the pull-request run is the gate; the merge commit got its own run on `main`).
 
 Docker on GitHub (runs 2 and 3, real evidence): the image builds from a clean checkout, the API imports
 and starts, `/health` reports service `zaad-api` with `auth_enforced` true under `HARVESTMIND_ENV=prod`,
@@ -175,13 +177,52 @@ Frozen regression on GitHub (highspy 1.15.1, two-core runner): B, T, Q, A identi
 P0 cell 15 identical on state, candidate sets, status, recovery mode, feasible set and final purchases,
 with three equal-plan label swaps reported as timeout variance.
 
-**Merge: not performed.** The merge gate requires every required check green on the PR head; run 4
-could not start. **PR closures: not performed** (they follow the merge). **Vercel: not touched.**
+CodeQL (`.github/workflows/codeql.yml`, added at `5895f18`, never run on `main`) fails on every run of
+this repository at the analyze/upload step with "Resource not accessible by integration": code scanning
+is not enabled for this private repository (the repository's security settings are empty and the
+code-scanning API answers 403 "Code scanning is not enabled"). ENVIRONMENT DEFECT outside the
+repository, not one of the release gates; no permission change can make the upload succeed on this
+plan, so the workflow was left untouched. To use it: enable code scanning (GitHub Advanced Security)
+or make the repository public, and add `actions: read` to its permissions as the action documents for
+private repositories.
+
+## Release line closed (2026-09-10)
+
+* **Merge:** PR #40 merged with a merge commit, `main` = **`f7ff600`** (parents `865b701`, `9a8d266`).
+  The tree of `main` is byte-identical to `9a8d266`; `2e30721`, `f7e1e62`, `12db66c`, `56e998f`,
+  `3bbb07c` and `9a8d266` are ancestors of `main`; the four tags still point where they were pushed.
+* **Post-merge verification:** the push-triggered run on `main`
+  ([34474090176](https://github.com/radalzubi/harvestmind/actions/runs/34474090176)) passed every job
+  (pytest 1,810 passed / 2 skipped in 36 min; ruff; mypy; bandit + pip-audit "No known vulnerabilities
+  found"; gitleaks; frozen regression PASS on highspy 1.15.1 with the three equal-plan label swaps
+  reported; Docker image smoke `{'status': 'ok', 'service': 'zaad-api', 'env': 'prod', 'auth_enforced':
+  True}` with anonymous jobs 401 and the legacy demo closed, compose validated; frontend typecheck /
+  lint 0 errors / build / npm audit 0 vulnerabilities). Locally on the `main` tree: the canonical API and
+  workspace tests (12) pass; legacy planners are off outside dev; `/network` is absent (404 on the
+  site); Network Twin's head `734fa49` is not an ancestor of `main`.
+* **PR closures (executed, branches kept, nothing deleted, `delete_branch_on_merge` false):**
+  #16, #17, #18, #20, #21, #23, #24, #25, #30, #31, #33, #35, #36, #37, #38 closed as superseded
+  (each head re-verified as an ancestor of `main`); #32 closed with the historical-evidence note
+  (holdout3 negative result, evidence only); #19 closed after the Vercel repoint. #39 (Network Twin)
+  stays open and deferred. Dependabot opened #41-#51 (GitHub Actions, npm and pip bumps) on the merge;
+  they are out of this release's scope and untouched (any solver-stack bump needs the frozen regression
+  before acceptance; the ruff / TypeScript / ESLint majors need their own gate runs).
+* **Vercel (authorized, done after the post-merge verification):** project `zaad` (team
+  `rad-al-zubi-s-projects`, serves `zaadsupply.com`, root `web`) production branch changed from
+  `adaptive/decision-engine` to **`main`** (the public project API does not expose the production
+  branch, so the change was made in the dashboard: Settings -> Environments -> Production -> Branch
+  Tracking); a production deployment of `main` at `f7ff600` was created through the deployments API
+  (`dpl_AbNhZqenfZa51PC29C8dkenJja67`, READY, aliases `zaadsupply.com`, `www.zaadsupply.com`,
+  `zaad-tau.vercel.app`). Live smoke: `/`, `/how-it-works`, `/overview`, `/upload` 200, `/network` 404.
+  The project's only production variable is `NEXT_PUBLIC_API_URL` (unchanged). The API deployment is
+  outside Vercel and outside this pass; its required posture is the handoff above (`HARVESTMIND_ENV=prod`,
+  `HARVESTMIND_AUTH_REQUIRED=true`, `ZAAD_LEGACY_PLANNERS=0`, explicit CORS origins, admin key, persistent
+  data root, positive rate limit). The second Vercel project `harvestmind` already tracked `main`.
+* **Verdict:** ZAAD CANONICAL RELEASE LINE — PASS, P2 MAY BE BRANCHED. P2 has not been started; it
+  branches from `main` (`f7ff600` or later). Nothing in this pass claims production-ready security.
 
 ## Exact next action
 
-Restore GitHub Actions for the account (Settings -> Billing and plans: settle the failed payment or
-raise the Actions spending limit; or make the repository public), then re-run the checks on PR #40:
-`gh run rerun <run id>` on the latest run of head `7cf0431` (or `gh pr checks 40 --watch` after a
-rerun). When every job is green: merge #40 without squash, verify `main`, close the superseded PRs per
-the checklist, repoint Vercel.
+None for the release line. The next brief is P2, branched from `main`; keep `ZAAD_LEGACY_PLANNERS`
+explicit on every deployed environment and run `scripts/zaad_canonical_regression.py` before accepting
+any Dependabot bump that touches the solver stack.
