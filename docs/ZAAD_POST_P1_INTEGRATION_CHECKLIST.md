@@ -16,7 +16,14 @@ the owner's authorization (push, PR, closures, Vercel). Run from the `harvestmin
 - [x] Validation on the canonical tree: pytest 1,810 passed / 2 skipped; ruff canonical scope clean; mypy clean; bandit 0 medium; pip-audit clean; frontend typecheck / lint / build / audit clean; `scripts/zaad_canonical_regression.py` PASS; invariants 720 / 720 identical to the freeze; workspace smoke OK
 - [ ] Docker image smoke: defined in CI, not runnable on this machine (no Docker); passes on the first CI run or is fixed there
 
-## Step 1: publish the frozen branches and the canonical branch (needs explicit authorization)
+## Step 1: publish the frozen branches and the canonical branch — DONE 2026-09-10 (authorized)
+
+- [x] frozen branches, four tags and `zaad/canonical` on origin at their exact SHAs
+- [x] PR #40 opened (`zaad/canonical` -> `main`, body `docs/ZAAD_CANONICAL_PR.md`)
+- [x] remote CI fixed to green on every job at `4bc8c4a` except one test on the literal key id, fixed at `7cf0431`
+- [ ] **blocked**: run 4 (`7cf0431`) could not schedule any job (account billing / Actions spending limit). Restore billing, then `gh run rerun <run id>` and `gh pr checks 40 --watch`.
+
+(the original step-1 commands, kept for the record)
 
 ```bash
 git push origin claude/zaad-industry-standard-v8      # nine P0 commits; origin moves e8e2398 -> 2e30721

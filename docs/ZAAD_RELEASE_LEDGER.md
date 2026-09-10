@@ -134,7 +134,54 @@ unrun), PR #39 / `claude/zaad-network-twin-v1`, Vercel, every other worktree. P2
   `docs/ZAAD_POST_P1_INTEGRATION_CHECKLIST.md`; the PR body is `docs/ZAAD_CANONICAL_PR.md`.
 * Every open PR head except #39 is an ancestor of `zaad/canonical` (re-verified).
 
+
+## Remote release gate (2026-09-10, authorized pass)
+
+Pushed and verified on origin: `claude/zaad-industry-standard-v8` -> `2e30721`, `claude/zaad-cycle-stock-p1`
+-> `56e998f`, tags `p0-frozen`=`2e30721`, `p1-frozen-product`=`f7e1e62`, `p1-frozen`=`12db66c`,
+`pre-canonical-integration`=`56e998f`, and `zaad/canonical`. Canonical PR: **#40**
+(https://github.com/radalzubi/harvestmind/pull/40), `zaad/canonical` -> `main`, open, head `7cf0431`.
+
+Remote CI on PR #40, job by job (the workflow of `.github/workflows/ci.yml`):
+
+| run | head | pytest | ruff | mypy | security | secret scan | frozen regression | docker | frontend |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | `653b86c` | cancelled by run 2 | pass | **fail** (highspy 1.15 alias) | pass | **fail** (403: pull-requests read) | **fail** (label variance on cell 15) | **fail** (compose needs the admin-key placeholder; image smoke itself passed) | pass |
+| 2 | `1ca2eb9` | cancelled at the 30-min budget (an unbounded 60-SKU plan under coverage) | pass | pass | pass | **fail** (one historical presigned-URL key id) | pass | **pass** | pass |
+| 3 | `4bc8c4a` | **fail**: 1,809 passed, 1 failed (`test_no_obvious_secrets_in_tracked_files` on the literal key id in `.gitleaks.toml`) | pass | pass | pass | pass | pass | pass | pass |
+| 4 | `7cf0431` | not started | not started | not started | not started | not started | not started | not started | not started |
+
+Run 4 (three attempts, and the push-triggered run on the same commit) did not schedule a single job:
+GitHub annotates every job "The job was not started because recent account payments have failed or
+your spending limit needs to be increased" (private repository; runs 1-3 consumed about 116
+job-minutes). This is an account billing state, outside the repository. `7cf0431` differs from
+`4bc8c4a` only in `.gitleaks.toml` (the allowlist expressed by pattern and path instead of the
+literal key id); the full suite at `7cf0431` passes locally (1,810 passed, 2 skipped) and the
+repository's tracked-secrets test passes on it.
+
+Docker on GitHub (runs 2 and 3, real evidence): the image builds from a clean checkout, the API imports
+and starts, `/health` reports service `zaad-api` with `auth_enforced` true under `HARVESTMIND_ENV=prod`,
+anonymous job listing is 401, the legacy demo endpoint is not open, and `compose.pilot.yml` validates.
+
+Fixes made for CI (`1ca2eb9`, `4bc8c4a`, `7cf0431`; none touches optimizer behaviour): the deprecated
+highspy status alias read defensively (`zaad/full/model.py`), `highspy>=1.14,<1.16` (decisions
+reproduced on 1.14.0 locally and 1.15.1 on GitHub), the P0 anchor of the frozen regression applying the
+recorded decision semantics (candidate-label variance under time limits reported, never accepted as a
+decision change), `pull-requests: read` for gitleaks, the compose validation placeholder, a bounded
+canonical purchase-plan test (`skus`, `max_solve_seconds` on `/fmcg/plan?mode=canonical`), a 45-minute
+pytest budget, and the scoped gitleaks allowlist.
+
+Frozen regression on GitHub (highspy 1.15.1, two-core runner): B, T, Q, A identical to the freeze record;
+P0 cell 15 identical on state, candidate sets, status, recovery mode, feasible set and final purchases,
+with three equal-plan label swaps reported as timeout variance.
+
+**Merge: not performed.** The merge gate requires every required check green on the PR head; run 4
+could not start. **PR closures: not performed** (they follow the merge). **Vercel: not touched.**
+
 ## Exact next action
 
-Authorize the pushes in `docs/ZAAD_POST_P1_INTEGRATION_CHECKLIST.md` (steps 1 and 6): the two frozen
-branches with their tags and `zaad/canonical`, then the canonical pull request to `main`.
+Restore GitHub Actions for the account (Settings -> Billing and plans: settle the failed payment or
+raise the Actions spending limit; or make the repository public), then re-run the checks on PR #40:
+`gh run rerun <run id>` on the latest run of head `7cf0431` (or `gh pr checks 40 --watch` after a
+rerun). When every job is green: merge #40 without squash, verify `main`, close the superseded PRs per
+the checklist, repoint Vercel.
