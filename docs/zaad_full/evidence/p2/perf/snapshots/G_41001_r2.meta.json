@@ -1,0 +1,9 @@
+{
+ "fixture": "G_central_supply_shortage",
+ "seed": 41001,
+ "review": 2,
+ "status": "COMPLETE",
+ "seconds_to_materialise": 20.7,
+ "review_wall_seconds": 0.8086669999174774,
+ "state": "NORMAL_REPLENISHMENT"
+}

@@ -1,0 +1,9 @@
+{
+ "fixture": "A_independent_demand",
+ "seed": 41001,
+ "review": 7,
+ "status": "COMPLETE",
+ "seconds_to_materialise": 64.8,
+ "review_wall_seconds": 8.449060915969312,
+ "state": "NO_ACTION"
+}

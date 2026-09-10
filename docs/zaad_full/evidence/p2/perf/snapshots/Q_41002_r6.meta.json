@@ -1,0 +1,9 @@
+{
+ "fixture": "Q_pack_constraint_on_transfer",
+ "seed": 41002,
+ "review": 6,
+ "status": "COMPLETE",
+ "seconds_to_materialise": 65.4,
+ "review_wall_seconds": 14.6114124590531,
+ "state": "NETWORK_ALLOCATION"
+}

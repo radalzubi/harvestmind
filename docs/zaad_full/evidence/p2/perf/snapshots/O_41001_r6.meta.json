@@ -1,0 +1,9 @@
+{
+ "fixture": "O_multiple_transfer_options",
+ "seed": 41001,
+ "review": 6,
+ "status": "COMPLETE",
+ "seconds_to_materialise": 502.0,
+ "review_wall_seconds": 88.02473529102281,
+ "state": "NO_ACTION"
+}
