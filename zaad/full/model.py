@@ -936,7 +936,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         net = margin - feed["cost"]
                         if j < feed["lead"] or demand_units <= 0 or net <= 0:
                             continue
-                        via = m.var(("continuation_via", sku, feed_origin, feed["branch"], w, j), upper=demand_units)
+                        via = m.var(("continuation_via", sku, feed_origin, feed.get("lane", feed["branch"]), w, j), upper=demand_units)
                         costs[w][via] -= net
                         via_vars.append(via)
                         shared[sku, feed["branch"], j].append(via)

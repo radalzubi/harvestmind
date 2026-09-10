@@ -68,6 +68,14 @@ STAGING_TABLES: dict[str, dict[str, Any]] = {
                            "description": "FMCG supplier master with route/manufacturer tags and capacity"},
     "stg_fmcg_economics": {"required_cols": {"key", "value"}, "date_cols": [],
                            "description": "FMCG economic parameters with provenance"},
+    # ── P2 network (db/migrations/016_fmcg_network.sql) ──
+    "stg_fmcg_locations": {"required_cols": {"location_id"}, "date_cols": [],
+                           "description": "Network locations (DC, branches) with kind, holding rate and capacity"},
+    "stg_fmcg_lanes": {"required_cols": {"origin_id", "destination_id"}, "date_cols": [],
+                       "description": "Transfer lanes between locations: lead, cost, capacity, packs"},
+    "stg_fmcg_transfers": {"required_cols": {"origin_id", "destination_id", "sku", "qty", "dispatch_date"},
+                           "date_cols": ["dispatch_date", "expected_arrival_date", "received_date"],
+                           "description": "Transfer history and open transfers between locations"},
     "stg_products": {
         "required_cols": {"product_name"},
         "date_cols": [],

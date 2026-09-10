@@ -264,16 +264,17 @@ def test_plan_network_reports_the_network_block_with_explanations(monkeypatch):
     json.dumps(report, allow_nan=False)
 
 
-def test_independent_branch_requests_isolate_every_branch_with_a_virtual_supplier():
-    req = p2_request(lane_lead_periods=2, lane_cost=.3, opening_central=100.)
+def test_independent_branch_requests_isolate_every_branch_as_its_own_chain():
+    req = p2_request(lane_lead_periods=2, lane_cost=.3, opening_central=100., supplier_capacity=500.)
     parts = independent_branch_requests(req)
     assert set(parts) == {"north", "south"}
     for name, part in parts.items():
-        assert len(part.locations) == 1 and not part.transfers and len(part.services) == 1
-        virtual = part.sources[0]
-        assert virtual.destination == name and virtual.lead_days == 7 + 14 and virtual.freight_per_unit == pytest.approx(.3)
-        assert part.inbound_transfers and part.inbound_transfers[0].due_in == 2
-    assert sum(p.inbound_transfers[0].accepted_quantity for p in parts.values()) == pytest.approx(100.)
+        assert {loc.id for loc in part.locations} == {"central", name} and len(part.services) == 1
+        assert [a.destination for a in part.transfers] == [name] and part.transfers[0].cost_per_unit == .3
+        assert part.sources[0].id == "src_A" and part.sources[0].destination == "central" and part.sources[0].lead_days == 7
+        assert 0 < part.sources[0].capacity_by_period[0] < 500.
+    assert sum(x.usable for p in parts.values() for x in p.stock if x.location == "central") == pytest.approx(100.)
+    assert sum(p.sources[0].capacity_by_period[0] for p in parts.values()) == pytest.approx(500.)
 
 
 # ---------------------------------------------------------------- network continuation (P2)

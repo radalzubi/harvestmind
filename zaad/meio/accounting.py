@@ -188,7 +188,9 @@ def economic_decomposition(req: Request, plan: Solution, row: dict) -> dict[str,
 
 def network_accounting(req: Request, plan: Solution | None, worlds: list[World], label: str = "plan") -> dict[str, Any]:
     if plan is None or not plan.usable_plan:
-        return {"label": label, "usable_worlds": 0, "worlds": len(worlds), "rows": [], "scope": "no usable plan"}
+        return {"label": label, "usable_worlds": 0, "worlds": len(worlds), "unusable": [], "flows": [], "lanes": {}, "services": [], "network_service": {},
+                "economics": {}, "actions": {}, "conservation": {"holds_on_every_world": None}, "stranded_units_at_end": None, "stranded": [],
+                "in_transit_after_horizon_units": None, "scope": "no usable plan"}
     rows = settle_rows(req, plan, worlds)
     usable = [r for r in rows if r["usable"]]
     weights = [r["weight"] for r in usable]

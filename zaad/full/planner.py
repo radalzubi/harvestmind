@@ -144,8 +144,10 @@ def evaluate(req, solution, worlds, terminal: dict[str, float] | None = None, fi
         try:
             result = settle(req, solution, world, future_guidance=True)
             if terminal:
+                from zaad.full.lotsizing import lane_premiums
                 from zaad.full.terminal import continuation_value
-                adjustment = continuation_value(req, result["end_stock"], result["pending"], fits if fits is not None else {}, window_end=req.horizon, landed=terminal, cap_units=terminal_cap)["adjustment"]
+                adjustment = continuation_value(req, result["end_stock"], result["pending"], fits if fits is not None else {}, window_end=req.horizon, landed=terminal, cap_units=terminal_cap,
+                                                location_premium=lane_premiums(req) or None)["adjustment"]
                 # carried in the row's ledger too (INVENTORY_VALUE_CHANGE), so components still reconcile
                 result = {**result, "economic_cost": result["economic_cost"] + adjustment, "terminal_adjustment": adjustment,
                           "ledger": {**result["ledger"], "terminal_continuation": adjustment}}

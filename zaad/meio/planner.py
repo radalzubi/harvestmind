@@ -33,7 +33,7 @@ from zaad.full.worlds import dates, draw
 from zaad.meio import VERSION
 from zaad.meio.accounting import network_accounting
 from zaad.meio.explain import explain_network
-from zaad.meio.topology import NetworkState, network_state
+from zaad.meio.topology import NetworkState, network_state, validate_network
 
 
 def solution_from_actions(rows: list[dict], status: str = "OPTIMAL") -> Solution:
@@ -104,7 +104,33 @@ def network_router(req: Request, state: NetworkState, fits: dict) -> dict[str, A
             "scope": "decided before the frozen planner from the request and the fitted demand rate; names the contested resources, never overrides the frozen decision"}
 
 
+class NetworkRefused(ValueError):
+    """The request cannot be planned as a network as declared (a structural defect the economics cannot price)."""
+
+
+def _native(x: Any) -> Any:
+    """Plain Python scalars throughout (numpy floats and bools from the frozen report's arithmetic), so
+    the network report serialises through json and the API alike. Values are unchanged."""
+    import numpy as np
+    if isinstance(x, dict):
+        return {k: _native(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [_native(v) for v in x]
+    if isinstance(x, np.bool_):
+        return bool(x)
+    if isinstance(x, np.integer):
+        return int(x)
+    if isinstance(x, np.floating):
+        return float(x)
+    return x
+
+
 def plan_network(req: Request) -> dict[str, Any]:
+    loops = [i for i in validate_network(req) if "zero-cost reverse pair" in i]
+    if loops:
+        # a free lane in both directions leaves nothing in the economics to separate A->B->A from doing
+        # nothing; the operator declares a cost (however small) or removes one direction
+        raise NetworkRefused("; ".join(loops))
     report = plan(req)
     fits = report.get("forecasts", {})
     state = network_state(req, rates={sid: float(f.get("mean", 0.)) for sid, f in fits.items()})
@@ -125,4 +151,4 @@ def plan_network(req: Request) -> dict[str, Any]:
                                       "lanes_with_packs": [a.id for a in req.transfers if a.multiple > 0],
                                       "lanes_with_dispatch_cost": [a.id for a in req.transfers if a.fixed_cost_per_dispatch > 0]},
                          "scope": "P2 network layer around the frozen joint decision; approval stays with the operator; no executable order"}
-    return report
+    return _native(report)

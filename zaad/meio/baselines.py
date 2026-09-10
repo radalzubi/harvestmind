@@ -33,7 +33,7 @@ import math
 from zaad.full.contracts import Request, Transfer
 from zaad.full.model import Solution, supplier_orders
 from zaad.full.policies import _keep_amendments, _z, apply_cash_cap, apply_load_cap, apply_mov, lot_round
-from zaad.full.worlds import dates, forecast_all
+from zaad.full.worlds import dates, draw, forecast_all
 from zaad.meio.topology import lane_arrival
 
 
@@ -54,6 +54,9 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
     skus = {s.id: s for s in req.skus}
     sources = {s.id: s for s in req.sources}
     H = req.horizon
+    # the projection lands supply exactly where the mean world lands it (fitted supply profiles, ETA
+    # evidence, signals), so the incumbent solve that pins these transfers sees the stock they need
+    mean_world = draw(req, req.seed, 1, deterministic=True)[0]
     # demand statistics per (sku, location)
     mu: dict[tuple[str, str], float] = defaultdict(float)
     var: dict[tuple[str, str], float] = defaultdict(float)
@@ -84,8 +87,8 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
         src = sources[po.source]
         if po.remaining <= 0:
             continue
-        due = max(1, next(o.due_in for o in po.options if o.action == "keep"))
-        pending.append((src.sku, src.destination, due + skus[src.sku].shelf_life, due, po.expected_accepted_remaining))
+        due = max(1, int(mean_world.po_due.get(po.id, next(o.due_in for o in po.options if o.action == "keep"))))
+        pending.append((src.sku, src.destination, due + skus[src.sku].shelf_life, due, po.expected_accepted_remaining * float(mean_world.po_fill.get(po.id, 1.)) / max(po.expected_accepted_remaining / po.remaining, 1e-9) if po.remaining > 0 else 0.))
     for row in req.inbound_transfers:
         pending.append((row.sku, row.destination, row.expires_in, row.due_in, row.accepted_quantity))
     purchases: dict[tuple[str, int], float] = {}
@@ -171,24 +174,28 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
             options = [s for s in req.sources if s.sku == sku and s.destination == location and s.approved and s.compliance == "cleared"]
             src = min(options, key=lambda s: (s.unit_price + s.freight_per_unit + s.handling_per_unit, s.id))
             z = _z(max([target[sku, location]] + [target[d] for d in downstream]))
-            _, arrival = dates(req, src, t)
+            arrival = int(mean_world.arrival.get((src.id, t), dates(req, src, t)[1]))
             lead = arrival - t
             tail = max((lane_arrival(req, feeder[d], 0) for d in downstream), default=0)
             echelon_pos = position(sku, location, t) + sum(position(*d, t) for d in downstream)
             rop = m * (lead + tail) + z * sd * math.sqrt(max(1, lead + tail))
             if echelon_pos - m > rop + 1e-9:
                 continue
-            nxt = next((dates(req, src, u)[1] for u in range(t + 1, H) if dates(req, src, u)[1] > arrival), None)
+            nxt = next((int(mean_world.arrival.get((src.id, u), dates(req, src, u)[1])) for u in range(t + 1, H) if int(mean_world.arrival.get((src.id, u), dates(req, src, u)[1])) > arrival), None)
             cover_to = nxt if nxt is not None else H
             need = m * (cover_to - t + tail) + z * sd * math.sqrt(max(1, cover_to - t + tail)) - echelon_pos
             holding = locations[location].holding_per_value_period * src.unit_price + req.liquidity.cost_of_capital_per_period * src.unit_price
             fixed = order_costs.get(src.supplier, 0.) + src.fixed_order_fee
             eoq = math.sqrt(2. * m * fixed / holding) if fixed > 0 and holding > 0 else 0.
-            q = lot_round(src, max(need, eoq, 0.))
-            q = min(q, src.maximum, src.capacity_by_period[t])
+            q = min(lot_round(src, max(need, eoq, 0.)), src.maximum, src.capacity_by_period[t])
+            # a cap that is not itself a legal pack (the frozen lot_round returns min(q, maximum) as is)
+            # is brought back to the pack below it, so the projection is always physically legal
+            for pack in (src.multiple, src.case_multiple, src.pallet_multiple, src.transport_multiple):
+                if pack > 0:
+                    q = _round_to(q, pack, up=False)
             if q > 0 and arrival < H + 1:
                 purchases[src.id, t] = purchases.get((src.id, t), 0.) + q
-                pending.append((sku, location, arrival + skus[sku].shelf_life, arrival, q * src.fill_mean))
+                pending.append((sku, location, arrival + skus[sku].shelf_life, arrival, q * float(mean_world.fills.get((src.id, t), src.fill_mean))))
         # 3. serve the period's mean demand FEFO at every location
         for (sku, location), m in mu.items():
             remaining = m
@@ -210,97 +217,104 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
 
 
 def independent_branch_requests(req: Request) -> dict[str, Request]:
-    """Baseline A: every location that serves demand becomes an isolated single-node request.
+    """Baseline A: every location that serves demand becomes its own isolated supply chain with the
+    same physics and no pooling.
 
-    A branch fed only by lanes gets a virtual supplier relationship for each SKU: the origin's cheapest
-    source with the lane appended (lead = supplier lead + lane lead, landed cost + lane cost, fill x
-    (1 - loss), capacity = min(source, lane) split by the branch's share of the origin's fed demand),
-    and its share of the origin's current stock as an inbound transfer landing after the lane lead.
-    A location that buys directly keeps its own sources and stock. No lanes, no shared stock: what a
-    decentralised network is. Shared supplier / resource capacity is split by demand share, so the
-    decomposition can never use more than the network could."""
-    rates = {s.id: 0. for s in req.services}
+    A transfer-fed branch keeps its feeding origin(s) as a private copy: the origin's stock, its
+    supplier capacity and maximum, its open orders and shared resources are split by the branch's share
+    of the demand the origin serves; the lane into the branch, the supplier lead, the lane cost and the
+    order-level economics are unchanged (each branch pays the full order cost: no consolidation is
+    exactly what "no pooling" means). A location that buys directly keeps its own sources and stock.
+    The union of the parts can never use more stock or capacity than the network holds."""
     from zaad.meio.topology import network_state
     state = network_state(req)
+    rate: dict[tuple[str, str], float] = defaultdict(float)
     for p in state.positions.values():
-        for sid in p.targets:
-            rates[sid] = p.demand_rate / max(1, len(p.targets))
-    demand_at: dict[tuple[str, str], float] = defaultdict(float)
-    for s in req.services:
-        demand_at[s.sku, s.location] += rates[s.id]
+        rate[p.sku, p.location] += p.demand_rate
+    served_by_origin: dict[tuple[str, str], float] = defaultdict(float)
+    for arc in req.transfers:
+        if arc.approved:
+            served_by_origin[arc.sku, arc.origin] += rate[arc.sku, arc.destination]
+    for (sku, loc), r in rate.items():
+        served_by_origin[sku, loc] += r          # an origin's own customers, if any
     data_all = req.model_dump(mode="python")
-    known_at = req.as_of
     out: dict[str, Request] = {}
     serving = sorted({s.location for s in req.services})
+
+    def scaled_po(po: dict, share: float) -> dict:
+        row = dict(po)
+        for k in ("ordered", "confirmed", "shipped", "received", "rejected", "expected_accepted_remaining"):
+            row[k] = po[k] * share
+        row["options"] = [{**o, "max_quantity": o["max_quantity"] * share} for o in po["options"]]
+        return row
+
     for location in serving:
+        feeders = [a for a in req.transfers if a.approved and a.destination == location]
+        origins = sorted({a.origin for a in feeders})
+        keep = {location, *origins}
+        # share of each origin's served demand that this branch represents (per SKU, then the max over SKUs)
+        share_of: dict[str, float] = {}
+        for origin in origins:
+            skus_here = {a.sku for a in feeders if a.origin == origin}
+            shares = [rate[sku, location] / served_by_origin[sku, origin] if served_by_origin[sku, origin] > 0 else 0. for sku in skus_here]
+            share_of[origin] = max(shares) if shares else 0.
         data = dict(data_all)
-        data["locations"] = [loc for loc in data_all["locations"] if loc["id"] == location]
+        data["locations"] = [loc for loc in data_all["locations"] if loc["id"] in keep]
         data["services"] = [s for s in data_all["services"] if s["location"] == location]
         keep_services = {s["id"] for s in data["services"]}
         data["history"] = [h for h in data_all["history"] if h["service"] in keep_services]
         data["events"] = [e for e in data_all["events"] if e["service"] in keep_services]
         data["order_lines"] = [line for line in data_all["order_lines"] if line["service"] in keep_services]
-        data["stock"] = [x for x in data_all["stock"] if x["location"] == location]
-        data["transfers"] = []
-        data["incumbent_transfers"] = []
-        data["inbound_transfers"] = [x for x in data_all["inbound_transfers"] if x["destination"] == location]
-        own_sources = [s for s in data_all["sources"] if s["destination"] == location]
-        own_ids = {s["id"] for s in own_sources}
-        data["pipeline"] = [po for po in data_all["pipeline"] if po["source"] in own_ids]
-        data["shipment_history"] = [row for row in data_all["shipment_history"] if row["source"] in own_ids]
-        data["incumbent_orders"] = [row for row in data_all["incumbent_orders"] if row["source"] in own_ids]
-        new_sources = list(own_sources)
-        resources_needed: set[str] = {r for s in own_sources for r in s["resources"]}
-        extra_inbound: list[dict] = []
-        for sku_id in {s["sku"] for s in data["services"]}:
-            if any(s["sku"] == sku_id for s in own_sources):
+        data["customers"] = [c for c in data_all["customers"] if c["id"] in {s["customer"] for s in data["services"]}] or list(data_all["customers"])[:1]
+        stock = []
+        for x in data_all["stock"]:
+            if x["location"] == location:
+                stock.append(x)
+            elif x["location"] in origins:
+                share = share_of[x["location"]]
+                stock.append({**x, "id": f"{x['id']}__{location}", "quantity": x["quantity"] * share, "reserved": x["reserved"] * share,
+                              "damaged": x["damaged"] * share, "quarantined": x["quarantined"] * share})
+        data["stock"] = stock
+        data["transfers"] = [a for a in data_all["transfers"] if a["destination"] == location and a["origin"] in keep]
+        lane_ids = {a["id"] for a in data["transfers"]}
+        data["incumbent_transfers"] = [x for x in data_all["incumbent_transfers"] if x["transfer"] in lane_ids]
+        data["inbound_transfers"] = [{**x, "origin": x["origin"] if x["origin"] in keep else location} for x in data_all["inbound_transfers"] if x["destination"] == location]
+        sources = []
+        for src in data_all["sources"]:
+            if src["destination"] == location:
+                sources.append(src)
+            elif src["destination"] in origins:
+                share = share_of[src["destination"]]
+                maximum = max(1e-9, src["maximum"] * share)
+                sources.append({**src, "capacity_by_period": [c * share for c in src["capacity_by_period"]], "maximum": maximum,
+                                "minimum": min(src["minimum"], maximum)})
+        data["sources"] = sources
+        source_ids = {s["id"] for s in sources}
+        share_of_source = {s["id"]: (1. if s["destination"] == location else share_of[s["destination"]]) for s in sources}
+        data["pipeline"] = [scaled_po(po, share_of_source[po["source"]]) for po in data_all["pipeline"] if po["source"] in source_ids]
+        data["pipeline"] = [po for po in data["pipeline"] if po["ordered"] - po["received"] > 1e-9]
+        data["shipment_history"] = [row for row in data_all["shipment_history"] if row["source"] in source_ids]
+        data["incumbent_orders"] = [{**row, "quantity": row["quantity"] * share_of_source[row["source"]]} for row in data_all["incumbent_orders"] if row["source"] in source_ids]
+        needed = {r for s in sources for r in s["resources"]}
+        outside = {r for s in req.sources for r in s.resources if s.id not in source_ids}
+        resources = []
+        for r in data_all["resources"]:
+            if r["id"] not in needed:
                 continue
-            feeders = [a for a in req.transfers if a.approved and a.sku == sku_id and a.destination == location]
-            if not feeders:
-                continue
-            arc = min(feeders, key=lambda a: (lane_arrival(req, a, 0), -a.capacity, a.id))
-            origin_sources = [s for s in req.sources if s.sku == sku_id and s.destination == arc.origin and s.approved and s.compliance == "cleared"]
-            if not origin_sources:
-                continue
-            base = min(origin_sources, key=lambda s: (s.unit_price + s.freight_per_unit + s.handling_per_unit, s.id))
-            fed = [d for a in req.transfers if a.approved and a.sku == sku_id and a.origin == arc.origin for d in [a.destination]]
-            total = sum(demand_at[sku_id, d] for d in set(fed)) + demand_at[sku_id, arc.origin]
-            share = demand_at[sku_id, location] / total if total > 0 else 1. / max(1, len(set(fed)))
-            virtual = base.model_dump(mode="python")
-            virtual.update({"id": f"{base.id}__via__{arc.id}", "destination": location, "route": [*base.route, location],
-                            "lead_days": base.lead_days + arc.lead_periods * req.period_days,
-                            "freight_per_unit": base.freight_per_unit + arc.cost_per_unit,
-                            "fill_mean": max(1e-6, min(1., base.fill_mean * (1 - arc.loss_fraction))),
-                            "capacity_by_period": [min(c, arc.capacity) * share for c in base.capacity_by_period],
-                            "maximum": max(1e-9, min(base.maximum, arc.capacity) * share),
-                            "minimum": min(base.minimum, max(1e-9, min(base.maximum, arc.capacity) * share)),
-                            "resources": list(base.resources), "leg_transit_days": [], "leg_arrival_calendars": []})
-            new_sources.append(virtual)
-            resources_needed |= set(base.resources)
-            origin_stock = sum(x.usable for x in req.stock if x.sku == sku_id and x.location == arc.origin)
-            if origin_stock > 0:
-                oldest = min((x.expires_in for x in req.stock if x.sku == sku_id and x.location == arc.origin and x.usable > 0), default=1)
-                due = lane_arrival(req, arc, 0)
-                if oldest > due:
-                    # the origin no longer exists in this isolated request: the share is stock already on its way here
-                    extra_inbound.append({"id": f"share_{sku_id}_{location}", "known_at": known_at, "sku": sku_id, "origin": location,
-                                          "destination": location, "accepted_quantity": origin_stock * share * (1 - arc.loss_fraction),
-                                          "due_in": due, "expires_in": oldest})
-        data["sources"] = new_sources
-        data["inbound_transfers"] = data["inbound_transfers"] + extra_inbound
-        data["resources"] = [r for r in data_all["resources"] if r["id"] in resources_needed] or data_all["resources"][:1]
-        # shared capacity: this branch's demand share of every shared resource
-        total_demand = sum(demand_at.values()) or 1.
-        my_share = sum(v for (k, loc), v in demand_at.items() if loc == location) / total_demand
-        data["resources"] = [{**r, "capacity_by_period": [c * my_share for c in r["capacity_by_period"]]} if len([s for s in req.sources if r["id"] in s.resources and s.destination != location]) else r
-                             for r in data["resources"]]
-        data["supplier_terms"] = [st for st in data_all["supplier_terms"] if st["supplier"] in {s["supplier"] for s in new_sources}]
-        data["stresses"] = data_all["stresses"]
+            if r["id"] in outside:
+                # shared with sources outside this chain: this chain's share of the network demand it serves
+                users = [s for s in req.sources if r["id"] in s.resources]
+                served = sum(served_by_origin[s.sku, s.destination] for s in users) or 1.
+                mine = sum(rate[s.sku, location] for s in users if s.id in source_ids) or sum(rate[sku, location] for (sku, loc) in rate if loc == location)
+                resources.append({**r, "capacity_by_period": [c * min(1., mine / served) for c in r["capacity_by_period"]]})
+            else:
+                resources.append(r)
+        data["resources"] = resources or list(data_all["resources"])[:1]
+        data["supplier_terms"] = [st for st in data_all["supplier_terms"] if st["supplier"] in {s["supplier"] for s in sources}]
         data["signals"] = []
-        data["operator_id"] = f"{req.operator_id}"
-        data["inherited_on_hand"] = {k: v for k, v in data_all["inherited_on_hand"].items() if k.endswith("|" + location)}
-        if data["incumbent_rule"] and str(data["incumbent_rule"]).startswith("network:"):
-            data["incumbent_rule"] = "reorder_point"
+        data["inherited_on_hand"] = {k: v for k, v in data_all["inherited_on_hand"].items() if k.split("|")[-1] in keep}
+        data["economics_provenance"] = {k: v for k, v in data_all["economics_provenance"].items()
+                                        if not k.startswith("location.") or k.split(".")[1] in keep}
         out[location] = Request.model_validate(data)
     return out
 

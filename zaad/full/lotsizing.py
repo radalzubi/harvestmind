@@ -119,6 +119,19 @@ def landed_unit_costs(req: Request, fits: dict) -> dict[str, float]:
     return landed
 
 
+def lane_premiums(req: Request) -> dict[tuple[str, str], float]:
+    """Per (SKU, location) that buys nothing itself but is fed by lanes (P2): the cost per unit of the
+    cheapest approved lane into it from a location that buys the SKU (or is itself fed), i.e. the
+    transfer a residual unit sitting there lets the operator avoid. Empty without lanes."""
+    buyers = {(s.sku, s.destination) for s in req.sources if s.approved and s.compliance == "cleared"}
+    out: dict[tuple[str, str], float] = {}
+    for arc in sorted(req.transfers, key=lambda a: (a.cost_per_unit, a.lead_periods, a.id)):
+        key = (arc.sku, arc.destination)
+        if arc.approved and key not in buyers and key not in out:
+            out[key] = float(arc.cost_per_unit)
+    return out
+
+
 def _continuation_sources(req: Request, mu: dict) -> list[tuple[tuple[str, str], Source]]:
     """(SKU, location) pairs that carry continuation slabs, each with the source whose supplier lot
     sets the cycle: a source destination keeps the first source declared for it (the frozen P1 rule,
@@ -153,6 +166,7 @@ def terminal_terms(req: Request, fits: dict) -> dict[tuple[str, str], tuple[floa
     locs = {loc.id: loc for loc in req.locations}
     lots = reference_lots(req, fits)
     landed = landed_unit_costs(req, fits)
+    premiums = lane_premiums(req)
     mu: dict[tuple[str, str], float] = defaultdict(float)
     for s in req.services:
         mu[s.sku, s.location] += float(fits[s.id]["mean"])
@@ -169,7 +183,7 @@ def terminal_terms(req: Request, fits: dict) -> dict[tuple[str, str], tuple[floa
             tau = lot["lot_units"] / (2. * lot["demand_per_period"])
         sku = skus[source.sku]
         rate = locs[key[1]].holding_per_value_period + req.liquidity.cost_of_capital_per_period
-        margin = landed[source.sku] - sku.terminal_value - sku.asset_value * rate * tau
+        margin = landed[source.sku] + premiums.get(key, 0.) - sku.terminal_value - sku.asset_value * rate * tau
         if units > 0 and margin > 0:
             out[key] = (float(units), float(margin))
     return out
@@ -223,6 +237,7 @@ def cycle_continuation_terms(req: Request, fits: dict) -> dict[tuple[str, str], 
     locs = {loc.id: loc for loc in req.locations}
     lots = reference_lots(req, fits)
     unit_cost = steady_state_unit_costs(req, fits)
+    premiums = lane_premiums(req)
     mu: dict[tuple[str, str], float] = defaultdict(float)
     for s in req.services:
         mu[s.sku, s.location] += float(fits[s.id]["mean"])
@@ -240,7 +255,8 @@ def cycle_continuation_terms(req: Request, fits: dict) -> dict[tuple[str, str], 
         rate = locs[key[1]].holding_per_value_period + req.liquidity.cost_of_capital_per_period
         slabs = []
         for j in range(periods):
-            margin = unit_cost[source.sku] - sku.terminal_value - sku.asset_value * rate * (j + .5)
+            # a residual unit at a transfer-fed location also avoids the move that brought it (P2 lane premium)
+            margin = unit_cost[source.sku] + premiums.get(key, 0.) - sku.terminal_value - sku.asset_value * rate * (j + .5)
             if margin <= 0:
                 break
             slabs.append((float(mu[key]), float(margin)))
@@ -262,13 +278,13 @@ def continuation_feeds(req: Request, fits: dict) -> dict[tuple[str, str], list[d
         mu[s.sku, s.location] += float(fits[s.id]["mean"])
     slabs = cycle_continuation_terms(req, fits) if req.terminal_economic_basis == "cycle" else {k: [v] for k, v in terminal_terms(req, fits).items()}
     out: dict[tuple[str, str], list[dict]] = {}
-    for arc in sorted(req.transfers, key=lambda a: (a.lead_periods, a.cost_per_unit, a.id)):
+    for arc in sorted(req.transfers, key=lambda a: (a.cost_per_unit, a.lead_periods, a.id)):
         if not arc.approved or mu.get((arc.sku, arc.origin), 0.) > 0 or (arc.sku, arc.destination) not in slabs:
             continue
         feeds = out.setdefault((arc.sku, arc.origin), [])
-        if any(f["branch"] == arc.destination for f in feeds):
-            continue          # the fastest, then cheapest, lane to each fed location
-        feeds.append({"branch": arc.destination, "lead": int(arc.lead_periods), "cost": float(arc.cost_per_unit)})
+        # every approved lane is an outlet: the solve uses a slow cheap lane for later slabs and a fast
+        # dear one only where its lead reaches a slab the cheap lane cannot
+        feeds.append({"branch": arc.destination, "lead": int(arc.lead_periods), "cost": float(arc.cost_per_unit), "lane": arc.id})
     return out
 
 
