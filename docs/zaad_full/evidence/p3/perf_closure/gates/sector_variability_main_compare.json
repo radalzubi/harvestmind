@@ -1,0 +1,545 @@
+{
+ "cells": [
+  {
+   "cell": [
+    "P3_age_at_receipt",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.0196690559387207,
+   "seconds_after": 0.9156317710876465,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P3_age_at_receipt",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.000092029571533,
+   "seconds_after": 0.950585126876831,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "X1_commercial_plus_produce",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 3,
+   "first_difference": 3,
+   "seconds_before": 0.6377110481262207,
+   "seconds_after": 0.5461008548736572,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "X1_commercial_plus_produce",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.6329410076141357,
+   "seconds_after": 0.5661530494689941,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "X2_produce_plus_frozen_seafood",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 6,
+   "first_difference": 6,
+   "seconds_before": 0.6419692039489746,
+   "seconds_after": 0.5923750400543213,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "X2_produce_plus_frozen_seafood",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 3,
+   "first_difference": 3,
+   "seconds_before": 0.6271438598632812,
+   "seconds_after": 0.5656039714813232,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "X3_three_sectors",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 7,
+   "first_difference": 7,
+   "seconds_before": 1.0335299968719482,
+   "seconds_after": 0.8553671836853027,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "X3_three_sectors",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.9280331134796143,
+   "seconds_after": 0.8431398868560791,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  }
+ ],
+ "differing_reviews": [
+  {
+   "cell": [
+    "X1_commercial_plus_produce",
+    "echelon_base_stock",
+    41001
+   ],
+   "review": 3,
+   "key": "cost",
+   "before": 2839.272273,
+   "after": 2806.044542,
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.077373499982059,
+   "wall_after": 0.060805958695709705
+  },
+  {
+   "cell": [
+    "X1_commercial_plus_produce",
+    "echelon_base_stock",
+    41001
+   ],
+   "review": 4,
+   "key": "purchases",
+   "before": [
+    [
+     "src_A",
+     226.416389
+    ],
+    [
+     "src_A_B",
+     190.910163
+    ]
+   ],
+   "after": [
+    [
+     "src_A",
+     226.416389
+    ],
+    [
+     "src_A_B",
+     196.472759
+    ]
+   ],
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.07699045911431313,
+   "wall_after": 0.0475287907756865
+  },
+  {
+   "cell": [
+    "X1_commercial_plus_produce",
+    "echelon_base_stock",
+    41001
+   ],
+   "review": 5,
+   "key": "purchases",
+   "before": [
+    [
+     "src_A",
+     191.672573
+    ],
+    [
+     "src_A_B",
+     244.613729
+    ]
+   ],
+   "after": [
+    [
+     "src_A",
+     191.672573
+    ],
+    [
+     "src_A_B",
+     242.546671
+    ]
+   ],
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.06879787473008037,
+   "wall_after": 0.05252541694790125
+  },
+  {
+   "cell": [
+    "X1_commercial_plus_produce",
+    "echelon_base_stock",
+    41001
+   ],
+   "review": 6,
+   "key": "purchases",
+   "before": [
+    [
+     "src_A",
+     184.874407
+    ],
+    [
+     "src_A_B",
+     195.525881
+    ]
+   ],
+   "after": [
+    [
+     "src_A",
+     184.874407
+    ],
+    [
+     "src_A_B",
+     185.406938
+    ]
+   ],
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.054468666668981314,
+   "wall_after": 0.050853791646659374
+  },
+  {
+   "cell": [
+    "X1_commercial_plus_produce",
+    "echelon_base_stock",
+    41001
+   ],
+   "review": 7,
+   "key": "purchases",
+   "before": [
+    [
+     "src_A",
+     226.638107
+    ],
+    [
+     "src_A_B",
+     161.599089
+    ]
+   ],
+   "after": [
+    [
+     "src_A",
+     226.638107
+    ],
+    [
+     "src_A_B",
+     175.500918
+    ]
+   ],
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.050695749931037426,
+   "wall_after": 0.04915591701865196
+  },
+  {
+   "cell": [
+    "X2_produce_plus_frozen_seafood",
+    "echelon_base_stock",
+    41001
+   ],
+   "review": 6,
+   "key": "transfers",
+   "before": {
+    "lane_north": 87.031496,
+    "lane_north_B": 96.675558,
+    "lane_south": 90.906717,
+    "lane_south_B": 96.521728
+   },
+   "after": {
+    "lane_north": 92.091214,
+    "lane_north_B": 96.675558,
+    "lane_south": 85.846999,
+    "lane_south_B": 96.521728
+   },
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.07057333318516612,
+   "wall_after": 0.061037332750856876
+  },
+  {
+   "cell": [
+    "X2_produce_plus_frozen_seafood",
+    "echelon_base_stock",
+    41001
+   ],
+   "review": 7,
+   "key": "transfers",
+   "before": {
+    "lane_north": 84.691067,
+    "lane_north_B": 84.81903,
+    "lane_south": 111.174621,
+    "lane_south_B": 119.350727
+   },
+   "after": {
+    "lane_north": 79.631349,
+    "lane_north_B": 90.415448,
+    "lane_south": 110.211003,
+    "lane_south_B": 116.817776
+   },
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.07451004208996892,
+   "wall_after": 0.07044241717085242
+  },
+  {
+   "cell": [
+    "X2_produce_plus_frozen_seafood",
+    "echelon_base_stock",
+    41002
+   ],
+   "review": 3,
+   "key": "cost",
+   "before": 5341.682686,
+   "after": 5338.99509,
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.06743441708385944,
+   "wall_after": 0.04425612464547157
+  },
+  {
+   "cell": [
+    "X2_produce_plus_frozen_seafood",
+    "echelon_base_stock",
+    41002
+   ],
+   "review": 4,
+   "key": "purchases",
+   "before": [
+    [
+     "src_A",
+     196.480463
+    ],
+    [
+     "src_A_B",
+     201.15586
+    ]
+   ],
+   "after": [
+    [
+     "src_A",
+     200.840763
+    ],
+    [
+     "src_A_B",
+     201.15586
+    ]
+   ],
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.06388525012880564,
+   "wall_after": 0.057566083036363125
+  },
+  {
+   "cell": [
+    "X2_produce_plus_frozen_seafood",
+    "echelon_base_stock",
+    41002
+   ],
+   "review": 5,
+   "key": "purchases",
+   "before": [
+    [
+     "src_A",
+     224.625045
+    ],
+    [
+     "src_A_B",
+     217.680437
+    ]
+   ],
+   "after": [
+    [
+     "src_A",
+     226.69596
+    ],
+    [
+     "src_A_B",
+     217.680437
+    ]
+   ],
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.06171433301642537,
+   "wall_after": 0.07694795820862055
+  },
+  {
+   "cell": [
+    "X2_produce_plus_frozen_seafood",
+    "echelon_base_stock",
+    41002
+   ],
+   "review": 6,
+   "key": "purchases",
+   "before": [
+    [
+     "src_A",
+     192.211002
+    ],
+    [
+     "src_A_B",
+     189.222594
+    ]
+   ],
+   "after": [
+    [
+     "src_A",
+     185.743327
+    ],
+    [
+     "src_A_B",
+     189.222594
+    ]
+   ],
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.07378816604614258,
+   "wall_after": 0.0634007090702653
+  },
+  {
+   "cell": [
+    "X2_produce_plus_frozen_seafood",
+    "echelon_base_stock",
+    41002
+   ],
+   "review": 7,
+   "key": "purchases",
+   "before": [
+    [
+     "src_A",
+     202.0137
+    ],
+    [
+     "src_A_B",
+     193.092472
+    ]
+   ],
+   "after": [
+    [
+     "src_A",
+     202.08298
+    ],
+    [
+     "src_A_B",
+     193.092472
+    ]
+   ],
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.07465566694736481,
+   "wall_after": 0.05052025010809302
+  },
+  {
+   "cell": [
+    "X3_three_sectors",
+    "echelon_base_stock",
+    41001
+   ],
+   "review": 7,
+   "key": "transfers",
+   "before": {
+    "lane_north": 79.631349,
+    "lane_north_B": 90.415448,
+    "lane_north_C": 115.441912,
+    "lane_south": 111.041581,
+    "lane_south_B": 73.276697
+   },
+   "after": {
+    "lane_north": 79.631349,
+    "lane_north_B": 90.415448,
+    "lane_north_C": 115.441912,
+    "lane_south": 111.041581,
+    "lane_south_B": 75.772149
+   },
+   "state_before": null,
+   "state_after": null,
+   "candidate_status_before": null,
+   "candidate_status_after": null,
+   "wall_before": 0.12381183309480548,
+   "wall_after": 0.08209787495434284
+  }
+ ],
+ "reviews_compared": 64,
+ "reviews_identical": 51,
+ "runtime_before": {
+  "reviews": 0,
+  "p50": null,
+  "p95": null,
+  "max": null
+ },
+ "runtime_after": {
+  "reviews": 0,
+  "p50": null,
+  "p95": null,
+  "max": null
+ }
+}

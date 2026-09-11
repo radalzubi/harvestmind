@@ -1,0 +1,1010 @@
+{
+ "adaptive_escalation": true,
+ "adaptive_solve_budget": true,
+ "analytic_shortage": true,
+ "as_of": "2026-09-07T00:00:00Z",
+ "cadence_candidates": true,
+ "calendars": [
+  {
+   "blackout_dates": [],
+   "cutoff_hour_utc": 24,
+   "id": "always",
+   "known_at": "2026-09-06T00:00:00Z",
+   "weekdays": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ]
+  }
+ ],
+ "carry_incumbent": false,
+ "comparable_gap": 0.02,
+ "currency": "USD",
+ "customers": [
+  {
+   "channel": "retail",
+   "id": "customer_north",
+   "known_at": "2026-09-06T00:00:00Z",
+   "priority": 1.0,
+   "service_class": null
+  },
+  {
+   "channel": "retail",
+   "id": "customer_south",
+   "known_at": "2026-09-06T00:00:00Z",
+   "priority": 1.0,
+   "service_class": null
+  }
+ ],
+ "demand_adaptation": "symmetric",
+ "demand_correlation": 0.0,
+ "downside_cost_tolerance": 0.05,
+ "economics_provenance": {
+  "liquidity.cost_of_capital_per_period": "NOT_AVAILABLE",
+  "location.central.holding_per_value_period": "CONFIGURED_ASSUMPTION",
+  "location.north.holding_per_value_period": "CONFIGURED_ASSUMPTION",
+  "location.south.holding_per_value_period": "CONFIGURED_ASSUMPTION",
+  "transfer.lane_north.cost_per_unit": "CONFIGURED_ASSUMPTION",
+  "transfer.lane_south.cost_per_unit": "CONFIGURED_ASSUMPTION"
+ },
+ "engine_profile": "reliability",
+ "events": [],
+ "evidence_label": "SYNTHETIC",
+ "force_unit_fills": false,
+ "history": [
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -52,
+   "quantity": 109.00000000000001,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -51,
+   "quantity": 106.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -50,
+   "quantity": 103.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -49,
+   "quantity": 100.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -48,
+   "quantity": 97.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -47,
+   "quantity": 94.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -46,
+   "quantity": 91.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -45,
+   "quantity": 88.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -44,
+   "quantity": 85.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -43,
+   "quantity": 114.99999999999999,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -42,
+   "quantity": 112.00000000000001,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -41,
+   "quantity": 109.00000000000001,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -40,
+   "quantity": 106.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -39,
+   "quantity": 103.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -38,
+   "quantity": 100.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -37,
+   "quantity": 97.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -36,
+   "quantity": 94.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -35,
+   "quantity": 91.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -34,
+   "quantity": 88.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -33,
+   "quantity": 85.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -32,
+   "quantity": 114.99999999999999,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -31,
+   "quantity": 112.00000000000001,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -30,
+   "quantity": 109.00000000000001,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -29,
+   "quantity": 106.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -28,
+   "quantity": 103.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -27,
+   "quantity": 100.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -26,
+   "quantity": 97.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -25,
+   "quantity": 94.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -24,
+   "quantity": 91.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -23,
+   "quantity": 88.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -22,
+   "quantity": 85.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -21,
+   "quantity": 114.99999999999999,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -20,
+   "quantity": 112.00000000000001,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -19,
+   "quantity": 109.00000000000001,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -18,
+   "quantity": 106.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -17,
+   "quantity": 103.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -16,
+   "quantity": 100.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -15,
+   "quantity": 97.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -14,
+   "quantity": 94.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -13,
+   "quantity": 91.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -12,
+   "quantity": 88.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -11,
+   "quantity": 85.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -10,
+   "quantity": 114.99999999999999,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -9,
+   "quantity": 112.00000000000001,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -8,
+   "quantity": 109.00000000000001,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -7,
+   "quantity": 106.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -6,
+   "quantity": 103.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -5,
+   "quantity": 100.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -4,
+   "quantity": 97.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -3,
+   "quantity": 94.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -2,
+   "quantity": 91.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -1,
+   "quantity": 88.0,
+   "service": "svc_north"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -52,
+   "quantity": 100.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -51,
+   "quantity": 97.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -50,
+   "quantity": 94.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -49,
+   "quantity": 91.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -48,
+   "quantity": 88.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -47,
+   "quantity": 85.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -46,
+   "quantity": 114.99999999999999,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -45,
+   "quantity": 112.00000000000001,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -44,
+   "quantity": 109.00000000000001,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -43,
+   "quantity": 106.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -42,
+   "quantity": 103.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -41,
+   "quantity": 100.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -40,
+   "quantity": 97.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -39,
+   "quantity": 94.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -38,
+   "quantity": 91.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -37,
+   "quantity": 88.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -36,
+   "quantity": 85.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -35,
+   "quantity": 114.99999999999999,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -34,
+   "quantity": 112.00000000000001,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -33,
+   "quantity": 109.00000000000001,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -32,
+   "quantity": 106.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -31,
+   "quantity": 103.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -30,
+   "quantity": 100.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -29,
+   "quantity": 97.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -28,
+   "quantity": 94.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -27,
+   "quantity": 91.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -26,
+   "quantity": 88.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -25,
+   "quantity": 85.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -24,
+   "quantity": 114.99999999999999,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -23,
+   "quantity": 112.00000000000001,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -22,
+   "quantity": 109.00000000000001,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -21,
+   "quantity": 106.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -20,
+   "quantity": 103.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -19,
+   "quantity": 100.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -18,
+   "quantity": 97.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -17,
+   "quantity": 94.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -16,
+   "quantity": 91.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -15,
+   "quantity": 88.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -14,
+   "quantity": 85.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -13,
+   "quantity": 114.99999999999999,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -12,
+   "quantity": 112.00000000000001,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -11,
+   "quantity": 109.00000000000001,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -10,
+   "quantity": 106.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -9,
+   "quantity": 103.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -8,
+   "quantity": 100.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -7,
+   "quantity": 97.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -6,
+   "quantity": 94.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -5,
+   "quantity": 91.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -4,
+   "quantity": 88.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -3,
+   "quantity": 85.0,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -2,
+   "quantity": 114.99999999999999,
+   "service": "svc_south"
+  },
+  {
+   "known_at": "2026-09-06T00:00:00Z",
+   "period": -1,
+   "quantity": 112.00000000000001,
+   "service": "svc_south"
+  }
+ ],
+ "horizon": 12,
+ "inbound_transfers": [],
+ "incumbent_orders": [],
+ "incumbent_rule": "network:rop",
+ "incumbent_transfers": [],
+ "inherited_on_hand": {},
+ "joint_recovery_deficit": 0.2,
+ "joint_recovery_rule": "deficit",
+ "liquidity": {
+  "cost_of_capital_per_period": 0.0,
+  "credit_limit": 1000000.0,
+  "interest_per_period": 0.0019178082191780824,
+  "known_at": "2026-09-06T00:00:00Z",
+  "known_receivables": [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "minimum_cash": 0.0,
+  "opening_cash": 1000000.0,
+  "opening_debt": 0.0,
+  "other_payments": [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ },
+ "locations": [
+  {
+   "capacity_volume": 1000000.0,
+   "holding_per_value_period": 0.0028767123287671234,
+   "id": "central",
+   "kind": "central_dc",
+   "known_at": "2026-09-06T00:00:00Z",
+   "receiving_calendar": "always",
+   "storage_states": []
+  },
+  {
+   "capacity_volume": 1000000.0,
+   "holding_per_value_period": 0.0028767123287671234,
+   "id": "north",
+   "kind": "branch",
+   "known_at": "2026-09-06T00:00:00Z",
+   "receiving_calendar": "always",
+   "storage_states": []
+  },
+  {
+   "capacity_volume": 1000000.0,
+   "holding_per_value_period": 0.0028767123287671234,
+   "id": "south",
+   "kind": "branch",
+   "known_at": "2026-09-06T00:00:00Z",
+   "receiving_calendar": "always",
+   "storage_states": []
+  }
+ ],
+ "lot_terminal_valuation": true,
+ "materiality_cost_fraction": 0.01,
+ "materiality_inventory_fraction": 0.05,
+ "materiality_service": 0.005,
+ "max_solve_seconds": 5.0,
+ "mode": "LEAN",
+ "operator_id": "p2_fixture",
+ "order_lines": [],
+ "order_smoothing": 0.0,
+ "period_days": 7,
+ "pipeline": [],
+ "planner_ownership": true,
+ "protection_decay": true,
+ "protection_v5": true,
+ "protection_v6": true,
+ "protection_v7": true,
+ "resources": [
+  {
+   "capacity_by_period": [
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0
+   ],
+   "failure_domains": [
+    "supplier"
+   ],
+   "id": "supplier_cap",
+   "known_at": "2026-09-06T00:00:00Z"
+  }
+ ],
+ "scenarios": 3,
+ "schema_version": "zaad.network.v2",
+ "sector_mode": null,
+ "seed": 41001,
+ "service_gate_basis": "incumbent",
+ "service_risk_level": 0.5,
+ "service_tolerance": 0.01,
+ "services": [
+  {
+   "customer": "customer_north",
+   "id": "svc_north",
+   "known_at": "2026-09-06T00:00:00Z",
+   "location": "north",
+   "metric": "unit_fill",
+   "selling_price": 10.0,
+   "sku": "A",
+   "sla_per_unmet": 2.5,
+   "target": 0.95
+  },
+  {
+   "customer": "customer_south",
+   "id": "svc_south",
+   "known_at": "2026-09-06T00:00:00Z",
+   "location": "south",
+   "metric": "unit_fill",
+   "selling_price": 10.0,
+   "sku": "A",
+   "sla_per_unmet": 2.5,
+   "target": 0.95
+  }
+ ],
+ "shipment_history": [],
+ "signals": [],
+ "sku_physics": [],
+ "skus": [
+  {
+   "asset_value": 5.0,
+   "disposal_fee": 0.0,
+   "id": "A",
+   "known_at": "2026-09-06T00:00:00Z",
+   "shelf_life": 52,
+   "terminal_value": 4.0,
+   "volume": 1.0
+  }
+ ],
+ "solve_budget_ceiling_seconds": 90.0,
+ "solve_budget_margin": 1.3,
+ "solver": "highs",
+ "solver_mip_gap": 1e-06,
+ "sources": [
+  {
+   "approved": true,
+   "capacity_by_period": [
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0,
+    1000000.0
+   ],
+   "case_multiple": 0.0,
+   "compliance": "cleared",
+   "destination": "central",
+   "dispatch_days": 0,
+   "exclusive_quote_group": null,
+   "fill_mean": 0.98,
+   "fill_sd": 0.01,
+   "fixed_order_fee": 0.0,
+   "freight_per_unit": 0.0,
+   "handling_per_unit": 0.0,
+   "id": "src_A",
+   "known_at": "2026-09-06T00:00:00Z",
+   "lead_days": 7,
+   "lead_sd_days": 0.0,
+   "leg_arrival_calendars": [],
+   "leg_transit_days": [],
+   "maximum": 1000000.0,
+   "minimum": 0.0,
+   "multiple": 0.0,
+   "order_calendar": "always",
+   "pallet_multiple": 0.0,
+   "production_calendar": null,
+   "production_workdays": 0,
+   "quote_expires": "2028-09-06T00:00:00Z",
+   "quote_reference": "p2-fixture",
+   "resources": [
+    "supplier_cap"
+   ],
+   "route": [
+    "supplier",
+    "central"
+   ],
+   "shipping_calendar": "always",
+   "sku": "A",
+   "supplier": "supplier",
+   "terms": "terms",
+   "transport_multiple": 0.0,
+   "unit_price": 5.0
+  }
+ ],
+ "sourcing": null,
+ "stock": [
+  {
+   "age_periods": 1,
+   "damaged": 0.0,
+   "expires_in": 52,
+   "id": "open_central",
+   "known_at": "2026-09-06T00:00:00Z",
+   "location": "central",
+   "quantity": 300.0,
+   "quarantined": 0.0,
+   "reserved": 0.0,
+   "sku": "A"
+  },
+  {
+   "age_periods": 1,
+   "damaged": 0.0,
+   "expires_in": 52,
+   "id": "open_north",
+   "known_at": "2026-09-06T00:00:00Z",
+   "location": "north",
+   "quantity": 150.0,
+   "quarantined": 0.0,
+   "reserved": 0.0,
+   "sku": "A"
+  },
+  {
+   "age_periods": 1,
+   "damaged": 0.0,
+   "expires_in": 52,
+   "id": "open_south",
+   "known_at": "2026-09-06T00:00:00Z",
+   "location": "south",
+   "quantity": 150.0,
+   "quarantined": 0.0,
+   "reserved": 0.0,
+   "sku": "A"
+  }
+ ],
+ "stratified_scenarios": true,
+ "stress_weight": 0.2,
+ "stresses": [
+  {
+   "affected_resources": [],
+   "demand_multiplier": 1.0,
+   "extra_lead_days": 0,
+   "fill_multiplier": 1.0,
+   "name": "nil",
+   "recovery_period": 12,
+   "shared_failure": true
+  }
+ ],
+ "substitutions": [],
+ "supplier_terms": [],
+ "terminal_continuation": false,
+ "terminal_economic_basis": "cycle",
+ "terms": [
+  {
+   "balance_trigger": "arrival",
+   "currency": "USD",
+   "deposit_fraction": 0.0,
+   "financing_fee_fraction": 0.0,
+   "fx_basis": "same_currency",
+   "fx_rate_to_currency": 1.0,
+   "id": "terms",
+   "known_at": "2026-09-06T00:00:00Z",
+   "letter_of_credit_fraction": 0.0,
+   "net_days": 0
+  }
+ ],
+ "timing_tiebreak": 0.0001,
+ "transfers": [
+  {
+   "approved": true,
+   "capacity": 1000000.0,
+   "cost_per_unit": 0.2,
+   "destination": "north",
+   "fixed_cost_per_dispatch": 0.0,
+   "id": "lane_north",
+   "known_at": "2026-09-06T00:00:00Z",
+   "lead_periods": 1,
+   "loss_fraction": 0.0,
+   "multiple": 0.0,
+   "origin": "central",
+   "sku": "A",
+   "storage_states": []
+  },
+  {
+   "approved": true,
+   "capacity": 1000000.0,
+   "cost_per_unit": 0.2,
+   "destination": "south",
+   "fixed_cost_per_dispatch": 0.0,
+   "id": "lane_south",
+   "known_at": "2026-09-06T00:00:00Z",
+   "lead_periods": 1,
+   "loss_fraction": 0.0,
+   "multiple": 0.0,
+   "origin": "central",
+   "sku": "A",
+   "storage_states": []
+  }
+ ],
+ "warm_start": true,
+ "warm_start_completion_seconds": 30.0,
+ "warm_start_completion_share": 0.6,
+ "warm_start_min_variables": 3000
+}

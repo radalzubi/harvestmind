@@ -1,0 +1,2329 @@
+{
+ "snapshot": "docs/zaad_full/evidence/p3/perf_closure/shared_mov_prod_snapshot.json",
+ "view": {
+  "plan_wall_s": 12.83,
+  "serialize_s": 0.003,
+  "bytes": 132145,
+  "status": "PENDING_REVIEW",
+  "owner": "PURCHASING_ECONOMICS",
+  "state": "NO_ACTION",
+  "selected": null,
+  "approval": true,
+  "epo": false,
+  "materiality": {
+   "material": true,
+   "verdict": "MATERIAL_IMPROVEMENT",
+   "cost_delta_fraction": -0.0027150079750825518,
+   "inventory_delta_fraction": -0.2415139339361507,
+   "service_delta": 0.0,
+   "better_on": [
+    "inventory"
+   ],
+   "worse_on": [],
+   "thresholds": {
+    "cost_fraction": 0.01,
+    "inventory_fraction": 0.05,
+    "service": 0.005
+   },
+   "reason": "cost -0.27%, inventory -24.15%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  },
+  "p0": [
+   [
+    "src_S2",
+    24.6
+   ],
+   [
+    "src_S2_B",
+    29.0
+   ]
+  ],
+  "purchases": [
+   [
+    "src_A",
+    1,
+    621.3
+   ],
+   [
+    "src_A",
+    4,
+    2187.4
+   ],
+   [
+    "src_S2",
+    0,
+    24.6
+   ],
+   [
+    "src_A_B",
+    1,
+    621.7
+   ],
+   [
+    "src_A_B",
+    4,
+    2209.4
+   ],
+   [
+    "src_S2_B",
+    0,
+    29.0
+   ]
+  ],
+  "transfers_p0": 238.6,
+  "pairs": [
+   {
+    "sku": "A",
+    "destination": "central",
+    "order_period": 0,
+    "total_committed_period_0": 24.58821240106208,
+    "total_committed_plan": 2833.3097984739015,
+    "incumbent_total_period_0": 2044.7628089964237,
+    "incumbent_total_plan": 4089.5256179928474,
+    "sources_used_plan": [
+     "src_A",
+     "src_S2"
+    ],
+    "recommendation": "COMMIT_AS_INCUMBENT_MIX",
+    "owner": {
+     "total_commitment": "P1 purchasing economics (or P0 protection / recovery when it owns the review)",
+     "source_split": "P3 sourcing portfolio"
+    },
+    "options": [
+     {
+      "source": "src_A",
+      "supplier": "supplier",
+      "route": [
+       "supplier",
+       "central"
+      ],
+      "eligible": true,
+      "ineligible_reason": null,
+      "quantity_period_0": 0.0,
+      "share_period_0": 0.0,
+      "quantity_plan": 2808.7215860728393,
+      "share_plan": 0.9913217353025404,
+      "incumbent_quantity_period_0": 2044.7628089964237,
+      "incumbent_share_period_0": 1.0,
+      "incumbent_share_plan": 1.0,
+      "declared_incumbent_share": 1.0,
+      "in_incumbent_mix": true,
+      "expected_receipt_period": 1,
+      "expected_fill": 0.98,
+      "lead_days": 7,
+      "lead_sd_days": 0.0,
+      "capacity_period_0": 1000000.0,
+      "capacity_binding": false,
+      "minimum_order": 0.0,
+      "packs": [],
+      "executable": true,
+      "landed": {
+       "unit_price": 5.0,
+       "freight_per_unit": 0.0,
+       "handling_per_unit": 0.0,
+       "financing_fee_per_unit": 0.0,
+       "fixed_order_fee": 0.0,
+       "landed_unit_cost": 5.0,
+       "payment_terms": {
+        "deposit_fraction": 0.0,
+        "balance_trigger": "arrival",
+        "net_days": 0,
+        "expected_payment_period": 1
+       },
+       "payment_timing_value_per_unit": 0.0,
+       "landed_unit_cost_after_terms": 5.0,
+       "scope": "per unit, report only; the plan's economics come from the settled ledger"
+      },
+      "reliability": {
+       "scope": "declared",
+       "records": 0,
+       "fill_mean": 0.98,
+       "fill_sd": 0.01,
+       "late_probability": 0.0,
+       "fill_provenance": null,
+       "lead_provenance": null,
+       "weak_evidence": true
+      },
+      "risk_groups": [],
+      "shared_risk_weak_evidence": false,
+      "share_constraints": [],
+      "switching_cost": null
+     },
+     {
+      "source": "src_S2",
+      "supplier": "supplier_s2",
+      "route": [
+       "supplier_s2",
+       "central"
+      ],
+      "eligible": true,
+      "ineligible_reason": null,
+      "quantity_period_0": 24.58821240106208,
+      "share_period_0": 1.0,
+      "quantity_plan": 24.58821240106208,
+      "share_plan": 0.008678264697459475,
+      "incumbent_quantity_period_0": 0.0,
+      "incumbent_share_period_0": 0.0,
+      "incumbent_share_plan": 0.0,
+      "declared_incumbent_share": null,
+      "in_incumbent_mix": false,
+      "expected_receipt_period": 1,
+      "expected_fill": 0.98,
+      "lead_days": 7,
+      "lead_sd_days": 0.0,
+      "capacity_period_0": 1000000.0,
+      "capacity_binding": false,
+      "minimum_order": 0.0,
+      "packs": [],
+      "executable": true,
+      "landed": {
+       "unit_price": 5.4,
+       "freight_per_unit": 0.0,
+       "handling_per_unit": 0.0,
+       "financing_fee_per_unit": 0.0,
+       "fixed_order_fee": 0.0,
+       "landed_unit_cost": 5.4,
+       "payment_terms": {
+        "deposit_fraction": 0.0,
+        "balance_trigger": "arrival",
+        "net_days": 0,
+        "expected_payment_period": 1
+       },
+       "payment_timing_value_per_unit": 0.0,
+       "landed_unit_cost_after_terms": 5.4,
+       "scope": "per unit, report only; the plan's economics come from the settled ledger"
+      },
+      "reliability": {
+       "scope": "declared",
+       "records": 0,
+       "fill_mean": 0.98,
+       "fill_sd": 0.01,
+       "late_probability": 0.0,
+       "fill_provenance": null,
+       "lead_provenance": null,
+       "weak_evidence": true
+      },
+      "risk_groups": [],
+      "shared_risk_weak_evidence": false,
+      "share_constraints": [],
+      "switching_cost": null
+     }
+    ]
+   },
+   {
+    "sku": "B",
+    "destination": "central",
+    "order_period": 0,
+    "total_committed_period_0": 28.96975945025897,
+    "total_committed_plan": 2860.0590590467596,
+    "incumbent_total_period_0": 2044.7628089964237,
+    "incumbent_total_plan": 4089.5256179928474,
+    "sources_used_plan": [
+     "src_A_B",
+     "src_S2_B"
+    ],
+    "recommendation": "COMMIT_AS_INCUMBENT_MIX",
+    "owner": {
+     "total_commitment": "P1 purchasing economics (or P0 protection / recovery when it owns the review)",
+     "source_split": "P3 sourcing portfolio"
+    },
+    "options": [
+     {
+      "source": "src_A_B",
+      "supplier": "supplier",
+      "route": [
+       "supplier",
+       "central"
+      ],
+      "eligible": true,
+      "ineligible_reason": null,
+      "quantity_period_0": 0.0,
+      "share_period_0": 0.0,
+      "quantity_plan": 2831.0892995965005,
+      "share_plan": 0.9898709226445433,
+      "incumbent_quantity_period_0": 2044.7628089964237,
+      "incumbent_share_period_0": 1.0,
+      "incumbent_share_plan": 1.0,
+      "declared_incumbent_share": 1.0,
+      "in_incumbent_mix": true,
+      "expected_receipt_period": 1,
+      "expected_fill": 0.98,
+      "lead_days": 7,
+      "lead_sd_days": 0.0,
+      "capacity_period_0": 1000000.0,
+      "capacity_binding": false,
+      "minimum_order": 0.0,
+      "packs": [],
+      "executable": true,
+      "landed": {
+       "unit_price": 5.0,
+       "freight_per_unit": 0.0,
+       "handling_per_unit": 0.0,
+       "financing_fee_per_unit": 0.0,
+       "fixed_order_fee": 0.0,
+       "landed_unit_cost": 5.0,
+       "payment_terms": {
+        "deposit_fraction": 0.0,
+        "balance_trigger": "arrival",
+        "net_days": 0,
+        "expected_payment_period": 1
+       },
+       "payment_timing_value_per_unit": 0.0,
+       "landed_unit_cost_after_terms": 5.0,
+       "scope": "per unit, report only; the plan's economics come from the settled ledger"
+      },
+      "reliability": {
+       "scope": "declared",
+       "records": 0,
+       "fill_mean": 0.98,
+       "fill_sd": 0.01,
+       "late_probability": 0.0,
+       "fill_provenance": null,
+       "lead_provenance": null,
+       "weak_evidence": true
+      },
+      "risk_groups": [],
+      "shared_risk_weak_evidence": false,
+      "share_constraints": [],
+      "switching_cost": null
+     },
+     {
+      "source": "src_S2_B",
+      "supplier": "supplier_s2",
+      "route": [
+       "supplier_s2",
+       "central"
+      ],
+      "eligible": true,
+      "ineligible_reason": null,
+      "quantity_period_0": 28.96975945025897,
+      "share_period_0": 1.0,
+      "quantity_plan": 28.96975945025897,
+      "share_plan": 0.010129077355456574,
+      "incumbent_quantity_period_0": 0.0,
+      "incumbent_share_period_0": 0.0,
+      "incumbent_share_plan": 0.0,
+      "declared_incumbent_share": null,
+      "in_incumbent_mix": false,
+      "expected_receipt_period": 1,
+      "expected_fill": 0.98,
+      "lead_days": 7,
+      "lead_sd_days": 0.0,
+      "capacity_period_0": 1000000.0,
+      "capacity_binding": false,
+      "minimum_order": 0.0,
+      "packs": [],
+      "executable": true,
+      "landed": {
+       "unit_price": 5.4,
+       "freight_per_unit": 0.0,
+       "handling_per_unit": 0.0,
+       "financing_fee_per_unit": 0.0,
+       "fixed_order_fee": 0.0,
+       "landed_unit_cost": 5.4,
+       "payment_terms": {
+        "deposit_fraction": 0.0,
+        "balance_trigger": "arrival",
+        "net_days": 0,
+        "expected_payment_period": 1
+       },
+       "payment_timing_value_per_unit": 0.0,
+       "landed_unit_cost_after_terms": 5.4,
+       "scope": "per unit, report only; the plan's economics come from the settled ledger"
+      },
+      "reliability": {
+       "scope": "declared",
+       "records": 0,
+       "fill_mean": 0.98,
+       "fill_sd": 0.01,
+       "late_probability": 0.0,
+       "fill_provenance": null,
+       "lead_provenance": null,
+       "weak_evidence": true
+      },
+      "risk_groups": [],
+      "shared_risk_weak_evidence": false,
+      "share_constraints": [],
+      "switching_cost": null
+     }
+    ]
+   }
+  ],
+  "service": null,
+  "economics_keys": [
+   "scope",
+   "incumbent_costs",
+   "selected_costs",
+   "incumbent_working_capital",
+   "selected_working_capital",
+   "reconciled",
+   "unmapped_ledger_keys",
+   "orders",
+   "incumbent_orders",
+   "supplier_orders",
+   "materiality",
+   "action_recommended",
+   "recommendation",
+   "provenance",
+   "fallbacks"
+  ]
+ },
+ "candidates": [
+  {
+   "label": "01:base_stock(deterministic)",
+   "worlds": 1,
+   "wall": 0.145,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.144,
+   "variables": 2476,
+   "rows": 1363,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 51267.05184404638,
+   "best_bound": 60788356.88424522,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "02:fixed_plan(incumbent/base)",
+   "worlds": 1,
+   "wall": 0.022,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.021,
+   "variables": 2364,
+   "rows": 1979,
+   "gap": 0.0,
+   "nodes": 0,
+   "objective": 30899.02737303027,
+   "best_bound": 24901.25802336734,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "03:deterministic_network",
+   "worlds": 1,
+   "wall": 2.921,
+   "status": "OPTIMAL",
+   "solve_seconds": 2.92,
+   "variables": 2472,
+   "rows": 1969,
+   "gap": 0.0,
+   "nodes": 29,
+   "objective": 25656.573567630618,
+   "best_bound": 19658.292622248788,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "04:stochastic_network",
+   "worlds": 3,
+   "wall": 3.367,
+   "status": "OPTIMAL",
+   "solve_seconds": 3.365,
+   "variables": 5904,
+   "rows": 3759,
+   "gap": 0.0,
+   "nodes": 9,
+   "objective": 25408.163075915494,
+   "best_bound": 19410.155982316857,
+   "warm": "improved",
+   "warm_completion_s": 0.12957516591995955
+  },
+  {
+   "label": "05:cadence_6",
+   "worlds": 3,
+   "wall": 2.4,
+   "status": "OPTIMAL",
+   "solve_seconds": 2.398,
+   "variables": 5904,
+   "rows": 3759,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25458.359048235598,
+   "best_bound": 19460.40965901249,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "06:cadence_3",
+   "worlds": 3,
+   "wall": 0.91,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.907,
+   "variables": 5904,
+   "rows": 3759,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25458.359048235572,
+   "best_bound": 19460.40965901249,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "07:joint_service_first",
+   "worlds": 1,
+   "wall": 0.52,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.519,
+   "variables": 2364,
+   "rows": 1308,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25633.399105395598,
+   "best_bound": 19635.07424340044,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "08:joint_service_first",
+   "worlds": 1,
+   "wall": 0.427,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.426,
+   "variables": 2364,
+   "rows": 1308,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25633.39910539558,
+   "best_bound": 19635.07424340043,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "09:joint_service_first",
+   "worlds": 1,
+   "wall": 0.546,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.545,
+   "variables": 2364,
+   "rows": 1308,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25633.399105395583,
+   "best_bound": 19635.074243400435,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "10:joint_service_first",
+   "worlds": 1,
+   "wall": 0.448,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.447,
+   "variables": 2364,
+   "rows": 1308,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25633.39910539558,
+   "best_bound": 19635.074243400435,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "11:protected/hedged_network",
+   "worlds": 3,
+   "wall": 0.865,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.862,
+   "variables": 5724,
+   "rows": 3657,
+   "gap": 0.0,
+   "nodes": 3,
+   "objective": 25703.196767533,
+   "best_bound": 19704.638141683008,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "12:protected/hedged_network",
+   "worlds": 3,
+   "wall": 0.068,
+   "status": "INFEASIBLE",
+   "solve_seconds": 0.067,
+   "variables": 5724,
+   "rows": 3657,
+   "gap": null,
+   "nodes": 0,
+   "objective": null,
+   "best_bound": null,
+   "warm": null,
+   "warm_completion_s": null
+  }
+ ],
+ "highs_calls": [
+  {
+   "cand": "01:base_stock(deterministic)",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 0.132,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2476,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1363,
+   "nnz": 9462,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 60788356.88424522
+  },
+  {
+   "cand": "02:fixed_plan(incumbent/base)",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 0.009,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1979,
+   "nnz": 9870,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 0,
+   "gap": 0.0,
+   "fun": 24901.25802336736
+  },
+  {
+   "cand": "03:deterministic_network",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 2.9,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2472,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1969,
+   "nnz": 18228,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 29,
+   "gap": 0.0,
+   "fun": 19658.29262224879
+  },
+  {
+   "cand": "04:stochastic_network",
+   "kind": "warm_complete(equal)",
+   "budget": 15.6,
+   "wall": 0.036,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5904,
+   "integer": 156,
+   "binary": null,
+   "rows": 3759,
+   "nnz": null,
+   "status": false,
+   "msg": "highspy HighsModelStatus.kInfeasible",
+   "nodes": null,
+   "gap": null,
+   "fun": null
+  },
+  {
+   "cand": "04:stochastic_network",
+   "kind": "warm_complete(floor)",
+   "budget": 15.56,
+   "wall": 0.094,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5904,
+   "integer": 156,
+   "binary": null,
+   "rows": 3759,
+   "nnz": null,
+   "status": true,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": null,
+   "gap": null,
+   "fun": null
+  },
+  {
+   "cand": "04:stochastic_network",
+   "kind": "solve",
+   "budget": 25.87,
+   "wall": 3.195,
+   "solver": "highspy",
+   "seeded": true,
+   "vars": 5904,
+   "integer": 156,
+   "binary": 156,
+   "rows": 3759,
+   "nnz": 26860,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 9,
+   "gap": 0.0,
+   "fun": 19410.155982316857
+  },
+  {
+   "cand": "05:cadence_6",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 2.358,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5904,
+   "integer": 156,
+   "binary": 156,
+   "rows": 3759,
+   "nnz": 26860,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19460.40965901249
+  },
+  {
+   "cand": "06:cadence_3",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 0.864,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5904,
+   "integer": 156,
+   "binary": 156,
+   "rows": 3759,
+   "nnz": 26860,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19460.40965901249
+  },
+  {
+   "cand": "07:joint_service_first",
+   "kind": "phase(objective)",
+   "budget": 26.0,
+   "wall": 0.026,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1307,
+   "nnz": 9198,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 0.0
+  },
+  {
+   "cand": "07:joint_service_first",
+   "kind": "solve",
+   "budget": 25.96,
+   "wall": 0.481,
+   "solver": "highspy",
+   "seeded": true,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1308,
+   "nnz": 9210,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19635.074243400435
+  },
+  {
+   "cand": "08:joint_service_first",
+   "kind": "phase(objective)",
+   "budget": 26.0,
+   "wall": 0.026,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1307,
+   "nnz": 9198,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 0.0
+  },
+  {
+   "cand": "08:joint_service_first",
+   "kind": "solve",
+   "budget": 25.96,
+   "wall": 0.388,
+   "solver": "highspy",
+   "seeded": true,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1308,
+   "nnz": 9210,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19635.07424340043
+  },
+  {
+   "cand": "09:joint_service_first",
+   "kind": "phase(objective)",
+   "budget": 26.0,
+   "wall": 0.026,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1307,
+   "nnz": 9198,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 0.0
+  },
+  {
+   "cand": "09:joint_service_first",
+   "kind": "solve",
+   "budget": 25.96,
+   "wall": 0.507,
+   "solver": "highspy",
+   "seeded": true,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1308,
+   "nnz": 9210,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19635.074243400435
+  },
+  {
+   "cand": "10:joint_service_first",
+   "kind": "phase(objective)",
+   "budget": 26.0,
+   "wall": 0.026,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1307,
+   "nnz": 9198,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 0.0
+  },
+  {
+   "cand": "10:joint_service_first",
+   "kind": "solve",
+   "budget": 25.96,
+   "wall": 0.408,
+   "solver": "highspy",
+   "seeded": true,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1308,
+   "nnz": 9210,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19635.074243400435
+  },
+  {
+   "cand": "11:protected/hedged_network",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 0.821,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5724,
+   "integer": 156,
+   "binary": 156,
+   "rows": 3657,
+   "nnz": 26122,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 3,
+   "gap": 0.0,
+   "fun": 19704.638141683008
+  },
+  {
+   "cand": "12:protected/hedged_network",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 0.019,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5724,
+   "integer": 156,
+   "binary": 156,
+   "rows": 3657,
+   "nnz": 26122,
+   "status": 2,
+   "msg": "highspy HighsModelStatus.kInfeasible",
+   "nodes": 0,
+   "gap": null,
+   "fun": null
+  }
+ ],
+ "phases": {
+  "validate_network": 0.0,
+  "forecast_all": 0.011,
+  "supply_profiles": 0.0,
+  "protection_profile": 0.002,
+  "draw": 0.05,
+  "settle": 0.044,
+  "evaluate": 0.079,
+  "screen": 0.0,
+  "stress_credibility": 0.0,
+  "economics_block": 0.001,
+  "network_state": 0.0,
+  "network_router": 0.0,
+  "network_accounting": 0.014,
+  "explain_network": 0.0
+ },
+ "matrix_build_s": 0.138,
+ "solver_wall_total_s": 12.316,
+ "n_highs_calls": 18,
+ "cprofile_tottime": "         2482546 function calls (2476893 primitive calls) in 12.834 seconds\n\n   Ordered by: internal time\n   List reduced from 981 to 30 due to restriction <30>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n       18   12.122    0.673   12.122    0.673 {built-in method highspy._core.run}\n       12    0.212    0.018   12.632    1.053 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/model.py:487(solve)\n       18    0.059    0.003    0.137    0.008 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/model.py:60(matrix)\n  1286066    0.057    0.000    0.057    0.000 {method 'append' of 'list' objects}\n       18    0.033    0.002   12.170    0.676 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/model.py:101(_highspy_solve)\n       45    0.028    0.001    0.061    0.001 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/settlement.py:25(settle)\n      965    0.028    0.000    0.028    0.000 {built-in method numpy.asarray}\n    45928    0.020    0.000    0.032    0.000 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/model.py:46(var)\n       33    0.018    0.001    0.026    0.001 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/terminal.py:30(continuation_value)\n      516    0.015    0.000    0.015    0.000 {built-in method numpy.array}\n     2440    0.014    0.000    0.018    0.000 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/forecast.py:9(point)\n13344/13093    0.012    0.000    0.033    0.000 {built-in method builtins.sum}\n    29134    0.009    0.000    0.013    0.000 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/model.py:55(row)\n       12    0.009    0.001   12.640    1.053 /private/tmp/claude-501/-Users-radalzubi-Desktop-harvestmind/ff795fbd-41f4-4af5-afd4-b87ad517d896/scratchpad/perf/profile_e2e.py:28(solve_wrapped)\n154271/154247    0.008    0.000    0.009    0.000 {built-in method builtins.max}\n    21780    0.007    0.000    0.007    0.000 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/model.py:566(<lambda>)\n   117621    0.007    0.000    0.007    0.000 {method 'items' of 'dict' objects}\n    10224    0.007    0.000    0.007    0.000 {method 'reduce' of 'numpy.ufunc' objects}\n     6029    0.006    0.000    0.015    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/numpy/_core/_methods.py:115(_mean)\n    70151    0.006    0.000    0.006    0.000 {method 'get' of 'dict' objects}\n     2160    0.005    0.000    0.014    0.000 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/worlds.py:42(dates)\n     1520    0.005    0.000    0.009    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/numpy/_core/_methods.py:148(_var)\n     9506    0.005    0.000    0.008    0.000 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/worlds.py:31(next_open)\n90561/90549    0.004    0.000    0.009    0.000 {built-in method builtins.min}\n    44604    0.004    0.000    0.004    0.000 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/model.py:1361(<genexpr>)\n     9823    0.004    0.000    0.006    0.000 {built-in method builtins.sorted}\n       40    0.004    0.000    0.026    0.001 /Users/radalzubi/Desktop/harvestmind-p3-perf/zaad/full/forecast.py:11(change_origin)\n    95980    0.004    0.000    0.004    0.000 {built-in method builtins.len}\n     7549    0.004    0.000    0.004    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/numpy/_core/_methods.py:73(_count_reduce_items)\n    34378    0.003    0.000    0.004    0.000 /private/tmp/claude-501/-Users-radalzubi-Desktop-harvestmind/ff795fbd-41f4-4af5-afd4-b87ad517d896/scratchpad/perf/profile_e2e.py:42(<genexpr>)\n\n\n",
+ "report_excerpt": {
+  "selected_policy": "stochastic_network",
+  "status": "PENDING_REVIEW",
+  "orchestration": {
+   "state": "NO_ACTION",
+   "reasons": [
+    "the incumbent plan is physically usable, meets every requested service target, carries no active risk driver and holds no materially avoidable inventory"
+   ],
+   "minimum_safe_candidates": [
+    "deterministic_network"
+   ],
+   "optional_candidates": [],
+   "incumbent_service_deficit": -0.04323007895314823,
+   "joint_recovery_required_by_rule": false,
+   "units_above_lean_base_stock": 0.0,
+   "periods_above_lean_base_stock": 0.0,
+   "incumbent_feasible_and_meeting_service": true,
+   "scope": "deterministic classification from the forecast, protection profile, topology and the incumbent's own outcome; it selects candidate classes and never prunes on a score",
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "cadence_2_network": "OPTIONAL",
+    "cadence_4_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cadence_2_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cadence_4_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required_candidate_count": 2,
+   "required_candidate_completed": 2,
+   "required_candidate_starved": 0,
+   "required_candidate_infeasible": 0,
+   "required_candidate_starvation_rate": 0.0,
+   "required_starved_names": [],
+   "optional_candidate_count": 2,
+   "optional_candidate_completed": 2,
+   "optional_candidate_skipped": 0,
+   "not_applicable_count": 0,
+   "physically_invalid_candidates": [],
+   "omissions": [
+    {
+     "candidate": "cvar_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "protected_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "hedged_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "stress_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    }
+   ],
+   "completeness_scope": "a required class is complete only with a usable plan that is physically valid on every scenario world; INFEASIBLE is a definitive answer reported apart from starvation; NOT_APPLICABLE classes cannot exist under the review's state and are never starvation; every omission carries a reason and none is silent",
+   "candidate_classes_requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "cadence_2_network",
+    "cadence_4_network"
+   ],
+   "planner_owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "p1_terminal_landed": {
+    "A": 5.205806067569539,
+    "B": 5.205806067569539
+   },
+   "p1_economics": {
+    "terminal_economic_basis": "cycle",
+    "detailed_horizon": 12,
+    "economic_cycle": {
+     "supplier": {
+      "lot_units": 2891.7312963188488,
+      "demand_per_period": 400.9230769230769,
+      "cycle_periods": 7.212683586367044
+     },
+     "supplier_s2": {
+      "lot_units": 400.9230769230769,
+      "demand_per_period": 400.9230769230769,
+      "cycle_periods": 1.0
+     }
+    },
+    "economic_cycle_periods": {
+     "supplier": 7.212683586367044,
+     "supplier_s2": 1.0
+    },
+    "economic_lot_reference": {
+     "supplier": 2891.7312963188488,
+     "supplier_s2": 400.9230769230769
+    },
+    "steady_state_unit_cost": {
+     "A": 5.205806067569539,
+     "B": 5.205806067569539
+    },
+    "continuation_slabs": {
+     "A@north": 8,
+     "A@south": 8,
+     "B@north": 8,
+     "B@south": 8
+    },
+    "residual_units_credited_up_to": {
+     "A": 1445.8656481594242,
+     "B": 1445.8656481594242
+    },
+    "continuation_feeds": {
+     "A@central": [
+      {
+       "branch": "north",
+       "lead": 1,
+       "cost": 0.2,
+       "lane": "lane_north"
+      },
+      {
+       "branch": "south",
+       "lead": 1,
+       "cost": 0.2,
+       "lane": "lane_south"
+      }
+     ],
+     "B@central": [
+      {
+       "branch": "north",
+       "lead": 1,
+       "cost": 0.2,
+       "lane": "lane_north_B"
+      },
+      {
+       "branch": "south",
+       "lead": 1,
+       "cost": 0.2,
+       "lane": "lane_south_B"
+      }
+     ]
+    },
+    "continuation_value": 2737.581183918294
+   },
+   "p1_classes_added": [
+    "stochastic_network"
+   ],
+   "candidate_classes_skipped": [
+    "cvar_network",
+    "hedged_network",
+    "joint_recovery",
+    "protected_network",
+    "stress_network"
+   ],
+   "candidates_built": [
+    "cadence_2_network",
+    "cadence_4_network",
+    "deterministic_network",
+    "stochastic_network"
+   ],
+   "milps_attempted": 6,
+   "milps_optimal": 6,
+   "milps_feasible_time_limited": 0,
+   "milps_no_feasible_solution": 0,
+   "milps_infeasible": 0,
+   "solver_seconds_total": 9.754410583525896,
+   "adaptive_escalation": true
+  },
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.02118562487885356,
+    "variables": 2364,
+    "constraints": 1979,
+    "gap": 0.0,
+    "residual": 2.3283064365386963e-10,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 26045.647196319485,
+     "cost_min": 25309.904133344262,
+     "cost_max": 26896.0927537106,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.14387916680425406,
+    "variables": 2476,
+    "constraints": 1363,
+    "gap": 0.0,
+    "residual": 2.3283064365386963e-10,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 51154.83616969265,
+     "cost_min": 49954.48644038159,
+     "cost_max": 52005.095815635694,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 2.9197172918356955,
+    "variables": 2472,
+    "constraints": 1969,
+    "gap": 0.0,
+    "residual": 1.1641532182693481e-10,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 25685.10960787363,
+     "cost_min": 25141.670485155617,
+     "cost_max": 26273.919539146624,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   },
+   "stochastic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 3.3645572080276906,
+    "variables": 5904,
+    "constraints": 3759,
+    "gap": 0.0,
+    "residual": 1.1641532182693481e-10,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 25407.995660486937,
+     "cost_min": 24942.32565667634,
+     "cost_max": 25670.330103003816,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   },
+   "cadence_2_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 2.3976288749836385,
+    "variables": 5904,
+    "constraints": 3759,
+    "gap": 0.0,
+    "residual": 6.821210263296962e-13,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 25458.183877685315,
+     "cost_min": 25092.809686906192,
+     "cost_max": 25652.241341209075,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   },
+   "cadence_4_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.9074424169957638,
+    "variables": 5904,
+    "constraints": 3759,
+    "gap": 0.0,
+    "residual": 1.1641532182693481e-10,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 25458.124807215678,
+     "cost_min": 25092.44813123058,
+     "cost_max": 25652.397451226556,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   }
+  },
+  "solve_quality": {
+   "comparable_gap_threshold": 0.02,
+   "requested_mip_gap": 1e-06,
+   "max_solve_seconds": 5.0,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 24901.25802336734,
+     "nodes": 0,
+     "solve_seconds": 0.02118562487885356,
+     "variables": 2364,
+     "constraints": 1979,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": null,
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 60788356.88424522,
+     "nodes": 1,
+     "solve_seconds": 0.14387916680425406,
+     "variables": 2476,
+     "constraints": 1363,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": null,
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 19658.292622248788,
+     "nodes": 29,
+     "solve_seconds": 2.9197172918356955,
+     "variables": 2472,
+     "constraints": 1969,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": null,
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 19410.155982316857,
+     "nodes": 9,
+     "solve_seconds": 3.3645572080276906,
+     "variables": 5904,
+     "constraints": 3759,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": {
+      "supplied": true,
+      "source": "OPTIMAL",
+      "controls_seeded": 672,
+      "accepted": true,
+      "reason": "completed by the formulation (floor pins)",
+      "mode": "floor",
+      "completion_seconds": 0.12957516591995955,
+      "completion_status": "highspy HighsModelStatus.kOptimal",
+      "attempts": [
+       {
+        "accepted": false,
+        "reason": "equal-pinned controls are not feasible for this formulation within 16 s (highspy HighsModelStatus.kInfeasible)",
+        "completion_seconds": 0.03580179065465927,
+        "completion_status": "highspy HighsModelStatus.kInfeasible",
+        "mode": "equal"
+       },
+       {
+        "accepted": true,
+        "reason": "completed by the formulation (floor pins)",
+        "completion_seconds": 0.09377337526530027,
+        "completion_status": "highspy HighsModelStatus.kOptimal",
+        "mode": "floor"
+       }
+      ],
+      "seed_status": "HighsStatus.kOk",
+      "seed_objective": 21157.54922963405,
+      "solver_accepted": true,
+      "phase1_objective": 19410.155982316857,
+      "phase1_status": 0,
+      "outcome": "improved",
+      "final_objective": 19410.155982316857,
+      "model_variables": 5904,
+      "solve_seconds": 3.3645624578930438,
+      "highs_integrality_violation": 1.1346089469396008e-17,
+      "highs_primal_infeasibility": 1.107973654261736e-10
+     },
+     "economically_comparable": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 19460.40965901249,
+     "nodes": 1,
+     "solve_seconds": 2.3976288749836385,
+     "variables": 5904,
+     "constraints": 3759,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": null,
+     "economically_comparable": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 19460.40965901249,
+     "nodes": 1,
+     "solve_seconds": 0.9074424169957638,
+     "variables": 5904,
+     "constraints": 3759,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": null,
+     "economically_comparable": true
+    }
+   },
+   "feasible_time_limited_admitted": [],
+   "selected_is_comparable": true,
+   "scope": "a candidate whose achieved optimality gap exceeds the threshold is a feasible point the solver did not optimise; it is excluded from cost ranking and cost-based acceptance"
+  },
+  "economics": {
+   "scope": "confirmation worlds; components reconcile to the settlement's economic cost; attribution partitions each order exactly",
+   "incumbent_costs": {
+    "PURCHASE": 40895.256179928474,
+    "FREIGHT": 0.0,
+    "ORDERING": 300.0,
+    "RECEIVING": 0.0,
+    "CARRYING": 381.64782186605515,
+    "FINANCING": 0.0,
+    "SHORTAGE": 209.65295697592055,
+    "OTHER": 934.1470430632951,
+    "INVENTORY_VALUE_CHANGE": -16675.437235226622,
+    "TOTAL": 26045.26676660712,
+    "OPERATING_TOTAL": 42720.70400183374
+   },
+   "selected_costs": {
+    "PURCHASE": 28488.26747634383,
+    "FREIGHT": 0.0,
+    "ORDERING": 300.0,
+    "RECEIVING": 0.0,
+    "CARRYING": 289.47455502902096,
+    "FINANCING": 0.0,
+    "SHORTAGE": 401.41748405338643,
+    "OTHER": 1233.6322236409417,
+    "INVENTORY_VALUE_CHANGE": -4738.238079444549,
+    "TOTAL": 25974.55365962263,
+    "OPERATING_TOTAL": 30712.79173906718
+   },
+   "incumbent_working_capital": 21139.22799578726,
+   "selected_working_capital": 19288.154619468074,
+   "reconciled": true,
+   "unmapped_ledger_keys": [],
+   "orders": [
+    {
+     "source": "src_S2",
+     "supplier": "supplier_s2",
+     "sku": "A",
+     "location": "central",
+     "period": 0,
+     "quantity": 24.58821240106208,
+     "arrival_period": 1,
+     "next_realistic_replenishment_period": 2,
+     "demand_rate_per_period": 0.0,
+     "lead_time_demand": 0.0,
+     "demand_until_next_replenishment": 0.0,
+     "justified_protection_units": 31.862233090857583,
+     "usable_on_hand": 300.0,
+     "usable_inbound": 0,
+     "economic_need": 0.0,
+     "after_moq": 0.0,
+     "after_case": 0.0,
+     "after_pallet": 0.0,
+     "after_mov": 0.0,
+     "under_need_units": 0.0,
+     "cycle_economics": null,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 0.0,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 0.0,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 24.58821240106208
+     },
+     "attribution_sum": 24.58821240106208,
+     "protection_regime": "LEAN",
+     "explanation": "Order 25 units of A from supplier_s2 at review 0 (arrives period 1): 25 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 300 and inbound 0 were netted off."
+    },
+    {
+     "source": "src_S2_B",
+     "supplier": "supplier_s2",
+     "sku": "B",
+     "location": "central",
+     "period": 0,
+     "quantity": 28.96975945025897,
+     "arrival_period": 1,
+     "next_realistic_replenishment_period": 2,
+     "demand_rate_per_period": 0.0,
+     "lead_time_demand": 0.0,
+     "demand_until_next_replenishment": 0.0,
+     "justified_protection_units": 31.862233090857583,
+     "usable_on_hand": 300.0,
+     "usable_inbound": 0,
+     "economic_need": 0.0,
+     "after_moq": 0.0,
+     "after_case": 0.0,
+     "after_pallet": 0.0,
+     "after_mov": 0.0,
+     "under_need_units": 0.0,
+     "cycle_economics": null,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 0.0,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 0.0,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 28.96975945025897
+     },
+     "attribution_sum": 28.96975945025897,
+     "protection_regime": "LEAN",
+     "explanation": "Order 29 units of B from supplier_s2 at review 0 (arrives period 1): 29 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 300 and inbound 0 were netted off."
+    }
+   ],
+   "incumbent_orders": [
+    {
+     "source": "src_A",
+     "supplier": "supplier",
+     "sku": "A",
+     "location": "central",
+     "period": 0,
+     "quantity": 2044.7628089964237,
+     "arrival_period": 1,
+     "next_realistic_replenishment_period": 2,
+     "demand_rate_per_period": 0.0,
+     "lead_time_demand": 0.0,
+     "demand_until_next_replenishment": 0.0,
+     "justified_protection_units": 31.862233090857583,
+     "usable_on_hand": 300.0,
+     "usable_inbound": 0,
+     "economic_need": 0.0,
+     "after_moq": 0.0,
+     "after_case": 0.0,
+     "after_pallet": 0.0,
+     "after_mov": 0.0,
+     "under_need_units": 0.0,
+     "cycle_economics": null,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 0.0,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 0.0,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 2044.7628089964237
+     },
+     "attribution_sum": 2044.7628089964237,
+     "protection_regime": "LEAN",
+     "explanation": "Order 2045 units of A from supplier at review 0 (arrives period 1): 2045 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 300 and inbound 0 were netted off."
+    },
+    {
+     "source": "src_A_B",
+     "supplier": "supplier",
+     "sku": "B",
+     "location": "central",
+     "period": 0,
+     "quantity": 2044.7628089964237,
+     "arrival_period": 1,
+     "next_realistic_replenishment_period": 2,
+     "demand_rate_per_period": 0.0,
+     "lead_time_demand": 0.0,
+     "demand_until_next_replenishment": 0.0,
+     "justified_protection_units": 31.862233090857583,
+     "usable_on_hand": 300.0,
+     "usable_inbound": 0,
+     "economic_need": 0.0,
+     "after_moq": 0.0,
+     "after_case": 0.0,
+     "after_pallet": 0.0,
+     "after_mov": 0.0,
+     "under_need_units": 0.0,
+     "cycle_economics": null,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 0.0,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 0.0,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 2044.7628089964237
+     },
+     "attribution_sum": 2044.7628089964237,
+     "protection_regime": "LEAN",
+     "explanation": "Order 2045 units of B from supplier at review 0 (arrives period 1): 2045 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 300 and inbound 0 were netted off."
+    }
+   ],
+   "supplier_orders": [],
+   "materiality": {
+    "material": true,
+    "verdict": "MATERIAL_IMPROVEMENT",
+    "cost_delta_fraction": -0.0027150079750825518,
+    "inventory_delta_fraction": -0.2415139339361507,
+    "service_delta": 0.0,
+    "better_on": [
+     "inventory"
+    ],
+    "worse_on": [],
+    "thresholds": {
+     "cost_fraction": 0.01,
+     "inventory_fraction": 0.05,
+     "service": 0.005
+    },
+    "reason": "cost -0.27%, inventory -24.15%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+   },
+   "action_recommended": true,
+   "recommendation": "ZAAD intervenes: stochastic_network",
+   "provenance": {
+    "source.src_A.unit_price": {
+     "value": 5.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_A.freight_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.handling_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.fixed_order_fee": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.minimum": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.case_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.pallet_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.transport_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.lead_days": {
+     "value": 7.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_S2.unit_price": {
+     "value": 5.4,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_S2.freight_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.handling_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.fixed_order_fee": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.minimum": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.case_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.pallet_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.transport_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.lead_days": {
+     "value": 7.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_A_B.unit_price": {
+     "value": 5.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_A_B.freight_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.handling_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.fixed_order_fee": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.minimum": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.case_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.pallet_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.transport_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.lead_days": {
+     "value": 7.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_S2_B.unit_price": {
+     "value": 5.4,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_S2_B.freight_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.handling_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.fixed_order_fee": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.minimum": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.case_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.pallet_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.transport_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.lead_days": {
+     "value": 7.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "location.central.holding_per_value_period": {
+     "value": 0.0028767123287671234,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "location.north.holding_per_value_period": {
+     "value": 0.0028767123287671234,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "location.south.holding_per_value_period": {
+     "value": 0.0028767123287671234,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "terms.terms.net_days": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "terms.terms.deposit_fraction": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "terms.terms.financing_fee_fraction": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "liquidity.interest_per_period": {
+     "value": 0.0019178082191780824,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "liquidity.cost_of_capital_per_period": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "liquidity.credit_limit": {
+     "value": 1000000.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "supplier_terms.supplier.minimum_order_value": {
+     "value": 5000.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "supplier_terms.supplier.fixed_order_cost": {
+     "value": 150.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "supplier_terms.supplier.receiving_fee_per_receipt": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "supplier_terms.supplier.receiving_per_pallet": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "supplier_terms.supplier.freight_per_pallet": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "supplier_terms.supplier.freight_tiers": {
+     "value": [],
+     "provenance": "NOT_AVAILABLE"
+    },
+    "supplier_terms.supplier.units_per_pallet": {
+     "value": {},
+     "provenance": "NOT_AVAILABLE"
+    },
+    "service.svc_north.selling_price": {
+     "value": 10.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_north.sla_per_unmet": {
+     "value": 2.5,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_south.selling_price": {
+     "value": 10.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_south.sla_per_unmet": {
+     "value": 2.5,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_north_B.selling_price": {
+     "value": 10.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_north_B.sla_per_unmet": {
+     "value": 2.5,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_south_B.selling_price": {
+     "value": 10.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_south_B.sla_per_unmet": {
+     "value": 2.5,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    }
+   },
+   "fallbacks": [
+    "cost of capital NOT_AVAILABLE: payment timing is valued only through interest on drawn credit"
+   ]
+  },
+  "sourcing": {
+   "version": "zaad.sourcing.1.0",
+   "principles": [
+    "Source where total landed economics and supply resilience are best, not where unit price is lowest.",
+    "Diversification is not the objective. Better decisions under real supply uncertainty are the objective."
+   ],
+   "recommendation_status": "PENDING_REVIEW",
+   "selected_policy": "stochastic_network",
+   "abstained": false,
+   "materiality": {
+    "material": true,
+    "verdict": "MATERIAL_IMPROVEMENT",
+    "cost_delta_fraction": -0.0027150079750825518,
+    "inventory_delta_fraction": -0.2415139339361507,
+    "service_delta": 0.0,
+    "better_on": [
+     "inventory"
+    ],
+    "worse_on": [],
+    "thresholds": {
+     "cost_fraction": 0.01,
+     "inventory_fraction": 0.05,
+     "service": 0.005
+    },
+    "reason": "cost -0.27%, inventory -24.15%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+   },
+   "risk_groups": [],
+   "pairs": [
+    {
+     "sku": "A",
+     "destination": "central",
+     "order_period": 0,
+     "total_committed_period_0": 24.58821240106208,
+     "total_committed_plan": 2833.3097984739015,
+     "incumbent_total_period_0": 2044.7628089964237,
+     "incumbent_total_plan": 4089.5256179928474,
+     "sources_used_plan": [
+      "src_A",
+      "src_S2"
+     ],
+     "recommendation": "COMMIT_AS_INCUMBENT_MIX",
+     "owner": {
+      "total_commitment": "P1 purchasing economics (or P0 protection / recovery when it owns the review)",
+      "source_split": "P3 sourcing portfolio"
+     },
+     "options": [
+      {
+       "source": "src_A",
+       "supplier": "supplier",
+       "route": [
+        "supplier",
+        "central"
+       ],
+       "eligible": true,
+       "ineligible_reason": null,
+       "quantity_period_0": 0.0,
+       "share_period_0": 0.0,
+       "quantity_plan": 2808.7215860728393,
+       "share_plan": 0.9913217353025404,
+       "incumbent_quantity_period_0": 2044.7628089964237,
+       "incumbent_share_period_0": 1.0,
+       "incumbent_share_plan": 1.0,
+       "declared_incumbent_share": 1.0,
+       "in_incumbent_mix": true,
+       "expected_receipt_period": 1,
+       "expected_fill": 0.98,
+       "lead_days": 7,
+       "lead_sd_days": 0.0,
+       "capacity_period_0": 1000000.0,
+       "capacity_binding": false,
+       "minimum_order": 0.0,
+       "packs": [],
+       "executable": true,
+       "landed": {
+        "unit_price": 5.0,
+        "freight_per_unit": 0.0,
+        "handling_per_unit": 0.0,
+        "financing_fee_per_unit": 0.0,
+        "fixed_order_fee": 0.0,
+        "landed_unit_cost": 5.0,
+        "payment_terms": {
+         "deposit_fraction": 0.0,
+         "balance_trigger": "arrival",
+         "net_days": 0,
+         "expected_payment_period": 1
+        },
+        "payment_timing_value_per_unit": 0.0,
+        "landed_unit_cost_after_terms": 5.0,
+        "scope": "per unit, report only; the plan's economics come from the settled ledger"
+       },
+       "reliability": {
+        "scope": "declared",
+        "records": 0,
+        "fill_mean": 0.98,
+        "fill_sd": 0.01,
+        "late_probability": 0.0,
+        "fill_provenance": null,
+        "lead_provenance": null,
+        "weak_evidence": true
+       },
+       "risk_groups": [],
+       "shared_risk_weak_evidence": false,
+       "share_constraints": [],
+       "switching_cost": null
+      },
+      {
+       "source": "src_S2",
+       "supplier": "supplier_s2",
+       "route": [
+        "supplier_s2",
+        "central"
+       ],
+       "eligible": true,
+       "ineligible_reason": null,
+       "quantity_period_0": 24.58821240106208,
+       "share_period_0": 1.0,
+       "quantity_plan": 24.58821240106208,
+       "share_plan": 0.008678264697459475,
+       "incumbent_quantity_period_0": 0.0,
+       "incumbent_share_period_0": 0.0,
+       "incumbent_share_plan": 0.0,
+       "declared_incumbent_share": null,
+       "in_incumbent_mix": false,
+       "expected_receipt_period": 1,
+       "expected_fill": 0.98,
+       "lead_days": 7,
+       "lead_sd_days": 0.0,
+       "capacity_period_0": 1000000.0,
+       "capacity_binding": false,
+       "minimum_order": 0.0,
+       "packs": [],
+       "executable": true,
+       "landed": {
+        "unit_price": 5.4,
+        "freight_per_unit": 0.0,
+        "handling_per_unit": 0.0,
+        "financing_fee_per_unit": 0.0,
+        "fixed_order_fee": 0.0,
+        "landed_unit_cost": 5.4,
+        "payment_terms": {
+         "deposit_fraction": 0.0,
+         "balance_trigger": "arrival",
+         "net_days": 0,
+         "expected_payment_period": 1
+        },
+        "payment_timing_value_per_unit": 0.0,
+        "landed_unit_cost_after_terms": 5.4,
+        "scope": "per unit, report only; the plan's economics come from the settled ledger"
+       },
+       "reliability": {
+        "scope": "declared",
+        "records": 0,
+        "fill_mean": 0.98,
+        "fill_sd": 0.01,
+        "late_probability": 0.0,
+        "fill_provenance": null,
+        "lead_provenance": null,
+        "weak_evidence": true
+       },
+       "risk_groups": [],
+       "shared_risk_weak_evidence": false,
+       "share_constraints": [],
+       "switching_cost": null
+      }
+     ]
+    },
+    {
+     "sku": "B",
+     "destination": "central",
+     "order_period": 0,
+     "total_committed_period_0": 28.96975945025897,
+     "total_committed_plan": 2860.0590590467596,
+     "incumbent_total_period_0": 2044.7628089964237,
+     "incumbent_total_plan": 4089.5256179928474,
+     "sources_used_plan": [
+      "src_A_B",
+      "src_S2_B"
+     ],
+     "recommendation": "COMMIT_AS_INCUMBENT_MIX",
+     "owner": {
+      "total_commitment": "P1 purchasing economics (or P0 protection / recovery when it owns the review)",
+      "source_split": "P3 sourcing portfolio"
+     },
+     "options": [
+      {
+       "source": "src_A_B",
+       "supplier": "supplier",
+       "route": [
+        "supplier",
+        "central"
+       ],
+       "eligible": true,
+       "ineligible_reason": null,
+       "quantity_period_0": 0.0,
+       "share_period_0": 0.0,
+       "quantity_plan": 2831.0892995965005,
+       "share_plan": 0.9898709226445433,
+       "incumbent_quantity_period_0": 2044.7628089964237,
+       "incumbent_share_period_0": 1.0,
+       "incumbent_share_plan": 1.0,
+       "declared_incumbent_share": 1.0,
+       "in_incumbent_mix": true,
+       "expected_receipt_period": 1,
+       "expected_fill": 0.98,
+       "lead_days": 7,
+       "lead_sd_days": 0.0,
+       "capacity_period_0": 1000000.0,
+       "capacity_binding": false,
+       "minimum_order": 0.0,
+       "packs": [],
+       "executable": true,
+       "landed": {
+        "unit_price": 5.0,
+        "freight_per_unit": 0.0,
+        "handling_per_unit": 0.0,
+        "financing_fee_per_unit": 0.0,
+        "fixed_order_fee": 0.0,
+        "landed_unit_cost": 5.0,
+        "payment_terms": {
+         "deposit_fraction": 0.0,
+         "balance_trigger": "arrival",
+         "net_days": 0,
+         "expected_payment_period": 1
+        },
+        "payment_timing_value_per_unit": 0.0,
+        "landed_unit_cost_after_terms": 5.0,
+        "scope": "per unit, report only; the plan's economics come from the settled ledger"
+       },
+       "reliability": {
+        "scope": "declared",
+        "records": 0,
+        "fill_mean": 0.98,
+        "fill_sd": 0.01,
+        "late_probability": 0.0,
+        "fill_provenance": null,
+        "lead_provenance": null,
+        "weak_evidence": true
+       },
+       "risk_groups": [],
+       "shared_risk_weak_evidence": false,
+       "share_constraints": [],
+       "switching_cost": null
+      },
+      {
+       "source": "src_S2_B",
+       "supplier": "supplier_s2",
+       "route": [
+        "supplier_s2",
+        "central"
+       ],
+       "eligible": true,
+       "ineligible_reason": null,
+       "quantity_period_0": 28.96975945025897,
+       "share_period_0": 1.0,
+       "quantity_plan": 28.96975945025897,
+       "share_plan": 0.010129077355456574,
+       "incumbent_quantity_period_0": 0.0,
+       "incumbent_share_period_0": 0.0,
+       "incumbent_share_plan": 0.0,
+       "declared_incumbent_share": null,
+       "in_incumbent_mix": false,
+       "expected_receipt_period": 1,
+       "expected_fill": 0.98,
+       "lead_days": 7,
+       "lead_sd_days": 0.0,
+       "capacity_period_0": 1000000.0,
+       "capacity_binding": false,
+       "minimum_order": 0.0,
+       "packs": [],
+       "executable": true,
+       "landed": {
+        "unit_price": 5.4,
+        "freight_per_unit": 0.0,
+        "handling_per_unit": 0.0,
+        "financing_fee_per_unit": 0.0,
+        "fixed_order_fee": 0.0,
+        "landed_unit_cost": 5.4,
+        "payment_terms": {
+         "deposit_fraction": 0.0,
+         "balance_trigger": "arrival",
+         "net_days": 0,
+         "expected_payment_period": 1
+        },
+        "payment_timing_value_per_unit": 0.0,
+        "landed_unit_cost_after_terms": 5.4,
+        "scope": "per unit, report only; the plan's economics come from the settled ledger"
+       },
+       "reliability": {
+        "scope": "declared",
+        "records": 0,
+        "fill_mean": 0.98,
+        "fill_sd": 0.01,
+        "late_probability": 0.0,
+        "fill_provenance": null,
+        "lead_provenance": null,
+        "weak_evidence": true
+       },
+       "risk_groups": [],
+       "shared_risk_weak_evidence": false,
+       "share_constraints": [],
+       "switching_cost": null
+      }
+     ]
+    }
+   ],
+   "explanations": [],
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "scope": "the frozen joint decision chose the total commitment (P1) and its split across approved sources (P3) under the declared economics, capacity, uncertainty and shared risk; no source score, no diversification rule, no autonomous order"
+  },
+  "actions": [
+   {
+    "action": "purchase",
+    "source": "src_A",
+    "period": 1,
+    "quantity": 621.3136693105382,
+    "first_review": false
+   },
+   {
+    "action": "purchase",
+    "source": "src_A",
+    "period": 4,
+    "quantity": 2187.4079167623013,
+    "first_review": false
+   },
+   {
+    "action": "purchase",
+    "source": "src_S2",
+    "period": 0,
+    "quantity": 24.58821240106208,
+    "first_review": true
+   },
+   {
+    "action": "purchase",
+    "source": "src_A_B",
+    "period": 1,
+    "quantity": 621.684972300974,
+    "first_review": false
+   },
+   {
+    "action": "purchase",
+    "source": "src_A_B",
+    "period": 4,
+    "quantity": 2209.4043272955264,
+    "first_review": false
+   },
+   {
+    "action": "purchase",
+    "source": "src_S2_B",
+    "period": 0,
+    "quantity": 28.96975945025897,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 69.63801102340656,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 77.75303017341905,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 1,
+    "quantity": 23.241233823950946,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 54,
+    "period": 2,
+    "quantity": 300.2353281347797,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 57,
+    "period": 5,
+    "quantity": 587.7144787152112,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 57,
+    "period": 11,
+    "quantity": 447.9629302343939,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 52.76858804158286,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 99.84037076159153,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 1,
+    "quantity": 0.35387964256227883,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 54,
+    "period": 2,
+    "quantity": 308.4307721974116,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 57,
+    "period": 5,
+    "quantity": 1120.932426676439,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 49.0469605688083,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 79.34557560362964,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 1,
+    "quantity": 27.799693209780813,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 54,
+    "period": 2,
+    "quantity": 308.8628787753984,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 57,
+    "period": 5,
+    "quantity": 179.18422748551785,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 57,
+    "period": 7,
+    "quantity": 414.9709498123753,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 57,
+    "period": 11,
+    "quantity": 451.98232020795456,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 67.14639790198011,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 104.46106592558198,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 54,
+    "period": 2,
+    "quantity": 300.1669662390579,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 57,
+    "period": 5,
+    "quantity": 1132.1590454512354,
+    "first_review": false
+   }
+  ],
+  "approval_required": true,
+  "executable_purchase_order": false
+ }
+}
