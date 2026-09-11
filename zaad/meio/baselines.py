@@ -35,6 +35,7 @@ from zaad.full.model import Solution, supplier_orders
 from zaad.full.policies import _keep_amendments, _z, apply_cash_cap, apply_load_cap, apply_mov, lot_round
 from zaad.full.worlds import dates, draw, forecast_all
 from zaad.meio.topology import lane_arrival
+from zaad.sectors.contracts import resolve as sector_physics
 
 
 def _round_to(q: float, multiple: float, up: bool) -> float:
@@ -43,6 +44,28 @@ def _round_to(q: float, multiple: float, up: bool) -> float:
     packs = q / multiple
     packs = math.ceil(packs - 1e-9) if up else math.floor(packs + 1e-9)
     return max(0., packs * multiple)
+
+
+def _apply_weight_cap(req: Request, purchases: dict[tuple[str, int], float], physics) -> None:
+    """Sector physics: cap each supplier order at the supplier's maximum shipment weight, scaling the
+    lines down and rounding to the pack below (the load-cap rule, on weight)."""
+    if physics is None:
+        return
+    for supplier, srcs, st in supplier_orders(req):
+        if st.max_shipment_weight is None:
+            continue
+        for t in range(req.horizon):
+            lines = [s for s in srcs if purchases.get((s.id, t), 0.) > 0]
+            weight = sum(purchases[s.id, t] * float(physics.weight(s.sku) or 0.) for s in lines)
+            if weight <= st.max_shipment_weight + 1e-9:
+                continue
+            scale = st.max_shipment_weight / weight
+            for s in lines:
+                q = purchases[s.id, t] * scale
+                for pack in (s.multiple, s.case_multiple, s.pallet_multiple, s.transport_multiple):
+                    if pack > 0:
+                        q = _round_to(q, pack, up=False)
+                purchases[s.id, t] = q
 
 
 def network_rule_plan(req: Request, rule: str) -> Solution:
@@ -57,6 +80,20 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
     # the projection lands supply exactly where the mean world lands it (fitted supply profiles, ETA
     # evidence, signals), so the incumbent solve that pins these transfers sees the stock they need
     mean_world = draw(req, req.seed, 1, deterministic=True)[0]
+    # Sector physics (hard feasibility only): the operator's own rule cannot ship a state on a lane or
+    # into a location that cannot carry it, receive below the minimum life, or ignore the age at
+    # receipt. It stays naive about sellable life - it counts physical units - which is the point of
+    # comparing ZAAD against it. None on a legacy request.
+    physics = sector_physics(req)
+
+    def lane_legal(arc: Transfer) -> bool:
+        return physics is None or (physics.lane_ok(arc.sku, arc.id) and physics.location_ok(arc.sku, arc.destination))
+
+    def receivable(sku: str, expiry: int, arrive: int) -> bool:
+        return expiry > arrive and (physics is None or physics.receivable(sku, expiry, arrive))
+
+    def receipt_life(src) -> int:
+        return int(skus[src.sku].shelf_life) if physics is None else physics.receipt_life(src.sku, src.id)
     # demand statistics per (sku, location)
     mu: dict[tuple[str, str], float] = defaultdict(float)
     var: dict[tuple[str, str], float] = defaultdict(float)
@@ -69,10 +106,11 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
         target[key] = max(target[key], s.target)
         priority[key] = max(priority[key], customers[s.customer].priority)
     # feeders: the fastest approved lane into every fed (sku, destination) whose origin buys or is stocked
-    buyers = {(s.sku, s.destination) for s in req.sources if s.approved and s.compliance == "cleared"}
+    buyers = {(s.sku, s.destination) for s in req.sources if s.approved and s.compliance == "cleared"
+              and (physics is None or (physics.location_ok(s.sku, s.destination) and receipt_life(s) > physics.min_receipt(s.sku)))}
     feeder: dict[tuple[str, str], Transfer] = {}
     for arc in sorted(req.transfers, key=lambda a: (lane_arrival(req, a, 0), -a.capacity, a.id)):
-        if arc.approved and (arc.sku, arc.destination) not in buyers:
+        if arc.approved and lane_legal(arc) and (arc.sku, arc.destination) not in buyers:
             feeder.setdefault((arc.sku, arc.destination), arc)
     fed_by_origin: dict[tuple[str, str], list[tuple[str, str]]] = defaultdict(list)
     for (sku, dest), arc in feeder.items():
@@ -142,7 +180,7 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
                 # available at the origin for this group: cohorts landing before expiry over the slowest lane
                 available = 0.
                 for e, units in cohorts[sku, origin].items():
-                    if units > 0 and all(lane_arrival(req, arcs[d], t) < e for d, _ in group):
+                    if units > 0 and all(receivable(sku, e, lane_arrival(req, arcs[d], t)) for d, _ in group):
                         available += units
                 total = sum(q for _, q in group)
                 share = {d: (q if total <= available + 1e-9 else q * available / total) for d, q in group}
@@ -157,7 +195,7 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
                     for e in sorted(cohorts[sku, origin]):
                         if remaining <= 1e-9:
                             break
-                        if e <= arrive or cohorts[sku, origin][e] <= 0:
+                        if not receivable(sku, e, arrive) or cohorts[sku, origin][e] <= 0:
                             continue
                         take = min(remaining, cohorts[sku, origin][e])
                         cohorts[sku, origin][e] -= take
@@ -171,7 +209,10 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
             sd = math.sqrt(var[sku, location] + sum(var[d] for d in downstream))
             if m <= 0:
                 continue
-            options = [s for s in req.sources if s.sku == sku and s.destination == location and s.approved and s.compliance == "cleared"]
+            options = [s for s in req.sources if s.sku == sku and s.destination == location and s.approved and s.compliance == "cleared"
+                       and (physics is None or receipt_life(s) > physics.min_receipt(sku))]
+            if not options:
+                continue
             src = min(options, key=lambda s: (s.unit_price + s.freight_per_unit + s.handling_per_unit, s.id))
             z = _z(max([target[sku, location]] + [target[d] for d in downstream]))
             arrival = int(mean_world.arrival.get((src.id, t), dates(req, src, t)[1]))
@@ -195,7 +236,7 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
                     q = _round_to(q, pack, up=False)
             if q > 0 and arrival < H + 1:
                 purchases[src.id, t] = purchases.get((src.id, t), 0.) + q
-                pending.append((sku, location, arrival + skus[sku].shelf_life, arrival, q * float(mean_world.fills.get((src.id, t), src.fill_mean))))
+                pending.append((sku, location, arrival + receipt_life(src), arrival, q * float(mean_world.fills.get((src.id, t), src.fill_mean))))
         # 3. serve the period's mean demand FEFO at every location
         for (sku, location), m in mu.items():
             remaining = m
@@ -210,6 +251,7 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
                 remaining -= take
     apply_mov(req, purchases)
     apply_load_cap(req, purchases)
+    _apply_weight_cap(req, purchases, physics)
     apply_cash_cap(req, purchases)
     purchases = {k: v for k, v in purchases.items() if v > 0}
     return Solution("OPTIMAL", purchases, {k: v for k, v in transfers.items() if v > 1e-9}, _keep_amendments(req), {}, None, [], 0., 0, 0, None, 0.,

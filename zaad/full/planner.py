@@ -1447,7 +1447,7 @@ def plan(req: Request) -> dict:
                         "quantile_levels": risk_levels,
                         "scope": "lean baseline is demand-only protection at the fitted spread; incremental is what active drivers add"}
 
-    return {"schema_version": "zaad.network.report.v2", "brand": "ZAAD", "version": VERSION,
+    report = {"schema_version": "zaad.network.report.v2", "brand": "ZAAD", "version": VERSION,
             "operator_id": req.operator_id, "as_of": req.as_of.isoformat(), "information_hash": fingerprint,
             "evidence_label": req.evidence_label, "status": status, "mode": mode, "engine_profile": req.engine_profile,
             "selected_policy": chosen if accepted else incumbent_label,
@@ -1538,6 +1538,13 @@ def plan(req: Request) -> dict:
                 "Only period-zero actions may be reviewed; future actions are replanning guidance.",
                 "Cash excludes forecast sales receipts; enter only dated known receivables.",
                 "A retained incumbent is not certified safe when it also fails the reported stress tests."]}
+    if req.sector_mode is not None or req.sku_physics:
+        # Sector operating physics (three-sector engine): the profiles, their provenance, physical against
+        # sellable stock and the sector-language explanations of the executed actions. Absent on a
+        # legacy request: the report is byte-identical to the frozen one.
+        from zaad.sectors.explain import physics_block
+        report["physics"] = physics_block(req, final, final_rows, incumbent, incumbent_rows, fits)
+    return report
 
 
 def report_json(report: dict) -> str:

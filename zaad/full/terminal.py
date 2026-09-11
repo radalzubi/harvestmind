@@ -46,6 +46,8 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
     (optional, per (SKU, location), P2): the cost of the move a residual unit at a transfer-fed location
     avoids, added to the purchase it avoids; origin residual that reaches that location through a lane
     pays the lane cost, so it nets to the origin's own replacement value."""
+    from zaad.sectors.contracts import resolve as sector_physics
+    physics = sector_physics(req)
     skus = {s.id: s for s in req.skus}
     locs = {loc.id: loc for loc in req.locations}
     mu: dict[tuple[str, str], float] = {}
@@ -106,7 +108,9 @@ def continuation_value(req: Request, end_stock: list[dict], pending: list, fits:
             for k in range(n + (1 if frac > 1e-9 else 0)):
                 q = 1. if k < n else frac
                 tau = start + (k + .5) / demand
-                if tau >= expiry or (cap is not None and consumed_before + k >= cap):
+                # sector physics: a residual unit is consumable only while it is sellable
+                sellable_until = expiry - (physics.min_sale(sku) if physics is not None else 0)
+                if tau >= sellable_until or (cap is not None and consumed_before + k >= cap):
                     value_here += q * salvage
                 else:
                     value_here += q * min(price - deduction, max(salvage, price - deduction - asset * rate * tau))
