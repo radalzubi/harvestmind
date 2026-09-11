@@ -476,10 +476,88 @@ and rerun CI on `main`.
   `evidence/p3/P3_CLOSEOUT.md` for the SHAs). Not pushed, not merged, not deployed. ENGINEERING
   VALIDATED, not real-data validated; no savings claimed.
 
+## P3 supplier / sourcing portfolio release line (2026-09-11, authorized)
+
+* **Remote CI prerequisite**: the last known state was REMOTE_CI_UNAVAILABLE (billing); one rerun of the
+  main run on `7bc4206` (34605444241) started every job with steps and completed green, so the release
+  proceeded.
+* **Preflight**: `claude/zaad-sourcing-p3` at `fb91946`, clean; `origin/main` `7bc4206` (no advancement).
+  Freeze integrity: `p3-frozen-product` = `9e496ed`, `p3-frozen` = `628d49f`, `p3-corrective-evidence` =
+  `fb91946`; `9e496ed` in both; runtime directories identical between `9e496ed` and `fb91946` (the only
+  file outside docs / tests is the P0 arm registration in `scripts/p1_p0_arms.py`). Branch and the three
+  tags published exactly (verified on origin, never moved); `sector-physics-replay-correction` stays a
+  local forensic marker.
+* **PR #60** ("ZAAD P3: Supplier / Sourcing Portfolio Optimization", base `7bc4206`). First exhaustive run
+  34626589387: every gate green except the unit-zaad pytest shard, cancelled by the runner at the 90-minute
+  job budget while the docs-only main rerun competed for runners (the zaad unit files take 224 s locally).
+  CI-only fix `326c010`: that shard split into two disjoint name ranges (`[a-r]` 323 tests, `[s-z]` 170
+  tests; union = the 493 zaad unit tests exactly); no timeout widened, no test changed. Run 34635732278
+  green on every job: pytest 275 + 1,139 + 322 + 170 = **1,906 passed, 2 skipped** (integration 14 min,
+  unit-core 6 min, unit-zaad-a 48 min, unit-zaad-b 43 min), ruff, mypy, security (bandit, pip-audit),
+  gitleaks, Docker build, frontend, frozen regression. CodeQL: the known "resource not accessible by
+  integration" (code scanning not enabled) configuration failure.
+* **Merge**: `0de6850` (pre-merge `main` `7bc4206`, head `326c010`, merge commit). Whole-tree diff against
+  the tested head empty; runtime directories identical to the product freeze `9e496ed`. Bounded post-merge
+  verification on the exact commit: ancestry, API and `zaad.sourcing` import, 33 sourcing / receipt-life
+  tests, canonical regression PASS, migration 018 present. No second full CI (tree identity proven).
+* **Migration 018**: additive, idempotent (`CREATE TABLE IF NOT EXISTS stg_fmcg_sources`, four
+  `ADD COLUMN IF NOT EXISTS` supplier risk columns), no backfill, nothing inferred. Applied by the
+  existing mechanism (`setup_db` at vault creation): the smoke vault created on v17 reports the source
+  table present; a pre-P3 vault (`op_0a69199c`, inspected read-only on the machine) has no
+  `stg_fmcg_sources` and keeps working through the legacy adapter (`sourcing=true` on such a vault warns
+  and builds the frozen request). To declare P3 sourcing on a pre-existing vault the operator runs the
+  idempotent `scripts.setup_db.setup_db` on that vault's DuckDB file (the API holds the vault lock while
+  it serves the tenant; run it with the tenant idle).
+* **Fly v17** `registry.fly.io/zaad-api:canonical-0de6850` (rolling, machine `0804e0dfd1e948`, volume
+  `harvestmind_data` and every secret untouched, `ZAAD_LEGACY_PLANNERS` unchanged, env `pilot`); health
+  checks passing after the grace period, no restart loop.
+* **Production smoke on v17** (`evidence/p3/release/production_smoke_v17.json`): `/health` = `zaad-api`,
+  pilot, auth enforced; legacy `/api/zaad/demo` and `/api/zaad/plan` 410; anonymous protected calls 401;
+  CORS allows zaadsupply.com and www, refuses a foreign origin. Self-serve workspace `op_38e4101e`
+  (sample FMCG, 427,995 rows): legacy request has `sourcing` null (`requested` false); with `sourcing=true`
+  and no declarations the block stays null and the request stays frozen; the P1 workspace plan runs on the
+  canonical path with approval required. Payload smokes (all HTTP 200, `approval_required` true,
+  `executable_purchase_order` false, economics reconciled, no unmapped ledger key): legacy no-P3 (no
+  sourcing block); single source (allocation = the P1 commitment, share 1.0); two-source economics (B
+  cheaper per unit, A cheaper landed after freight and terms: A retained, sentence present); capacity
+  split (A at its 200 capacity, B 108, sum = commitment, sentence present); MOQ / MOV (B orders 1,333 >=
+  MOQ 1,200 and MOV); packs (120 = 1 x 120-unit pallet); payment terms (declared 50 / 50 retained, not
+  material); switching small (B unused: "starting to buy from it would cost 2,000"), switching large (B
+  adopted, cost 300 charged once); shares (A at most 70 % and B at least 30 % honoured exactly);
+  correlated risk (plant group listed with provenance on A and B, C independent; one source per period,
+  no intra-period split); independent identical sources (period-level label ties, never a split within a
+  period); PRODUCE (short-life B unused; age by source in the profile); MEAT_SEAFOOD (frozen source into a
+  chilled-only destination rejected with the reason); network (P2 transfers 300 at period 0, source split
+  P3, conservation exact); multi-SKU shared capacity (S1 lines 158 + 292 = 450 = the shared cap, S2 takes
+  the overflow); shared MOV (combined S1 orders 650 + 655 units >= 5,000 MOV); age at receipt payload
+  (profile `{src_A: 3}` on shelf life 6: "arrive with 3 of 6 periods of life"). Malformed inputs: unknown
+  group member, unqualified source with a minimum share, negative capacity, minimum above maximum share,
+  impossible aggregate shares, missing provenance, infinite price all 422; 11 sources on one pair 413
+  before any model. Frontend `/`, `/overview`, `/upload`, `/fmcg`, `/state`, `/access` 200.
+* **Age-at-receipt workspace check** (`evidence/p3/release/age_at_receipt_workspace_*`): a new produce
+  workspace `op_a2b8b9d9` loaded through the intake upload with a SKU master declaring shelf life 42 days,
+  age at receipt 21 days and sale minimum 7 days; the production adapter built `sku_physics`
+  `age_at_receipt_periods` 3 on a 6-period shelf life (received life 3, not 6) and the plan's physics
+  profile carried it; approval required, no executable order.
+* **Logs after the smokes**: 0 x 5xx, 0 tracebacks, no store / migration / tenant / serialization error;
+  one health-check miss inside the rolling-deploy grace; 59 x 200, 7 x 422, 3 x 401, 2 x 410, 1 x 413,
+  1 x 400 (foreign CORS preflight).
+* **Release-runtime tag**: `p3-release-runtime` = `0de6850` (on origin; identical runtime tree to
+  `9e496ed`).
+* **Known observations (future performance work, not fixed here)**: sector C1 frontier oracle ~60 s; the
+  two-SKU P1 workspace call ~24 s on a 5 s budget; the synchronous 150-SKU whole-workspace call > 400 s;
+  new: interactive P3 payloads with supplier-order MOV binaries across two SKUs run far slower on the Fly
+  machine than locally (shared-MOV smoke 218 s, multi-SKU shared capacity 78 s, plant-group case 46 s,
+  against 1-20 s locally); async jobs remain the path for such requests.
+* **Untouched**: Validation7, Validation8, holdout4 (unrun, unread); Network Twin #39; P4-P6; dashboard
+  and website uplift; Dependabot solver-stack bumps.
+* **Verdict: ZAAD P3 SUPPLIER / SOURCING PORTFOLIO RELEASE LINE — PASS** (released runtime `0de6850`, Fly
+  `zaad-api` v17 `canonical-0de6850`; ENGINEERING VALIDATED, not real-data validated; no savings claimed).
+  Next authorized phase: P4 adaptive recourse — not started.
+
 ## Exact next action
 
-P3 is frozen locally on `claude/zaad-sourcing-p3`; its release needs a separate authorization. P4 (adaptive
-recourse) is not started. Keep
+P3 is released (v17, `0de6850`). P4 (adaptive recourse) is not started and needs a separate authorization. Keep
 `ZAAD_LEGACY_PLANNERS` explicit on every deployed environment and run
 `scripts/zaad_canonical_regression.py` before accepting any Dependabot bump that touches the solver
 stack. Keep `ZAAD_LEGACY_PLANNERS`
