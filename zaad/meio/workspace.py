@@ -35,6 +35,7 @@ import pandas as pd
 
 from zaad.full.contracts import Request
 from zaad.full.workspace import CALENDAR, CUSTOMER, LOCATION, WorkspaceError, _frame, _num, build_request
+from zaad.sectors.workspace import lot_expiry_periods, parse_states
 
 LANE_CAPACITY_WEEKS = 10.        # declared assumption when a lane's capacity is not given: ten weeks of the destination's demand per week
 LANE_LEAD_DAYS = 7               # declared assumption when neither the lane nor its history gives a lead
@@ -80,9 +81,10 @@ def estimate_demand_correlation(weekly: pd.DataFrame) -> tuple[float | None, int
 
 def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days: int = 7, as_of: datetime | None = None,
                           service_target: float = .95, history_weeks: int = 52, seed: int = 41001, scenarios: int = 3,
-                          max_solve_seconds: float = 15., skus: list[str] | None = None) -> tuple[Request, dict[str, Any]]:
+                          max_solve_seconds: float = 15., skus: list[str] | None = None, sector_mode: str | None = None) -> tuple[Request, dict[str, Any]]:
     base, report = build_request(conn, operator_id, horizon=horizon, period_days=period_days, as_of=as_of, service_target=service_target,
-                                 history_weeks=history_weeks, seed=seed, scenarios=scenarios, max_solve_seconds=max_solve_seconds, skus=skus)
+                                 history_weeks=history_weeks, seed=seed, scenarios=scenarios, max_solve_seconds=max_solve_seconds, skus=skus,
+                                 sector_mode=sector_mode)
     locations = _location_rows(conn)
     if len(locations) < 2:
         report["network"] = {"locations": int(len(locations)), "mode": "single_location", "note": "fewer than two declared locations: the frozen single-location request"}
@@ -108,8 +110,11 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
         holding = holding_annual / 52. if holding_annual is not None else default_holding
         provenance[f"location.{lid}.holding_per_value_period"] = "CUSTOMER_PROVIDED" if holding_annual is not None else "CONFIGURED_ASSUMPTION"
         capacity = _num(getattr(row, "capacity_units", None), None)
+        states = parse_states(getattr(row, "storage_states", None))   # sector physics; [] = unrestricted
+        if states:
+            provenance[f"location.{lid}.storage_states"] = "CUSTOMER_PROVIDED"
         loc_rows.append({**known, "id": lid, "kind": kind, "capacity_volume": float(capacity) if capacity else UNBOUNDED_LOCATION_UNITS,
-                         "holding_per_value_period": float(holding), "receiving_calendar": CALENDAR})
+                         "holding_per_value_period": float(holding), "receiving_calendar": CALENDAR, "storage_states": states})
         kinds[lid] = kind
     ids = {r["id"] for r in loc_rows}
     central = next((r["id"] for r in loc_rows if r["kind"] == "central_dc"), None)
@@ -146,7 +151,7 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
     busiest = hist.groupby("location_id")["qty_ordered"].sum().idxmax() if len(hist) else next(iter(ids))
 
     # ── opening stock per (SKU, location) ──
-    inventory = _safe(conn, "SELECT sku, snapshot_date, on_hand, location_id FROM stg_fmcg_inventory")
+    inventory = _safe(conn, "SELECT * FROM stg_fmcg_inventory")
     stock_rows: list[dict[str, Any]] = []
     if len(inventory):
         inventory["snapshot_date"] = pd.to_datetime(inventory["snapshot_date"])
@@ -158,8 +163,11 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
             for row in latest.itertuples():
                 sku, lid = str(row.sku), str(row.location_id)
                 if sku in shelf and lid in ids and float(row.on_hand or 0.) > 0:
+                    expires_in, lot_prov = lot_expiry_periods(getattr(row, "expiry_date", None), origin, period_days, shelf[sku])
+                    if lot_prov == "CUSTOMER_PROVIDED":
+                        provenance["stock.expiry"] = "CUSTOMER_PROVIDED"
                     stock_rows.append({**known, "id": f"open_{sku}@{lid}", "sku": sku, "location": lid, "quantity": float(row.on_hand),
-                                       "reserved": 0., "damaged": 0., "quarantined": 0., "expires_in": shelf[sku], "age_periods": 0})
+                                       "reserved": 0., "damaged": 0., "quarantined": 0., "expires_in": expires_in, "age_periods": 0})
 
     # ── sources: where each supplier delivers ──
     pos = _safe(conn, "SELECT sku, supplier_id, qty_ordered, destination_id FROM stg_fmcg_purchase_orders")
@@ -247,7 +255,8 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
                                       "lead_periods": max(1, int(math.ceil(float(lead_days) / period_days))), "capacity": float(capacity),
                                       "cost_per_unit": float(cost or 0.), "loss_fraction": 0., "approved": True,
                                       "multiple": float(_num(getattr(row, "units_per_pack", None), 0.) or 0.),
-                                      "fixed_cost_per_dispatch": float(_num(getattr(row, "fixed_cost_per_dispatch", None), 0.) or 0.)})
+                                      "fixed_cost_per_dispatch": float(_num(getattr(row, "fixed_cost_per_dispatch", None), 0.) or 0.),
+                                      "storage_states": parse_states(getattr(row, "storage_states", None))})
     else:
         warnings.append("no lanes declared in stg_fmcg_lanes: locations are planned as isolated (no transfers)")
     # isolated demand: a served location that neither buys nor is fed

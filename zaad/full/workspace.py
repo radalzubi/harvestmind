@@ -31,6 +31,7 @@ from typing import Any
 import pandas as pd
 
 from zaad.full.contracts import Request
+from zaad.sectors.workspace import lot_expiry_periods, sku_physics_rows
 from zaad.full.uncertainty import MIN_SUPPLY_RECORDS
 
 LOCATION = "main"
@@ -141,7 +142,8 @@ def infer_incumbent_rule(pos: pd.DataFrame, origin: pd.Timestamp) -> tuple[str, 
 def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days: int = 7, as_of: datetime | None = None,
                   service_target: float = .95, history_weeks: int = 52, seed: int = 41001, scenarios: int = 3,
                   max_solve_seconds: float = 15., min_history_weeks: int = MIN_HISTORY_WEEKS,
-                  shipment_observations_per_source: int = 60, skus: list[str] | None = None) -> tuple[Request, dict[str, Any]]:
+                  shipment_observations_per_source: int = 60, skus: list[str] | None = None,
+                  sector_mode: str | None = None) -> tuple[Request, dict[str, Any]]:
     """The frozen contract built from the operator's vault, plus the build report (rows read, compact
     dimensions, fits with sample sizes, provenance, warnings, leakage guard). Raises WorkspaceError with
     an operator-facing message when the workspace cannot be planned yet."""
@@ -151,7 +153,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     orders = _frame(conn, "SELECT sku, order_date, qty_ordered FROM stg_fmcg_orders")
     pos = _frame(conn, "SELECT po_id, po_date, supplier_id, sku, qty_ordered, unit_cost, expected_delivery_date FROM stg_fmcg_purchase_orders")
     receipts = _frame(conn, "SELECT po_id, receipt_date, qty_received FROM stg_fmcg_receipts")
-    inventory = _frame(conn, "SELECT sku, snapshot_date, on_hand, in_transit FROM stg_fmcg_inventory")
+    inventory = _frame(conn, "SELECT * FROM stg_fmcg_inventory")
     promotions = _frame(conn, "SELECT sku, week_start, uplift FROM stg_fmcg_promotions")
     suppliers = _frame(conn, "SELECT * FROM stg_fmcg_suppliers")
     economics, economics_prov = _economics(conn)
@@ -329,6 +331,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                             "quote_expires": known_at + timedelta(days=365), "quote_reference": f"workspace:{operator_id}"})
     planned = {r["id"] for r in sku_rows}
     sourced = {r["sku"] for r in source_rows}
+    physics_rows, physics_mode = sku_physics_rows(master, sorted(planned), period_days, provenance, warnings, sector_mode)
 
     # ── supplier terms (order-level economics the P1 engine prices) ──
     terms_rows, resource_rows = [], []
@@ -343,9 +346,20 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
             term_prov["fixed_order_cost"] = "CUSTOMER_PROVIDED"
         if mov is not None:
             term_prov["minimum_order_value"] = "CUSTOMER_PROVIDED"
-        if fixed is not None or mov is not None or units_per_pallet:
+        # sector physics: a declared shipment weight cap on the supplier row (migration 017)
+        max_weight = None
+        if len(suppliers) and "max_shipment_weight" in suppliers.columns:
+            cap_rows = suppliers[suppliers["supplier_id"].astype(str) == sid]
+            if len(cap_rows):
+                max_weight = _num(cap_rows.iloc[-1]["max_shipment_weight"], None)
+                if max_weight is not None and max_weight > 0:
+                    term_prov["max_shipment_weight"] = "CUSTOMER_PROVIDED"
+                else:
+                    max_weight = None
+        if fixed is not None or mov is not None or units_per_pallet or max_weight is not None:
             supplier_terms.append({**known, "id": f"terms_{sid}", "supplier": sid, "fixed_order_cost": float(fixed or 0.),
-                                   "minimum_order_value": float(mov or 0.), "units_per_pallet": units_per_pallet, "provenance": term_prov})
+                                   "minimum_order_value": float(mov or 0.), "units_per_pallet": units_per_pallet, "provenance": term_prov,
+                                   **({"max_shipment_weight": float(max_weight)} if max_weight is not None else {})})
         net_days = _num(economics.get(f"net_days_{sid}"), None)
         if net_days is None:
             net_days = _num(economics.get("net_days"), 0.)
@@ -366,8 +380,12 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                 sku = str(row.sku)
                 if sku in planned and float(row.on_hand or 0.) > 0:
                     shelf = next(r["shelf_life"] for r in sku_rows if r["id"] == sku)
+                    # sector physics: a lot with an expiry date carries its own remaining life (migration 017)
+                    expires_in, lot_prov = lot_expiry_periods(getattr(row, "expiry_date", None), origin, period_days, shelf)
                     stock_rows.append({**known, "id": f"open_{sku}", "sku": sku, "location": LOCATION, "quantity": float(row.on_hand), "reserved": 0.,
-                                       "damaged": 0., "quarantined": 0., "expires_in": shelf, "age_periods": 0})
+                                       "damaged": 0., "quarantined": 0., "expires_in": expires_in, "age_periods": 0})
+                    if lot_prov == "CUSTOMER_PROVIDED":
+                        provenance["stock.expiry"] = "CUSTOMER_PROVIDED"
             provenance["stock.age"] = "NOT_AVAILABLE"
         else:
             warnings.append("no inventory snapshot before the plan date: opening stock is zero")
@@ -442,6 +460,9 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         "customers": [{**known, "id": CUSTOMER, "channel": "wholesale", "priority": 1.}],
         "services": service_rows, "history": history_rows, "events": event_rows, "shipment_history": shipment_rows,
         "pipeline": pipeline_rows, "incumbent_rule": incumbent_rule, "supplier_terms": supplier_terms,
+        # sector physics (three-sector engine): profiles from the SKU master's physics columns, the
+        # request default from the caller or the single sector the master declares; nothing when absent
+        "sector_mode": physics_mode, "sku_physics": physics_rows,
         "liquidity": {**known, "opening_cash": float(opening_cash if opening_cash is not None else UNBOUNDED), "minimum_cash": 0.,
                       "credit_limit": float(_num(economics.get("credit_limit"), UNBOUNDED) or UNBOUNDED), "opening_debt": 0.,
                       "interest_per_period": interest_period, "cost_of_capital_per_period": cost_of_capital_period,
