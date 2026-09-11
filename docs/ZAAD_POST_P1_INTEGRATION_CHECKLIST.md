@@ -96,7 +96,14 @@ consolidation, start P2.
 - [x] lineage tags on origin: `sector-physics-frozen-product` = `43d769f` (semantics freeze), `sector-physics-frozen` = `4f358f7` (evidence), `sector-physics-release-runtime` = `5ca3772` (exact v16 runtime, one JSON-safe report correction, gate decisions unchanged); Actions billing-blocked at bookkeeping time (not a code failure)
 - [ ] Validation7 / Validation8 / holdout4 reserved; Network Twin #39 deferred
 
-## Step 11: next build — P3 supplier / sourcing portfolio optimization — NOT STARTED
+## Step 11: P3 supplier / sourcing portfolio optimization — PASS AND FROZEN LOCALLY 2026-09-11
 
-- [ ] branch from `main` (`5ca3772` or later); P0 / P1 / P2 / sector physics frozen
+- [x] branch `claude/zaad-sourcing-p3` from `main` `7bc4206` in `harvestmind-p3`; declared `SourcingPortfolio` on the frozen request, default-off hooks, migration 018, API `sourcing` parameter
+- [x] 30 / 30 pre-registered fixtures, 34 / 34 invariants, 23 / 23 adversarial, runtime max 42.8 s; P0 120 / 120, P1 identity + invariants, P2 344 / 344 identical, sector 26 / 26 (402 / 416 identical; P3_age_at_receipt explained by the replay receipt-life correction)
+- [x] local freeze tags `p3-frozen-product` / `p3-frozen` (see `evidence/p3/P3_CLOSEOUT.md`); not pushed, not merged, not deployed
+- [ ] Validation7 / Validation8 / holdout4 reserved; Network Twin #39 deferred; P4 not started
+
+## Step 12: next build — P4 adaptive recourse — NOT STARTED
+
+- [ ] requires a separate authorization; P3 release (push, PR, CI, deploy) also requires a separate authorization
 

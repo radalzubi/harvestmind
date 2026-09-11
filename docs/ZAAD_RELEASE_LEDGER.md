@@ -447,9 +447,36 @@ billing condition, not a code failure; the code line's evidence is the green pre
 `be12202` and `3f57284`, whose trees equal the merged commits. Owner action: restore Actions billing
 and rerun CI on `main`.
 
+## P3 supplier / sourcing portfolio optimization (2026-09-11, branch `claude/zaad-sourcing-p3`, worktree `harvestmind-p3`, parent `main` `7bc4206`)
+
+* **Audit first** (`evidence/p3/P3_EXISTING_CAPABILITIES.md`): the frozen engine already chooses among approved
+  sources jointly (per-source purchase columns, capacity, MOQ, packs, supplier orders across SKUs, payment
+  terms through the cash balance, shared resources, per-source fill / lead fitting, shared-domain supply
+  shocks). No second optimizer, candidate class, supplier score or diversification rule was built.
+* **P3 layer** (`zaad/sourcing`): a default-off `SourcingPortfolio` on the frozen request (risk groups with
+  kind, correlation and provenance; declared share limits and committed units; declared switching /
+  qualification costs; the operator's incumbent source mix). Hooks reached only when a portfolio is
+  declared: model (exact zero-capability pruning, share rows, one first-stage switching binary), worlds
+  (group factor from a salted generator, marginals preserved, frozen stream untouched), settlement
+  (switching ledger line under ORDERING), rule projections (incumbent mix split, shared-resource fit),
+  replay (an executed switch joins the mix), planner `report["sourcing"]` with operator-language reasons;
+  approval required, no executable PO. Migration 018 (`stg_fmcg_sources`, four supplier risk columns);
+  `sourcing` parameter on the workspace endpoints; interactive bounds (413) and 422 `sourcing_invalid`.
+* **Evidence**: 30 / 30 pre-registered fixtures PASS (`p3_authoritative`; changes recorded in the spec and
+  dev log), 34 / 34 invariants, 23 / 23 adversarial cases fail safely; runtime 480 reviews p50 0.66 s /
+  p95 19.2 s / max 42.8 s, 0 time-limited; P0 six-cell arm `p3_sourcing` 120 / 120 decision-identical;
+  canonical regression identical; P1 invariants no failures; P2 matrix under the P3 code 20 / 20, 18 / 18,
+  344 / 344 decision-identical; sector matrix 26 / 26, 19 / 19 invariants, 402 / 416 identical with the 14
+  differences confined to fixture P3_age_at_receipt (sector addendum: the replay now materialises received
+  purchases with the declared age at receipt; legacy replays unchanged).
+* **Frozen and local only**: product tag `p3-frozen-product`, evidence tag `p3-frozen` (see
+  `evidence/p3/P3_CLOSEOUT.md` for the SHAs). Not pushed, not merged, not deployed. ENGINEERING
+  VALIDATED, not real-data validated; no savings claimed.
+
 ## Exact next action
 
-P3 supplier / sourcing portfolio optimization, branched from `main` (`5ca3772` or later). Keep
+P3 is frozen locally on `claude/zaad-sourcing-p3`; its release needs a separate authorization. P4 (adaptive
+recourse) is not started. Keep
 `ZAAD_LEGACY_PLANNERS` explicit on every deployed environment and run
 `scripts/zaad_canonical_regression.py` before accepting any Dependabot bump that touches the solver
 stack. Keep `ZAAD_LEGACY_PLANNERS`
