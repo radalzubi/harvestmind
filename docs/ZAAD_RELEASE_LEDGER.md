@@ -336,8 +336,26 @@ PASS AND FROZEN** (see `perf/P2_PERF_RESULTS.md`, `P2_CLOSEOUT.md`; frozen SHA r
   `canonical-9c4ece7`). Next authorized build: Three-Sector Physics Engine (commercial goods,
   produce, meat & seafood) — not started.
 
+## Three-sector physics engine (2026-09-11, branch `claude/zaad-sector-physics`, worktree `harvestmind-sectors`, parent `ea1ed3a`)
+
+Not merged, not pushed, not deployed. Evidence in `docs/zaad_full/evidence/sectors/` (capability audit,
+architecture, dated fixture specification, development log, authoritative results, performance record,
+invariants, closeout, gate logs). One engine: `zaad/sectors` declares per-SKU operating physics
+(COMMERCIAL / PRODUCE / MEAT_SEAFOOD; storage state, age at receipt, minimum remaining life at receipt
+and at sale, shipment weight) with provenance, plus optional storage states on locations and lanes;
+the frozen model, settlement, continuation, rule projection and report consult one resolved view
+behind `physics is not None` (a legacy request resolves to None). Migration 017 (additive), both
+workspace adapters, `sector_mode` API parameter, 422 on malformed physics. Authoritative synthetic
+run: 26 / 26 pre-registered fixtures (C1-C7, P1-P8, M1-M8, X1-X3) pass; 19 / 19 invariants; runtime
+p50 1.4 s / p95 8.4 s / max 59.5 s, 0 time-limited solves. Frozen behaviour: P0 six-cell 120 / 120,
+P1 B / T / Q / A identity and 720 / 720 invariants, P2 matrix 20 / 20 with 344 / 344 reviews
+decision-identical to the release record. Full suite 1,865 passed, 2 skipped. **Verdict: THREE-SECTOR
+PHYSICS ENGINE — PASS AND FROZEN LOCALLY** (product `43d769f`, local tags `sector-physics-frozen-product`
+and `sector-physics-frozen`; ENGINEERING VALIDATED, not real-data validated).
+
 ## Exact next action
 
-Three-Sector Physics Engine, branched from `main` (`9c4ece7` or later). Keep `ZAAD_LEGACY_PLANNERS`
+Owner decision on releasing the sector-physics line (push, PR, CI, merge, deploy: not authorized in
+this phase). Next authorized phase after that: P3 supplier / sourcing portfolio optimization. Keep `ZAAD_LEGACY_PLANNERS`
 explicit on every deployed environment and run `scripts/zaad_canonical_regression.py` before accepting
 any Dependabot bump that touches the solver stack.
