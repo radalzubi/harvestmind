@@ -416,6 +416,37 @@ and `sector-physics-frozen`; ENGINEERING VALIDATED, not real-data validated).
   `zaad-api` v16 `canonical-5ca3772`; ENGINEERING VALIDATED, not real-data validated). Next
   authorized build: P3 supplier / sourcing portfolio optimization — not started.
 
+## Three-sector physics release bookkeeping (2026-09-11, lineage tags)
+
+Three immutable markers describe the sector phase. They are distinct commits and are never moved.
+
+| tag (on origin) | SHA | meaning |
+|---|---|---|
+| `sector-physics-frozen-product` | `43d769f` | original sector optimization / runtime semantics freeze, before release smoke |
+| `sector-physics-frozen` | `4f358f7` | complete local engineering evidence freeze (fixtures, invariants, benchmark, closeout) |
+| `sector-physics-release-runtime` | `5ca3772` | exact runtime deployed to Fly `zaad-api` v16 (`canonical-5ca3772`) after PR #57 |
+
+`43d769f` freezes sector optimization semantics. `5ca3772` is the exact released runtime and contains
+one post-freeze JSON-safe reporting correction (PR #57, `zaad/full/planner.py`) that does not alter
+optimizer gate decisions: the report's weighted-service-shortfall fields carry None where a
+stress-world settlement is physically unusable (the value the recovery ranking already used); the
+gate reads the numeric value before serialisation. Evidence for that correction: canonical regression
+PASS on the merged commit, the targeted regression test, exhaustive pre-merge CI green on the
+identical tree (run 34588333043, 1,866 passed, 2 skipped), production mixed-sector smoke 200 on v16.
+`43d769f` is therefore not byte-identical to production; v16 (`5ca3772`) is the authoritative released
+runtime. Final `main` `4cc9f52` adds the docs-only release closeout after the released runtime.
+
+Ancestry (verified): `43d769f` -> `4f358f7`; `43d769f` -> `5ca3772` (through `dca3d48`);
+`5ca3772` -> `4cc9f52`; `2e30721`, `f7e1e62`, `12db66c`, `cab3849`, `fa615ff`, `9c4ece7` all in
+`4cc9f52`. Original tags re-verified on origin at bookkeeping time: `43d769f` / `4f358f7`, unchanged.
+
+GitHub Actions at bookkeeping time: the push runs on `main` for `5ca3772` (34593147827) and `4cc9f52`
+(34593818699) and the docs PR #58 run did not start ("recent account payments have failed or your
+spending limit needs to be increased"): REMOTE_CI_UNAVAILABLE — GITHUB ACTIONS BILLING. This is a
+billing condition, not a code failure; the code line's evidence is the green pre-merge runs on
+`be12202` and `3f57284`, whose trees equal the merged commits. Owner action: restore Actions billing
+and rerun CI on `main`.
+
 ## Exact next action
 
 P3 supplier / sourcing portfolio optimization, branched from `main` (`5ca3772` or later). Keep
