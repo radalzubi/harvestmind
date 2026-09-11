@@ -85,5 +85,9 @@ consolidation, start P2.
 - [x] authoritative run: 20 / 20 fixtures, 18 / 18 principles, 20 / 20 invariants
 - [x] runtime maximum per review (pre-registered 180 s): failed as recorded (M 257 s, O 315 s); performance pass (exact FEFO symmetry elimination, network requests only) re-ran the unchanged set: p50 0.5 s, p95 6.6 s, max 14.6 s, 0 time-limited solves; P0 / P1 identity held (`docs/zaad_full/evidence/p2/perf/`)
 - [x] verdict: P2 MULTI-ECHELON / NETWORK OPTIMIZATION — PASS AND FROZEN (`P2_CLOSEOUT.md`)
-- [ ] not merged, not pushed: owner decision on the merge of `claude/zaad-meio-p2` into `main`
+- [x] released: branch and tags pushed (`p2-frozen-product` = `cab3849`, `p2-frozen` = `fa615ff`), PR #54 merged as `9c4ece7` (CI green; pytest budget widened to 90 min as a release-only CI change), main CI green, Fly `zaad-api` v14 `canonical-9c4ece7`, bounded P1 + P2 production smoke passed (ledger "P2 release line")
+
+## Step 10: next build — Three-Sector Physics Engine (commercial goods, produce, meat & seafood) — NOT STARTED
+
+- [ ] branch from `main` (`9c4ece7` or later); P0 / P1 / P2 frozen; Validation7 / Validation8 / holdout4 reserved; Network Twin #39 still deferred
 

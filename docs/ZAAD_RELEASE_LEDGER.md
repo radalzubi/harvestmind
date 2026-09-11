@@ -283,8 +283,61 @@ pre-performance record is a tie broken differently (objective equality proved on
 one review whose frozen plan was time-limited. **Verdict: P2 MULTI-ECHELON / NETWORK OPTIMIZATION —
 PASS AND FROZEN** (see `perf/P2_PERF_RESULTS.md`, `P2_CLOSEOUT.md`; frozen SHA recorded there).
 
+## P2 release line (2026-09-10 / 11, authorized)
+
+* **Preflight**: `claude/zaad-meio-p2` at `fa615ff`, clean; `origin/main` at `11f5459` had not advanced
+  except by PR #53 (docs only, the production-plumbing record), merged first as `6d2934e`; the P2
+  branch then received one docs-only merge of `main` (`cef7a72`, ledger sections kept side by side).
+* **Freeze tags** (published for the first time, verified on origin): `p2-frozen-product` = `cab3849`
+  (the frozen P2 runtime / code), `p2-frozen` = `fa615ff` (the complete freeze record with evidence
+  and closeout). The local pre-release tag already pointed at `fa615ff`; the product tag was created
+  before publication. Ancestry: `2e30721`, `f7e1e62`, `12db66c`, `cab3849` are ancestors of `fa615ff`.
+* **PR #54** (`claude/zaad-meio-p2` -> `main`, "ZAAD P2: multi-echelon network optimization, performance
+  closure, and freeze"). First CI run 34532888450: every gate green except pytest, cancelled at the
+  45-minute job budget at 85% (1,845 tests; a 20-minute stretch inside the integration tests that does
+  not reproduce locally on the same scipy 1.18.1 / highspy 1.15.1 stack, where the same files run in
+  8 s). Release-only fix `89211b1`: pytest budget 90 minutes and `--durations=30`; no test and no
+  optimizer code changed. Second run 34537444878 green on every job: pytest 1,843 passed, 2 skipped
+  (71:50 on the runner; slowest tests the two network workspace plans at 1,048 s and 523 s and the
+  frozen economic-horizon test at 420 s), ruff, mypy, security, gitleaks, frozen regression, Docker
+  build, frontend. CodeQL: the documented "code scanning is not enabled" environment failure, unchanged.
+* **Merge**: merge commit `9c4ece7` at 2026-09-10T23:40:25Z (pre-merge `main` `6d2934e`, PR head
+  `89211b1`). Every freeze SHA is an ancestor of `main`. Post-merge main CI 34543195400 green
+  (pytest 1,843 passed, 2 skipped in 55:45; frozen regression green); local canonical regression on
+  `9c4ece7` PASS (B / T / Q / A twelve-review identity, P0 cell 15).
+* **Fly**: `zaad-api` release **v14**, image `registry.fly.io/zaad-api:canonical-9c4ece7`, rolling
+  update of the existing machine `0804e0dfd1e948` (fra), volume `harvestmind_data` untouched, secrets
+  untouched (`ZAAD_LEGACY_PLANNERS=0`, `ZAAD_JOB_STORE`, `ZAAD_SHADOW_LEDGER` persistent). Start-up:
+  the old process's cancellation traceback, one health-check miss inside the grace period, then
+  "Application startup complete"; no 5xx during the smoke.
+* **Bounded production smoke** (`https://api.zaadsupply.com`): `/health` = `zaad-api`, env `pilot`,
+  `auth_enforced` true; 11 `/api/zaad/network/*` routes present; `/api/zaad/demo` and `/api/zaad/plan`
+  410 with the canonical pointer; anonymous `/fmcg/status`, `/api/zaad/network/jobs`,
+  `request/from-workspace` and `/fmcg/plan?mode=incumbent` 401; CORS preflight allows
+  `https://zaadsupply.com` and `https://www.zaadsupply.com`, refuses a foreign origin (400). P1 path on
+  a fresh self-serve synthetic workspace (`op_47bdde74`, `load-sample-fmcg`, two SKUs):
+  `plan/from-workspace` -> `engine = zaad.full frozen P1`, `mode_run = canonical_p1`,
+  `planner_owner = PROTECTION_RECOVERY`, `solver_status = RETAIN_INCUMBENT`, `approval_required = true`,
+  `executable_purchase_order = false` (23.5 s). P2 path (`op_be0813f3`, payload `/api/zaad/network/plan`,
+  one SKU, one central and two branches, two lanes, horizon 12, three worlds, 5 s budget): HTTP 200 in
+  1.8 s, `zaad.network.2.0`, state NO_ACTION, owner PURCHASING_ECONOMICS, selected
+  `operator_rule:network:rop`, status RETAIN_INCUMBENT, period-zero purchase 39.2 and transfers 68.1 /
+  76.5, branch service .990 / .982, economics block, network block with explanations ("no change to
+  your current network policy this period"), provenance fingerprint, `approval_required = true`,
+  `executable_purchase_order = false`. Oversized payload (15 locations) -> 413 with the interactive
+  bounds. One observation outside P2's scope: a whole-workspace `/fmcg/plan?mode=canonical` call without a SKU subset (150 synthetic SKUs) did not return inside a 400 s client window and left no error, traceback or 5xx in the logs (health stayed 200); the interactive canonical route is meant to be called with a SKU subset, as the plumbing smoke did (36 s), and the whole-workspace case belongs to the asynchronous job path.
+* **Frontend**: `/`, `/overview`, `/upload`, `/fmcg`, `/state`, `/access` on `https://zaadsupply.com`
+  answer 200 before and after the API release (unchanged site; the P2 fields are available on the
+  backend for the later dashboard / Network Twin phases).
+* **Untouched**: Validation7, Validation8, holdout4 (unrun, unread); Network Twin PR #39 open and
+  deferred; Dependabot #41-#51 untouched (no solver-stack bump); sector physics, P3, dashboard and
+  website uplift not started.
+* **Verdict: ZAAD P2 RELEASE LINE — PASS** (final `main` `9c4ece7`, Fly `zaad-api` v14
+  `canonical-9c4ece7`). Next authorized build: Three-Sector Physics Engine (commercial goods,
+  produce, meat & seafood) — not started.
+
 ## Exact next action
 
-Owner decision on merging `claude/zaad-meio-p2` into `main` (local only; not pushed). Keep `ZAAD_LEGACY_PLANNERS`
+Three-Sector Physics Engine, branched from `main` (`9c4ece7` or later). Keep `ZAAD_LEGACY_PLANNERS`
 explicit on every deployed environment and run `scripts/zaad_canonical_regression.py` before accepting
 any Dependabot bump that touches the solver stack.
