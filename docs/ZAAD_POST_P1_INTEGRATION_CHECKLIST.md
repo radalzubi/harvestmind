@@ -92,5 +92,10 @@ consolidation, start P2.
 - [x] branch `claude/zaad-sector-physics` from `ea1ed3a` in `harvestmind-sectors`; one engine, per-SKU physics contract, default-off on legacy requests
 - [x] 26 / 26 pre-registered fixtures, 19 / 19 invariants, runtime max 59.5 s; P0 120 / 120, P1 identity + 720 invariants, P2 344 / 344 identical; full suite 1,865 passed
 - [x] local freeze tags `sector-physics-frozen-product` (`43d769f`) and `sector-physics-frozen` (closeout commit); not pushed, not merged, not deployed
-- [ ] owner decision on the release line; Validation7 / Validation8 / holdout4 reserved; Network Twin #39 deferred; P3 not started
+- [x] released 2026-09-11: tags published (`43d769f` / `4f358f7`), PR #56 merged `dca3d48` (sharded CI, 1,865 passed), release fix PR #57 merged `5ca3772` (JSON-safe report field; 1,866 passed), Fly `zaad-api` v16 `canonical-5ca3772`, production smoke for legacy, commercial, produce, meat & seafood, mixed and malformed inputs PASS (ledger "Three-sector physics release line")
+- [ ] Validation7 / Validation8 / holdout4 reserved; Network Twin #39 deferred
+
+## Step 11: next build — P3 supplier / sourcing portfolio optimization — NOT STARTED
+
+- [ ] branch from `main` (`5ca3772` or later); P0 / P1 / P2 / sector physics frozen
 
