@@ -13,6 +13,7 @@ from zaad.full.eta import conditional_eta
 from zaad.full.forecast import estimate, sample
 from zaad.full.uncertainty import MIN_SUPPLY_RECORDS, OUTLIER_Z, demand_uncertainty, failure_domains_for, lead_quantile, overdue_periods, recent_fill_run, supply_profiles
 from zaad.signals import Signal, route_evidence
+from zaad.sourcing.contracts import resolve as sourcing_view
 from scipy.stats import norm
 
 
@@ -120,6 +121,14 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
         from zaad.full.correlation import copula_draws
         copula = copula_draws(req, seed, count)
         stratified = False
+    # Declared shared-risk groups (P3, `zaad/sourcing/correlation.py`): a common factor per group from
+    # a separate generator, blended into each member's frozen shock with its marginal preserved. None
+    # on a frozen request, and then the block in the source loop never runs.
+    sourcing = sourcing_view(req)
+    group_factor = None
+    if sourcing is not None and not deterministic and sourcing.portfolio.risk_groups:
+        from zaad.sourcing.correlation import group_factors
+        group_factor = group_factors(req, seed, count)
     weights = [1. / count] * count
     strata_u: dict[str, np.ndarray] = {}
     if stratified:
@@ -202,6 +211,10 @@ def draw(req: Request, seed: int, count: int, stress: Stress | None = None,
                     if (key, t) not in common:
                         common[key, t] = float(rng.normal())
                 z = 0. if deterministic else sum(common[key, t] for key in keys) / math.sqrt(len(keys))
+                if group_factor is not None and sourcing is not None and source.id in sourcing.groups_of:
+                    groups = sourcing.groups_of[source.id]
+                    rho = sum(g.correlation for g in groups)
+                    z = math.sqrt(max(0., 1. - rho)) * z + sum(math.sqrt(g.correlation) * group_factor[g.id, w, t] for g in groups)
                 profile = supply.get(source.id)
                 if profile is not None and profile.scope == "observed":
                     # The source's own history through the shared factor: fill from its accepted

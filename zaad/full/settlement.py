@@ -14,6 +14,7 @@ from zaad.full.model import Solution, compatible
 from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
 from zaad.sectors.contracts import resolve as sector_physics
+from zaad.sourcing.contracts import resolve as sourcing_view
 from zaad.full.model import pallet_units, supplier_orders
 
 
@@ -50,6 +51,10 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
     # Sector operating physics, re-derived from the executed plan exactly as the model applied them
     # (receipt life, storage-state eligibility, sellable life, shipment weight). None on a legacy request.
     physics = sector_physics(req)
+    # Sourcing portfolio (P3): the declared switching cost is a real payment; it enters the ledger once
+    # per source outside the incumbent mix that the plan actually buys from. None on a frozen request.
+    sourcing = sourcing_view(req)
+    switched: set[str] = set()
     stock: dict[tuple[str, str, int], float] = defaultdict(float)
     locked: dict[str, float] = defaultdict(float)
     ledger: dict[str, float] = defaultdict(float)
@@ -216,6 +221,13 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
                 payments[arrival] += pallets * st.receiving_per_pallet
                 shipment.update(pallets=pallets, load_pallets=load)
             shipments.append(shipment)
+        if sourcing is not None:
+            for source in req.sources:
+                q = plan.purchases.get((source.id, t), 0.)
+                if source.id not in switched and not is_dust(q, source_pack(source)) and sourcing.switching_cost(source.id) > 0:
+                    switched.add(source.id)
+                    ledger["switching"] += sourcing.switching_cost(source.id)
+                    payments[t] += sourcing.switching_cost(source.id)
         for capacity_resource in req.resources:
             if usage[capacity_resource.id] > capacity_resource.capacity_by_period[t] + 1e-5:
                 raise PhysicalViolation("shared supplier/route capacity breach")

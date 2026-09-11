@@ -1,0 +1,843 @@
+{
+ "label": "original",
+ "runs": {
+  "declared:41001": {
+   "status": "COMPLETE",
+   "reviews": [
+    {
+     "review": 0,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       167.47717
+      ],
+      [
+       "src_A_south",
+       17.191839
+      ]
+     ],
+     "transfer_units": 200.0,
+     "cost": 1444.550859,
+     "served": 189.547264,
+     "demand": 189.547264,
+     "observed_lots_in_snapshot": []
+    },
+    {
+     "review": 1,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       194.127492
+      ],
+      [
+       "src_A_north",
+       13.347216
+      ]
+     ],
+     "transfer_units": 166.940207,
+     "cost": 1442.47774,
+     "served": 183.926593,
+     "demand": 183.926593,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_0_src_A",
+       "central",
+       6,
+       166.94
+      ],
+      [
+       "observed-new_0_src_A_south",
+       "south",
+       6,
+       16.785
+      ]
+     ]
+    },
+    {
+     "review": 2,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       180.72257
+      ]
+     ],
+     "transfer_units": 172.869739,
+     "cost": 1662.525215,
+     "served": 220.307678,
+     "demand": 220.307678,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_1_src_A",
+       "central",
+       6,
+       190.05
+      ],
+      [
+       "observed-new_1_src_A_north",
+       "north",
+       6,
+       13.128
+      ]
+     ]
+    },
+    {
+     "review": 3,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       196.267895
+      ],
+      [
+       "src_A_north",
+       30.910012
+      ]
+     ],
+     "transfer_units": 179.448845,
+     "cost": 2003.054066,
+     "served": 194.727605,
+     "demand": 229.292238,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_2_src_A",
+       "central",
+       6,
+       174.011
+      ]
+     ]
+    },
+    {
+     "review": 4,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       191.600726
+      ],
+      [
+       "src_A_south",
+       25.459849
+      ]
+     ],
+     "transfer_units": 200.030221,
+     "cost": 1571.599471,
+     "served": 205.893002,
+     "demand": 207.959228,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_3_src_A",
+       "central",
+       6,
+       195.496
+      ],
+      [
+       "observed-new_3_src_A_north",
+       "north",
+       6,
+       30.195
+      ]
+     ]
+    },
+    {
+     "review": 5,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       194.151483
+      ],
+      [
+       "src_A_north",
+       15.790503
+      ]
+     ],
+     "transfer_units": 193.727312,
+     "cost": 1458.16269,
+     "served": 186.626218,
+     "demand": 186.626218,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_4_src_A",
+       "central",
+       6,
+       186.519
+      ],
+      [
+       "observed-new_4_src_A_south",
+       "south",
+       6,
+       24.883
+      ]
+     ]
+    },
+    {
+     "review": 6,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       181.965129
+      ]
+     ],
+     "transfer_units": 174.277937,
+     "cost": 1468.01904,
+     "served": 200.081776,
+     "demand": 200.081776,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_5_src_A",
+       "central",
+       6,
+       188.421
+      ],
+      [
+       "observed-new_5_src_A_north",
+       "north",
+       6,
+       15.475
+      ]
+     ]
+    },
+    {
+     "review": 7,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       186.839534
+      ],
+      [
+       "src_A_north",
+       21.913886
+      ]
+     ],
+     "transfer_units": 187.95563,
+     "cost": 1602.135526,
+     "served": 205.604034,
+     "demand": 210.658852,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_6_src_A",
+       "central",
+       6,
+       179.397
+      ]
+     ]
+    }
+   ],
+   "physics": {
+    "shelf_life": 6,
+    "age_by_source": {
+     "src_A": 3
+    }
+   }
+  },
+  "declared:41002": {
+   "status": "COMPLETE",
+   "reviews": [
+    {
+     "review": 0,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       162.127459
+      ],
+      [
+       "src_A_south",
+       21.027239
+      ]
+     ],
+     "transfer_units": 200.0,
+     "cost": 1460.837656,
+     "served": 188.991248,
+     "demand": 188.991248,
+     "observed_lots_in_snapshot": []
+    },
+    {
+     "review": 1,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       181.997845
+      ],
+      [
+       "src_A_south",
+       18.90319
+      ]
+     ],
+     "transfer_units": 157.88425,
+     "cost": 1541.369716,
+     "served": 210.382397,
+     "demand": 210.382397,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_0_src_A",
+       "central",
+       6,
+       157.884
+      ],
+      [
+       "observed-new_0_src_A_south",
+       "south",
+       6,
+       20.281
+      ]
+     ]
+    },
+    {
+     "review": 2,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       195.762959
+      ],
+      [
+       "src_A_north",
+       6.949257
+      ]
+     ],
+     "transfer_units": 177.892139,
+     "cost": 1483.470913,
+     "served": 195.023832,
+     "demand": 195.023832,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_1_src_A",
+       "central",
+       6,
+       177.892
+      ],
+      [
+       "observed-new_1_src_A_south",
+       "south",
+       6,
+       18.407
+      ]
+     ]
+    },
+    {
+     "review": 3,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       194.804233
+      ],
+      [
+       "src_A_south",
+       28.004934
+      ]
+     ],
+     "transfer_units": 189.697131,
+     "cost": 1732.55469,
+     "served": 204.872487,
+     "demand": 216.692086,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_2_src_A",
+       "central",
+       6,
+       191.562
+      ],
+      [
+       "observed-new_2_src_A_north",
+       "north",
+       6,
+       6.883
+      ]
+     ]
+    },
+    {
+     "review": 4,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       191.989936
+      ],
+      [
+       "src_A_north",
+       16.861568
+      ]
+     ],
+     "transfer_units": 188.893096,
+     "cost": 1564.937392,
+     "served": 216.137876,
+     "demand": 216.137876,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_3_src_A",
+       "central",
+       6,
+       187.028
+      ],
+      [
+       "observed-new_3_src_A_south",
+       "south",
+       6,
+       27.674
+      ]
+     ]
+    },
+    {
+     "review": 5,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A_north",
+       198.900492
+      ],
+      [
+       "src_A_south",
+       220.747475
+      ]
+     ],
+     "transfer_units": 2.29786,
+     "cost": 2246.894237,
+     "served": 185.78195,
+     "demand": 203.703235,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_4_src_A",
+       "central",
+       6,
+       188.339
+      ],
+      [
+       "observed-new_4_src_A_north",
+       "north",
+       6,
+       16.85
+      ]
+     ]
+    },
+    {
+     "review": 6,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [],
+     "transfer_units": 86.803207,
+     "cost": 1465.11056,
+     "served": 201.056416,
+     "demand": 201.056416,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_5_src_A_north",
+       "north",
+       6,
+       196.884
+      ],
+      [
+       "observed-new_5_src_A_south",
+       "south",
+       6,
+       216.329
+      ]
+     ]
+    },
+    {
+     "review": 7,
+     "state": "NETWORK_ALLOCATION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       198.581443
+      ],
+      [
+       "src_A_south",
+       9.131499
+      ]
+     ],
+     "transfer_units": 99.238078,
+     "cost": 1547.000659,
+     "served": 206.904264,
+     "demand": 206.904264,
+     "observed_lots_in_snapshot": []
+    }
+   ],
+   "physics": {
+    "shelf_life": 6,
+    "age_by_source": {
+     "src_A": 3
+    }
+   }
+  },
+  "neutral:41001": {
+   "status": "COMPLETE",
+   "reviews": [
+    {
+     "review": 0,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       199.774124
+      ]
+     ],
+     "transfer_units": 200.0,
+     "cost": 1441.250921,
+     "served": 189.547264,
+     "demand": 189.547264,
+     "observed_lots_in_snapshot": []
+    },
+    {
+     "review": 1,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       402.194914
+      ]
+     ],
+     "transfer_units": 199.133611,
+     "cost": 1662.060117,
+     "served": 183.926593,
+     "demand": 183.926593,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_0_src_A",
+       "central",
+       6,
+       199.134
+      ]
+     ]
+    },
+    {
+     "review": 2,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       184.361777
+      ]
+     ],
+     "transfer_units": 165.448936,
+     "cost": 1853.705855,
+     "served": 220.307678,
+     "demand": 220.307678,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_1_src_A",
+       "central",
+       6,
+       393.748
+      ]
+     ]
+    },
+    {
+     "review": 3,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       20.072464
+      ]
+     ],
+     "transfer_units": 236.40923,
+     "cost": 1961.983823,
+     "served": 194.727605,
+     "demand": 229.292238,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_2_src_A",
+       "central",
+       6,
+       177.515
+      ]
+     ]
+    },
+    {
+     "review": 4,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       426.284453
+      ],
+      [
+       "src_A_south",
+       22.022055
+      ]
+     ],
+     "transfer_units": 189.398169,
+     "cost": 1813.48014,
+     "served": 207.959228,
+     "demand": 207.959228,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_3_src_A",
+       "central",
+       6,
+       19.993
+      ]
+     ]
+    },
+    {
+     "review": 5,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       523.748364
+      ]
+     ],
+     "transfer_units": 196.182607,
+     "cost": 2029.584429,
+     "served": 186.626218,
+     "demand": 186.626218,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_4_src_A",
+       "central",
+       6,
+       414.979
+      ],
+      [
+       "observed-new_4_src_A_south",
+       "south",
+       6,
+       21.523
+      ]
+     ]
+    },
+    {
+     "review": 6,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [],
+     "transfer_units": 176.590632,
+     "cost": 1820.278381,
+     "served": 200.081776,
+     "demand": 200.081776,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_5_src_A",
+       "central",
+       6,
+       508.289
+      ]
+     ]
+    },
+    {
+     "review": 7,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [],
+     "transfer_units": 220.809057,
+     "cost": 1710.721211,
+     "served": 205.604034,
+     "demand": 210.658852,
+     "observed_lots_in_snapshot": []
+    }
+   ],
+   "physics": {
+    "shelf_life": 6,
+    "age_by_source": {}
+   }
+  },
+  "neutral:41002": {
+   "status": "COMPLETE",
+   "reviews": [
+    {
+     "review": 0,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       399.15478
+      ],
+      [
+       "src_A_south",
+       16.196745
+      ]
+     ],
+     "transfer_units": 200.0,
+     "cost": 1712.332411,
+     "served": 188.991248,
+     "demand": 188.991248,
+     "observed_lots_in_snapshot": []
+    },
+    {
+     "review": 1,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       181.463142
+      ]
+     ],
+     "transfer_units": 164.020973,
+     "cost": 1731.551264,
+     "served": 210.382397,
+     "demand": 210.382397,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_0_src_A",
+       "central",
+       6,
+       388.708
+      ],
+      [
+       "observed-new_0_src_A_south",
+       "south",
+       6,
+       15.622
+      ]
+     ]
+    },
+    {
+     "review": 2,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [],
+     "transfer_units": 204.140791,
+     "cost": 1452.945055,
+     "served": 195.023832,
+     "demand": 195.023832,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_1_src_A",
+       "central",
+       6,
+       177.369
+      ]
+     ]
+    },
+    {
+     "review": 3,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       417.970356
+      ],
+      [
+       "src_A_north",
+       15.766549
+      ]
+     ],
+     "transfer_units": 197.915813,
+     "cost": 1926.326274,
+     "served": 208.566056,
+     "demand": 216.692086,
+     "observed_lots_in_snapshot": []
+    },
+    {
+     "review": 4,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       465.521827
+      ]
+     ],
+     "transfer_units": 197.109523,
+     "cost": 2042.096894,
+     "served": 216.137876,
+     "demand": 216.137876,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_3_src_A",
+       "central",
+       6,
+       401.286
+      ],
+      [
+       "observed-new_3_src_A_north",
+       "north",
+       6,
+       15.617
+      ]
+     ]
+    },
+    {
+     "review": 5,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [
+      [
+       "src_A",
+       281.043591
+      ]
+     ],
+     "transfer_units": 267.793923,
+     "cost": 2215.608731,
+     "served": 185.314483,
+     "demand": 203.703235,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_4_src_A",
+       "central",
+       6,
+       456.67
+      ]
+     ]
+    },
+    {
+     "review": 6,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [],
+     "transfer_units": 334.906784,
+     "cost": 1840.307801,
+     "served": 201.056416,
+     "demand": 201.056416,
+     "observed_lots_in_snapshot": [
+      [
+       "observed-new_5_src_A",
+       "central",
+       6,
+       273.724
+      ]
+     ]
+    },
+    {
+     "review": 7,
+     "state": "NO_ACTION",
+     "status": "PENDING_REVIEW",
+     "purchases": [],
+     "transfer_units": 185.663674,
+     "cost": 1660.970864,
+     "served": 203.497548,
+     "demand": 206.904264,
+     "observed_lots_in_snapshot": []
+    }
+   ],
+   "physics": {
+    "shelf_life": 6,
+    "age_by_source": {}
+   }
+  }
+ }
+}

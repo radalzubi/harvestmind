@@ -81,10 +81,11 @@ def estimate_demand_correlation(weekly: pd.DataFrame) -> tuple[float | None, int
 
 def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days: int = 7, as_of: datetime | None = None,
                           service_target: float = .95, history_weeks: int = 52, seed: int = 41001, scenarios: int = 3,
-                          max_solve_seconds: float = 15., skus: list[str] | None = None, sector_mode: str | None = None) -> tuple[Request, dict[str, Any]]:
+                          max_solve_seconds: float = 15., skus: list[str] | None = None, sector_mode: str | None = None,
+                          sourcing: bool = False) -> tuple[Request, dict[str, Any]]:
     base, report = build_request(conn, operator_id, horizon=horizon, period_days=period_days, as_of=as_of, service_target=service_target,
                                  history_weeks=history_weeks, seed=seed, scenarios=scenarios, max_solve_seconds=max_solve_seconds, skus=skus,
-                                 sector_mode=sector_mode)
+                                 sector_mode=sector_mode, sourcing=sourcing)
     locations = _location_rows(conn)
     if len(locations) < 2:
         report["network"] = {"locations": int(len(locations)), "mode": "single_location", "note": "fewer than two declared locations: the frozen single-location request"}
@@ -176,9 +177,10 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
         pos["destination_id"] = pos["destination_id"].fillna("").astype(str)
         for (sku, sup), group in pos[pos["destination_id"].isin(ids)].groupby(["sku", "supplier_id"]):
             destination_of[f"src_{sku}"] = str(group.groupby("destination_id")["qty_ordered"].sum().idxmax())
+            destination_of[f"src_{sku}__{sup}"] = str(group.groupby("destination_id")["qty_ordered"].sum().idxmax())   # P3 alternate source ids
     source_rows = []
     for src in data["sources"]:
-        dest = destination_of.get(src["id"]) or central or busiest
+        dest = destination_of.get(src["id"]) or destination_of.get(f"src_{src['sku']}") or central or busiest
         provenance[f"source.{src['supplier']}.destination"] = "INFERRED_FROM_HISTORY" if src["id"] in destination_of else "CONFIGURED_ASSUMPTION"
         # a declared capacity that is not a whole pack is brought to the pack below it, so every legal
         # order is also a legal pack (the network policy projection and the settlement both check packs)
@@ -188,6 +190,12 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
             maximum = max(min(packs), math.floor(maximum / min(packs)) * min(packs))
         source_rows.append({**src, "destination": dest, "route": [src["supplier"], dest], "maximum": maximum,
                             "capacity_by_period": [min(c, maximum) for c in src["capacity_by_period"]]})
+    if data.get("sourcing"):
+        # P3: the declared shares and incumbent mix name the destination the source now delivers to
+        src_dest = {r["id"]: r["destination"] for r in source_rows}
+        for key in ("share_constraints", "incumbent_shares"):
+            for row in data["sourcing"].get(key, []):
+                row["destination"] = src_dest.get(row["source"], row["destination"])
     source_dest = {s["id"]: s["destination"] for s in source_rows}
 
     # ── lanes ──

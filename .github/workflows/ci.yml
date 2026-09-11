@@ -27,8 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     # The full suite runs 4-5 minutes locally and 55-90+ minutes on this runner (solver-building
     # tests are 10-15x slower under 2 vCPUs and coverage). The three-sector suite (1,865 tests)
-    # exceeded 90 minutes in one job, so the same tests run as three shards in parallel; every
-    # test still runs, no timeout is widened, no optimizer change.
+    # exceeded 90 minutes in one job, so the same tests run as shards in parallel; the P3 suite's
+    # zaad unit files (224 s locally) exceeded the budget again as one shard, so they run as two
+    # disjoint name ranges ([a-r] and [s-z], every test_zaad_*.py file begins with a lowercase
+    # letter). Every test still runs exactly once, no timeout is widened, no optimizer change.
     timeout-minutes: 90
     strategy:
       fail-fast: false
@@ -38,8 +40,10 @@ jobs:
             paths: tests/integration
           - shard: unit-core
             paths: tests/unit --ignore-glob='tests/unit/test_zaad_*.py'
-          - shard: unit-zaad
-            paths: tests/unit/test_zaad_*.py
+          - shard: unit-zaad-a
+            paths: tests/unit/test_zaad_[a-r]*.py
+          - shard: unit-zaad-b
+            paths: tests/unit/test_zaad_[s-z]*.py
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

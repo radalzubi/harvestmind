@@ -1,0 +1,441 @@
+{
+ "01_legacy_unchanged": {
+  "pass": true,
+  "evidence": {
+   "sourcing_field": null,
+   "report_has_block": false,
+   "canonical_regression": "PASS (gates/canonical_regression_final.log)"
+  },
+  "seconds": 0.3
+ },
+ "02_single_source_reduces_to_p1": {
+  "pass": true,
+  "evidence": {
+   "purchases_identical": true,
+   "policy": [
+    "operator_rule:network:rop",
+    "operator_rule:network:rop"
+   ],
+   "owner": "PURCHASING_ECONOMICS"
+  },
+  "seconds": 0.6
+ },
+ "03_sum_of_sources_equals_commitment": {
+  "pass": true,
+  "evidence": {
+   "pairs": 1,
+   "mismatched": []
+  },
+  "seconds": 0.9
+ },
+ "04_unapproved_source_gets_nothing": {
+  "pass": true,
+  "evidence": {
+   "unapproved_used": [],
+   "settlement_refuses_forced_purchase": true
+  },
+  "seconds": 0.3
+ },
+ "05_capacity_never_exceeded": {
+  "pass": true,
+  "evidence": {
+   "over_capacity": [],
+   "settlement_refuses_600_on_cap_500": true
+  },
+  "seconds": 0.1
+ },
+ "06_shared_capacity_across_skus": {
+  "pass": true,
+  "evidence": {
+   "shared_usage_by_period": {
+    "0": 450.0,
+    "1": 450.0,
+    "2": 450.0,
+    "3": 450.0,
+    "4": 450.0,
+    "5": 450.0,
+    "6": 450.0,
+    "7": 450.0,
+    "8": 450.0,
+    "9": 450.0
+   },
+   "over": {}
+  },
+  "seconds": 2.4
+ },
+ "07_moq_respected": {
+  "pass": true,
+  "evidence": {
+   "b_orders": [
+    [
+     0,
+     1333.3
+    ],
+    [
+     4,
+     1333.3
+    ]
+   ],
+   "below_moq": []
+  },
+  "seconds": 5.2
+ },
+ "08_mov_respected": {
+  "pass": true,
+  "evidence": {
+   "supplier_b_order_values": {
+    "0": 6000,
+    "4": 6000
+   },
+   "below_mov": {}
+  },
+  "seconds": 0.0
+ },
+ "09_packs_executable": {
+  "pass": true,
+  "evidence": {
+   "purchases": [
+    [
+     "src_A",
+     0,
+     120.0000000021298
+    ],
+    [
+     "src_A",
+     1,
+     120.0
+    ],
+    [
+     "src_A",
+     2,
+     239.9999999978702
+    ],
+    [
+     "src_A",
+     3,
+     240.0
+    ],
+    [
+     "src_A",
+     4,
+     240.00000000004127
+    ],
+    [
+     "src_A",
+     5,
+     120.0
+    ],
+    [
+     "src_A",
+     6,
+     240.0
+    ],
+    [
+     "src_A",
+     7,
+     240.0
+    ]
+   ],
+   "pack_violations": []
+  },
+  "seconds": 9.4
+ },
+ "10_payment_terms_not_double_counted": {
+  "pass": true,
+  "evidence": {
+   "reconciled": true,
+   "unmapped": [],
+   "ledger_keys": [
+    "closing_assets",
+    "financing",
+    "freight",
+    "handling",
+    "holding",
+    "lost_sales_opportunity",
+    "opening_assets",
+    "order_fees",
+    "procurement",
+    "sla",
+    "substitution",
+    "transfer",
+    "working_capital"
+   ],
+   "financing_line": 0.0
+  },
+  "seconds": 0.4
+ },
+ "11_commitments_scenario_invariant": {
+  "pass": true,
+  "evidence": {
+   "procurement_value_by_world": [
+    9482.519026
+   ],
+   "worlds": 4
+  },
+  "seconds": 0.1
+ },
+ "12_receipts_vary_commitments_do_not": {
+  "pass": true,
+  "evidence": {
+   "fills_b_period_0_by_world": [
+    0.8797,
+    0.9482,
+    0.777,
+    0.6444
+   ],
+   "purchases_identical_across_worlds": true,
+   "received_units_by_world": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "seconds": 0.1
+ },
+ "13_shared_dependency_not_independent": {
+  "pass": true,
+  "evidence": {
+   "fill_correlation_plant_group": 1.0
+  },
+  "seconds": 0.1
+ },
+ "14_single_source_unaffected_by_correlation": {
+  "pass": true,
+  "evidence": {
+   "worlds_bit_identical": true
+  },
+  "seconds": 0.0
+ },
+ "15_marginals_preserved": {
+  "pass": "True",
+  "evidence": {
+   "src_A": {
+    "mean_grouped": 0.9029846910732212,
+    "mean_frozen": 0.8971814898094772,
+    "sd_grouped": 0.12409199830473037,
+    "sd_frozen": 0.12832753464879249
+   },
+   "src_B": {
+    "mean_grouped": 0.9035663296659442,
+    "mean_frozen": 0.8961195743961856,
+    "sd_grouped": 0.12651280553086866,
+    "sd_frozen": 0.1329864536685458
+   }
+  },
+  "seconds": 0.2
+ },
+ "16_no_artificial_diversification": {
+  "pass": true,
+  "evidence": {
+   "periods_with_both_sources": [],
+   "sources_used": [
+    "src_A",
+    "src_B"
+   ]
+  },
+  "seconds": 3.0
+ },
+ "17_declared_shares_respected": {
+  "pass": true,
+  "evidence": {
+   "violations": [],
+   "b_share_by_period": {
+    "0": 0.3,
+    "1": 0.3,
+    "2": 0.3,
+    "3": 0.3,
+    "4": 0.3,
+    "5": 0.3,
+    "6": 0.3,
+    "7": 0.3,
+    "8": 0.3,
+    "9": 0.3,
+    "10": 0.3
+   }
+  },
+  "seconds": 0.3
+ },
+ "18_switching_cost_only_when_switching": {
+  "pass": true,
+  "evidence": {
+   "plan_uses_b": false,
+   "ledger_plan": 0.0,
+   "ledger_forced_b": 2000.0,
+   "ledger_cost_declared_on_incumbent": 0.0
+  },
+  "seconds": 0.7
+ },
+ "19_produce_arrival_cannot_reset_life": {
+  "pass": true,
+  "evidence": {
+   "receipt_life_b": 3,
+   "receipt_life_a": 8,
+   "shelf_life": 8,
+   "pending_cohort_lives": [
+    3,
+    7,
+    8
+   ]
+  },
+  "seconds": 0.7
+ },
+ "20_unusable_life_cannot_serve": {
+  "pass": true,
+  "evidence": {
+   "b_units_in_plan": 0,
+   "forced_b_units_unsellable_at_end_or_expired": 4.190832682412463,
+   "note": "B's cohorts are never allocated to demand (life at receipt 3 = minimum at sale 3)"
+  },
+  "seconds": 0.4
+ },
+ "21_cold_chain_eligibility": {
+  "pass": true,
+  "evidence": {
+   "b_units": 0,
+   "settlement_refuses_forced_receipt": true,
+   "block_explains": true
+  },
+  "seconds": 0.4
+ },
+ "22_network_conservation_exact": {
+  "pass": true,
+  "evidence": {
+   "max_residual": 5.258016244624741e-13,
+   "transfers_in_plan": 2050.656622630001
+  },
+  "seconds": 0.9
+ },
+ "23_no_double_allocation": {
+  "pass": true,
+  "evidence": {
+   "served": 2294.9548391883245,
+   "demand": 2417.3614382533137,
+   "opening_plus_received": 600.0,
+   "residual": -2.842170943040401e-14
+  },
+  "seconds": 0.1
+ },
+ "24_no_negative_commitment": {
+  "pass": true,
+  "evidence": {
+   "negative": [],
+   "fixtures": 3
+  },
+  "seconds": 0.2
+ },
+ "25_plan_rows_reconcile": {
+  "pass": true,
+  "evidence": {
+   "options": 2,
+   "mismatched": []
+  },
+  "seconds": 0.6
+ },
+ "26_economics_reconcile": {
+  "pass": true,
+  "evidence": {
+   "E2_landed_beats_unit_price": {
+    "reconciled": true,
+    "unmapped": []
+   },
+   "E6_switching_cost_retains_incumbent": {
+    "reconciled": true,
+    "unmapped": []
+   }
+  },
+  "seconds": 1.9
+ },
+ "27_incumbent_retained_when_not_material": {
+  "pass": true,
+  "evidence": {
+   "status": "RETAIN_INCUMBENT",
+   "recommendations": [
+    "RETAIN_INCUMBENT_MIX"
+   ],
+   "reasons": [
+    "Independent fitted-model confirmation does not establish positive benefit."
+   ]
+  },
+  "seconds": 0.3
+ },
+ "28_no_hidden_score": {
+  "pass": true,
+  "evidence": {
+   "score_identifiers_in_sourcing_package": [],
+   "score_keys_in_block": [],
+   "objective": "landed cost, order economics, holding, shortage, capital, declared switching cost only"
+  },
+  "seconds": 0.0
+ },
+ "29_30_approval_and_no_po": {
+  "pass": true,
+  "evidence": {
+   "report": [
+    true,
+    false
+   ],
+   "block": [
+    true,
+    false
+   ]
+  },
+  "seconds": 0.0
+ },
+ "31_p0_ownership_unchanged": {
+  "pass": true,
+  "evidence": {
+   "owner_with_block_vs_without": [
+    "PROTECTION_RECOVERY",
+    "PROTECTION_RECOVERY"
+   ],
+   "state": [
+    "NO_ACTION",
+    "NO_ACTION"
+   ]
+  },
+  "seconds": 0.6
+ },
+ "32_p1_ownership_unchanged": {
+  "pass": true,
+  "evidence": {
+   "owner": [
+    "PURCHASING_ECONOMICS",
+    "PURCHASING_ECONOMICS"
+   ],
+   "block_owner_labels": {
+    "total_commitment": "P1 purchasing economics (or P0 protection / recovery when it owns the review)",
+    "source_split": "P3 sourcing portfolio"
+   }
+  },
+  "seconds": 0.3
+ },
+ "33_p2_ownership_unchanged": {
+  "pass": true,
+  "evidence": {
+   "owner": [
+    "PURCHASING_ECONOMICS",
+    "PURCHASING_ECONOMICS"
+   ],
+   "transfer_actions_in_plan": 25,
+   "block_carries_transfers": false
+  },
+  "seconds": 0.9
+ },
+ "34_sector_physics_unchanged": {
+  "pass": true,
+  "evidence": {
+   "profiles_identical": true,
+   "sector_invariants": "19 / 19 (gates/sector_invariants.log)"
+  },
+  "seconds": 14.8
+ },
+ "benchmark": {
+  "pass": true,
+  "evidence": {
+   "fixtures": "30 / 30",
+   "tag": "p3_authoritative"
+  },
+  "seconds": 0
+ }
+}
