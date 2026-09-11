@@ -1,0 +1,1331 @@
+{
+ "21.health": {
+  "code": 200,
+  "seconds": 0.5,
+  "view": {
+   "status": "ok",
+   "service": "zaad-api",
+   "env": "pilot",
+   "auth_enforced": true,
+   "rate_limit_per_min": 60
+  }
+ },
+ "22.legacy /api/zaad/demo": {
+  "code": 410,
+  "seconds": 0.3,
+  "view": {
+   "detail": "{'code': 'legacy_planner_disabled', 'message': 'This planning engine is superseded by the frozen ZAA"
+  }
+ },
+ "22.legacy /api/zaad/plan": {
+  "code": 410,
+  "seconds": 0.3,
+  "view": {
+   "detail": "{'code': 'legacy_planner_disabled', 'message': 'This planning engine is superseded by the frozen ZAA"
+  }
+ },
+ "22.anon /fmcg/status": {
+  "code": 401,
+  "seconds": 0.3,
+  "view": {}
+ },
+ "22.anon /api/zaad/network/jobs": {
+  "code": 401,
+  "seconds": 0.3,
+  "view": {}
+ },
+ "22.anon /api/zaad/network/request/from-workspace": {
+  "code": 401,
+  "seconds": 0.3,
+  "view": {}
+ },
+ "22.cors https://zaadsupply.com": {
+  "code": "HTTP/2 200 ",
+  "seconds": 0,
+  "view": {
+   "allow_origin": [
+    "access-control-allow-origin: https://zaadsupply.com"
+   ]
+  }
+ },
+ "22.cors https://www.zaadsupply.com": {
+  "code": "HTTP/2 200 ",
+  "seconds": 0,
+  "view": {
+   "allow_origin": [
+    "access-control-allow-origin: https://www.zaadsupply.com"
+   ]
+  }
+ },
+ "22.cors https://evil.example.com": {
+  "code": "HTTP/2 400 ",
+  "seconds": 0,
+  "view": {
+   "allow_origin": []
+  }
+ },
+ "23.start": {
+  "code": 200,
+  "seconds": 0.7,
+  "view": {
+   "operator_id": "op_38e4101e",
+   "sector": "commercial"
+  }
+ },
+ "23.sample_fmcg": {
+  "code": 200,
+  "seconds": 17.7,
+  "view": {
+   "total_rows": 427995
+  }
+ },
+ "23.legacy_request": {
+  "code": 200,
+  "seconds": 3.4,
+  "view": {
+   "skus": 150,
+   "sourcing_field": null,
+   "build_sourcing": {
+    "requested": false,
+    "source_table_present": false,
+    "alternate_sources": 0,
+    "block": null
+   }
+  }
+ },
+ "23.flag_on_vault_without_declarations": {
+  "code": 200,
+  "seconds": 0.6,
+  "view": {
+   "sourcing_field": null,
+   "build_sourcing": {
+    "requested": true,
+    "source_table_present": true,
+    "alternate_sources": 0,
+    "block": null
+   },
+   "sources": 2
+  }
+ },
+ "40.legacy_plan_p1": {
+  "code": 200,
+  "seconds": 24.4,
+  "view": {
+   "engine": "zaad.full frozen P1",
+   "mode_run": "canonical_p1",
+   "planner_owner": "PROTECTION_RECOVERY",
+   "solver_status": "RETAIN_INCUMBENT",
+   "approval_required": true,
+   "executable_purchase_order": false
+  }
+ },
+ "_workspace": {
+  "operator_id": "op_38e4101e",
+  "skus": [
+   "SKU-0001",
+   "SKU-0002"
+  ]
+ },
+ "payload.legacy_no_p3": {
+  "code": 200,
+  "seconds": 1.6,
+  "view": {
+   "status": "RETAIN_INCUMBENT",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "operator_rule:network:rop",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     39.2
+    ]
+   ],
+   "transfers_p0": 144.6,
+   "sourcing": null,
+   "risk_groups": null,
+   "explanations": null,
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "NO MATERIAL IMPROVEMENT AVAILABLE",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.single_source": {
+  "code": 200,
+  "seconds": 1.5,
+  "view": {
+   "status": "RETAIN_INCUMBENT",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "operator_rule:network:rop",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     39.2
+    ]
+   ],
+   "transfers_p0": 144.6,
+   "sourcing": [
+    [
+     "A",
+     "RETAIN_INCUMBENT_MIX",
+     2081.4,
+     [
+      [
+       "src_A",
+       2081.4,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: ZAAD retained your current supplier mix because the modeled improvement from changing it is not material."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "NO MATERIAL IMPROVEMENT AVAILABLE",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.economics_two_source": {
+  "code": 200,
+  "seconds": 1.7,
+  "view": {
+   "status": "RETAIN_INCUMBENT",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "operator_rule:network:rop",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     39.2
+    ]
+   ],
+   "transfers_p0": 144.6,
+   "sourcing": [
+    [
+     "A",
+     "RETAIN_INCUMBENT_MIX",
+     2081.4,
+     [
+      [
+       "src_A",
+       2081.4,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       0.0,
+       0.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: supplier_b has a lower unit price (4.60 against 5.00), but supplier is cheaper on total landed economics after freight, handling and payment terms (4.92 against 5.30 per unit).",
+    "A at central: ZAAD retained your current supplier mix because the modeled improvement from changing it is not material.",
+    "A at central: supplier_b carries no observed fill or lead history; ZAAD does not credit a second source with resilience it cannot evidence."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "NO MATERIAL IMPROVEMENT AVAILABLE",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.capacity_split": {
+  "code": 200,
+  "seconds": 3.6,
+  "view": {
+   "status": "PENDING_REVIEW",
+   "owner": "PROTECTION_RECOVERY",
+   "state": "NORMAL_REPLENISHMENT",
+   "selected": "cvar_network",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     200.0
+    ],
+    [
+     "src_B",
+     107.5
+    ]
+   ],
+   "transfers_p0": 300.0,
+   "sourcing": [
+    [
+     "A",
+     "CHANGE_SOURCE_MIX",
+     3114.7,
+     [
+      [
+       "src_A",
+       2000.0,
+       0.642,
+       true,
+       true,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       1114.7,
+       0.358,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: supplier cannot cover the full recommendation because its declared capacity is 200 units this period, so the remaining quantity is assigned to supplier_b (108)."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "MATERIAL_IMPROVEMENT",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.moq_mov": {
+  "code": 200,
+  "seconds": 18.8,
+  "view": {
+   "status": "PENDING_REVIEW",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "cadence_4_network",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_B",
+     1333.3
+    ]
+   ],
+   "transfers_p0": 128.6,
+   "sourcing": [
+    [
+     "A",
+     "CHANGE_SOURCE_MIX",
+     2666.7,
+     [
+      [
+       "src_A",
+       0.0,
+       0.0,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       2666.7,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: supplier carries no observed fill or lead history; ZAAD does not credit a second source with resilience it cannot evidence."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "MATERIAL_IMPROVEMENT",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.packs": {
+  "code": 200,
+  "seconds": 29.5,
+  "view": {
+   "status": "PENDING_REVIEW",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "deterministic_network",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     120.0
+    ]
+   ],
+   "transfers_p0": 131.7,
+   "sourcing": [
+    [
+     "A",
+     "COMMIT_AS_INCUMBENT_MIX",
+     2040.0,
+     [
+      [
+       "src_A",
+       2040.0,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       0.0,
+       0.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: supplier_b carries no observed fill or lead history; ZAAD does not credit a second source with resilience it cannot evidence."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "MATERIAL_IMPROVEMENT",
+   "physics_profiles": [
+    [
+     "A",
+     "COMMERCIAL",
+     {},
+     52
+    ]
+   ],
+   "physics_explanations": [
+    "A: 120 units from supplier is 1 x 120-unit packs; the supplier ships whole packs."
+   ],
+   "conservation": []
+  }
+ },
+ "payload.payment_terms": {
+  "code": 200,
+  "seconds": 1.6,
+  "view": {
+   "status": "RETAIN_INCUMBENT",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "operator_rule:network:rop",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     19.6
+    ],
+    [
+     "src_B",
+     19.6
+    ]
+   ],
+   "transfers_p0": 144.6,
+   "sourcing": [
+    [
+     "A",
+     "RETAIN_INCUMBENT_MIX",
+     2081.4,
+     [
+      [
+       "src_A",
+       1040.7,
+       0.5,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       1040.7,
+       0.5,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: ZAAD retained your current supplier mix because the modeled improvement from changing it is not material."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "NO MATERIAL IMPROVEMENT AVAILABLE",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.switching_small": {
+  "code": 200,
+  "seconds": 6.9,
+  "view": {
+   "status": "RETAIN_INCUMBENT",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "operator_rule:network:rop",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     39.2
+    ]
+   ],
+   "transfers_p0": 144.6,
+   "sourcing": [
+    [
+     "A",
+     "RETAIN_INCUMBENT_MIX",
+     2081.4,
+     [
+      [
+       "src_A",
+       2081.4,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       0.0,
+       0.0,
+       true,
+       false,
+       false,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: ZAAD retained your current supplier mix because the modeled improvement from changing it is not material.",
+    "A at central: supplier_b is not used; starting to buy from it would cost 2,000 (switching), which the modeled saving does not justify.",
+    "A at central: supplier_b carries no observed fill or lead history; ZAAD does not credit a second source with resilience it cannot evidence."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "NO MATERIAL IMPROVEMENT AVAILABLE",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.switching_large": {
+  "code": 200,
+  "seconds": 6.9,
+  "view": {
+   "status": "PENDING_REVIEW",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "stochastic_network",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_B",
+     27.8
+    ]
+   ],
+   "transfers_p0": 202.6,
+   "sourcing": [
+    [
+     "A",
+     "CHANGE_SOURCE_MIX",
+     1979.0,
+     [
+      [
+       "src_A",
+       0.0,
+       0.0,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       1979.0,
+       1.0,
+       true,
+       false,
+       true,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: the plan starts buying from supplier_b and carries its declared switching cost of 300.",
+    "A at central: supplier carries no observed fill or lead history; ZAAD does not credit a second source with resilience it cannot evidence."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "MATERIAL_IMPROVEMENT",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.shares": {
+  "code": 200,
+  "seconds": 1.7,
+  "view": {
+   "status": "RETAIN_INCUMBENT",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "operator_rule:network:rop",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     27.5
+    ],
+    [
+     "src_B",
+     11.8
+    ]
+   ],
+   "transfers_p0": 144.6,
+   "sourcing": [
+    [
+     "A",
+     "RETAIN_INCUMBENT_MIX",
+     2081.4,
+     [
+      [
+       "src_A",
+       1457.0,
+       0.7,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       624.4,
+       0.3,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: ZAAD retained your current supplier mix because the modeled improvement from changing it is not material.",
+    "A at central: your declared share limit for supplier (at most 70%) is honoured (planned share 70%).",
+    "A at central: your declared share limit for supplier_b (at least 30%) is honoured (planned share 30%)."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "NO MATERIAL IMPROVEMENT AVAILABLE",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.correlated_risk": {
+  "code": 200,
+  "seconds": 45.6,
+  "view": {
+   "status": "PENDING_REVIEW",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "deterministic_network",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_B",
+     646.4
+    ]
+   ],
+   "transfers_p0": 131.7,
+   "sourcing": [
+    [
+     "A",
+     "CHANGE_SOURCE_MIX",
+     2251.5,
+     [
+      [
+       "src_A",
+       0.0,
+       0.0,
+       true,
+       false,
+       null,
+       [
+        "plant_1"
+       ]
+      ],
+      [
+       "src_B",
+       2251.5,
+       1.0,
+       true,
+       false,
+       null,
+       [
+        "plant_1"
+       ]
+      ],
+      [
+       "src_C",
+       0.0,
+       0.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [
+    [
+     "plant_1",
+     "PLANT",
+     1.0,
+     "OPERATOR_DECLARED"
+    ]
+   ],
+   "explanations": [],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "MATERIAL_IMPROVEMENT",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.independent_sources": {
+  "code": 200,
+  "seconds": 47.9,
+  "view": {
+   "status": "PENDING_REVIEW",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "deterministic_network",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_B",
+     646.4
+    ]
+   ],
+   "transfers_p0": 131.7,
+   "sourcing": [
+    [
+     "A",
+     "CHANGE_SOURCE_MIX",
+     2251.5,
+     [
+      [
+       "src_A",
+       818.2,
+       0.363,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       1433.3,
+       0.637,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "MATERIAL_IMPROVEMENT",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.produce": {
+  "code": 200,
+  "seconds": 23.7,
+  "view": {
+   "status": "RETAIN_INCUMBENT",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "operator_rule:network:rop",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     39.2
+    ]
+   ],
+   "transfers_p0": 144.6,
+   "sourcing": [
+    [
+     "A",
+     "RETAIN_INCUMBENT_MIX",
+     2081.4,
+     [
+      [
+       "src_A",
+       2081.4,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       0.0,
+       0.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: ZAAD retained your current supplier mix because the modeled improvement from changing it is not material.",
+    "A at central: supplier_b carries no observed fill or lead history; ZAAD does not credit a second source with resilience it cannot evidence."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "NO MATERIAL IMPROVEMENT AVAILABLE",
+   "physics_profiles": [
+    [
+     "A",
+     "PRODUCE",
+     {
+      "src_B": 5
+     },
+     8
+    ]
+   ],
+   "physics_explanations": [
+    "A: 68 units central -> north on lane_north (ambient) arrive with 7 periods of life, 5 of them sellable.",
+    "A: 77 units central -> south on lane_south (ambient) arrive with 7 periods of life, 5 of them sellable."
+   ],
+   "conservation": []
+  }
+ },
+ "payload.meat": {
+  "code": 200,
+  "seconds": 11.2,
+  "view": {
+   "status": "RETAIN_INCUMBENT",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "operator_rule:network:rop",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     39.2
+    ]
+   ],
+   "transfers_p0": 144.6,
+   "sourcing": [
+    [
+     "A",
+     "RETAIN_INCUMBENT_MIX",
+     2081.4,
+     [
+      [
+       "src_A",
+       2081.4,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ],
+    [
+     "A",
+     "NO_ORDER",
+     0.0,
+     [
+      [
+       "src_B",
+       0.0,
+       null,
+       false,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: ZAAD retained your current supplier mix because the modeled improvement from changing it is not material.",
+    "A at cross_dock: supplier_b (src_B) was rejected because cross_dock cannot store frozen goods."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "NO MATERIAL IMPROVEMENT AVAILABLE",
+   "physics_profiles": [
+    [
+     "A",
+     "MEAT_SEAFOOD",
+     {},
+     26
+    ]
+   ],
+   "physics_explanations": [
+    "A: 68 units central -> north on lane_north (frozen) arrive with 25 periods of life, 25 of them sellable.",
+    "A: 77 units central -> south on lane_south (frozen) arrive with 25 periods of life, 25 of them sellable."
+   ],
+   "conservation": []
+  }
+ },
+ "payload.network": {
+  "code": 200,
+  "seconds": 9.1,
+  "view": {
+   "status": "RETAIN_INCUMBENT",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NORMAL_REPLENISHMENT",
+   "selected": "operator_rule:network:rop",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     245.5
+    ]
+   ],
+   "transfers_p0": 300.0,
+   "sourcing": [
+    [
+     "A",
+     "RETAIN_INCUMBENT_MIX",
+     2188.9,
+     [
+      [
+       "src_A",
+       2188.9,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_B",
+       0.0,
+       0.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: ZAAD retained your current supplier mix because the modeled improvement from changing it is not material.",
+    "A at central: supplier_b carries no observed fill or lead history; ZAAD does not credit a second source with resilience it cannot evidence."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "NO MATERIAL IMPROVEMENT AVAILABLE",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.multi_sku_capacity": {
+  "code": 200,
+  "seconds": 77.6,
+  "view": {
+   "status": "PENDING_REVIEW",
+   "owner": "PROTECTION_RECOVERY",
+   "state": "NORMAL_REPLENISHMENT",
+   "selected": "stochastic_network",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     158.3
+    ],
+    [
+     "src_S2",
+     153.0
+    ],
+    [
+     "src_A_B",
+     291.7
+    ],
+    [
+     "src_S2_B",
+     45.0
+    ]
+   ],
+   "transfers_p0": 600.0,
+   "sourcing": [
+    [
+     "A",
+     "CHANGE_SOURCE_MIX",
+     3125.1,
+     [
+      [
+       "src_A",
+       2426.0,
+       0.776,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_S2",
+       699.2,
+       0.224,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ],
+    [
+     "B",
+     "CHANGE_SOURCE_MIX",
+     3145.2,
+     [
+      [
+       "src_A_B",
+       2074.0,
+       0.659,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_S2_B",
+       1071.1,
+       0.341,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "MATERIAL_IMPROVEMENT",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.shared_mov": {
+  "code": 200,
+  "seconds": 218.4,
+  "view": {
+   "status": "PENDING_REVIEW",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "cadence_4_network",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     650.0
+    ],
+    [
+     "src_A_B",
+     654.7
+    ]
+   ],
+   "transfers_p0": 334.4,
+   "sourcing": [
+    [
+     "A",
+     "COMMIT_AS_INCUMBENT_MIX",
+     2835.5,
+     [
+      [
+       "src_A",
+       2835.5,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_S2",
+       0.0,
+       0.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ],
+    [
+     "B",
+     "COMMIT_AS_INCUMBENT_MIX",
+     2863.7,
+     [
+      [
+       "src_A_B",
+       2863.7,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ],
+      [
+       "src_S2_B",
+       0.0,
+       0.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: supplier_s2 carries no observed fill or lead history; ZAAD does not credit a second source with resilience it cannot evidence.",
+    "B at central: supplier_s2 carries no observed fill or lead history; ZAAD does not credit a second source with resilience it cannot evidence."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "MATERIAL_IMPROVEMENT",
+   "physics_profiles": [],
+   "physics_explanations": [],
+   "conservation": []
+  }
+ },
+ "payload.age_at_receipt": {
+  "code": 200,
+  "seconds": 19.9,
+  "view": {
+   "status": "RETAIN_INCUMBENT",
+   "owner": "PURCHASING_ECONOMICS",
+   "state": "NO_ACTION",
+   "selected": "operator_rule:network:rop",
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "p0_purchases": [
+    [
+     "src_A",
+     39.2
+    ]
+   ],
+   "transfers_p0": 144.6,
+   "sourcing": [
+    [
+     "A",
+     "RETAIN_INCUMBENT_MIX",
+     2081.4,
+     [
+      [
+       "src_A",
+       2081.4,
+       1.0,
+       true,
+       false,
+       null,
+       []
+      ]
+     ]
+    ]
+   ],
+   "risk_groups": [],
+   "explanations": [
+    "A at central: ZAAD retained your current supplier mix because the modeled improvement from changing it is not material."
+   ],
+   "reconciled": true,
+   "unmapped": [],
+   "materiality": "NO MATERIAL IMPROVEMENT AVAILABLE",
+   "physics_profiles": [
+    [
+     "A",
+     "PRODUCE",
+     {
+      "src_A": 3
+     },
+     6
+    ]
+   ],
+   "physics_explanations": [
+    "A: 39 units from supplier arrive with 3 of 6 periods of life (age at receipt 3 periods); they are sellable for 2 periods.",
+    "A: 68 units central -> north on lane_north (ambient) arrive with 5 periods of life, 4 of them sellable.",
+    "A: 77 units central -> south on lane_south (ambient) arrive with 5 periods of life, 4 of them sellable."
+   ],
+   "conservation": []
+  }
+ },
+ "38.unknown_supplier_in_group": {
+  "code": 422,
+  "seconds": 0.6,
+  "view": {
+   "detail": "[{'loc': [], 'msg': \"Value error, sourcing: risk group g names unknown source 'src_ghost'\", 'type': 'value_error'}]"
+  }
+ },
+ "38.source_not_approved_with_min_share": {
+  "code": 422,
+  "seconds": 0.4,
+  "view": {
+   "detail": "[{'loc': [], 'msg': 'Value error, sourcing: source src_B is not qualified (approved and cleared) and cannot carry a minimum share or committed units', 'type': '"
+  }
+ },
+ "38.negative_capacity": {
+  "code": 422,
+  "seconds": 0.3,
+  "view": {
+   "detail": "[{'loc': ['sources', 1], 'msg': 'Value error, invalid source capacity', 'type': 'value_error'}]"
+  }
+ },
+ "38.min_share_above_max": {
+  "code": 422,
+  "seconds": 0.5,
+  "view": {
+   "detail": "[{'loc': ['sourcing', 'share_constraints', 0], 'msg': 'Value error, share constraint src_B: minimum share above maximum share', 'type': 'value_error'}]"
+  }
+ },
+ "38.shares_impossible": {
+  "code": 422,
+  "seconds": 0.3,
+  "view": {
+   "detail": "[{'loc': [], 'msg': 'Value error, sourcing: maximum shares for A at central sum below 100 %; no full commitment is possible', 'type': 'value_error'}]"
+  }
+ },
+ "38.missing_provenance": {
+  "code": 422,
+  "seconds": 0.4,
+  "view": {
+   "detail": "[{'loc': ['sourcing', 'risk_groups', 0], 'msg': 'Value error, risk group g: a declared dependency needs a provenance other than UNKNOWN', 'type': 'value_error'}"
+  }
+ },
+ "38.infinite_price": {
+  "code": 422,
+  "seconds": 0.3,
+  "view": {
+   "detail": "[{'loc': ['sources', 1, 'unit_price'], 'msg': 'Input should be a finite number', 'type': 'finite_number'}]"
+  }
+ },
+ "38.excessive_sources": {
+  "code": 413,
+  "seconds": 0.3,
+  "view": {
+   "detail": "Interactive sourcing bounds exceeded: {'sources_per_pair': 8, 'risk_groups': 50, 'share_constraints': 200, 'switching_costs': 100, 'incumbent_shares': 200}; use"
+  }
+ },
+ "43.frontend /": {
+  "code": 200,
+  "seconds": 0,
+  "view": {}
+ },
+ "43.frontend /overview": {
+  "code": 200,
+  "seconds": 0,
+  "view": {}
+ },
+ "43.frontend /upload": {
+  "code": 200,
+  "seconds": 0,
+  "view": {}
+ },
+ "43.frontend /fmcg": {
+  "code": 200,
+  "seconds": 0,
+  "view": {}
+ },
+ "43.frontend /state": {
+  "code": 200,
+  "seconds": 0,
+  "view": {}
+ },
+ "43.frontend /access": {
+  "code": 200,
+  "seconds": 0,
+  "view": {}
+ }
+}
