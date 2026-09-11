@@ -467,8 +467,11 @@ and rerun CI on `main`.
   p95 19.2 s / max 42.8 s, 0 time-limited; P0 six-cell arm `p3_sourcing` 120 / 120 decision-identical;
   canonical regression identical; P1 invariants no failures; P2 matrix under the P3 code 20 / 20, 18 / 18,
   344 / 344 decision-identical; sector matrix 26 / 26, 19 / 19 invariants, 402 / 416 identical with the 14
-  differences confined to fixture P3_age_at_receipt (sector addendum: the replay now materialises received
-  purchases with the declared age at receipt; legacy replays unchanged).
+  differences confined to fixture P3_age_at_receipt: one documented correctness correction in
+  physics-enabled historical replay (received perishable purchases keep their declared remaining life;
+  live planner / settlement unchanged; legacy replays bit-identical), audited and causally proven in
+  `evidence/sectors/corrections/` (2026-09-11 corrective pass); "sector physics remains frozen" is
+  withdrawn in favour of that precise statement.
 * **Frozen and local only**: product tag `p3-frozen-product`, evidence tag `p3-frozen` (see
   `evidence/p3/P3_CLOSEOUT.md` for the SHAs). Not pushed, not merged, not deployed. ENGINEERING
   VALIDATED, not real-data validated; no savings claimed.

@@ -12,8 +12,22 @@ carrying this closeout = **frozen evidence** (`p3-frozen`).
 ## Verdict
 
 **P3 SUPPLIER / SOURCING PORTFOLIO OPTIMIZATION — PASS AND FROZEN LOCALLY.** Product tag `p3-frozen-product`
-= `9e496ed`; evidence tag `p3-frozen` = the commit carrying this file. Tags are local; nothing pushed.
+= `9e496ed`; evidence tag `p3-frozen` = `628d49f` (this file's first version); corrective evidence
+follow-up (this wording, the sector correction records and the receipt-life tests) on a later commit
+tagged `p3-corrective-evidence`. Tags are local; nothing pushed.
 **Status: ENGINEERING VALIDATED on synthetic fixtures, not REAL-DATA VALIDATED. No savings claimed.**
+
+**Sector semantics statement (corrected 2026-09-11).** Original sector frozen semantics remain preserved
+except for one documented correctness correction in physics-enabled historical replay: purchased
+perishable lots now retain their declared age-at-receipt / remaining life rather than being replayed
+as fresh. Legacy / no-physics behaviour remains identical. The correction changes 14 / 416 authoritative
+sector replay decisions, all causally attributed to fixture P3_age_at_receipt, while 26 / 26 sector
+fixtures and 19 / 19 invariants remain PASS. The earlier wording "sector physics remains frozen" was too
+strong and is withdrawn.
+
+**Release status.** P3 is NOT released. P3 release requires remote exhaustive CI capability restored
+(GitHub Actions is billing-blocked at the time of this closeout); no push, PR, merge or deployment has
+been made.
 
 ## One engine, one more declared layer
 
@@ -50,7 +64,7 @@ still chooses the total commitment (P1, or P0 when it owns the review) and its s
 | S P0 frozen | six-cell arm `p3_sourcing` 120 / 120 decision-identical to `router_cycle` (`gates/p0_six_cell_p3_sourcing.log`); canonical cell 15 identical | PASS |
 | T P1 frozen | canonical regression B / T / Q / A twelve-review identity (`gates/canonical_regression.log`); P1 invariants no failures (`gates/p1_invariants.log`) | PASS |
 | U P2 frozen | `p2_under_p3`: 20 / 20 fixtures, 18 / 18 principles, 344 / 344 ZAAD reviews decision-identical (`evidence/p2/p2_under_p3_compare.json`) | PASS |
-| V sector physics frozen | `sector_under_p3`: 26 / 26 fixtures, invariants 19 / 19 (`gates/sector_invariants.log`); 402 / 416 reviews identical, the 14 differences all on P3_age_at_receipt where the replay now materialises the declared age at receipt (`evidence/sectors/ADDENDUM_2026-09-11_P3_REPLAY_RECEIPT_LIFE.md`); optimizer semantics unchanged (invariant 34) | PASS (explained) |
+| V sector architecture and all previously validated sector semantics preserved, except documented correctness corrections that are independently isolated, causally proven, fully revalidated, and leave legacy / P0 / P1 / P2 behaviour unchanged | **one such correction for this freeze**: physics-enabled historical replay now materialises a received perishable purchase with its declared remaining life (`shelf_life - age_at_receipt`) instead of the full shelf life (`zaad/full/replay.py`, first in `33f96cc`). Live planner, settlement and projections already used the declared receipt life and are unchanged. Audit, review-by-review table and counterfactual: `evidence/sectors/corrections/AGE_AT_RECEIPT_REPLAY_AUDIT.md` and `AGE_AT_RECEIPT_REPLAY_CORRECTION.md`. Sector re-runs on the product code: 26 / 26 fixtures, 19 / 19 invariants; 402 / 416 ZAAD replay reviews identical with the 14 differences all causally attributed to fixture P3_age_at_receipt (the only sector fixture declaring an age at receipt); legacy / no-physics replays bit-identical (P2 344 / 344, P0 120 / 120). Future semantic changes still require an explicit correction record. | PASS (one documented correction) |
 | W runtime bounded and explained | 480 reviews p50 0.66 s / p95 19.2 s / max 42.8 s, 0 time-limited, none over 60 s; profiles in `P3_PERFORMANCE.md` | PASS |
 | X full repository suite | **1,901 passed, 2 skipped** (`gates/pytest_final.log`); ruff, mypy (CI scope), bandit, `git diff --check` clean (`gates/static_checks.log`) | PASS |
 | Y no commercial solver | HiGHS only | PASS |
