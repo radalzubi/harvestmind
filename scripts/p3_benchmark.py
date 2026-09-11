@@ -54,7 +54,10 @@ def _usable(req, s) -> bool:
 def policies_for(name: str, seed: int) -> list[str]:
     req = build(name, seed)
     suppliers = sorted({s.supplier for s in req.sources if _usable(req, s)})
-    out = list(BASE_POLICIES) + [f"single:{s}" for s in suppliers if len(suppliers) > 1]
+    # a single-supplier policy only where it restricts something: a pair the supplier serves with another usable supplier
+    pairs_of = {sup: {(s.sku, s.destination) for s in req.sources if s.supplier == sup and _usable(req, s)} for sup in suppliers}
+    singles = [sup for sup in suppliers if any(any(o != sup and pair in pairs_of[o] for o in suppliers) for pair in pairs_of[sup])]
+    out = list(BASE_POLICIES) + [f"single:{s}" for s in singles]
     if name.startswith("A3_"):
         out.append("gated_noprune")
     if name.startswith("A5_"):
@@ -62,7 +65,7 @@ def policies_for(name: str, seed: int) -> list[str]:
     return out
 
 
-def p3_score(initial, log: list[dict]) -> dict:
+def p3_score(initial, log: list[dict], basis=None) -> dict:
     """The P3 continuation basis: residual stock valued at what one received unit from the cheapest
     approved source of the SKU costs (unit price over its fill, plus freight and handling), the lane cost
     a unit at a transfer-fed location avoids, and no policy-specific premium. The P2 basis adds the order-
@@ -78,13 +81,16 @@ def p3_score(initial, log: list[dict]) -> dict:
     ledger["opening_assets"] = log[0]["settlement"]["ledger"]["opening_assets"]
     ledger["closing_assets"] = log[-1]["settlement"]["ledger"]["closing_assets"]
     realized = sum(ledger.values())
-    terms = {t.id: t for t in initial.terms}
+    basis = basis or initial   # the fixture's own request: a policy variant that unapproves sources must not change the basis
+    terms = {t.id: t for t in basis.terms}
     landed = {}
-    for sku in initial.skus:
-        options = [s for s in initial.sources if s.sku == sku.id and s.approved and s.compliance == "cleared"]
-        cheapest = min(options, key=lambda s: (s.unit_price + s.freight_per_unit + s.handling_per_unit, s.id)) if options else None
-        base = (cheapest.unit_price * terms[cheapest.terms].fx_rate_to_currency + cheapest.freight_per_unit + cheapest.handling_per_unit) / max(cheapest.fill_mean, 1e-6) if cheapest else sku.asset_value
-        landed[sku.id] = max(sku.asset_value, base)
+    for sku in basis.skus:
+        # the cheapest approved source per RECEIVED unit (landed cost over its expected fill); the P2 basis
+        # picks the cheapest by price and then divides by that source's fill, which crowns a cheap
+        # low-yield source and credits every policy's residual at its dearer received-unit cost
+        options = [s for s in basis.sources if s.sku == sku.id and _usable(basis, s)]
+        per_received = [(s.unit_price * terms[s.terms].fx_rate_to_currency + s.freight_per_unit + s.handling_per_unit) / max(s.fill_mean, 1e-6) for s in options]
+        landed[sku.id] = max(sku.asset_value, min(per_received)) if per_received else sku.asset_value
     last = log[-1]["settlement"]
     term = continuation_value(initial, last.get("end_stock", []), last.get("pending", []), log[-1]["forecast"], landed=landed, location_premium=lane_premiums(initial) or None)
     return {"cost_p3": realized + term["adjustment"], "p3_credit": term["continuation_credit"], "p3_landed": landed}
@@ -94,7 +100,8 @@ def run_p3_cell(name: str, policy: str, seed: int, reviews: int) -> dict:
     register_p3_methods()
     method = "gated" if policy.startswith("single:") else METHOD[policy]
     builder = build if policy == "cheapest_landed" else (lambda n, s, **kw: variant(n, s, policy, **kw))
-    cell = run_cell(name, method, seed, reviews, builder=builder, extra_score=p3_score)
+    basis = build(name, seed)
+    cell = run_cell(name, method, seed, reviews, builder=builder, extra_score=lambda initial, log: p3_score(initial, log, basis))
     cell["policy"] = policy
     cell["method"] = method
     return cell
@@ -170,14 +177,18 @@ def principle_check(name: str, spec: dict, records: list[dict]) -> dict:
         ok = not used and said
         ev = {"unqualified_purchases": sorted(used), "block_says_not_qualified": said}
     elif kind == "a_dominant_share":
-        total = sum(q for _, rows in execs for row in rows for q in row.values())
-        a = sum(q for _, rows in execs for row in rows for s, q in row.items() if src[s].supplier == "supplier")
+        # on the reviews where ZAAD acts (a retained incumbent keeps the operator's declared mix by design)
+        acted = [row for c in cells for x, row in zip(c["per_review"], _executed(c)) if not x["abstained"]]
+        total = sum(q for row in acted for q in row.values())
+        a = sum(q for row in acted for s, q in row.items() if src[s].supplier == "supplier")
+        all_total = sum(q for _, rows in execs for row in rows for q in row.values())
+        all_a = sum(q for _, rows in execs for row in rows for s, q in row.items() if src[s].supplier == "supplier")
         ok = total > 0 and a / total >= .9
-        ev = {"a_share": a / total if total else None}
+        ev = {"a_share_on_acted_reviews": a / total if total else None, "acted_reviews": len(acted), "a_share_all_reviews": all_a / all_total if all_total else None}
     elif kind == "tier2_when_large":
         t1 = [(seed, i, q) for seed, rows in execs for i, row in enumerate(rows) for s, q in row.items() if s == "src_B_tier1" and q > 1e-9]
         t2 = [(seed, i, q) for seed, rows in execs for i, row in enumerate(rows) for s, q in row.items() if s == "src_B_tier2" and q > 1e-9]
-        ok = all(q <= 400 + 1e-6 for _, _, q in t1) and all(q >= 500 - 1e-6 for _, _, q in t2) and bool(t2)
+        ok = all(q <= 200 + 1e-6 for _, _, q in t1) and all(q >= 250 - 1e-6 for _, _, q in t2) and bool(t2)
         ev = {"tier1_orders": len(t1), "tier2_orders": len(t2), "tier2_units": sum(q for _, _, q in t2)}
     elif kind == "b_orders_executable":
         b = [(seed, i, q) for seed, rows in execs for i, row in enumerate(rows) for s, q in row.items() if s == "src_B" and q > 1e-9]

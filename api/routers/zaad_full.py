@@ -157,7 +157,7 @@ def _workspace_request(conn, operator: str, horizon: int, service_target: float,
     except ValueError as exc:
         # sector physics or sourcing declared inconsistently in the vault (unknown state, threshold above
         # shelf life, share limits the incumbent mix does not meet, unknown supplier in a risk group, ...)
-        code = "sourcing_invalid" if "sourcing" in str(exc) else "sector_physics_invalid"
+        code = "sourcing_invalid" if "sourcing:" in str(exc) else "sector_physics_invalid"
         raise HTTPException(422, {"code": code, "message": str(exc)}) from exc
 
 

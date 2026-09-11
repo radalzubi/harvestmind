@@ -203,6 +203,11 @@ def sourcing_block(req, final, incumbent, report: dict) -> dict[str, Any]:
                                  f"ZAAD does not credit a second source with resilience it cannot evidence.")
         if any(r["shared_risk_weak_evidence"] for r in used) and len(used) >= 2:
             sentences.append(f"{sku} at {destination}: the shared-risk declaration between the sources used rests on weak evidence; no independence benefit is claimed.")
+    for g in sourcing.portfolio.risk_groups:
+        if g.provenance in WEAK_PROVENANCE:
+            names = sorted({s.supplier for s in req.sources if s.id in g.members})
+            sentences.append(f"Risk group {g.id} ({g.kind.lower()}) between {' and '.join(names)} rests on weak evidence ({g.provenance}); ZAAD treats the dependency "
+                             f"as declared and claims no independence benefit from splitting between them.")
     return {"version": "zaad.sourcing.1.0", "principles": [PRINCIPLE, PRINCIPLE_2],
             "recommendation_status": report.get("status"), "selected_policy": report.get("selected_policy"),
             "abstained": bool(abstained), "materiality": materiality,

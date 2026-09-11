@@ -143,13 +143,18 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
             state["stock"] = list(state["stock"])
             state["shipment_history"] = [r.model_dump() for r in req.shipment_history if r.id not in {"censored-" + p.id for p in arrived}]
             other_payments = list(req.liquidity.other_payments)
+            from zaad.sectors.contracts import resolve as sector_physics
+            physics = sector_physics(req)
             for po in arrived:
                 source = next(s for s in req.sources if s.id == po.source)
                 sku = next(s for s in req.skus if s.id == source.sku)
                 ratio = private[po.id][1]
+                # a materialised receipt carries the life the declared physics gives an arrival from this
+                # source (age at receipt); the frozen full shelf life on a legacy request
+                life = sku.shelf_life if physics is None else physics.receipt_life(source.sku, source.id)
                 state["stock"].append({"id": "observed-" + po.id, "known_at": req.as_of, "sku": source.sku,
                                        "location": source.destination, "quantity": po.remaining * ratio,
-                                       "reserved": 0., "damaged": 0., "quarantined": 0., "expires_in": sku.shelf_life, "age_periods": 0})
+                                       "reserved": 0., "damaged": 0., "quarantined": 0., "expires_in": life, "age_periods": 0})
                 state["shipment_history"].append({"id": "received-" + po.id, "known_at": req.as_of, "source": po.source,
                         "elapsed_days": max(1, (req.as_of - po.placed_at).days), "arrived": True,
                         "stage": po.stage, "carrier": po.carrier, "accepted_ratio": ratio})
