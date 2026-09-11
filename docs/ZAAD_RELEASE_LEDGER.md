@@ -353,9 +353,74 @@ decision-identical to the release record. Full suite 1,865 passed, 2 skipped. **
 PHYSICS ENGINE — PASS AND FROZEN LOCALLY** (product `43d769f`, local tags `sector-physics-frozen-product`
 and `sector-physics-frozen`; ENGINEERING VALIDATED, not real-data validated).
 
+## Three-sector physics release line (2026-09-11, authorized)
+
+* **Preflight**: `claude/zaad-sector-physics` at `4f358f7`, clean; `origin/main` still `ea1ed3a` (no
+  advancement). Ancestry: `43d769f` in `4f358f7`; every P0 / P1 / P2 freeze SHA in the sector freeze.
+* **Freeze tags published exactly** (verified on origin, never moved): `sector-physics-frozen-product`
+  = `43d769f`, `sector-physics-frozen` = `4f358f7`.
+* **PR #56** ("ZAAD: Three-Sector Physics Engine — commercial, produce, meat & seafood", base
+  `ea1ed3a`). First exhaustive run 34573264612: every gate green except pytest, cancelled by the
+  runner at the 90-minute job budget at 92% (the same suite is 4:42 locally; the P2 matrix is
+  decision-identical under the sector code: runner overhead, not a model regression). CI-only fix
+  `be12202`: the identical 1,867 collected tests run as three parallel shards (integration, unit
+  without the zaad files, zaad unit files); no timeout widened, no test changed. Run 34580683633
+  green on every job: pytest 275 + 1,139 + 451 = **1,865 passed, 2 skipped** (unit-zaad shard 72 min
+  on the runner), ruff, mypy, security (bandit, pip-audit), gitleaks, frozen regression, Docker
+  build, frontend. CodeQL: the documented "code scanning is not enabled" environment failure.
+* **Merge**: `dca3d48` at 2026-09-11T09:59:16Z (pre-merge `main` `ea1ed3a`, head `be12202`). Merged
+  tree identical to the tested candidate (`git diff be12202 dca3d48` empty); runtime directories
+  identical to the product freeze `43d769f`. Bounded post-merge verification on the exact commit:
+  ancestry, API import, migration 017 present, canonical regression PASS, sector and network API
+  tests (the three 429s of one combined run were the per-minute recommendation rate limiter across
+  files in one process; the file passes 4 / 4 alone). No second full CI (tree identity proven).
+* **Fly v15** `canonical-dca3d48` (rolling, machine `0804e0dfd1e948`, volume and secrets untouched,
+  `ZAAD_LEGACY_PLANNERS=0`). Production smoke: health, routes, legacy 410, anonymous 401, CORS,
+  legacy P1 workspace path (two SKUs, 24 s), commercial / produce / meat & seafood payloads PASS;
+  **the mixed-sector payload answered 500**: on the Fly machine a base-stock projection breached
+  receiving capacity on a stress world, the candidate gate stored an infinite weighted service
+  shortfall and the JSON encoder refused it (reproduced read-only on the machine; not reproducible
+  on macOS: a solver tie broke differently). Release fix **PR #57** `3f57284` (`zaad/full/planner.py`:
+  the report's weighted-service-shortfall fields carry None where the recovery ranking already did;
+  gate decisions read the numeric value before serialisation and are unchanged; regression test).
+  CI run 34588333043 green (1,866 passed, 2 skipped); merged as **`5ca3772`** at 11:15:36Z; merged
+  tree identical to the tested head; runtime delta against `dca3d48` is that one file.
+* **Fly v16** `registry.fly.io/zaad-api:canonical-5ca3772` (rolling, same machine, volume and secrets
+  untouched). Smoke on v16: `/health` = `zaad-api`, env `pilot`, auth enforced; 11 network routes;
+  `/api/zaad/demo` and `/api/zaad/plan` 410; anonymous protected calls 401; CORS allows zaadsupply.com
+  and www, refuses a foreign origin; legacy workspace (`op_0a69199c`, no sector fields) builds
+  (`sector_mode` null, no profiles) and plans on the frozen P1 path (`canonical_p1`,
+  `approval_required` true, `executable_purchase_order` false, 24 s); the same workspace with
+  `sector_mode=COMMERCIAL` carries a physics block with undeclared (neutral) profiles. Payload
+  smokes, all HTTP 200, `approval_required` true, `executable_purchase_order` false: COMMERCIAL
+  (case pack 12: purchase 48 = 4 x 12 with the operator-language explanation; 31 s), PRODUCE
+  (age / sellable life: transfer cohort keeps expiry 4, "arrive with 3 periods of life, 2 of them
+  sellable"; 2 s), MEAT_SEAFOOD (chilled, ambient south lane never used, reefer lane declared; 6 s),
+  MIXED (commercial A with produce B: profiles isolated, A min life 0 / B min life 1, shared
+  branches; 5 s). Malformed inputs 422 with clear messages: unknown sector mode, negative shelf
+  life, minimum life above shelf life, invalid storage state, physics for an unknown SKU, declared
+  value without provenance. Logs after the v16 start-up: 0 x 5xx, 0 tracebacks from the active
+  process, no store / migration / auth errors (one health-check miss inside the grace period).
+* **Migration 017**: additive, nullable, idempotent (`ADD COLUMN IF NOT EXISTS`, the pattern since 007);
+  applied by the existing mechanism (`setup_db` at vault creation) to every vault created from v15 on;
+  existing vaults keep their schema and load through the guarded adapters (legacy-neutral); no
+  backfill. To declare physics on a pre-existing vault the operator runs the idempotent
+  `scripts.setup_db.setup_db` on that vault's DuckDB file.
+* **Frontend**: `/`, `/overview`, `/upload`, `/fmcg`, `/state`, `/access` answer 200 before and after.
+* **Known observations (future performance work, not fixed here)**: C1 report-only service-frontier
+  oracle up to ~59.5 s; two-SKU P1 workspace request ~24 s end to end on a 5 s solve budget; the
+  synchronous 150-SKU whole-workspace canonical call exceeded 400 s (P2 release).
+* **Untouched**: Validation7, Validation8, holdout4 (unrun, unread); Network Twin #39; P3-P6;
+  dashboard and website uplift; Dependabot solver-stack bumps.
+* **Verdict: ZAAD THREE-SECTOR PHYSICS RELEASE LINE — PASS** (final released runtime `5ca3772`, Fly
+  `zaad-api` v16 `canonical-5ca3772`; ENGINEERING VALIDATED, not real-data validated). Next
+  authorized build: P3 supplier / sourcing portfolio optimization — not started.
+
 ## Exact next action
 
-Owner decision on releasing the sector-physics line (push, PR, CI, merge, deploy: not authorized in
-this phase). Next authorized phase after that: P3 supplier / sourcing portfolio optimization. Keep `ZAAD_LEGACY_PLANNERS`
+P3 supplier / sourcing portfolio optimization, branched from `main` (`5ca3772` or later). Keep
+`ZAAD_LEGACY_PLANNERS` explicit on every deployed environment and run
+`scripts/zaad_canonical_regression.py` before accepting any Dependabot bump that touches the solver
+stack. Keep `ZAAD_LEGACY_PLANNERS`
 explicit on every deployed environment and run `scripts/zaad_canonical_regression.py` before accepting
 any Dependabot bump that touches the solver stack.
