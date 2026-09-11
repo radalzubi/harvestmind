@@ -248,3 +248,15 @@ def test_every_pre_registered_fixture_builds_and_plans():
         assert resolve(req) is not None
     rep = plan(build("X3_three_sectors", 41001))
     assert {p["sector"] for p in rep["physics"]["profiles"]} == {"COMMERCIAL", "PRODUCE", "MEAT_SEAFOOD"}
+
+
+def test_report_stays_json_serialisable_when_a_stress_settlement_is_unusable(monkeypatch):
+    """A physically unusable stress-world settlement gives an infinite weighted shortfall; the report
+    must carry None there (the production mixed-sector request of the release smoke hit this)."""
+    import json
+    import zaad.full.planner as P
+    original = P.weighted_shortfall
+    monkeypatch.setattr(P, "weighted_shortfall", lambda req, rows: float("inf") if rows else original(req, rows))
+    rep = plan(build("X1_commercial_plus_produce", 41001, max_solve_seconds=5.))
+    json.dumps(rep, allow_nan=False, default=str)
+    assert rep["confirmation"]["candidate"]["weighted_service_shortfall"] is None

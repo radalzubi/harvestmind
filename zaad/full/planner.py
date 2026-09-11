@@ -1213,9 +1213,10 @@ def plan(req: Request) -> dict:
         accepted &= pass_stress
         stress_report.append({"stress": stress.model_dump(), "pass": pass_stress, "gate_mode": gate_mode,
                               "physically_usable": physically_ok, "within_downside": downside_ok, "service_met": service_under_stress,
-                              "incumbent": {**summarize(before), "weighted_service_shortfall": weighted_shortfall(req, before),
+                              # None, never infinity, when a stress-world settlement is physically unusable (JSON-safe report)
+                              "incumbent": {**summarize(before), "weighted_service_shortfall": _finite(weighted_shortfall(req, before)),
                                             "service": {s.id: _service_value(req, before, s) for s in req.services}},
-                              "candidate": {**summarize(after), "weighted_service_shortfall": weighted_shortfall(req, after),
+                              "candidate": {**summarize(after), "weighted_service_shortfall": _finite(weighted_shortfall(req, after)),
                                             "service": {s.id: _service_value(req, after, s) for s in req.services}}})
     if any(not x["pass"] for x in stress_report):
         blocking["stress"] = True
@@ -1365,7 +1366,7 @@ def plan(req: Request) -> dict:
         cell["achieved_mean"] /= cell["services"]
     service_reliability = {"scope": "independent confirmation worlds; stress values from the declared stress envelopes; not a guarantee",
                            "services": per_service,
-                           "weighted_service_shortfall": weighted_shortfall(req, final_rows) if final_rows else None,
+                           "weighted_service_shortfall": _finite(weighted_shortfall(req, final_rows)) if final_rows else None,
                            "customer_priority_weighted_service": sum(p * v for p, v in achieved) / priority_total if achieved and priority_total else None,
                            "by_customer_class": by_class,
                            "services_met": sum(row["classification"]["class"] == "MET" for row in per_service),
@@ -1522,8 +1523,8 @@ def plan(req: Request) -> dict:
                 "scope": "joint priority-weighted modeled shortfall under independent confirmation; not a guaranteed ex-post frontier"},
             "cash": final.cash if final else [], "reasons": reasons,
             "confirmation_benefit_lower": benefit_lower,
-            "confirmation": {"incumbent": {**summarize(incumbent_rows), "weighted_service_shortfall": weighted_shortfall(req, incumbent_rows)},
-                             "candidate": {**summarize(candidate_rows), "weighted_service_shortfall": weighted_shortfall(req, candidate_rows)}},
+            "confirmation": {"incumbent": {**summarize(incumbent_rows), "weighted_service_shortfall": _finite(weighted_shortfall(req, incumbent_rows))},
+                             "candidate": {**summarize(candidate_rows), "weighted_service_shortfall": _finite(weighted_shortfall(req, candidate_rows))}},
             "stress_confirmation": stress_report,
             "candidate_gates": candidate_gates,
             "recovery_guidance": {"status": recovery.status, "actions": action_rows(recovery),
