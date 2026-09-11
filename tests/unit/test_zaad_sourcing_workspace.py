@@ -46,6 +46,10 @@ def _app(vault, operator: str = "tenant_n") -> FastAPI:
 
     app.dependency_overrides[get_conn] = conn_override
     app.dependency_overrides[require_operator] = lambda: operator
+    # the per-process per-minute recommendation limiter is shared by every API test in the session;
+    # these tests exercise the sourcing contract, not the limiter (covered by the API security tests)
+    from api.routers.zaad import bounded_rate
+    app.dependency_overrides[bounded_rate] = lambda: None
     return app
 
 
