@@ -1,0 +1,948 @@
+{
+ "fixtures": {
+  "A_independent_demand": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "pooling_has_value"
+   },
+   "why": "independent branches diversify: one pooled central stock should cover both with less total protection than isolated buffers",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "B_correlated_demand": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "pooling_benefit_shrinks"
+   },
+   "why": "branches that move together do not diversify; the pooling benefit measured against the independent baseline must be smaller than in A",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "C_short_transfer_lead": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "central_more_useful_than_D"
+   },
+   "why": "a one-review lane makes central stock reachable for next period's demand",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "D_long_transfer_lead": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "local_more_valuable_than_C"
+   },
+   "why": "a three-review lane cannot protect near-term branch demand; more must sit locally",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "E_high_transfer_cost": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "no_churn"
+   },
+   "why": "at 40% of unit price per move nothing should be moved that demand does not need",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "F_low_transfer_cost": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "rebalance_before_purchase"
+   },
+   "why": "near-free moves and a well-stocked central: rebalancing should dominate purchasing early",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "G_central_supply_shortage": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.03,
+    "service": "feasible",
+    "action": "either",
+    "network": "principled_allocation"
+   },
+   "why": "the supplier delivers 60% of network demand: allocation, not purchasing, decides service",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "H_one_branch_demand_shock": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.03,
+    "service": "incumbent",
+    "action": "either",
+    "network": "healthy_branch_not_starved"
+   },
+   "why": "a declared surge at south must be met from the pool without starving north",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "I_shared_supplier_disruption": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.05,
+    "service": "incumbent",
+    "action": "either",
+    "network": "network_protection"
+   },
+   "why": "a declared shared supplier disruption: P0-style protection sized at the network, not per branch",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "J_asymmetric_service_targets": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "priority_branch_protected"
+   },
+   "why": "the 99% branch carries the protection; the 90% branch is not padded to 99%",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "K_unequal_demand_scale": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "small_branch_not_starved"
+   },
+   "why": "the large branch must not mechanically consume the pool; the small branch keeps its target",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "L_already_efficient_network": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "no",
+    "network": "abstain"
+   },
+   "why": "a well-run incumbent network policy with adequate stock: ZAAD should mostly report no material improvement",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "M_transfer_not_reachable_in_time": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "feasible",
+    "action": "either",
+    "network": "remote_stock_not_credited"
+   },
+   "why": "central stock four reviews away cannot serve the next four periods; the plan must not count it as protection now",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "N_pipeline_already_solves_shortage": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "incumbent",
+    "action": "either",
+    "network": "no_over_transfer"
+   },
+   "why": "transfers already in flight cover the shortage; period-0 transfers should be small (the period-0 shortfall itself is unavoidable)",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "O_multiple_transfer_options": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "cheap_lane_when_time_allows"
+   },
+   "why": "a slow cheap lane and a fast dear lane: the cheap lane should carry the bulk when time allows",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "P_transfer_capacity_limit": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.03,
+    "service": "feasible",
+    "action": "either",
+    "network": "capacity_respected"
+   },
+   "why": "a lane that carries 70% of branch demand per period: capacity binds, service as feasible",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "Q_pack_constraint_on_transfer": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "legal_packs"
+   },
+   "why": "moves in whole cases of 24 with a per-dispatch fee: only legal quantities, fewer dispatches",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "R_order_transfer_interaction": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "total_economic_sourcing"
+   },
+   "why": "central buying with an order cost plus a move, or dearer local buying: the total-economic answer, not a fixed rule",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "S_recovery_after_imbalance": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.03,
+    "service": "incumbent",
+    "action": "either",
+    "network": "recovery_then_steady"
+   },
+   "why": "south starts empty: the network recovers it from the pool, then settles without ping-pong or hoarding",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  },
+  "T_single_node_network_off": {
+   "policies": {
+    "network_rop": {
+     "runs": 0,
+     "failures": []
+    },
+    "central_pool": {
+     "runs": 0,
+     "failures": []
+    },
+    "independent": {
+     "runs": 0,
+     "failures": []
+    },
+    "echelon_base_stock": {
+     "runs": 0,
+     "failures": []
+    },
+    "gated": {
+     "runs": 0,
+     "failures": []
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "frozen_identity"
+   },
+   "why": "one node, no lane: P2 must reduce to the frozen P1 / P0 decisions exactly",
+   "valid_baselines": [],
+   "classification": "INVALID: ZAAD run incomplete"
+  }
+ },
+ "reviews": 8,
+ "network_principles": {},
+ "valid_fixtures": 0,
+ "passing_fixtures": 0,
+ "principles_passing": 0,
+ "principles_total": 0,
+ "sector_principles": {
+  "C1_case_pack_rounding": {
+   "pass": false,
+   "principle": "case_multiples",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "C2_pallet_load_threshold": {
+   "pass": false,
+   "principle": "load_limits",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "C3_moq_mov_economics": {
+   "pass": false,
+   "principle": "moq_mov",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "C4_long_import_lead": {
+   "pass": false,
+   "principle": "not_worse",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "C5_variable_supplier_arrival": {
+   "pass": false,
+   "principle": "not_worse",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "C6_storage_capacity": {
+   "pass": false,
+   "principle": "capacity",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "C7_no_material_improvement": {
+   "pass": false,
+   "principle": "abstains",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "P1_fresh_no_unnecessary_purchase": {
+   "pass": false,
+   "principle": "no_purchase_first_two_reviews",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "P2_near_expiry_inventory": {
+   "pass": true,
+   "principle": "acts_on_near_expiry",
+   "evidence": {
+    "first_review_actions": [
+     [
+      41001,
+      0,
+      124.79804747090446,
+      300.0
+     ]
+    ],
+    "north_service_zaad_vs_incumbent": [
+     [
+      41001,
+      1.0,
+      0.9023577154753191
+     ]
+    ]
+   }
+  },
+  "P3_age_at_receipt": {
+   "pass": false,
+   "principle": "uses_fresh_source",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "P4_transfer_becomes_useless": {
+   "pass": false,
+   "principle": "no_useless_transfer",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "P5_spoilage_vs_service": {
+   "pass": false,
+   "principle": "not_worse",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "P6_uncertain_usable_yield": {
+   "pass": false,
+   "principle": "service_under_yield",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "P7_fefo_settlement": {
+   "pass": false,
+   "principle": "fefo",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "P8_no_material_improvement": {
+   "pass": false,
+   "principle": "abstains",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "M1_chilled_shelf_life": {
+   "pass": false,
+   "principle": "not_worse",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "M2_frozen_shelf_life": {
+   "pass": false,
+   "principle": "not_worse",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "M3_storage_state_infeasibility": {
+   "pass": true,
+   "principle": "never_at_ineligible_location",
+   "evidence": {
+    "south_end_stock": [],
+    "south_lane_units": [
+     [
+      41001,
+      0.0
+     ]
+    ],
+    "south_service": [
+     [
+      41001,
+      0.0
+     ]
+    ]
+   }
+  },
+  "M4_cold_chain_lane": {
+   "pass": false,
+   "principle": "eligible_lane_only",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "M5_aging_vs_service": {
+   "pass": false,
+   "principle": "not_worse",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "M6_transfer_usable_lot": {
+   "pass": false,
+   "principle": "moves_usable_lot",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "M7_transfer_rejected_by_expiry": {
+   "pass": true,
+   "principle": "expiring_lot_not_moved",
+   "evidence": {
+    "first_review_transfers": [
+     [
+      41001,
+      {}
+     ]
+    ]
+   }
+  },
+  "M8_no_material_improvement": {
+   "pass": false,
+   "principle": "abstains",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "X1_commercial_plus_produce": {
+   "pass": false,
+   "principle": "isolation_and_capacity",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "X2_produce_plus_frozen_seafood": {
+   "pass": false,
+   "principle": "shared_capacity_no_cross_expiry",
+   "evidence": {
+    "detail": "no completed ZAAD cell"
+   }
+  },
+  "X3_three_sectors": {
+   "pass": true,
+   "principle": "no_cross_physics",
+   "evidence": {
+    "capacity_violations": [],
+    "expired_units": [
+     [
+      41001,
+      0.0
+     ]
+    ],
+    "frozen_at_south": []
+   }
+  }
+ },
+ "sector_fixture_pass": {
+  "C1_case_pack_rounding": false,
+  "C2_pallet_load_threshold": false,
+  "C3_moq_mov_economics": false,
+  "C4_long_import_lead": false,
+  "C5_variable_supplier_arrival": false,
+  "C6_storage_capacity": false,
+  "C7_no_material_improvement": false,
+  "P1_fresh_no_unnecessary_purchase": false,
+  "P2_near_expiry_inventory": false,
+  "P3_age_at_receipt": false,
+  "P4_transfer_becomes_useless": false,
+  "P5_spoilage_vs_service": false,
+  "P6_uncertain_usable_yield": false,
+  "P7_fefo_settlement": false,
+  "P8_no_material_improvement": false,
+  "M1_chilled_shelf_life": false,
+  "M2_frozen_shelf_life": false,
+  "M3_storage_state_infeasibility": false,
+  "M4_cold_chain_lane": false,
+  "M5_aging_vs_service": false,
+  "M6_transfer_usable_lot": false,
+  "M7_transfer_rejected_by_expiry": false,
+  "M8_no_material_improvement": false,
+  "X1_commercial_plus_produce": false,
+  "X2_produce_plus_frozen_seafood": false,
+  "X3_three_sectors": false
+ },
+ "runtime": {
+  "reviews": 12,
+  "p50": 1.6413585206028074,
+  "p95": 2.6785548329353333,
+  "max": 6.022072667255998,
+  "over_60s": [],
+  "over_180s": [],
+  "solve_statuses": {
+   "OPTIMAL": 42,
+   "INFEASIBLE": 24
+  },
+  "by_sector": {
+   "PRODUCE": {
+    "p50": 1.6097160000354052,
+    "max": 6.022072667255998
+   },
+   "MEAT_SEAFOOD": {
+    "p50": 0.5446370211429894,
+    "max": 2.6785548329353333
+   },
+   "MIXED": {
+    "p50": 2.04448699997738,
+    "max": 2.0509637077338994
+   }
+  }
+ },
+ "errors": [],
+ "tag": "sector_smoke"
+}

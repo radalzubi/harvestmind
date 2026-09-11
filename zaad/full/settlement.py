@@ -13,6 +13,7 @@ from zaad.full.contracts import Request
 from zaad.full.model import Solution, compatible
 from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
+from zaad.sectors.contracts import resolve as sector_physics
 from zaad.full.model import pallet_units, supplier_orders
 
 
@@ -46,6 +47,9 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
     calendars = {c.id: c for c in req.calendars}
     customers = {c.id: c for c in req.customers}
     arcs = {a.id: a for a in req.transfers}
+    # Sector operating physics, re-derived from the executed plan exactly as the model applied them
+    # (receipt life, storage-state eligibility, sellable life, shipment weight). None on a legacy request.
+    physics = sector_physics(req)
     stock: dict[tuple[str, str, int], float] = defaultdict(float)
     locked: dict[str, float] = defaultdict(float)
     ledger: dict[str, float] = defaultdict(float)
@@ -99,7 +103,8 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
                     keep = next(o for o in po.options if o.action == "keep")
                     due = option.due_in + max(0, due - keep.due_in)
                 quantity = q * world.po_fill[po.id]
-                pending.append((source.sku, source.destination, due + skus[source.sku].shelf_life, due, quantity, "external"))
+                life = skus[source.sku].shelf_life if physics is None else physics.receipt_life(source.sku, source.id)
+                pending.append((source.sku, source.destination, due + life, due, quantity, "external"))
         if abs(total - po.remaining) > 1e-5 or (not po.allow_split_amendments and active != 1):
             raise PhysicalViolation("PO amendment conservation or exclusivity")
         ledger["opening_assets"] += po.prepaid_per_remaining_unit * po.remaining
@@ -145,6 +150,11 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
                 raise PhysicalViolation("ineligible source or expired quote")
             if q > min(source.maximum, source.capacity_by_period[t]) + 1e-5 or q < source.minimum - 1e-5:
                 raise PhysicalViolation("source capacity / MOQ")
+            if physics is not None:
+                if not physics.location_ok(source.sku, source.destination):
+                    raise PhysicalViolation(f"{source.destination} cannot store {physics.state(source.sku)} ({source.sku})")
+                if physics.receipt_life(source.sku, source.id) <= physics.min_receipt(source.sku):
+                    raise PhysicalViolation(f"receipt from {source.id} arrives below the minimum remaining life at receipt ({source.sku})")
             if source.multiple and abs(q / source.multiple - round(q / source.multiple)) > 1e-5:
                 raise PhysicalViolation("pack violation")
             for multiple in (source.case_multiple, source.pallet_multiple, source.transport_multiple):
@@ -167,7 +177,8 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             payments[departure] += q * (source.freight_per_unit + source.handling_per_unit)
             lc.append((due, q * price * term.letter_of_credit_fraction))
             quantity = q * world.fills[source.id, t]
-            pending.append((source.sku, source.destination, due + skus[source.sku].shelf_life, due, quantity, "external"))
+            life = skus[source.sku].shelf_life if physics is None else physics.receipt_life(source.sku, source.id)
+            pending.append((source.sku, source.destination, due + life, due, quantity, "external"))
         # Supplier-order economics (P1): the same rows the model carries, re-derived from the plan.
         for supplier, srcs, st in supplier_orders(req):
             lines = [(s, plan.purchases.get((s.id, t), 0.)) for s in srcs]
@@ -177,6 +188,10 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             value = sum(q * s.unit_price * terms[s.terms].fx_rate_to_currency for s, q in lines)
             if st.minimum_order_value and value < st.minimum_order_value - 1e-6:
                 raise PhysicalViolation("supplier minimum order value")
+            if st.max_shipment_weight is not None and physics is not None:
+                weight = sum(q * float(physics.weight(s.sku) or 0.) for s, q in lines)
+                if weight > st.max_shipment_weight + 1e-6:
+                    raise PhysicalViolation("shipment exceeds the supplier's maximum weight")
             departure = min(dates(req, s, t)[0] for s, _ in lines)
             arrival = min(world.arrival[s.id, t] for s, _ in lines)
             ledger["ordering"] += st.fixed_order_cost
@@ -221,6 +236,11 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
                     continue
             if not arc.approved or due >= expiry or q > stock[key] + 1e-5 or q < 0:
                 raise PhysicalViolation("transfer lacks usable source stock or approval")
+            if physics is not None:
+                if not physics.lane_ok(arc.sku, arc_id) or not physics.location_ok(arc.sku, arc.destination):
+                    raise PhysicalViolation(f"lane {arc_id} or {arc.destination} cannot carry / hold {physics.state(arc.sku)} ({arc.sku})")
+                if not physics.receivable(arc.sku, expiry, due):
+                    raise PhysicalViolation(f"transfer on {arc_id} would arrive with {expiry - due} periods of life, below the minimum at receipt ({arc.sku})")
             stock[key] -= q
             transfer_usage[arc_id] += q
             pending.append((arc.sku, arc.destination, expiry, due, q * (1 - arc.loss_fraction), "transfer"))
@@ -251,7 +271,8 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             need = demand
             substitutions = 0.
             for sku, ratio, fee in compatible(req, service):
-                for key in sorted([k for k in stock if k[0] == sku and k[1] == service.location], key=lambda k: k[2]):
+                for key in sorted([k for k in stock if k[0] == sku and k[1] == service.location
+                                   and (physics is None or physics.sellable(sku, k[2], t))], key=lambda k: k[2]):
                     quantity = min(need, max(0., stock[key]) / ratio)
                     stock[key] -= quantity * ratio
                     served_inputs += quantity * ratio
@@ -379,7 +400,8 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             "shipments": shipments,
             "unpaid_contractual_payments": terminal_liability,
             "terminal_liability_reserve": terminal_liability, "terminal_financing_headroom": terminal_headroom,
-            "end_stock": [{"sku": s, "location": location_key, "expiry": e, "quantity": q} for (s, location_key, e), q in stock.items()],
+            "end_stock": [{"sku": s, "location": location_key, "expiry": e, "quantity": q,
+                           **({"sellable": physics.sellable(s, e, end)} if physics is not None else {})} for (s, location_key, e), q in stock.items()],
             "future_payments": {t: v for t, v in payments.items() if t >= end},
             "pending": pending,
             "flows": flows, "transfer_events": transfer_events,

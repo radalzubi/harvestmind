@@ -132,28 +132,33 @@ async def recommend(request: HTTPRequest, operator: str | None = Depends(require
     return await compute(req)
 
 
-def _workspace_request(conn, operator: str, horizon: int, service_target: float, skus: str | None, max_solve_seconds: float, network: bool = False):
+def _workspace_request(conn, operator: str, horizon: int, service_target: float, skus: str | None, max_solve_seconds: float, network: bool = False,
+                       sector_mode: str | None = None):
     from zaad.full.workspace import WorkspaceError, build_request
     subset = [x.strip() for x in skus.split(",") if x.strip()] if skus else None
     try:
         if network:
             # P2: the vault's declared locations and lanes; identical to the frozen adapter below two locations
             from zaad.meio.workspace import build_network_request
-            return build_network_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds)
-        return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds)
+            return build_network_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode)
+        return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode)
     except WorkspaceError as exc:
         raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
+    except ValueError as exc:
+        # sector physics declared inconsistently in the vault (unknown state, threshold above shelf life, ...)
+        raise HTTPException(422, {"code": "sector_physics_invalid", "message": str(exc)}) from exc
 
 
 @router.get("/request/from-workspace", dependencies=[Depends(bounded_rate)])
 def workspace_request(operator: str = Depends(authenticated), conn=Depends(get_conn), horizon: int = Query(12, ge=4, le=26),
                       service_target: float = Query(.95, gt=.5, le=1.), skus: str | None = Query(None, description="comma-separated subset"),
                       max_solve_seconds: float = Query(15., gt=0, le=120),
-                      network: bool = Query(False, description="P2: build the multi-location network from stg_fmcg_locations / lanes / transfers")):
+                      network: bool = Query(False, description="P2: build the multi-location network from stg_fmcg_locations / lanes / transfers"),
+                      sector_mode: Literal["COMMERCIAL", "PRODUCE", "MEAT_SEAFOOD"] | None = Query(None, description="sector physics: the request's default sector (per-SKU columns override it)")):
     """The frozen contract built from the operator's own vault (the canonical customer-data path), with
     the build report: rows read, compact dimensions, fitted supplier fill and lead with sample sizes,
     provenance, warnings and the leakage guard. No plan is run."""
-    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds, network)
+    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode)
     return {"request": req.model_dump(mode="json"), "build": build}
 
 
@@ -162,12 +167,13 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
                          service_target: float = Query(.95, gt=.5, le=1.), skus: str | None = Query(None, description="comma-separated subset"),
                          max_solve_seconds: float = Query(15., gt=0, le=120), commit_window_weeks: int = Query(4, ge=1, le=8),
                          shape: Literal["network", "purchase_plan"] = Query("purchase_plan"),
-                         network: bool = Query(False, description="P2: plan the declared multi-location network (purchases, transfers, allocation)")):
+                         network: bool = Query(False, description="P2: plan the declared multi-location network (purchases, transfers, allocation)"),
+                         sector_mode: Literal["COMMERCIAL", "PRODUCE", "MEAT_SEAFOOD"] | None = Query(None, description="sector physics: the request's default sector (per-SKU columns override it)")):
     """Plan the operator's workspace with the frozen P1 optimizer: vault -> compact Request -> plan.
     `shape=purchase_plan` returns the workspace purchase-plan rows (approval stays with the operator,
     never an executable order); `shape=network` returns the full network report with the build."""
     from zaad.full.workspace import to_purchase_plan
-    req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds, network)
+    req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode)
     report = await compute(req)
     if shape == "network":
         return {"report": report, "build": build, "executable_purchase_order": False}

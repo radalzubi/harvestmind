@@ -9,6 +9,7 @@ from pydantic import Field, field_validator, model_validator
 from pydantic_core import to_jsonable_python
 
 from zaad.contracts import Dated, Record
+from zaad.sectors.contracts import SectorMode, SkuPhysics, StorageState
 
 
 class SKU(Dated):
@@ -48,6 +49,9 @@ class Location(Dated):
     capacity_volume: float = Field(gt=0)
     holding_per_value_period: float = Field(ge=0)
     receiving_calendar: str
+    # Storage states this location can hold (sector physics). Empty (default) = unrestricted, the
+    # frozen behaviour; a SKU whose declared state is not listed cannot be held or received here.
+    storage_states: tuple[StorageState, ...] = ()
 
 
 class Stock(Dated):
@@ -161,6 +165,8 @@ class Transfer(Dated):
     # lane is used at all (a truck, a consolidation fee); 0 adds nothing to the model.
     multiple: float = Field(default=0., ge=0)
     fixed_cost_per_dispatch: float = Field(default=0., ge=0)
+    # Storage states the lane can carry (sector physics, cold chain). Empty (default) = unrestricted.
+    storage_states: tuple[StorageState, ...] = ()
 
 
 class Substitute(Dated):
@@ -328,6 +334,9 @@ class SupplierTerms(Dated):
     freight_tiers: tuple[FreightTier, ...] = ()
     freight_per_pallet: float = Field(default=0., ge=0)
     max_pallets: float | None = Field(default=None, gt=0)
+    # Shipment weight cap (sector physics): sum of quantity x SkuPhysics.weight_per_unit per order,
+    # in the operator's mass unit. None (default) = no weight physics.
+    max_shipment_weight: float | None = Field(default=None, gt=0)
     provenance: dict[str, Provenance] = {}
 
     @model_validator(mode="after")
@@ -631,6 +640,11 @@ class Request(Record):
     terminal_economic_basis: Literal["cycle", "landed"] = "cycle"
     mode: Literal["LEAN", "PROTECT", "ALLOCATE", "RECOVER"] = "LEAN"
     evidence_label: Literal["SYNTHETIC", "OPERATOR-SHADOW"]
+    # Sector operating physics (three-sector engine). `sector_mode` is the request's default sector;
+    # `sku_physics` declares per-SKU profiles (storage state, life at receipt, sellable life, weight)
+    # and overrides the default. Both absent (default) = the frozen request: no physics consulted.
+    sector_mode: SectorMode | None = None
+    sku_physics: tuple[SkuPhysics, ...] = ()
 
     @field_validator("signals")
     @classmethod
@@ -724,4 +738,7 @@ class Request(Record):
         require(len(self.liquidity.known_receivables) >= self.horizon and len(self.liquidity.other_payments) >= self.horizon)
         require(self.liquidity.opening_debt <= self.liquidity.credit_limit)
         require(min(self.liquidity.known_receivables) >= 0 and min(self.liquidity.other_payments) >= 0)
+        if self.sector_mode is not None or self.sku_physics:
+            from zaad.sectors.validation import validate_request
+            validate_request(self)
         return self

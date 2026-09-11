@@ -25,11 +25,21 @@ jobs:
   test:
     name: pytest
     runs-on: ubuntu-latest
-    # 45 minutes held 1,810 tests at ~35 min on this runner; the P2 suite (1,845) hit the budget
-    # at 85% on its first remote run (a 20-minute stretch inside the integration tests that does
-    # not reproduce locally on the same solver stack). Budget widened and per-test durations
-    # printed so the runner's own slow tests are visible; no test or optimizer change.
+    # The full suite runs 4-5 minutes locally and 55-90+ minutes on this runner (solver-building
+    # tests are 10-15x slower under 2 vCPUs and coverage). The three-sector suite (1,865 tests)
+    # exceeded 90 minutes in one job, so the same tests run as three shards in parallel; every
+    # test still runs, no timeout is widened, no optimizer change.
     timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: integration
+            paths: tests/integration
+          - shard: unit-core
+            paths: tests/unit --ignore-glob='tests/unit/test_zaad_*.py'
+          - shard: unit-zaad
+            paths: tests/unit/test_zaad_*.py
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -46,12 +56,12 @@ jobs:
         # isolation, the canonical workspace path).
         env:
           PYTHONHASHSEED: "0"
-        run: python -m pytest tests/ -q --durations=30 --cov=. --cov-report=term --cov-report=xml
+        run: python -m pytest ${{ matrix.paths }} -q --durations=30 --cov=. --cov-report=term --cov-report=xml
       - name: Upload coverage artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-xml
+          name: coverage-xml-${{ matrix.shard }}
           path: coverage.xml
           if-no-files-found: warn
 

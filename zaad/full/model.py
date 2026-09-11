@@ -17,6 +17,7 @@ from scipy.optimize import Bounds, LinearConstraint, milp
 from scipy.sparse import coo_matrix
 
 from zaad.full.contracts import Request, SupplierTerms
+from zaad.sectors.contracts import resolve as sector_physics
 from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
 
@@ -338,6 +339,20 @@ def warm_start_vector(m: Linear, seed: Solution, seconds: float) -> tuple[dict, 
     return telemetry, done.get("x")
 
 
+def _cohort_slab_rows(m: "Linear", physics, sku: str, H: int, slabs: list[tuple[int, int]], supply: dict[int, float], expiry_of: dict[int, int]) -> None:
+    """Cohort-aware continuation (sector physics): the units served in post-window period j or later
+    can only come from residual cohorts still sellable at period H + j. One cumulative row per slab
+    whose eligible supply is smaller than the full residual; a request whose cohorts all outlive the
+    slabs adds nothing (the frozen aggregate row already binds)."""
+    threshold = physics.min_sale(sku)
+    for j, _ in slabs:
+        eligible = {q: coef for q, coef in supply.items() if expiry_of.get(q, math.inf) - (H + j) > threshold}
+        if len(eligible) == len(supply):
+            continue
+        later = [var for jj, var in slabs if jj >= j]
+        m.row({**{q: -coef for q, coef in eligible.items()}, **{var: 1. for var in later}}, upper=0)
+
+
 def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           service_first: str | None = None, cvar_weight: float = 0.,
           fixed: Solution | None = None, disabled: frozenset[str] = frozenset(),
@@ -369,6 +384,10 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     terms = {p.id: p for p in req.terms}
     customers = {c.id: c for c in req.customers}
     calendars = {c.id: c for c in req.calendars}
+    # Sector operating physics (three-sector engine): None on a legacy request, and then no branch
+    # below reads it. Physics changes the decision environment - which cohorts may be received,
+    # held, moved or sold, and what a residual unit is worth - never the objective's ownership.
+    physics = sector_physics(req)
     m = Linear()
     x, tr, po, inv, use, unmet, cash, debt = {}, {}, {}, {}, {}, {}, {}, {}
     use_by_stock = defaultdict(list)
@@ -407,6 +426,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     shortage_terms.append((service, t, cuts))
     # Post-horizon supply per (sku, location): arrivals due at or after H and end-of-horizon stock (v6 continuation).
     post: list[dict[tuple[str, str], dict[int, float]]] = [defaultdict(lambda: defaultdict(float)) for _ in worlds]
+    post_expiry: dict[int, int] = {}      # supply variable -> its cohort's expiry period (sector physics continuation)
     payments: list[list[dict[int, float]]] = [[defaultdict(float) for _ in range(H)] for _ in worlds]
     arrivals: list[dict[tuple, dict[int, float]]] = [defaultdict(lambda: defaultdict(float)) for _ in worlds]
     outbound: dict[tuple, dict[int, float]] = defaultdict(lambda: defaultdict(float))
@@ -431,6 +451,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             if inbound.due_in >= H:
                 costs[w][q] -= skus[inbound.sku].terminal_value
                 post[w][inbound.sku, inbound.destination][q] += 1.
+                post_expiry[q] = int(inbound.expires_in)
     tail: list[dict[int, float]] = [defaultdict(float) for _ in worlds]
 
     def expense(index, amount, w, when):
@@ -462,6 +483,11 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             eligible = source.approved and source.compliance == "cleared" and order_date <= source.quote_expires
             if "alternates" in disabled and primary_id.get((source.sku, source.destination)) != source.id:
                 eligible = False
+            if physics is not None and (not physics.location_ok(source.sku, source.destination)
+                                        or physics.receipt_life(source.sku, source.id) <= physics.min_receipt(source.sku)):
+                # the destination cannot store the SKU's state, or every arrival lands below the
+                # minimum remaining life at receipt: the source is not usable (sector physics)
+                eligible = False
             cap = min(source.maximum, source.capacity_by_period[t]) if eligible else 0.
             if allowed_periods is not None and t not in allowed_periods:
                 cap = 0.   # cadence candidate (P1): no order is placed outside the cadence
@@ -491,7 +517,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 due, fill = world.arrival[source.id, t], world.fills[source.id, t]
                 if not 0 <= fill <= 1 or due <= t:
                     raise ValueError("invalid physical fill or arrival chronology")
-                expiry = due + skus[source.sku].shelf_life
+                expiry = due + (skus[source.sku].shelf_life if physics is None else physics.receipt_life(source.sku, source.id))
                 cohorts[source.sku].add(expiry)
                 arrivals[w][source.sku, source.destination, expiry, due][q] += fill
                 trigger = {"order": t, "shipment": departure, "arrival": due}[term.balance_trigger]
@@ -513,6 +539,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 payments[w][t][q] += price * term.financing_fee_fraction
                 if due >= H:
                     costs[w][q] -= fill * skus[source.sku].terminal_value
+                    post_expiry.setdefault(q, expiry)
                     # New purchases landing after the horizon earn salvage only: continuation demand
                     # may be served by stock held to the end and by orders already committed, never
                     # by a plan to buy late for it (that incentive deferred buying into a closure).
@@ -533,6 +560,9 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 m.row({x[s.id, t]: 1, order: -caps[s.id]}, upper=0)
             if st.minimum_order_value:
                 m.row({**{x[s.id, t]: s.unit_price * terms[s.terms].fx_rate_to_currency for s in srcs}, order: -st.minimum_order_value}, lower=0)
+            if st.max_shipment_weight is not None and physics is not None:
+                # shipment weight cap (sector physics): like the pallet cap, one continuous row per order
+                m.row({**{x[s.id, t]: float(physics.weight(s.sku) or 0.) for s in srcs}, order: -st.max_shipment_weight}, upper=0)
             departure = min(dates(req, s, t)[0] for s in srcs)
             for w, world in enumerate(worlds):
                 arrival = min(world.arrival[s.id, t] for s in srcs)
@@ -603,12 +633,13 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 if option.action != "keep":
                     keep = next(o for o in order.options if o.action == "keep")
                     due += max(0, world.po_due[order.id] - keep.due_in)
-                expiry = due + skus[source.sku].shelf_life
+                expiry = due + (skus[source.sku].shelf_life if physics is None else physics.receipt_life(source.sku, source.id))
                 cohorts[source.sku].add(expiry)
                 arrivals[w][source.sku, source.destination, expiry, due][q] += world.po_fill[order.id]
                 if due >= H:
                     costs[w][q] -= world.po_fill[order.id] * skus[source.sku].terminal_value
                     post[w][source.sku, source.destination][q] += world.po_fill[order.id]
+                    post_expiry.setdefault(q, expiry)
         m.row({q: 1 for q in quantities}, order.remaining, order.remaining)
         if switches:
             m.row({q: 1 for q in switches}, 1, 1)
@@ -635,6 +666,11 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 cap = arc.capacity if arc.approved and "transfers" not in disabled else 0.
                 if due >= expiry:
                     cap = 0.
+                if physics is not None and (not physics.lane_ok(arc.sku, arc.id) or not physics.location_ok(arc.sku, arc.destination)
+                                            or not physics.receivable(arc.sku, expiry, due)):
+                    # the lane or the destination cannot carry / hold the SKU's state, or the cohort
+                    # would arrive below the minimum remaining life at receipt (sector physics)
+                    cap = 0.
                 q = m.var(("transfer", arc.id, expiry, t), upper=cap)
                 tr[arc.id, expiry, t] = q
                 ids.append(q)
@@ -648,6 +684,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     if due >= H:
                         costs[w][q] -= (1 - arc.loss_fraction) * skus[arc.sku].terminal_value
                         post[w][arc.sku, arc.destination][q] += 1 - arc.loss_fraction
+                        post_expiry.setdefault(q, expiry)
             if ids:
                 m.row({q: 1 for q in ids}, upper=arc.capacity)
                 lane_cap = arc.capacity if arc.approved and "transfers" not in disabled else 0.
@@ -686,7 +723,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     if expiry <= t:
                         continue
                     index = m.var(("inventory", sku, location, expiry, t, w),
-                                  upper=max(0., (locs[location].capacity_volume - locked[location]) / skus[sku].volume))
+                                  upper=(0. if physics is not None and not physics.location_ok(sku, location)
+                                         else max(0., (locs[location].capacity_volume - locked[location]) / skus[sku].volume)))
                     inv[sku, location, expiry, t, w] = index
                     stock_indices[sku, location, t, w].append(index)
                     costs[w][index] += skus[sku].asset_value * locs[location].holding_per_value_period
@@ -696,6 +734,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         costs[w][index] -= skus[sku].terminal_value if expiry > H else 0.
                         if expiry > H:
                             post[w][sku, location][index] += 1.
+                            post_expiry[index] = expiry
             if excess_penalty:
                 for (sku, location), (baseline, rate) in excess_penalty.items():
                     held = stock_indices.get((sku, location, t, w), [])
@@ -721,6 +760,9 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         key = (sku, service.location, expiry, t, w)
                         if key not in inv:
                             continue
+                        if physics is not None and not physics.sellable(sku, expiry, t):
+                            # below the minimum remaining life at sale: physical stock, not sellable stock
+                            continue
                         q = m.var(("allocate", sku, service.id, expiry, t, w), upper=d)
                         use[sku, service.id, expiry, t, w] = (q, conversion)
                         use_by_stock[sku, service.location, expiry, t, w].append((q, conversion))
@@ -743,7 +785,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         window = max(H, latest_due[sku]) if (FEFO_SYMMETRY_ELIMINATION and req.transfers) else math.inf
                         for expiry, q in consumptions:
                             older = [inv[sku, service.location, e, t, w] for e in cohorts[sku]
-                                     if t < e < expiry and e <= window and (sku, service.location, e, t, w) in inv]
+                                     if t < e < expiry and e <= window and (sku, service.location, e, t, w) in inv
+                                     and (physics is None or physics.sellable(sku, e, t))]
                             if older:
                                 active = m.var(("fefo", sku, service.id, expiry, t, w), upper=1, integer=True)
                                 m.row({q: 1, active: -d}, upper=0)
@@ -932,14 +975,18 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 slabs = value if isinstance(value, list) else [value]
                 supply_terms = post[w].get((sku, location), {})
                 served_vars = []
+                served_slabs: list[tuple[int, int]] = []
                 for j, (demand_units, margin) in enumerate(slabs):
                     if demand_units > 0 and margin > 0 and supply_terms:
                         served = m.var(("continuation", sku, location, w, j), upper=demand_units)
                         costs[w][served] -= margin
                         served_vars.append(served)
+                        served_slabs.append((j, served))
                         slab_vars[sku, location, j] = (served, demand_units)
                 if served_vars:
                     m.row({**{q: -coef for q, coef in supply_terms.items()}, **{s: 1. for s in served_vars}}, upper=0)
+                    if physics is not None:
+                        _cohort_slab_rows(m, physics, sku, H, served_slabs, supply_terms, post_expiry)
             # Network continuation (P2): an origin without customers of its own may earn a fed location's
             # slab margin less the lane cost, from the slab its lane lead can reach, sharing that
             # location's post-window demand with the location's own residual (one row per slab), and
@@ -949,6 +996,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 if not supply_terms:
                     continue
                 via_vars = []
+                via_slabs: list[tuple[int, int]] = []
                 shared: dict[tuple[str, str, int], list[int]] = defaultdict(list)
                 for feed in feeds:
                     fed_entry = continuation.get((sku, feed["branch"]))
@@ -962,9 +1010,12 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         via = m.var(("continuation_via", sku, feed_origin, feed.get("lane", feed["branch"]), w, j), upper=demand_units)
                         costs[w][via] -= net
                         via_vars.append(via)
+                        via_slabs.append((j, via))
                         shared[sku, feed["branch"], j].append(via)
                 if via_vars:
                     m.row({**{q: -coef for q, coef in supply_terms.items()}, **{v: 1. for v in via_vars}}, upper=0)
+                    if physics is not None:
+                        _cohort_slab_rows(m, physics, sku, H, via_slabs, supply_terms, post_expiry)
                     for slab_key, vias in shared.items():
                         own = slab_vars.get(slab_key)
                         row = {v: 1. for v in vias}
