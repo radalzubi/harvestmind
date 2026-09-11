@@ -27,6 +27,7 @@ COMPONENT_OF = {
     "financing": "FINANCING", "working_capital": "FINANCING",
     "sla": "SHORTAGE", "lost_sales_opportunity": "SHORTAGE",
     "substitution": "OTHER", "transfer": "OTHER",
+    "switching": "ORDERING",   # P3: a declared switching / qualification cost, charged once per newly used source
     "opening_assets": "INVENTORY_VALUE_CHANGE", "closing_assets": "INVENTORY_VALUE_CHANGE",
     "terminal_continuation": "INVENTORY_VALUE_CHANGE",   # P1 lot-sizing terminal valuation on evaluation rows (planner.evaluate)
 }

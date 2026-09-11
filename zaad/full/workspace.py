@@ -31,6 +31,7 @@ from typing import Any
 import pandas as pd
 
 from zaad.full.contracts import Request
+from zaad.sourcing.workspace import sourcing_block
 from zaad.sectors.workspace import lot_expiry_periods, sku_physics_rows
 from zaad.full.uncertainty import MIN_SUPPLY_RECORDS
 
@@ -143,7 +144,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                   service_target: float = .95, history_weeks: int = 52, seed: int = 41001, scenarios: int = 3,
                   max_solve_seconds: float = 15., min_history_weeks: int = MIN_HISTORY_WEEKS,
                   shipment_observations_per_source: int = 60, skus: list[str] | None = None,
-                  sector_mode: str | None = None) -> tuple[Request, dict[str, Any]]:
+                  sector_mode: str | None = None, sourcing: bool = False) -> tuple[Request, dict[str, Any]]:
     """The frozen contract built from the operator's vault, plus the build report (rows read, compact
     dimensions, fits with sample sizes, provenance, warnings, leakage guard). Raises WorkspaceError with
     an operator-facing message when the workspace cannot be planned yet."""
@@ -254,6 +255,19 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     if unsourced:
         warnings.append(f"{len(unsourced)} SKU(s) have no supplier (master or purchase history) and cannot be sourced (e.g. {unsourced[:3]})")
     supplier_ids = sorted({sku_supplier[s] for s in products if s in sku_supplier})
+    # sourcing portfolio (P3, migration 018): declared alternate source options per SKU; nothing without the flag
+    alternates: list[dict[str, Any]] = []
+    primary_declared: dict[str, dict[str, Any]] = {}
+    source_table_present = False
+    if sourcing:
+        from zaad.sourcing.workspace import alternate_rows, primary_rows, source_table
+        table = source_table(conn)
+        source_table_present = table is not None
+        alternates = alternate_rows(table, [s for s in products if s in sku_supplier], sku_supplier)
+        primary_declared = primary_rows(table, [s for s in products if s in sku_supplier], sku_supplier)
+        if not source_table_present:
+            warnings.append("sourcing requested but the vault has no stg_fmcg_sources table (migration 018): the frozen single-source request is built")
+        supplier_ids = sorted(set(supplier_ids) | {a["supplier"] for a in alternates})
     po_peak: dict[str, float] = {}
     if len(pos):
         past = pos[pos["po_date"] < origin].assign(week=((pos["po_date"] - origin).dt.days // 7))
@@ -278,11 +292,16 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     # ── contract rows ──
     sku_rows, source_rows, service_rows, history_rows, stock_rows, event_rows, supplier_terms = [], [], [], [], [], [], []
     latest_cost: dict[str, float] = {}
+    latest_cost_by_supplier: dict[tuple[str, str], float] = {}
     if len(pos):
         for sku, group in pos[pos["po_date"] < origin].sort_values("po_date").groupby("sku"):
             cost = _num(group["unit_cost"].dropna().iloc[-1], None) if group["unit_cost"].notna().any() else None
             if cost:
                 latest_cost[str(sku)] = float(cost)
+        for (sku, sid), group in pos[pos["po_date"] < origin].sort_values("po_date").groupby(["sku", "supplier_id"]):
+            cost = _num(group["unit_cost"].dropna().iloc[-1], None) if group["unit_cost"].notna().any() else None
+            if cost:
+                latest_cost_by_supplier[str(sku), str(sid)] = float(cost)
     pack: dict[str, dict[str, float]] = {}
     for row in master.itertuples():
         sku = str(row.sku)
@@ -332,6 +351,37 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     planned = {r["id"] for r in sku_rows}
     sourced = {r["sku"] for r in source_rows}
     physics_rows, physics_mode = sku_physics_rows(master, sorted(planned), period_days, provenance, warnings, sector_mode)
+    declared_sourcing: dict[str, dict[str, Any]] = {}
+    for sku, d in primary_declared.items():
+        if sku in sourced:
+            declared_sourcing[f"src_{sku}"] = d
+    for alt in alternates:
+        sku, sid = alt["sku"], alt["supplier"]
+        base_row = next((r for r in source_rows if r["id"] == f"src_{sku}"), None)
+        if base_row is None:
+            warnings.append(f"declared source {sid} for SKU {sku} skipped: the SKU is not planned")
+            continue
+        fit = fits.get(sid, {"fill_mean": ASSUMED_FILL[0], "fill_sd": ASSUMED_FILL[1], "lead_days": ASSUMED_LEAD_DAYS, "lead_sd_days": ASSUMED_LEAD_SD_DAYS})
+        cap = min(capacity[sid][0], alt["capacity_per_week"]) if alt["capacity_per_week"] else capacity[sid][0]
+        unit_cost = alt["unit_cost"] or latest_cost_by_supplier.get((sku, sid)) or base_row["unit_price"]
+        provenance[f"source.{sku}.{sid}.unit_price"] = ("CUSTOMER_PROVIDED" if alt["unit_cost"] else "INFERRED_FROM_HISTORY" if (sku, sid) in latest_cost_by_supplier else "CONFIGURED_ASSUMPTION")
+        lead_days = int(round(alt["lead_time_promised_weeks"] * 7)) if alt["lead_time_promised_weeks"] else int(fit["lead_days"])
+        source_id = f"src_{sku}__{sid}"
+        source_rows.append({**base_row, "id": source_id, "supplier": sid, "route": [sid, LOCATION], "resources": [f"cap_{sid}"], "capacity_by_period": [cap] * horizon,
+                            "unit_price": float(unit_cost), "freight_per_unit": float(alt["freight_per_unit"] if alt["freight_per_unit"] is not None else _num(economics.get(f"freight_per_unit_{sid}"), 0.) or 0.),
+                            "handling_per_unit": float(alt["handling_per_unit"] if alt["handling_per_unit"] is not None else base_row["handling_per_unit"]),
+                            "minimum": float(alt["moq_units"] or 0.), "case_multiple": float(alt["units_per_case"] if alt["units_per_case"] is not None else base_row["case_multiple"]),
+                            "maximum": cap, "fixed_order_fee": float(alt["fixed_po_cost"] or 0.), "terms": f"terms_{sid}",
+                            "lead_days": max(1, lead_days), "fill_mean": float(fit["fill_mean"]), "fill_sd": float(fit["fill_sd"]), "lead_sd_days": float(fit["lead_sd_days"]),
+                            "approved": bool(alt["approved"]), "compliance": alt["compliance"] if alt["compliance"] in ("cleared", "blocked", "unreviewed") else "unreviewed"})
+        declared_sourcing[source_id] = alt
+        if alt["age_at_receipt_days"] is not None:
+            profile = next((p for p in physics_rows if p["sku"] == sku), None)
+            if profile is not None:
+                profile.setdefault("age_at_receipt_by_source", {})[source_id] = max(0, int(round(alt["age_at_receipt_days"] / period_days)))
+                profile.setdefault("provenance", {})["age_at_receipt_by_source"] = "OPERATOR_DECLARED"
+            else:
+                warnings.append(f"source {sid} for SKU {sku} declares an age at receipt but the SKU has no physics profile; ignored")
 
     # ── supplier terms (order-level economics the P1 engine prices) ──
     terms_rows, resource_rows = [], []
@@ -463,6 +513,9 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         # sector physics (three-sector engine): profiles from the SKU master's physics columns, the
         # request default from the caller or the single sector the master declares; nothing when absent
         "sector_mode": physics_mode, "sku_physics": physics_rows,
+        # sourcing portfolio (P3): declared shares, incumbent mix, switching costs and risk groups; None when nothing is declared
+        "sourcing": (sourcing_block(source_rows, declared_sourcing, suppliers if len(suppliers) else None, LOCATION, provenance, warnings)
+                     if sourcing and source_table_present else None),
         "liquidity": {**known, "opening_cash": float(opening_cash if opening_cash is not None else UNBOUNDED), "minimum_cash": 0.,
                       "credit_limit": float(_num(economics.get("credit_limit"), UNBOUNDED) or UNBOUNDED), "opening_debt": 0.,
                       "interest_per_period": interest_period, "cost_of_capital_per_period": cost_of_capital_period,
@@ -477,6 +530,8 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     request = Request.model_validate(payload)
     report = {
         "operator_id": operator_id, "origin_monday": str(origin.date()), "period_days": period_days, "horizon": horizon,
+        "sourcing": {"requested": bool(sourcing), "source_table_present": source_table_present, "alternate_sources": len(alternates),
+                     "block": None if payload["sourcing"] is None else {k: len(v) for k, v in payload["sourcing"].items()}},
         "rows_read": rows_read,
         "compact": {"skus": len(sku_rows), "sources": len(source_rows), "services": len(service_rows), "history_observations": len(history_rows),
                     "history_weeks": span, "shipment_observations": len(shipment_rows), "open_purchase_orders": len(pipeline_rows),

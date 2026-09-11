@@ -350,6 +350,28 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
                                         for (source_id, period), q in solution.purchases.items() if period >= 1 and period - 1 < next_h and q > 0]
         else:
             data["incumbent_orders"] = []
+        if req.sourcing is not None and req.sourcing.incumbent_shares:
+            # Sourcing portfolio (P3): a source the operator has just bought from is now part of the
+            # operator's mix. The executed period-zero purchases of a pair that used a source outside
+            # the declared mix become that pair's declared incumbent shares for the next review, so a
+            # declared switching cost is paid once, when the switch is executed, and never again.
+            from zaad.sourcing.contracts import resolve as sourcing_view
+            view = sourcing_view(req)
+            assert view is not None
+            executed: dict[tuple[str, str], dict[str, float]] = {}
+            sources_by_id = {s.id: s for s in req.sources}
+            for (source_id, period), q in solution.purchases.items():
+                if period == 0 and q > 1e-9:
+                    src = sources_by_id[source_id]
+                    executed.setdefault((src.sku, src.destination), {})[source_id] = executed.get((src.sku, src.destination), {}).get(source_id, 0.) + q
+            rows = [r.model_dump() for r in req.sourcing.incumbent_shares]
+            for pair, lines in executed.items():
+                if pair in view.incumbent_mix and any(sid not in view.incumbent_mix[pair] for sid in lines):
+                    total = sum(lines.values())
+                    rows = [r for r in rows if (r["sku"], r["destination"]) != pair]
+                    rows += [{"sku": pair[0], "destination": pair[1], "source": sid, "share": q / total, "provenance": "DERIVED_FROM_OPERATOR_HISTORY"}
+                             for sid, q in lines.items()]
+            data["sourcing"] = {**req.sourcing.model_dump(), "incumbent_shares": rows}
         req = Request.model_validate(data)
     total_components["opening_assets"] = first_assets or 0.
     total_components["closing_assets"] = last_assets

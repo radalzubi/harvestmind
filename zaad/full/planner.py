@@ -1545,6 +1545,12 @@ def plan(req: Request) -> dict:
         # legacy request: the report is byte-identical to the frozen one.
         from zaad.sectors.explain import physics_block
         report["physics"] = physics_block(req, final, final_rows, incumbent, incumbent_rows, fits)
+    if req.sourcing is not None:
+        # Sourcing portfolio (P3): the commitment's split across approved sources, landed economics,
+        # capacity, shared risk, incumbent against recommended shares and operator-language reasons.
+        # Absent on a frozen request: the report is byte-identical to the frozen one.
+        from zaad.sourcing.explain import sourcing_block
+        report["sourcing"] = sourcing_block(req, final, incumbent, report)
     return report
 
 

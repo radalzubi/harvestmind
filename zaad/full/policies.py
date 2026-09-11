@@ -13,6 +13,8 @@ from zaad.full.contracts import Request
 from zaad.full.economics import round_up
 from zaad.full.model import Solution, supplier_orders
 from zaad.full.worlds import dates, forecast_all
+from zaad.sourcing.contracts import resolve as sourcing_view
+from zaad.sourcing.incumbent import apply_resource_cap, split_projection
 
 EPOCH = datetime(2000, 1, 3, tzinfo=timezone.utc)   # a Monday; periodic cadences count from here
 Z_SERVICE = {.90: 1.282, .95: 1.645, .98: 2.054, .99: 2.326}
@@ -160,6 +162,10 @@ def baseline_plan(req: Request, rule: str) -> Solution:
     fits = forecast_all(req)
     rate, sd, stock, inbound = _projection(req, fits)
     purchases: dict[tuple[str, int], float] = {}
+    sourcing = sourcing_view(req)
+
+    def options_of(sku, location):
+        return [s for s in req.sources if s.sku == sku and s.destination == location and s.approved and s.compliance == "cleared"]
     idx = review_index(req)
     kind, _, arg = rule.partition(":")
     k = int(arg) if arg else 1
@@ -204,9 +210,13 @@ def baseline_plan(req: Request, rule: str) -> Solution:
                     need = mu * (cover_to - t) + z * sigma * math.sqrt(max(cover_to - t, 1)) - position
                     q = lot_round(src, max(need, eoq, 0.))
             if q > 0 and arrival < req.horizon + 1:
-                purchases[src.id, t] = q
-                arrivals[arrival] = arrivals.get(arrival, 0.) + q * src.fill_mean
+                # incumbent source mix (P3): the declared shares split the rule's quantity; frozen single line otherwise
+                for line_src, line_q in split_projection(sourcing, sku, location, options_of(sku, location), src, q, t):
+                    purchases[line_src.id, t] = line_q
+                    arrivals[dates(req, line_src, t)[1]] = arrivals.get(dates(req, line_src, t)[1], 0.) + line_q * line_src.fill_mean
             level -= mu
+    if sourcing is not None:
+        apply_resource_cap(req, purchases)   # P3: a projected order never exceeds a shared supplier capacity
     apply_mov(req, purchases)
     apply_load_cap(req, purchases)
     apply_cash_cap(req, purchases)

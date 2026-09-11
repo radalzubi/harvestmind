@@ -18,6 +18,7 @@ from scipy.sparse import coo_matrix
 
 from zaad.full.contracts import Request, SupplierTerms
 from zaad.sectors.contracts import resolve as sector_physics
+from zaad.sourcing.contracts import resolve as sourcing_view
 from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
 
@@ -388,6 +389,10 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     # below reads it. Physics changes the decision environment - which cohorts may be received,
     # held, moved or sold, and what a residual unit is worth - never the objective's ownership.
     physics = sector_physics(req)
+    # Sourcing portfolio (P3): None on a frozen request. Adds declared share rows, one first-stage
+    # switching binary per declared non-incumbent source, and skips the binaries of a source-period
+    # that can carry nothing (exact). Never a new objective of its own.
+    sourcing = sourcing_view(req)
     m = Linear()
     x, tr, po, inv, use, unmet, cash, debt = {}, {}, {}, {}, {}, {}, {}, {}
     use_by_stock = defaultdict(list)
@@ -493,15 +498,18 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 cap = 0.   # cadence candidate (P1): no order is placed outside the cadence
             q = m.var(("purchase", source.id, t), upper=cap)
             x[source.id, t] = q
+            # Zero-capability pruning (P3, exact): a column bounded at zero needs no pack, activation or
+            # quote-group binary; their only value was 0 (or a cost-free tie inside a quote group).
+            pruned = sourcing is not None and sourcing.portfolio.prune_zero_capability and cap <= 0
             multiple = source.multiple if "continuous" not in disabled else max(source.multiple, 10.)
-            if multiple > 0:
+            if multiple > 0 and not pruned:
                 units = m.var(("packs", source.id, t), upper=math.floor(cap / multiple), integer=True)
                 m.row({q: 1, units: -multiple}, 0, 0)
             for label, increment in (("case", source.case_multiple), ("pallet", source.pallet_multiple), ("transport", source.transport_multiple)):
-                if increment:
+                if increment and not pruned:
                     units = m.var((label, source.id, t), upper=math.floor(cap / increment), integer=True)
                     m.row({q: 1, units: -increment}, 0, 0)
-            if source.minimum or source.fixed_order_fee or source.exclusive_quote_group:
+            if (source.minimum or source.fixed_order_fee or source.exclusive_quote_group) and not pruned:
                 active = m.var(("active", source.id, t), upper=1, integer=True)
                 m.row({q: 1, active: -cap}, upper=0)
                 m.row({q: 1, active: -source.minimum}, lower=0)
@@ -545,6 +553,44 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     # by a plan to buy late for it (that incentive deferred buying into a closure).
     for group in quote_groups.values():
         m.row({v: 1 for v in group}, upper=1)
+    if sourcing is not None:
+        # Declared share limits (P3): linear rows on the pair's commitment. A fixed plan (the incumbent
+        # or a projected policy being evaluated) is not re-chosen, so the rows do not apply to it.
+        pair_sources: dict[tuple[str, str], list[str]] = defaultdict(list)
+        for source in req.sources:
+            pair_sources[source.sku, source.destination].append(source.id)
+        if fixed is None:
+            for (sku, destination), rows in sourcing.shares.items():
+                members = pair_sources[sku, destination]
+                for c in rows:
+                    windows = [list(range(H))] if c.scope == "horizon" else [[t] for t in range(H)]
+                    for ts in windows:
+                        own_cols = {x[c.source, t]: 1. for t in ts}
+                        if c.minimum_share > 0:
+                            share_row: dict[int, float] = {x[s, t]: -c.minimum_share for s in members for t in ts}
+                            for k, v in own_cols.items():
+                                share_row[k] = share_row.get(k, 0.) + v
+                            m.row(share_row, lower=0)
+                        if c.maximum_share < 1:
+                            share_row = {x[s, t]: -c.maximum_share for s in members for t in ts}
+                            for k, v in own_cols.items():
+                                share_row[k] = share_row.get(k, 0.) + v
+                            m.row(share_row, upper=0)
+                    if c.committed_units > 0 and c.scope == "horizon":
+                        m.row({x[c.source, t]: 1. for t in range(H)}, lower=c.committed_units)
+        # Declared switching / qualification cost (P3): one first-stage binary per declared source
+        # outside the incumbent mix, charged once when the source receives any quantity in the plan.
+        for sid, row_cost in sourcing.switching.items():
+            cost = sourcing.switching_cost(sid)
+            if cost <= 0:
+                continue
+            total_cap = sum(m.upper[x[sid, t]] for t in range(H))
+            if total_cap <= 0:
+                continue
+            switch = m.var(("switch", sid), upper=1, integer=True)
+            m.row({**{x[sid, t]: 1. for t in range(H)}, switch: -total_cap}, upper=0)
+            for w in range(len(worlds)):
+                expense(switch, cost, w, 0)
     # Supplier-order economics (P1). One order per supplier and period: minimum order value across
     # its lines, a fixed order cost charged once, a receipt fee charged once on arrival, and the
     # shipment priced as a whole - integer pallets, a stepped tariff (exactly one tier when an

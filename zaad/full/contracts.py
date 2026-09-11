@@ -10,6 +10,7 @@ from pydantic_core import to_jsonable_python
 
 from zaad.contracts import Dated, Record
 from zaad.sectors.contracts import SectorMode, SkuPhysics, StorageState
+from zaad.sourcing.contracts import SourcingPortfolio
 
 
 class SKU(Dated):
@@ -645,6 +646,10 @@ class Request(Record):
     # and overrides the default. Both absent (default) = the frozen request: no physics consulted.
     sector_mode: SectorMode | None = None
     sku_physics: tuple[SkuPhysics, ...] = ()
+    # Sourcing portfolio (P3). Declares shared-risk groups, contractual share limits, switching costs and
+    # the incumbent source mix over the frozen source records, and switches the sourcing report on.
+    # None (default) = the frozen request: no sourcing hook is reached.
+    sourcing: SourcingPortfolio | None = None
 
     @field_validator("signals")
     @classmethod
@@ -741,4 +746,7 @@ class Request(Record):
         if self.sector_mode is not None or self.sku_physics:
             from zaad.sectors.validation import validate_request
             validate_request(self)
+        if self.sourcing is not None:
+            from zaad.sourcing.validation import validate_request as validate_sourcing
+            validate_sourcing(self)
         return self

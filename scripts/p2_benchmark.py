@@ -108,9 +108,11 @@ def p2_score(initial: Request, log: list[dict]) -> dict:
     return {"realized": realized, "cost_p2": realized + term["adjustment"], "p2_credit": term["continuation_credit"], "p2_landed": landed, "p2_units": term["units"]}
 
 
-def run_cell(name: str, policy: str, seed: int, reviews: int, max_solve: float | None = None, scenarios: int | None = None, builder=None) -> dict:
+def run_cell(name: str, policy: str, seed: int, reviews: int, max_solve: float | None = None, scenarios: int | None = None, builder=None, extra_score=None) -> dict:
     """One benchmark cell. `builder(name, seed, **overrides)` (optional) supplies the initial request
-    instead of the P2 fixture matrix (the sector-physics benchmark reuses this runner unchanged)."""
+    instead of the P2 fixture matrix (the sector-physics benchmark reuses this runner unchanged);
+    `extra_score(initial, log)` (optional) adds a caller's own window score next to the P2 one (the
+    P3 sourcing benchmark's policy-independent continuation basis)."""
     from zaad.full.evaluation import endpoint, long_truth
     from zaad.full.replay import replay
     from zaad.full.tolerance import is_dust
@@ -130,6 +132,8 @@ def run_cell(name: str, policy: str, seed: int, reviews: int, max_solve: float |
         return cell
     score = endpoint(initial, log, len(log))
     score.update(p2_score(initial, log))
+    if extra_score is not None:
+        score.update(extra_score(initial, log))
     central = [loc.id for loc in initial.locations if loc.kind == "central_dc"]
     per_review = []
     for row in log:
@@ -181,7 +185,7 @@ def run_cell(name: str, policy: str, seed: int, reviews: int, max_solve: float |
             if b.sku == a.sku and b.origin == a.destination and b.destination == a.origin:
                 reverse_units += min(lanes[a.id]["units"], lanes[b.id]["units"])
     cell.update({
-        "score": {k: score[k] for k in ("W", "realized", "continuation", "continuation_landed", "cost_p2", "p2_credit", "p2_units", "ledger", "components", "service", "unmet", "breaches", "avg_inventory_units", "terminal_on_hand", "terminal_in_transit")},
+        "score": {k: score[k] for k in ("W", "realized", "continuation", "continuation_landed", "cost_p2", "p2_credit", "p2_units", "ledger", "components", "service", "unmet", "breaches", "avg_inventory_units", "terminal_on_hand", "terminal_in_transit", *[k for k in score if k.startswith("cost_p3") or k.startswith("p3_")])},
         "service_by_branch": service,
         "network": {"lanes": lanes, "reverse_pair_units": reverse_units / 2.,
                     "transfer_units": sum(r["transfer_units"] for r in per_review), "transfer_lines": sum(r["transfer_lines"] for r in per_review),

@@ -36,6 +36,8 @@ from zaad.full.policies import _keep_amendments, _z, apply_cash_cap, apply_load_
 from zaad.full.worlds import dates, draw, forecast_all
 from zaad.meio.topology import lane_arrival
 from zaad.sectors.contracts import resolve as sector_physics
+from zaad.sourcing.contracts import resolve as sourcing_view
+from zaad.sourcing.incumbent import fit_resources, split_projection
 
 
 def _round_to(q: float, multiple: float, up: bool) -> float:
@@ -85,6 +87,8 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
     # receipt. It stays naive about sellable life - it counts physical units - which is the point of
     # comparing ZAAD against it. None on a legacy request.
     physics = sector_physics(req)
+    sourcing = sourcing_view(req)   # incumbent source mix (P3); None on a frozen request
+    resource_used: dict[tuple[str, int], float] = {}   # P3: shared resource volume booked by earlier lines, per period
 
     def lane_legal(arc: Transfer) -> bool:
         return physics is None or (physics.lane_ok(arc.sku, arc.id) and physics.location_ok(arc.sku, arc.destination))
@@ -228,15 +232,29 @@ def network_rule_plan(req: Request, rule: str) -> Solution:
             holding = locations[location].holding_per_value_period * src.unit_price + req.liquidity.cost_of_capital_per_period * src.unit_price
             fixed = order_costs.get(src.supplier, 0.) + src.fixed_order_fee
             eoq = math.sqrt(2. * m * fixed / holding) if fixed > 0 and holding > 0 else 0.
-            q = min(lot_round(src, max(need, eoq, 0.)), src.maximum, src.capacity_by_period[t])
+            mix_sources = [s for s in options if s.id in (sourcing.incumbent_mix.get((sku, location), {}) if sourcing is not None else {})]
+            if len(mix_sources) > 1:
+                # incumbent source mix (P3): the mix's combined capacity caps the period's quantity; each line is
+                # capped by its own source in the split below
+                q = min(lot_round(src, max(need, eoq, 0.)), sum(min(s.maximum, s.capacity_by_period[t]) for s in mix_sources))
+            else:
+                q = min(lot_round(src, max(need, eoq, 0.)), src.maximum, src.capacity_by_period[t])
             # a cap that is not itself a legal pack (the frozen lot_round returns min(q, maximum) as is)
             # is brought back to the pack below it, so the projection is always physically legal
             for pack in (src.multiple, src.case_multiple, src.pallet_multiple, src.transport_multiple):
                 if pack > 0:
                     q = _round_to(q, pack, up=False)
             if q > 0 and arrival < H + 1:
-                purchases[src.id, t] = purchases.get((src.id, t), 0.) + q
-                pending.append((sku, location, arrival + receipt_life(src), arrival, q * float(mean_world.fills.get((src.id, t), src.fill_mean))))
+                # incumbent source mix (P3): the declared shares split the rule's quantity; frozen single line otherwise
+                for line_src, line_q in split_projection(sourcing, sku, location, options, src, q, t):
+                    if sourcing is not None:
+                        # P3: a projected line never exceeds the room left on a resource shared across SKUs
+                        line_q = fit_resources(req, resource_used, line_src, line_q, t)
+                        if line_q <= 0:
+                            continue
+                    line_arrival = int(mean_world.arrival.get((line_src.id, t), dates(req, line_src, t)[1]))
+                    purchases[line_src.id, t] = purchases.get((line_src.id, t), 0.) + line_q
+                    pending.append((sku, location, line_arrival + receipt_life(line_src), line_arrival, line_q * float(mean_world.fills.get((line_src.id, t), line_src.fill_mean))))
         # 3. serve the period's mean demand FEFO at every location
         for (sku, location), m in mu.items():
             remaining = m
