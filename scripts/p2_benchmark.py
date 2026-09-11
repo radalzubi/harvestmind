@@ -108,13 +108,15 @@ def p2_score(initial: Request, log: list[dict]) -> dict:
     return {"realized": realized, "cost_p2": realized + term["adjustment"], "p2_credit": term["continuation_credit"], "p2_landed": landed, "p2_units": term["units"]}
 
 
-def run_cell(name: str, policy: str, seed: int, reviews: int, max_solve: float | None = None, scenarios: int | None = None) -> dict:
+def run_cell(name: str, policy: str, seed: int, reviews: int, max_solve: float | None = None, scenarios: int | None = None, builder=None) -> dict:
+    """One benchmark cell. `builder(name, seed, **overrides)` (optional) supplies the initial request
+    instead of the P2 fixture matrix (the sector-physics benchmark reuses this runner unchanged)."""
     from zaad.full.evaluation import endpoint, long_truth
     from zaad.full.replay import replay
     from zaad.full.tolerance import is_dust
     from zaad.meio.baselines import register_replay_methods
     register_replay_methods()
-    initial = build(name, seed, **({"max_solve_seconds": max_solve} if max_solve else {}), **({"scenarios": scenarios} if scenarios else {}))
+    initial = (builder or build)(name, seed, **({"max_solve_seconds": max_solve} if max_solve else {}), **({"scenarios": scenarios} if scenarios else {}))
     H = initial.horizon
     segments = -(-(reviews - 1 + H) // H)
     truth = long_truth(initial, seed + 10000, segments * H)
@@ -155,6 +157,8 @@ def run_cell(name: str, policy: str, seed: int, reviews: int, max_solve: float |
                            "central_units": sum(end_by_loc.get(c, 0.) for c in central),
                            "in_transit_units": sum(p[4] for p in s["pending"]),
                            "conservation_residual": abs(s.get("conservation_residual") or 0.),
+                           "expired_units": (s["trace"][-1].get("expired_units", 0.) if s.get("trace") else 0.),
+                           "end_stock": [{k: x[k] for k in ("sku", "location", "expiry", "quantity", *(["sellable"] if "sellable" in x else []))} for x in s["end_stock"]],
                            "inventory_value": s["trace"][0]["inventory_value"] if s["trace"] else None,
                            "abstained": any("NO MATERIAL IMPROVEMENT" in str(w) for w in warn) or (warn and str(warn[0]) == "RETAIN_INCUMBENT"),
                            "status": warn[0] if warn else None, "owner": orch.get("planner_owner"), "state": orch.get("state"),
@@ -213,14 +217,16 @@ def _job(args):
         return {"fixture": name, "policy": policy, "seed": seed, "status": "ERROR", "failure": repr(exc), "reviews_completed": 0, "reviews_requested": reviews}
 
 
-def summarize(records: list[dict], reviews: int) -> dict:
+def summarize(records: list[dict], reviews: int, fixtures: dict | None = None) -> dict:
     """Per fixture: policy means over seeds, best baseline, ZAAD gap, service, network behaviour, the
-    pre-registered checks and the valid / invalid classification."""
+    pre-registered checks and the valid / invalid classification. `fixtures` (optional) is another
+    fixture matrix with the same `expect` / `why` shape (the sector-physics benchmark); the P2 network
+    principles are computed for the P2 matrix only."""
     by: dict[tuple[str, str], list[dict]] = {}
     for r in records:
         by.setdefault((r["fixture"], r["policy"]), []).append(r)
     summary: dict = {"fixtures": {}, "reviews": reviews}
-    for name, spec in FIXTURES.items():
+    for name, spec in (FIXTURES if fixtures is None else fixtures).items():
         rows = {p: by.get((name, p), []) for p in POLICIES}
         wanted = spec.get("reviews", reviews)
         complete = {p: [r for r in rs if r.get("status") == "COMPLETE" and r.get("reviews_completed") == wanted] for p, rs in rows.items()}
@@ -290,7 +296,7 @@ def summarize(records: list[dict], reviews: int) -> dict:
             entry["checks"] = checks
             entry["pass"] = all(c["pass"] for c in checks.values())
         summary["fixtures"][name] = entry
-    summary["network_principles"] = network_principles(summary)
+    summary["network_principles"] = network_principles(summary) if fixtures is None else {}
     valid = {k: v for k, v in summary["fixtures"].items() if v["classification"] == "VALID"}
     summary["valid_fixtures"] = len(valid)
     summary["passing_fixtures"] = sum(1 for v in valid.values() if v.get("pass"))
