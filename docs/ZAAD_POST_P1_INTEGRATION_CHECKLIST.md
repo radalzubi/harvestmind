@@ -100,10 +100,11 @@ consolidation, start P2.
 
 - [x] branch `claude/zaad-sourcing-p3` from `main` `7bc4206` in `harvestmind-p3`; declared `SourcingPortfolio` on the frozen request, default-off hooks, migration 018, API `sourcing` parameter
 - [x] 30 / 30 pre-registered fixtures, 34 / 34 invariants, 23 / 23 adversarial, runtime max 42.8 s; P0 120 / 120, P1 identity + invariants, P2 344 / 344 identical, sector 26 / 26 (402 / 416 identical; P3_age_at_receipt explained by the replay receipt-life correction)
-- [x] local freeze tags `p3-frozen-product` / `p3-frozen` (see `evidence/p3/P3_CLOSEOUT.md`); not pushed, not merged, not deployed
+- [x] local freeze tags `p3-frozen-product` / `p3-frozen` (see `evidence/p3/P3_CLOSEOUT.md`); corrective evidence `fb91946` (`p3-corrective-evidence`, sector age-at-receipt replay correction audited)
+- [x] released 2026-09-11: tags published, PR #60 merged `0de6850` (CI-only re-shard `326c010`, 1,906 passed / 2 skipped), Fly `zaad-api` v17 `canonical-0de6850`, production smoke for legacy, single-source, economics, capacity, MOQ / MOV / packs, payment terms, switching, shares, correlated risk, sectors, network, multi-SKU, malformed inputs and the age-at-receipt workspace check PASS; `p3-release-runtime` = `0de6850` (ledger "P3 supplier / sourcing portfolio release line")
 - [ ] Validation7 / Validation8 / holdout4 reserved; Network Twin #39 deferred; P4 not started
 
 ## Step 12: next build — P4 adaptive recourse — NOT STARTED
 
-- [ ] requires a separate authorization; P3 release (push, PR, CI, deploy) also requires a separate authorization
+- [ ] requires a separate authorization
 
