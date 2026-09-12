@@ -144,7 +144,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                   service_target: float = .95, history_weeks: int = 52, seed: int = 41001, scenarios: int = 3,
                   max_solve_seconds: float = 15., min_history_weeks: int = MIN_HISTORY_WEEKS,
                   shipment_observations_per_source: int = 60, skus: list[str] | None = None,
-                  sector_mode: str | None = None, sourcing: bool = False) -> tuple[Request, dict[str, Any]]:
+                  sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False) -> tuple[Request, dict[str, Any]]:
     """The frozen contract built from the operator's vault, plus the build report (rows read, compact
     dimensions, fits with sample sizes, provenance, warnings, leakage guard). Raises WorkspaceError with
     an operator-facing message when the workspace cannot be planned yet."""
@@ -268,6 +268,12 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         if not source_table_present:
             warnings.append("sourcing requested but the vault has no stg_fmcg_sources table (migration 018): the frozen single-source request is built")
         supplier_ids = sorted(set(supplier_ids) | {a["supplier"] for a in alternates})
+    declared_recourse: dict[str, Any] | None = None
+    if recourse:
+        from zaad.recourse.workspace import recourse_block
+        declared_recourse = recourse_block(conn, operator_id)
+        if declared_recourse is None:
+            warnings.append("recourse requested but the vault declares no recourse specification (stg_recourse_spec, migration 019): the frozen request is built")
     po_peak: dict[str, float] = {}
     if len(pos):
         past = pos[pos["po_date"] < origin].assign(week=((pos["po_date"] - origin).dt.days // 7))
@@ -516,6 +522,8 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         # sourcing portfolio (P3): declared shares, incumbent mix, switching costs and risk groups; None when nothing is declared
         "sourcing": (sourcing_block(source_rows, declared_sourcing, suppliers if len(suppliers) else None, LOCATION, provenance, warnings)
                      if sourcing and source_table_present else None),
+        # adaptive recourse (P4, migration 019): the operator's declared review epochs and observables; None without the flag or a row
+        "recourse": declared_recourse,
         "liquidity": {**known, "opening_cash": float(opening_cash if opening_cash is not None else UNBOUNDED), "minimum_cash": 0.,
                       "credit_limit": float(_num(economics.get("credit_limit"), UNBOUNDED) or UNBOUNDED), "opening_debt": 0.,
                       "interest_per_period": interest_period, "cost_of_capital_per_period": cost_of_capital_period,
@@ -532,6 +540,8 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         "operator_id": operator_id, "origin_monday": str(origin.date()), "period_days": period_days, "horizon": horizon,
         "sourcing": {"requested": bool(sourcing), "source_table_present": source_table_present, "alternate_sources": len(alternates),
                      "block": None if payload["sourcing"] is None else {k: len(v) for k, v in payload["sourcing"].items()}},
+        "recourse": {"requested": bool(recourse), "declared": declared_recourse is not None, "enabled": bool(declared_recourse and declared_recourse.get("enabled")),
+                     "review_periods": (declared_recourse or {}).get("review_periods")},
         "rows_read": rows_read,
         "compact": {"skus": len(sku_rows), "sources": len(source_rows), "services": len(service_rows), "history_observations": len(history_rows),
                     "history_weeks": span, "shipment_observations": len(shipment_rows), "open_purchase_orders": len(pipeline_rows),
