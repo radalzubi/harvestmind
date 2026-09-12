@@ -618,6 +618,18 @@ and rerun CI on `main`.
 * Tag `p4-release-runtime` = `8c813ac`. Historical tags immutable (verified peeled on origin).
 * VERDICT: ZAAD P4 ADAPTIVE RECOURSE — RELEASED AND CLOSED. ENGINEERING VALIDATED, NOT REAL-DATA VALIDATED. Next authorized phase: P5 — ATP / scarce-supply allocation (not started).
 
+## P4 production performance closure (2026-09-12, branch `perf/p4-recourse-performance-closure`, worktree `harvestmind-p4-perf`, parent `main` `adf45e4`) — TRACK A of the parallel stage
+
+* Diagnosis before any change (`evidence/p4/perf_closure/P4_PERF_DIAGNOSIS.md`, harness `scripts/p4_perf_profile.py`, 35 cells with HiGHS logs): the heavy cost is the unseeded adaptive tree solve (shared-order 12 worlds: 78 s time-limited incumbent dearer than the static optimum; produce: FEFO indicators, rejected warm completion). One exact change adopted: warm-start the adaptive tree solve from the static comparator (planner + `policy.compare`); rejected: indicator big-M tightening (invalid harness bound on produce; no gain on shared order), PI seeding, decomposition.
+* Before / after: shared order 12 worlds 177 -> 138 s (adaptive 39 s OPTIMAL, verdict corrected), 8 worlds 60 -> 55 s, produce 6 / 8 worlds 41 / 60 -> 36 / 54 s, S1 adaptive time-limited -> OPTIMAL 10 s, interactive classes unchanged, 16-world shared order unchanged; no gate changed or recommended.
+* Gates: P3 snapshot identical, P1 identity + 60, P2 20 / 20 + 18 / 18 + 1,720 / 1,720, sector 26 / 26 + 19 / 19 + 416 / 416, P3 30 / 30 + 34 / 34 + 23 / 23 + 2,304 / 2,304, P0 120 / 120 (one pass), P4 28 / 28 (objectives identical) + 27 / 27 + 25 / 25, full suite 1,946 / 2.
+* PR #69 tested head `a9b2b92`, CI 34696879480 green; merged `6b58764` (tree identical); Fly v21 `canonical-6b58764` from a clean checkout; production benchmark: interactive 3.1 / 3.7 / 3.4 s, produce 67 s (steal 0.02), shared-order job TIMEOUT under 3.2x steal (infrastructure residual unchanged); logs clean; tag `p4-performance-closure-runtime` = `6b58764`, `p4-release-runtime` unmoved.
+* VERDICT: ZAAD P4 PRODUCTION PERFORMANCE CLOSURE — PASS.
+
+## P5 ATP / scarce-supply allocation — parallel-phase isolated engineering (2026-09-12, branch `claude/zaad-atp-p5`, worktree `harvestmind-p5`) — TRACK B
+
+* Audit `docs/zaad_full/p5/P5_EXISTING_CAPABILITIES.md`, architecture `P5_ARCHITECTURE.md`, pre-registration `P5_PREREGISTRATION.md` (fixtures A-V, 20 invariants, 16 adversarial), dev log. Isolated package `zaad/atp` (contracts with provenance, ATP ladder, incumbent policies, exact MILP via scipy HiGHS, shared-ledger economics, validation, report, fixtures, adapter), migration 020, `Request.atp` default None (identity proven), endpoint `POST /api/zaad/atp/promise` behind `ZAAD_ATP_ENABLED=1`. Results: 24 / 24 fixtures, 16 / 16 adversarial, 9 tests, ruff / mypy / bandit clean. Commits `f9d0251` -> rebased `ae7001a` + `149fb5f` on the TRACK A main; no shared-core file touched; not pushed, not frozen, not released. Next: shared-core integration (separate authorization).
+
 ## Exact next action
 
 P3 is released (v17, `0de6850`) and its production performance closure is deployed (v18, `61a3e75`, tag `p3-performance-closure-runtime`). P4 (adaptive recourse) is not started and needs a separate authorization. Keep

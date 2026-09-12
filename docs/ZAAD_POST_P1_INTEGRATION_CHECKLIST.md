@@ -108,9 +108,12 @@ consolidation, start P2.
 ## Step 12: P4 adaptive recourse — RELEASED AND CLOSED 2026-09-12
 - [x] local freeze `d8cdad5` / `7059379` (`p4-frozen-product` / `p4-frozen`), 28 / 28, 27 / 27, 25 / 25; release audit blockers A-D (`evidence/p4/P4_RELEASE_AUDIT.md`)
 - [x] PR #67 merged `8c813ac` (CI 1,946 passed / 2 skipped), Fly v20 `canonical-8c813ac`, smokes A-S, `p4-release-runtime` = `8c813ac` (`evidence/p4/P4_RELEASE_CLOSEOUT.md`)
-- [ ] residual: shared-order recourse through `/jobs` times out under host steal on shared-cpu-2x (machine-class decision deferred with the P3 residual)
+- [x] production performance closure 2026-09-12: warm-started adaptive tree solve, PR #69 merged `6b58764`, Fly v21 `canonical-6b58764`, tag `p4-performance-closure-runtime` (`evidence/p4/perf_closure/P4_PERF_CLOSEOUT.md`)
+- [ ] residual: shared-order recourse through `/jobs` times out under host steal on shared-cpu-2x (machine-class decision deferred with the P3 residual); produce at 12 / 16 tree worlds bounded by FEFO indicators (exact stock bound to be proven)
 
-## Step 13: next build — P5 ATP / scarce-supply allocation — NOT STARTED
+## Step 13: P5 ATP / scarce-supply allocation — ISOLATED ENGINE BUILT (parallel phase), shared-core integration NOT STARTED
+- [x] architecture, contracts, fixture matrix A-V (24 / 24), invariants, adversarial (16 / 16), isolated engine, migration 020, default-off endpoint; rebased onto `6b58764` (`docs/zaad_full/p5/`)
+- [ ] shared-core integration, freeze, release (separate authorization)
 
 - [ ] requires a separate authorization
 

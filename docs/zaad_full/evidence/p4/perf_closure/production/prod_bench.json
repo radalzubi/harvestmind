@@ -1,0 +1,288 @@
+{
+ "workspace": {
+  "code": 200,
+  "operator": "op_71c329af"
+ },
+ "C_commercial_simple": {
+  "code": 200,
+  "seconds": 3.1,
+  "selected": "operator_rule:network:rop",
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.1
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    0.1
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    0.2
+   ]
+  },
+  "recourse": {
+   "verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+   "perfect_information_status": "CERTIFIED",
+   "value_of_adaptation": 5.036993433448515,
+   "material": false,
+   "ordering_ok": true
+  },
+  "adaptive_solve": {
+   "status": "OPTIMAL",
+   "variables": 5934,
+   "constraints": 3915,
+   "seconds": 0.4490390429999991,
+   "nodes": 1,
+   "gap": 0.0
+  },
+  "static_solve": {
+   "status": "OPTIMAL",
+   "variables": 5448,
+   "constraints": 3861,
+   "seconds": 0.7448991150000097,
+   "built_as_comparator": true
+  },
+  "perfect_solve": {
+   "status": "OPTIMAL",
+   "certified": true,
+   "variables": 7068,
+   "seconds": 0.43558642400000736,
+   "gap": 0.0,
+   "solver_objective_bound": 9641.02462242668,
+   "solver_objective_bound_units": "HiGHS dual bound on the solver objective (ledger cost plus objective-only terms); not comparable with the expected costs above and never a policy cost"
+  },
+  "cpu_delta": {
+   "user": 263,
+   "system": 9,
+   "idle": 902,
+   "steal": 4
+  },
+  "steal_ratio": 0.01
+ },
+ "F_p2_network": {
+  "code": 200,
+  "seconds": 3.7,
+  "selected": "stochastic_network",
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.1
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    0.1
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    0.4
+   ]
+  },
+  "recourse": {
+   "verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+   "perfect_information_status": "CERTIFIED",
+   "value_of_adaptation": 7.888704537841477,
+   "material": false,
+   "ordering_ok": true
+  },
+  "adaptive_solve": {
+   "status": "OPTIMAL",
+   "variables": 7858,
+   "constraints": 5185,
+   "seconds": 0.6610416909999941,
+   "nodes": 1,
+   "gap": 0.0
+  },
+  "static_solve": {
+   "status": "OPTIMAL",
+   "variables": 7156,
+   "constraints": 5131,
+   "seconds": 0.9351444840000056,
+   "built_as_comparator": true
+  },
+  "perfect_solve": {
+   "status": "OPTIMAL",
+   "certified": true,
+   "variables": 9424,
+   "seconds": 0.613930332999999,
+   "gap": 0.0,
+   "solver_objective_bound": 8057.395588801059,
+   "solver_objective_bound_units": "HiGHS dual bound on the solver objective (ledger cost plus objective-only terms); not comparable with the expected costs above and never a policy cost"
+  },
+  "cpu_delta": {
+   "user": 334,
+   "system": 9,
+   "idle": 1232,
+   "steal": 9
+  },
+  "steal_ratio": 0.03
+ },
+ "G_p3_source_mix": {
+  "code": 200,
+  "seconds": 3.4,
+  "selected": "operator_rule:network:rop",
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.1
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.1
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    0.1
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    0.2
+   ]
+  },
+  "recourse": {
+   "verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+   "perfect_information_status": "CERTIFIED",
+   "value_of_adaptation": 9.624335361306294,
+   "material": false,
+   "ordering_ok": true
+  },
+  "adaptive_solve": {
+   "status": "OPTIMAL",
+   "variables": 5964,
+   "constraints": 3945,
+   "seconds": 0.4917961909999917,
+   "nodes": 1,
+   "gap": 0.0
+  },
+  "static_solve": {
+   "status": "OPTIMAL",
+   "variables": 5460,
+   "constraints": 3873,
+   "seconds": 0.7196647069999926,
+   "built_as_comparator": true
+  },
+  "perfect_solve": {
+   "status": "OPTIMAL",
+   "certified": true,
+   "variables": 7140,
+   "seconds": 0.49592832999999814,
+   "gap": 0.0,
+   "solver_objective_bound": -24179.036489902108,
+   "solver_objective_bound_units": "HiGHS dual bound on the solver objective (ledger cost plus objective-only terms); not comparable with the expected costs above and never a policy cost"
+  },
+  "cpu_delta": {
+   "user": 295,
+   "system": 4,
+   "idle": 951,
+   "steal": 11
+  },
+  "steal_ratio": 0.04
+ },
+ "D_produce": {
+  "code": 200,
+  "seconds": 67.1,
+  "selected": "stochastic_network",
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.3
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    1.2
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    7.1
+   ],
+   "cvar_network": [
+    "OPTIMAL",
+    5.3
+   ],
+   "adaptive_network": [
+    "OPTIMAL",
+    7.9
+   ]
+  },
+  "recourse": {
+   "verdict": "ADAPTIVE PLAN NOT SELECTED (a static candidate passed the gates at lower settled cost)",
+   "perfect_information_status": "CERTIFIED",
+   "value_of_adaptation": 238754.9808639574,
+   "material": true,
+   "ordering_ok": true
+  },
+  "adaptive_solve": {
+   "status": "OPTIMAL",
+   "variables": 6488,
+   "constraints": 6256,
+   "seconds": 7.9372424849999845,
+   "nodes": 89,
+   "gap": 0.0
+  },
+  "static_solve": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "variables": 6060,
+   "constraints": 6196,
+   "seconds": 43.105862765,
+   "built_as_comparator": true
+  },
+  "perfect_solve": {
+   "status": "OPTIMAL",
+   "certified": true,
+   "variables": 7410,
+   "seconds": 0.7486541149999937,
+   "gap": 8.925524023705714e-16,
+   "solver_objective_bound": 10189.818540147986,
+   "solver_objective_bound_units": "HiGHS dual bound on the solver objective (ledger cost plus objective-only terms); not comparable with the expected costs above and never a policy cost"
+  },
+  "cpu_delta": {
+   "user": 6528,
+   "system": 55,
+   "idle": 7278,
+   "steal": 135
+  },
+  "steal_ratio": 0.02
+ },
+ "N_submit": {
+  "code": 202,
+  "timeout_s": 252.0
+ },
+ "N_job": {
+  "status": "TIMEOUT",
+  "error": "exceeded 252s wall clock",
+  "wall_s": 269,
+  "cpu_delta": {
+   "user": 7299,
+   "system": 146,
+   "idle": 28237,
+   "steal": 23919
+  },
+  "steal_ratio": 3.21,
+  "health_probes": {
+   "n": 18,
+   "non_200": [],
+   "max_latency_s": 0.3
+  },
+  "report": null
+ }
+}
