@@ -157,12 +157,15 @@ def hsolve(self, matrix, cost, seconds, mip_gap, seed=None, first_feasible=False
 def lsolve(self, seconds, objective=None, solver="highs", mip_gap=1e-6, seed=None, options=None):
     build = (time.perf_counter() - ctx["build_start"]) if ctx["build_start"] else None
     t = time.perf_counter()
-    mt = time.perf_counter(); matrix = _matrix(self); mtime = time.perf_counter() - mt
+    mt = time.perf_counter()
+    matrix = _matrix(self)
+    mtime = time.perf_counter() - mt
     # route through highspy always so the log exists (identical model; the solver, not the problem)
     res = _solve(self, seconds, objective, "highspy" if ctx["capture"] else solver, mip_gap, seed, options)
     dt = time.perf_counter() - t
     r = res[0]
-    ints = int(sum(self.integer)); bins = int(sum(1 for i, u in zip(self.integer, self.upper) if i and u == 1))
+    ints = int(sum(self.integer))
+    bins = int(sum(1 for i, u in zip(self.integer, self.upper) if i and u == 1))
     rec = {"label": ctx["label"], "kind": "solve" if objective is None else "phase(objective)", "budget": round(seconds, 2), "build_s": round(build, 3) if build else None,
            "matrix_s": round(mtime, 3), "solve_wall_s": round(dt, 3), "seeded": seed is not None, "rows": len(self.rows), "cols": len(self.names),
            "continuous": len(self.names) - ints, "integer": ints, "binary": bins, "nnz": int(matrix.nnz),
@@ -205,7 +208,9 @@ def cell(cls: str, make, histories: int, epochs: list[int], cont: int, log_dir: 
     row: dict[str, Any] = {"class": cls, "histories": histories, "epochs": epochs, "continuations": cont, "worlds": len(worlds),
                            "skus": len(req.skus), "sources": len(req.sources), "locations": len(req.locations), "services": len(req.services), "horizon": req.horizon,
                            "budget_s": req.max_solve_seconds}
-    ctx["log_dir"] = log_dir; ctx["calls"] = []; ctx["capture"] = True
+    ctx["log_dir"] = log_dir
+    ctx["calls"] = []
+    ctx["capture"] = True
     ctx["label"] = f"{cls}_h{histories}_e{'-'.join(map(str, epochs))}_c{cont}_compare"
     t = time.perf_counter()
     out = compare(req, worlds, rc, perfect=True, service_floor=True)
@@ -214,9 +219,12 @@ def cell(cls: str, make, histories: int, epochs: list[int], cont: int, log_dir: 
     row["compare_solves"] = ctx["calls"]
     row["comparators"] = {k: {"status": out[k].status, "objective": out[k].projected_cost, "solve_seconds": round(out[k].solve_seconds, 3), "nodes": out[k].nodes, "gap": out[k].gap, "bound": out[k].best_bound}
                           for k in ("static", "adaptive", "perfect") if out.get(k) is not None}
-    row["ordering_ok"] = out.get("ordering_ok"); row["perfect_status"] = out.get("perfect_status")
+    row["ordering_ok"] = out.get("ordering_ok")
+    row["perfect_status"] = out.get("perfect_status")
     # whole planner (production path) with the log capture off (the frozen candidate route stays scipy/highspy as released)
-    ctx["calls"] = []; ctx["capture"] = False; ctx["label"] = f"{cls}_h{histories}_e{'-'.join(map(str, epochs))}_c{cont}_plan"
+    ctx["calls"] = []
+    ctx["capture"] = False
+    ctx["label"] = f"{cls}_h{histories}_e{'-'.join(map(str, epochs))}_c{cont}_plan"
     preq = req.model_copy(update={"scenarios": min(histories, 4)}) if req.scenarios != min(histories, 4) else req
     preq = Request.model_validate(preq.model_dump())
     t = time.perf_counter()
@@ -242,7 +250,8 @@ def main() -> int:
     a = ap.parse_args()
     classes = [c for c in a.classes.split(",") if c] or list(CLASSES)
     grid = [GRID[int(i)] for i in a.grid.split(",") if i] or GRID
-    OUT.mkdir(parents=True, exist_ok=True); LOGS.mkdir(parents=True, exist_ok=True)
+    OUT.mkdir(parents=True, exist_ok=True)
+    LOGS.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, Any]] = []
     for cls in classes:
         for histories, epochs, cont in grid:
@@ -256,7 +265,6 @@ def main() -> int:
             except Exception as exc:
                 row = {"class": cls, "histories": histories, "epochs": epochs, "continuations": cont, "error": f"{type(exc).__name__}: {exc}"[:200]}
             rows.append(row)
-            a_ = next((c for c in row.get("compare_solves", []) if c["label"].endswith("compare") and c["kind"] == "solve"), None)
             print(f"{cls:18s} h={histories} e={epochs} c={cont} worlds={row.get('worlds')} sets={row.get('information_sets')} compare={row.get('compare_wall_s')}s "
                   f"planner={row.get('planner_wall_s')}s solves={row.get('planner_candidate_solves')} {row.get('planner_verdict', row.get('error', ''))}", flush=True)
             (OUT / f"{a.tag}.json").write_text(json.dumps(rows, indent=1, default=str))
