@@ -138,7 +138,7 @@
    ],
    "pack_violations": []
   },
-  "seconds": 8.9
+  "seconds": 9.0
  },
  "10_payment_terms_not_double_counted": {
   "pass": true,
@@ -278,7 +278,7 @@
     8
    ]
   },
-  "seconds": 0.6
+  "seconds": 0.7
  },
  "20_unusable_life_cannot_serve": {
   "pass": true,
@@ -428,13 +428,13 @@
    "profiles_identical": true,
    "sector_invariants": "19 / 19 (gates/sector_invariants.log)"
   },
-  "seconds": 12.9
+  "seconds": 13.1
  },
  "benchmark": {
   "pass": true,
   "evidence": {
    "fixtures": "30 / 30",
-   "tag": "p3_under_p4rel"
+   "tag": "p3_under_p4perf"
   },
   "seconds": 0
  }

@@ -99,7 +99,7 @@
   "status": "PENDING_REVIEW",
   "selected": "deterministic_network",
   "principle": "one node, no lane: the P2 fields change nothing; the canonical regression proves the frozen fixtures separately",
-  "seconds": 0.8
+  "seconds": 0.9
  },
  "12_zero_lane_identity": {
   "pass": true,
@@ -164,7 +164,7 @@
    "no_action": true
   },
   "principle": "an efficient state produces no unnecessary transfer or purchase",
-  "seconds": 0.2
+  "seconds": 0.3
  },
  "16_service_not_overridden": {
   "pass": true,

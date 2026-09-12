@@ -1,0 +1,240 @@
+{
+ "cell": {
+  "class": "E_produce",
+  "histories": 3,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 12
+ },
+ "plan_wall": 92.8,
+ "variants": {
+  "static_baseline": {
+   "status": "NO_FEASIBLE_SOLUTION",
+   "objective": null,
+   "wall": 43.05,
+   "solve_seconds": 43.05,
+   "nodes": 659,
+   "gap": null,
+   "bound": 10425.253635797862,
+   "rows": 12340,
+   "cols": 11850,
+   "binary": 2976,
+   "first_incumbent_s": null,
+   "lp_iterations": 87806,
+   "timing_total": 17.13,
+   "warm": {
+    "supplied": true,
+    "source": "OPTIMAL",
+    "controls_seeded": 270,
+    "accepted": false,
+    "reason": "floor-pinned controls are not feasible for this formulation within 26 s (highspy HighsModelStatus.kTimeLimit)",
+    "mode": "floor",
+    "completion_seconds": 25.770233624614775,
+    "completion_status": "highspy HighsModelStatus.kTimeLimit",
+    "attempts": [
+     {
+      "accepted": false,
+      "reason": "equal-pinned controls are not feasible for this formulation within 26 s (highspy HighsModelStatus.kInfeasible)",
+      "completion_seconds": 0.019648249726742506,
+      "completion_status": "highspy HighsModelStatus.kInfeasible",
+      "mode": "equal"
+     },
+     {
+      "accepted": false,
+      "reason": "floor-pinned controls are not feasible for this formulation within 26 s (highspy HighsModelStatus.kTimeLimit)",
+      "completion_seconds": 25.750585374888033,
+      "completion_status": "highspy HighsModelStatus.kTimeLimit",
+      "mode": "floor"
+     }
+    ],
+    "seed_status": null,
+    "seed_objective": null,
+    "solver_accepted": false,
+    "phase1_objective": null,
+    "phase1_status": 1,
+    "outcome": "rejected",
+    "final_objective": null,
+    "model_variables": 11850,
+    "solve_seconds": 43.050709375180304,
+    "highs_integrality_violation": null,
+    "highs_primal_infeasibility": null
+   },
+   "all_calls": [
+    {
+     "kind": "warm_complete(equal)",
+     "solve_wall_s": 0.02,
+     "status": false,
+     "bb_nodes": null,
+     "seeded": null
+    },
+    {
+     "kind": "warm_complete(floor)",
+     "solve_wall_s": 25.751,
+     "status": false,
+     "bb_nodes": null,
+     "seeded": null
+    },
+    {
+     "kind": "solve",
+     "solve_wall_s": 17.161,
+     "status": 1,
+     "bb_nodes": 659,
+     "seeded": false
+    }
+   ]
+  },
+  "adaptive_baseline": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "objective": 13398.06470340219,
+   "wall": 43.06,
+   "solve_seconds": 43.05,
+   "nodes": 2882,
+   "gap": 0.006604393558224995,
+   "bound": 10330.007033966207,
+   "rows": 12448,
+   "cols": 12548,
+   "binary": 2976,
+   "first_incumbent_s": 37.6,
+   "lp_iterations": 243859,
+   "timing_total": 42.91,
+   "warm": null,
+   "all_calls": [
+    {
+     "kind": "solve",
+     "solve_wall_s": 42.937,
+     "status": 1,
+     "bb_nodes": 2882,
+     "seeded": false
+    }
+   ]
+  },
+  "pi_baseline": {
+   "status": "OPTIMAL",
+   "objective": 13185.99850620522,
+   "wall": 0.68,
+   "solve_seconds": 0.67,
+   "nodes": 1,
+   "gap": 0.0,
+   "bound": 10186.620938849364,
+   "rows": 12890,
+   "cols": 14820,
+   "binary": 2976,
+   "first_incumbent_s": 0.1,
+   "lp_iterations": 2876,
+   "timing_total": 0.52,
+   "warm": null,
+   "all_calls": [
+    {
+     "kind": "solve",
+     "solve_wall_s": 0.555,
+     "status": 0,
+     "bb_nodes": 1,
+     "seeded": false
+    }
+   ]
+  },
+  "adaptive_warm_from_static": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "objective": 13398.06470340219,
+   "wall": 43.05,
+   "solve_seconds": 43.05,
+   "nodes": 2903,
+   "gap": 0.006604393558224995,
+   "bound": 10330.007033966207,
+   "rows": 12448,
+   "cols": 12548,
+   "binary": 2976,
+   "first_incumbent_s": 37.5,
+   "lp_iterations": 244582,
+   "timing_total": 42.9,
+   "warm": null,
+   "all_calls": [
+    {
+     "kind": "solve",
+     "solve_wall_s": 42.933,
+     "status": 1,
+     "bb_nodes": 2903,
+     "seeded": false
+    }
+   ]
+  },
+  "pi_warm_from_adaptive": {
+   "status": "OPTIMAL",
+   "objective": 13185.99850620522,
+   "wall": 0.83,
+   "solve_seconds": 0.82,
+   "nodes": 1,
+   "gap": 0.0,
+   "bound": 10186.620938849364,
+   "rows": 12890,
+   "cols": 14820,
+   "binary": 2976,
+   "first_incumbent_s": 0.1,
+   "lp_iterations": 2876,
+   "timing_total": 0.52,
+   "warm": {
+    "supplied": true,
+    "source": "FEASIBLE_TIME_LIMIT",
+    "controls_seeded": 3240,
+    "accepted": true,
+    "reason": "completed by the formulation (floor pins)",
+    "mode": "floor",
+    "completion_seconds": 0.15234020771458745,
+    "completion_status": "highspy HighsModelStatus.kSolutionLimit",
+    "attempts": [
+     {
+      "accepted": false,
+      "reason": "equal-pinned controls are not feasible for this formulation within 26 s (highspy HighsModelStatus.kInfeasible)",
+      "completion_seconds": 0.029314832761883736,
+      "completion_status": "highspy HighsModelStatus.kInfeasible",
+      "mode": "equal"
+     },
+     {
+      "accepted": true,
+      "reason": "completed by the formulation (floor pins)",
+      "completion_seconds": 0.12302537495270371,
+      "completion_status": "highspy HighsModelStatus.kSolutionLimit",
+      "mode": "floor"
+     }
+    ],
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 10236.705214419677,
+    "solver_accepted": true,
+    "phase1_objective": 10186.620938849364,
+    "phase1_status": 0,
+    "outcome": "improved",
+    "final_objective": 10186.620938849364,
+    "model_variables": 14820,
+    "solve_seconds": 0.8240851671434939,
+    "highs_integrality_violation": 0.0,
+    "highs_primal_infeasibility": 1.8737900120413542e-10
+   },
+   "all_calls": [
+    {
+     "kind": "warm_complete(equal)",
+     "solve_wall_s": 0.029,
+     "status": false,
+     "bb_nodes": null,
+     "seeded": null
+    },
+    {
+     "kind": "warm_complete(floor)",
+     "solve_wall_s": 0.123,
+     "status": true,
+     "bb_nodes": null,
+     "seeded": null
+    },
+    {
+     "kind": "solve",
+     "solve_wall_s": 0.553,
+     "status": 0,
+     "bb_nodes": 1,
+     "seeded": true
+    }
+   ]
+  }
+ }
+}

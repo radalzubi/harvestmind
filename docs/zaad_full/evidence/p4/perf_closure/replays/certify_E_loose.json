@@ -1,0 +1,16 @@
+{
+ "static_loose_900s": {
+  "status": "OPTIMAL",
+  "objective": 13424.644398958015,
+  "wall": 73.7,
+  "nodes": 5960,
+  "gap": 0.0
+ },
+ "adaptive_loose_900s": {
+  "status": "OPTIMAL",
+  "objective": 13329.379802564396,
+  "wall": 89.6,
+  "nodes": 8481,
+  "gap": 0.0
+ }
+}

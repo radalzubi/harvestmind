@@ -1,5 +1,5 @@
 {
- "benchmark": "p4_release",
+ "benchmark": "p4_perf_closure",
  "passed": 27,
  "total": 27,
  "results": {
