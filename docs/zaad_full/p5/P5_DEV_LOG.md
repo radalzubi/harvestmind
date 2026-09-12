@@ -61,3 +61,12 @@ No change to `zaad/full/model.py`, `zaad/full/planner.py`, the P4 node indexing,
 formulation or the candidate orchestration; no `atp=true` on the from-workspace endpoints; no
 threading of promises through P4 nodes; no real-data claims. Shared-core integration starts only
 after TRACK A closes and this branch is rebased onto that main.
+
+## 2026-09-12 — rebased onto the TRACK A merge
+
+TRACK A closed with one accepted exact change (warm-started adaptive tree solve), merged as
+`main` `6b58764` (PR #69). This branch was rebased onto that main without conflict (P5 touched
+no TRACK A file): `ae7001a`. Isolated re-run on the rebased head: tests 9 / 9,
+fixtures 24 / 24 (`benchmarks/p5_isolated_rebased`), adversarial 16 / 16. Shared-core
+integration is NOT started in this stage; it needs its own authorization.
+
