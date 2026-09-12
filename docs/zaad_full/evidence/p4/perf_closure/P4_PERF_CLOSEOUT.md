@@ -5,10 +5,10 @@
 | original P4 release runtime | `8c813ac` (tag `p4-release-runtime`, Fly v20 `canonical-8c813ac`) - unchanged, historical |
 | branch | `perf/p4-recourse-performance-closure` from `main` `adf45e4` (docs-only above `8c813ac`) |
 | product commit | `5b3be50` |
-| tested head (CI once) | {{TESTED_HEAD}} (PR {{PR}}, run {{CI_RUN}}: {{CI_RESULT}}) |
-| merge | {{MERGE_SHA}} (runtime tree identical to the tested head) |
-| new performance-closed runtime | {{MERGE_SHA}} -> Fly `zaad-api` {{FLY_RELEASE}} `{{IMAGE}}` |
-| tag | `p4-performance-closure-runtime` -> {{MERGE_SHA}} |
+| tested head (CI once) | `a9b2b92` (PR [#69](https://github.com/radalzubi/harvestmind/pull/69), run 34696879480: green on every gate - ruff, gitleaks, security (bandit, pip-audit), mypy, docker build, frontend, zaad frozen regression, pytest 4 shards 362 + 275 + 170 + 1,139 = 1,946 passed, 2 skipped; the two CodeQL analyses fail as on every prior release (code scanning not enabled on the private repository, environment defect, not a gate). A first run on the pre-lint head a9a4b42 was cancelled after its supersession) |
+| merge | `6b58764` (runtime tree identical to the tested head) |
+| new performance-closed runtime | `6b58764` -> Fly `zaad-api` v21 `registry.fly.io/zaad-api:canonical-6b58764 (digest sha256:38896b8dd0fc...), built from a clean detached checkout (tree 5e88df3, identical to the tested head), same machine 0804e0dfd1e948 / volume / secrets / env` |
+| tag | `p4-performance-closure-runtime` -> `6b58764` |
 
 ## Scope
 
@@ -56,12 +56,33 @@ P3 shared-MOV snapshot identical (12.29 s, P4 disabled); P1 canonical identity +
 2,304 / 2,304 (historical 2,273 / 2,304 + 31 proven ties unchanged); P0 six-cell 120 / 120; P4
 28 / 28 (objectives identical to the release record), 27 / 27, 25 / 25, release-audit tests; PI
 certification, exact-or-REPLAN_REQUIRED and approval semantics unchanged (same tests). Full suite:
-{{SUITE}}.
+1,946 passed, 2 skipped, 0 failed locally (5 m 36 s) and on CI.
 
 ## CI, merge, deployment, production benchmark
 
-{{RELEASE}}
+* CI once on the tested head `a9b2b92` (run 34696879480): green on every gate; merged as `6b58764` (merge commit; whole-tree hash `5e88df3` identical to the tested head; no post-merge rerun).
+* Deployed from a clean detached checkout of `6b58764`: Fly `zaad-api` v21, `registry.fly.io/zaad-api:canonical-6b58764`; machine `0804e0dfd1e948` (shared-cpu-2x, 2 GB), volume `harvestmind_data`, 11 secrets and env unchanged.
+* Bounded production benchmark (`production/prod_bench.json`, synthetic self-serve workspace, host steal measured across each request from `/proc/stat`):
+
+| case | v20 (release, 2026-09-12 morning, steal 2.5-6x) | v21 (this closure, steal <= 0.04 on the interactive cases) | tree solves on v21 |
+|---|---|---|---|
+| simple P4 (C, tree 6) | 3.2 s | 3.1 s | static 0.74 s, adaptive 0.45 s OPTIMAL (1 node), PI CERTIFIED |
+| P2 + P4 (F, tree 8) | 3.7 s | 3.7 s | static 0.94 s, adaptive 0.66 s OPTIMAL, PI CERTIFIED |
+| P3 + P4 (G, tree 6) | 3.2 s | 3.4 s | static 0.72 s, adaptive 0.49 s OPTIMAL, PI CERTIFIED |
+| PRODUCE + P4 (D, tree 6) | 75.8 s (steal 2.5x) | 67.1 s (steal 0.02) | static comparator FEASIBLE_TIME_LIMIT at its 43.1 s budget, adaptive OPTIMAL 7.9 s (89 nodes), PI CERTIFIED; the produce cost is formulation (FEFO indicators), not steal |
+| shared-order job (N, tree 6, budget 12 s, `/jobs`) | TIMEOUT at 252 s, steal 6.05x | TIMEOUT at 252 s, **steal 3.21x** (steal 23,919 vs user 7,299 + system 146 jiffies over 269 s: 74 s of CPU delivered); API answered all 18 health probes (max 0.3 s) | no report (safe timeout); locally this cell is 36 s; the closure changes its 6-world local wall by +3 s (noise) and does not close the host-throttling residual recorded at the P4 release |
+
+* Logs after the benchmark: no 5xx, no traceback, no OOM; 56 x 200, 1 x 202.
+* Tag `p4-performance-closure-runtime` = `6b58764` pushed; `p4-release-runtime` (`8c813ac`), `p4-frozen-product`, `p4-frozen` and every older tag unmoved (verified peeled on origin).
+* Residuals: (1) the shared-supplier-order recourse class through `/jobs` still times out on the shared-cpu-2x machine under 3-6x steal - a machine-class decision, unchanged; (2) the produce class at 12 / 16 tree worlds remains bounded by its FEFO indicators (identified exact candidate: a proven per-line undominated stock bound for the indicator rows); (3) the perfect-information diagnostic on the shared-order class stays NON_CERTIFIED at its budget (report-only).
 
 ## Verdict
 
-{{VERDICT}}
+One exact change adopted with its equivalence argument, measured before and after on the same
+machine, every frozen regression green in one pass, CI green once on the exact candidate, tree
+identity proven, deployed and benchmarked in production, historical tags immutable.
+
+**ZAAD P4 PRODUCTION PERFORMANCE CLOSURE — PASS.** Original P4 release runtime `8c813ac`; new
+performance-closed runtime `6b58764` (Fly v21, `canonical-6b58764`, tag
+`p4-performance-closure-runtime`). Validation status unchanged: ENGINEERING VALIDATED, NOT
+REAL-DATA VALIDATED.
