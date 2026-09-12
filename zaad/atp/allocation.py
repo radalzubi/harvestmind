@@ -25,6 +25,7 @@ TIE_PERIOD = 1e-6      # earlier promise wins among equal-cost channels
 TIE_HOME = 5e-8        # then the service's own location among equal-cost direct channels
 TIE_FEFO = 1e-8        # then the earlier-expiring cohort (the frozen model's fefo rule as a tie)
 TIE_RANK = 1e-9        # then the documented line rank (order period, line id)
+TIE_UNMET = 1e-5       # an unmet / refused unit with zero declared economics is still served when serving is otherwise free
 FLOOR_INFEASIBLE = "INFEASIBLE_CONTRACTUAL_FLOORS"
 
 
@@ -129,7 +130,7 @@ def solve(req, atp: Atp, state: SupplyState, seconds: float = 30.) -> Allocation
         j = idx_unmet[line.id]
         # a CANCEL_IF_LATE order's shortfall is a refusal (lost sale + declared refusal cost), an
         # ACCEPT_LATE order's shortfall is unmet (lost sale + SLA + declared shortage penalty)
-        cost[j] = d.refused_cost if refuses[line.id] else d.unmet_cost
+        cost[j] = (d.refused_cost if refuses[line.id] else d.unmet_cost) + TIE_UNMET
         upper[j] = line.quantity
     for j in list(idx_full.values()) + list(idx_min.values()):
         upper[j] = 1

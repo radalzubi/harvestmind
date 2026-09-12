@@ -148,7 +148,7 @@ def principle(name: str, req, rep) -> dict[str, Any]:
         expected = {"sla": sum(u["unmet"] * drv[lid]["sla_per_unmet"] for lid, u in units.items()),
                     "shortage_penalty": sum(u["unmet"] * drv[lid]["shortage_penalty_per_unit"] for lid, u in units.items()),
                     "refusal": sum(u["refused"] * drv[lid]["refusal_cost_per_unit"] for lid, u in units.items()),
-                    "lost_sales_opportunity": sum((u["unmet"] + u["refused"]) * drv[lid]["lost_sale_per_unit"] for lid, u in units.items()),
+                    "lost_contribution": sum((u["unmet"] + u["refused"]) * drv[lid]["lost_contribution_per_unit"] for lid, u in units.items()),
                     "backorder_carry": sum(u["late_unit_periods"] * drv[lid]["late_penalty_per_unit_period"] for lid, u in units.items())}
         ok = (set(led) == set(LEDGER_KEYS) and set(rep["ledger_owner"]) == set(LEDGER_KEYS) and abs(sum(led.values()) - rep["optimised_cost"]) < TOL
               and abs(sum(rep["incumbent_ledger"].values()) - rep["incumbent_cost"]) < TOL

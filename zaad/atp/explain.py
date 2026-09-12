@@ -21,7 +21,7 @@ RESERVATION_RELEASE = ("proposed by this report only: nothing is committed or pe
 
 
 def _basis(d: Drivers) -> str:
-    return {"declared_line_margin": "declared line margin", "declared_class_margin": "declared class margin", "service_selling_price": "Service selling price, the frozen settlement basis"}[d.lost_basis]
+    return {"declared_line_margin": "declared line margin", "declared_class_margin": "declared class margin", "frozen_contribution": "selling price less asset value, the frozen allocation-ranking basis"}[d.lost_basis]
 
 
 def _why(a_id: str, b_id: str, da: Drivers, db: Drivers, la, lb) -> str:
@@ -30,7 +30,7 @@ def _why(a_id: str, b_id: str, da: Drivers, db: Drivers, la, lb) -> str:
         ("contractual floor", da.floor, db.floor, "{:.0%}"),
         ("shortage penalty per unit", da.shortage_penalty, db.shortage_penalty, "{:,.2f}"),
         ("late penalty per unit per period", da.late_penalty, db.late_penalty, "{:,.2f}"),
-        (f"lost sale per unit ({_basis(da)})", da.lost_margin, db.lost_margin, "{:,.2f}"),
+        (f"lost contribution per unit ({_basis(da)})", da.lost_margin, db.lost_margin, "{:,.2f}"),
         ("service SLA per unmet unit", da.sla, db.sla, "{:,.2f}"),
         ("refusal cost per unit", da.refusal_cost, db.refusal_cost, "{:,.2f}"),
     ]
@@ -68,10 +68,10 @@ def report(req, atp: Atp, state: SupplyState, optimised: Allocation, incumbent: 
     substituted = [p for p in promised if p["substitution"]]
     alternative = [p for p in promised if p["fulfilment"] == ALTERNATIVE]
     unfulfilled = [{"order": lines[lid][0].id, "line": lid, "customer": lines[lid][0].customer, "sku": lines[lid][1].sku, "quantity": round(q, 3),
-                    "driver": f"lost sale {drv[lid].lost_margin:,.2f} ({_basis(drv[lid])}) + SLA {drv[lid].sla:,.2f} + shortage penalty {drv[lid].shortage_penalty:,.2f} per unit; no feasible supply at a lower total cost"}
+                    "driver": f"lost contribution {drv[lid].lost_margin:,.2f} ({_basis(drv[lid])}) + SLA {drv[lid].sla:,.2f} + shortage penalty {drv[lid].shortage_penalty:,.2f} per unit; no feasible supply at a lower total cost"}
                    for lid, q in sorted(recommended.unmet.items())]
     refused = [{"order": lines[lid][0].id, "line": lid, "customer": lines[lid][0].customer, "sku": lines[lid][1].sku, "quantity": round(q, 3),
-                "driver": f"CANCEL_IF_LATE: nothing promisable by period {lines[lid][1].requested_period}; refusal cost {drv[lid].refusal_cost:,.2f} + lost sale {drv[lid].lost_margin:,.2f} per unit"}
+                "driver": f"CANCEL_IF_LATE: nothing promisable by period {lines[lid][1].requested_period}; refusal cost {drv[lid].refusal_cost:,.2f} + lost contribution {drv[lid].lost_margin:,.2f} per unit"}
                for lid, q in sorted(recommended.refused.items())]
     # why A before B: for every scarce (sku, home location) pair, the served-first line against a line that received less of its request
     order_of = {}
@@ -89,7 +89,7 @@ def report(req, atp: Atp, state: SupplyState, optimised: Allocation, incumbent: 
     drawn: dict[str, float] = {}
     for s in recommended.shipments:
         drawn[s.lot] = drawn.get(s.lot, 0.) + s.physical_units
-    remaining = [{"lot": lot.id, "record": lot.record, "sku": lot.sku, "location": lot.location, "available_from": lot.available_from, "tier": lot.tier,
+    remaining: list[dict[str, Any]] = [{"lot": lot.id, "record": lot.record, "sku": lot.sku, "location": lot.location, "available_from": lot.available_from, "tier": lot.tier,
                   "physical": round(lot.physical, 3), "reserved_before": round(lot.reserved, 3), "unusable": round(lot.unusable, 3),
                   "promised_now": round(drawn.get(lot.id, 0.), 3), "remaining_unreserved": round(lot.quantity - drawn.get(lot.id, 0.), 3)} for lot in state.lots]
     non_firm = [{"id": n.id, "record": n.record, "sku": n.sku, "location": n.location, "expected_period": n.expected_period, "quantity": round(n.quantity, 3),
@@ -104,10 +104,13 @@ def report(req, atp: Atp, state: SupplyState, optimised: Allocation, incumbent: 
                              "earliest_period_with_non_firm_supply": capable[0] if capable else None,
                              "note": ("outside the order's backorder window or beyond the promise horizon" if arrivals
                                       else ("only non-firm supply (open purchase orders) is expected; it is never promised" if capable else "no further firm supply declared within the promise horizon"))}
-    classes = {c.id: {"provenance": c.provenance, "reference": c.reference, "contractual_service_floor": c.contractual_service_floor, "shortage_penalty_per_unit": c.shortage_penalty_per_unit,
+    classes = {c.id: {"provenance": c.provenance, "reference": c.reference, "contractual_service_floor": c.contractual_service_floor, "shortage_penalty_per_unit": c.shortage_penalty_per_unit, "shortage_penalty_basis": c.shortage_penalty_basis,
                       "late_penalty_per_unit_period": c.late_penalty_per_unit_period, "refusal_cost_per_unit": c.refusal_cost_per_unit, "lost_margin_per_unit": c.lost_margin_per_unit,
                       "strategic": c.strategic, "tier": c.tier} for c in spec.service_classes}
-    drivers_out = {lid: {"lost_sale_per_unit": d.lost_margin, "lost_sale_basis": d.lost_basis, "sla_per_unmet": d.sla, "shortage_penalty_per_unit": d.shortage_penalty,
+    drivers_out = {lid: {"lost_contribution_per_unit": d.lost_margin, "lost_basis": d.lost_basis, "gross_selling_price": d.gross_selling_price,
+                         "sla_per_unmet": d.sla, "sla_service_declared": d.sla_service, "sla_basis": d.sla_basis,
+                         "sla_replaced_per_unit": (d.sla_service if d.sla_basis == "REPLACES_SERVICE_SLA" else 0.),
+                         "shortage_penalty_per_unit": d.shortage_penalty,
                          "late_penalty_per_unit_period": d.late_penalty, "refusal_cost_per_unit": d.refusal_cost, "contractual_floor": d.floor, "provenance": d.provenance}
                    for lid, d in drv.items()}
     return {"version": VERSION, "principle": PRINCIPLE, "verdict": verdict, "recommended_policy": recommended.policy,
@@ -125,6 +128,10 @@ def report(req, atp: Atp, state: SupplyState, optimised: Allocation, incumbent: 
             "supply_envelope": state.ladder(), "remaining_supply": remaining, "non_firm_availability": non_firm,
             "blocked_supply": blocked_supply(req, atp, state), "next_promise": next_promise,
             "ledger": priced["ledger"], "incumbent_ledger": priced_incumbent["ledger"], "ledger_owner": {k: OWNER[k] for k in LEDGER_KEYS}, "unit_states": priced["units"],
+            "gross_lost_sales_opportunity": priced.get("gross_lost_sales_opportunity"), "incumbent_gross_lost_sales_opportunity": priced_incumbent.get("gross_lost_sales_opportunity"),
+            "lost_sale_basis_note": "lost contribution (selling price less asset value, the frozen allocation-ranking basis, or a declared margin) enters the objective; "
+                                    "the gross selling price (the settlement's lost_sales_opportunity convention) is information only",
+            "retained_supply_units": round(sum(r["remaining_unreserved"] for r in remaining if r["tier"] == "on_hand"), 3),
             "assumptions": list(state.assumptions) + list(recommended.notes),
             "approval_required": True, "executable_promise": False,
             "engineering": {"optimised": optimised.engine, "incumbent": incumbent.engine, "solve_seconds": optimised.solve_seconds,

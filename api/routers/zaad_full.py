@@ -228,9 +228,10 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
     `shape=purchase_plan` returns the workspace purchase-plan rows (approval stays with the operator,
     never an executable order); `shape=network` returns the full network report with the build."""
     from zaad.full.workspace import to_purchase_plan
-    # NOTE (recorded in the P5 API audit, not changed here): the frozen call site passes `sourcing` but not
-    # `recourse`; the P5 flag is passed by keyword so this closed P4 plumbing is left exactly as released.
-    req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode, sourcing, atp=atp)
+    # P5 release audit (item C): the released call site dropped `recourse` (P4 plumbing defect, recorded in the
+    # P5 integration API audit); every phase flag is now passed by keyword, so no flag depends on its position.
+    req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds, network,
+                                         sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp)
     atp_gate(req, batch=False)
     report = await compute(req)
     if shape == "network":

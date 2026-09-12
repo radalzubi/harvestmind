@@ -36,7 +36,7 @@ def promise_with(req, atp: Atp, seconds: float = 30.) -> dict[str, Any]:
     priced_base = price(base, req, atp, state)
     optimised = solve(req, atp, state, seconds=seconds)
     if optimised.status in (FLOOR_INFEASIBLE, "INFEASIBLE", "ERROR"):
-        priced_opt = {"ledger": {k: None for k in priced_base["ledger"]}, "total": None, "units": {}}
+        priced_opt = {"ledger": {k: None for k in priced_base["ledger"]}, "total": None, "units": {}, "gross_lost_sales_opportunity": None}
         return report(req, atp, state, optimised, base, priced_opt, priced_base, drv, NO_RECOMMENDATION, None, False, base)
     priced_opt = price(optimised, req, atp, state)
     value = priced_base["total"] - priced_opt["total"]

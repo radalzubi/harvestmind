@@ -76,7 +76,7 @@ def test_ledger_keys_are_owned_and_the_class_penalty_is_not_hidden_in_the_servic
     assert abs(rep["ledger"]["shortage_penalty"] - sum(u["unmet"] * drv[lid]["shortage_penalty_per_unit"] for lid, u in units.items())) < 1e-6
     assert abs(sum(rep["ledger"].values()) - rep["optimised_cost"]) < 1e-6
     assert "transfer" not in rep["ledger"] and rep["fulfilment"]["p2_transfers_created"] == 0
-    assert all(d["lost_sale_basis"] == "service_selling_price" for d in drv.values())
+    assert all(d["lost_basis"] == "frozen_contribution" and d["lost_contribution_per_unit"] == d["gross_selling_price"] - 5. for d in drv.values())
 
 
 def test_no_implicit_transfer_and_direct_ship_from_are_structurally_distinct():
@@ -150,7 +150,8 @@ def test_workspace_flag_attaches_declared_orders_only_when_asked(vault, monkeypa
     assert req1.atp is None and rep1["atp"]["requested"] and not rep1["atp"]["declared"] and any("stg_atp_customer_orders" in w for w in rep1["warnings"])
     sku = req1.skus[0].id
     customer = req1.customers[0].id
-    vault.execute("insert into stg_atp_service_classes (operator_id, class_id, provenance, shortage_penalty_per_unit) values ('tenant_n', 'hi', 'OPERATOR_DECLARED', 20.0)")
+    vault.execute("insert into stg_atp_service_classes (operator_id, class_id, provenance, reference, shortage_penalty_per_unit, shortage_penalty_basis) "
+                  "values ('tenant_n', 'hi', 'OPERATOR_DECLARED', 'policy-hi', 20.0, 'ADDITIONAL_TO_SERVICE_SLA')")
     vault.execute("insert into stg_atp_customer_orders (operator_id, order_id, line_id, customer_id, service_class, sku, quantity, requested_period, order_period) "
                   f"values ('tenant_n', 'o1', 'l1', '{customer}', 'hi', '{sku}', 5.0, 0, 0)")
     req2, rep2 = build_request(vault, "tenant_n", atp=True)
@@ -186,3 +187,38 @@ def test_planner_api_is_gated_bounded_and_tenant_checked(vault, monkeypatch):
     rep = r.json()
     assert rep["atp"]["path"] == "planner" and rep["atp"]["approval_required"] and rep["executable_purchase_order"] is False
     assert rep["atp"]["reservations"] and all(x["status"] == "PROPOSED" for x in rep["atp"]["reservations"])
+
+
+def test_workspace_plan_forwards_every_phase_flag_by_keyword(vault, monkeypatch):
+    """P5 release audit item C: `plan/from-workspace` forwards `recourse` (P4) and `atp` (P5) to the request
+    builder by keyword; `recourse=false` builds the same request as no flag; both flags coexist. The planner
+    call is stubbed (the planner-path proof with real solves is R16 / R17 in the release-audit evidence)."""
+    from api.routers import zaad_full as router_module
+    vault.execute("INSERT INTO stg_recourse_spec (operator_id, enabled, review_periods, observables, actions, demand_grid, continuations, provenance) "
+                  "VALUES ('tenant_n', TRUE, '[3]', '[\"demand\"]', '[\"purchase\", \"transfer\"]', 5.0, 2, 'OPERATOR_DECLARED')")
+    seen = []
+
+    async def stub(req):
+        seen.append(req)
+        return {"status": "STUB", "actions": [], "incumbent_actions": [], "input_fingerprint": "0" * 64}
+
+    monkeypatch.setattr(router_module, "compute", stub)
+    monkeypatch.setenv("ZAAD_ATP_ENABLED", "1")
+    client = TestClient(_app(vault))
+    q = {"max_solve_seconds": 5, "shape": "network"}
+    assert client.post("/api/zaad/network/plan/from-workspace", params=q).status_code == 200
+    assert client.post("/api/zaad/network/plan/from-workspace", params={**q, "recourse": "false"}).status_code == 200
+    assert client.post("/api/zaad/network/plan/from-workspace", params={**q, "recourse": "true"}).status_code == 200
+    none, false, true = seen
+    assert none.recourse is None and false.recourse is None and none.model_dump() == false.model_dump()
+    assert true.recourse is not None and true.recourse.enabled and tuple(true.recourse.review_periods) == (3,) and true.atp is None
+    sku, customer = none.skus[0].id, none.customers[0].id
+    vault.execute("insert into stg_atp_service_classes (operator_id, class_id, provenance, reference, shortage_penalty_per_unit, shortage_penalty_basis) "
+                  "values ('tenant_n', 'hi', 'OPERATOR_DECLARED', 'policy-hi', 20.0, 'ADDITIONAL_TO_SERVICE_SLA')")
+    vault.execute("insert into stg_atp_customer_orders (operator_id, order_id, line_id, customer_id, service_class, sku, quantity, requested_period, order_period) "
+                  f"values ('tenant_n', 'o1', 'l1', '{customer}', 'hi', '{sku}', 5.0, 0, 0)")
+    assert client.post("/api/zaad/network/plan/from-workspace", params={**q, "recourse": "true", "atp": "true"}).status_code == 200
+    assert client.post("/api/zaad/network/plan/from-workspace", params={**q, "atp": "true"}).status_code == 200
+    both, atp_only = seen[3], seen[4]
+    assert both.recourse is not None and both.recourse.enabled and both.atp is not None and both.atp.enabled
+    assert atp_only.recourse is None and atp_only.atp is not None and atp_only.atp.enabled

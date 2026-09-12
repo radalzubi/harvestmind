@@ -66,6 +66,11 @@ def with_state(req: Request, *, stock_rows=None, customers=None, services=None, 
 
 
 def cls(cid: str, **kw) -> ServiceClass:
+    """Fixture classes declare their shortage-penalty basis explicitly (release audit B): a class penalty on a
+    stream that already carries an SLA is ADDITIONAL to it, with a fixture policy reference, unless the fixture says otherwise."""
+    if kw.get("shortage_penalty_per_unit", 0.) > 0 and "shortage_penalty_basis" not in kw:
+        kw["shortage_penalty_basis"] = "ADDITIONAL_TO_SERVICE_SLA"
+        kw.setdefault("reference", f"fixture-policy-{cid}")
     return ServiceClass(id=cid, **kw)
 
 

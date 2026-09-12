@@ -66,6 +66,7 @@ ARMS = {
     "p2_meio_quiet": {},    # P2 freeze gate: cell 108 alone with nothing else running
     "p2_perf": {},          # P2 performance pass: product defaults after the exact FEFO symmetry elimination; every P0 cell must stay decision-identical to router_cycle
     "sector_physics": {},   # three-sector physics freeze gate: product defaults with the sector layer present (no profile on the P0 cells); decision-identical to router_cycle
+    "p5_release": {},   # P5 release audit: corrected lost-contribution basis + shortage-basis contract (no atp block on the P0 cells); decision-identical to router_cycle
     "p5_integration": {},   # P5 shared-core integration: planner hook after the frozen report (no atp block on the P0 cells); decision-identical to router_cycle
     "p4_perf": {},   # P4 performance closure: warm-started adaptive tree solve (recourse path only; no recourse block on the P0 cells); decision-identical to router_cycle
     "p4_perf_rerun": {},   # P4 performance closure: wall-clock-limited cells alone on a quiet machine

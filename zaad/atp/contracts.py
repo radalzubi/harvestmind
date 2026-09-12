@@ -20,6 +20,7 @@ Provenance = Literal["OPERATOR_DECLARED", "CONTRACT", "CONFIGURED_ASSUMPTION"]
 IncumbentPolicy = Literal["FIFO_PROMISE", "FCFS_ORDER_DATE", "TIER_PRIORITY", "PROPORTIONAL", "CONTRACTUAL_THEN_PRIORITY", "DECLARED_MANUAL"]
 Fairness = Literal["NONE", "PROPORTIONAL_WHEN_INDIFFERENT"]
 LateSemantics = Literal["ACCEPT_LATE", "CANCEL_IF_LATE"]
+ShortageBasis = Literal["ADDITIONAL_TO_SERVICE_SLA", "REPLACES_SERVICE_SLA"]
 
 INTERACTIVE_LIMITS = {"orders": 200, "lines": 500, "promise_horizon": 26, "service_classes": 50}
 
@@ -33,7 +34,13 @@ class ServiceClass(Record):
     shortage_penalty_per_unit: float = Field(default=0., ge=0)
     late_penalty_per_unit_period: float = Field(default=0., ge=0)
     refusal_cost_per_unit: float = Field(default=0., ge=0)
-    lost_margin_per_unit: float | None = Field(default=None, ge=0)   # None -> frozen Service economics
+    lost_margin_per_unit: float | None = Field(default=None, ge=0)   # None -> frozen contribution (selling_price - asset_value)
+    # How the class shortage penalty relates to the frozen Service.sla_per_unmet of the streams it serves.
+    # Required (fail closed) whenever both are declared non-zero for a line, so one contractual consequence
+    # is never declared twice by accident: ADDITIONAL_TO_SERVICE_SLA (a second, distinct consequence - needs a
+    # reference and CONTRACT / OPERATOR_DECLARED provenance) or REPLACES_SERVICE_SLA (the class term stands in
+    # for the stream SLA on those lines; the SLA is then not charged and the replacement is reported).
+    shortage_penalty_basis: ShortageBasis | None = None
     strategic: bool = False
     tier: str | None = None                   # declared label; used only by the TIER_PRIORITY incumbent
 
@@ -41,6 +48,13 @@ class ServiceClass(Record):
     def provenance_rules(self):
         if self.provenance == "CONTRACT" and not self.reference:
             raise ValueError("atp: a CONTRACT service class needs a reference")
+        if self.shortage_penalty_basis == "ADDITIONAL_TO_SERVICE_SLA":
+            if self.provenance == "CONFIGURED_ASSUMPTION":
+                raise ValueError("atp: a shortage penalty ADDITIONAL to the Service SLA cannot rest on a CONFIGURED_ASSUMPTION (double declaration of one shortage consequence)")
+            if not self.reference:
+                raise ValueError("atp: a shortage penalty ADDITIONAL to the Service SLA needs a reference naming the distinct contract / policy (double declaration of one shortage consequence)")
+        if self.shortage_penalty_basis is not None and self.shortage_penalty_per_unit <= 0:
+            raise ValueError("atp: shortage_penalty_basis declared without a shortage penalty")
         if self.strategic and (self.provenance != "OPERATOR_DECLARED" or not self.reference):
             raise ValueError("atp: a strategic flag needs OPERATOR_DECLARED provenance and a reference (undeclared strategic flag)")
         return self
@@ -165,6 +179,7 @@ def validate_request(req) -> None:
     skus = {s.id for s in req.skus}
     locations = {loc.id for loc in req.locations}
     services = {(s.customer, s.sku): s for s in req.services}
+    classes = {c.id: c for c in spec.service_classes}
     for order in spec.orders:
         if order.customer not in customers:
             raise ValueError(f"atp: order {order.id} names an unknown customer {order.customer}")
@@ -176,5 +191,10 @@ def validate_request(req) -> None:
                     raise ValueError(f"atp: line {line.id} names an unknown location {loc}")
             if (order.customer, line.sku) not in services:
                 raise ValueError(f"atp: no service (demand stream) declares customer {order.customer} for SKU {line.sku}; P5 prices with the frozen Service economics")
+            cls = classes.get(order.service_class)
+            if cls is not None and cls.shortage_penalty_per_unit > 0 and services[order.customer, line.sku].sla_per_unmet > 0 and cls.shortage_penalty_basis is None:
+                raise ValueError(f"atp: class {cls.id} declares a shortage penalty and the service for line {line.id} already carries sla_per_unmet "
+                                 f"{services[order.customer, line.sku].sla_per_unmet}: declare shortage_penalty_basis (ADDITIONAL_TO_SERVICE_SLA with a reference, "
+                                 "or REPLACES_SERVICE_SLA) - one shortage consequence must not be declared twice")
     if len(spec.orders) > INTERACTIVE_LIMITS["orders"] * 4 or sum(len(o.lines) for o in spec.orders) > INTERACTIVE_LIMITS["lines"] * 4:
         raise ValueError("atp: order count beyond the contract envelope (resource abuse)")

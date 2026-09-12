@@ -7,10 +7,11 @@ settlement, `zaad/full/settlement.py`, and the frozen model, `zaad/full/model.py
 
 | key                     | per unit in state        | basis                                                   | owner                        |
 |-------------------------|--------------------------|---------------------------------------------------------|------------------------------|
-| lost_sales_opportunity  | unmet, refused           | Service.selling_price (the frozen settlement's basis:   | frozen settlement convention |
-|                         |                          | `ledger["lost_sales_opportunity"] += need * selling_price`), or a DECLARED |            |
-|                         |                          | class / line margin when the operator declares one      | (P5 declaration)             |
-| sla                     | unmet                    | Service.sla_per_unmet (`ledger["sla"] += need * sla`)   | frozen Service record        |
+| lost_contribution       | unmet, refused           | Service.selling_price - SKU.asset_value (the frozen      | frozen allocation ranking    |
+|                         |                          | model's allocation-ranking basis), or a DECLARED line /  | (release audit A) or the P5  |
+|                         |                          | class margin; the gross selling price is reported only   | declaration                  |
+| sla                     | unmet                    | Service.sla_per_unmet (`ledger["sla"] += need * sla`);  | frozen Service record        |
+|                         |                          | 0 on lines whose class basis REPLACES_SERVICE_SLA       |                              |
 | shortage_penalty        | unmet                    | ServiceClass.shortage_penalty_per_unit (declared class  | P5 declaration               |
 |                         |                          | term, ADDITIONAL to the Service SLA, its own key)       |                              |
 | backorder_carry         | late (per period late)   | ServiceClass.late_penalty_per_unit_period               | P5 declaration               |
@@ -36,8 +37,8 @@ from typing import Any
 from zaad.atp.contracts import Atp, CustomerOrder, PromiseLine
 
 TOL = 1e-9
-LEDGER_KEYS = ("lost_sales_opportunity", "sla", "shortage_penalty", "backorder_carry", "substitution", "alternative_ship_from", "refusal")
-OWNER = {"lost_sales_opportunity": "frozen settlement convention (Service.selling_price) or a declared margin",
+LEDGER_KEYS = ("lost_contribution", "sla", "shortage_penalty", "backorder_carry", "substitution", "alternative_ship_from", "refusal")
+OWNER = {"lost_contribution": "frozen allocation-ranking basis (Service.selling_price - SKU.asset_value, model.py / settlement.py) or a declared line / class margin; the gross selling price is reported as information",
          "sla": "frozen Service.sla_per_unmet", "shortage_penalty": "declared ServiceClass.shortage_penalty_per_unit",
          "backorder_carry": "declared ServiceClass.late_penalty_per_unit_period x periods late", "substitution": "frozen Substitute penalty (settlement fee)",
          "alternative_ship_from": "frozen P2 Transfer.cost_per_unit on the approved lane, priced only (no transfer is created)",
@@ -80,9 +81,12 @@ class Allocation:
 @dataclass(frozen=True)
 class Drivers:
     """The declared numbers that rank a line; every one of them can be cited by the report."""
-    lost_margin: float               # per unmet or refused unit: declared line margin, else declared class margin, else Service.selling_price
-    lost_basis: str                  # declared_line_margin | declared_class_margin | service_selling_price (frozen settlement basis)
-    sla: float                       # Service.sla_per_unmet (stream-level, frozen)
+    lost_margin: float               # per unmet or refused unit: declared line margin, else declared class margin, else selling_price - asset_value
+    lost_basis: str                  # declared_line_margin | declared_class_margin | frozen_contribution
+    gross_selling_price: float       # Service.selling_price (the settlement's gross lost-sales-opportunity basis; reported, never charged here)
+    sla: float                       # Service.sla_per_unmet charged per unmet unit (0 when the class basis REPLACES it)
+    sla_service: float               # Service.sla_per_unmet as declared on the stream
+    sla_basis: str | None            # ADDITIONAL_TO_SERVICE_SLA | REPLACES_SERVICE_SLA | None (no class penalty or no stream SLA)
     shortage_penalty: float          # class (its own ledger key)
     late_penalty: float              # class, per unit per period late
     refusal_cost: float              # class
@@ -106,13 +110,18 @@ def drivers(req, atp: Atp, order: CustomerOrder, line: PromiseLine) -> Drivers:
     cls = atp.classes[order.service_class]
     service = next(s for s in req.services if s.customer == order.customer and s.sku == line.sku)
     customer = next(c for c in req.customers if c.id == order.customer)
+    asset_value = float(next(k.asset_value for k in req.skus if k.id == line.sku))
     if line.unit_margin is not None:
         lost, basis = float(line.unit_margin), "declared_line_margin"
     elif cls.lost_margin_per_unit is not None:
         lost, basis = float(cls.lost_margin_per_unit), "declared_class_margin"
     else:
-        lost, basis = float(service.selling_price), "service_selling_price"
-    return Drivers(lost_margin=lost, lost_basis=basis, sla=float(service.sla_per_unmet), shortage_penalty=cls.shortage_penalty_per_unit,
+        lost, basis = max(0., float(service.selling_price) - asset_value), "frozen_contribution"
+    sla_service = float(service.sla_per_unmet)
+    sla_basis = cls.shortage_penalty_basis if (cls.shortage_penalty_per_unit > 0 and sla_service > 0) else None
+    sla = 0. if sla_basis == "REPLACES_SERVICE_SLA" else sla_service
+    return Drivers(lost_margin=lost, lost_basis=basis, gross_selling_price=float(service.selling_price), sla=sla, sla_service=sla_service, sla_basis=sla_basis,
+                   shortage_penalty=cls.shortage_penalty_per_unit,
                    late_penalty=cls.late_penalty_per_unit_period, refusal_cost=cls.refusal_cost_per_unit, floor=cls.contractual_service_floor,
                    strategic=cls.strategic, reference=cls.reference, customer_priority=float(customer.priority), tier=cls.tier, provenance=cls.provenance)
 
@@ -120,6 +129,7 @@ def drivers(req, atp: Atp, order: CustomerOrder, line: PromiseLine) -> Drivers:
 def price(alloc: Allocation, req, atp: Atp, state) -> dict[str, Any]:
     """Ledger by key, total, and the unit-state table per line (reconciliation invariants 3 / 13)."""
     ledger = {k: 0. for k in LEDGER_KEYS}
+    gross = 0.
     units: dict[str, dict[str, float]] = {}
     subs = {s.id: s for s in req.substitutions}
     lanes = {lane.id: lane for lane in state.lanes}
@@ -143,10 +153,11 @@ def price(alloc: Allocation, req, atp: Atp, state) -> dict[str, Any]:
                     ledger["substitution"] += s.quantity * rule.penalty_per_output / rule.service_equivalence
                 if s.lane is not None:
                     ledger["alternative_ship_from"] += s.physical_units * lanes[s.lane].cost_per_unit
-            ledger["lost_sales_opportunity"] += (row["unmet"] + row["refused"]) * d.lost_margin
+            ledger["lost_contribution"] += (row["unmet"] + row["refused"]) * d.lost_margin
+            gross += (row["unmet"] + row["refused"]) * d.gross_selling_price
             ledger["sla"] += row["unmet"] * d.sla
             ledger["shortage_penalty"] += row["unmet"] * d.shortage_penalty
             ledger["refusal"] += row["refused"] * d.refusal_cost
             row["balance_residual"] = row["on_time"] + row["late"] + row["unmet"] + row["refused"] - line.quantity
             units[line.id] = row
-    return {"ledger": ledger, "total": sum(ledger.values()), "units": units}
+    return {"ledger": ledger, "total": sum(ledger.values()), "units": units, "gross_lost_sales_opportunity": gross}

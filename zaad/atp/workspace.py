@@ -28,7 +28,7 @@ def atp_block(conn, operator_id: str) -> dict[str, Any] | None:
     class_rows = []
     for r in (classes.to_dict("records") if classes is not None else []):
         row = {"id": r["class_id"]}
-        for k in ("provenance", "reference", "contractual_service_floor", "shortage_penalty_per_unit", "late_penalty_per_unit_period", "refusal_cost_per_unit", "lost_margin_per_unit", "strategic", "tier"):
+        for k in ("provenance", "reference", "contractual_service_floor", "shortage_penalty_per_unit", "shortage_penalty_basis", "late_penalty_per_unit_period", "refusal_cost_per_unit", "lost_margin_per_unit", "strategic", "tier"):
             if _present(r.get(k)):
                 row[k] = r[k]
         class_rows.append(row)

@@ -142,6 +142,18 @@ def case_probabilistic_inbound():
     return refused(lambda: with_atp(req, [order("o1", "c1", "std", [line("l1", 10.)])], STD, include_inbound=True, inbound_confidence=.8))
 
 
+def case_double_shortage_declaration():
+    """R07: one shortage consequence declared twice fails closed (equal amount, no basis; any amount, no basis;
+    ADDITIONAL on an assumption; ADDITIONAL without a reference)."""
+    req = scene(base(), 10.)
+    o = [order("o1", "c1", "k", [line("l1", 10.)])]
+    a = refused(lambda: with_atp(req, o, [ServiceClass(id="k", shortage_penalty_per_unit=2.5)]))
+    b = refused(lambda: with_atp(req, o, [ServiceClass(id="k", shortage_penalty_per_unit=3.)]))
+    c = refused(lambda: ServiceClass(id="k", shortage_penalty_per_unit=3., shortage_penalty_basis="ADDITIONAL_TO_SERVICE_SLA", provenance="CONFIGURED_ASSUMPTION", reference="x"))
+    d = refused(lambda: ServiceClass(id="k", shortage_penalty_per_unit=3., shortage_penalty_basis="ADDITIONAL_TO_SERVICE_SLA"))
+    return all(x[0] for x in (a, b, c, d)), " | ".join(x[1][:60] for x in (a, b, c, d))
+
+
 def case_cross_tenant_reference():
     req = scene(base(), 100.)
     # a customer id of another operator's vault is simply unknown here: refused at the contract; the API adds the operator match (403)
@@ -155,7 +167,7 @@ CASES = [("duplicate customer order id", case_duplicate_order_id), ("negative de
          ("expired produce", case_expired_produce), ("cold-chain invalid shipment", case_cold_chain_invalid_shipment),
          ("substitution not approved", case_substitution_not_approved), ("huge order count (resource abuse)", case_huge_order_count),
          ("malformed economics", case_malformed_economics), ("cross-tenant order reference", case_cross_tenant_reference),
-         ("probabilistic inbound (confidence factor)", case_probabilistic_inbound)]
+         ("probabilistic inbound (confidence factor)", case_probabilistic_inbound), ("double shortage declaration (SLA + class penalty)", case_double_shortage_declaration)]
 
 
 def main() -> int:
