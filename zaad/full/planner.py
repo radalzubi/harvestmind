@@ -153,6 +153,11 @@ def evaluate(req, solution, worlds, terminal: dict[str, float] | None = None, fi
             plan = world_plan(solution, req, nodes.recourse, nodes, world, index=member)
         try:
             result = settle(req, plan, world, future_guidance=True)
+            if adaptive:
+                from zaad.recourse.policy import resolve_nodes
+                hits = resolve_nodes(solution, req, solution.recourse_nodes.recourse, solution.recourse_nodes, world, index=member)
+                result = {**result, "policy_lookup": {"exact": all(exact for _n, exact in hits.values()),
+                                                      "replan_required_epochs": [e for e, (_n, exact) in hits.items() if not exact]}}
             if terminal:
                 from zaad.full.lotsizing import lane_premiums
                 from zaad.full.terminal import continuation_value
@@ -828,14 +833,15 @@ def plan(req: Request) -> dict:
             candidates[name] = solve(req, selection, service_floor=True, allowed_periods=mask, **v6)
     # Adaptive recourse (P4). One information-set-indexed solve of the stochastic candidate's model on
     # the selection worlds; the static comparator is that candidate itself (built when absent, as a
-    # comparator only), the perfect-information solve is a report-only bound. The adaptive candidate
-    # enters selection only when its value clears the request's own materiality standard.
+    # comparator only), the perfect-information solve is a report-only diagnostic (a bound only when
+    # proven optimal; release audit blocker A). The adaptive candidate enters selection only when its
+    # value clears the request's own materiality standard and the certified ordering holds.
     recourse_result: dict[str, Any] | None = None
     recourse_view = resolve_recourse(req)
     if recourse_view is not None:
         from dataclasses import replace as _replace
         from zaad.recourse.information import node_map
-        from zaad.recourse.policy import non_anticipativity
+        from zaad.recourse.policy import assess, attach_fallback, non_anticipativity
         from zaad.recourse.worlds import draw_tree
         # the recourse world set is a small tree on the selection draw: every branch shares its
         # observable history exactly with `continuations` independent futures
@@ -843,22 +849,17 @@ def plan(req: Request) -> dict:
         static_comparator = solve(req, tree, service_floor=True, seed=incumbent, **v6)
         nodes = node_map(req, recourse_view, tree)
         adaptive = solve(req, tree, service_floor=True, nodes=nodes, **v6)
-        adaptive = _replace(adaptive, recourse_nodes=nodes, recourse_worlds=tuple(w.name for w in tree))
+        # a world outside the modelled branches receives the static commitments (REPLAN_REQUIRED),
+        # never a nearest branch (release audit blocker B)
+        adaptive = attach_fallback(_replace(adaptive, recourse_nodes=nodes, recourse_worlds=tuple(w.name for w in tree)), static_comparator)
         perfect = (solve(req, tree, service_floor=True, nodes=node_map(req, recourse_view, tree, perfect=True), **v6)
                    if recourse_view.spec.perfect_information else None)
-        value = ((static_comparator.projected_cost - adaptive.projected_cost)
-                 if (static_comparator.usable_plan and adaptive.usable_plan and static_comparator.projected_cost is not None and adaptive.projected_cost is not None) else None)
+        verdicts = assess(req, static_comparator, adaptive, perfect)
+        value, ordering = verdicts["value_of_adaptation"], verdicts["ordering_ok"]
         static_cost = float(static_comparator.projected_cost or 0.)
-        adaptive_cost = float(adaptive.projected_cost or 0.)
-        slack = float(req.solver_mip_gap) * max(1., abs(static_cost)) + 1e-6
-        ordering = None
-        if value is not None:
-            ordering = adaptive_cost <= static_cost + slack
-            if perfect is not None and perfect.usable_plan and perfect.projected_cost is not None:
-                ordering = ordering and float(perfect.projected_cost) <= adaptive_cost + slack
         material = value is not None and value > req.materiality_cost_fraction * abs(static_cost)
         recourse_result = {"nodes": nodes, "static": static_comparator, "adaptive": adaptive, "perfect": perfect,
-                           "value_of_adaptation": value, "material": material, "ordering_ok": ordering,
+                           **verdicts, "material": material,
                            "non_anticipativity": non_anticipativity(adaptive, nodes, req) if (adaptive.usable_plan and nodes is not None) else None,
                            "tree_worlds": tree, "static_built_as_comparator": True}
         if adaptive.usable_plan and material and ordering:

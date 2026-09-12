@@ -122,20 +122,25 @@ def _breaches(name):
         p = world_plan(out["adaptive"], req, rc, out["nodes"], w, index=i)
         for (sid, t), q in p.purchases.items():
             s = sources[sid]
-            if q > min(s.maximum, s.capacity_by_period[t]) + TOL: bad.append(("capacity", sid, t))
-            if q > TOL and s.minimum > 0 and q < s.minimum - TOL: bad.append(("moq", sid, t))
+            if q > min(s.maximum, s.capacity_by_period[t]) + TOL:
+                bad.append(("capacity", sid, t))
+            if q > TOL and s.minimum > 0 and q < s.minimum - TOL:
+                bad.append(("moq", sid, t))
             for inc in (s.multiple, s.case_multiple, s.pallet_multiple):
-                if inc > 0 and q > TOL and abs(q / inc - round(q / inc)) > 1e-6: bad.append(("pack", sid, t))
+                if inc > 0 and q > TOL and abs(q / inc - round(q / inc)) > 1e-6:
+                    bad.append(("pack", sid, t))
         for res in req.resources:
             for t in range(req.horizon):
                 used = sum(p.purchases.get((s.id, t), 0.) * next(k.volume for k in req.skus if k.id == s.sku) for s in req.sources if res.id in s.resources)
-                if used > res.capacity_by_period[t] + TOL: bad.append(("resource", res.id, t))
+                if used > res.capacity_by_period[t] + TOL:
+                    bad.append(("resource", res.id, t))
         for st in req.supplier_terms:
             if st.minimum_order_value:
                 for t in range(req.horizon):
                     lines = [(s, p.purchases.get((s.id, t), 0.)) for s in req.sources if s.supplier == st.supplier]
                     value = sum(q * s.unit_price for s, q in lines)
-                    if 0 < value < st.minimum_order_value - 1e-6: bad.append(("mov", st.supplier, t))
+                    if 0 < value < st.minimum_order_value - 1e-6:
+                        bad.append(("mov", st.supplier, t))
     return bad
 
 
@@ -170,7 +175,8 @@ def inv_14_mov():
         for st in req.supplier_terms:
             for t in range(req.horizon):
                 value = sum(p.purchases.get((s.id, t), 0.) * s.unit_price for s in req.sources if s.supplier == st.supplier)
-                if 0 < value < st.minimum_order_value - 1e-6: bad.append((w.name, t, value))
+                if 0 < value < st.minimum_order_value - 1e-6:
+                    bad.append((w.name, t, value))
     return {"pass": not bad and out["adaptive"].usable_plan, "evidence": bad or {"status": out["adaptive"].status, "worlds": len(worlds)}}
 
 
@@ -188,7 +194,8 @@ def inv_16_share_constraints():
         for c in req.sourcing.share_constraints:
             own = sum(q for (sid, t), q in p.purchases.items() if sid == c.source)
             total = sum(q for (sid, t), q in p.purchases.items() if sources[sid].sku == c.sku and sources[sid].destination == c.destination)
-            if total > TOL and not (c.minimum_share - 1e-6 <= own / total <= c.maximum_share + 1e-6): bad.append((w.name, own / total))
+            if total > TOL and not (c.minimum_share - 1e-6 <= own / total <= c.maximum_share + 1e-6):
+                bad.append((w.name, own / total))
     return {"pass": not bad, "evidence": bad or "shares hold in every branch"}
 
 
@@ -199,7 +206,8 @@ def inv_17_transfer_lead_time():
     bad = []
     for node, planx in out["adaptive"].recourse["nodes"].items():
         for (arc, expiry, t), q in planx["transfers"].items():
-            if t < first: bad.append((node, arc, t))
+            if t < first:
+                bad.append((node, arc, t))
     return {"pass": not bad, "evidence": bad or "every recourse transfer departs at or after its epoch"}
 
 
@@ -244,9 +252,13 @@ def inv_22_no_executable_po():
 
 
 def inv_23_perfect_le_adaptive(records):
-    bad = [r["fixture"] for r in records if r.get("solves", {}).get("perfect") and r["solves"]["perfect"]["cost"] is not None and r["solves"]["adaptive"]["cost"] is not None
-           and r["solves"]["perfect"]["cost"] > r["solves"]["adaptive"]["cost"] + 1e-6 * max(1., abs(r["solves"]["adaptive"]["cost"])) + 1e-6]
-    return {"pass": not bad, "evidence": bad or "PI <= adaptive on every fixture with a PI solve"}
+    """PI <= adaptive on every fixture whose perfect-information solve is CERTIFIED (status OPTIMAL); a
+    feasible time-limited PI incumbent is not a bound and is listed, not compared (release audit blocker A)."""
+    certified = [r for r in records if r.get("solves", {}).get("perfect") and r["solves"]["perfect"]["status"] == "OPTIMAL"
+                 and r["solves"]["perfect"]["cost"] is not None and r["solves"]["adaptive"]["cost"] is not None]
+    uncertified = [r["fixture"] for r in records if r.get("solves", {}).get("perfect") and r["solves"]["perfect"]["status"] != "OPTIMAL"]
+    bad = [r["fixture"] for r in certified if r["solves"]["perfect"]["cost"] > r["solves"]["adaptive"]["cost"] + 1e-6 * max(1., abs(r["solves"]["adaptive"]["cost"])) + 1e-6]
+    return {"pass": not bad, "evidence": bad or f"PI <= adaptive on {len(certified)} certified PI solves; non-certified (not compared): {uncertified or 'none'}"}
 
 
 def inv_24_adaptive_le_static(records):
@@ -259,7 +271,8 @@ def inv_25_disabled_is_frozen():
     from zaad.meio.fixtures_p2 import p2_request
     base = p2_request()
     off = Request.model_validate({**base.model_dump(mode="json"), "recourse": {"enabled": False, "review_periods": [3]}})
-    strip = lambda s: re.sub(r'"information_hash": "[0-9a-f]+"|"solve_seconds": [0-9.e-]+|"solver_seconds_total": [0-9.e-]+|"seconds": [0-9.e-]+', '', s)
+    def strip(s):
+        return re.sub(r'"information_hash": "[0-9a-f]+"|"solve_seconds": [0-9.e-]+|"solver_seconds_total": [0-9.e-]+|"seconds": [0-9.e-]+', '', s)
     r0, r1 = plan(base), plan(off)
     return {"pass": strip(report_json(r0)) == strip(report_json(r1)) and "recourse" not in r1, "evidence": "reports identical up to timings and the request hash"}
 

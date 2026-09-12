@@ -131,32 +131,15 @@ def node_map(req, recourse: Recourse | None, worlds: list, perfect: bool = False
     return NodeMap(recourse=recourse, sets=information_sets(req, recourse, worlds), world_count=len(worlds))
 
 
-def _distance(a: tuple, b: tuple) -> float:
-    """Distance between two signatures of the same shape: normalised absolute difference on
-    integers, one per categorical mismatch (pending vs arrived, different periods)."""
-    total = 0.
-    for x, y in zip(a, b):
-        for u, v in zip(x, y):
-            if isinstance(u, tuple) and isinstance(v, tuple):
-                total += sum(abs(i - j) / max(1., abs(i) + abs(j)) for i, j in zip(u, v)) + abs(len(u) - len(v))
-            elif isinstance(u, (int, float)) and isinstance(v, (int, float)) and not isinstance(u, bool):
-                total += abs(u - v) / max(1., abs(u) + abs(v))
-            elif u != v:
-                total += 1.
-    return total + abs(len(a) - len(b))
-
-
-def lookup(req, recourse: Recourse, sets: dict[int, tuple[InformationSet, ...]], world) -> dict[int, tuple[str, bool]]:
+def lookup(req, recourse: Recourse, sets: dict[int, tuple[InformationSet, ...]], world) -> dict[int, tuple[str | None, bool]]:
     """Policy lookup for a world that was not in the solve: per epoch, the information set whose
-    signature equals the world's observable history, else the nearest one (documented distance,
-    ties to the lower rank). The boolean says whether the match was exact."""
-    out: dict[int, tuple[str, bool]] = {}
+    canonical signature equals the world's observable history, exactly, or `(None, False)` when no
+    modelled branch matches. Release rule (P4 release audit, blocker B): there is no nearest-signature
+    routing anywhere. An observation outside the modelled branches never selects a branch action; the
+    caller applies the declared fallback (`policy.world_plan`: the static commitments, REPLAN_REQUIRED)."""
+    out: dict[int, tuple[str | None, bool]] = {}
     for epoch, members in sets.items():
         sig = observable_signature(req, recourse, world, epoch)
         exact = [s for s in members if s.signature == sig]
-        if exact:
-            out[epoch] = (exact[0].id, True)
-            continue
-        best = min(members, key=lambda s: (_distance(sig, s.signature), s.id))
-        out[epoch] = (best.id, False)
+        out[epoch] = (exact[0].id, True) if exact else (None, False)
     return out

@@ -211,6 +211,8 @@ def case_double_counting_bug():
     """The adaptive objective can never beat the perfect-information bound on the same worlds (a cheaper adaptive plan would mean missing economics)."""
     req, rc, worlds = build("T3_perfect_information_bound")
     out = compare(req, worlds, rc, perfect=True, service_floor=True)
+    if out["perfect_status"] != "CERTIFIED":
+        return out["perfect_cost"] is None and out["ordering_ok"] is not None, "PI_NOT_CERTIFIED_NOT_A_BOUND"
     return out["perfect_cost"] <= out["adaptive_cost"] + 1e-6 * max(1., abs(out["adaptive_cost"])) + 1e-6, "INVARIANT_HOLDS"
 
 
@@ -219,7 +221,9 @@ def case_perfect_information_not_executable():
     req = build("D1_demand_recourse")[0]
     r = plan(req)
     b = r["recourse"]
-    return r["selected_policy"] != "perfect_information" and "never a recommendation" in b["perfect_information_scope"] and all(c != "perfect_information" for c in r["candidates"]), "REPORT_ONLY"
+    bound_claimed = "bound" in b["perfect_information_scope"] and b["perfect_information_status"] != "CERTIFIED"
+    return (r["selected_policy"] != "perfect_information" and "never a recommendation" in b["perfect_information_scope"]
+            and not bound_claimed and all(c != "perfect_information" for c in r["candidates"])), "REPORT_ONLY"
 
 
 def case_lookup_never_leaks():
@@ -230,7 +234,11 @@ def case_lookup_never_leaks():
     w = worlds[0]
     a = replace(w, demand={s: tuple(d * (1. if t < e else .5) for t, d in enumerate(v)) for s, v in w.demand.items()})
     b = replace(w, demand={s: tuple(d * (1. if t < e else 2.) for t, d in enumerate(v)) for s, v in w.demand.items()})
-    return lookup(req, rc, nodes.sets, a) == lookup(req, rc, nodes.sets, b), "STRUCTURALLY_IMPOSSIBLE"
+    same = lookup(req, rc, nodes.sets, a) == lookup(req, rc, nodes.sets, b)
+    # and a history outside every modelled branch selects no branch at all (no nearest routing)
+    c = replace(w, demand={s: tuple(d * 7. for d in v) for s, v in w.demand.items()})
+    outside = all(nid is None and not exact for nid, exact in lookup(req, rc, nodes.sets, c).values())
+    return same and outside, "STRUCTURALLY_IMPOSSIBLE"
 
 
 def case_disabled_block_no_hook():

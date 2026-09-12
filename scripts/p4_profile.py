@@ -11,7 +11,7 @@ from pathlib import Path
 
 from zaad.full.planner import plan
 from zaad.recourse.contracts import resolve
-from zaad.recourse.fixtures import p2_base, sourcing_base, with_recourse
+from zaad.recourse.fixtures import sector_base, p2_base, sourcing_base, with_recourse
 from zaad.recourse.policy import compare
 from zaad.recourse.worlds import draw_tree
 
@@ -26,6 +26,8 @@ CLASSES = {
     "p2_network": lambda: p2_base(),
     "p3_two_sources": lambda: sourcing_base("E2_landed_beats_unit_price"),
     "p3_multi_sku_shared_order": lambda: sourcing_base("C6_shared_mov_multi_sku"),
+    # representative sector request (release audit, section 16): produce with FEFO / sellable-life physics
+    "sector_produce": lambda: sector_base("P2_near_expiry_inventory"),
 }
 GRID = [(3, [3], 2), (3, [3, 6], 2), (4, [3], 2), (4, [3, 6], 2), (8, [3], 1), (8, [3, 6], 1), (2, [3, 6], 3)]   # histories, epochs, continuations
 

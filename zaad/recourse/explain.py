@@ -7,10 +7,17 @@ from typing import Any
 
 from zaad.recourse.contracts import Recourse
 from zaad.recourse.information import PENDING
-from zaad.recourse.policy import lookup_exactness
+from zaad.recourse.policy import CERTIFIED, NON_CERTIFIED, REPLAN_REQUIRED, lookup_exactness
 
 PRINCIPLE = ("Commit only what must be committed now; keep flexibility where waiting has economic value; adapt to "
              "observed information, never to scenario labels.")
+UNSEEN_OBSERVATION_RULE = (f"{REPLAN_REQUIRED}: an observation at a review period that matches none of the modelled branches "
+                           "executes no adaptive action; the static commitments stand for that window and a replan is required "
+                           "before any change. There is no nearest-branch routing.")
+PI_SCOPE = {CERTIFIED: "certified lower bound (proven optimal): every world acts with full foresight; never a recommendation",
+            NON_CERTIFIED: ("feasible time-limited perfect-information plan: not proven optimal, reported as a feasible cost only "
+                            "and excluded from the ordering check; never a recommendation"),
+            "UNAVAILABLE": "perfect-information diagnostic not available (not solved or no usable plan); never a recommendation"}
 
 
 def _condition(req, recourse: Recourse, signature: tuple, epoch: int) -> list[str]:
@@ -66,14 +73,21 @@ def recourse_block(req, recourse: Recourse, result: dict[str, Any], report: dict
     selected = report.get("selected_policy") == "adaptive_network"
     if not adaptive.usable_plan:
         verdict = "ADAPTIVE PLAN UNAVAILABLE"
+    elif result["ordering_ok"] is None:
+        # no static comparator plan (infeasible, or none found within the budget): nothing to order against
+        verdict = "ADAPTIVE PLAN NOT COMPARABLE (no static comparator plan: infeasible or not found within the time budget)"
     elif not result["ordering_ok"]:
-        verdict = "ADAPTIVE PLAN REJECTED (ordering check failed)"
+        # a certified violation is a genuine failure; a time-limited adaptive incumbent dearer than the
+        # static plan is not an ordering violation, it is a solve that did not improve on the static plan
+        verdict = ("ADAPTIVE PLAN REJECTED (ordering check failed)" if adaptive.status == "OPTIMAL"
+                   else "ADAPTIVE PLAN NOT SELECTED (time-limited adaptive solve did not improve on the static plan)")
     elif not result["material"]:
         verdict = "NO MATERIAL ADAPTIVE BENEFIT"
     elif selected:
         verdict = "ADAPTIVE PLAN SELECTED"
     else:
         verdict = "ADAPTIVE PLAN NOT SELECTED (a static candidate passed the gates at lower settled cost)"
+    pi_status = result.get("perfect_status", "UNAVAILABLE")
     committed_periods = list(range(0, recourse.first_epoch if recourse.first_epoch is not None else H))
     committed = {"periods": committed_periods,
                  "purchases": [{"source": k[0], "period": k[1], "quantity": round(q, 3)} for k, q in sorted(adaptive.purchases.items()) if q > 1e-9],
@@ -116,18 +130,40 @@ def recourse_block(req, recourse: Recourse, result: dict[str, Any], report: dict
     if verdict == "NO MATERIAL ADAPTIVE BENEFIT":
         sentences.append("The static plan stands: adapting later would not change the economics materially.")
     lookups = lookup_exactness(req, recourse, nodes, confirmation) if nodes is not None else []
-    return {"version": "zaad.recourse.1.0", "principle": PRINCIPLE, "verdict": verdict, "selected": selected,
+    replan = [row["world"] for row in lookups if row["replan_required"]]
+    if replan:
+        sentences.append(f"{len(replan)} of {len(lookups)} evaluation worlds carry an observation outside the modelled branches: "
+                         "they were evaluated under the static commitments (no adaptive action; replan required).")
+    if pi_status == NON_CERTIFIED:
+        sentences.append("The perfect-information solve was not proven optimal within the time budget: its cost is reported as a "
+                         "feasible plan cost, not as a bound.")
+    if not result.get("value_certified", True) and result["value_of_adaptation"] is not None:
+        sentences.append("The value of adaptation compares plans that were not both proven optimal (time-limited solve); it is a "
+                         "diagnostic against the best static plan found, not a certified difference.")
+    return {"version": "zaad.recourse.1.1", "principle": PRINCIPLE, "verdict": verdict, "selected": selected,
             "static_expected_cost": static.projected_cost, "adaptive_expected_cost": adaptive.projected_cost,
-            "perfect_information_cost": (perfect.projected_cost if perfect is not None and perfect.usable_plan else None),
-            "perfect_information_scope": "lower bound only: every world acts with full foresight; never a recommendation",
-            "value_of_adaptation": result["value_of_adaptation"], "material": result["material"],
+            "perfect_information_status": pi_status,
+            "perfect_information_cost": result.get("perfect_cost"),
+            "perfect_information_feasible_cost": result.get("perfect_feasible_cost"),
+            "perfect_information_scope": PI_SCOPE.get(pi_status, PI_SCOPE["UNAVAILABLE"]),
+            "value_of_adaptation": result["value_of_adaptation"], "value_of_adaptation_certified": result.get("value_certified"),
+            "material": result["material"],
             "materiality_cost_fraction": req.materiality_cost_fraction, "ordering_ok": result["ordering_ok"],
+            "ordering_scope": ("adaptive <= static" + (" and certified perfect-information <= adaptive" if pi_status == CERTIFIED else "")
+                               + " within the solver tolerance"),
             "non_anticipativity": result["non_anticipativity"],
             "review_periods": list(recourse.epochs), "observables": list(spec.observables), "actions": list(spec.actions),
             "committed_now": committed, "policy": epochs_out, "explanations": sentences,
+            "unseen_observation_rule": UNSEEN_OBSERVATION_RULE,
+            "replan_required": {"worlds": len(replan), "of": len(lookups), "fallback": "static commitments" if (adaptive.recourse or {}).get("fallback", {}).get("available") else "none available (static plan infeasible)"},
             "approval_required": True, "executable_purchase_order": False,
             "engineering": {"worlds": len(selection), "information_sets": {e: [{"id": s.id, "members": list(s.members), "probability": s.probability} for s in v] for e, v in nodes.sets.items()},
-                            "policy_lookup_on_confirmation_worlds": lookups,
+                            "policy_lookup_on_evaluation_worlds": lookups,
+                            "solve_status": result.get("solve_status"),
                             "adaptive_solve": {"status": adaptive.status, "variables": adaptive.variables, "constraints": adaptive.constraints, "seconds": adaptive.solve_seconds, "nodes": adaptive.nodes, "gap": adaptive.gap},
                             "static_solve": {"status": static.status, "variables": static.variables, "constraints": static.constraints, "seconds": static.solve_seconds, "built_as_comparator": result["static_built_as_comparator"]},
-                            "perfect_solve": ({"status": perfect.status, "variables": perfect.variables, "seconds": perfect.solve_seconds} if perfect is not None else None)}}
+                            "perfect_solve": ({"status": perfect.status, "certified": pi_status == CERTIFIED, "variables": perfect.variables, "seconds": perfect.solve_seconds,
+                                               "gap": perfect.gap,
+                                               "solver_objective_bound": result.get("perfect_solver_bound"),
+                                               "solver_objective_bound_units": "HiGHS dual bound on the solver objective (ledger cost plus objective-only terms); not comparable with the expected costs above and never a policy cost"}
+                                              if perfect is not None else None)}}

@@ -42,7 +42,8 @@ def principle(name: str, spec: dict, req, rc, worlds, out: dict) -> dict[str, An
         import re
         base = spec["request"]()
         r0, r1 = plan(base), plan(req)
-        strip = lambda s: re.sub(r'"information_hash": "[0-9a-f]+"|"solve_seconds": [0-9.e-]+|"solver_seconds_total": [0-9.e-]+|"seconds": [0-9.e-]+', '', s)
+        def strip(s):
+            return re.sub(r'"information_hash": "[0-9a-f]+"|"solve_seconds": [0-9.e-]+|"solver_seconds_total": [0-9.e-]+|"seconds": [0-9.e-]+', '', s)
         ok = strip(report_json(r0)) == strip(report_json(r1)) and "recourse" not in r1
         return {"pass": ok, "evidence": {"recourse_block_absent": "recourse" not in r1}}
     if kind == "equals_static":
@@ -51,7 +52,8 @@ def principle(name: str, spec: dict, req, rc, worlds, out: dict) -> dict[str, An
         return {"pass": ok, "evidence": {"static": out["static_cost"], "adaptive": out["adaptive_cost"]}}
     first = rc.epochs[0]
     plans = _branch_plans(out, req, rc, worlds)
-    branch = lambda prefix: [p for n, p in plans.items() if n.startswith(prefix)]
+    def branch(prefix):
+        return [p for n, p in plans.items() if n.startswith(prefix)]
     sets = {e: len(v) for e, v in out["nodes"].sets.items()}
     if kind in ("feasible_every_world",) and out.get("static_infeasible"):
         return {"pass": out["adaptive"].usable_plan, "evidence": {"sets": sets, "static": "INFEASIBLE under the service floors", "adaptive": out["adaptive"].status,
@@ -94,7 +96,10 @@ def principle(name: str, spec: dict, req, rc, worlds, out: dict) -> dict[str, An
     if kind == "ordering_only":
         return {"pass": True, "evidence": {"sets": sets, "value": out["value_of_adaptation"]}}
     if kind == "pi_ordering":
-        return {"pass": out["perfect_cost"] is not None and out["perfect_cost"] <= out["adaptive_cost"] + 1e-6 * max(1., abs(out["static_cost"])), "evidence": {"pi": out["perfect_cost"], "adaptive": out["adaptive_cost"], "static": out["static_cost"]}}
+        # release audit blocker A: the ordering is asserted only against a CERTIFIED (proven optimal) perfect-information solve
+        certified = out.get("perfect_status") == "CERTIFIED" and out["perfect_cost"] is not None
+        return {"pass": certified and out["perfect_cost"] <= out["adaptive_cost"] + 1e-6 * max(1., abs(out["static_cost"])),
+                "evidence": {"pi": out["perfect_cost"], "pi_status": out.get("perfect_status"), "adaptive": out["adaptive_cost"], "static": out["static_cost"]}}
     if kind in ("moq_in_every_branch", "capacity_in_every_branch", "shares_in_every_branch", "packs_in_every_branch", "feasible_every_world", "transfers_adapt_conserved", "plant_observed_once"):
         sources = {s.id: s for s in req.sources}
         breaches: list[str] = []
@@ -151,11 +156,13 @@ def run(name: str) -> dict[str, Any]:
         s = out.get(k)
         if s is not None:
             solves[k] = {"status": s.status, "cost": s.projected_cost, "variables": s.variables, "binaries": s.binaries, "constraints": s.constraints,
-                         "nodes": s.nodes, "seconds": round(s.solve_seconds, 3), "gap": s.gap}
+                         "nodes": s.nodes, "seconds": round(s.solve_seconds, 3), "gap": s.gap, "certified": s.status == "OPTIMAL", "solver_bound": s.best_bound}
     record["solves"] = solves
     record["information_sets"] = {str(e): [{"id": s.id, "members": list(s.members), "probability": s.probability} for s in v] for e, v in out["nodes"].sets.items()} if out["nodes"] is not None else {}
     record["value_of_adaptation"] = out.get("value_of_adaptation")
     record["ordering_ok"] = out.get("ordering_ok")
+    record["perfect_status"] = out.get("perfect_status")
+    record["value_certified"] = out.get("value_certified")
     record["non_anticipativity"] = out.get("non_anticipativity")
     # every represented world settles under its own plan (feasibility) with no guidance truncation
     settlements = []
@@ -189,7 +196,12 @@ def table(records: list[dict]) -> str:
     lines = ["| fixture | family | worlds | sets | static | adaptive | PI | value | ordering | NA | feasible | principle | wall s | result |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in records:
         s = r.get("solves", {})
-        f = lambda k: (f"{s[k]['cost']:,.1f}" if k in s and s[k]["cost"] is not None else "-")
+        def f(k):
+            if k not in s or s[k]["cost"] is None:
+                return "-"
+            # release audit blocker A: a perfect-information cost that is not certified (OPTIMAL) is a feasible cost, not a bound
+            tag = " (feasible, not certified)" if (k == "perfect" and s[k]["status"] != "OPTIMAL") else ""
+            return f"{s[k]['cost']:,.1f}{tag}"
         sets = ",".join(str(len(v)) for v in r.get("information_sets", {}).values()) or "-"
         c = r.get("checks", {})
         lines.append(f"| {r['fixture']} | {r['family']} | {r['worlds']} | {sets} | {f('static')} | {f('adaptive')} | {f('perfect')} | "
