@@ -848,7 +848,14 @@ def plan(req: Request) -> dict:
         tree = draw_tree(req_draw, recourse_view, req.seed, req.scenarios, recourse_view.spec.continuations)
         static_comparator = solve(req, tree, service_floor=True, seed=incumbent, **v6)
         nodes = node_map(req, recourse_view, tree)
-        adaptive = solve(req, tree, service_floor=True, nodes=nodes, **v6)
+        # P4 performance closure (warm start, exact): the static comparator's plan is a feasible
+        # adaptive policy - the same commitment in every information-set node - and
+        # `warm_start_vector` maps a plan onto node columns by (line, period), so seeding the
+        # adaptive solve with it starts HiGHS from that policy instead of from nothing. The problem,
+        # its bounds and its tolerance are unchanged; only the search path is. Measured on the
+        # shared-supplier-order class at 12 tree worlds: 78 s time-limited (a dearer incumbent than
+        # the static optimum) -> 40 s proven optimal (evidence/p4/perf_closure/).
+        adaptive = solve(req, tree, service_floor=True, nodes=nodes, seed=(static_comparator if static_comparator.usable_plan else None), **v6)
         # a world outside the modelled branches receives the static commitments (REPLAN_REQUIRED),
         # never a nearest branch (release audit blocker B)
         adaptive = attach_fallback(_replace(adaptive, recourse_nodes=nodes, recourse_worlds=tuple(w.name for w in tree)), static_comparator)

@@ -160,7 +160,10 @@ def compare(req, worlds: list, recourse: Recourse, *, perfect: bool | None = Non
     worlds with the same kwargs, the ordering check (see `assess`) and the fallback attachment."""
     static = solve(req, worlds, **kw)
     nodes = node_map(req, recourse, worlds)
-    adaptive = attach_fallback(solve(req, worlds, nodes=nodes, **kw), static)
+    # the static plan is a feasible adaptive policy (the same commitment in every node): start there
+    # (P4 performance closure; warm start only, the problem is unchanged)
+    seed_kw = {**kw, "seed": static} if (static.usable_plan and "seed" not in kw) else kw
+    adaptive = attach_fallback(solve(req, worlds, nodes=nodes, **seed_kw), static)
     want_pi = recourse.spec.perfect_information if perfect is None else perfect
     pi = solve(req, worlds, nodes=node_map(req, recourse, worlds, perfect=True), **kw) if want_pi else None
     out: dict[str, Any] = {"static": static, "adaptive": adaptive, "perfect": pi, "nodes": nodes, "non_anticipativity": None,
