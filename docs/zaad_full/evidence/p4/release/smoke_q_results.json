@@ -1,0 +1,32 @@
+{
+ "load_sample": {
+  "code": 200,
+  "seconds": 126.8,
+  "body": "{\"tables\":{\"stg_fmcg_skus\":150,\"stg_fmcg_orders\":371140,\"stg_fmcg_purchase_orders\":16751,\"stg_fmcg_receipts\":16546,\"stg_fmcg_inventory\":23400,\"stg_fmcg_suppliers\":8},\"total_rows\":427995,\"classificatio"
+ },
+ "request_recourse_true": {
+  "code": 200,
+  "recourse_field": null
+ },
+ "plan_recourse_false": {
+  "code": 200,
+  "seconds": 97.3,
+  "status": null,
+  "selected": null,
+  "approval": true,
+  "epo": false,
+  "has_recourse_block": false,
+  "detail": null
+ },
+ "plan_recourse_true": {
+  "code": 200,
+  "seconds": 88.1,
+  "status": null,
+  "selected": null,
+  "approval": true,
+  "epo": false,
+  "has_recourse_block": false,
+  "detail": null
+ },
+ "identical_stripped": true
+}

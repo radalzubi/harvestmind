@@ -1,0 +1,100 @@
+[2m2026-09-12T07:05:43Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_42aed35ab91640ca821c7d7cfec58ea6 HTTP/1.1" 200 OK
+[2m2026-09-12T07:05:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:64122 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:05:53Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_42aed35ab91640ca821c7d7cfec58ea6 HTTP/1.1" 200 OK
+[2m2026-09-12T07:06:04Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_42aed35ab91640ca821c7d7cfec58ea6 HTTP/1.1" 200 OK
+[2m2026-09-12T07:06:14Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_42aed35ab91640ca821c7d7cfec58ea6 HTTP/1.1" 200 OK
+[2m2026-09-12T07:06:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:64650 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:06:24Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_42aed35ab91640ca821c7d7cfec58ea6 HTTP/1.1" 200 OK
+[2m2026-09-12T07:06:35Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_42aed35ab91640ca821c7d7cfec58ea6 HTTP/1.1" 200 OK
+[2m2026-09-12T07:06:35Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan/from-workspace?skus=SKU-001&max_solve_seconds=10&recourse=false HTTP/1.1" 422 Unprocessable Entity
+[2m2026-09-12T07:06:35Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan/from-workspace?skus=SKU-001&max_solve_seconds=10&recourse=true HTTP/1.1" 422 Unprocessable Entity
+[2m2026-09-12T07:06:35Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan HTTP/1.1" 403 Forbidden
+[2m2026-09-12T07:06:36Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs HTTP/1.1" 401 Unauthorized
+[2m2026-09-12T07:06:36Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "OPTIONS /api/zaad/network/plan HTTP/1.1" 200 OK
+[2m2026-09-12T07:06:36Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:06:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:52656 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:07:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:37838 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:07:18Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026/09/12 07:07:18 INFO New SSH session email=rad.alzubi2005@gmail.com verified=true
+[2m2026-09-12T07:07:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:33728 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:07:58Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /access/start HTTP/1.1" 200 OK
+[2m2026-09-12T07:07:58Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan HTTP/1.1" 413 Request Entity Too Large
+[2m2026-09-12T07:08:00Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026/09/12 07:08:00 INFO New SSH session email=rad.alzubi2005@gmail.com verified=true
+[2m2026-09-12T07:08:02Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/jobs HTTP/1.1" 202 Accepted
+[2m2026-09-12T07:08:02Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:08:02Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:08:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:35108 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:08:17Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:08:18Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:08:33Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:08:33Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:08:47Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:45556 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:08:48Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:08:49Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:09:04Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:09:04Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:09:17Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:63674 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:09:19Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:09:20Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:09:35Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:09:35Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:09:47Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:43768 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:09:51Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:09:51Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:10:06Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:10:06Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:10:17Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:48362 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:10:22Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:10:22Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:10:37Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:10:38Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:10:47Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:59152 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:10:53Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:10:53Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:11:09Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:11:09Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:11:17Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:54062 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:11:24Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:11:24Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:11:40Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:11:40Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:11:47Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:59964 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:11:55Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:11:56Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:12:11Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:12:11Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:12:17Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:39498 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:12:26Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:12:27Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/jobs/job_9492ec5911d547c896019c0929fa8a62 HTTP/1.1" 200 OK
+[2m2026-09-12T07:12:29Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026/09/12 07:12:29 INFO New SSH session email=rad.alzubi2005@gmail.com verified=true
+[2m2026-09-12T07:12:47Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:47014 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:13:15Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /access/start HTTP/1.1" 200 OK
+[2m2026-09-12T07:13:17Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:50406 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:13:47Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:50576 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:14:17Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:41448 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:14:33Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /intake/load-sample-fmcg?seed=7 HTTP/1.1" 200 OK
+[2m2026-09-12T07:14:36Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/request/from-workspace?skus=SKU-001&max_solve_seconds=10&recourse=true HTTP/1.1" 422 Unprocessable Entity
+[2m2026-09-12T07:14:37Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan/from-workspace?skus=SKU-001&max_solve_seconds=10&recourse=false HTTP/1.1" 422 Unprocessable Entity
+[2m2026-09-12T07:14:38Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan/from-workspace?skus=SKU-001&max_solve_seconds=10&recourse=true HTTP/1.1" 422 Unprocessable Entity
+[2m2026-09-12T07:14:47Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:52656 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:14:55Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /access/start HTTP/1.1" 200 OK
+[2m2026-09-12T07:15:17Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:64088 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:15:48Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:59258 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:16:18Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:50722 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:16:48Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:58168 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:17:02Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /intake/load-sample-fmcg?seed=7 HTTP/1.1" 200 OK
+[2m2026-09-12T07:17:07Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /api/zaad/network/request/from-workspace?skus=SKU-0001,SKU-0002&max_solve_seconds=10&recourse=true HTTP/1.1" 200 OK
+[2m2026-09-12T07:17:12Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]HighsMipSolverData::transformNewIntegerFeasibleSolution tmpSolver.run();
+[2m2026-09-12T07:17:15Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]HighsMipSolverData::transformNewIntegerFeasibleSolution tmpSolver.run();
+[2m2026-09-12T07:17:18Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:59490 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:17:18Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]HighsMipSolverData::transformNewIntegerFeasibleSolution tmpSolver.run();
+[2m2026-09-12T07:17:48Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:35520 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:18:18Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:37504 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:18:44Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan/from-workspace?skus=SKU-0001,SKU-0002&max_solve_seconds=10&recourse=false HTTP/1.1" 200 OK
+[2m2026-09-12T07:18:48Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:47956 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:18:50Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]HighsMipSolverData::transformNewIntegerFeasibleSolution tmpSolver.run();
+[2m2026-09-12T07:18:52Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]HighsMipSolverData::transformNewIntegerFeasibleSolution tmpSolver.run();
+[2m2026-09-12T07:18:55Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]HighsMipSolverData::transformNewIntegerFeasibleSolution tmpSolver.run();
+[2m2026-09-12T07:19:18Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:64846 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:19:49Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:48286 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T07:20:12Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan/from-workspace?skus=SKU-0001,SKU-0002&max_solve_seconds=10&recourse=true HTTP/1.1" 200 OK
+[2m2026-09-12T07:20:19Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:37696 - "GET /health HTTP/1.1" 200 OK
