@@ -14,7 +14,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import assistant, fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin, access, jobs, zaad, zaad_full
+from api.routers import assistant, fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin, access, jobs, zaad, zaad_full, zaad_atp
 
 app = FastAPI(
     title="Zaad Supply API",
@@ -109,6 +109,7 @@ app.include_router(planning.router)
 app.include_router(fmcg.router)
 app.include_router(zaad.router)
 app.include_router(zaad_full.router)
+app.include_router(zaad_atp.router)   # P5 ATP (default off: ZAAD_ATP_ENABLED=1)
 app.include_router(backtest.router)
 app.include_router(data.router)
 app.include_router(fsma.router)

@@ -11,6 +11,7 @@ from pydantic_core import to_jsonable_python
 from zaad.contracts import Dated, Record
 from zaad.sectors.contracts import SectorMode, SkuPhysics, StorageState
 from zaad.sourcing.contracts import SourcingPortfolio
+from zaad.atp.contracts import AtpSpec
 from zaad.recourse.contracts import RecourseSpec
 
 
@@ -655,6 +656,10 @@ class Request(Record):
     # actions that may adapt after them. None or `enabled` false (default) = the frozen request: no
     # recourse column is built and no P4 report is produced.
     recourse: RecourseSpec | None = None
+    # ATP / scarce-supply allocation (P5). Declares customer orders, economic service classes and
+    # the promising policy. None or `enabled` false: no P5 code path is reached, no promise is
+    # produced and every P0-P4 semantic is bit-identical (isolated engine during the parallel phase).
+    atp: AtpSpec | None = None
 
     @field_validator("signals")
     @classmethod
@@ -757,4 +762,7 @@ class Request(Record):
         if self.recourse is not None:
             from zaad.recourse.contracts import validate_request as validate_recourse
             validate_recourse(self)
+        if self.atp is not None:
+            from zaad.atp.contracts import validate_request as validate_atp
+            validate_atp(self)
         return self
