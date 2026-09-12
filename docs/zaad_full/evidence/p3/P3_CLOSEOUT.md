@@ -104,3 +104,23 @@ still chooses the total commitment (P1, or P0 when it owns the review) and its s
 
 Validation7, Validation8, holdout4; Network Twin #39; P4-P6; dashboard and website uplift; Dependabot
 solver-stack bumps; no push, no PR, no merge, no deployment.
+
+
+## Production performance closure (2026-09-11 / 12, amendment)
+
+The release above stands as recorded: functionally correct, with one interactive shared-MOV
+production case measured at ~218 s (`payload.shared_mov`, Fly v17), above the declared 180 s bound.
+That case is closed by PR #64 (`perf/p3-shared-mov-closure`, commit `5bbdefc`, merge `61a3e75`,
+Fly `zaad-api` v18 with image label `canonical-61a3e75`, tag `p3-performance-closure-runtime`).
+Root cause, correction, exactness proof, before / after and every regression gate:
+`perf_closure/P3_SHARED_MOV_PROFILE.md`, `perf_closure/P3_PRODUCTION_PERF_BEFORE.md`,
+`perf_closure/P3_PRODUCTION_PERF_AFTER.md`. In one line: the supplier-order linking rows used the
+declared capacity as big-M, HiGHS's root restart doubled the remaining root work, and the 218 s was
+that request on a throttled shared CPU; the correction is an exact undominated-quantity bound plus
+one search setting, scoped to the P3 shared-supplier-order class only, with every frozen decision
+preserved (P3 30 / 30, P2 344 / 344, sector ZAAD 416 / 416, P1 identity, P0 120 / 120). Production
+re-run of the exact snapshot after the correction: 39.4 s fresh and 37.8 s after the sustained
+sequence, every candidate optimal, decision identical. Row W of the gate table therefore reads, for
+production: interactive shared-MOV case 218 s (v17, throttled) -> 39 s (v18); the residual risk of
+host throttling on the shared-CPU machine is recorded, not fixed. `p3-release-runtime` stays on
+`0de6850`.
