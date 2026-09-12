@@ -37,4 +37,4 @@
 | 32_p1_ownership_unchanged | PASS | {"owner": ["PURCHASING_ECONOMICS", "PURCHASING_ECONOMICS"], "block_owner_labels": {"total_commitment": "P1 purchasing economics (or P0 protection / recovery when it owns the review)", "source_split": "P3 sourcing portfolio"}} |
 | 33_p2_ownership_unchanged | PASS | {"owner": ["PURCHASING_ECONOMICS", "PURCHASING_ECONOMICS"], "transfer_actions_in_plan": 25, "block_carries_transfers": false} |
 | 34_sector_physics_unchanged | PASS | {"profiles_identical": true, "sector_invariants": "19 / 19 (gates/sector_invariants.log)"} |
-| benchmark | PASS | {"fixtures": "30 / 30", "tag": "p3_authoritative"} |
+| benchmark | PASS | {"fixtures": "30 / 30", "tag": "p3_under_p4rel"} |

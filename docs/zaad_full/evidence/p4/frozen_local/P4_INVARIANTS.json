@@ -1,0 +1,173 @@
+{
+ "benchmark": "p4_authoritative",
+ "passed": 27,
+ "total": 27,
+ "results": {
+  "01_no_anticipation": {
+   "doc": "Before the first epoch every world's plan equals the here-and-now plan; after it, worlds of one set share the plan (structural check on solved values).",
+   "pass": true,
+   "evidence": "structural check passed on 4 fixtures"
+  },
+  "02_same_information_same_decision": {
+   "doc": "Two worlds with identical observable histories map to the same information set at every epoch (N3, W2).",
+   "pass": true,
+   "evidence": {
+    "N3_zero_information": {
+     "3": 1
+    },
+    "W2_no_benefit": {
+     "3": 1
+    }
+   }
+  },
+  "03_set_probabilities_sum": {
+   "doc": "Information-set probabilities equal the sums of member weights and sum to one per epoch.",
+   "pass": true,
+   "evidence": "sums exact on 2 fixtures"
+  },
+  "04_world_probabilities_preserved": {
+   "doc": "The tree worlds' weights sum to one and every branch keeps its history weight split evenly over its continuations.",
+   "pass": true,
+   "evidence": {
+    "total": 1.0,
+    "worlds": 6
+   }
+  },
+  "05_static_feasible": {
+   "doc": "The static comparator is a feasible static plan under the frozen rows (usable) wherever a static plan exists.",
+   "pass": true,
+   "evidence": {
+    "A1_demand_visible_at_epoch": "OPTIMAL",
+    "I1_p1_fixed_cost_lots": "OPTIMAL",
+    "I4_p3_shares_hold": "OPTIMAL"
+   }
+  },
+  "06_adaptive_feasible_every_world": {
+   "doc": "Every represented world settles under its own policy plan (no physical violation, no guidance truncation).",
+   "pass": true,
+   "evidence": "125 world settlements clean"
+  },
+  "07_committed_stays_committed": {
+   "doc": "Purchases before the first epoch are identical in every world's plan and equal the here-and-now plan (no cancellation, no retroactive change).",
+   "pass": true,
+   "evidence": {
+    "committed_periods": [
+     0,
+     1,
+     2
+    ],
+    "worlds": 4
+   }
+  },
+  "08_no_negative_inventory": {
+   "doc": "Settlement of every world plan reports no negative stock (settlement raises on any physical violation).",
+   "pass": true,
+   "evidence": "125 world settlements clean"
+  },
+  "09_network_conservation": {
+   "doc": "On the P2 recourse fixture the settled conservation residual is zero in every world.",
+   "pass": true,
+   "evidence": {
+    "worst_residual": 9.521272659185342e-13
+   }
+  },
+  "10_no_double_allocation": {
+   "doc": "Period-0 transfers of the adaptive plan never exceed opening stock at the origin (settlement strict at period zero, every world).",
+   "pass": true,
+   "evidence": {
+    "worst_residual": 9.521272659185342e-13
+   }
+  },
+  "11_source_capacity": {
+   "doc": "No branch buys above a source's capacity or maximum (I3, I6).",
+   "pass": true,
+   "evidence": "clean"
+  },
+  "12_shared_supplier_capacity": {
+   "doc": "Shared resources hold in every branch (I6).",
+   "pass": true,
+   "evidence": "clean"
+  },
+  "13_moq": {
+   "doc": "",
+   "pass": true,
+   "evidence": "clean"
+  },
+  "14_mov": {
+   "doc": "Every branch's supplier order meets the MOV or is absent (shared supplier orders counted once per node).",
+   "pass": true,
+   "evidence": {
+    "status": "OPTIMAL",
+    "worlds": 4
+   }
+  },
+  "15_packs": {
+   "doc": "",
+   "pass": true,
+   "evidence": "whole packs in every branch"
+  },
+  "16_share_constraints": {
+   "doc": "",
+   "pass": true,
+   "evidence": "shares hold in every branch"
+  },
+  "17_transfer_lead_time": {
+   "doc": "A recourse transfer decided at epoch e cannot arrive before e + lane lead (columns exist only for t >= e; arrival = t + lead).",
+   "pass": true,
+   "evidence": "every recourse transfer departs at or after its epoch"
+  },
+  "18_sector_physics": {
+   "doc": "Sector fixtures settle in every world (physics enforced by the same rows and settlement).",
+   "pass": true,
+   "evidence": "clean"
+  },
+  "19_shelf_life_fefo": {
+   "doc": "Produce fixture: no world plan settles with expired sales (settlement's FEFO and life rules).",
+   "pass": true,
+   "evidence": "clean"
+  },
+  "20_cold_chain": {
+   "doc": "Meat / seafood fixture: every world plan settles under the cold-chain and receipt-life rules.",
+   "pass": true,
+   "evidence": {
+    "status": "OPTIMAL",
+    "worlds": 4
+   }
+  },
+  "21_approval_required": {
+   "doc": "",
+   "pass": true,
+   "evidence": "NO MATERIAL ADAPTIVE BENEFIT"
+  },
+  "22_no_executable_po": {
+   "doc": "",
+   "pass": true,
+   "evidence": "NO MATERIAL ADAPTIVE BENEFIT"
+  },
+  "23_perfect_le_adaptive": {
+   "doc": "",
+   "pass": true,
+   "evidence": "PI <= adaptive on every fixture with a PI solve"
+  },
+  "24_adaptive_le_static": {
+   "doc": "",
+   "pass": true,
+   "evidence": "adaptive <= static wherever a static plan exists"
+  },
+  "25_disabled_is_frozen": {
+   "doc": "",
+   "pass": true,
+   "evidence": "reports identical up to timings and the request hash"
+  },
+  "26_signature_order_independent": {
+   "doc": "Reversing the world order changes no information-set membership signature and no probability.",
+   "pass": true,
+   "evidence": "signatures, probabilities and memberships invariant under world reordering"
+  },
+  "27_signature_uses_no_future": {
+   "doc": "Changing any world's demand at or after the epoch never changes its signature at that epoch.",
+   "pass": true,
+   "evidence": "epoch 3: future demand doubled, signature unchanged"
+  }
+ }
+}

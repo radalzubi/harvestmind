@@ -1,5 +1,5 @@
 {
- "benchmark": "p4_authoritative",
+ "benchmark": "p4_release",
  "passed": 27,
  "total": 27,
  "results": {
@@ -145,9 +145,9 @@
    "evidence": "NO MATERIAL ADAPTIVE BENEFIT"
   },
   "23_perfect_le_adaptive": {
-   "doc": "",
+   "doc": "PI <= adaptive on every fixture whose perfect-information solve is CERTIFIED (status OPTIMAL); a\nfeasible time-limited PI incumbent is not a bound and is listed, not compared (release audit blocker A).",
    "pass": true,
-   "evidence": "PI <= adaptive on every fixture with a PI solve"
+   "evidence": "PI <= adaptive on 25 certified PI solves; non-certified (not compared): ['S1_commercial_packs']"
   },
   "24_adaptive_le_static": {
    "doc": "",

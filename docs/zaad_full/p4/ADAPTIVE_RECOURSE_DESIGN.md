@@ -67,9 +67,15 @@ perfect information) are solved on the same tree.
 epoch, deterministic, order-independent and seed-reproducible: sets are sorted by signature, ids are
 `e<epoch>.<rank>`, members are sorted world indices, probability is the sum of member weights.
 Signatures at a later epoch extend the earlier one, so sets refine (a tree without a tree database).
-A world outside the solve (a confirmation world) is mapped by exact signature, otherwise to the
-nearest signature under a documented distance (per-field normalised absolute difference, categorical
-mismatch = 1, ties to the lower rank): that is the policy lookup and it is reported as such.
+A world outside the solve (a confirmation world, or a live observation) is mapped by exact
+signature only. **Release rule (P4 release audit, blocker B):** there is no nearest-signature
+routing. An observation that matches none of the modelled branches selects no branch action: for
+that review window the world receives the declared fallback, the static commitments attached to the
+adaptive solution (`policy.attach_fallback`), and the lookup is reported as `REPLAN_REQUIRED`
+(`policy.lookup_exactness`, report field `replan_required`, rule text `unseen_observation_rule`).
+Settlement therefore evaluates exactly the policy the operator may execute; nothing is credited to
+adaptation on a world whose information is outside the modelled support. (The local engineering
+freeze `d8cdad5` routed such worlds to the nearest signature; withdrawn at the release audit.)
 
 ## 6. Non-anticipativity
 
@@ -86,8 +92,16 @@ subject to the frozen rows (conservation per world, MOQ / MOV / packs per node, 
 switching per world path, capacity per node, network rows per world, sector physics, service floors,
 cash) - the same builder, the same ledger, the same tie-break. Static comparator: the same builder
 with a single node (the frozen `stochastic_network` solve). Perfect-information comparator: one node
-per world at every period (report-only; never executable). Ordering `PI <= adaptive <= static` must
-hold within the solver tolerance because the feasible sets nest; a violation fails the review.
+per world at every period (report-only; never executable). Ordering `adaptive <= static` must hold
+within the solver tolerance because the feasible sets nest; `PI <= adaptive` is asserted only when
+the perfect-information solve is **certified** (status OPTIMAL). **Release rule (P4 release audit,
+blocker A):** a feasible time-limited perfect-information incumbent is the cost of a feasible policy,
+not a lower bound of the minimisation: it is reported as `perfect_information_feasible_cost` with
+`perfect_information_status = NON_CERTIFIED`, excluded from the ordering check, and never labelled a
+bound, an optimum or a value of perfect information. HiGHS's dual bound, when returned, is reported
+apart (`engineering.perfect_solve.solver_objective_bound`) in solver-objective units (the ledger cost
+plus objective-only terms), never as a policy cost and never compared with the projected costs. A
+certified ordering violation still rejects the adaptive candidate (`policy.assess`).
 
 ## 8. Value of adaptation, materiality, abstention
 
@@ -102,7 +116,8 @@ does not enter selection; the static plan stands. Never called savings, never an
 `plan()`: when `resolve(req)` is not None, build the information sets on the selection worlds, solve
 `adaptive_network` (the stochastic candidate's kwargs plus the node map) and, when declared, the
 perfect-information diagnostic; `evaluate()` settles an adaptive solution world by world with that
-world's own plan (its node columns; policy lookup for fresh worlds); the report gains `recourse`
+world's own plan (its node columns; exact policy lookup for fresh worlds, the static commitments for
+a window whose observation matches no branch); the report gains `recourse`
 (comparators, value, sets per epoch in operator language, the policy per set, explanations). The
 selected plan's period-0 actions are here-and-now by construction (epochs start at 1).
 

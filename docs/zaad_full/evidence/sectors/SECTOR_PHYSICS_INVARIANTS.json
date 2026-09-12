@@ -21,7 +21,7 @@
    "src_A@8": 204.0,
    "src_A@9": 204.0
   },
-  "seconds": 31.7
+  "seconds": 31.6
  },
  {
   "invariant": "03_produce_expired_cannot_serve",

@@ -1,0 +1,3729 @@
+[
+ {
+  "fixture": "N1_disabled_is_frozen",
+  "family": "neutrality",
+  "principle": "frozen_identity",
+  "worlds": 3,
+  "epochs": [],
+  "seed": 41001,
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "recourse_block_absent": true
+   }
+  },
+  "seconds": 0.49,
+  "pass": true
+ },
+ {
+  "fixture": "N2_no_epochs_is_static",
+  "family": "neutrality",
+  "principle": "equals_static",
+  "worlds": 3,
+  "epochs": [],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 12529.654504189431,
+    "variables": 2880,
+    "binaries": 72,
+    "constraints": 1950,
+    "nodes": 1,
+    "seconds": 0.052,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9530.268762379248
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 12529.654504189431,
+    "variables": 2880,
+    "binaries": 72,
+    "constraints": 1950,
+    "nodes": 1,
+    "seconds": 0.052,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9530.268762379248
+   }
+  },
+  "information_sets": {},
+  "value_of_adaptation": 0.0,
+  "ordering_ok": true,
+  "perfect_status": "UNAVAILABLE",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 0,
+   "sets_per_epoch": {}
+  },
+  "settlements": [
+   {
+    "world": "fitted:41001:0:lhs",
+    "usable": true,
+    "cost": 12711.279562058355,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs",
+    "usable": true,
+    "cost": 12236.589939412044,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs",
+    "usable": true,
+    "cost": 12641.094011097899,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "static": 12529.654504189431,
+    "adaptive": 12529.654504189431
+   }
+  },
+  "seconds": 0.11,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "N3_zero_information",
+  "family": "neutrality",
+  "principle": "one_set_equals_static",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 15059.227548110086,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.069,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12059.934208925453
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 15059.227548110086,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.069,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12059.934208925453
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 14550.473237564787,
+    "variables": 4704,
+    "binaries": 96,
+    "constraints": 2730,
+    "nodes": 1,
+    "seconds": 0.065,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 11551.07644435799
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "probability": 1.0
+    }
+   ]
+  },
+  "value_of_adaptation": 0.0,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 3,
+   "sets_per_epoch": {
+    "3": 1
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 13615.510870906004,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 13668.198387590232,
+    "truncated": 0.0
+   },
+   {
+    "world": "high_later.0",
+    "usable": true,
+    "cost": 16439.719205293077,
+    "truncated": 0.0
+   },
+   {
+    "world": "high_later.1",
+    "usable": true,
+    "cost": 16513.481728650997,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 1
+    },
+    "value": 0.0
+   }
+  },
+  "seconds": 0.21,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "A1_demand_visible_at_epoch",
+  "family": "non_anticipativity",
+  "principle": "same_before_diverge_after",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 15869.116261471083,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.07,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12869.945653840616
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 15205.964885217525,
+    "variables": 3975,
+    "binaries": 96,
+    "constraints": 2610,
+    "nodes": 1,
+    "seconds": 0.075,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12206.659071424174
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 15186.45638244339,
+    "variables": 4704,
+    "binaries": 96,
+    "constraints": 2730,
+    "nodes": 1,
+    "seconds": 0.064,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12187.120955013675
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 663.1513762535578,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 12637.019255363684,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 12689.706772047914,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 17711.685495050286,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 17785.448018408206,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "before_identical": true,
+    "after_low": 1024.808477237049,
+    "after_high": 2009.3882783882784,
+    "value": 663.1513762535578
+   }
+  },
+  "seconds": 0.22,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "A2_delayed_information",
+  "family": "non_anticipativity",
+  "principle": "no_branch_until_observed",
+  "worlds": 4,
+  "epochs": [
+   2,
+   4
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 12682.003150649096,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.132,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9682.504871309382
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 12682.003150649096,
+    "variables": 3948,
+    "binaries": 96,
+    "constraints": 2607,
+    "nodes": 1,
+    "seconds": 0.121,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9682.504871309382
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 12657.923923141443,
+    "variables": 4704,
+    "binaries": 96,
+    "constraints": 2730,
+    "nodes": 1,
+    "seconds": 0.089,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9658.425458481099
+   }
+  },
+  "information_sets": {
+   "2": [
+    {
+     "id": "e2.0",
+     "members": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "probability": 1.0
+    }
+   ],
+   "4": [
+    {
+     "id": "e4.0",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e4.1",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 0.0,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 5,
+   "sets_per_epoch": {
+    "2": 1,
+    "4": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "on_time.0",
+    "usable": true,
+    "cost": 12743.613133086745,
+    "truncated": 0.0
+   },
+   {
+    "world": "on_time.1",
+    "usable": true,
+    "cost": 12620.393168211438,
+    "truncated": 0.0
+   },
+   {
+    "world": "late.0",
+    "usable": true,
+    "cost": 12743.613133086745,
+    "truncated": 0.0
+   },
+   {
+    "world": "late.1",
+    "usable": true,
+    "cost": 12620.393168211436,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "2": 1,
+     "4": 2
+    },
+    "same_until_second_epoch": true
+   }
+  },
+  "seconds": 0.35,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "D1_demand_recourse",
+  "family": "demand",
+  "principle": "high_branch_buys_more",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 16683.747425969334,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.07,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 13684.656337058246
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 15858.035673999844,
+    "variables": 3975,
+    "binaries": 96,
+    "constraints": 2610,
+    "nodes": 1,
+    "seconds": 0.073,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12858.779516942615
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 15834.994051203203,
+    "variables": 4704,
+    "binaries": 96,
+    "constraints": 2730,
+    "nodes": 1,
+    "seconds": 0.065,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12835.698274658318
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 825.7117519694893,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 12643.157798040185,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 12695.845314724414,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 19007.05415410422,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 19086.08542913056,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "before_identical": true,
+    "after_low": 925.3702250130822,
+    "after_high": 2152.9160125588696,
+    "value": 825.7117519694893
+   }
+  },
+  "seconds": 0.21,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "D2_two_epochs",
+  "family": "demand",
+  "principle": "high_branch_buys_more",
+  "worlds": 4,
+  "epochs": [
+   3,
+   6
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 15869.116261471083,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.066,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12869.945653840616
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 15195.293852938652,
+    "variables": 4299,
+    "binaries": 96,
+    "constraints": 2646,
+    "nodes": 1,
+    "seconds": 0.073,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12195.986923403896
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 15186.45638244339,
+    "variables": 4704,
+    "binaries": 96,
+    "constraints": 2730,
+    "nodes": 1,
+    "seconds": 0.063,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12187.120955013675
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ],
+   "6": [
+    {
+     "id": "e6.0",
+     "members": [
+      0
+     ],
+     "probability": 0.25
+    },
+    {
+     "id": "e6.1",
+     "members": [
+      1
+     ],
+     "probability": 0.25
+    },
+    {
+     "id": "e6.2",
+     "members": [
+      2
+     ],
+     "probability": 0.25
+    },
+    {
+     "id": "e6.3",
+     "members": [
+      3
+     ],
+     "probability": 0.25
+    }
+   ]
+  },
+  "value_of_adaptation": 673.8224085324309,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2,
+    "6": 4
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 12619.33031326208,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 12689.61066035139,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 17686.920976108042,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 17785.313462033075,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2,
+     "6": 4
+    },
+    "before_identical": true,
+    "after_low": 1011.1716378859237,
+    "after_high": 1990.2967032967033,
+    "value": 673.8224085324309
+   }
+  },
+  "seconds": 0.21,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "R1_supplier_short_fill",
+  "family": "receipts",
+  "principle": "short_branch_replaces_supply",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": -20768.61940575025,
+    "variables": 3744,
+    "binaries": 96,
+    "constraints": 2595,
+    "nodes": 1,
+    "seconds": 0.072,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": -23768.144540938858
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": -20888.392232786227,
+    "variables": 3996,
+    "binaries": 96,
+    "constraints": 2631,
+    "nodes": 1,
+    "seconds": 0.07,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": -23887.909477203702
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": -20980.124781683946,
+    "variables": 4752,
+    "binaries": 96,
+    "constraints": 2778,
+    "nodes": 1,
+    "seconds": 0.066,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": -23979.636896426346
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 119.77282703597666,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "full.0",
+    "usable": true,
+    "cost": 12811.180804654237,
+    "truncated": 0.0
+   },
+   {
+    "world": "full.1",
+    "usable": true,
+    "cost": 12863.868321338467,
+    "truncated": 0.0
+   },
+   {
+    "world": "short.0",
+    "usable": true,
+    "cost": 13050.72645872619,
+    "truncated": 0.0
+   },
+   {
+    "world": "short.1",
+    "usable": true,
+    "cost": 13103.41397541042,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "before_identical": true,
+    "after_normal": 1435.2773417059132,
+    "after_disrupted": 1435.2773417059132,
+    "transfers_normal": 2112.220512820513,
+    "transfers_disrupted": 2112.220512820513
+   }
+  },
+  "seconds": 0.21,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "R2_shipment_delay",
+  "family": "receipts",
+  "principle": "late_branch_covers_gap",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 12649.542151745838,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.062,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9650.056564119182
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 12649.542151745834,
+    "variables": 3975,
+    "binaries": 96,
+    "constraints": 2610,
+    "nodes": 1,
+    "seconds": 0.068,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9650.05656411918
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 12638.775446764588,
+    "variables": 4704,
+    "binaries": 96,
+    "constraints": 2730,
+    "nodes": 1,
+    "seconds": 0.069,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9639.282885754168
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 3.637978807091713e-12,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "on_time.0",
+    "usable": true,
+    "cost": 12623.198393403727,
+    "truncated": 0.0
+   },
+   {
+    "world": "on_time.1",
+    "usable": true,
+    "cost": 12675.885910087954,
+    "truncated": 0.0
+   },
+   {
+    "world": "late.0",
+    "usable": true,
+    "cost": 12623.198393403727,
+    "truncated": 0.0
+   },
+   {
+    "world": "late.1",
+    "usable": true,
+    "cost": 12675.885910087956,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "before_identical": true,
+    "after_normal": 1435.2773417059132,
+    "after_disrupted": 1435.2773417059132,
+    "transfers_normal": 2112.220512820513,
+    "transfers_disrupted": 2112.220512820513
+   }
+  },
+  "seconds": 0.21,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "V1_recovery",
+  "family": "recovery",
+  "principle": "recovered_branch_buys_less",
+  "worlds": 4,
+  "epochs": [
+   4
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": -20485.41637777723,
+    "variables": 3744,
+    "binaries": 96,
+    "constraints": 2595,
+    "nodes": 1,
+    "seconds": 0.074,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": -23484.952385245946
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": -20709.523635255566,
+    "variables": 3968,
+    "binaries": 96,
+    "constraints": 2627,
+    "nodes": 1,
+    "seconds": 0.067,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": -23709.04960105167
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": -20794.965937788114,
+    "variables": 4752,
+    "binaries": 96,
+    "constraints": 2778,
+    "nodes": 1,
+    "seconds": 0.067,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": -23794.487006719184
+   }
+  },
+  "information_sets": {
+   "4": [
+    {
+     "id": "e4.0",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e4.1",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 224.10725747833567,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "4": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "recovered.0",
+    "usable": true,
+    "cost": 12898.646571672292,
+    "truncated": 0.0
+   },
+   {
+    "world": "recovered.1",
+    "usable": true,
+    "cost": 12925.47088849702,
+    "truncated": 0.0
+   },
+   {
+    "world": "persistent.0",
+    "usable": true,
+    "cost": 13346.861086628956,
+    "truncated": 0.0
+   },
+   {
+    "world": "persistent.1",
+    "usable": true,
+    "cost": 13373.685403453685,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "4": 2
+    },
+    "after_recovered": 1227.315541601256,
+    "after_persistent": 1227.315541601256
+   }
+  },
+  "seconds": 0.21,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "W1_waiting_has_value",
+  "family": "waiting",
+  "principle": "waiting_value",
+  "worlds": 4,
+  "epochs": [
+   2
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 15268.355164620116,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.07,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12269.266167724154
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 13945.667590397696,
+    "variables": 4002,
+    "binaries": 96,
+    "constraints": 2613,
+    "nodes": 1,
+    "seconds": 0.072,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 10946.307821838876
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 13924.718020150105,
+    "variables": 4704,
+    "binaries": 96,
+    "constraints": 2730,
+    "nodes": 1,
+    "seconds": 0.065,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 10925.305956321075
+   }
+  },
+  "information_sets": {
+   "2": [
+    {
+     "id": "e2.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e2.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 1322.6875742224202,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "2": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "low.0",
+    "usable": true,
+    "cost": 8859.184590815252,
+    "truncated": 0.0
+   },
+   {
+    "world": "low.1",
+    "usable": true,
+    "cost": 8841.954967351956,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 19059.225712565323,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 19022.305090858263,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "2": 2
+    },
+    "before_identical": true,
+    "after_low": 486.263997906855,
+    "after_high": 2449.51726844584,
+    "value": 1322.6875742224202,
+    "static_committed_before": 622.1193092621664,
+    "adaptive_committed_before": 622.1193092621664
+   }
+  },
+  "seconds": 0.21,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "W2_no_benefit",
+  "family": "waiting",
+  "principle": "no_benefit",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 12646.610745001895,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.069,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9647.115704566146
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 12646.610745001895,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.07,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9647.115704566146
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 12637.33377131675,
+    "variables": 4704,
+    "binaries": 96,
+    "constraints": 2730,
+    "nodes": 1,
+    "seconds": 0.064,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9637.836561383821
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "probability": 1.0
+    }
+   ]
+  },
+  "value_of_adaptation": 0.0,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 3,
+   "sets_per_epoch": {
+    "3": 1
+   }
+  },
+  "settlements": [
+   {
+    "world": "a.0",
+    "usable": true,
+    "cost": 12620.266986659784,
+    "truncated": 0.0
+   },
+   {
+    "world": "a.1",
+    "usable": true,
+    "cost": 12672.954503344014,
+    "truncated": 0.0
+   },
+   {
+    "world": "b.0",
+    "usable": true,
+    "cost": 12620.266986659784,
+    "truncated": 0.0
+   },
+   {
+    "world": "b.1",
+    "usable": true,
+    "cost": 12672.954503344014,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 1
+    },
+    "value": 0.0
+   }
+  },
+  "seconds": 0.21,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "W3_flexibility_costs_mov",
+  "family": "waiting",
+  "principle": "ordering_only",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 16201.30559339943,
+    "variables": 3744,
+    "binaries": 108,
+    "constraints": 2595,
+    "nodes": 1,
+    "seconds": 1.578,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 13202.722485602457
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 15537.115448441977,
+    "variables": 3996,
+    "binaries": 117,
+    "constraints": 2631,
+    "nodes": 3,
+    "seconds": 0.962,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12538.151934812742
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 15484.16545429131,
+    "variables": 4752,
+    "binaries": 144,
+    "constraints": 2778,
+    "nodes": 1,
+    "seconds": 0.438,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12485.289916971482
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 664.1901449574525,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 12900.40222375146,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 12953.089740435691,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 18110.603653111404,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 18184.366176469324,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "value": 664.1901449574525
+   }
+  },
+  "seconds": 2.98,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "I1_p1_fixed_cost_lots",
+  "family": "p1",
+  "principle": "moq_in_every_branch",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 16171.30559339943,
+    "variables": 3756,
+    "binaries": 120,
+    "constraints": 2619,
+    "nodes": 1,
+    "seconds": 1.531,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 13172.72248560246
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 15492.115448441968,
+    "variables": 4017,
+    "binaries": 138,
+    "constraints": 2673,
+    "nodes": 1,
+    "seconds": 1.346,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12493.151934812742
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 15454.165454291307,
+    "variables": 4800,
+    "binaries": 192,
+    "constraints": 2874,
+    "nodes": 1,
+    "seconds": 0.486,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12455.289916971484
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 679.1901449574616,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 12870.402223751462,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 12923.089740435691,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 18050.603653111404,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 18124.366176469324,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "breaches": [],
+    "value": 679.1901449574616
+   }
+  },
+  "seconds": 3.37,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "I2_p2_transfer_recourse",
+  "family": "p2",
+  "principle": "transfers_adapt_conserved",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 14978.892842935285,
+    "variables": 3732,
+    "binaries": 96,
+    "constraints": 2583,
+    "nodes": 1,
+    "seconds": 0.071,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 10479.597253572261
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 14916.935124284071,
+    "variables": 3966,
+    "binaries": 96,
+    "constraints": 2601,
+    "nodes": 1,
+    "seconds": 0.069,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 10417.639534921049
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 14466.582099094645,
+    "variables": 4704,
+    "binaries": 96,
+    "constraints": 2730,
+    "nodes": 1,
+    "seconds": 0.066,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9967.151673805647
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 61.957718651214236,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 13419.045775847115,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 13471.733292531344,
+    "truncated": 0.0
+   },
+   {
+    "world": "north_surge.0",
+    "usable": true,
+    "cost": 16354.233828534156,
+    "truncated": 0.0
+   },
+   {
+    "world": "north_surge.1",
+    "usable": true,
+    "cost": 16422.727600223654,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "breaches": [],
+    "value": 61.957718651214236,
+    "transfers_normal": 1812.220512820513,
+    "transfers_surge": 2535.8866666666668
+   }
+  },
+  "seconds": 0.21,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "I3_p3_source_mix",
+  "family": "p3",
+  "principle": "capacity_in_every_branch",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": -17919.272700243742,
+    "variables": 3744,
+    "binaries": 96,
+    "constraints": 2595,
+    "nodes": 1,
+    "seconds": 0.077,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": -20918.443307874208
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": -18588.846710410897,
+    "variables": 3996,
+    "binaries": 96,
+    "constraints": 2631,
+    "nodes": 1,
+    "seconds": 0.074,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": -21588.152524204248
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": -18615.648460582892,
+    "variables": 4752,
+    "binaries": 96,
+    "constraints": 2778,
+    "nodes": 1,
+    "seconds": 0.066,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": -21614.983888012604
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 669.5740101671545,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 12681.474648640216,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 12734.162165324446,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 17768.986156154006,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 17842.748679511926,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "breaches": [],
+    "value": 669.5740101671545
+   }
+  },
+  "seconds": 0.22,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "I4_p3_shares_hold",
+  "family": "p3",
+  "principle": "shares_in_every_branch",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 15257.562841537458,
+    "variables": 3744,
+    "binaries": 96,
+    "constraints": 2619,
+    "nodes": 1,
+    "seconds": 0.069,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12258.322349968195
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 14732.134368219677,
+    "variables": 3996,
+    "binaries": 96,
+    "constraints": 2679,
+    "nodes": 1,
+    "seconds": 0.072,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 11732.789728040487
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 14714.969293241007,
+    "variables": 4752,
+    "binaries": 96,
+    "constraints": 2874,
+    "nodes": 1,
+    "seconds": 0.068,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 11715.602782089658
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 525.428473317781,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 12770.774265116162,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 12823.461781800392,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 16632.90382713634,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 16701.397598825835,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "breaches": [],
+    "value": 525.428473317781
+   }
+  },
+  "seconds": 0.22,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "I5_p3_switching_cost",
+  "family": "p3",
+  "principle": "ordering_only",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 14507.92039962668,
+    "variables": 3745,
+    "binaries": 97,
+    "constraints": 2596,
+    "nodes": 1,
+    "seconds": 0.881,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 11508.417784797464
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 14507.920399628165,
+    "variables": 3997,
+    "binaries": 97,
+    "constraints": 2633,
+    "nodes": 1,
+    "seconds": 1.2,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 11508.417784798949
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 14499.1548074235,
+    "variables": 4753,
+    "binaries": 97,
+    "constraints": 2782,
+    "nodes": 1,
+    "seconds": 0.653,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 11499.650055639566
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": -1.4842953532934189e-09,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "full.0",
+    "usable": true,
+    "cost": 14481.576641290918,
+    "truncated": 0.0
+   },
+   {
+    "world": "full.1",
+    "usable": true,
+    "cost": 14534.264157975147,
+    "truncated": 0.0
+   },
+   {
+    "world": "short.0",
+    "usable": true,
+    "cost": 14481.576641311023,
+    "truncated": 0.0
+   },
+   {
+    "world": "short.1",
+    "usable": true,
+    "cost": 14534.264157995274,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "value": -1.4842953532934189e-09
+   }
+  },
+  "seconds": 2.74,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "I6_multi_sku_shared_capacity",
+  "family": "p3",
+  "principle": "capacity_in_every_branch",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 47777.075608761144,
+    "variables": 7392,
+    "binaries": 192,
+    "constraints": 4794,
+    "nodes": 1,
+    "seconds": 0.169,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 41779.52394705424
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 46166.94932437476,
+    "variables": 7896,
+    "binaries": 192,
+    "constraints": 4848,
+    "nodes": 1,
+    "seconds": 0.178,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 40169.14575827442
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 46112.95119137223,
+    "variables": 9408,
+    "binaries": 192,
+    "constraints": 5088,
+    "nodes": 1,
+    "seconds": 0.138,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 40115.09571913019
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 1610.1262843863879,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 38700.67493145308,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 38858.73748150577,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 53451.451784735815,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 53656.93309980431,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "breaches": [],
+    "value": 1610.1262843863879
+   }
+  },
+  "seconds": 0.5,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "I7_correlated_plant",
+  "family": "correlated",
+  "principle": "plant_observed_once",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 18236.110813206855,
+    "variables": 3768,
+    "binaries": 120,
+    "constraints": 2643,
+    "nodes": 48,
+    "seconds": 2.303,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 15237.254658894506
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 17178.036683798233,
+    "variables": 4038,
+    "binaries": 138,
+    "constraints": 2715,
+    "nodes": 56,
+    "seconds": 1.88,
+    "gap": 7.970255214810954e-07,
+    "certified": true,
+    "solver_bound": 14178.93489181677
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 17161.55348911842,
+    "variables": 4848,
+    "binaries": 192,
+    "constraints": 2970,
+    "nodes": 5126,
+    "seconds": 12.809,
+    "gap": 8.920266984547297e-07,
+    "certified": true,
+    "solver_bound": 14162.503080458746
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 1058.074129408622,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "plant_up.0",
+    "usable": true,
+    "cost": 12726.463117710793,
+    "truncated": 0.0
+   },
+   {
+    "world": "plant_up.1",
+    "usable": true,
+    "cost": 12779.150634395519,
+    "truncated": 0.0
+   },
+   {
+    "world": "plant_down.0",
+    "usable": true,
+    "cost": 21520.02918560839,
+    "truncated": 0.0
+   },
+   {
+    "world": "plant_down.1",
+    "usable": true,
+    "cost": 21686.503797479527,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "breaches": [],
+    "value": 1058.074129408622
+   }
+  },
+  "seconds": 17.0,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "S1_commercial_packs",
+  "family": "sector",
+  "principle": "packs_in_every_branch",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 15870.846622585206,
+    "variables": 3744,
+    "binaries": 108,
+    "constraints": 2595,
+    "nodes": 4385,
+    "seconds": 9.135,
+    "gap": 8.75547712705937e-07,
+    "certified": true,
+    "solver_bound": 12871.665534636202
+   },
+   "adaptive": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "cost": 15210.722416227614,
+    "variables": 3996,
+    "binaries": 117,
+    "constraints": 2631,
+    "nodes": 26476,
+    "seconds": 42.931,
+    "gap": 0.0001701829388206773,
+    "certified": false,
+    "solver_bound": 12209.339695792645
+   },
+   "perfect": {
+    "status": "FEASIBLE_TIME_LIMIT",
+    "cost": 15193.762578854892,
+    "variables": 4752,
+    "binaries": 144,
+    "constraints": 2778,
+    "nodes": 34998,
+    "seconds": 42.933,
+    "gap": 0.000414642698018395,
+    "certified": false,
+    "solver_bound": 12189.373611159106
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 660.1242063575919,
+  "ordering_ok": true,
+  "perfect_status": "NON_CERTIFIED",
+  "value_certified": false,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 12636.040991921322,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 12698.779847558835,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 17709.67856129259,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 17798.390264137688,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "breaches": [],
+    "value": 660.1242063575919
+   }
+  },
+  "seconds": 95.01,
+  "time_limited": [
+   "adaptive",
+   "perfect"
+  ],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": false,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "S2_produce_sell_through",
+  "family": "sector",
+  "principle": "feasible_every_world",
+  "worlds": 4,
+  "epochs": [
+   2
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 14927.503025008278,
+    "variables": 4130,
+    "binaries": 992,
+    "constraints": 4148,
+    "nodes": 3413,
+    "seconds": 18.665,
+    "gap": 8.927356986667346e-07,
+    "certified": true,
+    "solver_bound": 11928.26257550175
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 13177.098608361468,
+    "variables": 4344,
+    "binaries": 992,
+    "constraints": 4178,
+    "nodes": 1,
+    "seconds": 0.672,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 10177.677031848698
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 13165.229945807616,
+    "variables": 4940,
+    "binaries": 992,
+    "constraints": 4298,
+    "nodes": 1,
+    "seconds": 0.064,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 10165.783969640926
+   }
+  },
+  "information_sets": {
+   "2": [
+    {
+     "id": "e2.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e2.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 1750.4044166468102,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "2": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "slow.0",
+    "usable": true,
+    "cost": 9685.864337745425,
+    "truncated": 0.0
+   },
+   {
+    "world": "slow.1",
+    "usable": true,
+    "cost": 9668.63471428213,
+    "truncated": 0.0
+   },
+   {
+    "world": "fast.0",
+    "usable": true,
+    "cost": 16692.94662678222,
+    "truncated": 0.0
+   },
+   {
+    "world": "fast.1",
+    "usable": true,
+    "cost": 16660.9487546361,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "2": 2
+    },
+    "breaches": [],
+    "value": 1750.4044166468102
+   }
+  },
+  "seconds": 19.41,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "S3_meat_cold_chain",
+  "family": "sector",
+  "principle": "feasible_every_world",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 16479.600051106438,
+    "variables": 3338,
+    "binaries": 792,
+    "constraints": 3435,
+    "nodes": 1,
+    "seconds": 0.036,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 14030.367588212182
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 15669.247313930533,
+    "variables": 3473,
+    "binaries": 792,
+    "constraints": 3462,
+    "nodes": 1,
+    "seconds": 0.038,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 13219.991714898606
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 14911.134003569818,
+    "variables": 3980,
+    "binaries": 792,
+    "constraints": 3582,
+    "nodes": 1,
+    "seconds": 0.036,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 12461.829017484475
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 810.3527371759046,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 14202.547881049155,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 14282.636384737247,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 17098.26157944274,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 17093.543410492966,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "breaches": [],
+    "value": 810.3527371759046
+   }
+  },
+  "seconds": 0.12,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "S4_mixed_sectors_static_infeasible",
+  "family": "sector",
+  "principle": "feasible_every_world",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "INFEASIBLE",
+    "cost": null,
+    "variables": 7254,
+    "binaries": null,
+    "constraints": 5886,
+    "nodes": null,
+    "seconds": 6.906,
+    "gap": null,
+    "certified": false,
+    "solver_bound": null
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 23758.175549164178,
+    "variables": 7650,
+    "binaries": 960,
+    "constraints": 5931,
+    "nodes": 5,
+    "seconds": 3.039,
+    "gap": 3.451578374036495e-07,
+    "certified": true,
+    "solver_bound": 18959.183308783387
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 23475.990705920307,
+    "variables": 8928,
+    "binaries": 960,
+    "constraints": 6144,
+    "nodes": 1,
+    "seconds": 0.113,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 18676.98930903148
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": null,
+  "ordering_ok": null,
+  "perfect_status": "CERTIFIED",
+  "value_certified": false,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 20408.899639280873,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 20461.702490000953,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 27048.385264913304,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 27113.7148024616,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "static": "INFEASIBLE under the service floors",
+    "adaptive": "OPTIMAL",
+    "note": "flexibility restores feasibility; ordering not applicable"
+   }
+  },
+  "seconds": 10.07,
+  "time_limited": [],
+  "static_infeasible": true,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": false,
+   "ordering": null,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "S5_mixed_sectors",
+  "family": "sector",
+  "principle": "feasible_every_world",
+  "worlds": 4,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 22790.444857472572,
+    "variables": 7254,
+    "binaries": 960,
+    "constraints": 5886,
+    "nodes": 6293,
+    "seconds": 69.371,
+    "gap": 9.533883665244915e-07,
+    "certified": true,
+    "solver_bound": 17991.44707126334
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 21952.77851831717,
+    "variables": 7650,
+    "binaries": 960,
+    "constraints": 5931,
+    "nodes": 1,
+    "seconds": 0.248,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 17153.697209549744
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 21932.083908475084,
+    "variables": 8928,
+    "binaries": 960,
+    "constraints": 6144,
+    "nodes": 1,
+    "seconds": 0.127,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 17132.985442084333
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "value_of_adaptation": 837.666339155403,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 2,
+   "sets_per_epoch": {
+    "3": 2
+   }
+  },
+  "settlements": [
+   {
+    "world": "normal.0",
+    "usable": true,
+    "cost": 20369.73193706802,
+    "truncated": 0.0
+   },
+   {
+    "world": "normal.1",
+    "usable": true,
+    "cost": 20454.031963762787,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.0",
+    "usable": true,
+    "cost": 23445.202570869442,
+    "truncated": 0.0
+   },
+   {
+    "world": "high.1",
+    "usable": true,
+    "cost": 23542.147601568424,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 2
+    },
+    "breaches": [],
+    "value": 837.666339155403
+   }
+  },
+  "seconds": 69.76,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "T1_tree_three_histories",
+  "family": "tree",
+  "principle": "ordering_only",
+  "worlds": 6,
+  "epochs": [
+   3
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 12805.902825150615,
+    "variables": 5436,
+    "binaries": 144,
+    "constraints": 3849,
+    "nodes": 1,
+    "seconds": 0.162,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9806.477612793737
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 12767.53398714016,
+    "variables": 5922,
+    "binaries": 144,
+    "constraints": 3903,
+    "nodes": 1,
+    "seconds": 0.125,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9768.099240070553
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 12644.890715574695,
+    "variables": 7056,
+    "binaries": 144,
+    "constraints": 4094,
+    "nodes": 1,
+    "seconds": 0.11,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9645.533390745444
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      4,
+      5
+     ],
+     "probability": 0.3333333333333333
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.3333333333333333
+    },
+    {
+     "id": "e3.2",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.3333333333333333
+    }
+   ]
+  },
+  "value_of_adaptation": 38.368838010455875,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 3,
+   "sets_per_epoch": {
+    "3": 3
+   }
+  },
+  "settlements": [
+   {
+    "world": "fitted:41001:0:lhs|e3.0",
+    "usable": true,
+    "cost": 12942.447383171162,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:0:lhs|e3.1",
+    "usable": true,
+    "cost": 12841.27136421933,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs|e3.0",
+    "usable": true,
+    "cost": 12759.473277151243,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs|e3.1",
+    "usable": true,
+    "cost": 12660.342587687583,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs|e3.0",
+    "usable": true,
+    "cost": 12750.34265915653,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs|e3.1",
+    "usable": true,
+    "cost": 12651.326651455112,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 3
+    },
+    "value": 38.368838010455875
+   }
+  },
+  "seconds": 0.41,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "T2_tree_two_epochs",
+  "family": "tree",
+  "principle": "ordering_only",
+  "worlds": 12,
+  "epochs": [
+   3,
+   6
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 12841.530841248765,
+    "variables": 10548,
+    "binaries": 288,
+    "constraints": 7647,
+    "nodes": 1,
+    "seconds": 0.737,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9842.133573179419
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 12794.79905658203,
+    "variables": 11520,
+    "binaries": 288,
+    "constraints": 7755,
+    "nodes": 1,
+    "seconds": 0.307,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9795.393287739747
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 12648.244596164977,
+    "variables": 14112,
+    "binaries": 288,
+    "constraints": 8186,
+    "nodes": 1,
+    "seconds": 0.268,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9648.830685671857
+   }
+  },
+  "information_sets": {
+   "3": [
+    {
+     "id": "e3.0",
+     "members": [
+      8,
+      9,
+      10,
+      11
+     ],
+     "probability": 0.3333333333333333
+    },
+    {
+     "id": "e3.1",
+     "members": [
+      4,
+      5,
+      6,
+      7
+     ],
+     "probability": 0.3333333333333333
+    },
+    {
+     "id": "e3.2",
+     "members": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "probability": 0.3333333333333333
+    }
+   ],
+   "6": [
+    {
+     "id": "e6.0",
+     "members": [
+      8,
+      9
+     ],
+     "probability": 0.16666666666666666
+    },
+    {
+     "id": "e6.1",
+     "members": [
+      10,
+      11
+     ],
+     "probability": 0.16666666666666666
+    },
+    {
+     "id": "e6.2",
+     "members": [
+      4,
+      5
+     ],
+     "probability": 0.16666666666666666
+    },
+    {
+     "id": "e6.3",
+     "members": [
+      6,
+      7
+     ],
+     "probability": 0.16666666666666666
+    },
+    {
+     "id": "e6.4",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.16666666666666666
+    },
+    {
+     "id": "e6.5",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.16666666666666666
+    }
+   ]
+  },
+  "value_of_adaptation": 46.73178466673562,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 15,
+   "sets_per_epoch": {
+    "3": 3,
+    "6": 6
+   }
+  },
+  "settlements": [
+   {
+    "world": "fitted:41001:0:lhs|e3.0|e6.0",
+    "usable": true,
+    "cost": 12711.892424752657,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:0:lhs|e3.0|e6.1",
+    "usable": true,
+    "cost": 13263.901013383387,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:0:lhs|e3.1|e6.0",
+    "usable": true,
+    "cost": 12574.039846761261,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:0:lhs|e3.1|e6.1",
+    "usable": true,
+    "cost": 13125.840304147805,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs|e3.0|e6.0",
+    "usable": true,
+    "cost": 12528.90638285089,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs|e3.0|e6.1",
+    "usable": true,
+    "cost": 13080.910802750583,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs|e3.1|e6.0",
+    "usable": true,
+    "cost": 12393.726371179624,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs|e3.1|e6.1",
+    "usable": true,
+    "cost": 12945.526828566168,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs|e3.0|e6.0",
+    "usable": true,
+    "cost": 12519.77509561048,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs|e3.0|e6.1",
+    "usable": true,
+    "cost": 13071.779281769142,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs|e3.1|e6.0",
+    "usable": true,
+    "cost": 12384.744934912896,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs|e3.1|e6.1",
+    "usable": true,
+    "cost": 12936.54539229944,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "sets": {
+     "3": 3,
+     "6": 6
+    },
+    "value": 46.73178466673562
+   }
+  },
+  "seconds": 1.33,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ },
+ {
+  "fixture": "T3_perfect_information_bound",
+  "family": "tree",
+  "principle": "pi_ordering",
+  "worlds": 12,
+  "epochs": [
+   2,
+   5
+  ],
+  "seed": 41001,
+  "solves": {
+   "static": {
+    "status": "OPTIMAL",
+    "cost": 12895.431254910922,
+    "variables": 10548,
+    "binaries": 288,
+    "constraints": 7647,
+    "nodes": 1,
+    "seconds": 0.589,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9896.086202003893
+   },
+   "adaptive": {
+    "status": "OPTIMAL",
+    "cost": 12841.880469642827,
+    "variables": 11655,
+    "binaries": 288,
+    "constraints": 7770,
+    "nodes": 1,
+    "seconds": 0.318,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9842.563430678643
+   },
+   "perfect": {
+    "status": "OPTIMAL",
+    "cost": 12669.16211514761,
+    "variables": 14112,
+    "binaries": 288,
+    "constraints": 8186,
+    "nodes": 1,
+    "seconds": 0.269,
+    "gap": 0.0,
+    "certified": true,
+    "solver_bound": 9669.759715119942
+   }
+  },
+  "information_sets": {
+   "2": [
+    {
+     "id": "e2.0",
+     "members": [
+      8,
+      9,
+      10,
+      11
+     ],
+     "probability": 0.3333333333333333
+    },
+    {
+     "id": "e2.1",
+     "members": [
+      4,
+      5,
+      6,
+      7
+     ],
+     "probability": 0.3333333333333333
+    },
+    {
+     "id": "e2.2",
+     "members": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "probability": 0.3333333333333333
+    }
+   ],
+   "5": [
+    {
+     "id": "e5.0",
+     "members": [
+      8,
+      9
+     ],
+     "probability": 0.16666666666666666
+    },
+    {
+     "id": "e5.1",
+     "members": [
+      10,
+      11
+     ],
+     "probability": 0.16666666666666666
+    },
+    {
+     "id": "e5.2",
+     "members": [
+      4,
+      5
+     ],
+     "probability": 0.16666666666666666
+    },
+    {
+     "id": "e5.3",
+     "members": [
+      6,
+      7
+     ],
+     "probability": 0.16666666666666666
+    },
+    {
+     "id": "e5.4",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.16666666666666666
+    },
+    {
+     "id": "e5.5",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.16666666666666666
+    }
+   ]
+  },
+  "value_of_adaptation": 53.55078526809484,
+  "ordering_ok": true,
+  "perfect_status": "CERTIFIED",
+  "value_certified": true,
+  "non_anticipativity": {
+   "pass": true,
+   "violations": [],
+   "pairs_checked": 15,
+   "sets_per_epoch": {
+    "2": 3,
+    "5": 6
+   }
+  },
+  "settlements": [
+   {
+    "world": "fitted:41001:0:lhs|e2.0|e5.0",
+    "usable": true,
+    "cost": 12672.713797843007,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:0:lhs|e2.0|e5.1",
+    "usable": true,
+    "cost": 13336.381383755528,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:0:lhs|e2.1|e5.0",
+    "usable": true,
+    "cost": 12572.712281504584,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:0:lhs|e2.1|e5.1",
+    "usable": true,
+    "cost": 13236.224021683838,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs|e2.0|e5.0",
+    "usable": true,
+    "cost": 12601.635148584955,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs|e2.0|e5.1",
+    "usable": true,
+    "cost": 13265.30094208058,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs|e2.1|e5.0",
+    "usable": true,
+    "cost": 12502.779369366928,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:1:lhs|e2.1|e5.1",
+    "usable": true,
+    "cost": 13166.29110954618,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs|e2.0|e5.0",
+    "usable": true,
+    "cost": 12403.14866488496,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs|e2.0|e5.1",
+    "usable": true,
+    "cost": 13066.809395902386,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs|e2.1|e5.0",
+    "usable": true,
+    "cost": 12307.528890190843,
+    "truncated": 0.0
+   },
+   {
+    "world": "fitted:41001:2:lhs|e2.1|e5.1",
+    "usable": true,
+    "cost": 12971.040630370097,
+    "truncated": 0.0
+   }
+  ],
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "pi": 12669.16211514761,
+    "pi_status": "CERTIFIED",
+    "adaptive": 12841.880469642827,
+    "static": 12895.431254910922
+   }
+  },
+  "seconds": 1.19,
+  "time_limited": [],
+  "static_infeasible": false,
+  "pass": true,
+  "checks": {
+   "all_usable": true,
+   "all_optimal": true,
+   "ordering": true,
+   "non_anticipativity": true,
+   "feasible_every_world": true,
+   "principle": true
+  }
+ }
+]

@@ -10,7 +10,7 @@
   "sets": {
    "3": 3
   },
-  "wall": 2.68,
+  "wall": 2.64,
   "ordering_ok": true,
   "value": 16.888879242676012,
   "static": {
@@ -19,7 +19,7 @@
    "binaries": 936,
    "rows": 3175,
    "nodes": 88,
-   "seconds": 1.3,
+   "seconds": 1.28,
    "gap": 0.0
   },
   "adaptive": {
@@ -28,7 +28,7 @@
    "binaries": 936,
    "rows": 3193,
    "nodes": 17,
-   "seconds": 1.32,
+   "seconds": 1.3,
    "gap": 0.0
   },
   "perfect": {
@@ -40,7 +40,7 @@
    "seconds": 0.05,
    "gap": 0.0
   },
-  "planner_wall": 2.64,
+  "planner_wall": 2.59,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 7
  },
@@ -57,7 +57,7 @@
    "3": 3,
    "6": 6
   },
-  "wall": 13.49,
+  "wall": 13.79,
   "ordering_ok": true,
   "value": 19.431832738303456,
   "static": {
@@ -66,7 +66,7 @@
    "binaries": 1872,
    "rows": 6337,
    "nodes": 975,
-   "seconds": 12.43,
+   "seconds": 12.73,
    "gap": 0.0
   },
   "adaptive": {
@@ -87,7 +87,7 @@
    "seconds": 0.14,
    "gap": 0.0
   },
-  "planner_wall": 13.32,
+  "planner_wall": 13.19,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 7
  },
@@ -102,7 +102,7 @@
   "sets": {
    "3": 4
   },
-  "wall": 2.16,
+  "wall": 2.17,
   "ordering_ok": true,
   "value": 21.50122555974849,
   "static": {
@@ -120,7 +120,7 @@
    "binaries": 1248,
    "rows": 4256,
    "nodes": 29,
-   "seconds": 1.49,
+   "seconds": 1.5,
    "gap": 5.019763613582134e-07
   },
   "perfect": {
@@ -132,7 +132,7 @@
    "seconds": 0.07,
    "gap": 0.0
   },
-  "planner_wall": 2.42,
+  "planner_wall": 2.4,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 7
  },
@@ -149,7 +149,7 @@
    "3": 4,
    "6": 8
   },
-  "wall": 23.75,
+  "wall": 23.71,
   "ordering_ok": true,
   "value": 177.2771625452342,
   "static": {
@@ -158,7 +158,7 @@
    "binaries": 2496,
    "rows": 8445,
    "nodes": 835,
-   "seconds": 19.57,
+   "seconds": 19.56,
    "gap": 0.028610400715568706
   },
   "adaptive": {
@@ -167,7 +167,7 @@
    "binaries": 2496,
    "rows": 8496,
    "nodes": 112,
-   "seconds": 4.03,
+   "seconds": 4.01,
    "gap": 0.0
   },
   "perfect": {
@@ -179,7 +179,7 @@
    "seconds": 0.14,
    "gap": 2.4408842406566068e-15
   },
-  "planner_wall": 26.55,
+  "planner_wall": 26.51,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 7
  },
@@ -241,7 +241,7 @@
    "3": 8,
    "6": 8
   },
-  "wall": 3.8,
+  "wall": 3.77,
   "ordering_ok": true,
   "value": 15.021952437739856,
   "static": {
@@ -250,7 +250,7 @@
    "binaries": 1248,
    "rows": 4229,
    "nodes": 188,
-   "seconds": 3.58,
+   "seconds": 3.55,
    "gap": 0.0
   },
   "adaptive": {
@@ -271,7 +271,7 @@
    "seconds": 0.09,
    "gap": 0.0
   },
-  "planner_wall": 0.77,
+  "planner_wall": 0.76,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 7
  },
@@ -333,7 +333,7 @@
    "3": 3,
    "6": 6
   },
-  "wall": 1.29,
+  "wall": 1.28,
   "ordering_ok": true,
   "value": 46.73178466673562,
   "static": {
@@ -342,7 +342,7 @@
    "binaries": 288,
    "rows": 7647,
    "nodes": 1,
-   "seconds": 0.72,
+   "seconds": 0.71,
    "gap": 0.0
   },
   "adaptive": {
@@ -408,7 +408,7 @@
    "seconds": 0.16,
    "gap": 0.0
   },
-  "planner_wall": 0.99,
+  "planner_wall": 1.0,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 7
  },
@@ -455,7 +455,7 @@
    "seconds": 0.39,
    "gap": 0.0
   },
-  "planner_wall": 2.06,
+  "planner_wall": 2.05,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 7
  },
@@ -470,7 +470,7 @@
   "sets": {
    "3": 8
   },
-  "wall": 0.58,
+  "wall": 0.57,
   "ordering_ok": true,
   "value": 62.358982506382745,
   "static": {
@@ -479,7 +479,7 @@
    "binaries": 192,
    "rows": 5115,
    "nodes": 1,
-   "seconds": 0.25,
+   "seconds": 0.24,
    "gap": 0.0
   },
   "adaptive": {
@@ -497,7 +497,7 @@
    "binaries": 192,
    "rows": 5458,
    "nodes": 1,
-   "seconds": 0.16,
+   "seconds": 0.15,
    "gap": 0.0
   },
   "planner_wall": 0.62,
@@ -636,7 +636,7 @@
    "binaries": 288,
    "rows": 8330,
    "nodes": 1,
-   "seconds": 0.27,
+   "seconds": 0.26,
    "gap": 0.0
   },
   "planner_wall": 1.52,
@@ -672,7 +672,7 @@
    "binaries": 192,
    "rows": 5235,
    "nodes": 1,
-   "seconds": 0.17,
+   "seconds": 0.18,
    "gap": 0.0
   },
   "perfect": {
@@ -701,7 +701,7 @@
    "3": 4,
    "6": 8
   },
-  "wall": 1.7,
+  "wall": 1.69,
   "ordering_ok": true,
   "value": 79.53115929090927,
   "static": {
@@ -728,10 +728,10 @@
    "binaries": 384,
    "rows": 11106,
    "nodes": 1,
-   "seconds": 0.4,
+   "seconds": 0.39,
    "gap": 0.0
   },
-  "planner_wall": 2.22,
+  "planner_wall": 2.21,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 7
  },
@@ -746,7 +746,7 @@
   "sets": {
    "3": 8
   },
-  "wall": 0.69,
+  "wall": 0.7,
   "ordering_ok": true,
   "value": 60.8072574475118,
   "static": {
@@ -793,7 +793,7 @@
    "3": 8,
    "6": 8
   },
-  "wall": 0.67,
+  "wall": 0.69,
   "ordering_ok": true,
   "value": 60.807257447508164,
   "static": {
@@ -802,7 +802,7 @@
    "binaries": 192,
    "rows": 5127,
    "nodes": 1,
-   "seconds": 0.33,
+   "seconds": 0.34,
    "gap": 0.0
   },
   "adaptive": {
@@ -811,7 +811,7 @@
    "binaries": 192,
    "rows": 5379,
    "nodes": 1,
-   "seconds": 0.18,
+   "seconds": 0.19,
    "gap": 0.0
   },
   "perfect": {
@@ -838,7 +838,7 @@
   "sets": {
    "3": 3
   },
-  "wall": 8.82,
+  "wall": 8.78,
   "ordering_ok": true,
   "value": 91.38770688992736,
   "static": {
@@ -847,7 +847,7 @@
    "binaries": 300,
    "rows": 7176,
    "nodes": 1,
-   "seconds": 4.4,
+   "seconds": 4.37,
    "gap": 0.0
   },
   "adaptive": {
@@ -856,7 +856,7 @@
    "binaries": 318,
    "rows": 7338,
    "nodes": 2,
-   "seconds": 2.07,
+   "seconds": 2.06,
    "gap": 0.0
   },
   "perfect": {
@@ -865,10 +865,10 @@
    "binaries": 360,
    "rows": 7846,
    "nodes": 17,
-   "seconds": 2.34,
+   "seconds": 2.33,
    "gap": 0.0
   },
-  "planner_wall": 33.14,
+  "planner_wall": 32.87,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 9
  },
@@ -885,7 +885,7 @@
    "3": 3,
    "6": 6
   },
-  "wall": 27.02,
+  "wall": 26.91,
   "ordering_ok": true,
   "value": 104.9899484334419,
   "static": {
@@ -894,7 +894,7 @@
    "binaries": 588,
    "rows": 14214,
    "nodes": 1,
-   "seconds": 7.64,
+   "seconds": 7.6,
    "gap": 4.324561749375153e-08
   },
   "adaptive": {
@@ -903,7 +903,7 @@
    "binaries": 624,
    "rows": 14538,
    "nodes": 4,
-   "seconds": 7.9,
+   "seconds": 7.87,
    "gap": 0.0
   },
   "perfect": {
@@ -912,11 +912,11 @@
    "binaries": 720,
    "rows": 15688,
    "nodes": 146,
-   "seconds": 11.45,
+   "seconds": 11.42,
    "gap": 0.0
   },
-  "planner_wall": 176.26,
-  "planner_verdict": "ADAPTIVE PLAN REJECTED (ordering check failed)",
+  "planner_wall": 176.2,
+  "planner_verdict": "ADAPTIVE PLAN NOT SELECTED (time-limited adaptive solve did not improve on the static plan)",
   "planner_solves": 9
  },
  {
@@ -930,7 +930,7 @@
   "sets": {
    "3": 4
   },
-  "wall": 25.75,
+  "wall": 25.66,
   "ordering_ok": true,
   "value": 98.93535417957901,
   "static": {
@@ -939,7 +939,7 @@
    "binaries": 396,
    "rows": 9522,
    "nodes": 7,
-   "seconds": 8.44,
+   "seconds": 8.41,
    "gap": 0.0
   },
   "adaptive": {
@@ -948,7 +948,7 @@
    "binaries": 423,
    "rows": 9765,
    "nodes": 3,
-   "seconds": 6.72,
+   "seconds": 6.69,
    "gap": 0.0
   },
   "perfect": {
@@ -957,10 +957,10 @@
    "binaries": 480,
    "rows": 10460,
    "nodes": 24,
-   "seconds": 10.58,
+   "seconds": 10.54,
    "gap": 0.0
   },
-  "planner_wall": 58.83,
+  "planner_wall": 58.4,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 9
  },
@@ -977,7 +977,7 @@
    "3": 4,
    "6": 8
   },
-  "wall": 65.89,
+  "wall": 64.54,
   "ordering_ok": true,
   "value": 118.02664745580114,
   "static": {
@@ -986,7 +986,7 @@
    "binaries": 780,
    "rows": 18906,
    "nodes": 11,
-   "seconds": 12.54,
+   "seconds": 11.85,
    "gap": 0.0
   },
   "adaptive": {
@@ -995,7 +995,7 @@
    "binaries": 831,
    "rows": 19365,
    "nodes": 27,
-   "seconds": 20.23,
+   "seconds": 19.96,
    "gap": 0.0
   },
   "perfect": {
@@ -1004,10 +1004,10 @@
    "binaries": 960,
    "rows": 20916,
    "nodes": 612,
-   "seconds": 33.08,
+   "seconds": 32.69,
    "gap": 0.0
   },
-  "planner_wall": 192.45,
+  "planner_wall": 191.6,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 9
  },
@@ -1022,7 +1022,7 @@
   "sets": {
    "3": 8
   },
-  "wall": 16.9,
+  "wall": 17.08,
   "ordering_ok": true,
   "value": 120.49127821238653,
   "static": {
@@ -1031,7 +1031,7 @@
    "binaries": 396,
    "rows": 9522,
    "nodes": 3,
-   "seconds": 6.85,
+   "seconds": 6.92,
    "gap": 6.80239016203411e-07
   },
   "adaptive": {
@@ -1040,7 +1040,7 @@
    "binaries": 459,
    "rows": 10089,
    "nodes": 9,
-   "seconds": 3.52,
+   "seconds": 3.56,
    "gap": 1.6509401070144212e-08
   },
   "perfect": {
@@ -1049,10 +1049,10 @@
    "binaries": 480,
    "rows": 10460,
    "nodes": 29,
-   "seconds": 6.51,
+   "seconds": 6.58,
    "gap": 0.0
   },
-  "planner_wall": 26.3,
+  "planner_wall": 26.64,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 9
  },
@@ -1069,7 +1069,7 @@
    "3": 8,
    "6": 8
   },
-  "wall": 22.42,
+  "wall": 22.75,
   "ordering_ok": true,
   "value": 142.29588930325554,
   "static": {
@@ -1078,7 +1078,7 @@
    "binaries": 396,
    "rows": 9522,
    "nodes": 11,
-   "seconds": 6.51,
+   "seconds": 6.6,
    "gap": 0.0
   },
   "adaptive": {
@@ -1087,7 +1087,7 @@
    "binaries": 459,
    "rows": 10089,
    "nodes": 9,
-   "seconds": 9.79,
+   "seconds": 9.95,
    "gap": 0.0
   },
   "perfect": {
@@ -1096,11 +1096,287 @@
    "binaries": 480,
    "rows": 10460,
    "nodes": 33,
-   "seconds": 6.09,
+   "seconds": 6.18,
    "gap": 0.0
   },
-  "planner_wall": 23.72,
+  "planner_wall": 24.15,
   "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
   "planner_solves": 9
+ },
+ {
+  "class": "sector_produce",
+  "histories": 3,
+  "epochs": [
+   3
+  ],
+  "continuations": 2,
+  "worlds": 6,
+  "sets": {
+   "3": 3
+  },
+  "wall": 29.5,
+  "ordering_ok": true,
+  "value": 55.749913772860964,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 6060,
+   "binaries": 1488,
+   "rows": 6196,
+   "nodes": 4135,
+   "seconds": 23.75,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 6434,
+   "binaries": 1488,
+   "rows": 6250,
+   "nodes": 377,
+   "seconds": 5.53,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 7410,
+   "binaries": 1488,
+   "rows": 6446,
+   "nodes": 1,
+   "seconds": 0.21,
+   "gap": 0.0
+  },
+  "planner_wall": 38.98,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 8
+ },
+ {
+  "class": "sector_produce",
+  "histories": 3,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 12,
+  "sets": {
+   "3": 3,
+   "6": 6
+  },
+  "wall": 86.77,
+  "ordering_ok": true,
+  "value": 351.1334107059174,
+  "static": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "vars": 11850,
+   "binaries": 2976,
+   "rows": 12340,
+   "nodes": 4114,
+   "seconds": 43.04,
+   "gap": 0.024627812567736364
+  },
+  "adaptive": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "vars": 12548,
+   "binaries": 2976,
+   "rows": 12448,
+   "nodes": 2485,
+   "seconds": 43.05,
+   "gap": 0.0007159225489889927
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 14820,
+   "binaries": 2976,
+   "rows": 12890,
+   "nodes": 1,
+   "seconds": 0.67,
+   "gap": 0.0
+  },
+  "planner_wall": 92.65,
+  "planner_verdict": "ADAPTIVE PLAN NOT SELECTED (a static candidate passed the gates at lower settled cost)",
+  "planner_solves": 9
+ },
+ {
+  "class": "sector_produce",
+  "histories": 4,
+  "epochs": [
+   3
+  ],
+  "continuations": 2,
+  "worlds": 8,
+  "sets": {
+   "3": 4
+  },
+  "wall": 41.81,
+  "ordering_ok": true,
+  "value": 81.53701372928845,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 7990,
+   "binaries": 1984,
+   "rows": 8244,
+   "nodes": 4793,
+   "seconds": 31.11,
+   "gap": 8.164637303000953e-07
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 8551,
+   "binaries": 1984,
+   "rows": 8325,
+   "nodes": 766,
+   "seconds": 10.41,
+   "gap": 6.151137275702374e-07
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 9880,
+   "binaries": 1984,
+   "rows": 8594,
+   "nodes": 1,
+   "seconds": 0.29,
+   "gap": 0.0
+  },
+  "planner_wall": 57.95,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 8
+ },
+ {
+  "class": "sector_produce",
+  "histories": 4,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 16,
+  "sets": {
+   "3": 4,
+   "6": 8
+  },
+  "wall": 86.98,
+  "ordering_ok": null,
+  "value": null,
+  "static": {
+   "status": "NO_FEASIBLE_SOLUTION",
+   "vars": 15710,
+   "binaries": null,
+   "rows": 16436,
+   "nodes": null,
+   "seconds": 43.11,
+   "gap": null
+  },
+  "adaptive": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "vars": 16703,
+   "binaries": 3968,
+   "rows": 16589,
+   "nodes": 2139,
+   "seconds": 43.13,
+   "gap": 0.009638541866321276
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 19760,
+   "binaries": 3968,
+   "rows": 17186,
+   "nodes": 1,
+   "seconds": 0.72,
+   "gap": 0.0
+  },
+  "planner_wall": 95.17,
+  "planner_verdict": "ADAPTIVE PLAN NOT COMPARABLE (no static comparator plan: infeasible or not found within the time budget)",
+  "planner_solves": 8
+ },
+ {
+  "class": "sector_produce",
+  "histories": 8,
+  "epochs": [
+   3
+  ],
+  "continuations": 1,
+  "worlds": 8,
+  "sets": {
+   "3": 8
+  },
+  "wall": 41.81,
+  "ordering_ok": true,
+  "value": 97.64639099729357,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 7990,
+   "binaries": 1984,
+   "rows": 8244,
+   "nodes": 4220,
+   "seconds": 41.3,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 9299,
+   "binaries": 1984,
+   "rows": 8433,
+   "nodes": 1,
+   "seconds": 0.26,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 9880,
+   "binaries": 1984,
+   "rows": 8594,
+   "nodes": 1,
+   "seconds": 0.24,
+   "gap": 0.0
+  },
+  "planner_wall": 10.12,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 8
+ },
+ {
+  "class": "sector_produce",
+  "histories": 8,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 1,
+  "worlds": 8,
+  "sets": {
+   "3": 8,
+   "6": 8
+  },
+  "wall": 47.28,
+  "ordering_ok": true,
+  "value": 119.31707685134461,
+  "static": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "vars": 7990,
+   "binaries": 1984,
+   "rows": 8244,
+   "nodes": 2794,
+   "seconds": 42.98,
+   "gap": 0.0019395109211927505
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 9299,
+   "binaries": 1984,
+   "rows": 8433,
+   "nodes": 68,
+   "seconds": 4.07,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 9880,
+   "binaries": 1984,
+   "rows": 8594,
+   "nodes": 1,
+   "seconds": 0.22,
+   "gap": 0.0
+  },
+  "planner_wall": 14.89,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 8
  }
 ]

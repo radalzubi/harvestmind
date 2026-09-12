@@ -108,7 +108,8 @@ where no static plan meets the floors (ordering not applicable, recorded); I5 (s
 * `P4_PERFORMANCE.md`: 24 matrix cells (single-SKU P1, P2 network, two-source P3, shared-order P3 x 3 / 4 / 8 histories x 1 / 2 epochs), every adaptive solve OPTIMAL. Interactive classes at 8 tree worlds: planner 0.6 - 2.6 s locally; the P3 shared-supplier-order class 33 - 192 s and therefore batch-only with recourse. Deterministic pre-solve rule enforced at the API: `/plan` accepts recourse only with `scenarios x continuations ^ epochs <= 8` and outside the shared-order class; `/jobs` accepts up to 16 tree worlds.
 * `P4_FROZEN_REGRESSION.md`: P3 snapshot identical (12.0 s), canonical B / T / Q / A identity, P1
   invariants 60 / 0, P2 20 / 20 + 18 / 18 + 1,720 / 1,720, sector 26 / 26 + 19 / 19 + 416 / 416, P3 30 / 30
-  + 34 / 34 + 23 / 23 + 2,304 / 2,304, P0 six-cell arm 119 / 120 under contention, cell 108 quiet rerun 30 / 30 -> 120 / 120 under the established protocol.
+  + 34 / 34 + 23 / 23 + 2,304 / 2,304 (P4-disabled code against the CURRENT P3 baseline `p3_perf_closure` = runtime `61a3e75`; the historical P3
+  performance-closure comparison stays 2,273 / 2,304 + 31 proven objective-flat C6 transfer ties and is not rewritten), P0 six-cell arm 119 / 120 under contention, cell 108 quiet rerun 30 / 30 -> 120 / 120 under the established protocol.
 * Full suite: **1,930 passed, 2 skipped** locally on the final candidate (`gates/pytest_full.log`; the remote reference before P4 was 1,912 / 2), the two P4 test files and the P3 structural test re-run afterwards (25 passed); ruff (CI scope), mypy (CI scope), bandit clean locally; pip-audit and
   gitleaks run remotely at release.
 

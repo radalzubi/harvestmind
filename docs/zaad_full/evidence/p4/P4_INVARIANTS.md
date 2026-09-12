@@ -1,6 +1,6 @@
 # P4 invariants
 
-Benchmark: `p4_authoritative`. **27 / 27 PASS**
+Benchmark: `p4_release`. **27 / 27 PASS**
 
 | invariant | statement | result | evidence |
 |---|---|---|---|
@@ -26,7 +26,8 @@ Benchmark: `p4_authoritative`. **27 / 27 PASS**
 | 20_cold_chain | Meat / seafood fixture: every world plan settles under the cold-chain and receipt-life rules. | PASS | {"status": "OPTIMAL", "worlds": 4} |
 | 21_approval_required |  | PASS | "NO MATERIAL ADAPTIVE BENEFIT" |
 | 22_no_executable_po |  | PASS | "NO MATERIAL ADAPTIVE BENEFIT" |
-| 23_perfect_le_adaptive |  | PASS | "PI <= adaptive on every fixture with a PI solve" |
+| 23_perfect_le_adaptive | PI <= adaptive on every fixture whose perfect-information solve is CERTIFIED (status OPTIMAL); a
+feasible time-limited PI incumbent is not a bound and is listed, not compared (release audit blocker A). | PASS | "PI <= adaptive on 25 certified PI solves; non-certified (not compared): ['S1_commercial_packs']" |
 | 24_adaptive_le_static |  | PASS | "adaptive <= static wherever a static plan exists" |
 | 25_disabled_is_frozen |  | PASS | "reports identical up to timings and the request hash" |
 | 26_signature_order_independent | Reversing the world order changes no information-set membership signature and no probability. | PASS | "signatures, probabilities and memberships invariant under world reordering" |
