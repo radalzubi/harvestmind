@@ -67,14 +67,16 @@ class Linear:
                     vv.append(v)
         return coo_matrix((vv, (rr, cc)), shape=(len(self.rows), len(self.names))).tocsc()
 
-    def solve(self, seconds, objective=None, solver="highs", mip_gap: float = 1e-6, seed=None):
+    def solve(self, seconds, objective=None, solver="highs", mip_gap: float = 1e-6, seed=None, options: dict | None = None):
         """Solve with scipy's bundled HiGHS (the frozen path) or, when `seed` is given or
         solver == "highspy", through highspy on the identical cost / bounds / integrality /
         constraint arrays, so a known feasible vector can be handed to HiGHS as its starting
-        incumbent (v8, P0-W2). Warm starting changes the search only, never the problem."""
+        incumbent (v8, P0-W2). Warm starting changes the search only, never the problem.
+        `options` are HiGHS search settings (P3 performance closure); they are honoured on the
+        highspy route only and never change the model or its optimality tolerance."""
         matrix = self.matrix()
         if solver == "highspy" or seed is not None:
-            result = self._highspy_solve(matrix, self.cost if objective is None else objective, seconds, mip_gap, seed)
+            result = self._highspy_solve(matrix, self.cost if objective is None else objective, seconds, mip_gap, seed, options=options)
         elif solver != "highs":
             from zaad.full.solvers import pyomo_solve
             result = pyomo_solve(self, seconds, objective, solver)
@@ -96,7 +98,7 @@ class Linear:
             residual = math.inf
         return result, residual
 
-    def _highspy_solve(self, matrix, cost, seconds, mip_gap, seed=None, first_feasible: bool = False):
+    def _highspy_solve(self, matrix, cost, seconds, mip_gap, seed=None, first_feasible: bool = False, options: dict | None = None):
         """The same model through highspy. Returns an object with scipy-milp-shaped attributes
         (x, fun, status, message, mip_gap, mip_dual_bound, mip_node_count) plus HiGHS's own
         residuals and whether a starting solution was supplied and accepted."""
@@ -106,6 +108,8 @@ class Linear:
         h.setOptionValue("output_flag", False)
         h.setOptionValue("time_limit", float(max(seconds, 1e-3)))
         h.setOptionValue("mip_rel_gap", float(mip_gap))
+        for key, value in (options or {}).items():
+            h.setOptionValue(key, value)
         if first_feasible:
             # a completion needs one feasible point, not a proof: stop at the first incumbent
             h.setOptionValue("mip_max_improving_sols", 1)
@@ -354,6 +358,132 @@ def _cohort_slab_rows(m: "Linear", physics, sku: str, H: int, slabs: list[tuple[
         m.row({**{q: -coef for q, coef in eligible.items()}, **{var: 1. for var in later}}, upper=0)
 
 
+# HiGHS search settings for the shared-supplier-order class - a supplier order (MOV / fixed cost /
+# tariff) linking purchase lines of several SKUs (P3 production performance closure). Measured on the exact
+# production shared-MOV snapshot after the activation bounds were tightened: HiGHS's root restart
+# (re-presolve after the root cut loop) doubled the time of every 3-world solve and of the
+# mean-world solve for no change in the optimum - deterministic_network 1.9 -> 1.0 s,
+# stochastic_network 3.7 -> 1.4 s, cadence_2 2.3 -> 1.4 s, identical objectives to 1e-4. Heuristic
+# effort, scaling, pricing, cut pool and LP-age settings changed nothing. The option is a search
+# setting: the model, its bounds and the optimality tolerance are untouched, so the optimal set
+# is the same; only the path to it is shorter.
+ORDER_CLASS_SEARCH: dict[str, object] = {"mip_allow_restart": False}
+
+
+def shared_supplier_orders(req: Request) -> bool:
+    """The P3 shared-supplier-order class (P3 production performance closure): a sourcing review
+    (`req.sourcing` declared) in which at least one supplier carrying order-level economics (MOV,
+    fixed order cost, receiving, freight tariff) serves more than one SKU, so one order binary per
+    period links purchase lines of several SKUs. This is the class of the 218 s production case and
+    the only class this closure changes: every frozen P0 / P1 / P2 / sector request, and every P3
+    review outside the class, keeps the released formulation and solver route bit for bit."""
+    if getattr(req, "sourcing", None) is None:
+        return False
+    return any(len({s.sku for s in srcs}) > 1 for _, srcs, _ in supplier_orders(req))
+
+
+def search_options(req: Request) -> dict | None:
+    """HiGHS search settings for this request, or None for the frozen default search."""
+    return dict(ORDER_CLASS_SEARCH) if shared_supplier_orders(req) else None
+
+
+def activation_bounds(req: Request, worlds: list[World], *, targets=None, continuation=None, continuation_feeds=None,
+                      fixed: "Solution | None" = None, sourcing=None,
+                      expected_shortage: dict | None = None) -> dict[tuple[str, int], float]:
+    """Exact activation bound per (source, period) for the supplier-order and MOQ linking rows
+    (P3 production performance closure).
+
+    The rows `purchase <= M * order` and `purchase <= M * active` used the declared line capacity
+    as M. A declared "unbounded" capacity (a million units against a few hundred units of demand)
+    lets the linear relaxation set order = purchase / M, near zero, so a minimum order value or a
+    fixed order cost is never priced by the relaxation and HiGHS must branch to recover it. The
+    bound returned here is the largest quantity of the line that any UNDOMINATED plan can carry:
+    everything a purchase placed at t can still do - serve the demand of every service the SKU may
+    supply, from t+1 to the end of the horizon, in the most demanding world (or on the analytic
+    surrogate's demand support), through the lossiest lane, earn every continuation slab, satisfy
+    its own MOQ, the supplier's MOV on its own and its base-stock target - rounded up to the
+    line's pack lattice. A unit above it is never consumed nor credited, costs its landed
+    price and earns at most salvage, which the guard keeps below landed cost, so no optimum carries
+    it: the optimal set, the objective and every economic quantity are unchanged; only the search
+    is shorter. Lines for which the argument does not close keep the declared capacity: a fixed
+    plan, a SKU whose salvage could reach its landed cost or whose lane loses everything, a pair
+    under declared share rows, or a pack lattice that is not integral. Requests outside the
+    shared-supplier-order class (`shared_supplier_orders`) get no bounds at all: their released
+    formulation is untouched.
+    """
+    if fixed is not None or not worlds or not shared_supplier_orders(req):
+        return {}
+    H = req.horizon
+    skus = {s.id: s for s in req.skus}
+    terms = {p.id: p for p in req.terms}
+    landed_floor: dict[str, float] = {}
+    for s in req.sources:
+        term = terms[s.terms]
+        landed = s.unit_price * term.fx_rate_to_currency + s.freight_per_unit + s.handling_per_unit
+        landed_floor[s.sku] = min(landed_floor.get(s.sku, math.inf), landed)
+    per_period: dict[str, list[float]] = {k: [0.] * H for k in skus}
+    for service in req.services:
+        peak = [max(w.demand[service.id][t] for w in worlds) for t in range(H)]
+        fit = expected_shortage.get(service.id) if (expected_shortage is not None and len(worlds) == 1) else None
+        if fit:
+            from zaad.full.shortage import demand_atoms
+            for t in range(H):
+                multiplier = 1.
+                for event in req.events:
+                    if event.service == service.id and event.start <= t <= event.end:
+                        multiplier *= event.multiplier
+                atoms, _ = demand_atoms(fit, multiplier)
+                if len(atoms):
+                    peak[t] = max(peak[t], float(atoms[-1]))
+        for sku, ratio, _ in compatible(req, service):
+            if sku in per_period:
+                for t in range(H):
+                    per_period[sku][t] += peak[t] * ratio
+    need: dict[str, list[float]] = {}
+    for k in skus:
+        running, to_go = 0., [0.] * H
+        for t in range(H - 1, -1, -1):
+            to_go[t] = running            # an order placed at t lands at t + 1 or later
+            running += per_period[k][t]
+        need[k] = to_go
+    credited = {k: 0. for k in skus}
+    for (sku, _), value in (continuation or {}).items():
+        slabs = value if isinstance(value, list) else [value]
+        credited[sku] = credited.get(sku, 0.) + sum(float(u) for u, _ in slabs if u > 0)
+    for (sku, _), feeds in (continuation_feeds or {}).items():
+        for feed in feeds:
+            entry = (continuation or {}).get((sku, feed["branch"]))
+            if entry:
+                slabs = entry if isinstance(entry, list) else [entry]
+                credited[sku] = credited.get(sku, 0.) + sum(float(u) for u, _ in slabs if u > 0)
+    loss = {k: max([a.loss_fraction for a in req.transfers if a.sku == k and a.approved] or [0.]) for k in skus}
+    shares = sourcing.shares if sourcing is not None else {}
+    mov: dict[str, float] = {}
+    for st in req.supplier_terms:
+        mov[st.supplier] = max(mov.get(st.supplier, 0.), float(st.minimum_order_value or 0.))
+    bounds: dict[tuple[str, int], float] = {}
+    for source in req.sources:
+        k = source.sku
+        if k not in skus or skus[k].terminal_value >= landed_floor[k] or loss[k] >= 1.:
+            continue
+        if shares.get((k, source.destination)):
+            continue
+        increments = [v for v in (source.multiple, source.case_multiple, source.pallet_multiple, source.transport_multiple) if v and v > 0]
+        if any(not float(v).is_integer() for v in increments):
+            continue
+        lattice = math.lcm(*[int(v) for v in increments]) if increments else 0
+        price = source.unit_price * terms[source.terms].fx_rate_to_currency
+        floor = max(float(source.minimum), mov.get(source.supplier, 0.) / price if price > 0 else 0.)
+        for t in range(H):
+            quantity = max((need[k][t] + credited[k]) / (1. - loss[k]), floor)
+            if targets is not None:
+                quantity = max(quantity, float(targets.get((source.id, t), 0.)))
+            if lattice:
+                quantity = math.ceil(quantity / lattice - 1e-9) * lattice
+            bounds[source.id, t] = float(quantity)
+    return bounds
+
+
 def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           service_first: str | None = None, cvar_weight: float = 0.,
           fixed: Solution | None = None, disabled: frozenset[str] = frozenset(),
@@ -477,6 +607,10 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             if pair not in cheapest or (landed, source.id) < cheapest[pair]:
                 cheapest[pair] = (landed, source.id)
     primary_id = {key: value[1] for key, value in cheapest.items()}
+    # Exact activation bounds for the order / MOQ linking rows (P3 performance closure); the
+    # purchase column itself keeps the declared capacity as its bound.
+    tight = activation_bounds(req, worlds, targets=targets, continuation=continuation, continuation_feeds=continuation_feeds,
+                              fixed=fixed, sourcing=sourcing, expected_shortage=expected_shortage)
     # Purchase variables and fixed costs, continuous unless actual pack/MOQ needs MILP.
     for source in req.sources:
         term = terms[source.terms]
@@ -511,7 +645,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     m.row({q: 1, units: -increment}, 0, 0)
             if (source.minimum or source.fixed_order_fee or source.exclusive_quote_group) and not pruned:
                 active = m.var(("active", source.id, t), upper=1, integer=True)
-                m.row({q: 1, active: -cap}, upper=0)
+                m.row({q: 1, active: -min(cap, tight.get((source.id, t), cap))}, upper=0)
                 m.row({q: 1, active: -source.minimum}, lower=0)
                 for w in range(len(worlds)):
                     expense(active, source.fixed_order_fee, w, t)
@@ -598,7 +732,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     for supplier, srcs, st in supplier_orders(req):
         upp = pallet_units(st, srcs)
         for t in range(H):
-            caps = {s.id: min(s.maximum, s.capacity_by_period[t]) for s in srcs}
+            caps = {s.id: min(s.maximum, s.capacity_by_period[t], tight.get((s.id, t), math.inf)) for s in srcs}
             if allowed_periods is not None and t not in allowed_periods:
                 caps = {k: 0. for k in caps}
             order = m.var(("order", supplier, t), upper=1, integer=True)
@@ -1143,10 +1277,24 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     seed_x = None
     if (seed is not None and req.warm_start and seed.usable_plan
             and len(m.names) >= req.warm_start_min_variables):
-        warm, seed_x = warm_start_vector(m, seed, min(req.warm_start_completion_seconds, req.warm_start_completion_share * budget))
-        budget = max(1., budget - warm["completion_seconds"])
-    solver_name = "highspy" if (seed_x is not None or req.solver == "highspy") else req.solver
-    result, residual = m.solve(budget, objective, solver_name, mip_gap=req.solver_mip_gap, seed=seed_x)
+        above = [(k, v, tight[k]) for k, v in seed.purchases.items() if k in tight and v > tight[k] + 1e-6]
+        if above:
+            # The seed buys more on a line than any undominated plan of this formulation can carry
+            # (P3 performance closure): pinning it, equal or as a floor, is infeasible against the
+            # activation bound, so it is rejected here with the reason instead of after two
+            # completion solves. Nothing is labelled feasible that is not.
+            seed_key, seed_value, seed_limit = above[0]
+            warm = {"supplied": True, "source": seed.status, "controls_seeded": 0, "accepted": False,
+                    "reason": f"seed value {seed_value:.6g} exceeds the activation bound {seed_limit:.6g} of {seed_key} (dominated plan)",
+                    "mode": None, "completion_seconds": 0., "completion_status": "activation_bound", "attempts": []}
+        else:
+            warm, seed_x = warm_start_vector(m, seed, min(req.warm_start_completion_seconds, req.warm_start_completion_share * budget))
+            budget = max(1., budget - warm["completion_seconds"])
+    # Search settings (P3 performance closure): a model with activation binaries solves through
+    # highspy with the order-class search settings; every other model keeps the frozen route.
+    options = search_options(req)
+    solver_name = "highspy" if (seed_x is not None or req.solver == "highspy" or (options is not None and req.solver == "highs")) else req.solver
+    result, residual = m.solve(budget, objective, solver_name, mip_gap=req.solver_mip_gap, seed=seed_x, options=options)
     if warm is not None:
         warm.update(seed_status=getattr(result, "seed_status", None),
                     seed_objective=getattr(result, "seed_objective", None),
@@ -1159,7 +1307,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
         if remaining > 0:
             # the phase-one optimum satisfies the new row exactly, so it seeds phase two
             result, residual = m.solve(remaining, solver=solver_name, mip_gap=req.solver_mip_gap,
-                                       seed=(result.x if solver_name == "highspy" else None))
+                                       seed=(result.x if solver_name == "highspy" else None), options=options)
     # Solve states (v8). scipy's milp reports status 1 for "iteration or time limit reached", and in
     # that case `result.x` frequently holds a genuine feasible incumbent. V7 threw that away and
     # returned an empty plan, so on long cells whole candidate classes silently vanished from the

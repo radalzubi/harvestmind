@@ -1,0 +1,5844 @@
+{
+ "cells": [
+  {
+   "cell": [
+    "E1_dominant_source",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21492910385131836,
+   "seconds_after": 0.2362070083618164,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E1_dominant_source",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21184611320495605,
+   "seconds_after": 0.2382049560546875,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E1_dominant_source",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.17379903793335,
+   "seconds_after": 5.081651210784912,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E1_dominant_source",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.5018577575683594,
+   "seconds_after": 4.346960067749023,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E1_dominant_source",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.347123146057129,
+   "seconds_after": 4.239426136016846,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E1_dominant_source",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2165060043334961,
+   "seconds_after": 0.22969770431518555,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E1_dominant_source",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21166682243347168,
+   "seconds_after": 0.23432230949401855,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E1_dominant_source",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.1138670444488525,
+   "seconds_after": 4.973550081253052,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E1_dominant_source",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.2828500270843506,
+   "seconds_after": 4.167379856109619,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E1_dominant_source",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.227771759033203,
+   "seconds_after": 5.156092882156372,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E2_landed_beats_unit_price",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21503782272338867,
+   "seconds_after": 0.23719120025634766,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E2_landed_beats_unit_price",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2098712921142578,
+   "seconds_after": 0.23630714416503906,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E2_landed_beats_unit_price",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.208803176879883,
+   "seconds_after": 4.156708240509033,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E2_landed_beats_unit_price",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.561028003692627,
+   "seconds_after": 3.4897220134735107,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E2_landed_beats_unit_price",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.7272040843963623,
+   "seconds_after": 3.7059431076049805,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E2_landed_beats_unit_price",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22622013092041016,
+   "seconds_after": 0.23339176177978516,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E2_landed_beats_unit_price",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21751618385314941,
+   "seconds_after": 0.22379493713378906,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E2_landed_beats_unit_price",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.239377021789551,
+   "seconds_after": 4.177223205566406,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E2_landed_beats_unit_price",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.5259299278259277,
+   "seconds_after": 3.4454331398010254,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E2_landed_beats_unit_price",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.664414882659912,
+   "seconds_after": 3.6014959812164307,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E3_price_break_scale",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21802401542663574,
+   "seconds_after": 0.23006105422973633,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E3_price_break_scale",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2189028263092041,
+   "seconds_after": 0.22959017753601074,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E3_price_break_scale",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 12.911354780197144,
+   "seconds_after": 12.82530927658081,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E3_price_break_scale",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.9139959812164307,
+   "seconds_after": 3.925797939300537,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E3_price_break_scale",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 11.862744808197021,
+   "seconds_after": 11.807065963745117,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E3_price_break_scale",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23474597930908203,
+   "seconds_after": 0.23444676399230957,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E3_price_break_scale",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2356250286102295,
+   "seconds_after": 0.23961591720581055,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E3_price_break_scale",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 11.3785080909729,
+   "seconds_after": 11.384490013122559,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E3_price_break_scale",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.2816240787506104,
+   "seconds_after": 3.350922107696533,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E3_price_break_scale",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 12.547823905944824,
+   "seconds_after": 12.361761808395386,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E4_moq_mov_small_order",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.18914389610290527,
+   "seconds_after": 0.24675488471984863,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E4_moq_mov_small_order",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.19195127487182617,
+   "seconds_after": 0.20228886604309082,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E4_moq_mov_small_order",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 58.45454788208008,
+   "seconds_after": 58.13653802871704,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E4_moq_mov_small_order",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.661068916320801,
+   "seconds_after": 4.672286033630371,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E4_moq_mov_small_order",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 33.16114616394043,
+   "seconds_after": 32.66845512390137,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E4_moq_mov_small_order",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.20174598693847656,
+   "seconds_after": 0.2169051170349121,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E4_moq_mov_small_order",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.19242024421691895,
+   "seconds_after": 0.2016289234161377,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E4_moq_mov_small_order",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 65.21918892860413,
+   "seconds_after": 65.4487361907959,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E4_moq_mov_small_order",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.866694927215576,
+   "seconds_after": 4.501633167266846,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E4_moq_mov_small_order",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 40.62425994873047,
+   "seconds_after": 40.204347133636475,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E5_payment_terms_preference",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.25570106506347656,
+   "seconds_after": 0.24429917335510254,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E5_payment_terms_preference",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.25968122482299805,
+   "seconds_after": 0.250338077545166,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E5_payment_terms_preference",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.644881963729858,
+   "seconds_after": 4.267168045043945,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E5_payment_terms_preference",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.6477088928222656,
+   "seconds_after": 3.4975810050964355,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E5_payment_terms_preference",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.678093194961548,
+   "seconds_after": 3.7166171073913574,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E5_payment_terms_preference",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23755478858947754,
+   "seconds_after": 0.24246883392333984,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E5_payment_terms_preference",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23059511184692383,
+   "seconds_after": 0.2644617557525635,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E5_payment_terms_preference",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.9612300395965576,
+   "seconds_after": 3.991321086883545,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E5_payment_terms_preference",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.6565051078796387,
+   "seconds_after": 3.61871600151062,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E5_payment_terms_preference",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.8573973178863525,
+   "seconds_after": 3.7485218048095703,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E6_switching_cost_retains_incumbent",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24916410446166992,
+   "seconds_after": 0.24295997619628906,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E6_switching_cost_retains_incumbent",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22622203826904297,
+   "seconds_after": 0.2523930072784424,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E6_switching_cost_retains_incumbent",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 20.16738200187683,
+   "seconds_after": 19.487311124801636,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E6_switching_cost_retains_incumbent",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.065335750579834,
+   "seconds_after": 3.839637041091919,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E6_switching_cost_retains_incumbent",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.5698018074035645,
+   "seconds_after": 4.453078985214233,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E6_switching_cost_retains_incumbent",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23795795440673828,
+   "seconds_after": 0.24376678466796875,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E6_switching_cost_retains_incumbent",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23095989227294922,
+   "seconds_after": 0.2434988021850586,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E6_switching_cost_retains_incumbent",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 18.98300790786743,
+   "seconds_after": 19.05920910835266,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E6_switching_cost_retains_incumbent",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.7396860122680664,
+   "seconds_after": 3.579561948776245,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E6_switching_cost_retains_incumbent",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.7414469718933105,
+   "seconds_after": 3.8073160648345947,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R1_cheap_unreliable",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24313592910766602,
+   "seconds_after": 0.2483820915222168,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R1_cheap_unreliable",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23529291152954102,
+   "seconds_after": 0.2442927360534668,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R1_cheap_unreliable",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 8.491674184799194,
+   "seconds_after": 8.822196006774902,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R1_cheap_unreliable",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.909759044647217,
+   "seconds_after": 3.906308889389038,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R1_cheap_unreliable",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 6.892151832580566,
+   "seconds_after": 7.292370080947876,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R1_cheap_unreliable",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2360522747039795,
+   "seconds_after": 0.25123000144958496,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R1_cheap_unreliable",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24166393280029297,
+   "seconds_after": 0.2502589225769043,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R1_cheap_unreliable",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 8.584763050079346,
+   "seconds_after": 8.991030216217041,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R1_cheap_unreliable",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.4146437644958496,
+   "seconds_after": 3.5419609546661377,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R1_cheap_unreliable",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 6.348814010620117,
+   "seconds_after": 6.627532958984375,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R2_capacity_forces_split",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.18822002410888672,
+   "seconds_after": 0.20343494415283203,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R2_capacity_forces_split",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.20145797729492188,
+   "seconds_after": 0.20841217041015625,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R2_capacity_forces_split",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 5.080022096633911,
+   "seconds_after": 5.275583028793335,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R2_capacity_forces_split",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 7.873197793960571,
+   "seconds_after": 8.371315002441406,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R2_capacity_forces_split",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.916414976119995,
+   "seconds_after": 4.042568922042847,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R2_capacity_forces_split",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.18839502334594727,
+   "seconds_after": 0.2100200653076172,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R2_capacity_forces_split",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.19776105880737305,
+   "seconds_after": 0.19558000564575195,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R2_capacity_forces_split",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.2948620319366455,
+   "seconds_after": 4.481917858123779,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R2_capacity_forces_split",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 7.54049825668335,
+   "seconds_after": 7.976642847061157,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R2_capacity_forces_split",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.5901410579681396,
+   "seconds_after": 3.762253761291504,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R3_independent_tail_benefit",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23577404022216797,
+   "seconds_after": 0.24968910217285156,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R3_independent_tail_benefit",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24010586738586426,
+   "seconds_after": 0.2506539821624756,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R3_independent_tail_benefit",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.073814868927002,
+   "seconds_after": 3.2267849445343018,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R3_independent_tail_benefit",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.5036399364471436,
+   "seconds_after": 2.6338040828704834,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R3_independent_tail_benefit",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.407853126525879,
+   "seconds_after": 2.4613771438598633,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R3_independent_tail_benefit",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.236008882522583,
+   "seconds_after": 0.2548811435699463,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R3_independent_tail_benefit",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23737692832946777,
+   "seconds_after": 0.2483820915222168,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R3_independent_tail_benefit",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.4369699954986572,
+   "seconds_after": 3.4952330589294434,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R3_independent_tail_benefit",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.3468410968780518,
+   "seconds_after": 2.421536922454834,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R3_independent_tail_benefit",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.4574899673461914,
+   "seconds_after": 2.5169131755828857,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R4_shared_plant_no_fake_diversification",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22377610206604004,
+   "seconds_after": 0.23019003868103027,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R4_shared_plant_no_fake_diversification",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22958803176879883,
+   "seconds_after": 0.2326798439025879,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R4_shared_plant_no_fake_diversification",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 43.749988079071045,
+   "seconds_after": 45.957927942276,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R4_shared_plant_no_fake_diversification",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 17.16849398612976,
+   "seconds_after": 18.4128201007843,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R4_shared_plant_no_fake_diversification",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 17.428386926651,
+   "seconds_after": 18.64076519012451,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R4_shared_plant_no_fake_diversification",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2220160961151123,
+   "seconds_after": 0.23734188079833984,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R4_shared_plant_no_fake_diversification",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21880865097045898,
+   "seconds_after": 0.22995615005493164,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R4_shared_plant_no_fake_diversification",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 42.32838821411133,
+   "seconds_after": 44.3599009513855,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R4_shared_plant_no_fake_diversification",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 14.41450810432434,
+   "seconds_after": 15.456866979598999,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R4_shared_plant_no_fake_diversification",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 17.98851704597473,
+   "seconds_after": 18.57580018043518,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R5_shared_port_risk",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23153424263000488,
+   "seconds_after": 0.2505347728729248,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R5_shared_port_risk",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23378992080688477,
+   "seconds_after": 0.3020596504211426,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R5_shared_port_risk",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.695281982421875,
+   "seconds_after": 3.8356149196624756,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R5_shared_port_risk",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.658608913421631,
+   "seconds_after": 2.7808611392974854,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R5_shared_port_risk",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.7476489543914795,
+   "seconds_after": 2.821586847305298,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R5_shared_port_risk",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22773504257202148,
+   "seconds_after": 0.2458648681640625,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R5_shared_port_risk",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24227190017700195,
+   "seconds_after": 0.25315093994140625,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R5_shared_port_risk",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.995182991027832,
+   "seconds_after": 3.6198997497558594,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R5_shared_port_risk",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.4945688247680664,
+   "seconds_after": 3.0622589588165283,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R5_shared_port_risk",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.230236768722534,
+   "seconds_after": 2.878328800201416,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R6_identical_no_split",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2189948558807373,
+   "seconds_after": 0.23012924194335938,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R6_identical_no_split",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21931886672973633,
+   "seconds_after": 0.22986388206481934,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R6_identical_no_split",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 42.378819942474365,
+   "seconds_after": 43.8328161239624,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R6_identical_no_split",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 19.506835222244263,
+   "seconds_after": 20.695755004882812,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R6_identical_no_split",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 15.20864987373352,
+   "seconds_after": 16.021036863327026,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R6_identical_no_split",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21927499771118164,
+   "seconds_after": 0.22707295417785645,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R6_identical_no_split",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21577692031860352,
+   "seconds_after": 0.22551918029785156,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R6_identical_no_split",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 46.117361307144165,
+   "seconds_after": 47.657204151153564,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R6_identical_no_split",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 13.204333066940308,
+   "seconds_after": 13.310214042663574,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R6_identical_no_split",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 15.991196870803833,
+   "seconds_after": 16.050347805023193,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C1_supplier_max_capacity",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24282217025756836,
+   "seconds_after": 0.2577662467956543,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C1_supplier_max_capacity",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.19730615615844727,
+   "seconds_after": 0.20748114585876465,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C1_supplier_max_capacity",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.032490968704224,
+   "seconds_after": 3.8413538932800293,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C1_supplier_max_capacity",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 7.781014919281006,
+   "seconds_after": 7.586606979370117,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C1_supplier_max_capacity",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 8.753067016601562,
+   "seconds_after": 9.062291860580444,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C1_supplier_max_capacity",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2296140193939209,
+   "seconds_after": 0.2619011402130127,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C1_supplier_max_capacity",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.19324588775634766,
+   "seconds_after": 0.20960402488708496,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C1_supplier_max_capacity",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.3110132217407227,
+   "seconds_after": 3.563399076461792,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C1_supplier_max_capacity",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.3539769649505615,
+   "seconds_after": 4.619667291641235,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C1_supplier_max_capacity",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.951831102371216,
+   "seconds_after": 5.064868211746216,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C2_declared_min_max_share",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2402510643005371,
+   "seconds_after": 0.2556309700012207,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C2_declared_min_max_share",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22955918312072754,
+   "seconds_after": 0.2465670108795166,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C2_declared_min_max_share",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.263599157333374,
+   "seconds_after": 4.2774293422698975,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C2_declared_min_max_share",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.01777195930481,
+   "seconds_after": 3.934039831161499,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C2_declared_min_max_share",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.016182899475098,
+   "seconds_after": 3.9494071006774902,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C2_declared_min_max_share",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24731111526489258,
+   "seconds_after": 0.2786402702331543,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C2_declared_min_max_share",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2558400630950928,
+   "seconds_after": 0.2677879333496094,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C2_declared_min_max_share",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.732343912124634,
+   "seconds_after": 3.7250499725341797,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C2_declared_min_max_share",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.6646251678466797,
+   "seconds_after": 3.6752820014953613,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C2_declared_min_max_share",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.3933160305023193,
+   "seconds_after": 3.381308078765869,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C3_source_blackout",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24492311477661133,
+   "seconds_after": 0.2351360321044922,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C3_source_blackout",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2367699146270752,
+   "seconds_after": 0.2312300205230713,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C3_source_blackout",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.901643991470337,
+   "seconds_after": 4.0236780643463135,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C3_source_blackout",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.7899861335754395,
+   "seconds_after": 3.951032876968384,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C3_source_blackout",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.4082577228546143,
+   "seconds_after": 3.5196468830108643,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C3_source_blackout",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23418498039245605,
+   "seconds_after": 0.23494505882263184,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C3_source_blackout",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2163231372833252,
+   "seconds_after": 0.22208166122436523,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C3_source_blackout",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.528286933898926,
+   "seconds_after": 3.683840036392212,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C3_source_blackout",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.489000082015991,
+   "seconds_after": 3.6662559509277344,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C3_source_blackout",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.7270798683166504,
+   "seconds_after": 2.881544828414917,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C4_unqualified_source",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24327993392944336,
+   "seconds_after": 0.25063133239746094,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C4_unqualified_source",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23710179328918457,
+   "seconds_after": 0.25792884826660156,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C4_unqualified_source",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.972501039505005,
+   "seconds_after": 4.1449620723724365,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C4_unqualified_source",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2453627586364746,
+   "seconds_after": 0.2596759796142578,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C4_unqualified_source",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.26805901527404785,
+   "seconds_after": 0.264664888381958,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C4_unqualified_source",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.987384080886841,
+   "seconds_after": 4.133702039718628,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C5_shared_capacity_multi_sku",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.4166748523712158,
+   "seconds_after": 0.44626402854919434,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C5_shared_capacity_multi_sku",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.4405786991119385,
+   "seconds_after": 0.454395055770874,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C5_shared_capacity_multi_sku",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 16.4968478679657,
+   "seconds_after": 14.977272272109985,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C5_shared_capacity_multi_sku",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 69.16733694076538,
+   "seconds_after": 65.03016996383667,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C5_shared_capacity_multi_sku",
+    "single:supplier_s2",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 12.469229221343994,
+   "seconds_after": 11.209688901901245,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C5_shared_capacity_multi_sku",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.44008493423461914,
+   "seconds_after": 0.44119882583618164,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C5_shared_capacity_multi_sku",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.4660670757293701,
+   "seconds_after": 0.45864200592041016,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C5_shared_capacity_multi_sku",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 16.292639017105103,
+   "seconds_after": 14.023271083831787,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C5_shared_capacity_multi_sku",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 58.89925503730774,
+   "seconds_after": 54.75104904174805,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C5_shared_capacity_multi_sku",
+    "single:supplier_s2",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 10.594389915466309,
+   "seconds_after": 9.410106182098389,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.4045712947845459,
+   "seconds_after": 0.38475489616394043,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.3967621326446533,
+   "seconds_after": 0.3665001392364502,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 0,
+   "first_difference": 0,
+   "seconds_before": 185.37156987190247,
+   "seconds_after": 149.14624309539795,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 1,
+   "first_difference": 1,
+   "seconds_before": 102.45999789237976,
+   "seconds_after": 66.94513893127441,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier_s2",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 14.806243181228638,
+   "seconds_after": 10.616176128387451,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.42389917373657227,
+   "seconds_after": 0.36468005180358887,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.43892526626586914,
+   "seconds_after": 0.36365413665771484,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 0,
+   "first_difference": 0,
+   "seconds_before": 165.97408366203308,
+   "seconds_after": 161.39588022232056,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 0,
+   "first_difference": 0,
+   "seconds_before": 120.490070104599,
+   "seconds_after": 83.8700647354126,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier_s2",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 12.251904010772705,
+   "seconds_after": 12.35701608657837,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S1_produce_short_life",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24024510383605957,
+   "seconds_after": 0.2700531482696533,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S1_produce_short_life",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21245312690734863,
+   "seconds_after": 0.2131059169769287,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S1_produce_short_life",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 17.993699073791504,
+   "seconds_after": 17.612632751464844,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S1_produce_short_life",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 17.3231680393219,
+   "seconds_after": 16.590052843093872,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S1_produce_short_life",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.034662961959839,
+   "seconds_after": 2.806635856628418,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S1_produce_short_life",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2959110736846924,
+   "seconds_after": 0.2600071430206299,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S1_produce_short_life",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.27460408210754395,
+   "seconds_after": 0.23029708862304688,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S1_produce_short_life",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 15.054395914077759,
+   "seconds_after": 14.126084089279175,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S1_produce_short_life",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 22.654526948928833,
+   "seconds_after": 22.023272037506104,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S1_produce_short_life",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.8636558055877686,
+   "seconds_after": 2.7671120166778564,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S2_produce_yield_uncertainty",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.26216983795166016,
+   "seconds_after": 0.281749963760376,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S2_produce_yield_uncertainty",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.19793105125427246,
+   "seconds_after": 0.2363450527191162,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S2_produce_yield_uncertainty",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 151.8165979385376,
+   "seconds_after": 156.66900396347046,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S2_produce_yield_uncertainty",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 14.335752964019775,
+   "seconds_after": 14.895078897476196,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S2_produce_yield_uncertainty",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 62.068132162094116,
+   "seconds_after": 65.19418811798096,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S2_produce_yield_uncertainty",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23810386657714844,
+   "seconds_after": 0.25483012199401855,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S2_produce_yield_uncertainty",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2077498435974121,
+   "seconds_after": 0.22110295295715332,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S2_produce_yield_uncertainty",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 121.33819484710693,
+   "seconds_after": 124.70098686218262,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S2_produce_yield_uncertainty",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 16.704474925994873,
+   "seconds_after": 17.40602397918701,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S2_produce_yield_uncertainty",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 60.57726836204529,
+   "seconds_after": 61.36755681037903,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S3_frozen_invalid_route",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2616250514984131,
+   "seconds_after": 0.2679891586303711,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S3_frozen_invalid_route",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.25551390647888184,
+   "seconds_after": 0.2808098793029785,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S3_frozen_invalid_route",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.3197691440582275,
+   "seconds_after": 4.529363393783569,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S3_frozen_invalid_route",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.25300025939941406,
+   "seconds_after": 0.26747679710388184,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S3_frozen_invalid_route",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.25924181938171387,
+   "seconds_after": 0.2691638469696045,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S3_frozen_invalid_route",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.5927512645721436,
+   "seconds_after": 4.866075038909912,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S4_commercial_pallets",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2522311210632324,
+   "seconds_after": 0.2637002468109131,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S4_commercial_pallets",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24536395072937012,
+   "seconds_after": 0.2816917896270752,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S4_commercial_pallets",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 187.29443287849426,
+   "seconds_after": 193.08356285095215,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S4_commercial_pallets",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 64.84145784378052,
+   "seconds_after": 65.09515905380249,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S4_commercial_pallets",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 35.4258599281311,
+   "seconds_after": 34.262662172317505,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S4_commercial_pallets",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24307918548583984,
+   "seconds_after": 0.25605010986328125,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S4_commercial_pallets",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.26300883293151855,
+   "seconds_after": 0.2620258331298828,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S4_commercial_pallets",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 216.48326802253723,
+   "seconds_after": 226.00536227226257,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S4_commercial_pallets",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 76.85833692550659,
+   "seconds_after": 79.0368800163269,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S4_commercial_pallets",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 35.39524507522583,
+   "seconds_after": 36.20960521697998,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N1_source_to_central_with_transfers",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2282729148864746,
+   "seconds_after": 0.24739599227905273,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N1_source_to_central_with_transfers",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22677206993103027,
+   "seconds_after": 0.2402360439300537,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N1_source_to_central_with_transfers",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 7.629020929336548,
+   "seconds_after": 7.913724899291992,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N1_source_to_central_with_transfers",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 6.610169887542725,
+   "seconds_after": 6.526655912399292,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N1_source_to_central_with_transfers",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 6.277543783187866,
+   "seconds_after": 6.160176753997803,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N1_source_to_central_with_transfers",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.284121036529541,
+   "seconds_after": 0.2470560073852539,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N1_source_to_central_with_transfers",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.27274298667907715,
+   "seconds_after": 0.24497008323669434,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N1_source_to_central_with_transfers",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 7.748116970062256,
+   "seconds_after": 7.87570595741272,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N1_source_to_central_with_transfers",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 6.0021891593933105,
+   "seconds_after": 6.141209125518799,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N1_source_to_central_with_transfers",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 6.248106002807617,
+   "seconds_after": 6.00817084312439,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N2_local_and_central_conserved",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23549675941467285,
+   "seconds_after": 0.2468416690826416,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N2_local_and_central_conserved",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22920608520507812,
+   "seconds_after": 0.25946927070617676,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N2_local_and_central_conserved",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.964845895767212,
+   "seconds_after": 2.7094879150390625,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N2_local_and_central_conserved",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.27510809898376465,
+   "seconds_after": 0.2431337833404541,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N2_local_and_central_conserved",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24614500999450684,
+   "seconds_after": 0.2453629970550537,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N2_local_and_central_conserved",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.5188770294189453,
+   "seconds_after": 2.612718105316162,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N3_mixed_sector_shared_capacity",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.4338858127593994,
+   "seconds_after": 0.4268357753753662,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N3_mixed_sector_shared_capacity",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.4400498867034912,
+   "seconds_after": 0.435884952545166,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N3_mixed_sector_shared_capacity",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 51.0296688079834,
+   "seconds_after": 52.854645013809204,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N3_mixed_sector_shared_capacity",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 86.19387292861938,
+   "seconds_after": 89.90499806404114,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N3_mixed_sector_shared_capacity",
+    "single:supplier_s2",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 29.749210119247437,
+   "seconds_after": 30.445544958114624,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N3_mixed_sector_shared_capacity",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.4322018623352051,
+   "seconds_after": 0.44019389152526855,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N3_mixed_sector_shared_capacity",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.4385230541229248,
+   "seconds_after": 0.44724607467651367,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N3_mixed_sector_shared_capacity",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 65.1059558391571,
+   "seconds_after": 68.41966390609741,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N3_mixed_sector_shared_capacity",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 107.98349070549011,
+   "seconds_after": 111.38186192512512,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N3_mixed_sector_shared_capacity",
+    "single:supplier_s2",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 24.21003794670105,
+   "seconds_after": 25.448256969451904,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A1_incumbent_mix_optimal",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23111724853515625,
+   "seconds_after": 0.24348902702331543,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A1_incumbent_mix_optimal",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.18928909301757812,
+   "seconds_after": 0.1998593807220459,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A1_incumbent_mix_optimal",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.891672134399414,
+   "seconds_after": 4.063380002975464,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A1_incumbent_mix_optimal",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 11.916034936904907,
+   "seconds_after": 12.469788074493408,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A1_incumbent_mix_optimal",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.5826568603515625,
+   "seconds_after": 3.757680892944336,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A1_incumbent_mix_optimal",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22904300689697266,
+   "seconds_after": 0.25910091400146484,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A1_incumbent_mix_optimal",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.19213414192199707,
+   "seconds_after": 0.20151901245117188,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A1_incumbent_mix_optimal",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.566941022872925,
+   "seconds_after": 3.7500789165496826,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A1_incumbent_mix_optimal",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 10.925513982772827,
+   "seconds_after": 11.541607141494751,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A1_incumbent_mix_optimal",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.118337631225586,
+   "seconds_after": 3.2857420444488525,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A2_weak_evidence_flagged",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22713494300842285,
+   "seconds_after": 0.24222612380981445,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A2_weak_evidence_flagged",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2246699333190918,
+   "seconds_after": 0.2602050304412842,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A2_weak_evidence_flagged",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.295301914215088,
+   "seconds_after": 4.606453895568848,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A2_weak_evidence_flagged",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.5630648136138916,
+   "seconds_after": 3.804403781890869,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A2_weak_evidence_flagged",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.930877208709717,
+   "seconds_after": 4.191577911376953,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A2_weak_evidence_flagged",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22876214981079102,
+   "seconds_after": 0.25630998611450195,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A2_weak_evidence_flagged",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23561811447143555,
+   "seconds_after": 0.2495431900024414,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A2_weak_evidence_flagged",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.50475001335144,
+   "seconds_after": 4.585045099258423,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A2_weak_evidence_flagged",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.4858028888702393,
+   "seconds_after": 3.6040899753570557,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A2_weak_evidence_flagged",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.3292148113250732,
+   "seconds_after": 3.425854206085205,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2624070644378662,
+   "seconds_after": 0.2660210132598877,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.25652217864990234,
+   "seconds_after": 0.2654139995574951,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.94881010055542,
+   "seconds_after": 4.2485527992248535,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.4182562828063965,
+   "seconds_after": 3.734571933746338,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.840480089187622,
+   "seconds_after": 4.1539928913116455,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "gated_noprune",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.743307113647461,
+   "seconds_after": 4.109695196151733,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.26142406463623047,
+   "seconds_after": 0.2553410530090332,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.267611026763916,
+   "seconds_after": 0.2658700942993164,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.796621799468994,
+   "seconds_after": 3.849154233932495,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.624870777130127,
+   "seconds_after": 3.690295934677124,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.7358181476593018,
+   "seconds_after": 3.8022620677948,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A3_pruning_identity",
+    "gated_noprune",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.9685680866241455,
+   "seconds_after": 3.960961103439331,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A5_single_source_legacy_identity",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2453901767730713,
+   "seconds_after": 0.24783802032470703,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A5_single_source_legacy_identity",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2420051097869873,
+   "seconds_after": 0.25619029998779297,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A5_single_source_legacy_identity",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.327989101409912,
+   "seconds_after": 3.3975448608398438,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A5_single_source_legacy_identity",
+    "gated_legacy",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.285130023956299,
+   "seconds_after": 3.36570405960083,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A5_single_source_legacy_identity",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24344897270202637,
+   "seconds_after": 0.24726486206054688,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A5_single_source_legacy_identity",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24419283866882324,
+   "seconds_after": 0.2654111385345459,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A5_single_source_legacy_identity",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.376491069793701,
+   "seconds_after": 3.422003984451294,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A5_single_source_legacy_identity",
+    "gated_legacy",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.3118319511413574,
+   "seconds_after": 3.394308090209961,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A6_no_order_no_allocation",
+    "incumbent_mix",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.19079279899597168,
+   "seconds_after": 0.18386602401733398,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A6_no_order_no_allocation",
+    "cheapest_landed",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.196044921875,
+   "seconds_after": 0.17713403701782227,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A6_no_order_no_allocation",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.7488720417022705,
+   "seconds_after": 4.826275110244751,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A6_no_order_no_allocation",
+    "single:supplier",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.375931262969971,
+   "seconds_after": 4.384413957595825,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A6_no_order_no_allocation",
+    "single:supplier_b",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.342957019805908,
+   "seconds_after": 4.361009120941162,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A6_no_order_no_allocation",
+    "incumbent_mix",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.17211604118347168,
+   "seconds_after": 0.18044495582580566,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A6_no_order_no_allocation",
+    "cheapest_landed",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.17162585258483887,
+   "seconds_after": 0.179826021194458,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A6_no_order_no_allocation",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.780632019042969,
+   "seconds_after": 4.873187780380249,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A6_no_order_no_allocation",
+    "single:supplier",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.984062910079956,
+   "seconds_after": 4.009413957595825,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A6_no_order_no_allocation",
+    "single:supplier_b",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.972874879837036,
+   "seconds_after": 3.9751880168914795,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  }
+ ],
+ "differing_reviews": [
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41001
+   ],
+   "review": 0,
+   "key": "transfers",
+   "before": {
+    "lane_north": 69.638011,
+    "lane_north_B": 49.046961,
+    "lane_south": 148.60796,
+    "lane_south_B": 67.146398
+   },
+   "after": {
+    "lane_north": 69.638011,
+    "lane_north_B": 49.046961,
+    "lane_south": 52.768588,
+    "lane_south_B": 67.146398
+   },
+   "state_before": "NO_ACTION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 24.552078124601394,
+   "wall_after": 14.383271041791886
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41001
+   ],
+   "review": 1,
+   "key": "transfers",
+   "before": {
+    "lane_north": 87.54687,
+    "lane_north_B": 96.676723,
+    "lane_south": 18.399337,
+    "lane_south_B": 101.527851
+   },
+   "after": {
+    "lane_north": 87.54687,
+    "lane_north_B": 96.676723,
+    "lane_south": 114.238709,
+    "lane_south_B": 101.527851
+   },
+   "state_before": "NO_ACTION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 24.888136791996658,
+   "wall_after": 10.770942583214492
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41001
+   ],
+   "review": 2,
+   "key": "status",
+   "before": "RETAIN_INCUMBENT",
+   "after": "PENDING_REVIEW",
+   "state_before": "CAPITAL_OPTIMIZATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 18.09719358291477,
+   "wall_after": 16.28735783416778
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41001
+   ],
+   "review": 3,
+   "key": "transfers",
+   "before": {
+    "lane_north": 100.254122,
+    "lane_north_B": 326.387967,
+    "lane_south": 307.381523,
+    "lane_south_B": 772.147628
+   },
+   "after": {
+    "lane_north": 88.383764,
+    "lane_north_B": 77.825836,
+    "lane_south": 211.972471,
+    "lane_south_B": 65.223463
+   },
+   "state_before": "CAPITAL_OPTIMIZATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 24.349582875147462,
+   "wall_after": 25.854438583366573
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41001
+   ],
+   "review": 4,
+   "key": "transfers",
+   "before": {
+    "lane_north": 113.153493,
+    "lane_north_B": 515.083386
+   },
+   "after": {
+    "lane_north": 113.153493,
+    "lane_north_B": 97.348141,
+    "lane_south": 15.209215,
+    "lane_south_B": 582.585752
+   },
+   "state_before": "CAPITAL_OPTIMIZATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 22.285180083010346,
+   "wall_after": 22.527652542106807
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41001
+   ],
+   "review": 5,
+   "key": "state",
+   "before": "NETWORK_ALLOCATION",
+   "after": "CAPITAL_OPTIMIZATION",
+   "state_before": "NETWORK_ALLOCATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "stress_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 20.25641308305785,
+   "wall_after": 21.292193166911602
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41001
+   ],
+   "review": 6,
+   "key": "state",
+   "before": "NETWORK_ALLOCATION",
+   "after": "CAPITAL_OPTIMIZATION",
+   "state_before": "NETWORK_ALLOCATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "stress_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 24.671759583055973,
+   "wall_after": 23.305502749979496
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41001
+   ],
+   "review": 7,
+   "key": "state",
+   "before": "NETWORK_ALLOCATION",
+   "after": "NO_ACTION",
+   "state_before": "NETWORK_ALLOCATION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "stress_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 26.147366583812982,
+   "wall_after": 14.609796542208642
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41001
+   ],
+   "review": 1,
+   "key": "transfers",
+   "before": {
+    "lane_north": 217.521818,
+    "lane_north_B": 393.456691,
+    "lane_south": 184.495304,
+    "lane_south_B": 115.812261
+   },
+   "after": {
+    "lane_north": 104.186703,
+    "lane_north_B": 198.24629,
+    "lane_south": 257.566675,
+    "lane_south_B": 115.812261
+   },
+   "state_before": "NO_ACTION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 12.47138254204765,
+   "wall_after": 7.969016291201115
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41001
+   ],
+   "review": 2,
+   "key": "transfers",
+   "before": {
+    "lane_south": 20.451322,
+    "lane_south_B": 76.690439
+   },
+   "after": {
+    "lane_north": 81.18075,
+    "lane_south_B": 76.690439
+   },
+   "state_before": "NO_ACTION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 8.918267082888633,
+   "wall_after": 8.581343166995794
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41001
+   ],
+   "review": 3,
+   "key": "transfers",
+   "before": {
+    "lane_north": 95.268117,
+    "lane_south": 99.177325,
+    "lane_south_B": 55.260945
+   },
+   "after": {
+    "lane_north": 100.254122,
+    "lane_north_B": 70.284661,
+    "lane_south": 61.588186,
+    "lane_south_B": 94.275789
+   },
+   "state_before": "NO_ACTION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 11.913241791073233,
+   "wall_after": 6.769898416940123
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41001
+   ],
+   "review": 4,
+   "key": "purchases",
+   "before": [
+    [
+     "src_A",
+     1019.19534
+    ],
+    [
+     "src_A_B",
+     925.124464
+    ]
+   ],
+   "after": [
+    [
+     "src_A",
+     1675.433174
+    ],
+    [
+     "src_A_B",
+     1552.072126
+    ]
+   ],
+   "state_before": "NO_ACTION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 11.547900833655149,
+   "wall_after": 8.1663185833022
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41001
+   ],
+   "review": 5,
+   "key": "transfers",
+   "before": {
+    "lane_north": 103.328239,
+    "lane_north_B": 91.484173,
+    "lane_south": 131.448984,
+    "lane_south_B": 104.754124
+   },
+   "after": {
+    "lane_north": 107.209639,
+    "lane_north_B": 114.306848,
+    "lane_south": 140.569727,
+    "lane_south_B": 84.39948
+   },
+   "state_before": "CAPITAL_OPTIMIZATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 23.96967954095453,
+   "wall_after": 6.940631750039756
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41001
+   ],
+   "review": 6,
+   "key": "state",
+   "before": "NO_ACTION",
+   "after": "CAPITAL_OPTIMIZATION",
+   "state_before": "NO_ACTION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 10.649020291864872,
+   "wall_after": 8.294286250136793
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41001
+   ],
+   "review": 7,
+   "key": "state",
+   "before": "NO_ACTION",
+   "after": "CAPITAL_OPTIMIZATION",
+   "state_before": "NO_ACTION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 10.874231666792184,
+   "wall_after": 12.352189499884844
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41002
+   ],
+   "review": 0,
+   "key": "transfers",
+   "before": {
+    "lane_north": 63.34489,
+    "lane_north_B": 138.372138,
+    "lane_south": 197.452286,
+    "lane_south_B": 68.709458
+   },
+   "after": {
+    "lane_north": 63.34489,
+    "lane_north_B": 62.526137,
+    "lane_south": 83.666742,
+    "lane_south_B": 68.709458
+   },
+   "state_before": "NO_ACTION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 21.964192625135183,
+   "wall_after": 12.50155712524429
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41002
+   ],
+   "review": 1,
+   "key": "transfers",
+   "before": {
+    "lane_north": 1051.747289,
+    "lane_north_B": 104.577457,
+    "lane_south": 26.767213,
+    "lane_south_B": 115.279157
+   },
+   "after": {
+    "lane_north": 111.298382,
+    "lane_north_B": 104.577457,
+    "lane_south": 106.022572,
+    "lane_south_B": 144.92179
+   },
+   "state_before": "CAPITAL_OPTIMIZATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 24.383042709436268,
+   "wall_after": 19.70803387509659
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41002
+   ],
+   "review": 2,
+   "key": "owner",
+   "before": "PROTECTION_RECOVERY",
+   "after": "PURCHASING_ECONOMICS",
+   "state_before": "CAPITAL_OPTIMIZATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 19.24053195817396,
+   "wall_after": 24.888016709126532
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41002
+   ],
+   "review": 3,
+   "key": "state",
+   "before": "NETWORK_ALLOCATION",
+   "after": "CAPITAL_OPTIMIZATION",
+   "state_before": "NETWORK_ALLOCATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "stress_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 23.021195916924626,
+   "wall_after": 20.168675667140633
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41002
+   ],
+   "review": 4,
+   "key": "state",
+   "before": "NETWORK_ALLOCATION",
+   "after": "CAPITAL_OPTIMIZATION",
+   "state_before": "NETWORK_ALLOCATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "stress_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 22.609644250012934,
+   "wall_after": 27.97835687501356
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41002
+   ],
+   "review": 5,
+   "key": "state",
+   "before": "NETWORK_ALLOCATION",
+   "after": "CAPITAL_OPTIMIZATION",
+   "state_before": "NETWORK_ALLOCATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "stress_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 24.591776208020747,
+   "wall_after": 23.551754374988377
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41002
+   ],
+   "review": 6,
+   "key": "state",
+   "before": "CAPITAL_OPTIMIZATION",
+   "after": "NO_ACTION",
+   "state_before": "CAPITAL_OPTIMIZATION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 15.007821665611118,
+   "wall_after": 17.141119457781315
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "gated",
+    41002
+   ],
+   "review": 7,
+   "key": "state",
+   "before": "CAPITAL_OPTIMIZATION",
+   "after": "NO_ACTION",
+   "state_before": "CAPITAL_OPTIMIZATION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 15.043899208307266,
+   "wall_after": 15.344130707904696
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41002
+   ],
+   "review": 0,
+   "key": "transfers",
+   "before": {
+    "lane_north": 129.976663,
+    "lane_north_B": 117.955725,
+    "lane_south": 83.666742,
+    "lane_south_B": 182.044275
+   },
+   "after": {
+    "lane_north": 63.34489,
+    "lane_north_B": 62.526137,
+    "lane_south": 83.666742,
+    "lane_south_B": 68.709458
+   },
+   "state_before": "NO_ACTION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 9.512627374846488,
+   "wall_after": 6.696998917032033
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41002
+   ],
+   "review": 1,
+   "key": "status",
+   "before": "PENDING_REVIEW",
+   "after": "RETAIN_INCUMBENT",
+   "state_before": "CAPITAL_OPTIMIZATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 18.089460541959852,
+   "wall_after": 12.813505250029266
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41002
+   ],
+   "review": 2,
+   "key": "state",
+   "before": "NO_ACTION",
+   "after": "CAPITAL_OPTIMIZATION",
+   "state_before": "NO_ACTION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 10.295202792156488,
+   "wall_after": 12.724915584083647
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41002
+   ],
+   "review": 3,
+   "key": "transfers",
+   "before": {
+    "lane_north": 9.955939,
+    "lane_north_B": 211.492992,
+    "lane_south": 93.011788
+   },
+   "after": {
+    "lane_north": 205.453982,
+    "lane_north_B": 102.856879
+   },
+   "state_before": "NO_ACTION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 11.51003333274275,
+   "wall_after": 7.200587292201817
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41002
+   ],
+   "review": 4,
+   "key": "state",
+   "before": "NETWORK_ALLOCATION",
+   "after": "NO_ACTION",
+   "state_before": "NETWORK_ALLOCATION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "stress_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 23.829622042365372,
+   "wall_after": 6.011119624599814
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41002
+   ],
+   "review": 5,
+   "key": "transfers",
+   "before": {
+    "lane_north": 122.943082,
+    "lane_south": 106.367332,
+    "lane_south_B": 14.195894
+   },
+   "after": {
+    "lane_north": 105.036862,
+    "lane_north_B": 114.955037,
+    "lane_south": 8.04532,
+    "lane_south_B": 18.11405
+   },
+   "state_before": "CAPITAL_OPTIMIZATION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 17.925886916927993,
+   "wall_after": 11.305577625054866
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41002
+   ],
+   "review": 6,
+   "key": "state",
+   "before": "NO_ACTION",
+   "after": "CAPITAL_OPTIMIZATION",
+   "state_before": "NO_ACTION",
+   "state_after": "CAPITAL_OPTIMIZATION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cvar_network": "OPTIMAL",
+    "protected_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL",
+    "joint_recovery": "OPTIMAL"
+   },
+   "wall_before": 12.819459666963667,
+   "wall_after": 18.377366250380874
+  },
+  {
+   "cell": [
+    "C6_shared_mov_multi_sku",
+    "single:supplier",
+    41002
+   ],
+   "review": 7,
+   "key": "transfers",
+   "before": {
+    "lane_north": 113.539136,
+    "lane_north_B": 87.451724,
+    "lane_south": 107.429243
+   },
+   "after": {
+    "lane_north": 113.539136,
+    "lane_north_B": 35.925121,
+    "lane_south": 116.539454,
+    "lane_south_B": 136.617605
+   },
+   "state_before": "NO_ACTION",
+   "state_after": "NO_ACTION",
+   "candidate_status_before": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "candidate_status_after": {
+    "incumbent": "OPTIMAL",
+    "base_stock": "OPTIMAL",
+    "deterministic_network": "OPTIMAL",
+    "stochastic_network": "OPTIMAL",
+    "cadence_2_network": "OPTIMAL",
+    "cadence_4_network": "OPTIMAL"
+   },
+   "wall_before": 16.396475207991898,
+   "wall_after": 8.627003750298172
+  }
+ ],
+ "reviews_compared": 2304,
+ "reviews_identical": 2273,
+ "runtime_before": {
+  "reviews": 480,
+  "p50": 0.7120197494514287,
+  "p95": 20.834159291815013,
+  "max": 46.19200412509963
+ },
+ "runtime_after": {
+  "reviews": 480,
+  "p50": 0.7290084993001074,
+  "p95": 19.881207791157067,
+  "max": 47.37407450005412
+ }
+}
