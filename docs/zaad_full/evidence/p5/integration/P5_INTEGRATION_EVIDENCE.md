@@ -5,7 +5,8 @@
 | starting `main` | `50980fc` (docs-only above the production runtime) |
 | production runtime | `6b58764`, tag `p4-performance-closure-runtime` (unmoved) |
 | isolated P5 baseline | tag `p5-isolated-baseline` = `660e5fc` (`claude/zaad-atp-p5` on `50980fc`, pushed); re-run from that SHA: tests 9 / 9, fixtures 24 / 24 (`../benchmarks/p5_isolated_baseline`), adversarial 16 / 16 (record byte-identical) |
-| integration branch | `claude/zaad-atp-p5` (commits above the baseline tag) |
+| integration branch | `claude/zaad-atp-p5`: product `b984543`, evidence `2c87fb0` (PR [#71](https://github.com/radalzubi/harvestmind/pull/71), not merged) |
+| CI (once, on `2c87fb0`) | run 34708783613 green on every gate: ruff, gitleaks, security (bandit, pip-audit), mypy, docker build, frontend, zaad frozen regression, pytest 4 shards (integration, unit-core, unit-zaad-a, unit-zaad-b); CodeQL fails as on every prior release (code scanning not enabled on the private repository - environment defect, not a gate). The docs-only commit recording this line does not get a second run (cancelled for cost discipline) |
 | untouched | `zaad/full/model.py`, P3 shared-order formulation, P4 information sets / node indexing, scenario probabilities, solver tolerances, sector physics, Validation7 / Validation8 / holdout4 (never accessed), historical tags, released evidence |
 
 ## Shared-state ownership

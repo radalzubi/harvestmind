@@ -138,3 +138,13 @@ adversarial 16 / 16 (evidence byte-identical to the committed record).
   firm inbound: 787 rows, 4,709 columns, 189 binaries, build 0.007 s, solve 0.19 s, root-node
   optimal, first incumbent at 0.0 s, peak RSS 142 MB - no performance work attempted;
 * ruff (CI scope), mypy (CI scope + `zaad/atp`), bandit (`-ll`) clean.
+
+### Candidate, frozen regressions, CI
+
+Product commit `b984543`, evidence `2c87fb0`, PR #71 (open, not merged, nothing deployed). Frozen
+regression chain in one pass on `b984543`: P3 snapshot identical, P1 canonical + 720 invariants,
+P2 1,720 / 1,720, sector 416 / 416, P3 30 / 30, 34 / 34, 23 / 23, 2,304 / 2,304, P0 120 / 120
+(`evidence/p5/integration/gates/`). Full suite 1,964 passed / 2 skipped. CI once on `2c87fb0`: run
+34708783613 green on every gate (CodeQL environment defect as always). Release strategy honoured:
+isolated baseline -> integration -> validation -> frozen regressions -> CI; the P5 release audit and
+any release need their own authorization.
