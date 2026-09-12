@@ -147,7 +147,7 @@ without rows; `inbound_confidence` in `stg_atp_policy` is accepted only at 1 by 
   but cannot be planned through the planner (forecast needs 16 observations) - engine fixtures only.
 * Engineering evidence only: synthetic fixtures, no real-data validation, no commercial claim.
 
-## Unresolved questions (for the release audit)
+## Unresolved questions (for the release audit) - RESOLVED by `../release_audit/P5_RELEASE_AUDIT.md` (1: lost contribution basis; 2: `shortage_penalty_basis` fail-closed rule; 3: workspace `recourse` keyword fix; 4: unchanged, a known limitation)
 
 1. Lost-sale basis: the P5 comparison charges the frozen key convention (gross selling price) and
    does not net the retained unit's asset value (the frozen ledger's net content through the asset

@@ -634,6 +634,10 @@ and rerun CI on `main`.
 
 * Isolated baseline tag `p5-isolated-baseline` = `660e5fc` (pushed; re-run from that SHA clean). Integration on top: `P5_INTEGRATION.md` (state contract: envelope, P0 overlay not a reservation, firm / non-firm inbound, direct vs alternative ship-from, PROPOSED reservations; ledger audit with owners, no double charge), planner hook after the frozen report (`zaad/full/planner.py`), workspace flag (`atp=True`, migration 020 adapter), API gate (`ZAAD_ATP_ENABLED`; 422 `atp_disabled` / 413 / 403). Evidence `docs/zaad_full/evidence/p5/integration/`: I01-I20 20 / 20 (I20 identical to the pre-P5 runtime `6b58764`), isolated 24 / 24, adversarial 17 / 17, invariants, profile, frozen regression gates, migration and API audits. `zaad/full/model.py`, P3 rows, P4 node indexing, scenario draws, tolerances, holdouts, historical tags: untouched. Next: P5 release audit under its own authorization; no deployment.
 
+## P5 ATP / scarce-supply allocation — release audit (2026-09-12, branch `release/p5-atp-release-audit` from `17d2d74`)
+
+* Economics: lost-sale basis corrected to the lost contribution (`selling_price - asset_value`, the frozen model's allocation-ranking basis; declared line / class margins override; gross selling price reported as information; ledger key `lost_contribution`) - a P5 semantic correction, no verdict changed on the 24 + 20 matrices, R01-R03 pre-registered and passing. SLA / class shortage penalty: distinct terms with a fail-closed `shortage_penalty_basis` (ADDITIONAL_TO_SERVICE_SLA with a reference and CONTRACT / OPERATOR_DECLARED provenance, or REPLACES_SERVICE_SLA), migration 021. P4 plumbing: `plan/from-workspace` forwards every phase flag by keyword. Evidence `docs/zaad_full/evidence/p5/release_audit/` (R01-R18 18 / 18 with runs 1-2 preserved, matrices, adversarial 18 / 18, profile, migration and API audits, frozen chain). Release: RELEASE_LEDGER_PLACEHOLDER
+
 ## Exact next action
 
 P3 is released (v17, `0de6850`) and its production performance closure is deployed (v18, `61a3e75`, tag `p3-performance-closure-runtime`). P4 (adaptive recourse) is not started and needs a separate authorization. Keep

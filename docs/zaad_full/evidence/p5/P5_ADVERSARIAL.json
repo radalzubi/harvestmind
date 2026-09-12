@@ -1,6 +1,6 @@
 {
- "passed": 17,
- "total": 17,
+ "passed": 18,
+ "total": 18,
  "results": [
   {
    "case": "duplicate customer order id",
@@ -86,6 +86,11 @@
    "case": "probabilistic inbound (confidence factor)",
    "pass": true,
    "outcome": "REFUSED_AT_CONTRACT: Value error, atp: inbound_confidence must be 1: probabilistic inbound is never promised (o"
+  },
+  {
+   "case": "double shortage declaration (SLA + class penalty)",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: class k declares a sh | REFUSED_AT_CONTRACT: Value error, atp: class k declares a sh | REFUSED_AT_CONTRACT: Value error, atp: a shortage penalty AD | REFUSED_AT_CONTRACT: Value error, atp: a shortage penalty AD"
   }
  ]
 }

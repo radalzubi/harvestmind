@@ -148,3 +148,20 @@ P2 1,720 / 1,720, sector 416 / 416, P3 30 / 30, 34 / 34, 23 / 23, 2,304 / 2,304,
 34708783613 green on every gate (CodeQL environment defect as always). Release strategy honoured:
 isolated baseline -> integration -> validation -> frozen regressions -> CI; the P5 release audit and
 any release need their own authorization.
+
+## 2026-09-12 — release audit (branch `release/p5-atp-release-audit` from `17d2d74`)
+
+* A. Lost-sale basis corrected to the lost contribution (`selling_price - asset_value`, the frozen
+  allocation-ranking basis) with declared margins as overrides; ledger key `lost_contribution`;
+  gross selling price reported as information; `TIE_UNMET` keeps zero-contribution demand served
+  when serving is free. Classified as a P5 semantic correction; no verdict changed on the 24 + 20
+  matrices (costs fall by the asset value per unmet unit); R01-R03 pre-registered and pass.
+* B. `ServiceClass.shortage_penalty_basis` (ADDITIONAL_TO_SERVICE_SLA with a reference and
+  CONTRACT / OPERATOR_DECLARED provenance, or REPLACES_SERVICE_SLA), required whenever a class
+  penalty meets a stream SLA; migration 021 (additive column); adversarial case 18 (four refusals).
+  Fixture classes now declare the basis explicitly (`cls()` helper default with a fixture policy
+  reference); principles unchanged.
+* C. `plan/from-workspace` forwards every phase flag by keyword (the released code dropped
+  `recourse`); R16 / R17 and `test_workspace_plan_forwards_every_phase_flag_by_keyword`.
+* `fly.toml` `[env]` gains `ZAAD_ATP_ENABLED = '1'` for the production environment (release
+  configuration, versioned; the code default stays off; every request must declare its block).

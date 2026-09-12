@@ -1,0 +1,5413 @@
+{
+ "tag": "p3_under_p5rel",
+ "reviews": 8,
+ "fixtures": {
+  "E1_dominant_source": {
+   "family": "economics",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_p2": 8826.160706327157,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.019807531032711267,
+     "wall_max": 0.021439500153064728,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8826.544178306194,
+     "cost_p2": 8826.544178306194,
+     "realized": 9333.6192733582,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1464.525085431044,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.4243903332389891,
+     "wall_max": 0.8013889170251787,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_p2": 8826.160706327157,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.01958335447125137,
+     "wall_max": 0.02154324995353818,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8826.544178306194,
+     "cost_p2": 8826.544178306194,
+     "realized": 9333.6192733582,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1464.525085431044,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.34617670823354274,
+     "wall_max": 0.7105453750118613,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 10198.495220399673,
+     "cost_p2": 9458.290658213868,
+     "realized": 10911.689730125898,
+     "service_by_branch": {
+      "svc_north": 0.9866173787885231,
+      "svc_south": 0.9699270057054241
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9699270057054241,
+     "severe_starvation": false,
+     "purchase_units": 1687.799621353277,
+     "transfer_units": 1528.6612914585974,
+     "abstained_reviews": 3,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.4031453956849873,
+     "wall_max": 0.9739803750999272,
+     "solve_statuses": {
+      "OPTIMAL": 74
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 4.344720108739891e-05,
+     "tolerance": 0.02,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 8826.160706327157,
+     "zaad_cost": 8826.544178306194,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 4.344720108739891e-05
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "incumbent": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "b_unused",
+     "evidence": {
+      "other_supplier_purchases": []
+     }
+    }
+   },
+   "pass": true
+  },
+  "E2_landed_beats_unit_price": {
+   "family": "economics",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8832.665423559743,
+     "cost_p2": 8832.665423559743,
+     "realized": 9334.573376730339,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.019324802444316447,
+     "wall_max": 0.021293458063155413,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8833.048895613098,
+     "cost_p2": 8833.048895613098,
+     "realized": 9334.956838520713,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1464.525085431044,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.427360916743055,
+     "wall_max": 0.7564127501100302,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8832.665423559743,
+     "cost_p2": 8832.665423559743,
+     "realized": 9334.573376730339,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.019424718571826816,
+     "wall_max": 0.021548334043473005,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8833.048895613098,
+     "cost_p2": 8833.048895613098,
+     "realized": 9334.956838520713,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1464.525085431044,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.3493625520495698,
+     "wall_max": 0.622379417065531,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 9161.311371917445,
+     "cost_p2": 8726.394023172017,
+     "realized": 9669.978467032022,
+     "service_by_branch": {
+      "svc_north": 0.9813457926208781,
+      "svc_south": 0.9855013674896347
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9813457926208781,
+     "severe_starvation": false,
+     "purchase_units": 1457.9376061560026,
+     "transfer_units": 1527.8497278526365,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.3489331351593137,
+     "wall_max": 0.6867415416054428,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 4.3415213298046425e-05,
+     "tolerance": 0.02,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 8832.665423559743,
+     "zaad_cost": 8833.048895613098,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 4.3415213298046425e-05
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "incumbent": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "a_dominant_share",
+     "evidence": {
+      "a_share_on_acted_reviews": 1.0,
+      "acted_reviews": 1,
+      "a_share_all_reviews": 1.0
+     }
+    }
+   },
+   "pass": true
+  },
+  "E3_price_break_scale": {
+   "family": "economics",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 11689.623180524995,
+     "cost_p2": 11689.623180524995,
+     "realized": 12394.465649082367,
+     "service_by_branch": {
+      "svc_north": 0.9804861291747544,
+      "svc_south": 0.9834177766298127
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9804861291747544,
+     "severe_starvation": false,
+     "purchase_units": 2486.3779154735475,
+     "transfer_units": 2438.1896831861673,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.019852343597449362,
+     "wall_max": 0.023289791774004698,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 11722.280768303941,
+     "cost_p2": 11722.280768303941,
+     "realized": 12427.126991837535,
+     "service_by_branch": {
+      "svc_north": 0.9798251187464602,
+      "svc_south": 0.98069771792691
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9798251187464602,
+     "severe_starvation": false,
+     "purchase_units": 2482.300319566205,
+     "transfer_units": 2434.0691136358932,
+     "abstained_reviews": 7,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 1.5516718855360523,
+     "wall_max": 2.048436624929309,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 13376.371619448864,
+     "cost_p2": 13376.371619448864,
+     "realized": 14071.86026364937,
+     "service_by_branch": {
+      "svc_north": 0.9772982121590796,
+      "svc_south": 0.9807129272532988
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9772982121590796,
+     "severe_starvation": false,
+     "purchase_units": 2497.4980846846793,
+     "transfer_units": 2433.4750931704984,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.019488021032884717,
+     "wall_max": 0.021681874990463257,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 13404.226061032801,
+     "cost_p2": 13339.099517176308,
+     "realized": 14099.717085473922,
+     "service_by_branch": {
+      "svc_north": 0.9811300038388306,
+      "svc_south": 0.9740770858984156
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9740770858984156,
+     "severe_starvation": false,
+     "purchase_units": 2493.9489790377384,
+     "transfer_units": 2429.7649682932506,
+     "abstained_reviews": 6.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.35806691693142056,
+     "wall_max": 0.762207499705255,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 11689.623180524995,
+     "cost_p2": 11689.623180524995,
+     "realized": 12394.465649082367,
+     "service_by_branch": {
+      "svc_north": 0.9804861291747544,
+      "svc_south": 0.9834177766298127
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9804861291747544,
+     "severe_starvation": false,
+     "purchase_units": 2486.3779154735475,
+     "transfer_units": 2438.1896831861673,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 1.3947405936196446,
+     "wall_max": 2.350444959010929,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier_b"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0027937245944209157,
+     "tolerance": 0.02,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 11689.623180524995,
+     "zaad_cost": 11722.280768303941,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.0027937245944209157
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9798251187464602,
+      "svc_south": 0.98069771792691
+     },
+     "incumbent": {
+      "svc_north": 0.9772982121590796,
+      "svc_south": 0.9807129272532988
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "tier2_when_large",
+     "evidence": {
+      "tier1_orders": 0,
+      "tier2_orders": 16,
+      "tier2_units": 4964.60063913241
+     }
+    }
+   },
+   "pass": true
+  },
+  "E4_moq_mov_small_order": {
+   "family": "economics",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 7624.788591783743,
+     "cost_p2": 7624.788591783743,
+     "realized": 9248.93549008235,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 2731.2898701583235,
+     "transfer_units": 1560.5415709623016,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "wall_p50": 0.017194291693158448,
+     "wall_max": 0.019078625366091728,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 7548.259349252143,
+     "cost_p2": 7548.259349252143,
+     "realized": 9309.102240481374,
+     "service_by_branch": {
+      "svc_north": 1.0,
+      "svc_south": 0.9982776106995959
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9982776106995959,
+     "severe_starvation": false,
+     "purchase_units": 2788.211963152801,
+     "transfer_units": 2057.1017709887806,
+     "abstained_reviews": 1.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "wall_p50": 7.071050000144169,
+     "wall_max": 11.26887824991718,
+     "solve_statuses": {
+      "OPTIMAL": 133
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 9112.348171441452,
+     "cost_p2": 9112.348171441452,
+     "realized": 10692.659542416317,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 2731.2898701583235,
+     "transfer_units": 1560.5415709623016,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "wall_p50": 0.017021198058500886,
+     "wall_max": 0.02152454201132059,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8869.96180477253,
+     "cost_p2": 8826.544178306194,
+     "realized": 9333.6192733582,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1464.525085431044,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.4701209790073335,
+     "wall_max": 0.8728383746929467,
+     "solve_statuses": {
+      "OPTIMAL": 96
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 7710.943665228372,
+     "cost_p2": 7710.943665228372,
+     "realized": 9215.677315492703,
+     "service_by_branch": {
+      "svc_north": 0.9988105830123206,
+      "svc_south": 0.9892702674225398
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9892702674225398,
+     "severe_starvation": false,
+     "purchase_units": 2623.4437129850885,
+     "transfer_units": 1567.1917535065395,
+     "abstained_reviews": 2,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "wall_p50": 3.914503927459009,
+     "wall_max": 9.775100333150476,
+     "solve_statuses": {
+      "OPTIMAL": 130
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier_b"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.01003690025111856,
+     "tolerance": 0.02,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 7624.788591783743,
+     "zaad_cost": 7548.259349252143,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": -0.01003690025111856
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 1.0,
+      "svc_south": 0.9982776106995959
+     },
+     "incumbent": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 4.547473508864641e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "b_orders_executable",
+     "evidence": {
+      "b_orders": [
+       [
+        41001,
+        0,
+        1333.3
+       ],
+       [
+        41001,
+        4,
+        1424.4
+       ],
+       [
+        41002,
+        0,
+        1485.4
+       ],
+       [
+        41002,
+        4,
+        1333.3
+       ]
+      ]
+     }
+    }
+   },
+   "pass": true
+  },
+  "E5_payment_terms_preference": {
+   "family": "economics",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8833.727435656081,
+     "cost_p2": 8833.727435656081,
+     "realized": 9334.343600813932,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.02056724962312728,
+     "wall_max": 0.02282037539407611,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8812.552283967132,
+     "cost_p2": 8812.552283967132,
+     "realized": 9327.963461133242,
+     "service_by_branch": {
+      "svc_north": 0.9804314717071286,
+      "svc_south": 0.9811245778090141
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9804314717071286,
+     "severe_starvation": false,
+     "purchase_units": 1474.5545390999987,
+     "transfer_units": 1524.0267043421252,
+     "abstained_reviews": 5.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.4267820829991251,
+     "wall_max": 0.8607693747617304,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8781.16731076213,
+     "cost_p2": 8781.16731076213,
+     "realized": 9285.129748825255,
+     "service_by_branch": {
+      "svc_north": 0.9797530506926925,
+      "svc_south": 0.9841542618595509
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9797530506926925,
+     "severe_starvation": false,
+     "purchase_units": 1461.1893940806922,
+     "transfer_units": 1526.2841724793843,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.02132280170917511,
+     "wall_max": 0.02583716670051217,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8834.110907728013,
+     "cost_p2": 8834.110907728013,
+     "realized": 9334.72706259953,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1464.525085431044,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.38347004202660173,
+     "wall_max": 0.623931874986738,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 8728.666024901057,
+     "cost_p2": 8728.666024901057,
+     "realized": 9235.999659718847,
+     "service_by_branch": {
+      "svc_north": 0.9813457926208781,
+      "svc_south": 0.9855013674896347
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9813457926208781,
+     "severe_starvation": false,
+     "purchase_units": 1457.9376061560026,
+     "transfer_units": 1527.8497278526365,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.38483928132336587,
+     "wall_max": 0.6679718745872378,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier_b"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.00961043289166588,
+     "tolerance": 0.02,
+     "best_baseline": "single:supplier_b",
+     "best_cost": 8728.666024901057,
+     "zaad_cost": 8812.552283967132,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.00961043289166588
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9804314717071286,
+      "svc_south": 0.9811245778090141
+     },
+     "incumbent": {
+      "svc_north": 0.9797530506926925,
+      "svc_south": 0.9841542618595509
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 5.684341886080802e-14
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "a_dominant_share",
+     "evidence": {
+      "a_share_on_acted_reviews": 1.0,
+      "acted_reviews": 5,
+      "a_share_all_reviews": 0.6454276123128923
+     }
+    }
+   },
+   "pass": true
+  },
+  "E6_switching_cost_retains_incumbent": {
+   "family": "economics",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 10623.690098217841,
+     "cost_p2": 10030.738854291172,
+     "realized": 11104.609086085584,
+     "service_by_branch": {
+      "svc_north": 0.9813457926208781,
+      "svc_south": 0.9855013674896347
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9813457926208781,
+     "severe_starvation": false,
+     "purchase_units": 1457.9376061560026,
+     "transfer_units": 1527.8497278526365,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.02144618786405772,
+     "wall_max": 0.0233559999614954,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8859.10739815595,
+     "cost_p2": 8859.10739815595,
+     "realized": 9333.6192733582,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1464.525085431044,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 2.324621572974138,
+     "wall_max": 2.846294082701206,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8858.723926298466,
+     "cost_p2": 8858.723926298466,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.021449895575642586,
+     "wall_max": 0.023934541270136833,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8859.10739815595,
+     "cost_p2": 8826.544178306196,
+     "realized": 9333.6192733582,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553397,
+      "svc_south": 0.9783501418073666
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073666,
+     "severe_starvation": false,
+     "purchase_units": 1464.5250854310443,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.35916652088053524,
+     "wall_max": 0.8388799582608044,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 10623.690098217841,
+     "cost_p2": 10030.738854291172,
+     "realized": 11104.609086085584,
+     "service_by_branch": {
+      "svc_north": 0.9813457926208781,
+      "svc_south": 0.9855013674896347
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9813457926208781,
+     "severe_starvation": false,
+     "purchase_units": 1457.9376061560026,
+     "transfer_units": 1527.8497278526365,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.4179292601766065,
+     "wall_max": 1.0164033751934767,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 4.3287482562260856e-05,
+     "tolerance": 0.02,
+     "best_baseline": "incumbent_mix",
+     "best_cost": 8858.723926298466,
+     "zaad_cost": 8859.10739815595,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.003689237734716934
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "incumbent": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "b_unused",
+     "evidence": {
+      "other_supplier_purchases": []
+     }
+    }
+   },
+   "pass": true
+  },
+  "R1_cheap_unreliable": {
+   "family": "reliability",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 9353.334547938011,
+     "cost_p2": 9204.400398463584,
+     "realized": 9818.114823043215,
+     "service_by_branch": {
+      "svc_north": 0.9206876379793094,
+      "svc_south": 0.928952726302103
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9206876379793094,
+     "severe_starvation": false,
+     "purchase_units": 1444.4376886979721,
+     "transfer_units": 1406.64213490171,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.021249708253890276,
+     "wall_max": 0.024397625122219324,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8714.552320502597,
+     "cost_p2": 8572.687691728823,
+     "realized": 9165.128830157948,
+     "service_by_branch": {
+      "svc_north": 0.9781795740733716,
+      "svc_south": 0.9931437125412186
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781795740733716,
+     "severe_starvation": false,
+     "purchase_units": 1426.0391873454691,
+     "transfer_units": 1527.8993822631255,
+     "abstained_reviews": 3.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 1.0440487081650645,
+     "wall_max": 1.3186959996819496,
+     "solve_statuses": {
+      "OPTIMAL": 124
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8766.269142542737,
+     "cost_p2": 8611.766699172666,
+     "realized": 9253.998383373812,
+     "service_by_branch": {
+      "svc_north": 0.97905426276779,
+      "svc_south": 0.983975467350662
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.97905426276779,
+     "severe_starvation": false,
+     "purchase_units": 1454.441645402669,
+     "transfer_units": 1528.1788846297109,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.022288260282948613,
+     "wall_max": 0.023510458879172802,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8767.217381484028,
+     "cost_p2": 8767.217381484028,
+     "realized": 9254.946622387524,
+     "service_by_branch": {
+      "svc_north": 0.9831573320315783,
+      "svc_south": 0.9799921136470375
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9799921136470375,
+     "severe_starvation": false,
+     "purchase_units": 1454.4789366282766,
+     "transfer_units": 1528.109380398711,
+     "abstained_reviews": 7,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.3776232188101858,
+     "wall_max": 0.6863826247863472,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 9345.105883816299,
+     "cost_p2": 9200.362555652058,
+     "realized": 9797.43877589997,
+     "service_by_branch": {
+      "svc_north": 0.9206876379793094,
+      "svc_south": 0.928952726302103
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9206876379793094,
+     "severe_starvation": false,
+     "purchase_units": 1430.003999227897,
+     "transfer_units": 1402.960386021394,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.8330272185849026,
+     "wall_max": 1.1250094156712294,
+     "solve_statuses": {
+      "INFEASIBLE": 52,
+      "OPTIMAL": 71
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.0058995247806342185,
+     "tolerance": 0.03,
+     "best_baseline": "incumbent_mix",
+     "best_cost": 8766.269142542737,
+     "zaad_cost": 8714.552320502597,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": -0.004537861835899144
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9781795740733716,
+      "svc_south": 0.9931437125412186
+     },
+     "incumbent": {
+      "svc_north": 0.97905426276779,
+      "svc_south": 0.983975467350662
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 8.526512829121202e-14
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "not_worse",
+     "evidence": {
+      "gate": "economic and service gates only"
+     }
+    }
+   },
+   "pass": true
+  },
+  "R2_capacity_forces_split": {
+   "family": "reliability",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 17794.20519313335,
+     "cost_p2": 17794.20519313335,
+     "realized": 18257.29065498693,
+     "service_by_branch": {
+      "svc_north": 0.7224955150116439,
+      "svc_south": 0.7245813661839968
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7224955150116439,
+     "severe_starvation": false,
+     "purchase_units": 1600.0,
+     "transfer_units": 1670.0406362366027,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.01592514559160918,
+     "wall_max": 0.01739091705530882,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 13530.035286951317,
+     "cost_p2": 13530.035286951317,
+     "realized": 14294.775559428585,
+     "service_by_branch": {
+      "svc_north": 0.9781656281006708,
+      "svc_south": 0.9820718240591126
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781656281006708,
+     "severe_starvation": false,
+     "purchase_units": 2492.5938260372213,
+     "transfer_units": 2435.2540707791977,
+     "abstained_reviews": 6,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.5294000520370901,
+     "wall_max": 0.9165177913382649,
+     "solve_statuses": {
+      "OPTIMAL": 68
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 17794.20519313335,
+     "cost_p2": 17794.20519313335,
+     "realized": 18257.29065498693,
+     "service_by_branch": {
+      "svc_north": 0.7224955150116439,
+      "svc_south": 0.7245813661839968
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7224955150116439,
+     "severe_starvation": false,
+     "purchase_units": 1600.0,
+     "transfer_units": 1670.0406362366027,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.016040926915593445,
+     "wall_max": 0.017247166018933058,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 17794.20519313335,
+     "cost_p2": 17794.20519313335,
+     "realized": 18257.29065498693,
+     "service_by_branch": {
+      "svc_north": 0.7224955150116439,
+      "svc_south": 0.7245813661839968
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7224955150116439,
+     "severe_starvation": false,
+     "purchase_units": 1600.0,
+     "transfer_units": 1670.0406362366027,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.640757416957058,
+     "wall_max": 3.2138620419427752,
+     "solve_statuses": {
+      "INFEASIBLE": 48,
+      "OPTIMAL": 48
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 13889.91880034271,
+     "cost_p2": 13691.42681903197,
+     "realized": 14660.929017548135,
+     "service_by_branch": {
+      "svc_north": 0.979825581691148,
+      "svc_south": 0.9806981819471416
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.979825581691148,
+     "severe_starvation": false,
+     "purchase_units": 2482.206569147701,
+     "transfer_units": 2434.070245296534,
+     "abstained_reviews": 7,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.39411741693038493,
+     "wall_max": 0.8072975422255695,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "single:supplier_b"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.025909691666628973,
+     "tolerance": 0.03,
+     "best_baseline": "single:supplier_b",
+     "best_cost": 13889.91880034271,
+     "zaad_cost": 13530.035286951317,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": -0.011787780354368104
+    },
+    "service": {
+     "pass": true,
+     "mode": "floor"
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "a_at_capacity_then_b",
+     "evidence": {
+      "reviews_above_capacity": 4,
+      "all_split_correctly": true
+     }
+    }
+   },
+   "pass": true
+  },
+  "R3_independent_tail_benefit": {
+   "family": "reliability",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_p2": 8826.160706327157,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.021342437947168946,
+     "wall_max": 0.02419233415275812,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8835.35500645373,
+     "cost_p2": 8835.35500645373,
+     "realized": 9342.450778208547,
+     "service_by_branch": {
+      "svc_north": 0.9821142511523333,
+      "svc_south": 0.9775070522672906
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9775070522672906,
+     "severe_starvation": false,
+     "purchase_units": 1463.0504247532917,
+     "transfer_units": 1524.2520934331426,
+     "abstained_reviews": 1.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.31940552056767046,
+     "wall_max": 0.8585957498289645,
+     "solve_statuses": {
+      "OPTIMAL": 48
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_p2": 8826.160706327157,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.021321395761333406,
+     "wall_max": 0.02646245900541544,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8829.601291700972,
+     "cost_p2": 8829.601291700972,
+     "realized": 9336.697046335257,
+     "service_by_branch": {
+      "svc_north": 0.9817122143704833,
+      "svc_south": 0.9788728883033371
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9788728883033371,
+     "severe_starvation": false,
+     "purchase_units": 1463.8180837534583,
+     "transfer_units": 1525.0328465402945,
+     "abstained_reviews": 2.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.25737789599224925,
+     "wall_max": 0.43873929092660546,
+     "solve_statuses": {
+      "OPTIMAL": 48
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 9012.036139810898,
+     "cost_p2": 8924.223904472565,
+     "realized": 9523.766508255718,
+     "service_by_branch": {
+      "svc_north": 0.9835209361024636,
+      "svc_south": 0.9798749025219814
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9798749025219814,
+     "severe_starvation": false,
+     "purchase_units": 1452.9618607416369,
+     "transfer_units": 1524.285254458308,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.2606951560592279,
+     "wall_max": 0.6078157080337405,
+     "solve_statuses": {
+      "OPTIMAL": 48
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0010417100291390024,
+     "tolerance": 0.03,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 8826.160706327157,
+     "zaad_cost": 8835.35500645373,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.0010417100291390024
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9821142511523333,
+      "svc_south": 0.9775070522672906
+     },
+     "incumbent": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "not_worse",
+     "evidence": {
+      "gate": "economic and service gates only"
+     }
+    }
+   },
+   "pass": true
+  },
+  "R4_shared_plant_no_fake_diversification": {
+   "family": "reliability",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8761.922695997415,
+     "cost_p2": 8743.581159797732,
+     "realized": 9471.047601660679,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 1668.9134804764385,
+     "transfer_units": 1560.5415709623016,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 0.02021985431201756,
+     "wall_max": 0.02146308310329914,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8799.607280570057,
+     "cost_p2": 8777.851033863644,
+     "realized": 9453.14614198347,
+     "service_by_branch": {
+      "svc_north": 0.987266961196507,
+      "svc_south": 0.9885078060972246
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.987266961196507,
+     "severe_starvation": false,
+     "purchase_units": 1592.2229033872736,
+     "transfer_units": 1626.0957074901658,
+     "abstained_reviews": 1.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 5.045801552245393,
+     "wall_max": 7.252270124852657,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8761.922695997415,
+     "cost_p2": 8743.581159797732,
+     "realized": 9471.047601660679,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 1668.9134804764385,
+     "transfer_units": 1560.5415709623016,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 0.02028703154064715,
+     "wall_max": 0.025890625081956387,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8805.358897183494,
+     "cost_p2": 8779.352925977959,
+     "realized": 9479.92033209851,
+     "service_by_branch": {
+      "svc_north": 0.9884952902069636,
+      "svc_south": 0.9885078060972246
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9884952902069636,
+     "severe_starvation": false,
+     "purchase_units": 1607.5033047685197,
+     "transfer_units": 1656.3445422362418,
+     "abstained_reviews": 1,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 1.8793356667738408,
+     "wall_max": 2.8648495422676206,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 8810.313092871402,
+     "cost_p2": 8781.20662028159,
+     "realized": 9466.947600463329,
+     "service_by_branch": {
+      "svc_north": 0.9891378708343656,
+      "svc_south": 0.9911020424595842
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9891378708343656,
+     "severe_starvation": false,
+     "purchase_units": 1597.5952419012115,
+     "transfer_units": 1655.017216501592,
+     "abstained_reviews": 0.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 2.020613520988263,
+     "wall_max": 3.3826392921619117,
+     "solve_statuses": {
+      "OPTIMAL": 68
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.004300949218583835,
+     "tolerance": 0.03,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 8761.922695997415,
+     "zaad_cost": 8799.607280570057,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.003919432260031231
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.987266961196507,
+      "svc_south": 0.9885078060972246
+     },
+     "incumbent": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 2.2737367544323206e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "no_split",
+     "evidence": {
+      "split_reviews": [],
+      "block_says_shared_plant": true
+     }
+    }
+   },
+   "pass": true
+  },
+  "R5_shared_port_risk": {
+   "family": "reliability",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8775.448032118824,
+     "cost_p2": 8775.448032118824,
+     "realized": 9289.700736763603,
+     "service_by_branch": {
+      "svc_north": 0.9786088041346068,
+      "svc_south": 0.9833728218016227
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9786088041346068,
+     "severe_starvation": false,
+     "purchase_units": 1463.4123626249948,
+     "transfer_units": 1524.2863446129659,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.020639729220420122,
+     "wall_max": 0.0242874170653522,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8764.156569930055,
+     "cost_p2": 8764.156569930055,
+     "realized": 9278.378209209728,
+     "service_by_branch": {
+      "svc_north": 0.9815504107873224,
+      "svc_south": 0.9823316132763547
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9815504107873224,
+     "severe_starvation": false,
+     "purchase_units": 1465.1251623575909,
+     "transfer_units": 1525.4780472156522,
+     "abstained_reviews": 2.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.3668095312314108,
+     "wall_max": 0.8555851662531495,
+     "solve_statuses": {
+      "OPTIMAL": 52
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8775.448032118824,
+     "cost_p2": 8775.448032118824,
+     "realized": 9289.700736763603,
+     "service_by_branch": {
+      "svc_north": 0.9786088041346068,
+      "svc_south": 0.9833728218016227
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9786088041346068,
+     "severe_starvation": false,
+     "purchase_units": 1463.4123626249948,
+     "transfer_units": 1524.2863446129659,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.021323802298866212,
+     "wall_max": 0.023127541411668062,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8753.353783512699,
+     "cost_p2": 8753.353783512699,
+     "realized": 9266.690742112605,
+     "service_by_branch": {
+      "svc_north": 0.9815788445109106,
+      "svc_south": 0.98412380280646
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9815788445109106,
+     "severe_starvation": false,
+     "purchase_units": 1465.5347410757558,
+     "transfer_units": 1528.1225943283519,
+     "abstained_reviews": 3,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.2461564999539405,
+     "wall_max": 0.7604469158686697,
+     "solve_statuses": {
+      "OPTIMAL": 52
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 8891.318574196019,
+     "cost_p2": 8847.157087842934,
+     "realized": 9407.264722652024,
+     "service_by_branch": {
+      "svc_north": 0.9816573114957075,
+      "svc_south": 0.9843001203607673
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9816573114957075,
+     "severe_starvation": false,
+     "purchase_units": 1464.9805564358173,
+     "transfer_units": 1534.1502756215718,
+     "abstained_reviews": 4,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.24887468735687435,
+     "wall_max": 0.8345493753440678,
+     "solve_statuses": {
+      "OPTIMAL": 52
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0012341311324242249,
+     "tolerance": 0.03,
+     "best_baseline": "single:supplier",
+     "best_cost": 8753.353783512699,
+     "zaad_cost": 8764.156569930055,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.0012341311324242249
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9815504107873224,
+      "svc_south": 0.9823316132763547
+     },
+     "incumbent": {
+      "svc_north": 0.9786088041346068,
+      "svc_south": 0.9833728218016227
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 8.526512829121202e-14
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "group_listed",
+     "evidence": {
+      "port_group_on_every_option": true
+     }
+    }
+   },
+   "pass": true
+  },
+  "R6_identical_no_split": {
+   "family": "reliability",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8741.87527333016,
+     "cost_p2": 8723.411497893583,
+     "realized": 9455.352777097149,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 1668.9134804764385,
+     "transfer_units": 1560.5415709623016,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 0.019730917061679065,
+     "wall_max": 0.020850667264312506,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8677.299778989109,
+     "cost_p2": 8662.256716951902,
+     "realized": 9204.417072250906,
+     "service_by_branch": {
+      "svc_north": 0.9931529875784493,
+      "svc_south": 0.9866760310601801
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9866760310601801,
+     "severe_starvation": false,
+     "purchase_units": 1473.3970592448966,
+     "transfer_units": 1544.8406412099068,
+     "abstained_reviews": 1.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 5.012824718956836,
+     "wall_max": 7.320265125017613,
+     "solve_statuses": {
+      "OPTIMAL": 67
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8741.87527333016,
+     "cost_p2": 8723.411497893583,
+     "realized": 9455.352777097149,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 1668.9134804764385,
+     "transfer_units": 1560.5415709623016,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 0.01972955174278468,
+     "wall_max": 0.025009458884596825,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8829.590266987729,
+     "cost_p2": 8796.974128868063,
+     "realized": 9777.58067632415,
+     "service_by_branch": {
+      "svc_north": 0.9855776756948844,
+      "svc_south": 0.9974057636376404
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9855776756948844,
+     "severe_starvation": false,
+     "purchase_units": 1910.300625771895,
+     "transfer_units": 1548.3983175484132,
+     "abstained_reviews": 1,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 1.814598395721987,
+     "wall_max": 4.676187375094742,
+     "solve_statuses": {
+      "OPTIMAL": 76
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 8654.220532961184,
+     "cost_p2": 8639.320610439461,
+     "realized": 9178.584196167296,
+     "service_by_branch": {
+      "svc_north": 0.9880981522148015,
+      "svc_south": 0.9955448266708606
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9880981522148015,
+     "severe_starvation": false,
+     "purchase_units": 1471.979981862296,
+     "transfer_units": 1559.2829344974186,
+     "abstained_reviews": 2.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 1.8859947815071791,
+     "wall_max": 2.7715374575927854,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier_b"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0026668197257075804,
+     "tolerance": 0.03,
+     "best_baseline": "single:supplier_b",
+     "best_cost": 8654.220532961184,
+     "zaad_cost": 8677.299778989109,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.0026548507164702332
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9931529875784493,
+      "svc_south": 0.9866760310601801
+     },
+     "incumbent": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 2.2737367544323206e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "no_split",
+     "evidence": {
+      "split_reviews": []
+     }
+    }
+   },
+   "pass": true
+  },
+  "C1_supplier_max_capacity": {
+   "family": "constraints",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 34015.27507875915,
+     "cost_p2": 34015.27507875915,
+     "realized": 34710.17218310718,
+     "service_by_branch": {
+      "svc_north": 0.578121921698163,
+      "svc_south": 0.5772240220866341
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5772240220866341,
+     "severe_starvation": false,
+     "purchase_units": 2400.0,
+     "transfer_units": 2355.0609543549044,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.01570506242569536,
+     "wall_max": 0.017001625150442123,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 25335.048742036364,
+     "cost_p2": 25335.048742036364,
+     "realized": 26611.542736384694,
+     "service_by_branch": {
+      "svc_north": 0.8950063295912418,
+      "svc_south": 0.8880105798899852
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.8880105798899852,
+     "severe_starvation": false,
+     "purchase_units": 4190.248972506373,
+     "transfer_units": 3897.41858363529,
+     "abstained_reviews": 6,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.3632508956361562,
+     "wall_max": 0.7408249578438699,
+     "solve_statuses": {
+      "INFEASIBLE": 6,
+      "OPTIMAL": 63
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 25280.416234056363,
+     "cost_p2": 25280.416234056363,
+     "realized": 26556.738958293274,
+     "service_by_branch": {
+      "svc_north": 0.8929439200624234,
+      "svc_south": 0.8945193932006074
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.8929439200624234,
+     "severe_starvation": false,
+     "purchase_units": 4199.815610181338,
+     "transfer_units": 3905.6136852027507,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 3.410605131648481e-13,
+     "wall_p50": 0.020702625042758882,
+     "wall_max": 0.023191458079963923,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 34015.27507875915,
+     "cost_p2": 34015.27507875915,
+     "realized": 34710.17218310718,
+     "service_by_branch": {
+      "svc_north": 0.578121921698163,
+      "svc_south": 0.5772240220866341
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5772240220866341,
+     "severe_starvation": false,
+     "purchase_units": 2400.0,
+     "transfer_units": 2355.0609543549044,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.5140446979785338,
+     "wall_max": 3.291373166721314,
+     "solve_statuses": {
+      "INFEASIBLE": 48,
+      "OPTIMAL": 48
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 34444.6304516019,
+     "cost_p2": 34264.17087540099,
+     "realized": 35146.31021742079,
+     "service_by_branch": {
+      "svc_north": 0.5831704939369996,
+      "svc_south": 0.5823518674696359
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5823518674696359,
+     "severe_starvation": false,
+     "purchase_units": 2400.0,
+     "transfer_units": 2373.1120574479837,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.5882321980316192,
+     "wall_max": 2.8724953341297805,
+     "solve_statuses": {
+      "INFEASIBLE": 48,
+      "OPTIMAL": 48
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "incumbent_mix"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0021610604617499514,
+     "tolerance": 0.02,
+     "best_baseline": "incumbent_mix",
+     "best_cost": 25280.416234056363,
+     "zaad_cost": 25335.048742036364,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.0021610604617499514
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.8950063295912418,
+      "svc_south": 0.8880105798899852
+     },
+     "incumbent": {
+      "svc_north": 0.8929439200624234,
+      "svc_south": 0.8945193932006074
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "both_used_within_capacity",
+     "evidence": {
+      "sources_used": [
+       "src_A",
+       "src_B"
+      ],
+      "over_capacity": []
+     }
+    }
+   },
+   "pass": true
+  },
+  "C2_declared_min_max_share": {
+   "family": "constraints",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_p2": 8826.160706327157,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.02123686473350972,
+     "wall_max": 0.023955834098160267,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8898.104156482217,
+     "cost_p2": 8898.104156482217,
+     "realized": 9407.245167494299,
+     "service_by_branch": {
+      "svc_north": 0.9832329223410824,
+      "svc_south": 0.9796953492250899
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9796953492250899,
+     "severe_starvation": false,
+     "purchase_units": 1462.5293437183886,
+     "transfer_units": 1525.6541016540887,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.41080043732654303,
+     "wall_max": 0.7055798340588808,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8897.9421321671,
+     "cost_p2": 8897.9421321671,
+     "realized": 9407.083149698725,
+     "service_by_branch": {
+      "svc_north": 0.9791105232270272,
+      "svc_south": 0.9836138225659353
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9791105232270272,
+     "severe_starvation": false,
+     "purchase_units": 1462.4890054359075,
+     "transfer_units": 1525.6541305156316,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.020921354182064533,
+     "wall_max": 0.024175957776606083,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8826.544178306196,
+     "cost_p2": 8826.544178306196,
+     "realized": 9333.6192733582,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553397,
+      "svc_south": 0.9783501418073666
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073666,
+     "severe_starvation": false,
+     "purchase_units": 1464.5250854310443,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.3693501667585224,
+     "wall_max": 0.8411408751271665,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 9064.43787178456,
+     "cost_p2": 8954.16471033795,
+     "realized": 9578.438808086285,
+     "service_by_branch": {
+      "svc_north": 0.9813457926208781,
+      "svc_south": 0.9855013674896347
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9813457926208781,
+     "severe_starvation": false,
+     "purchase_units": 1457.9376061560026,
+     "transfer_units": 1527.8497278526365,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.38052989600691944,
+     "wall_max": 0.7833190839737654,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.008151160232499137,
+     "tolerance": 0.02,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 8826.160706327157,
+     "zaad_cost": 8898.104156482217,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.008151160232499137
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9832329223410824,
+      "svc_south": 0.9796953492250899
+     },
+     "incumbent": {
+      "svc_north": 0.9791105232270272,
+      "svc_south": 0.9836138225659353
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "min_share_honoured",
+     "evidence": {
+      "reviews_below_minimum": []
+     }
+    }
+   },
+   "pass": true
+  },
+  "C3_source_blackout": {
+   "family": "constraints",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 12594.668504600835,
+     "cost_p2": 12594.668504600835,
+     "realized": 13065.89954173845,
+     "service_by_branch": {
+      "svc_north": 0.6393403744860371,
+      "svc_south": 0.6439457823665444
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.6393403744860371,
+     "severe_starvation": false,
+     "purchase_units": 888.9057599830132,
+     "transfer_units": 975.996845953055,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.019626531517133117,
+     "wall_max": 0.02097800001502037,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8370.039234099057,
+     "cost_p2": 8370.039234099057,
+     "realized": 8839.921792762143,
+     "service_by_branch": {
+      "svc_north": 0.9893231397084614,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9893231397084614,
+     "severe_starvation": false,
+     "purchase_units": 1469.842215038685,
+     "transfer_units": 1540.5919849012903,
+     "abstained_reviews": 7,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.40340213559102267,
+     "wall_max": 0.8019147082231939,
+     "solve_statuses": {
+      "OPTIMAL": 66
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 12856.442526333118,
+     "cost_p2": 12856.442526333118,
+     "realized": 13321.263214106013,
+     "service_by_branch": {
+      "svc_north": 0.6392456997635405,
+      "svc_south": 0.6438342862315478
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.6392456997635405,
+     "severe_starvation": false,
+     "purchase_units": 898.7157436950937,
+     "transfer_units": 975.9547971037384,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.019331812392920256,
+     "wall_max": 0.02137404168024659,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8869.961804772533,
+     "cost_p2": 8826.544178306196,
+     "realized": 9333.6192733582,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553397,
+      "svc_south": 0.9783501418073666
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073666,
+     "severe_starvation": false,
+     "purchase_units": 1464.5250854310443,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.3714009481482208,
+     "wall_max": 0.8467215830460191,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 8370.039234099057,
+     "cost_p2": 8370.039234099057,
+     "realized": 8839.921792762143,
+     "service_by_branch": {
+      "svc_north": 0.9893231397084614,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9893231397084614,
+     "severe_starvation": false,
+     "purchase_units": 1469.842215038685,
+     "transfer_units": 1540.5919849012903,
+     "abstained_reviews": 7,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.30925728112924844,
+     "wall_max": 0.6851081671193242,
+     "solve_statuses": {
+      "OPTIMAL": 66
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "single:supplier_b"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0,
+     "tolerance": 0.02,
+     "best_baseline": "single:supplier_b",
+     "best_cost": 8370.039234099057,
+     "zaad_cost": 8370.039234099057,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.0
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9893231397084614,
+      "svc_south": 0.9932439844387354
+     },
+     "incumbent": {
+      "svc_north": 0.6392456997635405,
+      "svc_south": 0.6438342862315478
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "no_purchase_in_blackout",
+     "evidence": {
+      "b_purchases_in_shutdown_periods": []
+     }
+    }
+   },
+   "pass": true
+  },
+  "C4_unqualified_source": {
+   "family": "constraints",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_p2": 8826.160706327157,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.02157021826133132,
+     "wall_max": 0.02660262491554022,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8849.406370364833,
+     "cost_p2": 8849.406370364833,
+     "realized": 9502.894186328016,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1605.3286842783814,
+     "transfer_units": 1533.6318671889903,
+     "abstained_reviews": 6.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.4038601565407589,
+     "wall_max": 0.864552874583751,
+     "solve_statuses": {
+      "OPTIMAL": 68
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_p2": 8826.160706327157,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.021567083429545164,
+     "wall_max": 0.026419625151902437,
+     "solve_statuses": {}
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.002633723179435514,
+     "tolerance": 0.02,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 8826.160706327157,
+     "zaad_cost": 8849.406370364833,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.002633723179435514
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "incumbent": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "unqualified_unused",
+     "evidence": {
+      "unqualified_purchases": [],
+      "block_says_not_qualified": true
+     }
+    }
+   },
+   "pass": true
+  },
+  "C5_shared_capacity_multi_sku": {
+   "family": "constraints",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 33185.172694488494,
+     "cost_p2": 33185.172694488494,
+     "realized": 34311.05751159755,
+     "service_by_branch": {
+      "svc_north": 0.979989925310941,
+      "svc_north_B": 0.5813934483414788,
+      "svc_south": 0.9809793039651392,
+      "svc_south_B": 0.5697934058801877
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.5697934058801877,
+     "severe_starvation": false,
+     "purchase_units": 3600.0,
+     "transfer_units": 3678.7526884993904,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 0.03758663556072861,
+     "wall_max": 0.04177658259868622,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 26780.84040622563,
+     "cost_p2": 26780.84040622563,
+     "realized": 28320.149304656057,
+     "service_by_branch": {
+      "svc_north": 0.9929484277668021,
+      "svc_north_B": 0.9861877968773143,
+      "svc_south": 0.9656855519178349,
+      "svc_south_B": 0.9785601100625869
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.9656855519178349,
+     "severe_starvation": false,
+     "purchase_units": 4945.983571571212,
+     "transfer_units": 4827.946256899973,
+     "abstained_reviews": 3,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 1.6077054579509422,
+     "wall_max": 2.5857141660526395,
+     "solve_statuses": {
+      "OPTIMAL": 68
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 33185.172694488494,
+     "cost_p2": 33185.172694488494,
+     "realized": 34311.05751159755,
+     "service_by_branch": {
+      "svc_north": 0.979989925310941,
+      "svc_north_B": 0.5813934483414788,
+      "svc_south": 0.9809793039651392,
+      "svc_south_B": 0.5697934058801877
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.5697934058801877,
+     "severe_starvation": false,
+     "purchase_units": 3600.0,
+     "transfer_units": 3678.7526884993904,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 0.036932604387402534,
+     "wall_max": 0.0405559167265892,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 33185.172694488494,
+     "cost_p2": 33185.172694488494,
+     "realized": 34311.05751159755,
+     "service_by_branch": {
+      "svc_north": 0.979989925310941,
+      "svc_north_B": 0.5813934483414788,
+      "svc_south": 0.9809793039651392,
+      "svc_south_B": 0.5697934058801877
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.5697934058801877,
+     "severe_starvation": false,
+     "purchase_units": 3600.0,
+     "transfer_units": 3678.7526884993904,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 8.214612906100228,
+     "wall_max": 11.407569834031165,
+     "solve_statuses": {
+      "INFEASIBLE": 64,
+      "OPTIMAL": 48
+     }
+    },
+    "single:supplier_s2": {
+     "runs": 2,
+     "cost": 27975.493666327908,
+     "cost_p2": 27444.299512651454,
+     "realized": 29522.501615168767,
+     "service_by_branch": {
+      "svc_north": 0.9803398069438176,
+      "svc_north_B": 0.9944204545922666,
+      "svc_south": 0.9779030267365909,
+      "svc_south_B": 0.9792053668229947
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.9779030267365909,
+     "severe_starvation": false,
+     "purchase_units": 4944.102041675982,
+     "transfer_units": 4827.023942285167,
+     "abstained_reviews": 6,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 3.410605131648481e-13,
+     "wall_p50": 1.069373124744743,
+     "wall_max": 2.2688541668467224,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "single:supplier_s2"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.042703563138197474,
+     "tolerance": 0.02,
+     "best_baseline": "single:supplier_s2",
+     "best_cost": 27975.493666327908,
+     "zaad_cost": 26780.84040622563,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": -0.024174750975880368
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9929484277668021,
+      "svc_north_B": 0.9861877968773143,
+      "svc_south": 0.9656855519178349,
+      "svc_south_B": 0.9785601100625869
+     },
+     "incumbent": {
+      "svc_north": 0.979989925310941,
+      "svc_north_B": 0.5813934483414788,
+      "svc_south": 0.9809793039651392,
+      "svc_south_B": 0.5697934058801877
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 2.2737367544323206e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "shared_resource_respected",
+     "evidence": {
+      "over_shared_capacity": [],
+      "s2_units": 3004.8109361824236
+     }
+    }
+   },
+   "pass": true
+  },
+  "C6_shared_mov_multi_sku": {
+   "family": "constraints",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 17648.51816683324,
+     "cost_p2": 17576.742162328344,
+     "realized": 19829.429340345006,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_north_B": 1.0,
+      "svc_south": 0.9932439844387354,
+      "svc_south_B": 0.9998247091302694
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 4089.5256179928474,
+     "transfer_units": 3086.636508092595,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 9.094947017729282e-13,
+     "wall_p50": 0.026265489403158426,
+     "wall_max": 0.03216266632080078,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 17412.315429270464,
+     "cost_p2": 17349.765558695202,
+     "realized": 19166.113334319183,
+     "service_by_branch": {
+      "svc_north": 0.9880956828986376,
+      "svc_north_B": 0.9972689254285396,
+      "svc_south": 0.996324208600462,
+      "svc_south_B": 0.9967143918144108
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.9880956828986376,
+     "severe_starvation": false,
+     "purchase_units": 3581.1784487998066,
+     "transfer_units": 3328.4488877395215,
+     "abstained_reviews": 1,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 9.094947017729282e-13,
+     "wall_p50": 17.827351041603833,
+     "wall_max": 25.77231991617009,
+     "solve_statuses": {
+      "OPTIMAL": 126
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 17648.51816683324,
+     "cost_p2": 17576.742162328344,
+     "realized": 19829.429340345006,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_north_B": 1.0,
+      "svc_south": 0.9932439844387354,
+      "svc_south_B": 0.9998247091302694
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 4089.5256179928474,
+     "transfer_units": 3086.636508092595,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 9.094947017729282e-13,
+     "wall_p50": 0.026953093707561493,
+     "wall_max": 0.0423830421641469,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 17639.69378285476,
+     "cost_p2": 17501.72841375087,
+     "realized": 19760.346391974916,
+     "service_by_branch": {
+      "svc_north": 0.997663624668885,
+      "svc_north_B": 0.9992024070413749,
+      "svc_south": 0.993423853100472,
+      "svc_south_B": 0.9965391009446802
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.993423853100472,
+     "severe_starvation": false,
+     "purchase_units": 4014.3957261902888,
+     "transfer_units": 3189.834414171977,
+     "abstained_reviews": 2,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "wall_p50": 8.28269640635699,
+     "wall_max": 16.928966458886862,
+     "solve_statuses": {
+      "OPTIMAL": 117
+     }
+    },
+    "single:supplier_s2": {
+     "runs": 2,
+     "cost": 18276.476843980257,
+     "cost_p2": 17922.351222871144,
+     "realized": 19309.41557360097,
+     "service_by_branch": {
+      "svc_north": 0.9811594152462157,
+      "svc_north_B": 0.9960294068755113,
+      "svc_south": 0.9845211190841028,
+      "svc_south_B": 0.9933925943343456
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.9811594152462157,
+     "severe_starvation": false,
+     "purchase_units": 2906.5618752491423,
+     "transfer_units": 3045.4246875119384,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.7053025658242404e-13,
+     "wall_p50": 1.2086338646477088,
+     "wall_max": 2.2095603751949966,
+     "solve_statuses": {
+      "OPTIMAL": 96
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.012890153104885563,
+     "tolerance": 0.02,
+     "best_baseline": "single:supplier",
+     "best_cost": 17639.69378285476,
+     "zaad_cost": 17412.315429270464,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": -0.008682734154203373
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9880956828986376,
+      "svc_north_B": 0.9972689254285396,
+      "svc_south": 0.996324208600462,
+      "svc_south_B": 0.9967143918144108
+     },
+     "incumbent": {
+      "svc_north": 0.9919499411384667,
+      "svc_north_B": 1.0,
+      "svc_south": 0.9932439844387354,
+      "svc_south_B": 0.9998247091302694
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 9.094947017729282e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "shared_mov_respected",
+     "evidence": {
+      "s1_orders": 2,
+      "below_mov": [],
+      "combined_orders": 2
+     }
+    }
+   },
+   "pass": true
+  },
+  "S1_produce_short_life": {
+   "family": "sector",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 19443.511381053722,
+     "cost_p2": 19443.511381053722,
+     "realized": 19443.511381053722,
+     "service_by_branch": {
+      "svc_north": 0.36550731993792573,
+      "svc_south": 0.36937737993005926
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.36550731993792573,
+     "severe_starvation": true,
+     "purchase_units": 1285.0195829050779,
+     "transfer_units": 300.0,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.016935823252424598,
+     "wall_max": 0.018299000337719917,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8870.525452313279,
+     "cost_p2": 8870.525452313279,
+     "realized": 9334.182927002978,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553395,
+      "svc_south": 0.9782753372209102
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9782753372209102,
+     "severe_starvation": false,
+     "purchase_units": 1464.4888451419902,
+     "transfer_units": 1524.6424563183066,
+     "abstained_reviews": 7,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 1.2791467705974355,
+     "wall_max": 3.852495000232011,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8869.578332955569,
+     "cost_p2": 8869.578332955569,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.02267967746593058,
+     "wall_max": 0.024421459063887596,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8870.52545231328,
+     "cost_p2": 8827.107825748077,
+     "realized": 9334.18292700298,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553398,
+      "svc_south": 0.9782753372209099
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9782753372209099,
+     "severe_starvation": false,
+     "purchase_units": 1464.4888451419902,
+     "transfer_units": 1524.6424563183068,
+     "abstained_reviews": 7,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 1.906652478966862,
+     "wall_max": 4.9001825409941375,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 19443.511381053722,
+     "cost_p2": 19443.511381053722,
+     "realized": 19443.511381053722,
+     "service_by_branch": {
+      "svc_north": 0.36550731993792573,
+      "svc_south": 0.36937737993005926
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.36550731993792573,
+     "severe_starvation": true,
+     "purchase_units": 1285.0195829050779,
+     "transfer_units": 300.0,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.3073667085263878,
+     "wall_max": 0.3477900833822787,
+     "solve_statuses": {
+      "INFEASIBLE": 48,
+      "OPTIMAL": 48
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.00010678290693831703,
+     "tolerance": 0.03,
+     "best_baseline": "incumbent_mix",
+     "best_cost": 8869.578332955569,
+     "zaad_cost": 8870.525452313279,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.004918669559983843
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9828238245553395,
+      "svc_south": 0.9782753372209102
+     },
+     "incumbent": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "b_unused",
+     "evidence": {
+      "other_supplier_purchases": []
+     }
+    }
+   },
+   "pass": true
+  },
+  "S2_produce_yield_uncertainty": {
+   "family": "sector",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 9773.62855430404,
+     "cost_p2": 9265.54155120469,
+     "realized": 10223.128971308493,
+     "service_by_branch": {
+      "svc_north": 0.9603629958591435,
+      "svc_south": 0.9537821718386871
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9537821718386871,
+     "severe_starvation": false,
+     "purchase_units": 1684.9960905513285,
+     "transfer_units": 1429.4776717578127,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.01755397894885391,
+     "wall_max": 0.023680207785218954,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 9041.745560997242,
+     "cost_p2": 8450.72368311487,
+     "realized": 9584.915994276278,
+     "service_by_branch": {
+      "svc_north": 0.9737488964419211,
+      "svc_south": 0.9687371235518571
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9687371235518571,
+     "severe_starvation": false,
+     "purchase_units": 1526.0002937981847,
+     "transfer_units": 1583.214531998844,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 15.201745041646063,
+     "wall_max": 26.39180341688916,
+     "solve_statuses": {
+      "OPTIMAL": 128
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8894.519243963125,
+     "cost_p2": 8337.220404198903,
+     "realized": 9396.107347330095,
+     "service_by_branch": {
+      "svc_north": 0.9761305184738938,
+      "svc_south": 0.9816756546921146
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9761305184738938,
+     "severe_starvation": false,
+     "purchase_units": 1466.3410187271775,
+     "transfer_units": 1523.5155793963868,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.022342406446114182,
+     "wall_max": 0.02649175003170967,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8896.036269477005,
+     "cost_p2": 8896.036269477005,
+     "realized": 9397.624369695339,
+     "service_by_branch": {
+      "svc_north": 0.9800156013207342,
+      "svc_south": 0.9778720162724733
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9778720162724733,
+     "severe_starvation": false,
+     "purchase_units": 1466.432948365842,
+     "transfer_units": 1523.4231150052517,
+     "abstained_reviews": 7,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 1.4918682390125468,
+     "wall_max": 4.633070040959865,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 9812.138092024903,
+     "cost_p2": 8893.299742063515,
+     "realized": 10614.784926742992,
+     "service_by_branch": {
+      "svc_north": 0.9695610021152122,
+      "svc_south": 0.9601078488266427
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9601078488266427,
+     "severe_starvation": false,
+     "purchase_units": 2286.0675270188044,
+     "transfer_units": 1559.904220741732,
+     "abstained_reviews": 4.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 7.21240654180292,
+     "wall_max": 11.721980709116906,
+     "solve_statuses": {
+      "OPTIMAL": 129
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.01655247608059792,
+     "tolerance": 0.03,
+     "best_baseline": "incumbent_mix",
+     "best_cost": 8894.519243963125,
+     "zaad_cost": 9041.745560997242,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.013614043219824531
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9737488964419211,
+      "svc_south": 0.9687371235518571
+     },
+     "incumbent": {
+      "svc_north": 0.9761305184738938,
+      "svc_south": 0.9816756546921146
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 2.2737367544323206e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "not_worse",
+     "evidence": {
+      "gate": "economic and service gates only"
+     }
+    }
+   },
+   "pass": true
+  },
+  "S3_frozen_invalid_route": {
+   "family": "sector",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8869.578332955569,
+     "cost_p2": 8869.578332955569,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.02289059362374246,
+     "wall_max": 0.02510466706007719,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8869.961804772533,
+     "cost_p2": 8869.961804772533,
+     "realized": 9333.619273358201,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1464.525085431044,
+     "transfer_units": 1524.7048815277499,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.4105971356621012,
+     "wall_max": 1.0649814996868372,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8869.578332955569,
+     "cost_p2": 8869.578332955569,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.023153155925683677,
+     "wall_max": 0.024851208087056875,
+     "solve_statuses": {}
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 4.3234503667316655e-05,
+     "tolerance": 0.03,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 8869.578332955569,
+     "zaad_cost": 8869.961804772533,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 4.3234503667316655e-05
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "incumbent": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "b_unused",
+     "evidence": {
+      "other_supplier_purchases": []
+     }
+    }
+   },
+   "pass": true
+  },
+  "S4_commercial_pallets": {
+   "family": "sector",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8994.392244083267,
+     "cost_p2": 8856.72158546379,
+     "realized": 9517.029747658115,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 1500.0,
+     "transfer_units": 1560.5415709623016,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.021813437691889703,
+     "wall_max": 0.023312207777053118,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8780.7803482044,
+     "cost_p2": 8780.7803482044,
+     "realized": 9351.483559708704,
+     "service_by_branch": {
+      "svc_north": 0.9888791626669141,
+      "svc_south": 0.9866760310601801
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9866760310601801,
+     "severe_starvation": false,
+     "purchase_units": 1560.0000000021298,
+     "transfer_units": 1552.677061586309,
+     "abstained_reviews": 4.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 24.65177753136959,
+     "wall_max": 43.562422584276646,
+     "solve_statuses": {
+      "OPTIMAL": 96
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8724.856032553827,
+     "cost_p2": 8724.856032553827,
+     "realized": 9287.519525960288,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 1560.0,
+     "transfer_units": 1560.5415709623016,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.02220616687554866,
+     "wall_max": 0.024560084100812674,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8723.16748365614,
+     "cost_p2": 8697.737550941349,
+     "realized": 9286.639495988617,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9930685595921822
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 1559.9999999999732,
+     "transfer_units": 1563.5797446998984,
+     "abstained_reviews": 6,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 5.970783771015704,
+     "wall_max": 33.907682000193745,
+     "solve_statuses": {
+      "OPTIMAL": 96
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 8994.392244083267,
+     "cost_p2": 8856.72158546379,
+     "realized": 9517.029747658115,
+     "service_by_branch": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9919499411384667,
+     "severe_starvation": false,
+     "purchase_units": 1499.999999999999,
+     "transfer_units": 1560.5415709623016,
+     "abstained_reviews": 7,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 3.9116563437273726,
+     "wall_max": 6.161803415976465,
+     "solve_statuses": {
+      "OPTIMAL": 96
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.006604580808084306,
+     "tolerance": 0.03,
+     "best_baseline": "single:supplier",
+     "best_cost": 8723.16748365614,
+     "zaad_cost": 8780.7803482044,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.009547631987822368
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9888791626669141,
+      "svc_south": 0.9866760310601801
+     },
+     "incumbent": {
+      "svc_north": 0.9919499411384667,
+      "svc_south": 0.9932439844387354
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "whole_packs",
+     "evidence": {
+      "pack_violations": []
+     }
+    }
+   },
+   "pass": true
+  },
+  "N1_source_to_central_with_transfers": {
+   "family": "network",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 9358.959795772971,
+     "cost_p2": 9358.959795772971,
+     "realized": 10129.834183153203,
+     "service_by_branch": {
+      "svc_north": 0.9365850031470975,
+      "svc_south": 0.9332466979894087
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9332466979894087,
+     "severe_starvation": false,
+     "purchase_units": 1598.8305959368347,
+     "transfer_units": 1661.21873110081,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.021028843824751675,
+     "wall_max": 0.022316625341773033,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 9380.746371107909,
+     "cost_p2": 9380.746371107909,
+     "realized": 10346.84104769391,
+     "service_by_branch": {
+      "svc_north": 0.9399039396741096,
+      "svc_south": 0.9293701121222901
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9293701121222901,
+     "severe_starvation": false,
+     "purchase_units": 1772.7622644106104,
+     "transfer_units": 1743.2232649388457,
+     "abstained_reviews": 1.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.9151479684514925,
+     "wall_max": 1.226733791641891,
+     "solve_statuses": {
+      "OPTIMAL": 68
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 9358.959795772971,
+     "cost_p2": 9358.959795772971,
+     "realized": 10129.834183153203,
+     "service_by_branch": {
+      "svc_north": 0.9365850031470975,
+      "svc_south": 0.9332466979894087
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9332466979894087,
+     "severe_starvation": false,
+     "purchase_units": 1598.8305959368347,
+     "transfer_units": 1661.21873110081,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.02087165624834597,
+     "wall_max": 0.022341915871948004,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 9380.476384366168,
+     "cost_p2": 9380.476384366168,
+     "realized": 10347.094713057098,
+     "service_by_branch": {
+      "svc_north": 0.9399039396741097,
+      "svc_south": 0.9293701121222925
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9293701121222925,
+     "severe_starvation": false,
+     "purchase_units": 1778.8289916401272,
+     "transfer_units": 1714.8287683297963,
+     "abstained_reviews": 1.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 0.6772636768873781,
+     "wall_max": 1.152422457933426,
+     "solve_statuses": {
+      "OPTIMAL": 68
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 9492.007203856723,
+     "cost_p2": 9386.681540789172,
+     "realized": 10338.4349880269,
+     "service_by_branch": {
+      "svc_north": 0.941079421357492,
+      "svc_south": 0.9338419443623933
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9338419443623933,
+     "severe_starvation": false,
+     "purchase_units": 1639.8044816864408,
+     "transfer_units": 1757.0250691324113,
+     "abstained_reviews": 2,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 0.640261416323483,
+     "wall_max": 1.1285097091458738,
+     "solve_statuses": {
+      "OPTIMAL": 68
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.002327884274572684,
+     "tolerance": 0.02,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 9358.959795772971,
+     "zaad_cost": 9380.746371107909,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.002327884274572684
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9399039396741096,
+      "svc_south": 0.9293701121222901
+     },
+     "incumbent": {
+      "svc_north": 0.9365850031470975,
+      "svc_south": 0.9332466979894087
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "conservation",
+     "evidence": {
+      "max_residual": 1.1368683772161603e-13
+     }
+    }
+   },
+   "pass": true
+  },
+  "N2_local_and_central_conserved": {
+   "family": "network",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8837.685763247557,
+     "cost_p2": 8837.685763247557,
+     "realized": 9221.930868633455,
+     "service_by_branch": {
+      "svc_north": 0.9919085980523213,
+      "svc_south": 0.9914307661359298
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9914307661359298,
+     "severe_starvation": false,
+     "purchase_units": 1388.0114710768178,
+     "transfer_units": 784.8184635862076,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.020925687393173575,
+     "wall_max": 0.024917416274547577,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8833.780189454974,
+     "cost_p2": 8833.780189454974,
+     "realized": 9326.111923201,
+     "service_by_branch": {
+      "svc_north": 0.9927801337311872,
+      "svc_south": 0.9801649766359248
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9801649766359248,
+     "severe_starvation": false,
+     "purchase_units": 1500.9459398841402,
+     "transfer_units": 1447.720309319147,
+     "abstained_reviews": 1,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.3079123019706458,
+     "wall_max": 0.32721845898777246,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8837.685763247557,
+     "cost_p2": 8837.685763247557,
+     "realized": 9221.930868633455,
+     "service_by_branch": {
+      "svc_north": 0.9919085980523213,
+      "svc_south": 0.9914307661359298
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9914307661359298,
+     "severe_starvation": false,
+     "purchase_units": 1388.0114710768178,
+     "transfer_units": 784.8184635862076,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.02096006239298731,
+     "wall_max": 0.023309374693781137,
+     "solve_statuses": {}
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.0004419226817075278,
+     "tolerance": 0.02,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 8837.685763247557,
+     "zaad_cost": 8833.780189454974,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": -0.0004419226817075278
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9927801337311872,
+      "svc_south": 0.9801649766359248
+     },
+     "incumbent": {
+      "svc_north": 0.9919085980523213,
+      "svc_south": 0.9914307661359298
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 5.684341886080802e-14
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "conservation",
+     "evidence": {
+      "max_residual": 5.684341886080802e-14
+     }
+    }
+   },
+   "pass": true
+  },
+  "N3_mixed_sector_shared_capacity": {
+   "family": "network",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 33185.172694488494,
+     "cost_p2": 33185.172694488494,
+     "realized": 34311.05751159755,
+     "service_by_branch": {
+      "svc_north": 0.979989925310941,
+      "svc_north_B": 0.5813934483414788,
+      "svc_south": 0.9809793039651392,
+      "svc_south_B": 0.5697934058801877
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.5697934058801877,
+     "severe_starvation": false,
+     "purchase_units": 3600.0,
+     "transfer_units": 3678.7526884993904,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 0.03662753093522042,
+     "wall_max": 0.04232879215851426,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 26863.55645190346,
+     "cost_p2": 26863.55645190346,
+     "realized": 28699.1272593936,
+     "service_by_branch": {
+      "svc_north": 0.989364580933606,
+      "svc_north_B": 0.993003877674752,
+      "svc_south": 0.9724725432333556,
+      "svc_south_B": 0.9745557683100441
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.9724725432333556,
+     "severe_starvation": false,
+     "purchase_units": 5231.989111207639,
+     "transfer_units": 4861.262538047884,
+     "abstained_reviews": 3.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "wall_p50": 6.724701448227279,
+     "wall_max": 15.555574832949787,
+     "solve_statuses": {
+      "OPTIMAL": 68
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 33185.172694488494,
+     "cost_p2": 33185.172694488494,
+     "realized": 34311.05751159755,
+     "service_by_branch": {
+      "svc_north": 0.979989925310941,
+      "svc_north_B": 0.5813934483414788,
+      "svc_south": 0.9809793039651392,
+      "svc_south_B": 0.5697934058801877
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.5697934058801877,
+     "severe_starvation": false,
+     "purchase_units": 3600.0,
+     "transfer_units": 3678.7526884993904,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 0.03668666665907949,
+     "wall_max": 0.04222029214724898,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 33185.172694488494,
+     "cost_p2": 33185.172694488494,
+     "realized": 34311.05751159755,
+     "service_by_branch": {
+      "svc_north": 0.979989925310941,
+      "svc_north_B": 0.5813934483414788,
+      "svc_south": 0.9809793039651392,
+      "svc_south_B": 0.5697934058801877
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.5697934058801877,
+     "severe_starvation": false,
+     "purchase_units": 3600.0,
+     "transfer_units": 3678.7526884993904,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 11.29491079156287,
+     "wall_max": 18.26104291714728,
+     "solve_statuses": {
+      "INFEASIBLE": 64,
+      "OPTIMAL": 48
+     }
+    },
+    "single:supplier_s2": {
+     "runs": 2,
+     "cost": 27975.287404859202,
+     "cost_p2": 27444.093914140616,
+     "realized": 29524.617506454368,
+     "service_by_branch": {
+      "svc_north": 0.9804290168043589,
+      "svc_north_B": 0.9944204545922666,
+      "svc_south": 0.9776619646266471,
+      "svc_south_B": 0.9792053668972331
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_north_B": 0.95,
+      "svc_south": 0.95,
+      "svc_south_B": 0.95
+     },
+     "min_branch_service": 0.9776619646266471,
+     "severe_starvation": false,
+     "purchase_units": 4943.682368527732,
+     "transfer_units": 4838.84661005216,
+     "abstained_reviews": 5.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "wall_p50": 3.061848541488871,
+     "wall_max": 7.341822125017643,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "single:supplier_s2"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.03973975090467306,
+     "tolerance": 0.02,
+     "best_baseline": "single:supplier_s2",
+     "best_cost": 27975.287404859202,
+     "zaad_cost": 26863.55645190346,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": -0.021153457062688213
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.989364580933606,
+      "svc_north_B": 0.993003877674752,
+      "svc_south": 0.9724725432333556,
+      "svc_south_B": 0.9745557683100441
+     },
+     "incumbent": {
+      "svc_north": 0.979989925310941,
+      "svc_north_B": 0.5813934483414788,
+      "svc_south": 0.9809793039651392,
+      "svc_south_B": 0.5697934058801877
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 4.547473508864641e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "shared_resource_respected",
+     "evidence": {
+      "over_shared_capacity": [],
+      "s2_units": 3536.4875496057907
+     }
+    }
+   },
+   "pass": true
+  },
+  "A1_incumbent_mix_optimal": {
+   "family": "abstention",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 11522.492891902835,
+     "cost_p2": 11522.492891902835,
+     "realized": 11800.451693492498,
+     "service_by_branch": {
+      "svc_north": 0.7455738308110362,
+      "svc_south": 0.7532673045010455
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7455738308110362,
+     "severe_starvation": false,
+     "purchase_units": 879.223053773528,
+     "transfer_units": 1042.4339778630256,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.015683812322095037,
+     "wall_max": 0.020419416017830372,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8835.992199073997,
+     "cost_p2": 8835.992199073997,
+     "realized": 9346.10258244745,
+     "service_by_branch": {
+      "svc_north": 0.9794332906718894,
+      "svc_south": 0.9838841562056475
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9794332906718894,
+     "severe_starvation": false,
+     "purchase_units": 1461.7084628096695,
+     "transfer_units": 1525.9716140394792,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.4214620111742988,
+     "wall_max": 0.7136265002191067,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8835.992199073997,
+     "cost_p2": 8835.992199073997,
+     "realized": 9346.10258244745,
+     "service_by_branch": {
+      "svc_north": 0.9794332906718894,
+      "svc_south": 0.9838841562056475
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9794332906718894,
+     "severe_starvation": false,
+     "purchase_units": 1461.7084628096695,
+     "transfer_units": 1525.9716140394792,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.020328760496340692,
+     "wall_max": 0.0227203331887722,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 11282.285594324698,
+     "cost_p2": 11282.285594324698,
+     "realized": 11560.244396362583,
+     "service_by_branch": {
+      "svc_north": 0.7658139802509518,
+      "svc_south": 0.7735285864291643
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7658139802509518,
+     "severe_starvation": false,
+     "purchase_units": 912.1730158370259,
+     "transfer_units": 1075.4106765440747,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.7475095418049023,
+     "wall_max": 3.4425241672433913,
+     "solve_statuses": {
+      "INFEASIBLE": 48,
+      "OPTIMAL": 48
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 8845.747230861158,
+     "cost_p2": 8801.637966282513,
+     "realized": 9359.748167162885,
+     "service_by_branch": {
+      "svc_north": 0.9813457926208781,
+      "svc_south": 0.9855013674896347
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9813457926208781,
+     "severe_starvation": false,
+     "purchase_units": 1457.9376061560026,
+     "transfer_units": 1527.8497278526365,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.3689095418667421,
+     "wall_max": 0.6863806671462953,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "incumbent_mix",
+    "single:supplier_b"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0,
+     "tolerance": 0.02,
+     "best_baseline": "incumbent_mix",
+     "best_cost": 8835.992199073997,
+     "zaad_cost": 8835.992199073997,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.003903163584220196
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9794332906718894,
+      "svc_south": 0.9838841562056475
+     },
+     "incumbent": {
+      "svc_north": 0.9794332906718894,
+      "svc_south": 0.9838841562056475
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "abstains",
+     "evidence": {
+      "abstained_reviews": [
+       8,
+       8
+      ]
+     }
+    }
+   },
+   "pass": true
+  },
+  "A2_weak_evidence_flagged": {
+   "family": "abstention",
+   "tolerance": 0.03,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8812.928531338715,
+     "cost_p2": 8812.928531338715,
+     "realized": 9321.772771909153,
+     "service_by_branch": {
+      "svc_north": 0.9779388540660908,
+      "svc_south": 0.9832389068582172
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9779388540660908,
+     "severe_starvation": false,
+     "purchase_units": 1464.1235175691854,
+     "transfer_units": 1523.8592027846062,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.020834968890994787,
+     "wall_max": 0.023158458061516285,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8812.928531338715,
+     "cost_p2": 8812.928531338715,
+     "realized": 9321.772771909153,
+     "service_by_branch": {
+      "svc_north": 0.9779388540660908,
+      "svc_south": 0.9832389068582172
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9779388540660908,
+     "severe_starvation": false,
+     "purchase_units": 1464.1235175691854,
+     "transfer_units": 1523.8592027846062,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.4617850936483592,
+     "wall_max": 0.8929178747348487,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8812.928531338715,
+     "cost_p2": 8812.928531338715,
+     "realized": 9321.772771909153,
+     "service_by_branch": {
+      "svc_north": 0.9779388540660908,
+      "svc_south": 0.9832389068582172
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9779388540660908,
+     "severe_starvation": false,
+     "purchase_units": 1464.1235175691854,
+     "transfer_units": 1523.8592027846062,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.0205869791097939,
+     "wall_max": 0.0230189161375165,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8813.117569383012,
+     "cost_p2": 8813.117569383012,
+     "realized": 9321.961799394183,
+     "service_by_branch": {
+      "svc_north": 0.9826177026554814,
+      "svc_south": 0.9787915103407694
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9787915103407694,
+     "severe_starvation": false,
+     "purchase_units": 1464.1719815745148,
+     "transfer_units": 1523.8591571715187,
+     "abstained_reviews": 7.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.37533616682048887,
+     "wall_max": 0.7418272499926388,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 8724.676959064167,
+     "cost_p2": 8724.676959064167,
+     "realized": 9238.442478824327,
+     "service_by_branch": {
+      "svc_north": 0.9801979952941805,
+      "svc_south": 0.9851412395982597
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9801979952941805,
+     "severe_starvation": false,
+     "purchase_units": 1459.720215185568,
+     "transfer_units": 1526.0811880133153,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.3785638439003378,
+     "wall_max": 0.8897057501599193,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier_b"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.010115167895455753,
+     "tolerance": 0.03,
+     "best_baseline": "single:supplier_b",
+     "best_cost": 8724.676959064167,
+     "zaad_cost": 8812.928531338715,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.010115167895455753
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9779388540660908,
+      "svc_south": 0.9832389068582172
+     },
+     "incumbent": {
+      "svc_north": 0.9779388540660908,
+      "svc_south": 0.9832389068582172
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 8.526512829121202e-14
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "weak_evidence_flagged",
+     "evidence": {
+      "group_weak": true,
+      "b_reliability_weak": true,
+      "block_states_weak_evidence": true
+     }
+    }
+   },
+   "pass": true
+  },
+  "A3_pruning_identity": {
+   "family": "abstention",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_p2": 8869.578332955569,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.022542999940924346,
+     "wall_max": 0.02510199975222349,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8731.546619046327,
+     "cost_p2": 8774.964301759283,
+     "realized": 9238.624090232226,
+     "service_by_branch": {
+      "svc_north": 0.9839510249257448,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9839510249257448,
+     "severe_starvation": false,
+     "purchase_units": 1477.3107441451975,
+     "transfer_units": 1537.8847919908758,
+     "abstained_reviews": 6.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.4210857814177871,
+     "wall_max": 0.7528314590454102,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "gated_noprune": {
+     "runs": 2,
+     "cost": 8731.546619046327,
+     "cost_p2": 8774.964301759283,
+     "realized": 9238.624090232226,
+     "service_by_branch": {
+      "svc_north": 0.9839510249257448,
+      "svc_south": 0.9932439844387354
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9839510249257448,
+     "severe_starvation": false,
+     "purchase_units": 1477.3107441451975,
+     "transfer_units": 1537.8847919908758,
+     "abstained_reviews": 6.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.41516693751327693,
+     "wall_max": 0.7523564998991787,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8823.13973101996,
+     "cost_p2": 8866.55736454007,
+     "realized": 9330.215152579283,
+     "service_by_branch": {
+      "svc_north": 0.9779862890322267,
+      "svc_south": 0.983240391446864
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9779862890322267,
+     "severe_starvation": false,
+     "purchase_units": 1464.2231210709108,
+     "transfer_units": 1524.9354727615466,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "wall_p50": 0.022376853972673416,
+     "wall_max": 0.025698583107441664,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8826.975322358456,
+     "cost_p2": 8826.975322358456,
+     "realized": 9334.066151407817,
+     "service_by_branch": {
+      "svc_north": 0.9828238245553393,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1464.6005353146847,
+     "transfer_units": 1524.7701839994552,
+     "abstained_reviews": 7,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.39219441660679877,
+     "wall_max": 0.6487134168855846,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 8991.540991476759,
+     "cost_p2": 8903.32246231947,
+     "realized": 9505.541927778484,
+     "service_by_branch": {
+      "svc_north": 0.9813457926208781,
+      "svc_south": 0.9855013674896347
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9813457926208781,
+     "severe_starvation": false,
+     "purchase_units": 1457.9376061560026,
+     "transfer_units": 1527.8497278526365,
+     "abstained_reviews": 8,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 8.526512829121202e-14,
+     "wall_p50": 0.3857534793205559,
+     "wall_max": 0.7702974998392165,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.010381011155429814,
+     "tolerance": 0.02,
+     "best_baseline": "incumbent_mix",
+     "best_cost": 8823.13973101996,
+     "zaad_cost": 8731.546619046327,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": -0.00589228118350245
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9839510249257448,
+      "svc_south": 0.9932439844387354
+     },
+     "incumbent": {
+      "svc_north": 0.9779862890322267,
+      "svc_south": 0.983240391446864
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "prune_identity",
+     "evidence": {
+      "seeds": [
+       [
+        41001,
+        true,
+        "purchases identical; transfers differ at review 0: objective tie {'equal': True, 'objective_on': 12622.737522090367, 'objective_off': 12622.737522090367, 'status': ('OPTIMAL', 'OPTIMAL')}"
+       ],
+       [
+        41002,
+        true,
+        "purchases identical; transfers differ at review 0: objective tie {'equal': True, 'objective_on': 12752.15541946573, 'objective_off': 12752.155419465726, 'status': ('OPTIMAL', 'OPTIMAL')}"
+       ]
+      ]
+     }
+    }
+   },
+   "pass": true
+  },
+  "A5_single_source_legacy_identity": {
+   "family": "abstention",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_p2": 8826.160706327157,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.021121208555996418,
+     "wall_max": 0.02523508295416832,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8836.423045049625,
+     "cost_p2": 8836.423045049625,
+     "realized": 9377.26267948357,
+     "service_by_branch": {
+      "svc_north": 0.9830646590897429,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1493.9142326527333,
+     "transfer_units": 1540.966546827863,
+     "abstained_reviews": 6.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.34666266618296504,
+     "wall_max": 0.616180666256696,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "gated_legacy": {
+     "runs": 2,
+     "cost": 8836.423045049625,
+     "cost_p2": 8836.423045049625,
+     "realized": 9377.26267948357,
+     "service_by_branch": {
+      "svc_north": 0.9830646590897429,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "severe_starvation": false,
+     "purchase_units": 1493.9142326527333,
+     "transfer_units": 1540.966546827863,
+     "abstained_reviews": 6.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.34644129138905555,
+     "wall_max": 0.6263679997064173,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_p2": 8826.160706327157,
+     "realized": 9333.235811548719,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "severe_starvation": false,
+     "purchase_units": 1464.4372874285912,
+     "transfer_units": 1524.7049230395298,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "wall_p50": 0.02120916685089469,
+     "wall_max": 0.02598679205402732,
+     "solve_statuses": {}
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.001162718317049426,
+     "tolerance": 0.02,
+     "best_baseline": "cheapest_landed",
+     "best_cost": 8826.160706327157,
+     "zaad_cost": 8836.423045049625,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.001162718317049426
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9830646590897429,
+      "svc_south": 0.9783501418073668
+     },
+     "incumbent": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "legacy_identity",
+     "evidence": {
+      "seeds": [
+       [
+        41001,
+        true,
+        "identical"
+       ],
+       [
+        41002,
+        true,
+        "identical"
+       ]
+      ]
+     }
+    }
+   },
+   "pass": true
+  },
+  "A6_no_order_no_allocation": {
+   "family": "abstention",
+   "tolerance": 0.02,
+   "policies": {
+    "cheapest_landed": {
+     "runs": 2,
+     "cost": 8866.10689852211,
+     "cost_p2": 8866.10689852211,
+     "realized": 12724.624379665798,
+     "service_by_branch": {
+      "svc_north": 1.0,
+      "svc_south": 1.0
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 1.0,
+     "severe_starvation": false,
+     "purchase_units": 0,
+     "transfer_units": 272.8268137852555,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 9.094947017729282e-13,
+     "wall_p50": 0.01362959377001971,
+     "wall_max": 0.014892875216901302,
+     "solve_statuses": {}
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8890.868032640476,
+     "cost_p2": 8890.868032640476,
+     "realized": 12927.714120997654,
+     "service_by_branch": {
+      "svc_north": 1.0,
+      "svc_south": 1.0
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 1.0,
+     "severe_starvation": false,
+     "purchase_units": 0,
+     "transfer_units": 1366.9634276026477,
+     "abstained_reviews": 5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 9.094947017729282e-13,
+     "wall_p50": 0.5527731040492654,
+     "wall_max": 0.5787470410577953,
+     "solve_statuses": {
+      "OPTIMAL": 112
+     }
+    },
+    "incumbent_mix": {
+     "runs": 2,
+     "cost": 8866.10689852211,
+     "cost_p2": 8866.10689852211,
+     "realized": 12724.624379665798,
+     "service_by_branch": {
+      "svc_north": 1.0,
+      "svc_south": 1.0
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 1.0,
+     "severe_starvation": false,
+     "purchase_units": 0,
+     "transfer_units": 272.8268137852555,
+     "abstained_reviews": 0,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 9.094947017729282e-13,
+     "wall_p50": 0.01384558342397213,
+     "wall_max": 0.014176249969750643,
+     "solve_statuses": {}
+    },
+    "single:supplier": {
+     "runs": 2,
+     "cost": 8851.710447429541,
+     "cost_p2": 8851.710447429541,
+     "realized": 12910.251090716185,
+     "service_by_branch": {
+      "svc_north": 1.0,
+      "svc_south": 1.0
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 1.0,
+     "severe_starvation": false,
+     "purchase_units": 0,
+     "transfer_units": 1272.8821574515578,
+     "abstained_reviews": 5.5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 9.094947017729282e-13,
+     "wall_p50": 0.4889626562362537,
+     "wall_max": 0.513327082619071,
+     "solve_statuses": {
+      "OPTIMAL": 112
+     }
+    },
+    "single:supplier_b": {
+     "runs": 2,
+     "cost": 8866.243409039209,
+     "cost_p2": 8056.783327496079,
+     "realized": 12722.717315692324,
+     "service_by_branch": {
+      "svc_north": 1.0,
+      "svc_south": 1.0
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 1.0,
+     "severe_starvation": false,
+     "purchase_units": 0,
+     "transfer_units": 262.5525945923722,
+     "abstained_reviews": 5,
+     "reverse_pair_units": 0.0,
+     "conservation_max_residual": 9.094947017729282e-13,
+     "wall_p50": 0.48520045820623636,
+     "wall_max": 0.5158187500201166,
+     "solve_statuses": {
+      "OPTIMAL": 112
+     }
+    }
+   },
+   "failures": {},
+   "valid_baselines": [
+    "cheapest_landed",
+    "incumbent_mix",
+    "single:supplier"
+   ],
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.004423730921101865,
+     "tolerance": 0.02,
+     "best_baseline": "single:supplier",
+     "best_cost": 8851.710447429541,
+     "zaad_cost": 8890.868032640476,
+     "basis": "cost_p3 (policy-independent continuation)",
+     "gap_p2_basis": 0.004423730921101865
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 1.0,
+      "svc_south": 1.0
+     },
+     "incumbent": {
+      "svc_north": 1.0,
+      "svc_south": 1.0
+     }
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 9.094947017729282e-13
+    },
+    "no_reverse_movement": {
+     "pass": true
+    },
+    "no_physical_failure": {
+     "pass": true
+    },
+    "principle": {
+     "pass": true,
+     "principle": "no_order_no_allocation",
+     "evidence": {
+      "early_purchases": [],
+      "block_no_order": true
+     }
+    }
+   },
+   "pass": true
+  }
+ },
+ "runtime": {
+  "reviews": 480,
+  "p50": 0.6623431243933737,
+  "p95": 18.161235708277673,
+  "max": 43.562422584276646,
+  "over_60s": [],
+  "over_180s": [],
+  "solve_statuses": {
+   "OPTIMAL": 2251,
+   "INFEASIBLE": 6
+  },
+  "by_family": {
+   "economics": {
+    "p50": 0.7952072289772332,
+    "max": 11.26887824991718
+   },
+   "reliability": {
+    "p50": 0.8854022289160639,
+    "max": 7.320265125017613
+   },
+   "constraints": {
+    "p50": 0.4681963960174471,
+    "max": 25.77231991617009
+   },
+   "sector": {
+    "p50": 5.163243978982791,
+    "max": 43.562422584276646
+   },
+   "network": {
+    "p50": 0.907050458015874,
+    "max": 15.555574832949787
+   },
+   "abstention": {
+    "p50": 0.4408946249168366,
+    "max": 0.8929178747348487
+   }
+  }
+ },
+ "errors": [],
+ "pass_count": 30,
+ "fixture_count": 30
+}

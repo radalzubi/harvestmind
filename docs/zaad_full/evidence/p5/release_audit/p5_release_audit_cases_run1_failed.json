@@ -1,0 +1,800 @@
+[
+ {
+  "case": "R01_basis_ranking",
+  "verdict": "ALLOCATION CHANGE RECOMMENDED",
+  "incumbent_cost": 375.0,
+  "optimised_cost": 225.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": false,
+  "evidence": {
+   "shipped": {
+    "lb": 50.0
+   },
+   "unmet": {
+    "la": 50.0
+   },
+   "ledger": {
+    "lost_contribution": 100.0,
+    "sla": 125.0,
+    "shortage_penalty": 0.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   },
+   "why": [
+    "lb before la: lost contribution per unit (selling price less asset value, the frozen allocation-ranking basis) 5.00 against 2.00"
+   ],
+   "lane_contribution": {
+    "via_lane": 0,
+    "unmet": [
+     {
+      "order": "o1",
+      "line": "l1",
+      "customer": "c1",
+      "sku": "A",
+      "quantity": 50.0,
+      "driver": "lost contribution 5.00 (selling price less asset value, the frozen allocation-ranking basis) + SLA 2.50 + shortage penalty 0.00 per unit; no feasible supply at a lower total cost"
+     }
+    ]
+   },
+   "lane_margin_8": {
+    "via_lane": 0,
+    "ledger": {
+     "lost_contribution": 400.0,
+     "sla": 125.0,
+     "shortage_penalty": 0.0,
+     "backorder_carry": 0.0,
+     "substitution": 0.0,
+     "alternative_ship_from": 0.0,
+     "refusal": 0.0
+    }
+   }
+  }
+ },
+ {
+  "case": "R02_minimum_ship_retained",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 600.0,
+  "optimised_cost": 600.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {},
+   "unmet": {
+    "l1": 80.0
+   },
+   "ledger": {
+    "lost_contribution": 400.0,
+    "sla": 200.0,
+    "shortage_penalty": 0.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   },
+   "retained": 50.0,
+   "gross": 800.0
+  }
+ },
+ {
+  "case": "R03_all_or_nothing",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 300.0,
+  "optimised_cost": 300.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "l1": 40.0
+   },
+   "unmet": {
+    "l2": 40.0
+   },
+   "ledger": {
+    "lost_contribution": 200.0,
+    "sla": 100.0,
+    "shortage_penalty": 0.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   },
+   "retained": 10.0
+  }
+ },
+ {
+  "case": "R04_sla_only",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 525.0,
+  "optimised_cost": 525.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "l1": 30.0
+   },
+   "unmet": {
+    "l1": 20.0,
+    "l2": 50.0
+   },
+   "ledger": {
+    "lost_contribution": 350.0,
+    "sla": 175.0,
+    "shortage_penalty": 0.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   }
+  }
+ },
+ {
+  "case": "R05_shortage_only",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 560.0,
+  "optimised_cost": 560.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "l1": 30.0
+   },
+   "unmet": {
+    "l1": 20.0,
+    "l2": 50.0
+   },
+   "ledger": {
+    "lost_contribution": 350.0,
+    "sla": 0.0,
+    "shortage_penalty": 210.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   }
+  }
+ },
+ {
+  "case": "R06_both_distinct",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 735.0,
+  "optimised_cost": 735.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "l1": 30.0
+   },
+   "unmet": {
+    "l1": 20.0,
+    "l2": 50.0
+   },
+   "ledger": {
+    "lost_contribution": 350.0,
+    "sla": 175.0,
+    "shortage_penalty": 210.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   },
+   "replaces": {
+    "ledger": {
+     "lost_contribution": 350.0,
+     "sla": 0.0,
+     "shortage_penalty": 210.0,
+     "backorder_carry": 0.0,
+     "substitution": 0.0,
+     "alternative_ship_from": 0.0,
+     "refusal": 0.0
+    },
+    "drivers": {
+     "l1": {
+      "lost_contribution_per_unit": 5.0,
+      "lost_basis": "frozen_contribution",
+      "gross_selling_price": 10.0,
+      "sla_per_unmet": 0.0,
+      "sla_service_declared": 2.5,
+      "sla_basis": "REPLACES_SERVICE_SLA",
+      "sla_replaced_per_unit": 2.5,
+      "shortage_penalty_per_unit": 3.0,
+      "late_penalty_per_unit_period": 0.0,
+      "refusal_cost_per_unit": 0.0,
+      "contractual_floor": 0.0,
+      "provenance": "CONTRACT"
+     },
+     "l2": {
+      "lost_contribution_per_unit": 5.0,
+      "lost_basis": "frozen_contribution",
+      "gross_selling_price": 10.0,
+      "sla_per_unmet": 0.0,
+      "sla_service_declared": 2.5,
+      "sla_basis": "REPLACES_SERVICE_SLA",
+      "sla_replaced_per_unit": 2.5,
+      "shortage_penalty_per_unit": 3.0,
+      "late_penalty_per_unit_period": 0.0,
+      "refusal_cost_per_unit": 0.0,
+      "contractual_floor": 0.0,
+      "provenance": "CONTRACT"
+     }
+    }
+   }
+  }
+ },
+ {
+  "case": "R07_duplicate_declaration_fails_closed",
+  "pass": false,
+  "evidence": {
+   "a_equal_amount_no_basis": "1 validation error for Request\n  Value error, atp: class k declares a shortage penalty and the service for line l1 already carries sla_per_unmet 2.5: declare shortage_penalty_basis (ADDITIONAL_TO_SERVICE_SLA with a refer",
+   "b_any_amount_no_basis": "1 validation error for Request\n  Value error, atp: class k declares a shortage penalty and the service for line l1 already carries sla_per_unmet 2.5: declare shortage_penalty_basis (ADDITIONAL_TO_SERVICE_SLA with a refer",
+   "c_additional_on_assumption": "1 validation error for ServiceClass\n  Value error, atp: a shortage penalty ADDITIONAL to the Service SLA cannot rest on a CONFIGURED_ASSUMPTION (double declaration of one shortage consequence) [type=value_error, input_va",
+   "d_additional_without_reference": "1 validation error for ServiceClass\n  Value error, atp: a shortage penalty ADDITIONAL to the Service SLA needs a reference naming the distinct contract / policy (double declaration of one shortage consequence) [type=valu"
+  }
+ },
+ {
+  "case": "R08_incumbent_optimal",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 300.0,
+  "optimised_cost": 300.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "lX": 50.0,
+    "lY": 10.0
+   },
+   "unmet": {
+    "lY": 40.0
+   },
+   "ledger": {
+    "lost_contribution": 200.0,
+    "sla": 100.0,
+    "shortage_penalty": 0.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   },
+   "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE"
+  }
+ },
+ {
+  "case": "R09_p0_overlay_non_binding",
+  "pass": true,
+  "evidence": {
+   "north": {
+    "sku": "A",
+    "location": "north",
+    "protection_units": 21.769,
+    "lean_baseline_units": 21.284,
+    "regime": "LEAN",
+    "allocatable_on_hand": 150.0,
+    "promised_from_on_hand": 150.0,
+    "remaining_after_promises": 0.0,
+    "below_protection_units": 21.769,
+    "hard_reservation": false,
+    "note": "P0 protection reserves no units (service-level construct in the planner's own solves); a firm customer order is realised demand; the next P0 review plans from the position these promises leave"
+   },
+   "frozen_identical": true
+  }
+ },
+ {
+  "case": "R10_reservations_excluded",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 150.0,
+  "optimised_cost": 150.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "l1": 30.0,
+    "l2": 10.0
+   },
+   "unmet": {
+    "l2": 20.0
+   },
+   "ledger": {
+    "lost_contribution": 100.0,
+    "sla": 50.0,
+    "shortage_penalty": 0.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   },
+   "envelope": {
+    "sku": "A",
+    "location": "north",
+    "period": 0,
+    "physical": 100.0,
+    "usable": 100.0,
+    "sellable": 100.0,
+    "reserved": 60.0,
+    "allocatable_atp": 40.0,
+    "firm_inbound_by_period": 0,
+    "non_firm_by_period": 0
+   }
+  }
+ },
+ {
+  "case": "R11_openpo_never_firm",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 450.0,
+  "optimised_cost": 450.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "l1": 40.0
+   },
+   "unmet": {
+    "l1": 60.0
+   },
+   "ledger": {
+    "lost_contribution": 300.0,
+    "sla": 150.0,
+    "shortage_penalty": 0.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   },
+   "non_firm": [
+    {
+     "id": "po:po_uncertain",
+     "record": "OpenPO:po_uncertain",
+     "sku": "A",
+     "location": "central",
+     "expected_period": 2,
+     "quantity": 60.0,
+     "promised": 0.0,
+     "reason": "open purchase order: fill and arrival are uncertain in the frozen semantics (drawn per world); never promised"
+    }
+   ]
+  }
+ },
+ {
+  "case": "R12_firm_inbound_timing",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 100.0,
+  "optimised_cost": 100.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "l1": 100.0
+   },
+   "unmet": {},
+   "ledger": {
+    "lost_contribution": 0.0,
+    "sla": 0.0,
+    "shortage_penalty": 0.0,
+    "backorder_carry": 100.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   },
+   "firm": [
+    [
+     "transfer:in1",
+     2,
+     50.0
+    ]
+   ]
+  }
+ },
+ {
+  "case": "R13_alternative_no_transfer",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 663.0,
+  "optimised_cost": 663.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "l1": 150.0
+   },
+   "unmet": {
+    "l1": 20.0
+   },
+   "ledger": {
+    "lost_contribution": 350.0,
+    "sla": 50.0,
+    "shortage_penalty": 60.0,
+    "backorder_carry": 80.0,
+    "substitution": 15.0,
+    "alternative_ship_from": 8.0,
+    "refusal": 100.0
+   },
+   "alternative": [
+    {
+     "order": "o1",
+     "line": "l1",
+     "customer": "c1",
+     "sku": "A",
+     "supplied_sku": "A",
+     "substitution": null,
+     "quantity": 40.0,
+     "promise_period": 1,
+     "requested_period": 0,
+     "periods_late": 1,
+     "ship_from": "central",
+     "lane": "lane_north",
+     "fulfilment": "ALTERNATIVE_SHIP_FROM",
+     "lot": "stock:a_central"
+    }
+   ]
+  }
+ },
+ {
+  "case": "R14_fefo",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 0.0,
+  "optimised_cost": 0.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "l1": 100.0
+   },
+   "unmet": {},
+   "ledger": {
+    "lost_contribution": 0.0,
+    "sla": 0.0,
+    "shortage_penalty": 0.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   },
+   "old": 60.0
+  }
+ },
+ {
+  "case": "R15_cold_chain",
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 450.0,
+  "optimised_cost": 450.0,
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "evidence": {
+   "shipped": {
+    "l1": 40.0
+   },
+   "unmet": {
+    "l1": 60.0
+   },
+   "ledger": {
+    "lost_contribution": 300.0,
+    "sla": 150.0,
+    "shortage_penalty": 0.0,
+    "backorder_carry": 0.0,
+    "substitution": 0.0,
+    "alternative_ship_from": 0.0,
+    "refusal": 0.0
+   },
+   "blocked": [
+    {
+     "line": "l1",
+     "lot": "stock:central_lot",
+     "sku": "A",
+     "location": "central",
+     "quantity": 200.0,
+     "reason": "the approved lane or its destination is not eligible for the SKU's storage state (sector physics)"
+    }
+   ]
+  }
+ },
+ {
+  "case": "R16_p4_workspace_recourse_flag",
+  "pass": true,
+  "evidence": {
+   "codes": [
+    200,
+    200,
+    200
+   ],
+   "false_identical_to_none": true,
+   "true_has_block": true,
+   "verdict": "ADAPTIVE PLAN UNAVAILABLE",
+   "review_periods": [
+    3
+   ],
+   "seconds": 226.4
+  }
+ },
+ {
+  "case": "R17_p4_p5_workspace_together",
+  "pass": true,
+  "evidence": {
+   "codes": [
+    200,
+    200,
+    200,
+    200
+   ],
+   "both_blocks": [
+    true,
+    true
+   ],
+   "atp_verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+   "p4_only": [
+    true,
+    false
+   ],
+   "p5_only": [
+    true,
+    false
+   ]
+  }
+ },
+ {
+  "case": "R18_atp_disabled_pre_p5_identity",
+  "pass": true,
+  "evidence": {
+   "disabled_identical": true,
+   "pre_p5_runtime_identical": true
+  }
+ }
+]

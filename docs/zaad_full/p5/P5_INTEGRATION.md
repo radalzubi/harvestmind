@@ -62,9 +62,9 @@ recommendation, and after approval it leaves the planner's usable stock through 
 
 | P5 key | charged per | basis | owner | frozen reference |
 |---|---|---|---|---|
-| `lost_sales_opportunity` | unmet unit, refused unit | `Service.selling_price` unless a class / line margin is declared; the basis is reported per line (`drivers[line].lost_sale_basis`) | frozen settlement convention (`settle()`: `need * service.selling_price`) or P5 declaration | `zaad/full/settlement.py` |
-| `sla` | unmet unit | `Service.sla_per_unmet` | frozen Service record | `settle()`: `need * service.sla_per_unmet`; `model.py`: `selling_price + sla_per_unmet` per unmet unit |
-| `shortage_penalty` | unmet unit | `ServiceClass.shortage_penalty_per_unit` | P5 declaration (its own key; it was folded into `sla` in the isolated engine and is now separate so the two terms are visible side by side) | none (new) |
+| `lost_contribution` | unmet unit, refused unit | `Service.selling_price - SKU.asset_value` (release audit A: the frozen model's own allocation-ranking basis, `model.py` / `settlement.py` `-(selling_price - asset_value)`), unless a line / class margin is declared; basis reported per line (`drivers[line].lost_basis`); the gross selling price (the settlement's `lost_sales_opportunity` convention) is reported as information (`gross_lost_sales_opportunity`), never charged | frozen allocation ranking or P5 declaration | `zaad/full/model.py` (service ranking), `zaad/full/settlement.py` (allocation order) |
+| `sla` | unmet unit | `Service.sla_per_unmet`; 0 on lines whose class declares `shortage_penalty_basis` REPLACES_SERVICE_SLA (the replacement is reported per line) | frozen Service record | `settle()`: `need * service.sla_per_unmet`; `model.py`: `selling_price + sla_per_unmet` per unmet unit |
+| `shortage_penalty` | unmet unit | `ServiceClass.shortage_penalty_per_unit`; when the stream also carries an SLA the class must declare `shortage_penalty_basis` (release audit B): ADDITIONAL_TO_SERVICE_SLA (a distinct consequence: needs a reference and CONTRACT / OPERATOR_DECLARED provenance) or REPLACES_SERVICE_SLA; absent -> refused (fail closed) | P5 declaration (its own key) | none (new) |
 | `backorder_carry` | late unit x periods late | `ServiceClass.late_penalty_per_unit_period` | P5 declaration | none (new; the frozen ledger has no lateness) |
 | `substitution` | substituted service-equivalent unit | `Substitute.penalty_per_output / service_equivalence` | frozen Substitute record | `compatible()` fee, `settle()`: `quantity * fee` |
 | `alternative_ship_from` | physical unit shipped from an alternative location | `Transfer.cost_per_unit` on the approved lane | P2 lane record, priced only | `settle()` charges `transfer` for real movements; P5 uses a distinct key because no movement is created |
@@ -78,7 +78,11 @@ substitution fee and the lateness (two distinct declared outcomes on one unit, e
 nothing is charged on a unit shipped on time from its own location. Ledger total equals the engine
 objective (invariant 13, fixture I17).
 
-Basis decision: the frozen ledger's key convention for a lost sale is the gross selling price
+Basis decision (superseded by the release audit, item A - see
+`evidence/p5/release_audit/P5_RELEASE_AUDIT.md`): the integration stage kept the gross convention; the
+release audit replaced it with the lost contribution (below, historical text kept for the record).
+
+Original integration-stage text: the frozen ledger's key convention for a lost sale is the gross selling price
 (`lost_sales_opportunity`), with the asset value of retained stock accounted separately through
 `opening_assets` / `closing_assets`. P5 keeps the key convention and does not carry asset movements
 (they belong to the planner's settlement ledger; the two ledgers are never summed). A declared

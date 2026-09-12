@@ -1,6 +1,6 @@
 # P5 adversarial matrix (fail closed)
 
-17 / 17 PASS
+18 / 18 PASS
 
 | case | outcome | result |
 |---|---|---|
@@ -21,3 +21,4 @@
 | malformed economics | REFUSED_AT_CONTRACT: 1 validation e | REFUSED_AT_CONTRACT: 1 validation e | REFUSED_AT_CONTRACT: 1 validation e | PASS |
 | cross-tenant order reference | REFUSED_AT_CONTRACT: Value error, atp: order o1 names an unknown customer op_other:customer_7 [type=value_error | PASS |
 | probabilistic inbound (confidence factor) | REFUSED_AT_CONTRACT: Value error, atp: inbound_confidence must be 1: probabilistic inbound is never promised (o | PASS |
+| double shortage declaration (SLA + class penalty) | REFUSED_AT_CONTRACT: Value error, atp: class k declares a sh | REFUSED_AT_CONTRACT: Value error, atp: class k declares a sh | REFUSED_AT_CON | PASS |
