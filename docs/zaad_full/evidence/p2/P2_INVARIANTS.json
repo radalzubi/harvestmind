@@ -164,7 +164,7 @@
    "no_action": true
   },
   "principle": "an efficient state produces no unnecessary transfer or purchase",
-  "seconds": 0.3
+  "seconds": 0.2
  },
  "16_service_not_overridden": {
   "pass": true,

@@ -1,0 +1,106 @@
+{
+ "passed": 25,
+ "total": 25,
+ "results": {
+  "review period outside horizon": {
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT"
+  },
+  "duplicate review epoch": {
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT"
+  },
+  "review at period zero": {
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT"
+  },
+  "unsupported observable": {
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT"
+  },
+  "illegal adaptive action": {
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT"
+  },
+  "invalid information tolerance": {
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT"
+  },
+  "more epochs than supported": {
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT"
+  },
+  "recourse enabled without structure": {
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT"
+  },
+  "future-information leak into a signature": {
+   "pass": true,
+   "outcome": "STRUCTURALLY_IMPOSSIBLE"
+  },
+  "scenario reorder": {
+   "pass": true,
+   "outcome": "INVARIANT_HOLDS"
+  },
+  "duplicate scenario": {
+   "pass": true,
+   "outcome": "INVARIANT_HOLDS"
+  },
+  "tiny probability scenario": {
+   "pass": true,
+   "outcome": "INVARIANT_HOLDS"
+  },
+  "zero-probability scenario": {
+   "pass": true,
+   "outcome": "REFUSED_AT_MODEL"
+  },
+  "near-tolerance observable values": {
+   "pass": true,
+   "outcome": "DETERMINISTIC_QUANTISATION"
+  },
+  "supplier failure known too early": {
+   "pass": true,
+   "outcome": "STRUCTURALLY_IMPOSSIBLE"
+  },
+  "transfer arrival before lead time": {
+   "pass": true,
+   "outcome": "STRUCTURALLY_IMPOSSIBLE"
+  },
+  "committed purchase cancelled by a branch": {
+   "pass": true,
+   "outcome": "STRUCTURALLY_IMPOSSIBLE"
+  },
+  "source capacity exceeded after adaptation": {
+   "pass": true,
+   "outcome": "INVARIANT_HOLDS"
+  },
+  "MOV counted per line instead of per shared order": {
+   "pass": true,
+   "outcome": "INVARIANT_HOLDS"
+  },
+  "perishable lot treated as fresh after review": {
+   "pass": true,
+   "outcome": "INVARIANT_HOLDS"
+  },
+  "cold-chain state reset": {
+   "pass": true,
+   "outcome": "INVARIANT_HOLDS"
+  },
+  "adaptive cheaper only through double counting": {
+   "pass": true,
+   "outcome": "INVARIANT_HOLDS"
+  },
+  "perfect-information plan surfaced as executable": {
+   "pass": true,
+   "outcome": "REPORT_ONLY"
+  },
+  "policy lookup leaking the future": {
+   "pass": true,
+   "outcome": "STRUCTURALLY_IMPOSSIBLE"
+  },
+  "disabled block reaches a hook": {
+   "pass": true,
+   "outcome": "FROZEN_PATH"
+  }
+ }
+}

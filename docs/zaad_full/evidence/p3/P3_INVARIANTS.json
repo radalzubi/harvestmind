@@ -18,7 +18,7 @@
    ],
    "owner": "PURCHASING_ECONOMICS"
   },
-  "seconds": 0.6
+  "seconds": 0.5
  },
  "03_sum_of_sources_equals_commitment": {
   "pass": true,
@@ -26,7 +26,7 @@
    "pairs": 1,
    "mismatched": []
   },
-  "seconds": 0.9
+  "seconds": 0.7
  },
  "04_unapproved_source_gets_nothing": {
   "pass": true,
@@ -61,7 +61,7 @@
    },
    "over": {}
   },
-  "seconds": 2.4
+  "seconds": 2.3
  },
  "07_moq_respected": {
   "pass": true,
@@ -78,7 +78,7 @@
    ],
    "below_moq": []
   },
-  "seconds": 5.2
+  "seconds": 4.9
  },
  "08_mov_respected": {
   "pass": true,
@@ -138,7 +138,7 @@
    ],
    "pack_violations": []
   },
-  "seconds": 9.4
+  "seconds": 8.9
  },
  "10_payment_terms_not_double_counted": {
   "pass": true,
@@ -198,7 +198,7 @@
   "evidence": {
    "fill_correlation_plant_group": 1.0
   },
-  "seconds": 0.1
+  "seconds": 0.0
  },
  "14_single_source_unaffected_by_correlation": {
   "pass": true,
@@ -234,7 +234,7 @@
     "src_B"
    ]
   },
-  "seconds": 3.0
+  "seconds": 2.8
  },
  "17_declared_shares_respected": {
   "pass": true,
@@ -278,7 +278,7 @@
     8
    ]
   },
-  "seconds": 0.7
+  "seconds": 0.6
  },
  "20_unusable_life_cannot_serve": {
   "pass": true,
@@ -330,7 +330,7 @@
    "options": 2,
    "mismatched": []
   },
-  "seconds": 0.6
+  "seconds": 0.5
  },
  "26_economics_reconcile": {
   "pass": true,
@@ -344,7 +344,7 @@
     "unmapped": []
    }
   },
-  "seconds": 1.9
+  "seconds": 1.7
  },
  "27_incumbent_retained_when_not_material": {
   "pass": true,
@@ -394,7 +394,7 @@
     "NO_ACTION"
    ]
   },
-  "seconds": 0.6
+  "seconds": 0.5
  },
  "32_p1_ownership_unchanged": {
   "pass": true,
@@ -420,7 +420,7 @@
    "transfer_actions_in_plan": 25,
    "block_carries_transfers": false
   },
-  "seconds": 0.9
+  "seconds": 0.8
  },
  "34_sector_physics_unchanged": {
   "pass": true,
@@ -428,13 +428,13 @@
    "profiles_identical": true,
    "sector_invariants": "19 / 19 (gates/sector_invariants.log)"
   },
-  "seconds": 14.8
+  "seconds": 12.9
  },
  "benchmark": {
   "pass": true,
   "evidence": {
    "fixtures": "30 / 30",
-   "tag": "p3_authoritative"
+   "tag": "p3_under_p4rel"
   },
   "seconds": 0
  }

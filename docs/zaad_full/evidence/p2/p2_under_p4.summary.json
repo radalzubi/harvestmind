@@ -1,0 +1,6639 @@
+{
+ "fixtures": {
+  "A_independent_demand": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_asset_basis": 8954.676881147261,
+     "realized": 9333.235811548719,
+     "components": {
+      "PURCHASE": 7322.186437142956,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.3410299914066055,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.73832364023946,
+      "INVENTORY_VALUE_CHANGE": 1298.029036166212
+     },
+     "service": 0.98037373290864,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1524.7049230395298,
+     "transfer_lines": 20,
+     "purchase_units": 1464.4372874285912,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.18406654375578008,
+     "end_stock_units": 63.79704635389074,
+     "branch_cover_periods": 0.21262493346834843,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 63.79704635389074,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.020763989654369652,
+     "wall_p95": 0.02218216611072421,
+     "wall_max": 0.02300820918753743,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_asset_basis": 8954.676881147261,
+     "realized": 9333.235811548719,
+     "components": {
+      "PURCHASE": 7322.186437142956,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.3410299914066055,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.73832364023946,
+      "INVENTORY_VALUE_CHANGE": 1298.029036166212
+     },
+     "service": 0.98037373290864,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1524.7049230395298,
+     "transfer_lines": 20,
+     "purchase_units": 1464.4372874285912,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.18406654375578008,
+     "end_stock_units": 63.79704635389074,
+     "branch_cover_periods": 0.21262493346834843,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 63.79704635389074,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.020046093966811895,
+     "wall_p95": 0.02194429188966751,
+     "wall_max": 0.02253845799714327,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 8751.02495675355,
+     "cost_asset_basis": 9033.486438131291,
+     "realized": 9818.056540826103,
+     "components": {
+      "PURCHASE": 9987.812494581049,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 22.597901288080152,
+      "FINANCING": 0.0,
+      "SHORTAGE": 215.9764845527536,
+      "INVENTORY_VALUE_CHANGE": -740.7061047322204
+     },
+     "service": 0.9894239296071631,
+     "service_by_branch": {
+      "svc_north": 0.9909643404986469,
+      "svc_south": 0.9881337063785915
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9881337063785915,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 1661.8788256822045,
+     "transfer_lines": 21.5,
+     "purchase_units": 1997.5624989162097,
+     "purchase_lines": 12,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 4.5,
+     "central_stock_share": 0.48914972082014496,
+     "end_stock_units": 196.38652309879177,
+     "branch_cover_periods": 0.23325036471603816,
+     "early_purchase_units": 228.48395194446502,
+     "early_transfer_units": 323.17804592528233,
+     "avg_inventory_units": 196.38652309879177,
+     "conservation_max_residual": 2.842170943040401e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.36953861464280635,
+     "wall_p95": 0.5846456661820412,
+     "wall_max": 0.7832477912306786,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 8827.868743399897,
+     "cost_asset_basis": 8957.693474784086,
+     "realized": 9340.122327198793,
+     "components": {
+      "PURCHASE": 7342.754389166814,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.679451312787082,
+      "FINANCING": 0.0,
+      "SHORTAGE": 403.5615453108535,
+      "INVENTORY_VALUE_CHANGE": 1280.6995032904595
+     },
+     "service": 0.9802289740522407,
+     "service_by_branch": {
+      "svc_north": 0.991948816122098,
+      "svc_south": 0.9690563119676883
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9690563119676883,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 1527.1371905893973,
+     "transfer_lines": 21.5,
+     "purchase_units": 1468.5508778333628,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.14781729251961906,
+     "end_stock_units": 66.73808878969726,
+     "branch_cover_periods": 0.2188220628476849,
+     "early_purchase_units": 228.7447088080134,
+     "early_transfer_units": 331.0995068454659,
+     "avg_inventory_units": 66.73808878969726,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.026383916498161852,
+     "wall_p95": 0.028462375048547983,
+     "wall_max": 0.037749584298580885,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8836.423045049625,
+     "cost_asset_basis": 8973.566060451696,
+     "realized": 9377.26267948357,
+     "components": {
+      "PURCHASE": 7469.571163263667,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 17.463181968413252,
+      "FINANCING": 0.0,
+      "SHORTAGE": 398.253336967408,
+      "INVENTORY_VALUE_CHANGE": 1183.78168791851
+     },
+     "service": 0.9804950337705423,
+     "service_by_branch": {
+      "svc_north": 0.9830646590897429,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1540.966546827863,
+     "transfer_lines": 19.5,
+     "purchase_units": 1493.9142326527333,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 6.5,
+     "central_stock_share": 0.35980838422316797,
+     "end_stock_units": 151.76336710644847,
+     "branch_cover_periods": 0.21780080270914953,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 151.76336710644847,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.3281776354415342,
+     "wall_p95": 0.43108408292755485,
+     "wall_max": 0.5959093747660518,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 16
+     },
+     "states": {
+      "NO_ACTION": 16
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "pooling_has_value"
+   },
+   "why": "independent branches diversify: one pooled central stock should cover both with less total protection than isolated buffers",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.009758638412997503,
+     "tolerance": 0.02,
+     "best_baseline": "independent",
+     "best_cost": 8751.02495675355,
+     "zaad_cost": 8836.423045049625
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.9830646590897429,
+      "svc_south": 0.9783501418073668
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.8125
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9783501418073668,
+     "incumbent_min": 0.9781408559352617
+    }
+   },
+   "pass": true
+  },
+  "B_correlated_demand": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 8641.416261804883,
+     "cost_asset_basis": 8765.491450724969,
+     "realized": 9132.193625814034,
+     "components": {
+      "PURCHASE": 7247.017618310965,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.542308663873616,
+      "FINANCING": 0.0,
+      "SHORTAGE": 214.8824463211051,
+      "INVENTORY_VALUE_CHANGE": 1356.8420926799508
+     },
+     "service": 0.9894954502843972,
+     "service_by_branch": {
+      "svc_north": 0.9953276706080079,
+      "svc_south": 0.983979134597697
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.983979134597697,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 1529.5457991907074,
+     "transfer_lines": 19.5,
+     "purchase_units": 1449.403523662193,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.23622007539084744,
+     "end_stock_units": 65.54625386461593,
+     "branch_cover_periods": 0.21463981476301525,
+     "early_purchase_units": 215.63231659463085,
+     "early_transfer_units": 321.7867464110752,
+     "avg_inventory_units": 65.54625386461593,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1625.8837317025936,
+     "wall_p50": 0.02013656252529472,
+     "wall_p95": 0.022245042026042938,
+     "wall_max": 0.02374699991196394,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 8641.416261804883,
+     "cost_asset_basis": 8765.491450724969,
+     "realized": 9132.193625814034,
+     "components": {
+      "PURCHASE": 7247.017618310965,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.542308663873616,
+      "FINANCING": 0.0,
+      "SHORTAGE": 214.8824463211051,
+      "INVENTORY_VALUE_CHANGE": 1356.8420926799508
+     },
+     "service": 0.9894954502843972,
+     "service_by_branch": {
+      "svc_north": 0.9953276706080079,
+      "svc_south": 0.983979134597697
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.983979134597697,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 1529.5457991907074,
+     "transfer_lines": 19.5,
+     "purchase_units": 1449.403523662193,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.23622007539084744,
+     "end_stock_units": 65.54625386461593,
+     "branch_cover_periods": 0.21463981476301525,
+     "early_purchase_units": 215.63231659463085,
+     "early_transfer_units": 321.7867464110752,
+     "avg_inventory_units": 65.54625386461593,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1625.8837317025936,
+     "wall_p50": 0.019813551916740835,
+     "wall_p95": 0.022037209011614323,
+     "wall_max": 0.02317112497985363,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 8630.006331804367,
+     "cost_asset_basis": 8794.498304100616,
+     "realized": 9264.560131009159,
+     "components": {
+      "PURCHASE": 7966.659178877981,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 15.233072667728083,
+      "FINANCING": 0.0,
+      "SHORTAGE": 152.741718108176,
+      "INVENTORY_VALUE_CHANGE": 821.5927993199498
+     },
+     "service": 0.9926363872510743,
+     "service_by_branch": {
+      "svc_north": 0.9947744255694989,
+      "svc_south": 0.9905899557873888
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9905899557873888,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 1541.666810176614,
+     "transfer_lines": 23,
+     "purchase_units": 1593.3318357755961,
+     "purchase_lines": 14,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 4,
+     "central_stock_share": 0.4083896442620546,
+     "end_stock_units": 132.38265532668453,
+     "branch_cover_periods": 0.2151284951620771,
+     "early_purchase_units": 213.5820304928564,
+     "early_transfer_units": 310.4271179215275,
+     "avg_inventory_units": 132.38265532668453,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1625.8837317025936,
+     "wall_p50": 0.2760432187933475,
+     "wall_p95": 0.5258102496154606,
+     "wall_max": 0.5652132909744978,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 8713.810725262676,
+     "cost_asset_basis": 8837.568129894717,
+     "realized": 9202.300779079866,
+     "components": {
+      "PURCHASE": 7191.53604184832,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 8.49741854675949,
+      "FINANCING": 0.0,
+      "SHORTAGE": 338.4421009382579,
+      "INVENTORY_VALUE_CHANGE": 1361.0505873054321
+     },
+     "service": 0.9834517112474208,
+     "service_by_branch": {
+      "svc_north": 1.0,
+      "svc_south": 0.9676785205768067
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9676785205768067,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1513.8731522054868,
+     "transfer_lines": 20,
+     "purchase_units": 1438.3072083696636,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.20555867289444396,
+     "end_stock_units": 73.84661356112416,
+     "branch_cover_periods": 0.24710898980175078,
+     "early_purchase_units": 219.3851380656331,
+     "early_transfer_units": 321.7828575857626,
+     "avg_inventory_units": 73.84661356112416,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1625.8837317025936,
+     "wall_p50": 0.026993697974830866,
+     "wall_p95": 0.028785958420485258,
+     "wall_max": 0.0405151667073369,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8636.308182441266,
+     "cost_asset_basis": 8759.030510886096,
+     "realized": 9122.468046359623,
+     "components": {
+      "PURCHASE": 7228.419603002729,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 8.17283960996852,
+      "FINANCING": 0.0,
+      "SHORTAGE": 204.86036492333196,
+      "INVENTORY_VALUE_CHANGE": 1374.7583530279496
+     },
+     "service": 0.989969496594834,
+     "service_by_branch": {
+      "svc_north": 0.9967522786565508,
+      "svc_south": 0.9835193965229705
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9835193965229705,
+     "breaches": 0,
+     "severe_starvation": false,
+     "transfer_units": 1531.284428978221,
+     "transfer_lines": 20,
+     "purchase_units": 1445.6839206005457,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 6,
+     "central_stock_share": 0.20529725963454465,
+     "end_stock_units": 71.02586803901212,
+     "branch_cover_periods": 0.2276508106854651,
+     "early_purchase_units": 241.1675949809146,
+     "early_transfer_units": 325.8331530433103,
+     "avg_inventory_units": 71.02586803901212,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1625.8837317025936,
+     "wall_p50": 0.3573663543211296,
+     "wall_p95": 0.5396082089282572,
+     "wall_max": 0.6496834172867239,
+     "solve_statuses": {
+      "OPTIMAL": 66
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 16
+     },
+     "states": {
+      "NO_ACTION": 14,
+      "NORMAL_REPLENISHMENT": 2
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "pooling_benefit_shrinks"
+   },
+   "why": "branches that move together do not diversify; the pooling benefit measured against the independent baseline must be smaller than in A",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0007302254940039386,
+     "tolerance": 0.02,
+     "best_baseline": "independent",
+     "best_cost": 8630.006331804367,
+     "zaad_cost": 8636.308182441266
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.9967522786565508,
+      "svc_south": 0.9835193965229705
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.75
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 5.684341886080802e-14
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9835193965229705,
+     "incumbent_min": 0.983979134597697
+    }
+   },
+   "pass": true
+  },
+  "C_short_transfer_lead": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_asset_basis": 8954.676881147261,
+     "realized": 9333.235811548719,
+     "components": {
+      "PURCHASE": 7322.186437142956,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.3410299914066055,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.73832364023946,
+      "INVENTORY_VALUE_CHANGE": 1298.029036166212
+     },
+     "service": 0.98037373290864,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1524.7049230395298,
+     "transfer_lines": 20,
+     "purchase_units": 1464.4372874285912,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.18406654375578008,
+     "end_stock_units": 63.79704635389074,
+     "branch_cover_periods": 0.21262493346834843,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 63.79704635389074,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.020344958524219692,
+     "wall_p95": 0.022498457692563534,
+     "wall_max": 0.02455220790579915,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 8826.160706327157,
+     "cost_asset_basis": 8954.676881147261,
+     "realized": 9333.235811548719,
+     "components": {
+      "PURCHASE": 7322.186437142956,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.3410299914066055,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.73832364023946,
+      "INVENTORY_VALUE_CHANGE": 1298.029036166212
+     },
+     "service": 0.98037373290864,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1524.7049230395298,
+     "transfer_lines": 20,
+     "purchase_units": 1464.4372874285912,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.18406654375578008,
+     "end_stock_units": 63.79704635389074,
+     "branch_cover_periods": 0.21262493346834843,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 63.79704635389074,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.021202448289841413,
+     "wall_p95": 0.023205624893307686,
+     "wall_max": 0.02371450001373887,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 8751.02495675355,
+     "cost_asset_basis": 9033.486438131291,
+     "realized": 9818.056540826103,
+     "components": {
+      "PURCHASE": 9987.812494581049,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 22.597901288080152,
+      "FINANCING": 0.0,
+      "SHORTAGE": 215.9764845527536,
+      "INVENTORY_VALUE_CHANGE": -740.7061047322204
+     },
+     "service": 0.9894239296071631,
+     "service_by_branch": {
+      "svc_north": 0.9909643404986469,
+      "svc_south": 0.9881337063785915
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9881337063785915,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 1661.8788256822045,
+     "transfer_lines": 21.5,
+     "purchase_units": 1997.5624989162097,
+     "purchase_lines": 12,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 4.5,
+     "central_stock_share": 0.48914972082014496,
+     "end_stock_units": 196.38652309879177,
+     "branch_cover_periods": 0.23325036471603816,
+     "early_purchase_units": 228.48395194446502,
+     "early_transfer_units": 323.17804592528233,
+     "avg_inventory_units": 196.38652309879177,
+     "conservation_max_residual": 2.842170943040401e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.37856356299016625,
+     "wall_p95": 0.5998045839369297,
+     "wall_max": 0.796232583001256,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 8827.868743399897,
+     "cost_asset_basis": 8957.693474784086,
+     "realized": 9340.122327198793,
+     "components": {
+      "PURCHASE": 7342.754389166814,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.679451312787082,
+      "FINANCING": 0.0,
+      "SHORTAGE": 403.5615453108535,
+      "INVENTORY_VALUE_CHANGE": 1280.6995032904595
+     },
+     "service": 0.9802289740522407,
+     "service_by_branch": {
+      "svc_north": 0.991948816122098,
+      "svc_south": 0.9690563119676883
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9690563119676883,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 1527.1371905893973,
+     "transfer_lines": 21.5,
+     "purchase_units": 1468.5508778333628,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.14781729251961906,
+     "end_stock_units": 66.73808878969726,
+     "branch_cover_periods": 0.2188220628476849,
+     "early_purchase_units": 228.7447088080134,
+     "early_transfer_units": 331.0995068454659,
+     "avg_inventory_units": 66.73808878969726,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.026365812169387937,
+     "wall_p95": 0.02893795818090439,
+     "wall_max": 0.03657983290031552,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8836.423045049625,
+     "cost_asset_basis": 8973.566060451696,
+     "realized": 9377.26267948357,
+     "components": {
+      "PURCHASE": 7469.571163263667,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 17.463181968413252,
+      "FINANCING": 0.0,
+      "SHORTAGE": 398.253336967408,
+      "INVENTORY_VALUE_CHANGE": 1183.78168791851
+     },
+     "service": 0.9804950337705423,
+     "service_by_branch": {
+      "svc_north": 0.9830646590897429,
+      "svc_south": 0.9783501418073668
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9783501418073668,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1540.966546827863,
+     "transfer_lines": 19.5,
+     "purchase_units": 1493.9142326527333,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 6.5,
+     "central_stock_share": 0.35980838422316797,
+     "end_stock_units": 151.76336710644847,
+     "branch_cover_periods": 0.21780080270914953,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 151.76336710644847,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.3304330414393917,
+     "wall_p95": 0.4413920002989471,
+     "wall_max": 0.6016277079470456,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 16
+     },
+     "states": {
+      "NO_ACTION": 16
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "central_more_useful_than_D"
+   },
+   "why": "a one-review lane makes central stock reachable for next period's demand",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.009758638412997503,
+     "tolerance": 0.02,
+     "best_baseline": "independent",
+     "best_cost": 8751.02495675355,
+     "zaad_cost": 8836.423045049625
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.9830646590897429,
+      "svc_south": 0.9783501418073668
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.8125
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9783501418073668,
+     "incumbent_min": 0.9781408559352617
+    }
+   },
+   "pass": true
+  },
+  "D_long_transfer_lead": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 8733.881422117462,
+     "cost_asset_basis": 8991.520901227159,
+     "realized": 9779.494701296431,
+     "components": {
+      "PURCHASE": 7461.717938566637,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 17.30254290591151,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.6381070114926,
+      "INVENTORY_VALUE_CHANGE": 1588.0177090877744
+     },
+     "service": 0.9803890941420927,
+     "service_by_branch": {
+      "svc_north": 0.9779244814544102,
+      "svc_south": 0.9834357796751192
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9779244814544102,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1559.0920186230812,
+     "transfer_lines": 19,
+     "purchase_units": 1492.3435877133275,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.038224299976780125,
+     "end_stock_units": 150.3673371585167,
+     "branch_cover_periods": 0.6786294148151524,
+     "early_purchase_units": 234.5246916739385,
+     "early_transfer_units": 347.46457084034404,
+     "avg_inventory_units": 150.3673371585167,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.020791176706552505,
+     "wall_p95": 0.022513875272125006,
+     "wall_max": 0.022674041334539652,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 8733.881422117462,
+     "cost_asset_basis": 8991.520901227159,
+     "realized": 9779.494701296431,
+     "components": {
+      "PURCHASE": 7461.717938566637,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 17.30254290591151,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.6381070114926,
+      "INVENTORY_VALUE_CHANGE": 1588.0177090877744
+     },
+     "service": 0.9803890941420927,
+     "service_by_branch": {
+      "svc_north": 0.9779244814544102,
+      "svc_south": 0.9834357796751192
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9779244814544102,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1559.0920186230812,
+     "transfer_lines": 19,
+     "purchase_units": 1492.3435877133275,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.038224299976780125,
+     "end_stock_units": 150.3673371585167,
+     "branch_cover_periods": 0.6786294148151524,
+     "early_purchase_units": 234.5246916739385,
+     "early_transfer_units": 347.46457084034404,
+     "avg_inventory_units": 150.3673371585167,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.020621489733457565,
+     "wall_p95": 0.022623667027801275,
+     "wall_max": 0.02300708321854472,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 8629.53206355336,
+     "cost_asset_basis": 9028.107569612732,
+     "realized": 10183.692849678326,
+     "components": {
+      "PURCHASE": 9919.523591012676,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 31.68328865496041,
+      "FINANCING": 0.0,
+      "SHORTAGE": 163.3449156817043,
+      "INVENTORY_VALUE_CHANGE": -278.4323775430166
+     },
+     "service": 0.9920123236187215,
+     "service_by_branch": {
+      "svc_north": 0.99036223946386,
+      "svc_south": 0.9938297438894858
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.99036223946386,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 1737.8671593600186,
+     "transfer_lines": 21.5,
+     "purchase_units": 1983.904718202535,
+     "purchase_lines": 12.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.42661560922894265,
+     "end_stock_units": 275.34286569191784,
+     "branch_cover_periods": 0.7365330086394488,
+     "early_purchase_units": 325.8177391684234,
+     "early_transfer_units": 349.74038636046254,
+     "avg_inventory_units": 275.34286569191784,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 1.027876021224074,
+     "wall_p95": 2.0592349162325263,
+     "wall_max": 2.2878251667134464,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 8757.188446657783,
+     "cost_asset_basis": 9015.582808667754,
+     "realized": 9806.983964877838,
+     "components": {
+      "PURCHASE": 7455.946657538019,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 17.66724280175633,
+      "FINANCING": 0.0,
+      "SHORTAGE": 442.6209258597578,
+      "INVENTORY_VALUE_CHANGE": 1578.0206112192934
+     },
+     "service": 0.9782978923432617,
+     "service_by_branch": {
+      "svc_north": 0.987454204490368,
+      "svc_south": 0.969972132573812
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.969972132573812,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1563.6426372950534,
+     "transfer_lines": 19.5,
+     "purchase_units": 1491.189331507604,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.06449574289169038,
+     "end_stock_units": 153.53675292002526,
+     "branch_cover_periods": 0.6868121254308355,
+     "early_purchase_units": 238.17973886946135,
+     "early_transfer_units": 347.4590987945047,
+     "avg_inventory_units": 153.53675292002526,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02579191653057933,
+     "wall_p95": 0.02911070827394724,
+     "wall_max": 0.033441624604165554,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8633.659100730769,
+     "cost_asset_basis": 8924.01249535512,
+     "realized": 9813.293697003945,
+     "components": {
+      "PURCHASE": 8075.743361808636,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 34.013918733773224,
+      "FINANCING": 0.0,
+      "SHORTAGE": 212.07520370931496,
+      "INVENTORY_VALUE_CHANGE": 1154.779368488332
+     },
+     "service": 0.9896193826006928,
+     "service_by_branch": {
+      "svc_north": 0.9894510049351835,
+      "svc_south": 0.9900761736344305
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9894510049351835,
+     "breaches": 0,
+     "severe_starvation": false,
+     "transfer_units": 1683.40922131944,
+     "transfer_lines": 25.5,
+     "purchase_units": 1615.1486723617272,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.4918144313600116,
+     "end_stock_units": 295.5971509006482,
+     "branch_cover_periods": 0.7001178197336413,
+     "early_purchase_units": 254.04207300916062,
+     "early_transfer_units": 335.95885094245307,
+     "avg_inventory_units": 295.5971509006482,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.5608497916255146,
+     "wall_p95": 0.6615607920102775,
+     "wall_max": 0.6813351246528327,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 16
+     },
+     "states": {
+      "NO_ACTION": 16
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "local_more_valuable_than_C"
+   },
+   "why": "a three-review lane cannot protect near-term branch demand; more must sit locally",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0004782457666318324,
+     "tolerance": 0.02,
+     "best_baseline": "independent",
+     "best_cost": 8629.53206355336,
+     "zaad_cost": 8633.659100730769
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.9894510049351835,
+      "svc_south": 0.9900761736344305
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.0
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 4.547473508864641e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9894510049351835,
+     "incumbent_min": 0.9779244814544102
+    }
+   },
+   "pass": true
+  },
+  "E_high_transfer_cost": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 11169.01646851259,
+     "cost_asset_basis": 12058.745934561834,
+     "realized": 12077.704673019873,
+     "components": {
+      "PURCHASE": 7322.186437142956,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.3410299914066055,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.73832364023946,
+      "INVENTORY_VALUE_CHANGE": 1298.029036166212
+     },
+     "service": 0.98037373290864,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1524.7049230395298,
+     "transfer_lines": 20,
+     "purchase_units": 1464.4372874285912,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.18406654375578008,
+     "end_stock_units": 63.79704635389074,
+     "branch_cover_periods": 0.21262493346834843,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 63.79704635389074,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02020696853287518,
+     "wall_p95": 0.02184391627088189,
+     "wall_max": 0.02473879186436534,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 11169.01646851259,
+     "cost_asset_basis": 12058.745934561834,
+     "realized": 12077.704673019873,
+     "components": {
+      "PURCHASE": 7322.186437142956,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.3410299914066055,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.73832364023946,
+      "INVENTORY_VALUE_CHANGE": 1298.029036166212
+     },
+     "service": 0.98037373290864,
+     "service_by_branch": {
+      "svc_north": 0.9781408559352617,
+      "svc_south": 0.9828014545468893
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781408559352617,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1524.7049230395298,
+     "transfer_lines": 20,
+     "purchase_units": 1464.4372874285912,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.18406654375578008,
+     "end_stock_units": 63.79704635389074,
+     "branch_cover_periods": 0.21262493346834843,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 63.79704635389074,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.020661802031099796,
+     "wall_p95": 0.02226954186335206,
+     "wall_max": 0.02325591677799821,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 11096.73700112961,
+     "cost_asset_basis": 13129.557349458926,
+     "realized": 14056.453884115259,
+     "components": {
+      "PURCHASE": 10152.968744802458,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 18.771135506367738,
+      "FINANCING": 0.0,
+      "SHORTAGE": 189.0571454857236,
+      "INVENTORY_VALUE_CHANGE": -868.7709044779394
+     },
+     "service": 0.9907337691852385,
+     "service_by_branch": {
+      "svc_north": 0.9919750467673396,
+      "svc_south": 0.9897028882331971
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9897028882331971,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 2282.213881399325,
+     "transfer_lines": 22.5,
+     "purchase_units": 2030.5937489604917,
+     "purchase_lines": 11,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 3.5,
+     "central_stock_share": 0.3946917013365868,
+     "end_stock_units": 163.13010618629107,
+     "branch_cover_periods": 0.2650401660167804,
+     "early_purchase_units": 233.1513565269849,
+     "early_transfer_units": 326.2543425274348,
+     "avg_inventory_units": 163.13010618629107,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.37317035463638604,
+     "wall_p95": 0.5948140840046108,
+     "wall_max": 0.9741527503356338,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 11170.297472070277,
+     "cost_asset_basis": 12069.065555287329,
+     "realized": 12091.56909246034,
+     "components": {
+      "PURCHASE": 7342.754389166814,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.660618520026379,
+      "FINANCING": 0.0,
+      "SHORTAGE": 403.5615453108535,
+      "INVENTORY_VALUE_CHANGE": 1280.6995032904597
+     },
+     "service": 0.9802289740522407,
+     "service_by_branch": {
+      "svc_north": 0.991948816122098,
+      "svc_south": 0.9690563119676883
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9690563119676883,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 1528.4465180860936,
+     "transfer_lines": 21,
+     "purchase_units": 1468.5508778333628,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.13187347670625832,
+     "end_stock_units": 66.5744228526102,
+     "branch_cover_periods": 0.22217695887346156,
+     "early_purchase_units": 228.7447088080134,
+     "early_transfer_units": 331.0995068454659,
+     "avg_inventory_units": 66.5744228526102,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02677751029841602,
+     "wall_p95": 0.028636666014790535,
+     "wall_max": 0.038052833173424006,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 11169.522266383312,
+     "cost_asset_basis": 12059.251727246785,
+     "realized": 12078.210358921126,
+     "components": {
+      "PURCHASE": 7322.765463059012,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.267791104216903,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.73832364023934,
+      "INVENTORY_VALUE_CHANGE": 1298.0290445463138
+     },
+     "service": 0.98037373290864,
+     "service_by_branch": {
+      "svc_north": 0.984309902832235,
+      "svc_south": 0.9769375764663325
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9769375764663325,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1524.7048682856725,
+     "transfer_lines": 20,
+     "purchase_units": 1464.5530926118026,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 7.5,
+     "central_stock_share": 0.18493534039799064,
+     "end_stock_units": 63.16056554855166,
+     "branch_cover_periods": 0.20930512043864,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 63.16056554855166,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.36484763550106436,
+     "wall_p95": 0.5949520827271044,
+     "wall_max": 0.6987076252698898,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 16
+     },
+     "states": {
+      "NO_ACTION": 16
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "no_churn"
+   },
+   "why": "at 40% of unit price per move nothing should be moved that demand does not need",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0065591592597258885,
+     "tolerance": 0.02,
+     "best_baseline": "independent",
+     "best_cost": 11096.73700112961,
+     "zaad_cost": 11169.522266383312
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.984309902832235,
+      "svc_south": 0.9769375764663325
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.9375
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9769375764663325,
+     "incumbent_min": 0.9781408559352617
+    }
+   },
+   "pass": true
+  },
+  "F_low_transfer_cost": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 8539.437695464567,
+     "cost_asset_basis": 8587.110330002663,
+     "realized": 9004.12121021475,
+     "components": {
+      "PURCHASE": 6109.88321871948,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 12.999779874478786,
+      "FINANCING": 0.0,
+      "SHORTAGE": 367.3381478326173,
+      "INVENTORY_VALUE_CHANGE": 2498.026162210029
+     },
+     "service": 0.9820055105840519,
+     "service_by_branch": {
+      "svc_north": 0.976556389039809,
+      "svc_south": 0.98769700914847
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.976556389039809,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1587.3901578144523,
+     "transfer_lines": 18,
+     "purchase_units": 1221.9766437438961,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.3217431367231184,
+     "end_stock_units": 112.97427748058945,
+     "branch_cover_periods": 0.173726247765279,
+     "early_purchase_units": 0,
+     "early_transfer_units": 391.10337616618597,
+     "avg_inventory_units": 112.97427748058945,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.019941020873375237,
+     "wall_p95": 0.020938874687999487,
+     "wall_max": 0.023783833254128695,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 8539.437695464567,
+     "cost_asset_basis": 8587.110330002663,
+     "realized": 9004.12121021475,
+     "components": {
+      "PURCHASE": 6109.88321871948,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 12.999779874478786,
+      "FINANCING": 0.0,
+      "SHORTAGE": 367.3381478326173,
+      "INVENTORY_VALUE_CHANGE": 2498.026162210029
+     },
+     "service": 0.9820055105840519,
+     "service_by_branch": {
+      "svc_north": 0.976556389039809,
+      "svc_south": 0.98769700914847
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.976556389039809,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1587.3901578144523,
+     "transfer_lines": 18,
+     "purchase_units": 1221.9766437438961,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.3217431367231184,
+     "end_stock_units": 112.97427748058945,
+     "branch_cover_periods": 0.173726247765279,
+     "early_purchase_units": 0,
+     "early_transfer_units": 391.10337616618597,
+     "avg_inventory_units": 112.97427748058945,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.019480812596157193,
+     "wall_p95": 0.020425124559551477,
+     "wall_max": 0.022555625066161156,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 8567.536817772914,
+     "cost_asset_basis": 8634.474320072304,
+     "realized": 9215.305390937116,
+     "components": {
+      "PURCHASE": 6899.956984394557,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 21.07721655527211,
+      "FINANCING": 0.0,
+      "SHORTAGE": 467.48661359753964,
+      "INVENTORY_VALUE_CHANGE": 1810.2458195482136
+     },
+     "service": 0.9771106520276692,
+     "service_by_branch": {
+      "svc_north": 0.9722667278450808,
+      "svc_south": 0.9822995153126197
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9722667278450808,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 1653.8756841531813,
+     "transfer_lines": 19.5,
+     "purchase_units": 1379.9913968789115,
+     "purchase_lines": 9.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 2.5,
+     "central_stock_share": 0.5210011554533822,
+     "end_stock_units": 183.17104863510286,
+     "branch_cover_periods": 0.23745088176030577,
+     "early_purchase_units": 2.6781945227268125,
+     "early_transfer_units": 484.2770851969245,
+     "avg_inventory_units": 183.17104863510286,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.26680616685189307,
+     "wall_p95": 0.5190258324146271,
+     "wall_max": 0.8217274583876133,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 8504.38495926879,
+     "cost_asset_basis": 8552.550056465534,
+     "realized": 8973.824688238452,
+     "components": {
+      "PURCHASE": 6156.056127586877,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 13.041174292568424,
+      "FINANCING": 0.0,
+      "SHORTAGE": 308.32147300777325,
+      "INVENTORY_VALUE_CHANGE": 2480.44461738391
+     },
+     "service": 0.984878914441558,
+     "service_by_branch": {
+      "svc_north": 0.991948816122098,
+      "svc_south": 0.9784154983161809
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9784154983161809,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1596.1295967321744,
+     "transfer_lines": 18.5,
+     "purchase_units": 1231.2112255173756,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.2605027446395296,
+     "end_stock_units": 113.33401468541607,
+     "branch_cover_periods": 0.17445677972057236,
+     "early_purchase_units": 0,
+     "early_transfer_units": 391.0995068454659,
+     "avg_inventory_units": 113.33401468541607,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02541416638996452,
+     "wall_p95": 0.02761600026860833,
+     "wall_max": 0.035846749786287546,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8549.502459275824,
+     "cost_asset_basis": 8600.284439687057,
+     "realized": 9043.9855767201,
+     "components": {
+      "PURCHASE": 6255.656849361866,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 17.980372023770563,
+      "FINANCING": 0.0,
+      "SHORTAGE": 367.33814783261755,
+      "INVENTORY_VALUE_CHANGE": 2387.0185499815434
+     },
+     "service": 0.9820055105840519,
+     "service_by_branch": {
+      "svc_north": 0.9810211304394905,
+      "svc_south": 0.9834531284216446
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9810211304394905,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1599.1657520302479,
+     "transfer_lines": 17.5,
+     "purchase_units": 1251.1313698723734,
+     "purchase_lines": 5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 7,
+     "central_stock_share": 0.36737543450423227,
+     "end_stock_units": 156.25799496848228,
+     "branch_cover_periods": 0.17112650839798116,
+     "early_purchase_units": 0,
+     "early_transfer_units": 391.10337616618597,
+     "avg_inventory_units": 156.25799496848228,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.32560237497091293,
+     "wall_p95": 0.36509887501597404,
+     "wall_max": 0.5862674587406218,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 16
+     },
+     "states": {
+      "NO_ACTION": 16
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "rebalance_before_purchase"
+   },
+   "why": "near-free moves and a well-stocked central: rebalancing should dominate purchasing early",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0053052043414217155,
+     "tolerance": 0.02,
+     "best_baseline": "echelon_base_stock",
+     "best_cost": 8504.38495926879,
+     "zaad_cost": 8549.502459275824
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.9810211304394905,
+      "svc_south": 0.9834531284216446
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.875
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 5.684341886080802e-14
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9810211304394905,
+     "incumbent_min": 0.976556389039809
+    }
+   },
+   "pass": true
+  },
+  "G_central_supply_shortage": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 13752.110067026519,
+     "cost_asset_basis": 13822.506052488483,
+     "realized": 14030.06887324287,
+     "components": {
+      "PURCHASE": 4800.0,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 4.599060858173251e-16,
+      "FINANCING": 0.0,
+      "SHORTAGE": 8877.935155715084,
+      "INVENTORY_VALUE_CHANGE": 167.72884117939373
+     },
+     "service": 0.5652552979006655,
+     "service_by_branch": {
+      "svc_north": 0.5660254014644304,
+      "svc_south": 0.5648309534634357
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5648309534634357,
+     "breaches": 8,
+     "severe_starvation": false,
+     "transfer_units": 922.0243817419616,
+     "transfer_lines": 16,
+     "purchase_units": 960.0,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.375,
+     "end_stock_units": 3.9968028886505635e-15,
+     "branch_cover_periods": 0.0,
+     "early_purchase_units": 240.0,
+     "early_transfer_units": 218.23730546454271,
+     "avg_inventory_units": 3.9968028886505635e-15,
+     "conservation_max_residual": 2.842170943040401e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.014544145669788122,
+     "wall_p95": 0.015690790954977274,
+     "wall_max": 0.015962082892656326,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 13752.110067026519,
+     "cost_asset_basis": 13822.506052488483,
+     "realized": 14030.06887324287,
+     "components": {
+      "PURCHASE": 4800.0,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 4.599060858173251e-16,
+      "FINANCING": 0.0,
+      "SHORTAGE": 8877.935155715084,
+      "INVENTORY_VALUE_CHANGE": 167.72884117939373
+     },
+     "service": 0.5652552979006655,
+     "service_by_branch": {
+      "svc_north": 0.5660254014644304,
+      "svc_south": 0.5648309534634357
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5648309534634357,
+     "breaches": 8,
+     "severe_starvation": false,
+     "transfer_units": 922.0243817419616,
+     "transfer_lines": 16,
+     "purchase_units": 960.0,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.375,
+     "end_stock_units": 3.9968028886505635e-15,
+     "branch_cover_periods": 0.0,
+     "early_purchase_units": 240.0,
+     "early_transfer_units": 218.23730546454271,
+     "avg_inventory_units": 3.9968028886505635e-15,
+     "conservation_max_residual": 2.842170943040401e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.014722291962243617,
+     "wall_p95": 0.015969375148415565,
+     "wall_max": 0.01641937531530857,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 13751.877194503777,
+     "cost_asset_basis": 13822.273179965741,
+     "realized": 14030.068873242868,
+     "components": {
+      "PURCHASE": 4800.0,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 4.088054096154001e-16,
+      "FINANCING": 0.0,
+      "SHORTAGE": 8877.93515571508,
+      "INVENTORY_VALUE_CHANGE": 167.72884117939356
+     },
+     "service": 0.5652552979006656,
+     "service_by_branch": {
+      "svc_north": 0.561457554669589,
+      "svc_south": 0.5692839716243858
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.561457554669589,
+     "breaches": 8,
+     "severe_starvation": false,
+     "transfer_units": 922.0243817419619,
+     "transfer_lines": 16,
+     "purchase_units": 960.0000000000001,
+     "purchase_lines": 16,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 8,
+     "central_stock_share": 0.4375,
+     "end_stock_units": 3.552713678800501e-15,
+     "branch_cover_periods": 0.0,
+     "early_purchase_units": 240.00000000000003,
+     "early_transfer_units": 218.23730546454271,
+     "avg_inventory_units": 3.552713678800501e-15,
+     "conservation_max_residual": 7.105427357601002e-15,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 1.7435838958481327,
+     "wall_p95": 2.6520248744636774,
+     "wall_max": 2.7020055828616023,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 13874.088277729621,
+     "cost_asset_basis": 13949.517553450423,
+     "realized": 14173.210757746261,
+     "components": {
+      "PURCHASE": 4800.0,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 1.5706995498042653,
+      "FINANCING": 0.0,
+      "SHORTAGE": 9086.238553251518,
+      "INVENTORY_VALUE_CHANGE": 101.07175396773397
+     },
+     "service": 0.5550358038056802,
+     "service_by_branch": {
+      "svc_north": 0.9508251887850054,
+      "svc_south": 0.1662672525432828
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.1662672525432828,
+     "breaches": 8,
+     "severe_starvation": true,
+     "transfer_units": 921.6487548860156,
+     "transfer_lines": 15,
+     "purchase_units": 960.0,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.008079797522487712,
+     "end_stock_units": 13.650127039965637,
+     "branch_cover_periods": 0.06644644437963908,
+     "early_purchase_units": 240.0,
+     "early_transfer_units": 218.23730546454271,
+     "avg_inventory_units": 13.650127039965637,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.03256111440714449,
+     "wall_p95": 0.03479608427733183,
+     "wall_max": 0.03556608268991113,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 13752.110067026519,
+     "cost_asset_basis": 13822.506052488483,
+     "realized": 14030.06887324287,
+     "components": {
+      "PURCHASE": 4800.0,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 4.599060858173251e-16,
+      "FINANCING": 0.0,
+      "SHORTAGE": 8877.935155715084,
+      "INVENTORY_VALUE_CHANGE": 167.72884117939373
+     },
+     "service": 0.5652552979006655,
+     "service_by_branch": {
+      "svc_north": 0.5660254014644304,
+      "svc_south": 0.5648309534634357
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5648309534634357,
+     "breaches": 8,
+     "severe_starvation": false,
+     "transfer_units": 922.0243817419616,
+     "transfer_lines": 16,
+     "purchase_units": 960.0,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 8,
+     "central_stock_share": 0.375,
+     "end_stock_units": 3.9968028886505635e-15,
+     "branch_cover_periods": 0.0,
+     "early_purchase_units": 240.0,
+     "early_transfer_units": 218.23730546454271,
+     "avg_inventory_units": 3.9968028886505635e-15,
+     "conservation_max_residual": 2.842170943040401e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.550273249973543,
+     "wall_p95": 1.717382333241403,
+     "wall_max": 1.969389583915472,
+     "solve_statuses": {
+      "OPTIMAL": 48,
+      "INFEASIBLE": 52
+     },
+     "owners": {
+      "PROTECTION_RECOVERY": 16
+     },
+     "states": {
+      "NETWORK_ALLOCATION": 2,
+      "NORMAL_REPLENISHMENT": 14
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.03,
+    "service": "feasible",
+    "action": "either",
+    "network": "principled_allocation"
+   },
+   "why": "the supplier delivers 60% of network demand: allocation, not purchasing, decides service",
+   "valid_baselines": [
+    "central_pool",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 1.6933871605161288e-05,
+     "tolerance": 0.03,
+     "best_baseline": "independent",
+     "best_cost": 13751.877194503777,
+     "zaad_cost": 13752.110067026519
+    },
+    "service": {
+     "pass": true,
+     "mode": "feasible",
+     "zaad": {
+      "svc_north": 0.5660254014644304,
+      "svc_south": 0.5648309534634357
+     },
+     "incumbent": {
+      "svc_north": 0.5660254014644304,
+      "svc_south": 0.5648309534634357
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 1.0
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 2.842170943040401e-14
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.5648309534634357,
+     "incumbent_min": 0.5648309534634357
+    }
+   },
+   "pass": true
+  },
+  "H_one_branch_demand_shock": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 12101.17838211561,
+     "cost_asset_basis": 12288.248042060059,
+     "realized": 12849.23724656496,
+     "components": {
+      "PURCHASE": 7817.723419720547,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 23.57341117809989,
+      "FINANCING": 0.0,
+      "SHORTAGE": 3646.5351773892244,
+      "INVENTORY_VALUE_CHANGE": 1022.5909899248488
+     },
+     "service": 0.8461476848226306,
+     "service_by_branch": {
+      "svc_north": 0.9476270865526792,
+      "svc_south": 0.7703699211805373
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7703699211805373,
+     "breaches": 4,
+     "severe_starvation": false,
+     "transfer_units": 1694.0712417611976,
+     "transfer_lines": 20,
+     "purchase_units": 1563.5446839441097,
+     "purchase_lines": 7,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.31752474972308187,
+     "end_stock_units": 204.86416857158235,
+     "branch_cover_periods": 0.6123469111664956,
+     "early_purchase_units": 124.46249205804514,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 204.86416857158235,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1896.1794600387475,
+     "wall_p50": 0.019210979342460632,
+     "wall_p95": 0.019689125008881092,
+     "wall_max": 0.021735290996730328,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 12101.17838211561,
+     "cost_asset_basis": 12288.248042060059,
+     "realized": 12849.23724656496,
+     "components": {
+      "PURCHASE": 7817.723419720547,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 23.57341117809989,
+      "FINANCING": 0.0,
+      "SHORTAGE": 3646.5351773892244,
+      "INVENTORY_VALUE_CHANGE": 1022.5909899248488
+     },
+     "service": 0.8461476848226306,
+     "service_by_branch": {
+      "svc_north": 0.9476270865526792,
+      "svc_south": 0.7703699211805373
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7703699211805373,
+     "breaches": 4,
+     "severe_starvation": false,
+     "transfer_units": 1694.0712417611976,
+     "transfer_lines": 20,
+     "purchase_units": 1563.5446839441097,
+     "purchase_lines": 7,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.31752474972308187,
+     "end_stock_units": 204.86416857158235,
+     "branch_cover_periods": 0.6123469111664956,
+     "early_purchase_units": 124.46249205804514,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 204.86416857158235,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1896.1794600387475,
+     "wall_p50": 0.018856229376979172,
+     "wall_p95": 0.019377916119992733,
+     "wall_max": 0.020903083961457014,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 10187.941382853127,
+     "cost_asset_basis": 10441.594541412382,
+     "realized": 11218.694282334134,
+     "components": {
+      "PURCHASE": 10275.538835042862,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 25.012805198730724,
+      "FINANCING": 0.0,
+      "SHORTAGE": 332.24030239957915,
+      "INVENTORY_VALUE_CHANGE": 140.8095217828677
+     },
+     "service": 0.9859580354866728,
+     "service_by_branch": {
+      "svc_north": 0.9857050938604184,
+      "svc_south": 0.986325368757619
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9857050938604184,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 2225.4640895504754,
+     "transfer_lines": 17.5,
+     "purchase_units": 2055.1077670085724,
+     "purchase_lines": 12.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 2.5,
+     "central_stock_share": 0.2600320234818496,
+     "end_stock_units": 217.37318803658843,
+     "branch_cover_periods": 0.6981802308817753,
+     "early_purchase_units": 424.8404333009586,
+     "early_transfer_units": 515.7575296854757,
+     "avg_inventory_units": 217.37318803658843,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1896.1794600387475,
+     "wall_p50": 0.41409972915425897,
+     "wall_p95": 0.5879082907922566,
+     "wall_max": 0.7466986263170838,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 11991.399713499313,
+     "cost_asset_basis": 12179.52686089261,
+     "realized": 12743.178915591996,
+     "components": {
+      "PURCHASE": 7916.605207463054,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 23.31428335744679,
+      "FINANCING": 0.0,
+      "SHORTAGE": 3452.760803636882,
+      "INVENTORY_VALUE_CHANGE": 1008.5864264130817
+     },
+     "service": 0.8543531103082684,
+     "service_by_branch": {
+      "svc_north": 0.991948816122098,
+      "svc_south": 0.7518360859772286
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7518360859772286,
+     "breaches": 3.5,
+     "severe_starvation": false,
+     "transfer_units": 1709.5609736076567,
+     "transfer_lines": 20,
+     "purchase_units": 1583.3210414926107,
+     "purchase_lines": 7,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.33729382603300273,
+     "end_stock_units": 202.61222441590667,
+     "branch_cover_periods": 0.594538178327376,
+     "early_purchase_units": 126.9991226517661,
+     "early_transfer_units": 331.0995068454659,
+     "avg_inventory_units": 202.61222441590667,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1896.1794600387475,
+     "wall_p50": 0.02760535408742726,
+     "wall_p95": 0.033050999976694584,
+     "wall_max": 0.033844792284071445,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 10295.312643106154,
+     "cost_asset_basis": 10561.355810659583,
+     "realized": 11395.604729921612,
+     "components": {
+      "PURCHASE": 10486.926233663844,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 30.80882011862591,
+      "FINANCING": 0.0,
+      "SHORTAGE": 432.67685356816844,
+      "INVENTORY_VALUE_CHANGE": -23.274381112960782
+     },
+     "service": 0.9817075969775941,
+     "service_by_branch": {
+      "svc_north": 0.9695665652044316,
+      "svc_south": 0.9906897846434497
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9695665652044316,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 2342.3360184196754,
+     "transfer_lines": 19.5,
+     "purchase_units": 2097.385246732769,
+     "purchase_lines": 6.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 2.5,
+     "central_stock_share": 0.2834203912652241,
+     "end_stock_units": 267.7433176975823,
+     "branch_cover_periods": 0.8535419893904648,
+     "early_purchase_units": 396.3778195965747,
+     "early_transfer_units": 490.7064230877769,
+     "avg_inventory_units": 267.7433176975823,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "demand_total": 1896.1794600387475,
+     "wall_p50": 0.7497412184020504,
+     "wall_p95": 1.0022559999488294,
+     "wall_max": 1.047346374951303,
+     "solve_statuses": {
+      "OPTIMAL": 100,
+      "INFEASIBLE": 7
+     },
+     "owners": {
+      "PROTECTION_RECOVERY": 16
+     },
+     "states": {
+      "NORMAL_REPLENISHMENT": 7,
+      "PROTECT": 6,
+      "RECOVER": 3
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.03,
+    "service": "incumbent",
+    "action": "either",
+    "network": "healthy_branch_not_starved"
+   },
+   "why": "a declared surge at south must be met from the pool without starving north",
+   "valid_baselines": [
+    "independent"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.010539053594648531,
+     "tolerance": 0.03,
+     "best_baseline": "independent",
+     "best_cost": 10187.941382853127,
+     "zaad_cost": 10295.312643106154
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9695665652044316,
+      "svc_south": 0.9906897846434497
+     },
+     "incumbent": {
+      "svc_north": 0.9476270865526792,
+      "svc_south": 0.7703699211805373
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.3125
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 2.2737367544323206e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9695665652044316,
+     "incumbent_min": 0.7703699211805373
+    }
+   },
+   "pass": true
+  },
+  "I_shared_supplier_disruption": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 8829.220355655056,
+     "cost_asset_basis": 8957.736530020407,
+     "realized": 9336.29545393961,
+     "components": {
+      "PURCHASE": 7575.919284924801,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 6.611246303359779,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.7958214372129,
+      "INVENTORY_VALUE_CHANGE": 1048.0290421885825
+     },
+     "service": 0.9803709259949638,
+     "service_by_branch": {
+      "svc_north": 0.9781445678690364,
+      "svc_south": 0.9827920324138606
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781445678690364,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1524.7002954282693,
+     "transfer_lines": 20,
+     "purchase_units": 1515.1838569849601,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.10803734269242715,
+     "end_stock_units": 57.45487858872188,
+     "branch_cover_periods": 0.212626036878515,
+     "early_purchase_units": 275.7731003024069,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 57.45487858872188,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.021528520970605314,
+     "wall_p95": 0.02322141733020544,
+     "wall_max": 0.023711291141808033,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 8829.220355655056,
+     "cost_asset_basis": 8957.736530020407,
+     "realized": 9336.29545393961,
+     "components": {
+      "PURCHASE": 7575.919284924801,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 6.611246303359779,
+      "FINANCING": 0.0,
+      "SHORTAGE": 400.7958214372129,
+      "INVENTORY_VALUE_CHANGE": 1048.0290421885825
+     },
+     "service": 0.9803709259949638,
+     "service_by_branch": {
+      "svc_north": 0.9781445678690364,
+      "svc_south": 0.9827920324138606
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9781445678690364,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1524.7002954282693,
+     "transfer_lines": 20,
+     "purchase_units": 1515.1838569849601,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.10803734269242715,
+     "end_stock_units": 57.45487858872188,
+     "branch_cover_periods": 0.212626036878515,
+     "early_purchase_units": 275.7731003024069,
+     "early_transfer_units": 331.10337616618597,
+     "avg_inventory_units": 57.45487858872188,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.020870708511210978,
+     "wall_p95": 0.022340041119605303,
+     "wall_max": 0.022657500114291906,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 8813.342022050765,
+     "cost_asset_basis": 8942.993531190932,
+     "realized": 9322.611286609637,
+     "components": {
+      "PURCHASE": 7607.621544800952,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 6.916986822118024,
+      "FINANCING": 0.0,
+      "SHORTAGE": 371.50044560609024,
+      "INVENTORY_VALUE_CHANGE": 1032.993527603205
+     },
+     "service": 0.9818114478402276,
+     "service_by_branch": {
+      "svc_north": 0.9861326497408067,
+      "svc_south": 0.9778782500094855
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9778782500094855,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1517.893908886358,
+     "transfer_lines": 25,
+     "purchase_units": 1521.5243089601904,
+     "purchase_lines": 16,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 2.5,
+     "central_stock_share": 0.2723578512283291,
+     "end_stock_units": 60.11190928745425,
+     "branch_cover_periods": 0.1940600025563654,
+     "early_purchase_units": 277.0369890511827,
+     "early_transfer_units": 321.4545169089164,
+     "avg_inventory_units": 60.11190928745425,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.42982670839410275,
+     "wall_p95": 0.566614415962249,
+     "wall_max": 0.8832942503504455,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 8830.875121613492,
+     "cost_asset_basis": 8960.699852997688,
+     "realized": 9343.128705410792,
+     "components": {
+      "PURCHASE": 7596.472133000047,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 6.964194131937437,
+      "FINANCING": 0.0,
+      "SHORTAGE": 403.56550014770994,
+      "INVENTORY_VALUE_CHANGE": 1030.6995032903644
+     },
+     "service": 0.9802287810761826,
+     "service_by_branch": {
+      "svc_north": 0.991948816122098,
+      "svc_south": 0.9690559224267568
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9690559224267568,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 1527.1368742036639,
+     "transfer_lines": 21.5,
+     "purchase_units": 1519.2944266000095,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.13606639698393685,
+     "end_stock_units": 60.5221632894563,
+     "branch_cover_periods": 0.21882244872539824,
+     "early_purchase_units": 279.4892772750792,
+     "early_transfer_units": 331.0995068454659,
+     "avg_inventory_units": 60.5221632894563,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.027174979099072516,
+     "wall_p95": 0.0329735423438251,
+     "wall_max": 0.0389834581874311,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8848.669283478857,
+     "cost_asset_basis": 8977.146617078593,
+     "realized": 9355.76504570826,
+     "components": {
+      "PURCHASE": 7560.478807558674,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 6.509874530208648,
+      "FINANCING": 0.0,
+      "SHORTAGE": 435.6870815509569,
+      "INVENTORY_VALUE_CHANGE": 1048.5434198954026
+     },
+     "service": 0.9786615303329376,
+     "service_by_branch": {
+      "svc_north": 0.9759075120835876,
+      "svc_south": 0.9815827412449556
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9759075120835876,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1522.7293108650902,
+     "transfer_lines": 19.5,
+     "purchase_units": 1512.095761511735,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 1.5,
+     "central_stock_share": 0.15572476185529566,
+     "end_stock_units": 56.57390960776563,
+     "branch_cover_periods": 0.1964411111956948,
+     "early_purchase_units": 272.45391006854396,
+     "early_transfer_units": 318.378220306764,
+     "avg_inventory_units": 56.57390960776563,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.23054504173342139,
+     "wall_p95": 0.3619833751581609,
+     "wall_max": 0.7574554169550538,
+     "solve_statuses": {
+      "OPTIMAL": 48
+     },
+     "owners": {
+      "PROTECTION_RECOVERY": 16
+     },
+     "states": {
+      "NO_ACTION": 16
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.05,
+    "service": "incumbent",
+    "action": "either",
+    "network": "network_protection"
+   },
+   "why": "a declared shared supplier disruption: P0-style protection sized at the network, not per branch",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.004008384258741384,
+     "tolerance": 0.05,
+     "best_baseline": "independent",
+     "best_cost": 8813.342022050765,
+     "zaad_cost": 8848.669283478857
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9759075120835876,
+      "svc_south": 0.9815827412449556
+     },
+     "incumbent": {
+      "svc_north": 0.9781445678690364,
+      "svc_south": 0.9827920324138606
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.1875
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9759075120835876,
+     "incumbent_min": 0.9781445678690364
+    }
+   },
+   "pass": true
+  },
+  "J_asymmetric_service_targets": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 8786.431855801355,
+     "cost_asset_basis": 8919.96680454127,
+     "realized": 9314.29199801071,
+     "components": {
+      "PURCHASE": 7946.484291823439,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 6.947470432402962,
+      "FINANCING": 0.0,
+      "SHORTAGE": 320.0871200078992,
+      "INVENTORY_VALUE_CHANGE": 731.5641923632779
+     },
+     "service": 0.9843070519383091,
+     "service_by_branch": {
+      "svc_north": 0.997184075118746,
+      "svc_south": 0.9719259736101282
+     },
+     "target_by_branch": {
+      "svc_north": 0.99,
+      "svc_south": 0.9
+     },
+     "min_branch_service": 0.9719259736101282,
+     "breaches": 2,
+     "severe_starvation": false,
+     "transfer_units": 1546.0446169184506,
+     "transfer_lines": 20.5,
+     "purchase_units": 1589.296858364688,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.12804543909858326,
+     "end_stock_units": 60.37682637683527,
+     "branch_cover_periods": 0.24257791443122956,
+     "early_purchase_units": 342.33216450335084,
+     "early_transfer_units": 334.9882258178501,
+     "avg_inventory_units": 60.37682637683527,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.020998437888920307,
+     "wall_p95": 0.02422874979674816,
+     "wall_max": 0.02933024987578392,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 8786.431855801355,
+     "cost_asset_basis": 8919.96680454127,
+     "realized": 9314.29199801071,
+     "components": {
+      "PURCHASE": 7946.484291823439,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 6.947470432402962,
+      "FINANCING": 0.0,
+      "SHORTAGE": 320.0871200078992,
+      "INVENTORY_VALUE_CHANGE": 731.5641923632779
+     },
+     "service": 0.9843070519383091,
+     "service_by_branch": {
+      "svc_north": 0.997184075118746,
+      "svc_south": 0.9719259736101282
+     },
+     "target_by_branch": {
+      "svc_north": 0.99,
+      "svc_south": 0.9
+     },
+     "min_branch_service": 0.9719259736101282,
+     "breaches": 2,
+     "severe_starvation": false,
+     "transfer_units": 1546.0446169184506,
+     "transfer_lines": 20.5,
+     "purchase_units": 1589.296858364688,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.12804543909858326,
+     "end_stock_units": 60.37682637683527,
+     "branch_cover_periods": 0.24257791443122956,
+     "early_purchase_units": 342.33216450335084,
+     "early_transfer_units": 334.9882258178501,
+     "avg_inventory_units": 60.37682637683527,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.020950156380422413,
+     "wall_p95": 0.022972291335463524,
+     "wall_max": 0.02515354100614786,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 8924.86883496161,
+     "cost_asset_basis": 9104.687597548476,
+     "realized": 9609.743305611646,
+     "components": {
+      "PURCHASE": 8607.227908288785,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 12.758148855018991,
+      "FINANCING": 0.0,
+      "SHORTAGE": 571.2069169658555,
+      "INVENTORY_VALUE_CHANGE": 118.6163873631267
+     },
+     "service": 0.9719996466619205,
+     "service_by_branch": {
+      "svc_north": 0.997184075118746,
+      "svc_south": 0.9476247554192387
+     },
+     "target_by_branch": {
+      "svc_north": 0.99,
+      "svc_south": 0.9
+     },
+     "min_branch_service": 0.9476247554192387,
+     "breaches": 3.5,
+     "severe_starvation": false,
+     "transfer_units": 1499.6697206942924,
+     "transfer_lines": 23,
+     "purchase_units": 1721.445581657757,
+     "purchase_lines": 14.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 6,
+     "central_stock_share": 0.31522678319165165,
+     "end_stock_units": 110.87438885909363,
+     "branch_cover_periods": 0.26977766389460944,
+     "early_purchase_units": 331.9227847259143,
+     "early_transfer_units": 322.3445435508261,
+     "avg_inventory_units": 110.87438885909363,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.5956801663851365,
+     "wall_p95": 0.7322696251794696,
+     "wall_max": 0.7940987912006676,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 8760.285454640474,
+     "cost_asset_basis": 8895.13583087653,
+     "realized": 9293.18436153473,
+     "components": {
+      "PURCHASE": 7987.379094524411,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 7.165041676729404,
+      "FINANCING": 0.0,
+      "SHORTAGE": 274.1764743382953,
+      "INVENTORY_VALUE_CHANGE": 714.1436660630484
+     },
+     "service": 0.9865549317455289,
+     "service_by_branch": {
+      "svc_north": 0.9971867488622672,
+      "svc_south": 0.976383789800515
+     },
+     "target_by_branch": {
+      "svc_north": 0.99,
+      "svc_south": 0.9
+     },
+     "min_branch_service": 0.976383789800515,
+     "breaches": 2,
+     "severe_starvation": false,
+     "transfer_units": 1551.6004246612267,
+     "transfer_lines": 21,
+     "purchase_units": 1597.4758189048823,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.15377647015226453,
+     "end_stock_units": 62.26762409538647,
+     "branch_cover_periods": 0.2434072886476235,
+     "early_purchase_units": 346.07173642809914,
+     "early_transfer_units": 334.98665392586327,
+     "avg_inventory_units": 62.26762409538647,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02755054144654423,
+     "wall_p95": 0.034683290868997574,
+     "wall_max": 0.04173837509006262,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8867.551500481051,
+     "cost_asset_basis": 9008.383943669422,
+     "realized": 9422.403364942016,
+     "components": {
+      "PURCHASE": 8021.181784943912,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 17.10712870585811,
+      "FINANCING": 0.0,
+      "SHORTAGE": 440.7456859254046,
+      "INVENTORY_VALUE_CHANGE": 634.9216983162102
+     },
+     "service": 0.9784176248850041,
+     "service_by_branch": {
+      "svc_north": 0.9895715904162963,
+      "svc_south": 0.9677816839599103
+     },
+     "target_by_branch": {
+      "svc_north": 0.99,
+      "svc_south": 0.9
+     },
+     "min_branch_service": 0.9677816839599103,
+     "breaches": 2,
+     "severe_starvation": false,
+     "transfer_units": 1542.2353352531554,
+     "transfer_lines": 20,
+     "purchase_units": 1604.2363569887825,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 4,
+     "central_stock_share": 0.36361419093615477,
+     "end_stock_units": 148.66909470567168,
+     "branch_cover_periods": 0.24302012093965222,
+     "early_purchase_units": 341.17021831231153,
+     "early_transfer_units": 340.8170394901457,
+     "avg_inventory_units": 148.66909470567168,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.4489765940234065,
+     "wall_p95": 0.49857958406209946,
+     "wall_max": 0.8716262918896973,
+     "solve_statuses": {
+      "OPTIMAL": 78
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 11,
+      "PROTECTION_RECOVERY": 5
+     },
+     "states": {
+      "NORMAL_REPLENISHMENT": 14,
+      "NO_ACTION": 2
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "priority_branch_protected"
+   },
+   "why": "the 99% branch carries the protection; the 90% branch is not padded to 99%",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.01224458339810793,
+     "tolerance": 0.02,
+     "best_baseline": "echelon_base_stock",
+     "best_cost": 8760.285454640474,
+     "zaad_cost": 8867.551500481051
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.9895715904162963,
+      "svc_south": 0.9677816839599103
+     },
+     "targets": {
+      "svc_north": 0.99,
+      "svc_south": 0.9
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.5
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9677816839599103,
+     "incumbent_min": 0.9719259736101282
+    }
+   },
+   "pass": true
+  },
+  "K_unequal_demand_scale": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 15251.850838754506,
+     "cost_asset_basis": 15470.825463466208,
+     "realized": 16117.058485845657,
+     "components": {
+      "PURCHASE": 13153.413227993153,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 11.027899153293692,
+      "FINANCING": 0.0,
+      "SHORTAGE": 507.35641999997654,
+      "INVENTORY_VALUE_CHANGE": 1900.0657808450244
+     },
+     "service": 0.9857845979570763,
+     "service_by_branch": {
+      "svc_north": 0.985117175271889,
+      "svc_south": 0.9901303925608602
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.985117175271889,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 2725.975789271047,
+     "transfer_lines": 19.5,
+     "purchase_units": 2630.6826455986306,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.14951654603065942,
+     "end_stock_units": 95.83769502267135,
+     "branch_cover_periods": 0.18618355954129578,
+     "early_purchase_units": 486.243165280178,
+     "early_transfer_units": 633.6246041285425,
+     "avg_inventory_units": 95.83769502267135,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 2840.584626738903,
+     "wall_p50": 0.020422031288035214,
+     "wall_p95": 0.021780874580144882,
+     "wall_max": 0.02365104202181101,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 15251.850838754506,
+     "cost_asset_basis": 15470.825463466208,
+     "realized": 16117.058485845657,
+     "components": {
+      "PURCHASE": 13153.413227993153,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 11.027899153293692,
+      "FINANCING": 0.0,
+      "SHORTAGE": 507.35641999997654,
+      "INVENTORY_VALUE_CHANGE": 1900.0657808450244
+     },
+     "service": 0.9857845979570763,
+     "service_by_branch": {
+      "svc_north": 0.985117175271889,
+      "svc_south": 0.9901303925608602
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.985117175271889,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 2725.975789271047,
+     "transfer_lines": 19.5,
+     "purchase_units": 2630.6826455986306,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.14951654603065942,
+     "end_stock_units": 95.83769502267135,
+     "branch_cover_periods": 0.18618355954129578,
+     "early_purchase_units": 486.243165280178,
+     "early_transfer_units": 633.6246041285425,
+     "avg_inventory_units": 95.83769502267135,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 2840.584626738903,
+     "wall_p50": 0.02044900006148964,
+     "wall_p95": 0.023524333257228136,
+     "wall_max": 0.024979083333164454,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 15142.16566383958,
+     "cost_asset_basis": 15366.014233556156,
+     "realized": 16031.357130567194,
+     "components": {
+      "PURCHASE": 13323.63121935499,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 10.673102274263913,
+      "FINANCING": 0.0,
+      "SHORTAGE": 306.42373546391025,
+      "INVENTORY_VALUE_CHANGE": 1835.5189415912864
+     },
+     "service": 0.9914198959670393,
+     "service_by_branch": {
+      "svc_north": 0.9928669323813331,
+      "svc_south": 0.9831048290699066
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9831048290699066,
+     "breaches": 0,
+     "severe_starvation": false,
+     "transfer_units": 2775.550659413723,
+     "transfer_lines": 19,
+     "purchase_units": 2664.7262438709977,
+     "purchase_lines": 16,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 3,
+     "central_stock_share": 0.05968305599155184,
+     "end_stock_units": 92.7543411930078,
+     "branch_cover_periods": 0.23718598141628428,
+     "early_purchase_units": 455.247110892626,
+     "early_transfer_units": 649.8917232366848,
+     "avg_inventory_units": 92.7543411930078,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 2840.584626738903,
+     "wall_p50": 0.28480142762418836,
+     "wall_p95": 0.7004338339902461,
+     "wall_max": 0.7478145421482623,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 15407.627241011687,
+     "cost_asset_basis": 15627.119048009188,
+     "realized": 16274.452415182517,
+     "components": {
+      "PURCHASE": 13048.110054678116,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 12.684854156045734,
+      "FINANCING": 0.0,
+      "SHORTAGE": 779.8208259090999,
+      "INVENTORY_VALUE_CHANGE": 1893.216610033137
+     },
+     "service": 0.9781317604523665,
+     "service_by_branch": {
+      "svc_north": 0.9919488161220978,
+      "svc_south": 0.8970079049846513
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.8970079049846513,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 2703.100352030584,
+     "transfer_lines": 22,
+     "purchase_units": 2609.6220109356236,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.21429004803508517,
+     "end_stock_units": 110.23742302277842,
+     "branch_cover_periods": 0.21300024884397162,
+     "early_purchase_units": 492.7693149822967,
+     "early_transfer_units": 633.6179443707017,
+     "avg_inventory_units": 110.23742302277842,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 2840.584626738903,
+     "wall_p50": 0.02555435395333916,
+     "wall_p95": 0.027751834131777287,
+     "wall_max": 0.03518233401700854,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 15253.190850074294,
+     "cost_asset_basis": 15470.542260523529,
+     "realized": 16112.477843202816,
+     "components": {
+      "PURCHASE": 13125.731458190767,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 10.925795058343276,
+      "FINANCING": 0.0,
+      "SHORTAGE": 509.25019710282817,
+      "INVENTORY_VALUE_CHANGE": 1921.5624021587205
+     },
+     "service": 0.9857319519560596,
+     "service_by_branch": {
+      "svc_north": 0.9852249781715997,
+      "svc_south": 0.9890674720516929
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9852249781715997,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 2725.039953460784,
+     "transfer_lines": 19.5,
+     "purchase_units": 2625.1462916381533,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 4.5,
+     "central_stock_share": 0.20698408350658226,
+     "end_stock_units": 94.95036181655465,
+     "branch_cover_periods": 0.18215822821147745,
+     "early_purchase_units": 486.2050120198522,
+     "early_transfer_units": 627.3946774176776,
+     "avg_inventory_units": 94.95036181655465,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 2840.584626738903,
+     "wall_p50": 0.2961906874552369,
+     "wall_p95": 0.6691158330067992,
+     "wall_max": 0.7211904996074736,
+     "solve_statuses": {
+      "OPTIMAL": 66
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 15,
+      "PROTECTION_RECOVERY": 1
+     },
+     "states": {
+      "NO_ACTION": 14,
+      "NORMAL_REPLENISHMENT": 2
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "small_branch_not_starved"
+   },
+   "why": "the large branch must not mechanically consume the pool; the small branch keeps its target",
+   "valid_baselines": [
+    "central_pool",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.00733218673599966,
+     "tolerance": 0.02,
+     "best_baseline": "independent",
+     "best_cost": 15142.16566383958,
+     "zaad_cost": 15253.190850074294
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.9852249781715997,
+      "svc_south": 0.9890674720516929
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.5625
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9852249781715997,
+     "incumbent_min": 0.985117175271889
+    }
+   },
+   "pass": true
+  },
+  "L_already_efficient_network": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 8735.927762047704,
+     "cost_asset_basis": 8864.444146177153,
+     "realized": 9243.006133863171,
+     "components": {
+      "PURCHASE": 5806.758077491317,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 19.305038301780996,
+      "FINANCING": 0.0,
+      "SHORTAGE": 353.21283875134657,
+      "INVENTORY_VALUE_CHANGE": 2798.026264231643
+     },
+     "service": 0.9826993959418254,
+     "service_by_branch": {
+      "svc_north": 0.9772590331002169,
+      "svc_south": 0.9883819540173229
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9772590331002169,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1328.5195754354293,
+     "transfer_lines": 16.5,
+     "purchase_units": 1161.3516154982635,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.32407367837251766,
+     "end_stock_units": 167.76997571785867,
+     "branch_cover_periods": 0.3811183280502031,
+     "early_purchase_units": 0,
+     "early_transfer_units": 131.10337616618597,
+     "avg_inventory_units": 167.76997571785867,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.019297895953059196,
+     "wall_p95": 0.019815166015177965,
+     "wall_max": 0.02102204179391265,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 8735.927762047704,
+     "cost_asset_basis": 8864.444146177153,
+     "realized": 9243.006133863171,
+     "components": {
+      "PURCHASE": 5806.758077491317,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 19.305038301780996,
+      "FINANCING": 0.0,
+      "SHORTAGE": 353.21283875134657,
+      "INVENTORY_VALUE_CHANGE": 2798.026264231643
+     },
+     "service": 0.9826993959418254,
+     "service_by_branch": {
+      "svc_north": 0.9772590331002169,
+      "svc_south": 0.9883819540173229
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9772590331002169,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1328.5195754354293,
+     "transfer_lines": 16.5,
+     "purchase_units": 1161.3516154982635,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.32407367837251766,
+     "end_stock_units": 167.76997571785867,
+     "branch_cover_periods": 0.3811183280502031,
+     "early_purchase_units": 0,
+     "early_transfer_units": 131.10337616618597,
+     "avg_inventory_units": 167.76997571785867,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.019770062412135303,
+     "wall_p95": 0.020543500315397978,
+     "wall_max": 0.021225207950919867,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 8717.288602684028,
+     "cost_asset_basis": 8947.599874574917,
+     "realized": 9665.857503308715,
+     "components": {
+      "PURCHASE": 7469.429856372919,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 23.824561618119546,
+      "FINANCING": 0.0,
+      "SHORTAGE": 369.2039357701306,
+      "INVENTORY_VALUE_CHANGE": 1449.931804688228
+     },
+     "service": 0.98191004227422,
+     "service_by_branch": {
+      "svc_north": 0.9813320797214633,
+      "svc_south": 0.9827696892900131
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9813320797214633,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1767.3367242965862,
+     "transfer_lines": 16.5,
+     "purchase_units": 1493.8859712745839,
+     "purchase_lines": 9.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 3,
+     "central_stock_share": 0.3699100920820489,
+     "end_stock_units": 207.0467854908008,
+     "branch_cover_periods": 0.5120847862087657,
+     "early_purchase_units": 0,
+     "early_transfer_units": 125.09080289543458,
+     "avg_inventory_units": 207.0467854908008,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.264106250484474,
+     "wall_p95": 0.7228151662275195,
+     "wall_max": 0.8535574171692133,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 8706.06805487771,
+     "cost_asset_basis": 8835.912032934979,
+     "realized": 9218.6662371252,
+     "components": {
+      "PURCHASE": 5849.771455167227,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 19.35530086528346,
+      "FINANCING": 0.0,
+      "SHORTAGE": 301.7640207308161,
+      "INVENTORY_VALUE_CHANGE": 2780.4446149172663
+     },
+     "service": 0.9852010688456014,
+     "service_by_branch": {
+      "svc_north": 0.991948816122098,
+      "svc_south": 0.9790438708735265
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9790438708735265,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1336.6542272230377,
+     "transfer_lines": 16.5,
+     "purchase_units": 1169.9542910334453,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.2649741648625348,
+     "end_stock_units": 168.2067813292491,
+     "branch_cover_periods": 0.38189355213657883,
+     "early_purchase_units": 0,
+     "early_transfer_units": 131.09950684546595,
+     "avg_inventory_units": 168.2067813292491,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02641881280578673,
+     "wall_p95": 0.029873833060264587,
+     "wall_max": 0.03509050002321601,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8745.698460058373,
+     "cost_asset_basis": 8882.693159634851,
+     "realized": 9285.153617608914,
+     "components": {
+      "PURCHASE": 5953.792358264597,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 24.343423387696575,
+      "FINANCING": 0.0,
+      "SHORTAGE": 353.21283875134657,
+      "INVENTORY_VALUE_CHANGE": 2685.745870473651
+     },
+     "service": 0.9826993959418254,
+     "service_by_branch": {
+      "svc_north": 0.9772590331002169,
+      "svc_south": 0.9883819540173229
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9772590331002169,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1340.2956336581153,
+     "transfer_lines": 15.5,
+     "purchase_units": 1190.7584716529195,
+     "purchase_lines": 5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 7.5,
+     "central_stock_share": 0.4283023232516584,
+     "end_stock_units": 211.55594134545834,
+     "branch_cover_periods": 0.38145279356578266,
+     "early_purchase_units": 0,
+     "early_transfer_units": 131.10337616618597,
+     "avg_inventory_units": 211.55594134545834,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.32609432307071984,
+     "wall_p95": 0.36532433284446597,
+     "wall_max": 0.6540768332779408,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 16
+     },
+     "states": {
+      "NO_ACTION": 16
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "no",
+    "network": "abstain"
+   },
+   "why": "a well-run incumbent network policy with adequate stock: ZAAD should mostly report no material improvement",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.004552044037659269,
+     "tolerance": 0.02,
+     "best_baseline": "echelon_base_stock",
+     "best_cost": 8706.06805487771,
+     "zaad_cost": 8745.698460058373
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.9772590331002169,
+      "svc_south": 0.9883819540173229
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "no",
+     "abstained_share": 0.9375
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 2.2737367544323206e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9772590331002169,
+     "incumbent_min": 0.9772590331002169
+    }
+   },
+   "pass": true
+  },
+  "M_transfer_not_reachable_in_time": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 13807.489110761795,
+     "cost_asset_basis": 14123.649474623784,
+     "realized": 15088.80759806204,
+     "components": {
+      "PURCHASE": 5444.694750571158,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 37.18715421524276,
+      "FINANCING": 0.0,
+      "SHORTAGE": 8963.520847184478,
+      "INVENTORY_VALUE_CHANGE": 313.01139750337006
+     },
+     "service": 0.5610380227173777,
+     "service_by_branch": {
+      "svc_north": 0.5763728566728359,
+      "svc_south": 0.5454072445410698
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5454072445410698,
+     "breaches": 4,
+     "severe_starvation": false,
+     "transfer_units": 1651.9672429389589,
+     "transfer_lines": 13.5,
+     "purchase_units": 1088.9389501142314,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 2,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.40461610921461955,
+     "end_stock_units": 323.1740782991335,
+     "branch_cover_periods": 1.2074489874552334,
+     "early_purchase_units": 453.55360661487055,
+     "early_transfer_units": 1064.628618933712,
+     "avg_inventory_units": 323.1740782991335,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02033163548912853,
+     "wall_p95": 0.022315249778330326,
+     "wall_max": 0.023695666808634996,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 13807.421980108858,
+     "cost_asset_basis": 14123.582343970846,
+     "realized": 15088.765268056426,
+     "components": {
+      "PURCHASE": 5444.694750571158,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 37.14482420962851,
+      "FINANCING": 0.0,
+      "SHORTAGE": 8963.520847184478,
+      "INVENTORY_VALUE_CHANGE": 313.01139750337006
+     },
+     "service": 0.5610380227173777,
+     "service_by_branch": {
+      "svc_north": 0.5763728566728359,
+      "svc_south": 0.5454072445410698
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5454072445410698,
+     "breaches": 4,
+     "severe_starvation": false,
+     "transfer_units": 1651.967242938959,
+     "transfer_lines": 15.5,
+     "purchase_units": 1088.9389501142314,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.40424912932105544,
+     "end_stock_units": 322.8062103932001,
+     "branch_cover_periods": 1.208608112534704,
+     "early_purchase_units": 453.55360661487055,
+     "early_transfer_units": 1064.628618933712,
+     "avg_inventory_units": 322.8062103932001,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.020574166672304273,
+     "wall_p95": 0.023053083568811417,
+     "wall_max": 0.02327399980276823,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 13863.263594222044,
+     "cost_asset_basis": 14357.639033351294,
+     "realized": 15760.507971324649,
+     "components": {
+      "PURCHASE": 8439.137294910031,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 52.3022230206185,
+      "FINANCING": 0.0,
+      "SHORTAGE": 8963.520847184478,
+      "INVENTORY_VALUE_CHANGE": -2047.134193873856
+     },
+     "service": 0.5610380227173777,
+     "service_by_branch": {
+      "svc_north": 0.5763728566728359,
+      "svc_south": 0.5454072445410698
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5454072445410698,
+     "breaches": 4,
+     "severe_starvation": false,
+     "transfer_units": 1763.4090004168747,
+     "transfer_lines": 18.5,
+     "purchase_units": 1687.8274589820062,
+     "purchase_lines": 10.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0.5,
+     "abstained_reviews": 4,
+     "central_stock_share": 0.5326967907133076,
+     "end_stock_units": 454.5312238696607,
+     "branch_cover_periods": 1.2074489874552334,
+     "early_purchase_units": 475.92426892557717,
+     "early_transfer_units": 1064.628618933712,
+     "avg_inventory_units": 454.5312238696607,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 1.111062885960564,
+     "wall_p95": 2.599239124916494,
+     "wall_max": 3.428440290968865,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 13807.891962575792,
+     "cost_asset_basis": 14125.385227220098,
+     "realized": 15094.53737058959,
+     "components": {
+      "PURCHASE": 5467.19369774399,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 37.323149212055796,
+      "FINANCING": 0.0,
+      "SHORTAGE": 8963.520847184478,
+      "INVENTORY_VALUE_CHANGE": 295.3594682240396
+     },
+     "service": 0.5610380227173777,
+     "service_by_branch": {
+      "svc_north": 0.5763728566728359,
+      "svc_south": 0.5454072445410698
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5454072445410698,
+     "breaches": 4,
+     "severe_starvation": false,
+     "transfer_units": 1655.7010411251335,
+     "transfer_lines": 16.5,
+     "purchase_units": 1093.4387395487981,
+     "purchase_lines": 7,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.4049246292801284,
+     "end_stock_units": 324.3559395809611,
+     "branch_cover_periods": 1.2085967294254643,
+     "early_purchase_units": 455.4601157206996,
+     "early_transfer_units": 1064.6225010004755,
+     "avg_inventory_units": 324.3559395809611,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02631214598659426,
+     "wall_p95": 0.029161375015974045,
+     "wall_max": 0.031217375304549932,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 13806.38044421549,
+     "cost_asset_basis": 14123.656073473416,
+     "realized": 15097.639657767219,
+     "components": {
+      "PURCHASE": 5460.302425966325,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 39.30373449751345,
+      "FINANCING": 0.0,
+      "SHORTAGE": 8963.520847184478,
+      "INVENTORY_VALUE_CHANGE": 298.24166658426975
+     },
+     "service": 0.5610380227173777,
+     "service_by_branch": {
+      "svc_north": 0.5763728566728359,
+      "svc_south": 0.5454072445410698
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.5454072445410698,
+     "breaches": 4,
+     "severe_starvation": false,
+     "transfer_units": 1681.35491767316,
+     "transfer_lines": 18,
+     "purchase_units": 1092.0604851932649,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 4,
+     "central_stock_share": 0.4480596538384629,
+     "end_stock_units": 341.5681688474384,
+     "branch_cover_periods": 1.2074489874552334,
+     "early_purchase_units": 453.55360661487055,
+     "early_transfer_units": 1064.628618933712,
+     "avg_inventory_units": 341.5681688474384,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.7705929997609928,
+     "wall_p95": 1.2791560422629118,
+     "wall_max": 1.3902044161222875,
+     "solve_statuses": {
+      "OPTIMAL": 56,
+      "INFEASIBLE": 24
+     },
+     "owners": {
+      "PROTECTION_RECOVERY": 8,
+      "PURCHASING_ECONOMICS": 8
+     },
+     "states": {
+      "NORMAL_REPLENISHMENT": 8,
+      "NO_ACTION": 8
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "feasible",
+    "action": "either",
+    "network": "remote_stock_not_credited"
+   },
+   "why": "central stock four reviews away cannot serve the next four periods; the plan must not count it as protection now",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -7.543304571036401e-05,
+     "tolerance": 0.02,
+     "best_baseline": "central_pool",
+     "best_cost": 13807.421980108858,
+     "zaad_cost": 13806.38044421549
+    },
+    "service": {
+     "pass": true,
+     "mode": "feasible",
+     "zaad": {
+      "svc_north": 0.5763728566728359,
+      "svc_south": 0.5454072445410698
+     },
+     "incumbent": {
+      "svc_north": 0.5763728566728359,
+      "svc_south": 0.5454072445410698
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.5
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 4.547473508864641e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.5454072445410698,
+     "incumbent_min": 0.5454072445410698
+    }
+   },
+   "pass": true
+  },
+  "N_pipeline_already_solves_shortage": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 9421.312333464226,
+     "cost_asset_basis": 9549.82857409061,
+     "realized": 9928.38822610131,
+     "components": {
+      "PURCHASE": 4786.283430657918,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 24.774078088359204,
+      "FINANCING": 0.0,
+      "SHORTAGE": 1593.4443249415601,
+      "INVENTORY_VALUE_CHANGE": 3298.0281646776175
+     },
+     "service": 0.921980928016221,
+     "service_by_branch": {
+      "svc_north": 0.9192661584305637,
+      "svc_south": 0.9247971054717783
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9192661584305637,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 1129.2911386792732,
+     "transfer_lines": 14,
+     "purchase_units": 957.2566861315836,
+     "purchase_lines": 5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 2,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.4082310094407508,
+     "end_stock_units": 215.29853576788358,
+     "branch_cover_periods": 0.3511744395095934,
+     "early_purchase_units": 0,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 215.29853576788358,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.01938182266894728,
+     "wall_p95": 0.020594208035618067,
+     "wall_max": 0.02087112469598651,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 9421.312333464226,
+     "cost_asset_basis": 9549.82857409061,
+     "realized": 9928.38822610131,
+     "components": {
+      "PURCHASE": 4786.283430657918,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 24.774078088359204,
+      "FINANCING": 0.0,
+      "SHORTAGE": 1593.4443249415601,
+      "INVENTORY_VALUE_CHANGE": 3298.0281646776175
+     },
+     "service": 0.921980928016221,
+     "service_by_branch": {
+      "svc_north": 0.9192661584305637,
+      "svc_south": 0.9247971054717783
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9192661584305637,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 1129.2911386792732,
+     "transfer_lines": 14,
+     "purchase_units": 957.2566861315836,
+     "purchase_lines": 5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 2,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.4082310094407508,
+     "end_stock_units": 215.29853576788358,
+     "branch_cover_periods": 0.3511744395095934,
+     "early_purchase_units": 0,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 215.29853576788358,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.019218260189518332,
+     "wall_p95": 0.02039900003001094,
+     "wall_max": 0.021017333026975393,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 9343.64581571724,
+     "cost_asset_basis": 9551.192016028293,
+     "realized": 10131.3698134895,
+     "components": {
+      "PURCHASE": 6169.545836034019,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 29.977854930041048,
+      "FINANCING": 0.0,
+      "SHORTAGE": 1449.5205696667122,
+      "INVENTORY_VALUE_CHANGE": 2251.415185069847
+     },
+     "service": 0.9290285212539209,
+     "service_by_branch": {
+      "svc_north": 0.9289382180736458,
+      "svc_south": 0.9289588846706833
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9289382180736458,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1154.5518389444019,
+     "transfer_lines": 14,
+     "purchase_units": 1233.9091672068037,
+     "purchase_lines": 9.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 2,
+     "abstained_reviews": 3.5,
+     "central_stock_share": 0.42455989487199275,
+     "end_stock_units": 260.521834511071,
+     "branch_cover_periods": 0.48066425188089357,
+     "early_purchase_units": 0,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 260.521834511071,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.3563192499568686,
+     "wall_p95": 0.5595779167488217,
+     "wall_max": 0.70091433217749,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 9378.508052875055,
+     "cost_asset_basis": 9508.316452484707,
+     "realized": 9890.960448466332,
+     "components": {
+      "PURCHASE": 4838.080350154075,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 24.68097114698726,
+      "FINANCING": 0.0,
+      "SHORTAGE": 1519.4551545037016,
+      "INVENTORY_VALUE_CHANGE": 3280.915788953246
+     },
+     "service": 0.9255925934718475,
+     "service_by_branch": {
+      "svc_north": 0.9264380731169577,
+      "svc_south": 0.9247959257267298
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9247959257267298,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 1139.1409185416132,
+     "transfer_lines": 14,
+     "purchase_units": 967.6160700308149,
+     "purchase_lines": 5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 2,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.4041363031584975,
+     "end_stock_units": 214.4893921107226,
+     "branch_cover_periods": 0.34819159939183864,
+     "early_purchase_units": 0,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 214.4893921107226,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02640011499170214,
+     "wall_p95": 0.031633667182177305,
+     "wall_max": 0.03953887475654483,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 9415.940007875768,
+     "cost_asset_basis": 9544.817579609182,
+     "realized": 9925.154119169241,
+     "components": {
+      "PURCHASE": 4794.261663823883,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 29.812988193716308,
+      "FINANCING": 0.0,
+      "SHORTAGE": 1580.9218782226149,
+      "INVENTORY_VALUE_CHANGE": 3293.2429689358746
+     },
+     "service": 0.9225921922925009,
+     "service_by_branch": {
+      "svc_north": 0.920479781689844,
+      "svc_south": 0.9247971054717783
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.920479781689844,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 1134.5730999657617,
+     "transfer_lines": 13.5,
+     "purchase_units": 958.8523327647765,
+     "purchase_lines": 4,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 2,
+     "abstained_reviews": 7.5,
+     "central_stock_share": 0.5357720029516183,
+     "end_stock_units": 259.0890640644393,
+     "branch_cover_periods": 0.35827084821950683,
+     "early_purchase_units": 0,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 259.0890640644393,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.3403170726960525,
+     "wall_p95": 0.6284584579989314,
+     "wall_max": 0.6640615831129253,
+     "solve_statuses": {
+      "OPTIMAL": 62,
+      "INFEASIBLE": 6
+     },
+     "owners": {
+      "PROTECTION_RECOVERY": 2,
+      "PURCHASING_ECONOMICS": 14
+     },
+     "states": {
+      "NORMAL_REPLENISHMENT": 2,
+      "NO_ACTION": 14
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "incumbent",
+    "action": "either",
+    "network": "no_over_transfer"
+   },
+   "why": "transfers already in flight cover the shortage; period-0 transfers should be small (the period-0 shortfall itself is unavoidable)",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.007737257338770228,
+     "tolerance": 0.02,
+     "best_baseline": "independent",
+     "best_cost": 9343.64581571724,
+     "zaad_cost": 9415.940007875768
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.920479781689844,
+      "svc_south": 0.9247971054717783
+     },
+     "incumbent": {
+      "svc_north": 0.9192661584305637,
+      "svc_south": 0.9247971054717783
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.9375
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.920479781689844,
+     "incumbent_min": 0.9192661584305637
+    }
+   },
+   "pass": true
+  },
+  "O_multiple_transfer_options": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 9919.595919445273,
+     "cost_asset_basis": 10005.562843589747,
+     "realized": 10401.750134893857,
+     "components": {
+      "PURCHASE": 6609.961832425948,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 12.841769335223674,
+      "FINANCING": 0.0,
+      "SHORTAGE": 395.8172136119882,
+      "INVENTORY_VALUE_CHANGE": 1998.0285724932166
+     },
+     "service": 0.9806141041403682,
+     "service_by_branch": {
+      "svc_north": 0.9778748797214118,
+      "svc_south": 0.9835556572328477
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9778748797214118,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1385.1007470274803,
+     "transfer_lines": 17,
+     "purchase_units": 1321.9923664851897,
+     "purchase_lines": 7,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.18872786579050876,
+     "end_stock_units": 111.60109065134858,
+     "branch_cover_periods": 0.30204508423308896,
+     "early_purchase_units": 84.4624920580452,
+     "early_transfer_units": 191.10337616618597,
+     "avg_inventory_units": 111.60109065134858,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.0224909579847008,
+     "wall_p95": 0.026457624975591898,
+     "wall_max": 0.027709125075489283,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 9919.595919445273,
+     "cost_asset_basis": 10005.562843589747,
+     "realized": 10401.750134893857,
+     "components": {
+      "PURCHASE": 6609.961832425948,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 12.841769335223672,
+      "FINANCING": 0.0,
+      "SHORTAGE": 395.817213611988,
+      "INVENTORY_VALUE_CHANGE": 1998.0285724932166
+     },
+     "service": 0.9806141041403682,
+     "service_by_branch": {
+      "svc_north": 0.9778748797214118,
+      "svc_south": 0.9835556572328477
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9778748797214118,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 1385.1007470274803,
+     "transfer_lines": 18,
+     "purchase_units": 1321.9923664851897,
+     "purchase_lines": 7,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.18473937172192242,
+     "end_stock_units": 111.60109065134857,
+     "branch_cover_periods": 0.30621435895769056,
+     "early_purchase_units": 84.4624920580452,
+     "early_transfer_units": 191.10337616618597,
+     "avg_inventory_units": 111.60109065134857,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02218567719683051,
+     "wall_p95": 0.024048499763011932,
+     "wall_max": 0.025489875115454197,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 8641.21945493877,
+     "cost_asset_basis": 8833.658189559907,
+     "realized": 9705.45952388884,
+     "components": {
+      "PURCHASE": 10158.81136167386,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 22.00976750001308,
+      "FINANCING": 0.0,
+      "SHORTAGE": 154.72661127865808,
+      "INVENTORY_VALUE_CHANGE": -859.8981803780844
+     },
+     "service": 0.9924387739604077,
+     "service_by_branch": {
+      "svc_north": 0.9925353825262895,
+      "svc_south": 0.9924258574602207
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9924258574602207,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 1654.1561951993351,
+     "transfer_lines": 31,
+     "purchase_units": 2031.762272334772,
+     "purchase_lines": 14.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.5178849741113383,
+     "end_stock_units": 191.27536041678033,
+     "branch_cover_periods": 0.3121025753253773,
+     "early_purchase_units": 568.1968149824514,
+     "early_transfer_units": 373.09686978704605,
+     "avg_inventory_units": 191.27536041678036,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.9692342394264415,
+     "wall_p95": 2.7369129583239555,
+     "wall_max": 2.8874882091768086,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 9925.455106730298,
+     "cost_asset_basis": 10012.312463950311,
+     "realized": 10412.726259907322,
+     "components": {
+      "PURCHASE": 6630.011750760192,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 13.14312458578463,
+      "FINANCING": 0.0,
+      "SHORTAGE": 401.07262905610514,
+      "INVENTORY_VALUE_CHANGE": 1980.3997964522464
+     },
+     "service": 0.9803509069264831,
+     "service_by_branch": {
+      "svc_north": 0.991948816122098,
+      "svc_south": 0.9692975621973465
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9692975621973465,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 1388.098959052994,
+     "transfer_lines": 19,
+     "purchase_units": 1326.0023501520384,
+     "purchase_lines": 7,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.1912355111820346,
+     "end_stock_units": 114.22001128122355,
+     "branch_cover_periods": 0.31615234696446604,
+     "early_purchase_units": 86.18279612115391,
+     "early_transfer_units": 191.09950684546592,
+     "avg_inventory_units": 114.22001128122355,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.0306424688315019,
+     "wall_p95": 0.038134333211928606,
+     "wall_max": 0.04379804106429219,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8522.049777438328,
+     "cost_asset_basis": 8676.405085962882,
+     "realized": 9402.126911310406,
+     "components": {
+      "PURCHASE": 8447.425041080252,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 26.345234859927118,
+      "FINANCING": 0.0,
+      "SHORTAGE": 75.54852112038475,
+      "INVENTORY_VALUE_CHANGE": 644.0767201199692
+     },
+     "service": 0.9963122133299396,
+     "service_by_branch": {
+      "svc_north": 0.9960590601561933,
+      "svc_south": 0.9965691091278028
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9960590601561933,
+     "breaches": 0,
+     "severe_starvation": false,
+     "transfer_units": 1783.3118752050104,
+     "transfer_lines": 28.5,
+     "purchase_units": 1689.4850082160506,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.5255333988129389,
+     "end_stock_units": 228.95263628269993,
+     "branch_cover_periods": 0.3588862938054317,
+     "early_purchase_units": 302.7548228652872,
+     "early_transfer_units": 404.52585388514126,
+     "avg_inventory_units": 228.95263628269993,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.6991411669878289,
+     "wall_p95": 0.7412194591015577,
+     "wall_max": 0.8300344576127827,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 16
+     },
+     "states": {
+      "NO_ACTION": 16
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "cheap_lane_when_time_allows"
+   },
+   "why": "a slow cheap lane and a fast dear lane: the cheap lane should carry the bulk when time allows",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.013790840300014862,
+     "tolerance": 0.02,
+     "best_baseline": "independent",
+     "best_cost": 8641.21945493877,
+     "zaad_cost": 8522.049777438328
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.9960590601561933,
+      "svc_south": 0.9965691091278028
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.0
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 2.2737367544323206e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9960590601561933,
+     "incumbent_min": 0.9778748797214118
+    }
+   },
+   "pass": true
+  },
+  "P_transfer_capacity_limit": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 11597.400709829819,
+     "cost_asset_basis": 11747.545389905557,
+     "realized": 12164.09838443646,
+     "components": {
+      "PURCHASE": 6035.578997750044,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 22.351901124815562,
+      "FINANCING": 0.0,
+      "SHORTAGE": 5170.570005483525,
+      "INVENTORY_VALUE_CHANGE": 711.5974800780764
+     },
+     "service": 0.7468037003878341,
+     "service_by_branch": {
+      "svc_north": 0.7538399717690739,
+      "svc_south": 0.7402896998025247
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7402896998025247,
+     "breaches": 6.5,
+     "severe_starvation": false,
+     "transfer_units": 1120.0,
+     "transfer_lines": 22,
+     "purchase_units": 1207.115799550009,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.9661358528474568,
+     "end_stock_units": 194.24866453708762,
+     "branch_cover_periods": 0.036013184368825196,
+     "early_purchase_units": 285.9199915136951,
+     "early_transfer_units": 280.0,
+     "avg_inventory_units": 194.24866453708762,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.018175677047111094,
+     "wall_p95": 0.02048433292657137,
+     "wall_max": 0.02180116670206189,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 11597.400709829819,
+     "cost_asset_basis": 11747.545389905557,
+     "realized": 12164.09838443646,
+     "components": {
+      "PURCHASE": 6035.578997750044,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 22.351901124815562,
+      "FINANCING": 0.0,
+      "SHORTAGE": 5170.570005483525,
+      "INVENTORY_VALUE_CHANGE": 711.5974800780764
+     },
+     "service": 0.7468037003878341,
+     "service_by_branch": {
+      "svc_north": 0.7538399717690739,
+      "svc_south": 0.7402896998025247
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7402896998025247,
+     "breaches": 6.5,
+     "severe_starvation": false,
+     "transfer_units": 1120.0,
+     "transfer_lines": 22,
+     "purchase_units": 1207.115799550009,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.9661358528474568,
+     "end_stock_units": 194.24866453708762,
+     "branch_cover_periods": 0.036013184368825196,
+     "early_purchase_units": 285.9199915136951,
+     "early_transfer_units": 280.0,
+     "avg_inventory_units": 194.24866453708762,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.01844628108665347,
+     "wall_p95": 0.02199495816603303,
+     "wall_max": 0.025724417064338923,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 11599.035858723979,
+     "cost_asset_basis": 11753.954155610842,
+     "realized": 12182.654702600355,
+     "components": {
+      "PURCHASE": 6115.783664252427,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 23.921721366112227,
+      "FINANCING": 0.0,
+      "SHORTAGE": 5170.570005483525,
+      "INVENTORY_VALUE_CHANGE": 648.3793114982916
+     },
+     "service": 0.7468037003878341,
+     "service_by_branch": {
+      "svc_north": 0.7538399717690739,
+      "svc_south": 0.7402896998025247
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7402896998025247,
+     "breaches": 6.5,
+     "severe_starvation": false,
+     "transfer_units": 1120.0,
+     "transfer_lines": 28,
+     "purchase_units": 1223.1567328504855,
+     "purchase_lines": 16,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 8,
+     "central_stock_share": 0.9665553830530195,
+     "end_stock_units": 207.89114996740386,
+     "branch_cover_periods": 0.03601318436882519,
+     "early_purchase_units": 301.73843853323,
+     "early_transfer_units": 280.0,
+     "avg_inventory_units": 207.89114996740386,
+     "conservation_max_residual": 2.842170943040401e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 1.7078289272030815,
+     "wall_p95": 2.2066630013287067,
+     "wall_max": 3.195900624152273,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 11597.826526006516,
+     "cost_asset_basis": 11748.903055863291,
+     "realized": 12167.72076918474,
+     "components": {
+      "PURCHASE": 6051.234885013963,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 22.659111925641746,
+      "FINANCING": 0.0,
+      "SHORTAGE": 5170.570005483525,
+      "INVENTORY_VALUE_CHANGE": 699.2567667616107
+     },
+     "service": 0.7468037003878341,
+     "service_by_branch": {
+      "svc_north": 0.7538399717690739,
+      "svc_south": 0.7402896998025247
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7402896998025247,
+     "breaches": 6.5,
+     "severe_starvation": false,
+     "transfer_units": 1120.0,
+     "transfer_lines": 23.5,
+     "purchase_units": 1210.2469770027928,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.9661958337362748,
+     "end_stock_units": 196.91847268712468,
+     "branch_cover_periods": 0.036013184368825196,
+     "early_purchase_units": 289.6381909684923,
+     "early_transfer_units": 280.0,
+     "avg_inventory_units": 196.91847268712468,
+     "conservation_max_residual": 0.0,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.0698880625423044,
+     "wall_p95": 0.08143620798364282,
+     "wall_max": 0.08361258404329419,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 11597.400709829819,
+     "cost_asset_basis": 11747.545389905557,
+     "realized": 12164.09838443646,
+     "components": {
+      "PURCHASE": 6035.578997750044,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 22.351901124815562,
+      "FINANCING": 0.0,
+      "SHORTAGE": 5170.570005483525,
+      "INVENTORY_VALUE_CHANGE": 711.5974800780764
+     },
+     "service": 0.7468037003878341,
+     "service_by_branch": {
+      "svc_north": 0.7538399717690739,
+      "svc_south": 0.7402896998025247
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.7402896998025247,
+     "breaches": 6.5,
+     "severe_starvation": false,
+     "transfer_units": 1120.0,
+     "transfer_lines": 22,
+     "purchase_units": 1207.115799550009,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 8,
+     "central_stock_share": 0.9661358528474568,
+     "end_stock_units": 194.24866453708762,
+     "branch_cover_periods": 0.036013184368825196,
+     "early_purchase_units": 285.9199915136951,
+     "early_transfer_units": 280.0,
+     "avg_inventory_units": 194.24866453708762,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.9204965102253482,
+     "wall_p95": 1.0583309172652662,
+     "wall_max": 1.0861935000866652,
+     "solve_statuses": {
+      "OPTIMAL": 48,
+      "INFEASIBLE": 48
+     },
+     "owners": {
+      "PROTECTION_RECOVERY": 16
+     },
+     "states": {
+      "NORMAL_REPLENISHMENT": 16
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.03,
+    "service": "feasible",
+    "action": "either",
+    "network": "capacity_respected"
+   },
+   "why": "a lane that carries 70% of branch demand per period: capacity binds, service as feasible",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.0,
+     "tolerance": 0.03,
+     "best_baseline": "network_rop",
+     "best_cost": 11597.400709829819,
+     "zaad_cost": 11597.400709829819
+    },
+    "service": {
+     "pass": true,
+     "mode": "feasible",
+     "zaad": {
+      "svc_north": 0.7538399717690739,
+      "svc_south": 0.7402896998025247
+     },
+     "incumbent": {
+      "svc_north": 0.7538399717690739,
+      "svc_south": 0.7402896998025247
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 1.0
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 5.684341886080802e-14
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.7402896998025247,
+     "incumbent_min": 0.7402896998025247
+    }
+   },
+   "pass": true
+  },
+  "Q_pack_constraint_on_transfer": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 9247.544078497735,
+     "cost_asset_basis": 9376.097147921559,
+     "realized": 9750.038591665609,
+     "components": {
+      "PURCHASE": 7193.3489156500655,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 8.77402653649254,
+      "FINANCING": 0.0,
+      "SHORTAGE": 715.1752175242852,
+      "INVENTORY_VALUE_CHANGE": 1297.540431954765
+     },
+     "service": 0.964973768930294,
+     "service_by_branch": {
+      "svc_north": 0.9654769601497317,
+      "svc_south": 0.9647659395184827
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9647659395184827,
+     "breaches": 2.5,
+     "severe_starvation": false,
+     "transfer_units": 1476.0,
+     "transfer_lines": 23,
+     "purchase_units": 1438.669783130013,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.538961703595427,
+     "end_stock_units": 76.25046870999469,
+     "branch_cover_periods": 0.2078517765402328,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 324.0,
+     "avg_inventory_units": 76.25046870999469,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02438304212410003,
+     "wall_p95": 0.02596445893868804,
+     "wall_max": 0.03001162502914667,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 9247.544078497735,
+     "cost_asset_basis": 9376.097147921559,
+     "realized": 9750.038591665609,
+     "components": {
+      "PURCHASE": 7193.3489156500655,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 8.77402653649254,
+      "FINANCING": 0.0,
+      "SHORTAGE": 715.1752175242852,
+      "INVENTORY_VALUE_CHANGE": 1297.540431954765
+     },
+     "service": 0.964973768930294,
+     "service_by_branch": {
+      "svc_north": 0.9654769601497317,
+      "svc_south": 0.9647659395184827
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9647659395184827,
+     "breaches": 2.5,
+     "severe_starvation": false,
+     "transfer_units": 1476.0,
+     "transfer_lines": 23,
+     "purchase_units": 1438.669783130013,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.538961703595427,
+     "end_stock_units": 76.25046870999469,
+     "branch_cover_periods": 0.2078517765402328,
+     "early_purchase_units": 225.0386442459664,
+     "early_transfer_units": 324.0,
+     "avg_inventory_units": 76.25046870999469,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02387039572931826,
+     "wall_p95": 0.02591374982148409,
+     "wall_max": 0.029607834294438362,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 8767.379939312475,
+     "cost_asset_basis": 8990.26895724039,
+     "realized": 9642.802864715679,
+     "components": {
+      "PURCHASE": 9018.905776676089,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 47.35588927570215,
+      "FINANCING": 0.0,
+      "SHORTAGE": 67.81467943086571,
+      "INVENTORY_VALUE_CHANGE": 48.22651933301995
+     },
+     "service": 0.9966897291021612,
+     "service_by_branch": {
+      "svc_north": 0.9934276843715035,
+      "svc_south": 1.0
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9934276843715035,
+     "breaches": 0,
+     "severe_starvation": false,
+     "transfer_units": 1740.0,
+     "transfer_lines": 13.5,
+     "purchase_units": 1803.781155335218,
+     "purchase_lines": 8.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.33885623756272326,
+     "end_stock_units": 411.5452282293163,
+     "branch_cover_periods": 1.3123418040032122,
+     "early_purchase_units": 764.8538218192195,
+     "early_transfer_units": 744.0,
+     "avg_inventory_units": 411.5452282293163,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 3.5915473544737324,
+     "wall_p95": 6.561829041689634,
+     "wall_max": 6.985197500325739,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 9189.35969774061,
+     "cost_asset_basis": 9319.183998727025,
+     "realized": 9699.528838363709,
+     "components": {
+      "PURCHASE": 7256.761753560939,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 8.553628177548912,
+      "FINANCING": 0.0,
+      "SHORTAGE": 613.5082534723375,
+      "INVENTORY_VALUE_CHANGE": 1280.7052031528851
+     },
+     "service": 0.9699506604581379,
+     "service_by_branch": {
+      "svc_north": 0.972771864514635,
+      "svc_south": 0.967540199911411
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.967540199911411,
+     "breaches": 2,
+     "severe_starvation": false,
+     "transfer_units": 1500.0,
+     "transfer_lines": 24,
+     "purchase_units": 1451.3523507121877,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.43894025731876896,
+     "end_stock_units": 74.33510201917508,
+     "branch_cover_periods": 0.20421574679350046,
+     "early_purchase_units": 228.7447088080134,
+     "early_transfer_units": 324.0,
+     "avg_inventory_units": 74.33510201917508,
+     "conservation_max_residual": 5.684341886080802e-14,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.05441276042256504,
+     "wall_p95": 0.06603599991649389,
+     "wall_max": 0.08321495912969112,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 8757.045038872911,
+     "cost_asset_basis": 8969.55354376401,
+     "realized": 9599.733666545524,
+     "components": {
+      "PURCHASE": 8889.409449222381,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 36.82603885393731,
+      "FINANCING": 0.0,
+      "SHORTAGE": 0.0,
+      "INVENTORY_VALUE_CHANGE": 185.6981784692066
+     },
+     "service": 1.0,
+     "service_by_branch": {
+      "svc_north": 1.0,
+      "svc_south": 1.0
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 1.0,
+     "breaches": 0,
+     "severe_starvation": false,
+     "transfer_units": 1764.0,
+     "transfer_lines": 15.5,
+     "purchase_units": 1777.8818898444758,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0.5,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.23720762385392752,
+     "end_stock_units": 320.03581384969334,
+     "branch_cover_periods": 1.127599781493989,
+     "early_purchase_units": 638.1037732657458,
+     "early_transfer_units": 443.9999999999999,
+     "avg_inventory_units": 320.03581384969334,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 8.112424416700378,
+     "wall_p95": 14.400664334185421,
+     "wall_max": 15.609423959162086,
+     "solve_statuses": {
+      "OPTIMAL": 77
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 13,
+      "PROTECTION_RECOVERY": 3
+     },
+     "states": {
+      "NO_ACTION": 12,
+      "NORMAL_REPLENISHMENT": 1,
+      "NETWORK_ALLOCATION": 3
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "legal_packs"
+   },
+   "why": "moves in whole cases of 24 with a per-dispatch fee: only legal quantities, fewer dispatches",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.001178790073100736,
+     "tolerance": 0.02,
+     "best_baseline": "independent",
+     "best_cost": 8767.379939312475,
+     "zaad_cost": 8757.045038872911
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 1.0,
+      "svc_south": 1.0
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.0
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 1.0,
+     "incumbent_min": 0.9647659395184827
+    }
+   },
+   "pass": true
+  },
+  "R_order_transfer_interaction": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 23989.52859320644,
+     "cost_asset_basis": 24046.13168891434,
+     "realized": 24530.07193483635,
+     "components": {
+      "PURCHASE": 23258.38859023794,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 98.99413672438628,
+      "FINANCING": 0.0,
+      "SHORTAGE": 391.5305596237198,
+      "INVENTORY_VALUE_CHANGE": 781.1586482503035
+     },
+     "service": 0.9922659016265101,
+     "service_by_branch": {
+      "svc_north": 0.9894987922063089,
+      "svc_south": 0.9950310456132248
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9894987922063089,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 0,
+     "transfer_lines": 0,
+     "purchase_units": 4044.937146128338,
+     "purchase_lines": 40,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.8755634164752047,
+     "end_stock_units": 344.1224752800094,
+     "branch_cover_periods": 0.22320026655561676,
+     "early_purchase_units": 334.0721093763931,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 344.1224752800094,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 4049.943618374411,
+     "wall_p50": 0.023270031320862472,
+     "wall_p95": 0.025585041847079992,
+     "wall_max": 0.026382749900221825,
+     "solve_statuses": {},
+     "owners": {
+      "None": 40
+     },
+     "states": {
+      "None": 40
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 23989.52859320644,
+     "cost_asset_basis": 24046.13168891434,
+     "realized": 24530.07193483635,
+     "components": {
+      "PURCHASE": 23258.38859023794,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 98.99413672438628,
+      "FINANCING": 0.0,
+      "SHORTAGE": 391.5305596237198,
+      "INVENTORY_VALUE_CHANGE": 781.1586482503035
+     },
+     "service": 0.9922659016265101,
+     "service_by_branch": {
+      "svc_north": 0.9894987922063089,
+      "svc_south": 0.9950310456132248
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9894987922063089,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 0,
+     "transfer_lines": 0,
+     "purchase_units": 4044.937146128338,
+     "purchase_lines": 40,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.8755634164752047,
+     "end_stock_units": 344.1224752800094,
+     "branch_cover_periods": 0.22320026655561676,
+     "early_purchase_units": 334.0721093763931,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 344.1224752800094,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 4049.943618374411,
+     "wall_p50": 0.023021343746222556,
+     "wall_p95": 0.025254083331674337,
+     "wall_max": 0.025511791929602623,
+     "solve_statuses": {},
+     "owners": {
+      "None": 40
+     },
+     "states": {
+      "None": 40
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 23354.260870641425,
+     "cost_asset_basis": 24086.64607687376,
+     "realized": 25580.919116472476,
+     "components": {
+      "PURCHASE": 27049.43340716246,
+      "FREIGHT": 0.0,
+      "ORDERING": 1500.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 320.71950161585715,
+      "FINANCING": 0.0,
+      "SHORTAGE": 615.3289115911961,
+      "INVENTORY_VALUE_CHANGE": -4723.707473285334
+     },
+     "service": 0.9878485697890214,
+     "service_by_branch": {
+      "svc_north": 0.9790498858789335,
+      "svc_south": 0.9963639517404169
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9790498858789335,
+     "breaches": 1.5,
+     "severe_starvation": false,
+     "transfer_units": 4095.723846941489,
+     "transfer_lines": 39.5,
+     "purchase_units": 5408.526712948609,
+     "purchase_lines": 7,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.7340782020910737,
+     "end_stock_units": 1114.8820770455989,
+     "branch_cover_periods": 1.1097659246569203,
+     "early_purchase_units": 1980.1979229634624,
+     "early_transfer_units": 550.6627317669669,
+     "avg_inventory_units": 1114.8820770455986,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "demand_total": 4049.943618374411,
+     "wall_p50": 2.523719458375126,
+     "wall_p95": 6.649391333106905,
+     "wall_max": 10.155279667116702,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 40
+     },
+     "states": {
+      "composite": 40
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 23962.779885286036,
+     "cost_asset_basis": 24019.772445588358,
+     "realized": 24507.380621715463,
+     "components": {
+      "PURCHASE": 23307.968082729552,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 99.90951145915524,
+      "FINANCING": 0.0,
+      "SHORTAGE": 333.6113913776526,
+      "INVENTORY_VALUE_CHANGE": 765.8916361491015
+     },
+     "service": 0.9934102963544003,
+     "service_by_branch": {
+      "svc_north": 0.9907013537670574,
+      "svc_south": 0.9961134251778592
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9907013537670574,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 0,
+     "transfer_lines": 0,
+     "purchase_units": 4053.5596665616617,
+     "purchase_lines": 40,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.8673977372172886,
+     "end_stock_units": 347.3044922151587,
+     "branch_cover_periods": 0.23897119262959335,
+     "early_purchase_units": 337.93993073017157,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 347.3044922151587,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 4049.943618374411,
+     "wall_p50": 0.028771926881745458,
+     "wall_p95": 0.030647125095129013,
+     "wall_max": 0.03103320812806487,
+     "solve_statuses": {},
+     "owners": {
+      "None": 40
+     },
+     "states": {
+      "None": 40
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 22649.383968270802,
+     "cost_asset_basis": 22795.13268332302,
+     "realized": 23408.84973426126,
+     "components": {
+      "PURCHASE": 20785.49087824741,
+      "FREIGHT": 0.0,
+      "ORDERING": 500.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 278.2774954942437,
+      "FINANCING": 0.0,
+      "SHORTAGE": 631.7011143280301,
+      "INVENTORY_VALUE_CHANGE": 381.31518164197837
+     },
+     "service": 0.9875301201769593,
+     "service_by_branch": {
+      "svc_north": 0.9846657885251475,
+      "svc_south": 0.9903343666614699
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.9846657885251475,
+     "breaches": 1,
+     "severe_starvation": false,
+     "transfer_units": 4160.325322747999,
+     "transfer_lines": 29,
+     "purchase_units": 4146.067471774988,
+     "purchase_lines": 4,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 4.5,
+     "abstained_reviews": 1,
+     "central_stock_share": 0.5350779189748356,
+     "end_stock_units": 967.3455795752279,
+     "branch_cover_periods": 1.8164641661768224,
+     "early_purchase_units": 1965.5361558363977,
+     "early_transfer_units": 312.6728415657146,
+     "avg_inventory_units": 967.3455795752278,
+     "conservation_max_residual": 4.547473508864641e-13,
+     "demand_total": 4049.943618374411,
+     "wall_p50": 3.294754635426216,
+     "wall_p95": 10.045358957722783,
+     "wall_max": 10.709741666913033,
+     "solve_statuses": {
+      "OPTIMAL": 292
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 27,
+      "PROTECTION_RECOVERY": 13
+     },
+     "states": {
+      "NO_ACTION": 27,
+      "NETWORK_ALLOCATION": 13
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "total_economic_sourcing"
+   },
+   "why": "central buying with an order cost plus a move, or dearer local buying: the total-economic answer, not a fixed rule",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": -0.030181940086861044,
+     "tolerance": 0.02,
+     "best_baseline": "independent",
+     "best_cost": 23354.260870641425,
+     "zaad_cost": 22649.383968270802
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_north": 0.9846657885251475,
+      "svc_south": 0.9903343666614699
+     },
+     "targets": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.05
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 4.547473508864641e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9846657885251475,
+     "incumbent_min": 0.9894987922063089
+    }
+   },
+   "pass": true
+  },
+  "S_recovery_after_imbalance": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 9460.813704341494,
+     "cost_asset_basis": 9589.330079594762,
+     "realized": 9967.891890342755,
+     "components": {
+      "PURCHASE": 5825.006990317435,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 19.099062340456342,
+      "FINANCING": 0.0,
+      "SHORTAGE": 1559.3539521374491,
+      "INVENTORY_VALUE_CHANGE": 2298.026381781021
+     },
+     "service": 0.9236416850177374,
+     "service_by_branch": {
+      "svc_north": 0.9769123326933797,
+      "svc_south": 0.8715472450272113
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.8715472450272113,
+     "breaches": 2.5,
+     "severe_starvation": false,
+     "transfer_units": 1332.0275188319715,
+     "transfer_lines": 14.5,
+     "purchase_units": 1165.001398063487,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.2143033332376622,
+     "end_stock_units": 165.9799465301563,
+     "branch_cover_periods": 0.5751391492904819,
+     "early_purchase_units": 0,
+     "early_transfer_units": 226.54632770689315,
+     "avg_inventory_units": 165.9799465301563,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.01968287513591349,
+     "wall_p95": 0.020625625271350145,
+     "wall_max": 0.02600395865738392,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 9460.786908739916,
+     "cost_asset_basis": 9589.30329354825,
+     "realized": 9967.865294967314,
+     "components": {
+      "PURCHASE": 5824.980291211214,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 19.099127253970515,
+      "FINANCING": 0.0,
+      "SHORTAGE": 1559.3539521374491,
+      "INVENTORY_VALUE_CHANGE": 2298.0262552409968
+     },
+     "service": 0.9236416850177374,
+     "service_by_branch": {
+      "svc_north": 0.9771701237854554,
+      "svc_south": 0.8713022062782066
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.8713022062782066,
+     "breaches": 2,
+     "severe_starvation": false,
+     "transfer_units": 1332.0283456184206,
+     "transfer_lines": 15.5,
+     "purchase_units": 1164.9960582422427,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.2151709306308736,
+     "end_stock_units": 165.98051065950565,
+     "branch_cover_periods": 0.5762068441050738,
+     "early_purchase_units": 0,
+     "early_transfer_units": 226.54632770689315,
+     "avg_inventory_units": 165.98051065950565,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.019058843376114964,
+     "wall_p95": 0.019892666023224592,
+     "wall_max": 0.021931417286396027,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 9398.608116235446,
+     "cost_asset_basis": 9664.91625536781,
+     "realized": 10428.210258916344,
+     "components": {
+      "PURCHASE": 8169.522856670845,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 34.9552593208074,
+      "FINANCING": 0.0,
+      "SHORTAGE": 1436.2237236324236,
+      "INVENTORY_VALUE_CHANGE": 473.21653581459054
+     },
+     "service": 0.9296737915248487,
+     "service_by_branch": {
+      "svc_north": 0.9892023857777428,
+      "svc_south": 0.8712993243363234
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.8712993243363234,
+     "breaches": 2,
+     "severe_starvation": false,
+     "transfer_units": 1571.4594173883934,
+     "transfer_lines": 16,
+     "purchase_units": 1633.9045713341688,
+     "purchase_lines": 9.5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 5,
+     "central_stock_share": 0.5241589002581548,
+     "end_stock_units": 303.77784885939764,
+     "branch_cover_periods": 0.5942749591758916,
+     "early_purchase_units": 129.97203957044078,
+     "early_transfer_units": 223.52800635874772,
+     "avg_inventory_units": 303.77784885939764,
+     "conservation_max_residual": 2.2737367544323206e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.2900985307060182,
+     "wall_p95": 0.6090607498772442,
+     "wall_max": 0.8262215410359204,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 9430.389911956332,
+     "cost_asset_basis": 9560.23388998932,
+     "realized": 9942.988093213462,
+     "components": {
+      "PURCHASE": 5868.402147796638,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 19.14708178058339,
+      "FINANCING": 0.0,
+      "SHORTAGE": 1506.9463206459027,
+      "INVENTORY_VALUE_CHANGE": 2280.444615238788
+     },
+     "service": 0.9261904630309361,
+     "service_by_branch": {
+      "svc_north": 0.991948816122098,
+      "svc_south": 0.8619714972803898
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.8619714972803898,
+     "breaches": 2,
+     "severe_starvation": false,
+     "transfer_units": 1340.239638757744,
+     "transfer_lines": 15.5,
+     "purchase_units": 1173.6804295593276,
+     "purchase_lines": 6,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.15576484968067855,
+     "end_stock_units": 166.39725833126045,
+     "branch_cover_periods": 0.5769287335955222,
+     "early_purchase_units": 0,
+     "early_transfer_units": 226.54433521097278,
+     "avg_inventory_units": 166.39725833126045,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.02665622904896736,
+     "wall_p95": 0.02919520903378725,
+     "wall_max": 0.036322500091046095,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 9470.678861600054,
+     "cost_asset_basis": 9607.911980211717,
+     "realized": 10010.976728966183,
+     "components": {
+      "PURCHASE": 5976.11254281421,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 24.160936145985623,
+      "FINANCING": 0.0,
+      "SHORTAGE": 1559.3539521374491,
+      "INVENTORY_VALUE_CHANGE": 2182.5884291968855
+     },
+     "service": 0.9236416850177374,
+     "service_by_branch": {
+      "svc_north": 0.9769123326933797,
+      "svc_south": 0.8715472450272113
+     },
+     "target_by_branch": {
+      "svc_north": 0.95,
+      "svc_south": 0.95
+     },
+     "min_branch_service": 0.8715472450272113,
+     "breaches": 2.5,
+     "severe_starvation": false,
+     "transfer_units": 1343.8043433582582,
+     "transfer_lines": 14,
+     "purchase_units": 1195.222508562842,
+     "purchase_lines": 5,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 1,
+     "abstained_reviews": 7.5,
+     "central_stock_share": 0.3203725508404609,
+     "end_stock_units": 209.9700403163036,
+     "branch_cover_periods": 0.5751391492904819,
+     "early_purchase_units": 0,
+     "early_transfer_units": 226.54632770689315,
+     "avg_inventory_units": 209.9700403163036,
+     "conservation_max_residual": 1.1368683772161603e-13,
+     "demand_total": 1633.6456004386819,
+     "wall_p50": 0.34268962498754263,
+     "wall_p95": 0.438380875159055,
+     "wall_max": 0.5949274580925703,
+     "solve_statuses": {
+      "OPTIMAL": 62,
+      "INFEASIBLE": 6
+     },
+     "owners": {
+      "PROTECTION_RECOVERY": 2,
+      "PURCHASING_ECONOMICS": 14
+     },
+     "states": {
+      "NORMAL_REPLENISHMENT": 2,
+      "NO_ACTION": 14
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.03,
+    "service": "incumbent",
+    "action": "either",
+    "network": "recovery_then_steady"
+   },
+   "why": "south starts empty: the network recovers it from the pool, then settles without ping-pong or hoarding",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.007668236027429529,
+     "tolerance": 0.03,
+     "best_baseline": "independent",
+     "best_cost": 9398.608116235446,
+     "zaad_cost": 9470.678861600054
+    },
+    "service": {
+     "pass": true,
+     "mode": "incumbent",
+     "zaad": {
+      "svc_north": 0.9769123326933797,
+      "svc_south": 0.8715472450272113
+     },
+     "incumbent": {
+      "svc_north": 0.9769123326933797,
+      "svc_south": 0.8715472450272113
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.9375
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.1368683772161603e-13
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.8715472450272113,
+     "incumbent_min": 0.8715472450272113
+    }
+   },
+   "pass": true
+  },
+  "T_single_node_network_off": {
+   "policies": {
+    "network_rop": {
+     "runs": 2,
+     "cost": 4177.814860029243,
+     "cost_asset_basis": 4188.436936641361,
+     "realized": 4291.736555178093,
+     "components": {
+      "PURCHASE": 3857.0504807727675,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 2.5872863341773678,
+      "FINANCING": 0.0,
+      "SHORTAGE": 98.48419126615786,
+      "INVENTORY_VALUE_CHANGE": 333.6145968049907
+     },
+     "service": 0.9904495482645692,
+     "service_by_branch": {
+      "svc_branch": 0.9904495482645692
+     },
+     "target_by_branch": {
+      "svc_branch": 0.95
+     },
+     "min_branch_service": 0.9904495482645692,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 0,
+     "transfer_lines": 0,
+     "purchase_units": 771.4100961545535,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.0,
+     "end_stock_units": 22.48475028511284,
+     "branch_cover_periods": 0.23740482663093404,
+     "early_purchase_units": 162.3340249026173,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 22.48475028511284,
+     "conservation_max_residual": 1.4210854715202004e-14,
+     "demand_total": 809.5047306078247,
+     "wall_p50": 0.008871947997249663,
+     "wall_p95": 0.01012066612020135,
+     "wall_max": 0.010786291677504778,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "central_pool": {
+     "runs": 2,
+     "cost": 4177.814860029243,
+     "cost_asset_basis": 4188.436936641361,
+     "realized": 4291.736555178093,
+     "components": {
+      "PURCHASE": 3857.0504807727675,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 2.5872863341773678,
+      "FINANCING": 0.0,
+      "SHORTAGE": 98.48419126615786,
+      "INVENTORY_VALUE_CHANGE": 333.6145968049907
+     },
+     "service": 0.9904495482645692,
+     "service_by_branch": {
+      "svc_branch": 0.9904495482645692
+     },
+     "target_by_branch": {
+      "svc_branch": 0.95
+     },
+     "min_branch_service": 0.9904495482645692,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 0,
+     "transfer_lines": 0,
+     "purchase_units": 771.4100961545535,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.0,
+     "end_stock_units": 22.48475028511284,
+     "branch_cover_periods": 0.23740482663093404,
+     "early_purchase_units": 162.3340249026173,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 22.48475028511284,
+     "conservation_max_residual": 1.4210854715202004e-14,
+     "demand_total": 809.5047306078247,
+     "wall_p50": 0.008866499760188162,
+     "wall_p95": 0.009866958018392324,
+     "wall_max": 0.010223290883004665,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "independent": {
+     "runs": 2,
+     "cost": 4206.069532734436,
+     "cost_asset_basis": 4216.6861085733135,
+     "realized": 4319.932646115587,
+     "components": {
+      "PURCHASE": 3837.550948161643,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 2.3340819513410382,
+      "FINANCING": 0.0,
+      "SHORTAGE": 146.21738888659425,
+      "INVENTORY_VALUE_CHANGE": 333.830227116008
+     },
+     "service": 0.9857253406042576,
+     "service_by_branch": {
+      "svc_branch": 0.9857253406042576
+     },
+     "target_by_branch": {
+      "svc_branch": 0.95
+     },
+     "min_branch_service": 0.9857253406042576,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 0,
+     "transfer_lines": 0,
+     "purchase_units": 767.5101896323285,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 2,
+     "central_stock_share": 0.0,
+     "end_stock_units": 20.2842836247495,
+     "branch_cover_periods": 0.21486359894436632,
+     "early_purchase_units": 158.07006297933486,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 20.2842836247495,
+     "conservation_max_residual": 1.4210854715202004e-14,
+     "demand_total": 809.5047306078247,
+     "wall_p50": 0.4680402922676876,
+     "wall_p95": 0.7235467499122024,
+     "wall_max": 0.8000363339670002,
+     "solve_statuses": {},
+     "owners": {
+      "composite": 16
+     },
+     "states": {
+      "composite": 16
+     }
+    },
+    "echelon_base_stock": {
+     "runs": 2,
+     "cost": 4170.274614594498,
+     "cost_asset_basis": 4181.081417146433,
+     "realized": 4286.163415387988,
+     "components": {
+      "PURCHASE": 3871.6089492584997,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 2.7492866343551396,
+      "FINANCING": 0.0,
+      "SHORTAGE": 85.43183953097059,
+      "INVENTORY_VALUE_CHANGE": 326.37333996416237
+     },
+     "service": 0.9917203027599207,
+     "service_by_branch": {
+      "svc_branch": 0.9917203027599207
+     },
+     "target_by_branch": {
+      "svc_branch": 0.95
+     },
+     "min_branch_service": 0.9917203027599207,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 0,
+     "transfer_lines": 0,
+     "purchase_units": 774.3217898516998,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 0,
+     "central_stock_share": 0.0,
+     "end_stock_units": 23.89261003665776,
+     "branch_cover_periods": 0.2514229945291543,
+     "early_purchase_units": 164.2193624972008,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 23.89261003665776,
+     "conservation_max_residual": 1.4210854715202004e-14,
+     "demand_total": 809.5047306078247,
+     "wall_p50": 0.11259836459066719,
+     "wall_p95": 0.17031774995848536,
+     "wall_max": 0.24158554105088115,
+     "solve_statuses": {},
+     "owners": {
+      "None": 16
+     },
+     "states": {
+      "None": 16
+     }
+    },
+    "gated": {
+     "runs": 2,
+     "cost": 4206.069532734436,
+     "cost_asset_basis": 4216.6861085733135,
+     "realized": 4319.932646115587,
+     "components": {
+      "PURCHASE": 3837.550948161643,
+      "FREIGHT": 0.0,
+      "ORDERING": 0.0,
+      "RECEIVING": 0.0,
+      "CARRYING": 2.3340819513410382,
+      "FINANCING": 0.0,
+      "SHORTAGE": 146.21738888659425,
+      "INVENTORY_VALUE_CHANGE": 333.830227116008
+     },
+     "service": 0.9857253406042576,
+     "service_by_branch": {
+      "svc_branch": 0.9857253406042576
+     },
+     "target_by_branch": {
+      "svc_branch": 0.95
+     },
+     "min_branch_service": 0.9857253406042576,
+     "breaches": 0.5,
+     "severe_starvation": false,
+     "transfer_units": 0,
+     "transfer_lines": 0,
+     "purchase_units": 767.5101896323285,
+     "purchase_lines": 8,
+     "reverse_pair_units": 0.0,
+     "no_action_reviews": 0,
+     "abstained_reviews": 2,
+     "central_stock_share": 0.0,
+     "end_stock_units": 20.2842836247495,
+     "branch_cover_periods": 0.21486359894436632,
+     "early_purchase_units": 158.07006297933486,
+     "early_transfer_units": 0,
+     "avg_inventory_units": 20.2842836247495,
+     "conservation_max_residual": 1.4210854715202004e-14,
+     "demand_total": 809.5047306078247,
+     "wall_p50": 0.46331186464522034,
+     "wall_p95": 0.715158459264785,
+     "wall_max": 0.7937951660715044,
+     "solve_statuses": {
+      "OPTIMAL": 64
+     },
+     "owners": {
+      "PURCHASING_ECONOMICS": 16
+     },
+     "states": {
+      "NO_ACTION": 16
+     }
+    }
+   },
+   "expect": {
+    "zaad_not_worse": 0.02,
+    "service": "target",
+    "action": "either",
+    "network": "frozen_identity"
+   },
+   "why": "one node, no lane: P2 must reduce to the frozen P1 / P0 decisions exactly",
+   "valid_baselines": [
+    "central_pool",
+    "echelon_base_stock",
+    "independent",
+    "network_rop"
+   ],
+   "classification": "VALID",
+   "checks": {
+    "zaad_not_worse": {
+     "pass": true,
+     "gap": 0.008583347968181165,
+     "tolerance": 0.02,
+     "best_baseline": "echelon_base_stock",
+     "best_cost": 4170.274614594498,
+     "zaad_cost": 4206.069532734436
+    },
+    "service": {
+     "pass": true,
+     "mode": "target",
+     "zaad": {
+      "svc_branch": 0.9857253406042576
+     },
+     "targets": {
+      "svc_branch": 0.95
+     }
+    },
+    "action": {
+     "pass": true,
+     "expected": "either",
+     "abstained_share": 0.25
+    },
+    "no_reverse_movement": {
+     "pass": true,
+     "units": 0.0
+    },
+    "conservation": {
+     "pass": true,
+     "residual": 1.4210854715202004e-14
+    },
+    "no_starvation": {
+     "pass": true,
+     "zaad_min": 0.9857253406042576,
+     "incumbent_min": 0.9904495482645692
+    }
+   },
+   "pass": true
+  }
+ },
+ "reviews": 8,
+ "network_principles": {
+  "pooling_has_value": {
+   "pass": true,
+   "pooling_benefit_vs_independent": -0.009758638412997503,
+   "note": "ZAAD on the pooled network is not worse than isolated branches (A)"
+  },
+  "pooling_benefit_shrinks": {
+   "pass": true,
+   "benefit_A": -0.009758638412997503,
+   "benefit_B": -0.0007302254940039386,
+   "note": "the benefit of pooling under correlated demand (B) is no larger than under independent demand (A), within two per cent (one-seed noise); the scenario-level fact is invariant 13/14"
+  },
+  "correlated_demand_no_fabricated_diversification": {
+   "pass": true,
+   "protection_A": 151.76336710644847,
+   "protection_B": 71.02586803901212,
+   "note": "correlated branches carry no less network protection than independent ones, or serve no worse"
+  },
+  "long_lead_positions_more_locally": {
+   "pass": true,
+   "branch_cover_C": 0.21780080270914953,
+   "branch_cover_D": 0.7001178197336413,
+   "note": "mean periods of demand held at the branches, D (lead 3) against C (lead 1)"
+  },
+  "no_churn_at_high_transfer_cost": {
+   "pass": true,
+   "zaad_units": 1524.7048682856725,
+   "incumbent_units": 1524.7049230395298,
+   "demand": 1633.6456004386819
+  },
+  "rebalance_before_purchase": {
+   "pass": true,
+   "zaad_early_purchases": 0,
+   "incumbent_early_purchases": 0,
+   "zaad_early_transfers": 391.10337616618597
+  },
+  "principled_allocation_under_shortage": {
+   "pass": true,
+   "service": {
+    "svc_north": 0.5660254014644304,
+    "svc_south": 0.5648309534634357
+   }
+  },
+  "healthy_branch_not_starved": {
+   "pass": true,
+   "north": 0.9695665652044316,
+   "south": 0.9906897846434497,
+   "incumbent_north": 0.9476270865526792,
+   "note": "the healthy branch is served no worse than under the incumbent network policy while the shocked branch is met"
+  },
+  "priority_branch_protected": {
+   "pass": true,
+   "north": 0.9895715904162963,
+   "south": 0.9677816839599103
+  },
+  "small_branch_not_starved": {
+   "pass": true,
+   "south": 0.9890674720516929
+  },
+  "already_efficient_abstains": {
+   "pass": true,
+   "abstained_share": 0.9375,
+   "cost_gap": 0.0011184499548080493
+  },
+  "remote_stock_not_credited": {
+   "pass": true,
+   "service": {
+    "svc_north": 0.5763728566728359,
+    "svc_south": 0.5454072445410698
+   },
+   "incumbent": {
+    "svc_north": 0.5763728566728359,
+    "svc_south": 0.5454072445410698
+   },
+   "note": "with the branches four periods from the pool the first four periods are lost by every policy; ZAAD serves no worse than the incumbent and the reachability invariant (03) proves the plan credits nothing it cannot reach"
+  },
+  "no_over_transfer_when_pipeline_covers": {
+   "pass": true,
+   "zaad_units": 1134.5730999657617,
+   "demand": 1633.6456004386819
+  },
+  "cheap_lane_when_time_allows": {
+   "pass": true,
+   "note": "reported per lane in the fixture record; the pass condition is zaad_not_worse on O"
+  },
+  "capacity_respected": {
+   "pass": true,
+   "note": "enforced by the settlement (PHYSICAL_FAILURE otherwise): the cell completed"
+  },
+  "legal_packs": {
+   "pass": true,
+   "note": "enforced by the settlement on executable transfers: the cell completed"
+  },
+  "recovery_without_ping_pong": {
+   "pass": true,
+   "south": 0.8715472450272113
+  },
+  "single_node_identity": {
+   "pass": true,
+   "note": "decision identity is proved by scripts.zaad_canonical_regression and tests; the cell records the cost"
+  }
+ },
+ "valid_fixtures": 20,
+ "passing_fixtures": 20,
+ "principles_passing": 18,
+ "principles_total": 18
+}

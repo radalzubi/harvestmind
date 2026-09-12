@@ -66,6 +66,10 @@ ARMS = {
     "p2_meio_quiet": {},    # P2 freeze gate: cell 108 alone with nothing else running
     "p2_perf": {},          # P2 performance pass: product defaults after the exact FEFO symmetry elimination; every P0 cell must stay decision-identical to router_cycle
     "sector_physics": {},   # three-sector physics freeze gate: product defaults with the sector layer present (no profile on the P0 cells); decision-identical to router_cycle
+    "p4_release": {},   # P4 release audit: the release-candidate runtime (certified PI / exact lookup corrections; no recourse block on the P0 cells); decision-identical to router_cycle
+    "p4_release_rerun": {},   # P4 release audit: wall-clock-limited cells alone on a quiet machine
+    "p4_recourse": {},   # P4 adaptive recourse: product defaults with the recourse layer present (no recourse block on the P0 cells); P0 cells must stay decision-identical to router_cycle
+    "p4_recourse_rerun": {},   # P4: wall-clock-limited cells alone on a quiet machine
     "p3_perf_closure_rerun": {},   # P3 production performance closure: cell 21 alone on a quiet machine (established wall-clock protocol)
     "p3_perf_closure": {},   # P3 production performance closure: exact activation bounds + order-class search; P0 cells must stay decision-identical to router_cycle
     "p3_sourcing_corrective": {},   # P3 corrective audit: the product freeze 9e496ed re-run alongside the sector and P3 matrices (cell 21 wall-clock-limited)

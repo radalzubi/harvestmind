@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 import math
 import time
+from typing import Any, TYPE_CHECKING
 
 import numpy as np
 from scipy.optimize import Bounds, LinearConstraint, milp
@@ -21,6 +22,9 @@ from zaad.sectors.contracts import resolve as sector_physics
 from zaad.sourcing.contracts import resolve as sourcing_view
 from zaad.full.tolerance import is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
+
+if TYPE_CHECKING:
+    from zaad.recourse.information import NodeMap
 
 
 # P2 performance pass: exact symmetry elimination of the FEFO indicators (see
@@ -226,6 +230,16 @@ class Solution:
     # Planning surrogate telemetry (P1 final closure): analytic expected shortage priced in the
     # objective of a mean-world solve, in units and in the declared penalty; None when not used.
     planning_surrogate: dict | None = None
+    # Adaptive recourse (P4): {"nodes": {node id: {"purchases": {(source, t): q}, "transfers":
+    # {(arc, expiry, t): q}}}, "perfect": bool} for an information-set-indexed solve; None for a
+    # static plan. `purchases` / `transfers` above then hold the here-and-now columns only.
+    recourse: dict | None = None
+    # the node map and the world names of the adaptive solve (settlement maps a solve world to its
+    # node by membership and any other world by observable-signature lookup)
+    recourse_nodes: Any = None
+    recourse_worlds: tuple[str, ...] | None = None
+    # instrumentation (P4): integer columns of the model
+    binaries: int | None = None
 
     @property
     def usable_plan(self) -> bool:
@@ -495,14 +509,18 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           seed: Solution | None = None,
           allowed_periods: frozenset[int] | None = None,
           expected_shortage: dict | None = None,
-          continuation_feeds: dict[tuple[str, str], list[dict]] | None = None) -> Solution:
+          continuation_feeds: dict[tuple[str, str], list[dict]] | None = None,
+          nodes: "NodeMap | None" = None) -> Solution:
     """excess_penalty (v6): {(sku, location): (baseline_units, cost_per_unit_period)} charges inventory
     held above the lean baseline while a temporary risk driver is gone, so the plan runs temporary
     protection down through demand rather than replenishing it. continuation (v6): {(sku, location):
     (post_horizon_demand_units, margin_per_unit)} lets end-of-horizon stock and post-horizon arrivals
     earn the service margin on demand expected during the next replenishment lead instead of only
     salvage, so late-horizon decisions are not artificially idle. Both use information available
-    at the review only (fitted mean demand, declared lead)."""
+    at the review only (fitted mean demand, declared lead). nodes (P4): the information-set node
+    map of an adaptive solve - purchase and transfer columns of a period at or after a review epoch
+    exist once per information set and every world reads its own set's column (non-anticipativity
+    by construction); None = the frozen builder path, bit for bit."""
     started = time.monotonic()
     if not worlds or abs(sum(w.weight for w in worlds) - 1) > 1e-8 or any(w.weight <= 0 for w in worlds):
         raise ValueError("positive scenario weights must sum to one")
@@ -524,7 +542,34 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     # that can carry nothing (exact). Never a new objective of its own.
     sourcing = sourcing_view(req)
     m = Linear()
-    x, tr, po, inv, use, unmet, cash, debt = {}, {}, {}, {}, {}, {}, {}, {}
+    x: dict[tuple, int] = {}
+    tr: dict[tuple, int] = {}
+    po, inv, use, unmet, cash, debt = {}, {}, {}, {}, {}, {}
+    # P4 node indexing. `nodes_at(t)` lists the information-set nodes whose columns exist at period
+    # t (`(None,)` = the single here-and-now column, the frozen naming); `node_of(w, t)` is the
+    # node world w reads; `name_at(base, node)` appends the node id to a column name only when the
+    # column is a recourse column, so a frozen solve produces exactly the frozen names.
+    def nodes_at(t: int, kind: str = "purchase") -> tuple:
+        return (None,) if nodes is None else nodes.nodes(t, kind)
+
+    def node_of(w: int, t: int, kind: str = "purchase"):
+        return None if nodes is None else nodes.node(w, t, kind)
+
+    def members_of(t: int, node, kind: str = "purchase") -> tuple[int, ...]:
+        return tuple(range(len(worlds))) if nodes is None else nodes.members(t, node, kind)
+
+    def name_at(base: tuple, node) -> tuple:
+        return base if node is None else base + (node,)
+
+    def xw(w: int, sid: str, t: int) -> int:
+        return x[sid, t, node_of(w, t)]
+
+    def paths() -> list[tuple]:
+        """Distinct node paths through the horizon (one per world when nodes differ; one path on the frozen builder)."""
+        seen: dict[tuple, int] = {}
+        for w in range(len(worlds)):
+            seen.setdefault(tuple(node_of(w, t) for t in range(H)), w)
+        return list(seen)
     use_by_stock = defaultdict(list)
     stock_indices = defaultdict(list)
     use_for_service: dict[tuple, dict[int, float]] = defaultdict(dict)
@@ -630,32 +675,34 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             cap = min(source.maximum, source.capacity_by_period[t]) if eligible else 0.
             if allowed_periods is not None and t not in allowed_periods:
                 cap = 0.   # cadence candidate (P1): no order is placed outside the cadence
-            q = m.var(("purchase", source.id, t), upper=cap)
-            x[source.id, t] = q
-            # Zero-capability pruning (P3, exact): a column bounded at zero needs no pack, activation or
-            # quote-group binary; their only value was 0 (or a cost-free tie inside a quote group).
-            pruned = sourcing is not None and sourcing.portfolio.prune_zero_capability and cap <= 0
-            multiple = source.multiple if "continuous" not in disabled else max(source.multiple, 10.)
-            if multiple > 0 and not pruned:
-                units = m.var(("packs", source.id, t), upper=math.floor(cap / multiple), integer=True)
+            departure = dates(req, source, t)[0]
+            for node in nodes_at(t):
+              q = m.var(name_at(("purchase", source.id, t), node), upper=cap)
+              x[source.id, t, node] = q
+              # Zero-capability pruning (P3, exact): a column bounded at zero needs no pack, activation or
+              # quote-group binary; their only value was 0 (or a cost-free tie inside a quote group).
+              pruned = sourcing is not None and sourcing.portfolio.prune_zero_capability and cap <= 0
+              multiple = source.multiple if "continuous" not in disabled else max(source.multiple, 10.)
+              if multiple > 0 and not pruned:
+                units = m.var(name_at(("packs", source.id, t), node), upper=math.floor(cap / multiple), integer=True)
                 m.row({q: 1, units: -multiple}, 0, 0)
-            for label, increment in (("case", source.case_multiple), ("pallet", source.pallet_multiple), ("transport", source.transport_multiple)):
+              for label, increment in (("case", source.case_multiple), ("pallet", source.pallet_multiple), ("transport", source.transport_multiple)):
                 if increment and not pruned:
-                    units = m.var((label, source.id, t), upper=math.floor(cap / increment), integer=True)
+                    units = m.var(name_at((label, source.id, t), node), upper=math.floor(cap / increment), integer=True)
                     m.row({q: 1, units: -increment}, 0, 0)
-            if (source.minimum or source.fixed_order_fee or source.exclusive_quote_group) and not pruned:
-                active = m.var(("active", source.id, t), upper=1, integer=True)
+              if (source.minimum or source.fixed_order_fee or source.exclusive_quote_group) and not pruned:
+                active = m.var(name_at(("active", source.id, t), node), upper=1, integer=True)
                 m.row({q: 1, active: -min(cap, tight.get((source.id, t), cap))}, upper=0)
                 m.row({q: 1, active: -source.minimum}, lower=0)
-                for w in range(len(worlds)):
+                for w in members_of(t, node):
                     expense(active, source.fixed_order_fee, w, t)
                 if source.exclusive_quote_group:
-                    quote_groups[source.exclusive_quote_group, t].append(active)
-            if fixed is not None:
+                    quote_groups[source.exclusive_quote_group, t, node].append(active)
+              if fixed is not None:
                 quantity = fixed.purchases.get((source.id, t), 0.)
                 m.row({q: 1}, quantity, quantity)
-            departure = dates(req, source, t)[0]
-            for w, world in enumerate(worlds):
+              for w in members_of(t, node):
+                world = worlds[w]
                 due, fill = world.arrival[source.id, t], world.fills[source.id, t]
                 if not 0 <= fill <= 1 or due <= t:
                     raise ValueError("invalid physical fill or arrival chronology")
@@ -697,32 +744,34 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             for (sku, destination), rows in sourcing.shares.items():
                 members = pair_sources[sku, destination]
                 for c in rows:
-                    windows = [list(range(H))] if c.scope == "horizon" else [[t] for t in range(H)]
+                  windows = [list(range(H))] if c.scope == "horizon" else [[t] for t in range(H)]
+                  for path in paths():   # one row set per distinct node path (P4); the frozen builder has one path
                     for ts in windows:
-                        own_cols = {x[c.source, t]: 1. for t in ts}
+                        own_cols = {x[c.source, t, path[t]]: 1. for t in ts}
                         if c.minimum_share > 0:
-                            share_row: dict[int, float] = {x[s, t]: -c.minimum_share for s in members for t in ts}
+                            share_row: dict[int, float] = {x[s, t, path[t]]: -c.minimum_share for s in members for t in ts}
                             for k, v in own_cols.items():
                                 share_row[k] = share_row.get(k, 0.) + v
                             m.row(share_row, lower=0)
                         if c.maximum_share < 1:
-                            share_row = {x[s, t]: -c.maximum_share for s in members for t in ts}
+                            share_row = {x[s, t, path[t]]: -c.maximum_share for s in members for t in ts}
                             for k, v in own_cols.items():
                                 share_row[k] = share_row.get(k, 0.) + v
                             m.row(share_row, upper=0)
                     if c.committed_units > 0 and c.scope == "horizon":
-                        m.row({x[c.source, t]: 1. for t in range(H)}, lower=c.committed_units)
+                        m.row({x[c.source, t, path[t]]: 1. for t in range(H)}, lower=c.committed_units)
         # Declared switching / qualification cost (P3): one first-stage binary per declared source
         # outside the incumbent mix, charged once when the source receives any quantity in the plan.
         for sid, row_cost in sourcing.switching.items():
             cost = sourcing.switching_cost(sid)
             if cost <= 0:
                 continue
-            total_cap = sum(m.upper[x[sid, t]] for t in range(H))
+            total_cap = sum(m.upper[x[sid, t, node]] for t in range(H) for node in nodes_at(t))
             if total_cap <= 0:
                 continue
             switch = m.var(("switch", sid), upper=1, integer=True)
-            m.row({**{x[sid, t]: 1. for t in range(H)}, switch: -total_cap}, upper=0)
+            for path in paths():
+                m.row({**{x[sid, t, path[t]]: 1. for t in range(H)}, switch: -total_cap}, upper=0)
             for w in range(len(worlds)):
                 expense(switch, cost, w, 0)
     # Supplier-order economics (P1). One order per supplier and period: minimum order value across
@@ -735,33 +784,36 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             caps = {s.id: min(s.maximum, s.capacity_by_period[t], tight.get((s.id, t), math.inf)) for s in srcs}
             if allowed_periods is not None and t not in allowed_periods:
                 caps = {k: 0. for k in caps}
-            order = m.var(("order", supplier, t), upper=1, integer=True)
-            for s in srcs:
-                m.row({x[s.id, t]: 1, order: -caps[s.id]}, upper=0)
-            if st.minimum_order_value:
-                m.row({**{x[s.id, t]: s.unit_price * terms[s.terms].fx_rate_to_currency for s in srcs}, order: -st.minimum_order_value}, lower=0)
-            if st.max_shipment_weight is not None and physics is not None:
-                # shipment weight cap (sector physics): like the pallet cap, one continuous row per order
-                m.row({**{x[s.id, t]: float(physics.weight(s.sku) or 0.) for s in srcs}, order: -st.max_shipment_weight}, upper=0)
             departure = min(dates(req, s, t)[0] for s in srcs)
-            for w, world in enumerate(worlds):
+            for node in nodes_at(t):
+              order = m.var(name_at(("order", supplier, t), node), upper=1, integer=True)
+              for s in srcs:
+                m.row({x[s.id, t, node]: 1, order: -caps[s.id]}, upper=0)
+              if st.minimum_order_value:
+                m.row({**{x[s.id, t, node]: s.unit_price * terms[s.terms].fx_rate_to_currency for s in srcs}, order: -st.minimum_order_value}, lower=0)
+              if st.max_shipment_weight is not None and physics is not None:
+                # shipment weight cap (sector physics): like the pallet cap, one continuous row per order
+                m.row({**{x[s.id, t, node]: float(physics.weight(s.sku) or 0.) for s in srcs}, order: -st.max_shipment_weight}, upper=0)
+              for w in members_of(t, node):
+                world = worlds[w]
                 arrival = min(world.arrival[s.id, t] for s in srcs)
                 if st.fixed_order_cost:
                     expense(order, st.fixed_order_cost, w, t)
                 if st.receiving_fee_per_receipt:
                     expense(order, st.receiving_fee_per_receipt, w, arrival)
-            if upp is None:
+              if upp is None:
                 continue
-            pallets = m.var(("pallets", supplier, t), upper=math.ceil(sum(caps[s.id] / upp[s.id] for s in srcs)) + 1, integer=True)
-            m.row({pallets: 1, **{x[s.id, t]: -1. / upp[s.id] for s in srcs}}, lower=0)
-            top = st.max_pallets if st.max_pallets is not None else (st.freight_tiers[-1].up_to_pallets if st.freight_tiers else None)
-            if top is not None:
+              pallets = m.var(name_at(("pallets", supplier, t), node), upper=math.ceil(sum(caps[s.id] / upp[s.id] for s in srcs)) + 1, integer=True)
+              m.row({pallets: 1, **{x[s.id, t, node]: -1. / upp[s.id] for s in srcs}}, lower=0)
+              top = st.max_pallets if st.max_pallets is not None else (st.freight_tiers[-1].up_to_pallets if st.freight_tiers else None)
+              if top is not None:
                 m.row({pallets: 1, order: -top}, upper=0)
-            if st.freight_tiers:
-                tiers = [m.var(("freight_tier", supplier, t, k), upper=1, integer=True) for k in range(len(st.freight_tiers))]
+              if st.freight_tiers:
+                tiers = [m.var(name_at(("freight_tier", supplier, t, k), node), upper=1, integer=True) for k in range(len(st.freight_tiers))]
                 m.row({**{v: 1 for v in tiers}, order: -1}, 0, 0)
                 m.row({pallets: 1, **{v: -tier.up_to_pallets for v, tier in zip(tiers, st.freight_tiers)}}, upper=0)
-            for w, world in enumerate(worlds):
+              for w in members_of(t, node):
+                world = worlds[w]
                 arrival = min(world.arrival[s.id, t] for s in srcs)
                 if st.freight_tiers:
                     for v, tier in zip(tiers, st.freight_tiers):
@@ -776,10 +828,11 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             term = terms[source.terms]
             landed = source.unit_price * term.fx_rate_to_currency + source.freight_per_unit + source.handling_per_unit
             charge = effective_smoothing(req) * landed
-            for t in range(1, H):
-                up = m.var(("smooth_up", source.id, t), cost=charge)
-                down = m.var(("smooth_down", source.id, t), cost=charge)
-                m.row({x[source.id, t]: 1, x[source.id, t - 1]: -1, up: -1, down: 1}, 0, 0)
+            for path in paths():
+              for t in range(1, H):
+                up = m.var(name_at(("smooth_up", source.id, t), path[t]), cost=charge)
+                down = m.var(name_at(("smooth_down", source.id, t), path[t]), cost=charge)
+                m.row({x[source.id, t, path[t]]: 1, x[source.id, t - 1, path[t - 1]]: -1, up: -1, down: 1}, 0, 0)
     # Outstanding PO amendments: only explicit contractual options, no invented permission.
     for order in req.pipeline:
         source = sources[order.source]
@@ -851,22 +904,25 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     # the lane or the destination cannot carry / hold the SKU's state, or the cohort
                     # would arrive below the minimum remaining life at receipt (sector physics)
                     cap = 0.
-                q = m.var(("transfer", arc.id, expiry, t), upper=cap)
-                tr[arc.id, expiry, t] = q
-                ids.append(q)
-                outbound[arc.sku, arc.origin, expiry, t][q] += 1
-                if fixed is not None:
+                for node in nodes_at(t, "transfer"):
+                  q = m.var(name_at(("transfer", arc.id, expiry, t), node), upper=cap)
+                  tr[arc.id, expiry, t, node] = q
+                  ids.append((node, q))
+                  outbound[arc.sku, arc.origin, expiry, t, node][q] += 1
+                  if fixed is not None:
                     amount = fixed.transfers.get((arc.id, expiry, t), 0.)
                     m.row({q: 1}, amount, amount)
-                for w in range(len(worlds)):
+                  for w in members_of(t, node, "transfer"):
                     arrivals[w][arc.sku, arc.destination, expiry, due][q] += 1 - arc.loss_fraction
                     expense(q, arc.cost_per_unit, w, t)
                     if due >= H:
                         costs[w][q] -= (1 - arc.loss_fraction) * skus[arc.sku].terminal_value
                         post[w][arc.sku, arc.destination][q] += 1 - arc.loss_fraction
                         post_expiry.setdefault(q, expiry)
-            if ids:
-                m.row({q: 1 for q in ids}, upper=arc.capacity)
+            for node in nodes_at(t, "transfer"):
+              node_ids = [q for n, q in ids if n == node]
+              if node_ids:
+                m.row({q: 1 for q in node_ids}, upper=arc.capacity)
                 lane_cap = arc.capacity if arc.approved and "transfers" not in disabled else 0.
                 if arc.multiple > 0 and lane_cap > 0 and t == 0:
                     # Transfer packs (P2): the executable movement over the lane is a whole number of
@@ -874,13 +930,13 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     # packs on period zero, the only period an operator executes), so they stay
                     # continuous and the model does not carry a general integer per lane-period. A lane
                     # without a declared pack is continuous, as before.
-                    packs = m.var(("transfer_packs", arc.id, t), upper=math.floor(lane_cap / arc.multiple), integer=True)
-                    m.row({**{q: 1 for q in ids}, packs: -arc.multiple}, 0, 0)
+                    packs = m.var(name_at(("transfer_packs", arc.id, t), node), upper=math.floor(lane_cap / arc.multiple), integer=True)
+                    m.row({**{q: 1 for q in node_ids}, packs: -arc.multiple}, 0, 0)
                 if arc.fixed_cost_per_dispatch > 0 and lane_cap > 0:
                     # Per-dispatch cost (P2): charged once in any period the lane carries anything.
-                    dispatch = m.var(("transfer_dispatch", arc.id, t), upper=1, integer=True)
-                    m.row({**{q: 1 for q in ids}, dispatch: -lane_cap}, upper=0)
-                    for w in range(len(worlds)):
+                    dispatch = m.var(name_at(("transfer_dispatch", arc.id, t), node), upper=1, integer=True)
+                    m.row({**{q: 1 for q in node_ids}, dispatch: -lane_cap}, upper=0)
+                    for w in members_of(t, node, "transfer"):
                         expense(dispatch, arc.fixed_cost_per_dispatch, w, t)
     # Executable transfers share observed opening inventory across all arcs.
     # Expected PO receipts, including overdue ones, cannot fund today's action.
@@ -888,14 +944,15 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     for inbound in req.inbound_transfers:
         if inbound.due_in == 0:
             confirmed[inbound.sku, inbound.destination, inbound.expires_in] += inbound.accepted_quantity
-    for (sku, origin, expiry, t), transfer_terms in outbound.items():
+    for (sku, origin, expiry, t, _node), transfer_terms in outbound.items():
         if t == 0:
             m.row(transfer_terms, upper=initial[sku, origin, expiry] + confirmed[sku, origin, expiry])
     for resource in req.resources:
         for t in range(H):
-            row = {x[s.id, t]: skus[s.sku].volume for s in req.sources if resource.id in s.resources}
-            if row:
-                m.row(row, upper=resource.capacity_by_period[t])
+            for node in nodes_at(t):
+                row = {x[s.id, t, node]: skus[s.sku].volume for s in req.sources if resource.id in s.resources}
+                if row:
+                    m.row(row, upper=resource.capacity_by_period[t])
     for w, world in enumerate(worlds):
         for t in range(H):
             for sku, location in sorted(pairs):
@@ -1010,7 +1067,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         row[prior] -= 1
                     for q, coefficient in arrivals[w][sku, location, expiry, t].items():
                         row[q] -= coefficient
-                    for q, coefficient in outbound[sku, location, expiry, t].items():
+                    for q, coefficient in outbound[sku, location, expiry, t, node_of(w, t, "transfer")].items():
                         row[q] += coefficient
                     for used_q, used_conversion in use_by_stock[key]:
                         row[used_q] += used_conversion
@@ -1062,7 +1119,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 term = terms[source.terms]
                 for placed in range(t + 1):
                     if world.arrival[source.id, placed] > t:
-                        reserve[x[source.id, placed]] += source.unit_price * term.fx_rate_to_currency * term.letter_of_credit_fraction
+                        reserve[xw(w, source.id, placed)] += source.unit_price * term.fx_rate_to_currency * term.letter_of_credit_fraction
             m.row(reserve, upper=-liquidity.minimum_cash)
             if t == H - 1 and tail[w]:
                 # Terminal solvency: closing cash above the floor plus unused credit must cover every
@@ -1238,25 +1295,26 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     if cvar_weight:
         threshold = m.var(("cvar_threshold",), cost=cvar_weight, lower=-np.inf)
         for w, world in enumerate(worlds):
-            tail = m.var(("cvar_tail", w), cost=cvar_weight * world.weight / .1)
+            tail_var = m.var(("cvar_tail", w), cost=cvar_weight * world.weight / .1)
             row = dict(costs[w])
-            row[threshold], row[tail] = -1, -1
+            row[threshold], row[tail_var] = -1, -1
             m.row(row, upper=0)
     if targets is not None:
         # Operational projection of a heuristic target into COMMON constraints.
         # It remains labelled a projected baseline, not an unconstrained strawman.
+        assert nodes is None, "a projected base-stock target is a static plan; it is never solved on recourse nodes"
         penalty = 1000 * max(s.selling_price + s.sla_per_unmet for s in req.services)
         for target_key, quantity in targets.items():
             plus, minus = m.var(("target_above", *target_key), cost=penalty), m.var(("target_below", *target_key), cost=penalty)
             if len(target_key) == 3 and target_key[0] == "transfer":
                 # Transfer target (echelon base stock): the period's total across expiry cohorts.
                 _, arc_id, t_key = target_key
-                terms_ = {q: 1. for (a_id, _, t_) , q in tr.items() if a_id == arc_id and t_ == t_key}
+                terms_ = {q: 1. for (a_id, _, t_, _n), q in tr.items() if a_id == arc_id and t_ == t_key}
                 if not terms_:
                     continue
                 m.row({**terms_, plus: -1, minus: 1}, quantity, quantity)
                 continue
-            m.row({x[target_key]: 1, plus: -1, minus: 1}, quantity, quantity)
+            m.row({x[target_key[0], target_key[1], None]: 1, plus: -1, minus: 1}, quantity, quantity)
     objective = None
     if service_first:
         objective = np.zeros(len(m.names))
@@ -1317,7 +1375,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     elapsed = time.monotonic() - started
     gap = getattr(result, "mip_gap", None)
     bound = getattr(result, "mip_dual_bound", None)
-    nodes = getattr(result, "mip_node_count", None)
+    nodes_count = getattr(result, "mip_node_count", None)
     physically_usable = result.x is not None and residual <= 1e-5
     if warm is not None:
         seed_objective = warm.get("seed_objective")
@@ -1351,7 +1409,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     if not physically_usable:
         return Solution(state, {}, {}, {}, {}, None, [], elapsed,
                         len(m.names), len(m.rows), gap, residual if math.isfinite(residual) else None, [str(result.message)],
-                        best_bound=bound, nodes=nodes, warm_start=warm)
+                        best_bound=bound, nodes=nodes_count, warm_start=warm)
     values = result.x
     service_result = {}
     for service in req.services:
@@ -1368,11 +1426,24 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
         telemetry = {"expected_shortage_units": sum(es_units.values()), "mean_world_unmet_units": sum(mean_unmet.values()),
                      "surrogate_cost": sum((es_units[k] - mean_unmet[k]) * (next(s_ for s_ in req.services if s_.id == k[0]).selling_price + next(s_ for s_ in req.services if s_.id == k[0]).sla_per_unmet) for k in es_units),
                      "scope": "planning objective of the mean-world candidate only; not in the ledger or the projected cost"}
-    return Solution(state, {k: float(max(0, values[q])) for k, q in x.items() if not is_dust(values[q], pack_of[k[0]])},
-                    {k: float(max(0, values[q])) for k, q in tr.items() if not is_dust(values[q])},
+    # P4: here-and-now columns make the plan; recourse columns make the policy (per node), read by
+    # `zaad.recourse.policy.world_plan` for each world's own path.
+    recourse_block: dict | None = None
+    if nodes is not None:
+        node_plans: dict[str, dict[str, dict]] = {}
+        for (sid, t, node), q in x.items():
+            if node is not None and not is_dust(values[q], pack_of[sid]):
+                node_plans.setdefault(node, {"purchases": {}, "transfers": {}})["purchases"][sid, t] = float(max(0, values[q]))
+        for (arc_id, expiry, t, node), q in tr.items():
+            if node is not None and not is_dust(values[q]):
+                node_plans.setdefault(node, {"purchases": {}, "transfers": {}})["transfers"][arc_id, expiry, t] = float(max(0, values[q]))
+        recourse_block = {"nodes": node_plans, "perfect": nodes.perfect}
+    return Solution(state, {k[:2]: float(max(0, values[q])) for k, q in x.items() if k[2] is None and not is_dust(values[q], pack_of[k[0]])},
+                    {k[:3]: float(max(0, values[q])) for k, q in tr.items() if k[3] is None and not is_dust(values[q])},
                     {k: float(max(0, values[q])) for k, q in po.items() if not is_dust(values[q], po_pack[k[0]])},
                     service_result, float(economic),
                     [{"period": t, "scenario": w, "cash": float(values[cash[t, w]]), "debt": float(values[debt[t, w]])} for w in range(len(worlds)) for t in range(H)],
                     elapsed, len(m.names), len(m.rows), gap, residual,
                     ([] if state == "OPTIMAL" else [f"{state}: feasible plan returned without a proof of optimality"]),
-                    best_bound=bound, nodes=nodes, warm_start=warm, planning_surrogate=telemetry)
+                    best_bound=bound, nodes=nodes_count, warm_start=warm, planning_surrogate=telemetry, recourse=recourse_block,
+                    binaries=int(sum(m.integer)))
