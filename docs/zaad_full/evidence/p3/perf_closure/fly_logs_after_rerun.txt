@@ -1,0 +1,100 @@
+[2m2026-09-12T00:09:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:44816 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:09:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:61562 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:10:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:60410 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:10:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:52462 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:11:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:35922 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:11:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:55656 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:12:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:37914 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:12:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:44848 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:13:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:54410 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:13:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:60918 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:14:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:43942 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:14:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:43366 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:15:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:51582 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:15:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:40292 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:16:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:35136 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:16:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:62070 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:17:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:56620 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:17:25Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026/09/12 00:17:25 INFO New SSH session email=rad.alzubi2005@gmail.com verified=true
+[2m2026-09-12T00:17:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:48136 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:18:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:46600 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:18:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:42064 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:19:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:34044 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:19:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:40482 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:20:16Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:43896 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:20:39Z[0m runner[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]Pulling container image registry.fly.io/zaad-api@sha256:141b2f69d9df956b1ad89cfb32812a6a880d81285c7d46ca091b4a3e51d6cd4a
+[2m2026-09-12T00:20:46Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:47524 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:20:56Z[0m runner[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]Successfully prepared image registry.fly.io/zaad-api@sha256:141b2f69d9df956b1ad89cfb32812a6a880d81285c7d46ca091b4a3e51d6cd4a (16.81072073s)
+[2m2026-09-12T00:20:56Z[0m runner[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]Setting up volume 'harvestmind_data'
+[2m2026-09-12T00:20:56Z[0m runner[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]Opening encrypted volume
+[2m2026-09-12T00:20:57Z[0m runner[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]Configuring firecracker
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][32m INFO[0m Sending signal SIGINT to main child process w/ PID 653
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     Shutting down
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     Waiting for application shutdown.
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     Application shutdown complete.
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     Finished server process [653]
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]Traceback (most recent call last):
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]    return self._loop.run_until_complete(task)
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]asyncio.exceptions.CancelledError
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]During handling of the above exception, another exception occurred:
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]Traceback (most recent call last):
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]  File "<frozen runpy>", line 198, in _run_module_as_main
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]  File "<frozen runpy>", line 88, in _run_code
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]  File "/app/api/serve.py", line 52, in <module>
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]    sys.exit(main())
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]             ^^^^^^
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]  File "/app/api/serve.py", line 47, in main
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]    server.run(sockets=socks)
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]  File "/usr/local/lib/python3.12/site-packages/uvicorn/server.py", line 77, in run
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]  File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]    return runner.run(main)
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]           ^^^^^^^^^^^^^^^^
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]  File "/usr/local/lib/python3.12/asyncio/runners.py", line 123, in run
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]    raise KeyboardInterrupt()
+[2m2026-09-12T00:20:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]KeyboardInterrupt
+[2m2026-09-12T00:20:58Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][32m INFO[0m Main child exited with signal (with signal 'SIGINT', core dumped? false)
+[2m2026-09-12T00:20:58Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][32m INFO[0m Starting clean up.
+[2m2026-09-12T00:20:58Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][32m INFO[0m Umounting /dev/vdc from /var/lib/harvestmind
+[2m2026-09-12T00:20:58Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][16270.176406] reboot: Restarting system
+[2m2026-09-12T00:20:59Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026-09-12T00:20:59.184592799 [01M29FSPEQEHW8A779EJ1BJ43M:main] Running Firecracker v1.14.4
+[2m2026-09-12T00:20:59Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026-09-12T00:20:59.184796281 [01M29FSPEQEHW8A779EJ1BJ43M:main] Listening on API socket ("/fc.sock").
+[2m2026-09-12T00:21:00Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][32m INFO[0m Starting init (commit: 6172d83)...
+[2m2026-09-12T00:21:00Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][32m INFO[0m Checking filesystem on /var/lib/harvestmind
+[2m2026-09-12T00:21:00Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]/dev/vdc: clean, 107/655360 files, 83447/2617344 blocks
+[2m2026-09-12T00:21:00Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][32m INFO[0m Mounting /dev/vdc at /var/lib/harvestmind w/ uid: 10001, gid: 10001 and chmod 0755
+[2m2026-09-12T00:21:00Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][32m INFO[0m Resized /var/lib/harvestmind to 10720641024 bytes
+[2m2026-09-12T00:21:00Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][32m INFO[0m Preparing to run: `python -m api.serve` as harvestmind
+[2m2026-09-12T00:21:00Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m][32m INFO[0m [fly api proxy] listening at /.fly/api
+[2m2026-09-12T00:21:00Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026/09/12 00:21:00 INFO SSH listening listen_address=[fdaa:c2:809:a7b:61d:f08e:9605:2]:22
+[2m2026-09-12T00:21:00Z[0m runner[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]Machine created and started in 20.694s
+[2m2026-09-12T00:21:00Z[0m health[0804e0dfd1e948] [32mfra[0m [[31merror[0m]Health check 'servicecheck-00-http-8000' on port 8000 has failed. Your app is not responding properly. Services exposed on ports [80, 443] will have intermittent failures until the health check passes.
+[2m2026-09-12T00:21:21Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     Started server process [652]
+[2m2026-09-12T00:21:21Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     Waiting for application startup.
+[2m2026-09-12T00:21:21Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     Application startup complete.
+[2m2026-09-12T00:21:22Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:43708 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:21:22Z[0m health[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]Health check 'servicecheck-00-http-8000' on port 8000 is now passing.
+[2m2026-09-12T00:21:40Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:21:52Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:57210 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:21:56Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026/09/12 00:21:56 INFO New SSH session email=rad.alzubi2005@gmail.com verified=true
+[2m2026-09-12T00:21:57Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /access/start HTTP/1.1" 200 OK
+[2m2026-09-12T00:22:22Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:48740 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:22:36Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan HTTP/1.1" 200 OK
+[2m2026-09-12T00:22:39Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026/09/12 00:22:39 INFO New SSH session email=rad.alzubi2005@gmail.com verified=true
+[2m2026-09-12T00:22:41Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /access/start HTTP/1.1" 200 OK
+[2m2026-09-12T00:22:50Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan HTTP/1.1" 200 OK
+[2m2026-09-12T00:22:52Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:35100 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:23:04Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan HTTP/1.1" 200 OK
+[2m2026-09-12T00:23:06Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan HTTP/1.1" 200 OK
+[2m2026-09-12T00:23:08Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan HTTP/1.1" 200 OK
+[2m2026-09-12T00:23:11Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026/09/12 00:23:11 INFO New SSH session email=rad.alzubi2005@gmail.com verified=true
+[2m2026-09-12T00:23:13Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /access/start HTTP/1.1" 200 OK
+[2m2026-09-12T00:23:22Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:52770 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:23:50Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     52.119.103.17:0 - "POST /api/zaad/network/plan HTTP/1.1" 200 OK
+[2m2026-09-12T00:23:52Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:38228 - "GET /health HTTP/1.1" 200 OK
+[2m2026-09-12T00:23:53Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]2026/09/12 00:23:53 INFO New SSH session email=rad.alzubi2005@gmail.com verified=true
+[2m2026-09-12T00:24:22Z[0m app[0804e0dfd1e948] [32mfra[0m [[34minfo[0m]INFO:     172.19.44.241:36822 - "GET /health HTTP/1.1" 200 OK

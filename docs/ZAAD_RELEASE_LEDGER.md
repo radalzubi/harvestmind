@@ -555,9 +555,62 @@ and rerun CI on `main`.
   `zaad-api` v17 `canonical-0de6850`; ENGINEERING VALIDATED, not real-data validated; no savings claimed).
   Next authorized phase: P4 adaptive recourse — not started.
 
+## P3 production performance closure (2026-09-11, branch `perf/p3-shared-mov-closure`, worktree `harvestmind-p3-perf`, parent `main` `1e712c9`)
+
+* **Original release observation (kept, not erased)**: the P3 release smoke's shared-supplier-MOV case
+  (`payload.shared_mov`: two SKUs, one supplier with a 5,000 MOV and a 150 fixed order cost, declared line
+  capacity 1,000,000) measured **218.4 s** on Fly v17 (`0de6850`) against the declared 180 s interactive bound;
+  functionally correct, performance blocked.
+* **Exact workload**: snapshotted byte for byte (`evidence/p3/perf_closure/shared_mov_prod_snapshot.json`)
+  with the multi-SKU capacity, plant-group, simple P3 and P2 network snapshots and the v17 reference results.
+* **Root cause (measured, `P3_SHARED_MOV_PROFILE.md`)**: 96 % of the wall time inside HiGHS across 18 calls
+  (12 distinct candidate / valuation models; no first-stage binary duplicated per world; nothing rebuilt
+  twice). (1) The supplier-order linking rows used the declared capacity (1,000,000) as big-M, so the
+  relaxation never priced the MOV or the fixed cost: base_stock 4.7 s / 1,214 nodes, oracles 84 nodes.
+  (2) After the bound is tight, HiGHS's root restart doubles every remaining solve for the same optimum.
+  (3) The 218 s itself was the request on a **throttled shared CPU** (guest counters: 518 s steal against
+  271 s user time since boot); the exact request rerun on the unthrottled machine took 76.2 s with every
+  candidate optimal and the same decision as locally. The frozen `depleted` indicators' big-M, heuristic
+  effort, scaling, pricing, cut and LP-age settings were measured and are not drivers.
+* **Correction** (`zaad/full/model.py`, PR #64 `5bbdefc` -> merge `61a3e75`): scoped to the P3
+  shared-supplier-order class (`shared_supplier_orders`: a sourcing review whose supplier order links lines
+  of more than one SKU). Inside it: `activation_bounds` (the exact undominated quantity per line and period
+  as the coefficient of the `order` / `active` linking rows; purchase columns keep their capacity; guarded
+  by salvage < landed cost, no bound under fixed plans or declared share rows, pack-lattice rounding),
+  highspy with `mip_allow_restart` off, and explicit rejection of dominated warm-start seeds. Outside the
+  class nothing changes. Two broader scopes were built, measured and withdrawn because they flipped
+  tie representatives (equal-cost transfers, identical-price sources) through the selector's confirmation
+  gates in E4 / R4 / T (`tie_evidence/`).
+* **Exactness**: every candidate on the exact snapshot returns the identical objective, bound and purchase
+  plan before and after; only equal-cost transfer allocations move (objective 25,408.1631 both).
+* **Before / after**: local 17.55 s -> 12.8 s (solver 17.06 -> 12.3 s; base_stock 4.68 -> 0.15 s; every
+  solve at or near one node). Fly: exact snapshot 218.4 s (v17 release smoke, throttled) / 76.2 s (v17 unthrottled rerun) -> **39.4 s** fresh and **37.8 s** after the sustained sequence on v18, every candidate optimal; multi-SKU capacity 77.6 -> 9.5 s; plant group 45.6 -> 14.5 s; simple P3 1.8 s; P2 network 1.6 s.
+* **Regression on the final code**: P3 30 / 30, 34 / 34, 23 / 23, 2,273 / 2,304 replay reviews identical
+  to `p3_corrective` (the 31 others all C6: one equal-cost transfer tie at review 0 and its cascade,
+  review-0 candidates identical on both seeds); P2 20 / 20, 18 / 18, invariants PASS, 1,720 / 1,720
+  identical; sector 26 / 26, 19 / 19, ZAAD reviews 416 / 416 identical (the `echelon_base_stock`
+  comparator's 19 differing reviews reproduce on the unchanged released code: pre-existing comparator
+  variability, recorded); P1 canonical B / T / Q / A identity, invariants 60 / 0; P0 six-cell arm
+  `p3_perf_closure` 118 / 120 under contention, quiet rerun of cells 21 and 108 50 / 50 -> 120 / 120.
+  New structural test `tests/unit/test_zaad_activation_bounds.py` (no wall clock).
+* **Remote CI**: PR #64 run 34657879427 green on every executable job: pytest 275 + 1,139 + 328 + 170 = **1,912 passed, 2 skipped** (the six new structural tests included), ruff, mypy, security (bandit, pip-audit), gitleaks, Docker build, frontend, frozen regression; CodeQL: the known configuration failure only.
+* **Merge / tree identity**: PR #64 head `5bbdefc`, pre-merge `main` `1e712c9`, merge commit `61a3e75`; whole-tree diff against the tested head empty, so no second full CI.
+* **Deployment**: `fly deploy -a zaad-api --image-label canonical-61a3e75 --strategy rolling --yes` from `harvestmind-main` at `61a3e75`: release v18, machine `0804e0dfd1e948` (fra, shared-cpu-2x, 2 GB), volume `harvestmind_data`, secrets and configuration identical before and after (listed), health `ok`, auth enforced; the deploy log's only traceback is uvicorn's SIGINT shutdown of the previous VM.
+* **Production re-run**: exact shared-MOV snapshot **39.4 s** (fresh) and **37.8 s** (after the four other snapshots), candidates incumbent 0.1 / base_stock 0.5 / deterministic 6.8 / stochastic 10.7 / cadence_2 5.5 / cadence_4 3.7 s, all OPTIMAL; same purchase commitment, source split (A 0.991 / 0.009, B 0.990 / 0.010), MOV satisfaction, objective and service as the local run and the v17 unthrottled rerun; `approval_required` true, `executable_purchase_order` false on every response; guest steal over the whole sequence 130 jiffies against 9,924 user (unthrottled numbers). Primary gate < 180 s met with a 4.6x margin; the residual host-throttling risk (12-31x observed at release) is recorded, not hidden.
+* **Log review**: 0 x 5xx, 0 request tracebacks, 0 timeouts, 0 OOM, 0 store / serialization errors; 41 x 200 in the window including the six plan calls (`evidence/p3/perf_closure/fly_logs_after_rerun.txt`).
+* **Performance-closure tag**: `p3-performance-closure-runtime` -> `61a3e75`; `p3-release-runtime` stays
+  on `0de6850` (the original P3 released runtime), never moved.
+* **Recorded, not fixed**: the same loose big-M under the P1 shared-order class (fixture T) and the
+  single-SKU MOV / MOQ class (E4, S4); the `echelon_base_stock` comparator's run-to-run variability;
+  the shared-CPU steal on the production machine (a performance-CPU machine or the async job path remain
+  the defences when the host throttles); sector C1 ~60 s, P1 workspace ~24 s, 150-SKU > 400 s unchanged.
+* **Untouched**: Validation7, Validation8, holdout4; Network Twin #39; P4-P6; dashboard and website
+  uplift; Dependabot solver-stack bumps.
+* **Verdict**: **ZAAD P3 PRODUCTION PERFORMANCE CLOSURE — PASS**; P3 release line fully closed (released runtime `0de6850`, performance-closure runtime `61a3e75`, Fly v18); ENGINEERING VALIDATED, not real-data validated; no savings claimed. Next authorized phase: P4 adaptive recourse — not started.
+
 ## Exact next action
 
-P3 is released (v17, `0de6850`). P4 (adaptive recourse) is not started and needs a separate authorization. Keep
+P3 is released (v17, `0de6850`) and its production performance closure is deployed (v18, `61a3e75`, tag `p3-performance-closure-runtime`). P4 (adaptive recourse) is not started and needs a separate authorization. Keep
 `ZAAD_LEGACY_PLANNERS` explicit on every deployed environment and run
 `scripts/zaad_canonical_regression.py` before accepting any Dependabot bump that touches the solver
 stack. Keep `ZAAD_LEGACY_PLANNERS`
