@@ -1,0 +1,276 @@
+{
+ "cell": {
+  "class": "D_p3_shared_order",
+  "histories": 3,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 12
+ },
+ "plan_wall": 177.0,
+ "variants": {
+  "static_baseline": {
+   "status": "OPTIMAL",
+   "objective": 25320.809564911528,
+   "wall": 8.3,
+   "solve_seconds": 8.29,
+   "nodes": 5,
+   "gap": 0.0,
+   "bound": 19322.66459348856,
+   "rows": 14622,
+   "cols": 21564,
+   "binary": 588,
+   "first_incumbent_s": 0.2,
+   "lp_iterations": 43533,
+   "timing_total": 7.6,
+   "warm": {
+    "supplied": true,
+    "source": "OPTIMAL",
+    "controls_seeded": 672,
+    "accepted": true,
+    "reason": "completed by the formulation (floor pins)",
+    "mode": "floor",
+    "completion_seconds": 0.40597487427294254,
+    "completion_status": "highspy HighsModelStatus.kOptimal",
+    "attempts": [
+     {
+      "accepted": false,
+      "reason": "equal-pinned controls are not feasible for this formulation within 30 s (highspy HighsModelStatus.kInfeasible)",
+      "completion_seconds": 0.04448508284986019,
+      "completion_status": "highspy HighsModelStatus.kInfeasible",
+      "mode": "equal"
+     },
+     {
+      "accepted": true,
+      "reason": "completed by the formulation (floor pins)",
+      "completion_seconds": 0.36148979142308235,
+      "completion_status": "highspy HighsModelStatus.kOptimal",
+      "mode": "floor"
+     }
+    ],
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 21077.715635314562,
+    "solver_accepted": true,
+    "phase1_objective": 19322.66459348856,
+    "phase1_status": 0,
+    "outcome": "improved",
+    "final_objective": 19322.66459348856,
+    "model_variables": 21564,
+    "solve_seconds": 8.292975042015314,
+    "highs_integrality_violation": 0.0,
+    "highs_primal_infeasibility": 9.118394928009366e-11
+   },
+   "all_calls": [
+    {
+     "kind": "warm_complete(equal)",
+     "solve_wall_s": 0.044,
+     "status": false,
+     "bb_nodes": null,
+     "seeded": null
+    },
+    {
+     "kind": "warm_complete(floor)",
+     "solve_wall_s": 0.361,
+     "status": true,
+     "bb_nodes": null,
+     "seeded": null
+    },
+    {
+     "kind": "solve",
+     "solve_wall_s": 7.641,
+     "status": 0,
+     "bb_nodes": 5,
+     "seeded": true
+    }
+   ]
+  },
+  "adaptive_baseline": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "objective": 25346.17198070666,
+   "wall": 78.32,
+   "solve_seconds": 78.31,
+   "nodes": 913,
+   "gap": 0.002579089935313157,
+   "bound": 19298.088839896518,
+   "rows": 14946,
+   "cols": 23616,
+   "binary": 624,
+   "first_incumbent_s": 0.5,
+   "lp_iterations": 469554,
+   "timing_total": 78.0,
+   "warm": null,
+   "all_calls": [
+    {
+     "kind": "solve",
+     "solve_wall_s": 78.05,
+     "status": 1,
+     "bb_nodes": 913,
+     "seeded": false
+    }
+   ]
+  },
+  "pi_baseline": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "objective": 25153.51265593766,
+   "wall": 78.32,
+   "solve_seconds": 78.31,
+   "nodes": 2410,
+   "gap": 0.0007939604793981645,
+   "bound": 19140.264154112352,
+   "rows": 16096,
+   "cols": 29088,
+   "binary": 720,
+   "first_incumbent_s": 0.3,
+   "lp_iterations": 322569,
+   "timing_total": 78.0,
+   "warm": null,
+   "all_calls": [
+    {
+     "kind": "solve",
+     "solve_wall_s": 78.052,
+     "status": 1,
+     "bb_nodes": 2410,
+     "seeded": false
+    }
+   ]
+  },
+  "adaptive_warm_from_static": {
+   "status": "OPTIMAL",
+   "objective": 25318.430543120743,
+   "wall": 40.33,
+   "solve_seconds": 40.33,
+   "nodes": 69,
+   "gap": 0.0,
+   "bound": 19320.278409209837,
+   "rows": 14946,
+   "cols": 23616,
+   "binary": 624,
+   "first_incumbent_s": 0.2,
+   "lp_iterations": 194259,
+   "timing_total": 39.94,
+   "warm": {
+    "supplied": true,
+    "source": "OPTIMAL",
+    "controls_seeded": 2688,
+    "accepted": true,
+    "reason": "completed by the formulation (equal pins)",
+    "mode": "equal",
+    "completion_seconds": 0.08399087516590953,
+    "completion_status": "highspy HighsModelStatus.kOptimal",
+    "attempts": [
+     {
+      "accepted": true,
+      "reason": "completed by the formulation (equal pins)",
+      "completion_seconds": 0.08399087516590953,
+      "completion_status": "highspy HighsModelStatus.kOptimal",
+      "mode": "equal"
+     }
+    ],
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 19322.66459348856,
+    "solver_accepted": true,
+    "phase1_objective": 19320.278409209834,
+    "phase1_status": 0,
+    "outcome": "improved",
+    "final_objective": 19320.278409209834,
+    "model_variables": 23616,
+    "solve_seconds": 40.325641917064786,
+    "highs_integrality_violation": 0.0,
+    "highs_primal_infeasibility": 1.1641532182693481e-10
+   },
+   "all_calls": [
+    {
+     "kind": "warm_complete(equal)",
+     "solve_wall_s": 0.084,
+     "status": true,
+     "bb_nodes": null,
+     "seeded": null
+    },
+    {
+     "kind": "solve",
+     "solve_wall_s": 39.986,
+     "status": 0,
+     "bb_nodes": 69,
+     "seeded": true
+    }
+   ]
+  },
+  "pi_warm_from_adaptive": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "objective": 25155.383688567428,
+   "wall": 78.33,
+   "solve_seconds": 78.32,
+   "nodes": 2930,
+   "gap": 0.0010583474667124784,
+   "bound": 19137.080200516346,
+   "rows": 16096,
+   "cols": 29088,
+   "binary": 720,
+   "first_incumbent_s": 0.1,
+   "lp_iterations": 340084,
+   "timing_total": 77.63,
+   "warm": {
+    "supplied": true,
+    "source": "FEASIBLE_TIME_LIMIT",
+    "controls_seeded": 8064,
+    "accepted": true,
+    "reason": "completed by the formulation (floor pins)",
+    "mode": "floor",
+    "completion_seconds": 0.3781486661173403,
+    "completion_status": "highspy HighsModelStatus.kSolutionLimit",
+    "attempts": [
+     {
+      "accepted": false,
+      "reason": "equal-pinned controls are not feasible for this formulation within 30 s (highspy HighsModelStatus.kInfeasible)",
+      "completion_seconds": 0.06866370793431997,
+      "completion_status": "highspy HighsModelStatus.kInfeasible",
+      "mode": "equal"
+     },
+     {
+      "accepted": true,
+      "reason": "completed by the formulation (floor pins)",
+      "completion_seconds": 0.30948495818302035,
+      "completion_status": "highspy HighsModelStatus.kSolutionLimit",
+      "mode": "floor"
+     }
+    ],
+    "seed_status": "HighsStatus.kOk",
+    "seed_objective": 19276.878861350866,
+    "solver_accepted": true,
+    "phase1_objective": 19157.3553390083,
+    "phase1_status": 1,
+    "outcome": "improved",
+    "final_objective": 19157.3553390083,
+    "model_variables": 29088,
+    "solve_seconds": 78.32337974989787,
+    "highs_integrality_violation": 2.441908035533997e-14,
+    "highs_primal_infeasibility": 2.998810089138715e-10
+   },
+   "all_calls": [
+    {
+     "kind": "warm_complete(equal)",
+     "solve_wall_s": 0.069,
+     "status": false,
+     "bb_nodes": null,
+     "seeded": null
+    },
+    {
+     "kind": "warm_complete(floor)",
+     "solve_wall_s": 0.309,
+     "status": true,
+     "bb_nodes": null,
+     "seeded": null
+    },
+    {
+     "kind": "solve",
+     "solve_wall_s": 77.68,
+     "status": 1,
+     "bb_nodes": 2930,
+     "seeded": true
+    }
+   ]
+  }
+ }
+}

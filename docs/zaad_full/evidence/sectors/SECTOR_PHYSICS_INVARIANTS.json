@@ -21,7 +21,7 @@
    "src_A@8": 204.0,
    "src_A@9": 204.0
   },
-  "seconds": 31.6
+  "seconds": 32.6
  },
  {
   "invariant": "03_produce_expired_cannot_serve",
@@ -185,7 +185,7 @@
   "invariant": "17_18_no_autonomous_po_and_approval",
   "pass": true,
   "reviews": 3,
-  "seconds": 4.9
+  "seconds": 5.1
  },
  {
   "invariant": "19_20_21_ownership_unchanged",
@@ -209,7 +209,7 @@
    ]
   },
   "note": "no sector owner exists; P0 / P1 / P2 labels only",
-  "seconds": 3.5
+  "seconds": 3.6
  },
  {
   "invariant": "12b_benchmark_conservation",

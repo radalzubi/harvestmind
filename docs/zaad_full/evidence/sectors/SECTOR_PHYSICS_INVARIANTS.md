@@ -22,4 +22,4 @@
 | 19_20_21_ownership_unchanged | PASS | {"owners": {"C7_no_material_improvement": ["PURCHASING_ECONOMICS", "NO_ACTION"], "P1_fresh_no_unnecessary_purchase": ["PURCHASING_ECONOMICS", "NO_ACTION"], "M1_chilled_shelf_life": ["PROTECTION_RECOVERY", "NORMAL_REPLENISHMENT"], "X3_three_sectors": ["PROTECTION_RECOVERY", "NORMAL_REPLENISHMENT"]}, "note": "no sector owner exists; P0 / P1 / P2 labels only"} |
 | 12b_benchmark_conservation | PASS | {"worst_residual": 3.410605131648481e-13, "physical_failures": []} |
 
-19 / 19 PASS. benchmark sector_under_p4rel: 52 ZAAD cells, worst conservation residual 3.41e-13, ZAAD physical failures []
+19 / 19 PASS. benchmark sector_under_p4perf: 52 ZAAD cells, worst conservation residual 3.41e-13, ZAAD physical failures []

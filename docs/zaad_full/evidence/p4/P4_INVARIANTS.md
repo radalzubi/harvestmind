@@ -1,6 +1,6 @@
 # P4 invariants
 
-Benchmark: `p4_release`. **27 / 27 PASS**
+Benchmark: `p4_perf_closure`. **27 / 27 PASS**
 
 | invariant | statement | result | evidence |
 |---|---|---|---|
