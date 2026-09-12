@@ -1,0 +1,1106 @@
+[
+ {
+  "class": "single_sku_single_location",
+  "histories": 3,
+  "epochs": [
+   3
+  ],
+  "continuations": 2,
+  "worlds": 6,
+  "sets": {
+   "3": 3
+  },
+  "wall": 2.68,
+  "ordering_ok": true,
+  "value": 16.888879242676012,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 3036,
+   "binaries": 936,
+   "rows": 3175,
+   "nodes": 88,
+   "seconds": 1.3,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 3054,
+   "binaries": 936,
+   "rows": 3193,
+   "nodes": 17,
+   "seconds": 1.32,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 3096,
+   "binaries": 936,
+   "rows": 3235,
+   "nodes": 1,
+   "seconds": 0.05,
+   "gap": 0.0
+  },
+  "planner_wall": 2.64,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "single_sku_single_location",
+  "histories": 3,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 12,
+  "sets": {
+   "3": 3,
+   "6": 6
+  },
+  "wall": 13.49,
+  "ordering_ok": true,
+  "value": 19.431832738303456,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 6060,
+   "binaries": 1872,
+   "rows": 6337,
+   "nodes": 975,
+   "seconds": 12.43,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 6096,
+   "binaries": 1872,
+   "rows": 6373,
+   "nodes": 1,
+   "seconds": 0.92,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 6192,
+   "binaries": 1872,
+   "rows": 6469,
+   "nodes": 1,
+   "seconds": 0.14,
+   "gap": 0.0
+  },
+  "planner_wall": 13.32,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "single_sku_single_location",
+  "histories": 4,
+  "epochs": [
+   3
+  ],
+  "continuations": 2,
+  "worlds": 8,
+  "sets": {
+   "3": 4
+  },
+  "wall": 2.16,
+  "ordering_ok": true,
+  "value": 21.50122555974849,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 4044,
+   "binaries": 1248,
+   "rows": 4229,
+   "nodes": 1,
+   "seconds": 0.59,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 4071,
+   "binaries": 1248,
+   "rows": 4256,
+   "nodes": 29,
+   "seconds": 1.49,
+   "gap": 5.019763613582134e-07
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 4128,
+   "binaries": 1248,
+   "rows": 4313,
+   "nodes": 1,
+   "seconds": 0.07,
+   "gap": 0.0
+  },
+  "planner_wall": 2.42,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "single_sku_single_location",
+  "histories": 4,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 16,
+  "sets": {
+   "3": 4,
+   "6": 8
+  },
+  "wall": 23.75,
+  "ordering_ok": true,
+  "value": 177.2771625452342,
+  "static": {
+   "status": "FEASIBLE_TIME_LIMIT",
+   "vars": 8076,
+   "binaries": 2496,
+   "rows": 8445,
+   "nodes": 835,
+   "seconds": 19.57,
+   "gap": 0.028610400715568706
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 8127,
+   "binaries": 2496,
+   "rows": 8496,
+   "nodes": 112,
+   "seconds": 4.03,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 8256,
+   "binaries": 2496,
+   "rows": 8625,
+   "nodes": 1,
+   "seconds": 0.14,
+   "gap": 2.4408842406566068e-15
+  },
+  "planner_wall": 26.55,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "single_sku_single_location",
+  "histories": 8,
+  "epochs": [
+   3
+  ],
+  "continuations": 1,
+  "worlds": 8,
+  "sets": {
+   "3": 8
+  },
+  "wall": 4.05,
+  "ordering_ok": true,
+  "value": 15.021952478527965,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 4044,
+   "binaries": 1248,
+   "rows": 4229,
+   "nodes": 413,
+   "seconds": 3.83,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 4107,
+   "binaries": 1248,
+   "rows": 4292,
+   "nodes": 1,
+   "seconds": 0.13,
+   "gap": 8.793093124505207e-14
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 4128,
+   "binaries": 1248,
+   "rows": 4313,
+   "nodes": 1,
+   "seconds": 0.09,
+   "gap": 0.0
+  },
+  "planner_wall": 0.72,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "single_sku_single_location",
+  "histories": 8,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 1,
+  "worlds": 8,
+  "sets": {
+   "3": 8,
+   "6": 8
+  },
+  "wall": 3.8,
+  "ordering_ok": true,
+  "value": 15.021952437739856,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 4044,
+   "binaries": 1248,
+   "rows": 4229,
+   "nodes": 188,
+   "seconds": 3.58,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 4107,
+   "binaries": 1248,
+   "rows": 4292,
+   "nodes": 1,
+   "seconds": 0.13,
+   "gap": 4.499092730824e-14
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 4128,
+   "binaries": 1248,
+   "rows": 4313,
+   "nodes": 1,
+   "seconds": 0.09,
+   "gap": 0.0
+  },
+  "planner_wall": 0.77,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p2_network",
+  "histories": 3,
+  "epochs": [
+   3
+  ],
+  "continuations": 2,
+  "worlds": 6,
+  "sets": {
+   "3": 3
+  },
+  "wall": 0.39,
+  "ordering_ok": true,
+  "value": 38.368838010455875,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 5436,
+   "binaries": 144,
+   "rows": 3849,
+   "nodes": 1,
+   "seconds": 0.16,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 5922,
+   "binaries": 144,
+   "rows": 3903,
+   "nodes": 1,
+   "seconds": 0.12,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 7056,
+   "binaries": 144,
+   "rows": 4094,
+   "nodes": 1,
+   "seconds": 0.11,
+   "gap": 0.0
+  },
+  "planner_wall": 0.72,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p2_network",
+  "histories": 3,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 12,
+  "sets": {
+   "3": 3,
+   "6": 6
+  },
+  "wall": 1.29,
+  "ordering_ok": true,
+  "value": 46.73178466673562,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 10548,
+   "binaries": 288,
+   "rows": 7647,
+   "nodes": 1,
+   "seconds": 0.72,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 11520,
+   "binaries": 288,
+   "rows": 7755,
+   "nodes": 1,
+   "seconds": 0.3,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 14112,
+   "binaries": 288,
+   "rows": 8186,
+   "nodes": 1,
+   "seconds": 0.26,
+   "gap": 0.0
+  },
+  "planner_wall": 1.41,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p2_network",
+  "histories": 4,
+  "epochs": [
+   3
+  ],
+  "continuations": 2,
+  "worlds": 8,
+  "sets": {
+   "3": 4
+  },
+  "wall": 1.04,
+  "ordering_ok": true,
+  "value": 72.73630068039165,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 7140,
+   "binaries": 192,
+   "rows": 5115,
+   "nodes": 1,
+   "seconds": 0.69,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 7869,
+   "binaries": 192,
+   "rows": 5196,
+   "nodes": 1,
+   "seconds": 0.18,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 9408,
+   "binaries": 192,
+   "rows": 5458,
+   "nodes": 1,
+   "seconds": 0.16,
+   "gap": 0.0
+  },
+  "planner_wall": 0.99,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p2_network",
+  "histories": 4,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 16,
+  "sets": {
+   "3": 4,
+   "6": 8
+  },
+  "wall": 1.82,
+  "ordering_ok": true,
+  "value": 86.44017617383724,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 13956,
+   "binaries": 384,
+   "rows": 10179,
+   "nodes": 1,
+   "seconds": 0.93,
+   "gap": 1.8419441169545497e-16
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 15333,
+   "binaries": 384,
+   "rows": 10332,
+   "nodes": 1,
+   "seconds": 0.48,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 18816,
+   "binaries": 384,
+   "rows": 10914,
+   "nodes": 1,
+   "seconds": 0.39,
+   "gap": 0.0
+  },
+  "planner_wall": 2.06,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p2_network",
+  "histories": 8,
+  "epochs": [
+   3
+  ],
+  "continuations": 1,
+  "worlds": 8,
+  "sets": {
+   "3": 8
+  },
+  "wall": 0.58,
+  "ordering_ok": true,
+  "value": 62.358982506382745,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 7140,
+   "binaries": 192,
+   "rows": 5115,
+   "nodes": 1,
+   "seconds": 0.25,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 8841,
+   "binaries": 192,
+   "rows": 5304,
+   "nodes": 1,
+   "seconds": 0.17,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 9408,
+   "binaries": 192,
+   "rows": 5458,
+   "nodes": 1,
+   "seconds": 0.16,
+   "gap": 0.0
+  },
+  "planner_wall": 0.62,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p2_network",
+  "histories": 8,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 1,
+  "worlds": 8,
+  "sets": {
+   "3": 8,
+   "6": 8
+  },
+  "wall": 0.6,
+  "ordering_ok": true,
+  "value": 62.35898250639002,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 7140,
+   "binaries": 192,
+   "rows": 5115,
+   "nodes": 1,
+   "seconds": 0.26,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 8841,
+   "binaries": 192,
+   "rows": 5304,
+   "nodes": 1,
+   "seconds": 0.17,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 9408,
+   "binaries": 192,
+   "rows": 5458,
+   "nodes": 1,
+   "seconds": 0.16,
+   "gap": 0.0
+  },
+  "planner_wall": 0.62,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p3_two_sources",
+  "histories": 3,
+  "epochs": [
+   3
+  ],
+  "continuations": 2,
+  "worlds": 6,
+  "sets": {
+   "3": 3
+  },
+  "wall": 0.45,
+  "ordering_ok": true,
+  "value": 39.03260311613485,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 5448,
+   "binaries": 144,
+   "rows": 3861,
+   "nodes": 1,
+   "seconds": 0.21,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 5952,
+   "binaries": 144,
+   "rows": 3933,
+   "nodes": 1,
+   "seconds": 0.12,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 7128,
+   "binaries": 144,
+   "rows": 4166,
+   "nodes": 1,
+   "seconds": 0.11,
+   "gap": 0.0
+  },
+  "planner_wall": 0.8,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p3_two_sources",
+  "histories": 3,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 12,
+  "sets": {
+   "3": 3,
+   "6": 6
+  },
+  "wall": 1.14,
+  "ordering_ok": true,
+  "value": 48.33584293936656,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 10560,
+   "binaries": 288,
+   "rows": 7659,
+   "nodes": 1,
+   "seconds": 0.57,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 11568,
+   "binaries": 288,
+   "rows": 7803,
+   "nodes": 1,
+   "seconds": 0.29,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 14256,
+   "binaries": 288,
+   "rows": 8330,
+   "nodes": 1,
+   "seconds": 0.27,
+   "gap": 0.0
+  },
+  "planner_wall": 1.52,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p3_two_sources",
+  "histories": 4,
+  "epochs": [
+   3
+  ],
+  "continuations": 2,
+  "worlds": 8,
+  "sets": {
+   "3": 4
+  },
+  "wall": 0.75,
+  "ordering_ok": true,
+  "value": 72.88359860281344,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 7152,
+   "binaries": 192,
+   "rows": 5127,
+   "nodes": 1,
+   "seconds": 0.41,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 7908,
+   "binaries": 192,
+   "rows": 5235,
+   "nodes": 1,
+   "seconds": 0.17,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 9504,
+   "binaries": 192,
+   "rows": 5554,
+   "nodes": 1,
+   "seconds": 0.16,
+   "gap": 0.0
+  },
+  "planner_wall": 1.12,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p3_two_sources",
+  "histories": 4,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 16,
+  "sets": {
+   "3": 4,
+   "6": 8
+  },
+  "wall": 1.7,
+  "ordering_ok": true,
+  "value": 79.53115929090927,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 13968,
+   "binaries": 384,
+   "rows": 10191,
+   "nodes": 1,
+   "seconds": 0.81,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 15396,
+   "binaries": 384,
+   "rows": 10395,
+   "nodes": 1,
+   "seconds": 0.47,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 19008,
+   "binaries": 384,
+   "rows": 11106,
+   "nodes": 1,
+   "seconds": 0.4,
+   "gap": 0.0
+  },
+  "planner_wall": 2.22,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p3_two_sources",
+  "histories": 8,
+  "epochs": [
+   3
+  ],
+  "continuations": 1,
+  "worlds": 8,
+  "sets": {
+   "3": 8
+  },
+  "wall": 0.69,
+  "ordering_ok": true,
+  "value": 60.8072574475118,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 7152,
+   "binaries": 192,
+   "rows": 5127,
+   "nodes": 1,
+   "seconds": 0.36,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 8916,
+   "binaries": 192,
+   "rows": 5379,
+   "nodes": 1,
+   "seconds": 0.17,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 9504,
+   "binaries": 192,
+   "rows": 5554,
+   "nodes": 1,
+   "seconds": 0.16,
+   "gap": 0.0
+  },
+  "planner_wall": 0.71,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p3_two_sources",
+  "histories": 8,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 1,
+  "worlds": 8,
+  "sets": {
+   "3": 8,
+   "6": 8
+  },
+  "wall": 0.67,
+  "ordering_ok": true,
+  "value": 60.807257447508164,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 7152,
+   "binaries": 192,
+   "rows": 5127,
+   "nodes": 1,
+   "seconds": 0.33,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 8916,
+   "binaries": 192,
+   "rows": 5379,
+   "nodes": 1,
+   "seconds": 0.18,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 9504,
+   "binaries": 192,
+   "rows": 5554,
+   "nodes": 1,
+   "seconds": 0.16,
+   "gap": 0.0
+  },
+  "planner_wall": 0.71,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 7
+ },
+ {
+  "class": "p3_multi_sku_shared_order",
+  "histories": 3,
+  "epochs": [
+   3
+  ],
+  "continuations": 2,
+  "worlds": 6,
+  "sets": {
+   "3": 3
+  },
+  "wall": 8.82,
+  "ordering_ok": true,
+  "value": 91.38770688992736,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 10764,
+   "binaries": 300,
+   "rows": 7176,
+   "nodes": 1,
+   "seconds": 4.4,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 11790,
+   "binaries": 318,
+   "rows": 7338,
+   "nodes": 2,
+   "seconds": 2.07,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 14184,
+   "binaries": 360,
+   "rows": 7846,
+   "nodes": 17,
+   "seconds": 2.34,
+   "gap": 0.0
+  },
+  "planner_wall": 33.14,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 9
+ },
+ {
+  "class": "p3_multi_sku_shared_order",
+  "histories": 3,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 12,
+  "sets": {
+   "3": 3,
+   "6": 6
+  },
+  "wall": 27.02,
+  "ordering_ok": true,
+  "value": 104.9899484334419,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 20844,
+   "binaries": 588,
+   "rows": 14214,
+   "nodes": 1,
+   "seconds": 7.64,
+   "gap": 4.324561749375153e-08
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 22896,
+   "binaries": 624,
+   "rows": 14538,
+   "nodes": 4,
+   "seconds": 7.9,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 28368,
+   "binaries": 720,
+   "rows": 15688,
+   "nodes": 146,
+   "seconds": 11.45,
+   "gap": 0.0
+  },
+  "planner_wall": 176.26,
+  "planner_verdict": "ADAPTIVE PLAN REJECTED (ordering check failed)",
+  "planner_solves": 9
+ },
+ {
+  "class": "p3_multi_sku_shared_order",
+  "histories": 4,
+  "epochs": [
+   3
+  ],
+  "continuations": 2,
+  "worlds": 8,
+  "sets": {
+   "3": 4
+  },
+  "wall": 25.75,
+  "ordering_ok": true,
+  "value": 98.93535417957901,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 14124,
+   "binaries": 396,
+   "rows": 9522,
+   "nodes": 7,
+   "seconds": 8.44,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 15663,
+   "binaries": 423,
+   "rows": 9765,
+   "nodes": 3,
+   "seconds": 6.72,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 18912,
+   "binaries": 480,
+   "rows": 10460,
+   "nodes": 24,
+   "seconds": 10.58,
+   "gap": 0.0
+  },
+  "planner_wall": 58.83,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 9
+ },
+ {
+  "class": "p3_multi_sku_shared_order",
+  "histories": 4,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 2,
+  "worlds": 16,
+  "sets": {
+   "3": 4,
+   "6": 8
+  },
+  "wall": 65.89,
+  "ordering_ok": true,
+  "value": 118.02664745580114,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 27564,
+   "binaries": 780,
+   "rows": 18906,
+   "nodes": 11,
+   "seconds": 12.54,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 30471,
+   "binaries": 831,
+   "rows": 19365,
+   "nodes": 27,
+   "seconds": 20.23,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 37824,
+   "binaries": 960,
+   "rows": 20916,
+   "nodes": 612,
+   "seconds": 33.08,
+   "gap": 0.0
+  },
+  "planner_wall": 192.45,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 9
+ },
+ {
+  "class": "p3_multi_sku_shared_order",
+  "histories": 8,
+  "epochs": [
+   3
+  ],
+  "continuations": 1,
+  "worlds": 8,
+  "sets": {
+   "3": 8
+  },
+  "wall": 16.9,
+  "ordering_ok": true,
+  "value": 120.49127821238653,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 14124,
+   "binaries": 396,
+   "rows": 9522,
+   "nodes": 3,
+   "seconds": 6.85,
+   "gap": 6.80239016203411e-07
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 17715,
+   "binaries": 459,
+   "rows": 10089,
+   "nodes": 9,
+   "seconds": 3.52,
+   "gap": 1.6509401070144212e-08
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 18912,
+   "binaries": 480,
+   "rows": 10460,
+   "nodes": 29,
+   "seconds": 6.51,
+   "gap": 0.0
+  },
+  "planner_wall": 26.3,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 9
+ },
+ {
+  "class": "p3_multi_sku_shared_order",
+  "histories": 8,
+  "epochs": [
+   3,
+   6
+  ],
+  "continuations": 1,
+  "worlds": 8,
+  "sets": {
+   "3": 8,
+   "6": 8
+  },
+  "wall": 22.42,
+  "ordering_ok": true,
+  "value": 142.29588930325554,
+  "static": {
+   "status": "OPTIMAL",
+   "vars": 14124,
+   "binaries": 396,
+   "rows": 9522,
+   "nodes": 11,
+   "seconds": 6.51,
+   "gap": 0.0
+  },
+  "adaptive": {
+   "status": "OPTIMAL",
+   "vars": 17715,
+   "binaries": 459,
+   "rows": 10089,
+   "nodes": 9,
+   "seconds": 9.79,
+   "gap": 0.0
+  },
+  "perfect": {
+   "status": "OPTIMAL",
+   "vars": 18912,
+   "binaries": 480,
+   "rows": 10460,
+   "nodes": 33,
+   "seconds": 6.09,
+   "gap": 0.0
+  },
+  "planner_wall": 23.72,
+  "planner_verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+  "planner_solves": 9
+ }
+]

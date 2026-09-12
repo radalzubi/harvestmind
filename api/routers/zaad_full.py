@@ -54,6 +54,11 @@ async def large_payload(request: HTTPRequest) -> Request:
     except ValidationError as exc:
         raise HTTPException(422, [{"loc": list(e["loc"]), "msg": e["msg"], "type": e["type"]}
                                  for e in exc.errors(include_input=False, include_context=False)]) from exc
+    if result.recourse is not None and result.recourse.enabled:
+        # P4 batch bounds: a structural cap on the scenario tree even on the asynchronous path
+        from zaad.recourse.contracts import BATCH_LIMITS, tree_worlds
+        if tree_worlds(result) > BATCH_LIMITS["tree_worlds"] or len(result.recourse.review_periods) > BATCH_LIMITS["review_epochs"]:
+            raise HTTPException(413, f"Recourse scenario tree over the batch envelope: {BATCH_LIMITS} (worlds {tree_worlds(result)}).")
     if (len(result.skus) > LARGE_LIMITS["skus"] or len(result.sources) > LARGE_LIMITS["sources"]
             or len(result.services) > LARGE_LIMITS["services"] or result.horizon > LARGE_LIMITS["horizon"]
             or result.scenarios > LARGE_LIMITS["scenarios"] or len(result.stresses) > LARGE_LIMITS["stresses"]):
@@ -104,6 +109,17 @@ async def payload(request: HTTPRequest) -> Request:
                 or len(result.sourcing.share_constraints) > INTERACTIVE_LIMITS["share_constraints"] or len(result.sourcing.switching_costs) > INTERACTIVE_LIMITS["switching_costs"]
                 or len(result.sourcing.incumbent_shares) > INTERACTIVE_LIMITS["incumbent_shares"]):
             raise HTTPException(413, f"Interactive sourcing bounds exceeded: {INTERACTIVE_LIMITS}; use offline batch planning.")
+    if result.recourse is not None and result.recourse.enabled:
+        # P4 interactive bounds (deterministic, before any model): the scenario tree at most 8 worlds
+        # and never the P3 shared-supplier-order class; both are served by the asynchronous jobs path
+        from zaad.full.model import shared_supplier_orders
+        from zaad.recourse.contracts import INTERACTIVE_LIMITS as RECOURSE_LIMITS, tree_worlds
+        tree = tree_worlds(result)
+        if (len(result.recourse.review_periods) > RECOURSE_LIMITS["review_epochs"] or len(result.recourse.observables) > RECOURSE_LIMITS["observables"]
+                or len(result.recourse.actions) > RECOURSE_LIMITS["actions"] or tree > RECOURSE_LIMITS["tree_worlds"]):
+            raise HTTPException(413, f"Interactive recourse bounds exceeded: {RECOURSE_LIMITS} (scenario-tree worlds {tree}); submit the request to /api/zaad/network/jobs.")
+        if shared_supplier_orders(result):
+            raise HTTPException(413, "Adaptive recourse on a supplier order shared across SKUs is batch-only in this version; submit the request to /api/zaad/network/jobs.")
     return result
 
 
@@ -143,21 +159,21 @@ async def recommend(request: HTTPRequest, operator: str | None = Depends(require
 
 
 def _workspace_request(conn, operator: str, horizon: int, service_target: float, skus: str | None, max_solve_seconds: float, network: bool = False,
-                       sector_mode: str | None = None, sourcing: bool = False):
+                       sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False):
     from zaad.full.workspace import WorkspaceError, build_request
     subset = [x.strip() for x in skus.split(",") if x.strip()] if skus else None
     try:
         if network:
             # P2: the vault's declared locations and lanes; identical to the frozen adapter below two locations
             from zaad.meio.workspace import build_network_request
-            return build_network_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing)
-        return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing)
+            return build_network_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing, recourse=recourse)
+        return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing, recourse=recourse)
     except WorkspaceError as exc:
         raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
     except ValueError as exc:
         # sector physics or sourcing declared inconsistently in the vault (unknown state, threshold above
         # shelf life, share limits the incumbent mix does not meet, unknown supplier in a risk group, ...)
-        code = "sourcing_invalid" if "sourcing:" in str(exc) else "sector_physics_invalid"
+        code = "recourse_invalid" if "recourse:" in str(exc) else ("sourcing_invalid" if "sourcing:" in str(exc) else "sector_physics_invalid")
         raise HTTPException(422, {"code": code, "message": str(exc)}) from exc
 
 
@@ -167,11 +183,12 @@ def workspace_request(operator: str = Depends(authenticated), conn=Depends(get_c
                       max_solve_seconds: float = Query(15., gt=0, le=120),
                       network: bool = Query(False, description="P2: build the multi-location network from stg_fmcg_locations / lanes / transfers"),
                       sector_mode: Literal["COMMERCIAL", "PRODUCE", "MEAT_SEAFOOD"] | None = Query(None, description="sector physics: the request's default sector (per-SKU columns override it)"),
-                      sourcing: bool = Query(False, description="P3: attach the vault's declared source options, shares, incumbent mix and risk groups (stg_fmcg_sources, migration 018)")):
+                      sourcing: bool = Query(False, description="P3: attach the vault's declared source options, shares, incumbent mix and risk groups (stg_fmcg_sources, migration 018)"),
+                      recourse: bool = Query(False, description="P4: attach the vault's declared adaptive-recourse specification (stg_recourse_spec, migration 019)")):
     """The frozen contract built from the operator's own vault (the canonical customer-data path), with
     the build report: rows read, compact dimensions, fitted supplier fill and lead with sample sizes,
     provenance, warnings and the leakage guard. No plan is run."""
-    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode, sourcing)
+    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode, sourcing, recourse)
     return {"request": req.model_dump(mode="json"), "build": build}
 
 
@@ -182,7 +199,8 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
                          shape: Literal["network", "purchase_plan"] = Query("purchase_plan"),
                          network: bool = Query(False, description="P2: plan the declared multi-location network (purchases, transfers, allocation)"),
                          sector_mode: Literal["COMMERCIAL", "PRODUCE", "MEAT_SEAFOOD"] | None = Query(None, description="sector physics: the request's default sector (per-SKU columns override it)"),
-                         sourcing: bool = Query(False, description="P3: attach the vault's declared source options, shares, incumbent mix and risk groups (stg_fmcg_sources, migration 018)")):
+                         sourcing: bool = Query(False, description="P3: attach the vault's declared source options, shares, incumbent mix and risk groups (stg_fmcg_sources, migration 018)"),
+                      recourse: bool = Query(False, description="P4: attach the vault's declared adaptive-recourse specification (stg_recourse_spec, migration 019)")):
     """Plan the operator's workspace with the frozen P1 optimizer: vault -> compact Request -> plan.
     `shape=purchase_plan` returns the workspace purchase-plan rows (approval stays with the operator,
     never an executable order); `shape=network` returns the full network report with the build."""

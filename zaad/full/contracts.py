@@ -11,6 +11,7 @@ from pydantic_core import to_jsonable_python
 from zaad.contracts import Dated, Record
 from zaad.sectors.contracts import SectorMode, SkuPhysics, StorageState
 from zaad.sourcing.contracts import SourcingPortfolio
+from zaad.recourse.contracts import RecourseSpec
 
 
 class SKU(Dated):
@@ -650,6 +651,10 @@ class Request(Record):
     # the incumbent source mix over the frozen source records, and switches the sourcing report on.
     # None (default) = the frozen request: no sourcing hook is reached.
     sourcing: SourcingPortfolio | None = None
+    # Adaptive recourse (P4). Declares review epochs, the observables recourse may depend on and the
+    # actions that may adapt after them. None or `enabled` false (default) = the frozen request: no
+    # recourse column is built and no P4 report is produced.
+    recourse: RecourseSpec | None = None
 
     @field_validator("signals")
     @classmethod
@@ -749,4 +754,7 @@ class Request(Record):
         if self.sourcing is not None:
             from zaad.sourcing.validation import validate_request as validate_sourcing
             validate_sourcing(self)
+        if self.recourse is not None:
+            from zaad.recourse.contracts import validate_request as validate_recourse
+            validate_recourse(self)
         return self
