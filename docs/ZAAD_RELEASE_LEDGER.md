@@ -608,6 +608,16 @@ and rerun CI on `main`.
   uplift; Dependabot solver-stack bumps.
 * **Verdict**: **ZAAD P3 PRODUCTION PERFORMANCE CLOSURE — PASS**; P3 release line fully closed (released runtime `0de6850`, performance-closure runtime `61a3e75`, Fly v18); ENGINEERING VALIDATED, not real-data validated; no savings claimed. Next authorized phase: P4 adaptive recourse — not started.
 
+## P4 adaptive recourse release line (2026-09-12, authorized; branch `release/zaad-p4-adaptive-recourse`, worktree `harvestmind-p4rel`, base `main` `b24fd02`)
+
+* Local engineering freeze `d8cdad5` (`p4-frozen-product`) / evidence `7059379` (`p4-frozen`), published unmoved. Main since the P4 base `ebcd1d0`: seven docs files, no runtime file.
+* Release audit (`evidence/p4/P4_RELEASE_AUDIT.md`): A PI semantics corrected (bound only when OPTIMAL; time-limited PI = feasible cost, excluded from ordering; solver bound apart; verdicts distinguish no-comparator / time-limited-adaptive), B nearest-signature lookup removed (exact or REPLAN_REQUIRED with the static commitments as declared fallback, reported), C jobs safety verified (no change), D historical P3 wording (2,273 / 2,304 + 31 ties vs 2,304 / 2,304 P4-disabled current baseline) fixed. 13 pre-existing lint findings in the P4 scripts / tests fixed.
+* Gates on the candidate: P4 28 / 28, 27 / 27, 25 / 25, 30-cell matrix; P3 snapshot identical 12.2 s; P1 identity + 60 invariants; P2 20 / 20, 18 / 18, 1,720 / 1,720; sector 26 / 26, 19 / 19, 416 / 416; P3 30 / 30, 34 / 34, 23 / 23, 2,304 / 2,304; P0 120 / 120 (one pass); migration 019 audited on fresh and populated pre-019 vaults; full suite 1,946 passed / 2 skipped.
+* PR #67, tested head `0305e6a`, CI run 34675377987 green (1,946 passed on 4 shards; CodeQL environment defect unchanged); merged `8c813ac` (tree `e1e1f2d` identical to the tested head, no post-merge rerun).
+* Fly `zaad-api` v20 `canonical-8c813ac` (v19 superseded: built from a worktree with stray untracked Finder duplicates; v20 from a clean detached checkout), machine / volume / secrets / env unchanged. Smokes A-S PASS as recorded in `evidence/p4/P4_RELEASE_CLOSEOUT.md`; N (shared-order recourse through `/jobs`) safe but TIMEOUT under 6x host steal (infrastructure residual, scope stated). Logs clean.
+* Tag `p4-release-runtime` = `8c813ac`. Historical tags immutable (verified peeled on origin).
+* VERDICT: ZAAD P4 ADAPTIVE RECOURSE — RELEASED AND CLOSED. ENGINEERING VALIDATED, NOT REAL-DATA VALIDATED. Next authorized phase: P5 — ATP / scarce-supply allocation (not started).
+
 ## Exact next action
 
 P3 is released (v17, `0de6850`) and its production performance closure is deployed (v18, `61a3e75`, tag `p3-performance-closure-runtime`). P4 (adaptive recourse) is not started and needs a separate authorization. Keep

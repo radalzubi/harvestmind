@@ -1,0 +1,42 @@
+{
+ "M_shared_order_interactive_budget12": {
+  "code": 413,
+  "expected": 413,
+  "ok": true,
+  "detail": "{\"detail\":\"Adaptive recourse on a supplier order shared across SKUs is batch-only in this version; submit the request to /api/zaad/network/jobs.\"}",
+  "seconds": 0.3
+ },
+ "N_submit": {
+  "code": 202,
+  "timeout_s": 252.0,
+  "approval": true,
+  "epo": false
+ },
+ "N_job": {
+  "status": "TIMEOUT",
+  "error": "exceeded 252s wall clock",
+  "wall_s": 269,
+  "started": "2026-09-12T07:08:02.054817+00:00",
+  "finished": "2026-09-12T07:12:14.554611+00:00",
+  "cpu_jiffies_delta": {
+   "user": 4506,
+   "system": 92,
+   "idle": 28115,
+   "steal": 27821
+  },
+  "steal_ratio": 6.050674206176598,
+  "health_probes": {
+   "n": 18,
+   "non_200": [],
+   "max_latency_s": 0.4
+  },
+  "report": {
+   "status": null,
+   "selected": null,
+   "approval": null,
+   "epo": null,
+   "candidates": null
+  },
+  "recourse": null
+ }
+}

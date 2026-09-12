@@ -103,9 +103,14 @@ consolidation, start P2.
 - [x] local freeze tags `p3-frozen-product` / `p3-frozen` (see `evidence/p3/P3_CLOSEOUT.md`); corrective evidence `fb91946` (`p3-corrective-evidence`, sector age-at-receipt replay correction audited)
 - [x] released 2026-09-11: tags published, PR #60 merged `0de6850` (CI-only re-shard `326c010`, 1,906 passed / 2 skipped), Fly `zaad-api` v17 `canonical-0de6850`, production smoke for legacy, single-source, economics, capacity, MOQ / MOV / packs, payment terms, switching, shares, correlated risk, sectors, network, multi-SKU, malformed inputs and the age-at-receipt workspace check PASS; `p3-release-runtime` = `0de6850` (ledger "P3 supplier / sourcing portfolio release line")
 - [x] production performance closure 2026-09-11 / 12: the ~218 s shared-MOV smoke closed by PR #64 (merge `61a3e75`, Fly v18 `canonical-61a3e75`, tag `p3-performance-closure-runtime`); exact activation bounds + order-class search scoped to the P3 shared-supplier-order class; production re-run 39.4 s / 37.8 s, decision identical; all gates green (`evidence/p3/perf_closure/`)
-- [ ] Validation7 / Validation8 / holdout4 reserved; Network Twin #39 deferred; P4 not started
+- [ ] Validation7 / Validation8 / holdout4 reserved; Network Twin #39 deferred
 
-## Step 12: next build — P4 adaptive recourse — NOT STARTED
+## Step 12: P4 adaptive recourse — RELEASED AND CLOSED 2026-09-12
+- [x] local freeze `d8cdad5` / `7059379` (`p4-frozen-product` / `p4-frozen`), 28 / 28, 27 / 27, 25 / 25; release audit blockers A-D (`evidence/p4/P4_RELEASE_AUDIT.md`)
+- [x] PR #67 merged `8c813ac` (CI 1,946 passed / 2 skipped), Fly v20 `canonical-8c813ac`, smokes A-S, `p4-release-runtime` = `8c813ac` (`evidence/p4/P4_RELEASE_CLOSEOUT.md`)
+- [ ] residual: shared-order recourse through `/jobs` times out under host steal on shared-cpu-2x (machine-class decision deferred with the P3 residual)
+
+## Step 13: next build — P5 ATP / scarce-supply allocation — NOT STARTED
 
 - [ ] requires a separate authorization
 

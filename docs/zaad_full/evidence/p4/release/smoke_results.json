@@ -1,0 +1,567 @@
+{
+ "workspace": {
+  "code": 200,
+  "operator": "op_6c41cf8a",
+  "second": 200
+ },
+ "A_legacy": {
+  "code": 200,
+  "seconds": 1.8,
+  "status": "RETAIN_INCUMBENT",
+  "selected": "operator_rule:network:rop",
+  "detail": null,
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.1
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    0.1
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    0.2
+   ]
+  },
+  "recourse": null,
+  "expected": 200,
+  "ok": true,
+  "has_recourse_block": false
+ },
+ "B_enabled_false": {
+  "code": 200,
+  "seconds": 1.8,
+  "status": "RETAIN_INCUMBENT",
+  "selected": "operator_rule:network:rop",
+  "detail": null,
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.1
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    0.1
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    0.2
+   ]
+  },
+  "recourse": null,
+  "expected": 200,
+  "ok": true,
+  "has_recourse_block": false
+ },
+ "C_commercial_simple": {
+  "code": 200,
+  "seconds": 3.2,
+  "status": "RETAIN_INCUMBENT",
+  "selected": "operator_rule:network:rop",
+  "detail": null,
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.1
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    0.1
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    0.2
+   ]
+  },
+  "recourse": {
+   "verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+   "pi_status": "CERTIFIED",
+   "pi_cost": 12640.322719983194,
+   "pi_feasible": null,
+   "value": 5.036993433448515,
+   "material": false,
+   "ordering": true,
+   "na": true,
+   "replan": {
+    "worlds": 3,
+    "of": 6,
+    "fallback": "static commitments"
+   },
+   "sets": [
+    3
+   ],
+   "approval": true,
+   "epo": false,
+   "scope": "certified lower bound (proven optimal): every world acts with full foresight; never a recommendation"
+  },
+  "expected": 200,
+  "ok": true
+ },
+ "D_produce": {
+  "code": 200,
+  "seconds": 75.8,
+  "status": "PENDING_REVIEW",
+  "selected": "stochastic_network",
+  "detail": null,
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.2
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    1.1
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    6.8
+   ],
+   "cvar_network": [
+    "OPTIMAL",
+    5.2
+   ],
+   "adaptive_network": [
+    "OPTIMAL",
+    17.0
+   ]
+  },
+  "recourse": {
+   "verdict": "ADAPTIVE PLAN NOT SELECTED (a static candidate passed the gates at lower settled cost)",
+   "pi_status": "CERTIFIED",
+   "pi_cost": 13189.184273500043,
+   "pi_feasible": null,
+   "value": 238754.97327999002,
+   "material": true,
+   "ordering": true,
+   "na": true,
+   "replan": {
+    "worlds": 3,
+    "of": 6,
+    "fallback": "static commitments"
+   },
+   "sets": [
+    3
+   ],
+   "approval": true,
+   "epo": false,
+   "scope": "certified lower bound (proven optimal): every world acts with full foresight; never a recommendation"
+  },
+  "expected": 200,
+  "ok": true
+ },
+ "E_meat": {
+  "code": 200,
+  "seconds": 2.8,
+  "status": "PENDING_REVIEW",
+  "selected": "deterministic_network",
+  "detail": null,
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.0
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    0.4
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    0.1
+   ],
+   "cvar_network": [
+    "OPTIMAL",
+    0.2
+   ]
+  },
+  "recourse": {
+   "verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+   "pi_status": "CERTIFIED",
+   "pi_cost": 13225.865637657567,
+   "pi_feasible": null,
+   "value": 6.037449424389706,
+   "material": false,
+   "ordering": true,
+   "na": true,
+   "replan": {
+    "worlds": 3,
+    "of": 6,
+    "fallback": "static commitments"
+   },
+   "sets": [
+    3
+   ],
+   "approval": true,
+   "epo": false,
+   "scope": "certified lower bound (proven optimal): every world acts with full foresight; never a recommendation"
+  },
+  "expected": 200,
+  "ok": true
+ },
+ "F_p2_network": {
+  "code": 200,
+  "seconds": 3.7,
+  "status": "PENDING_REVIEW",
+  "selected": "stochastic_network",
+  "detail": null,
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.1
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    0.1
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    0.4
+   ]
+  },
+  "recourse": {
+   "verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+   "pi_status": "CERTIFIED",
+   "pi_cost": 12556.80302001656,
+   "pi_feasible": null,
+   "value": 7.888704537841477,
+   "material": false,
+   "ordering": true,
+   "na": true,
+   "replan": {
+    "worlds": 4,
+    "of": 8,
+    "fallback": "static commitments"
+   },
+   "sets": [
+    4
+   ],
+   "approval": true,
+   "epo": false,
+   "scope": "certified lower bound (proven optimal): every world acts with full foresight; never a recommendation"
+  },
+  "expected": 200,
+  "ok": true
+ },
+ "G_p3_source_mix": {
+  "code": 200,
+  "seconds": 3.2,
+  "status": "RETAIN_INCUMBENT",
+  "selected": "operator_rule:network:rop",
+  "detail": null,
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.1
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    0.1
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    0.1
+   ]
+  },
+  "recourse": {
+   "verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+   "pi_status": "CERTIFIED",
+   "pi_cost": -21179.6268565179,
+   "pi_feasible": null,
+   "value": 9.624335361306294,
+   "material": false,
+   "ordering": true,
+   "na": true,
+   "replan": {
+    "worlds": 3,
+    "of": 6,
+    "fallback": "static commitments"
+   },
+   "sets": [
+    3
+   ],
+   "approval": true,
+   "epo": false,
+   "scope": "certified lower bound (proven optimal): every world acts with full foresight; never a recommendation"
+  },
+  "expected": 200,
+  "ok": true
+ },
+ "H_correlated": {
+  "code": 200,
+  "seconds": 77.4,
+  "status": "PENDING_REVIEW",
+  "selected": "deterministic_network",
+  "detail": null,
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.1
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    3.9
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    2.5
+   ]
+  },
+  "recourse": {
+   "verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+   "pi_status": "CERTIFIED",
+   "pi_cost": 12698.081277000958,
+   "pi_feasible": null,
+   "value": 0.1976671958618681,
+   "material": false,
+   "ordering": true,
+   "na": true,
+   "replan": {
+    "worlds": 1,
+    "of": 6,
+    "fallback": "static commitments"
+   },
+   "sets": [
+    2
+   ],
+   "approval": true,
+   "epo": false,
+   "scope": "certified lower bound (proven optimal): every world acts with full foresight; never a recommendation"
+  },
+  "expected": 200,
+  "ok": true
+ },
+ "I_waiting": {
+  "code": 200,
+  "seconds": 15.4,
+  "status": "RETAIN_INCUMBENT",
+  "selected": "operator_rule:network:rop",
+  "detail": null,
+  "approval": true,
+  "epo": false,
+  "candidates": {
+   "incumbent": [
+    "OPTIMAL",
+    0.0
+   ],
+   "base_stock": [
+    "OPTIMAL",
+    0.1
+   ],
+   "deterministic_network": [
+    "OPTIMAL",
+    0.3
+   ],
+   "stochastic_network": [
+    "OPTIMAL",
+    1.1
+   ]
+  },
+  "recourse": {
+   "verdict": "NO MATERIAL ADAPTIVE BENEFIT",
+   "pi_status": "CERTIFIED",
+   "pi_cost": 12641.226673304393,
+   "pi_feasible": null,
+   "value": 6.856244370215791,
+   "material": false,
+   "ordering": true,
+   "na": true,
+   "replan": {
+    "worlds": 3,
+    "of": 6,
+    "fallback": "static commitments"
+   },
+   "sets": [
+    3
+   ],
+   "approval": true,
+   "epo": false,
+   "scope": "certified lower bound (proven optimal): every world acts with full foresight; never a recommendation"
+  },
+  "expected": 200,
+  "ok": true
+ },
+ "J_malformed_epoch": {
+  "code": 422,
+  "seconds": 0.5,
+  "status": null,
+  "selected": null,
+  "detail": [
+   {
+    "loc": [],
+    "msg": "Value error, recourse: every review period must lie inside the horizon (at most horizon - 1)",
+    "type": "value_error"
+   }
+  ],
+  "approval": null,
+  "epo": null,
+  "candidates": null,
+  "recourse": null,
+  "expected": 422,
+  "ok": true
+ },
+ "K_unsupported_observable": {
+  "code": 422,
+  "seconds": 0.3,
+  "status": null,
+  "selected": null,
+  "detail": [
+   {
+    "loc": [
+     "recourse",
+     "observables",
+     0
+    ],
+    "msg": "Input should be 'demand' or 'receipts'",
+    "type": "literal_error"
+   }
+  ],
+  "approval": null,
+  "epo": null,
+  "candidates": null,
+  "recourse": null,
+  "expected": 422,
+  "ok": true
+ },
+ "L_tree_too_high": {
+  "code": 413,
+  "seconds": 0.3,
+  "status": null,
+  "selected": null,
+  "detail": "Interactive recourse bounds exceeded: {'review_epochs': 2, 'observables': 2, 'actions': 2, 'scenarios': 4, 'tree_worlds': 8} (scenario-tree worlds 12); submit the request to /api/zaad/network/jobs.",
+  "approval": null,
+  "epo": null,
+  "candidates": null,
+  "recourse": null,
+  "expected": 413,
+  "ok": true
+ },
+ "M_shared_order_interactive": {
+  "code": 422,
+  "seconds": 0.6,
+  "status": null,
+  "selected": null,
+  "detail": "Aggregate requested solver time exceeds 180 seconds; lower max_solve_seconds.",
+  "approval": null,
+  "epo": null,
+  "candidates": null,
+  "recourse": null,
+  "expected": 413,
+  "ok": false
+ },
+ "N_job_submit": {
+  "code": 202,
+  "body": {
+   "job_id": "job_42aed35ab91640ca821c7d7cfec58ea6",
+   "status": "QUEUED",
+   "timeout_s": 315.0,
+   "executable_purchase_order": false,
+   "approval_required": true
+  },
+  "seconds": 0.5
+ },
+ "R_other_tenant_reads_job": {
+  "code": 404,
+  "expected": 404,
+  "ok": true
+ },
+ "N_job_result": {
+  "status": "TIMEOUT",
+  "error": "exceeded 315s wall clock",
+  "seconds": 321,
+  "timeout_s": 315.0,
+  "started": "2026-09-12T07:01:13.742662+00:00",
+  "finished": "2026-09-12T07:06:29.026809+00:00",
+  "report": null
+ },
+ "Q_from_workspace_recourse_false": {
+  "code": 422,
+  "seconds": 0.3,
+  "selected": null,
+  "has_recourse_block": false,
+  "detail": {
+   "code": "workspace_not_ready",
+   "message": "Upload stg_fmcg_skus and stg_fmcg_orders before planning."
+  }
+ },
+ "Q_from_workspace_recourse_true": {
+  "code": 422,
+  "seconds": 0.3,
+  "selected": null,
+  "has_recourse_block": false,
+  "detail": {
+   "code": "workspace_not_ready",
+   "message": "Upload stg_fmcg_skus and stg_fmcg_orders before planning."
+  }
+ },
+ "R_plan_operator_mismatch": {
+  "code": 403,
+  "expected": 403,
+  "ok": true
+ },
+ "R_jobs_unauthenticated": {
+  "code": 401,
+  "expected": 401,
+  "ok": true
+ },
+ "S_cors_preflight": {
+  "code": 200
+ },
+ "S_health": {
+  "code": 200,
+  "body": {
+   "status": "ok",
+   "service": "zaad-api",
+   "env": "pilot",
+   "auth_enforced": true,
+   "rate_limit_per_min": 60
+  }
+ }
+}
