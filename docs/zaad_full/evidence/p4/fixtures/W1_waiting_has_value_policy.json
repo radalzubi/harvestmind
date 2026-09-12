@@ -1,0 +1,176 @@
+{
+ "version": "zaad.recourse.1.0",
+ "principle": "Commit only what must be committed now; keep flexibility where waiting has economic value; adapt to observed information, never to scenario labels.",
+ "verdict": "ADAPTIVE PLAN SELECTED",
+ "selected": true,
+ "static_expected_cost": 15268.355164620116,
+ "adaptive_expected_cost": 13945.667590397696,
+ "perfect_information_cost": 13924.718020150105,
+ "perfect_information_scope": "lower bound only: every world acts with full foresight; never a recommendation",
+ "value_of_adaptation": 1322.6875742224202,
+ "material": true,
+ "materiality_cost_fraction": 0.01,
+ "ordering_ok": true,
+ "non_anticipativity": {
+  "pass": true,
+  "violations": [],
+  "pairs_checked": 2,
+  "sets_per_epoch": {
+   "2": 2
+  }
+ },
+ "review_periods": [
+  2
+ ],
+ "observables": [
+  "demand"
+ ],
+ "actions": [
+  "purchase",
+  "transfer"
+ ],
+ "committed_now": {
+  "periods": [
+   0,
+   1
+  ],
+  "purchases": [
+   {
+    "source": "src_A",
+    "period": 0,
+    "quantity": 320.404
+   },
+   {
+    "source": "src_A",
+    "period": 1,
+    "quantity": 301.715
+   }
+  ],
+  "transfers": [
+   {
+    "lane": "lane_north",
+    "period": 0,
+    "quantity": 145.154
+   },
+   {
+    "lane": "lane_north",
+    "period": 1,
+    "quantity": 1.731
+   },
+   {
+    "lane": "lane_north",
+    "period": 1,
+    "quantity": 153.225
+   },
+   {
+    "lane": "lane_south",
+    "period": 0,
+    "quantity": 153.115
+   },
+   {
+    "lane": "lane_south",
+    "period": 1,
+    "quantity": 160.771
+   }
+  ]
+ },
+ "policy": [
+  {
+   "review_period": 2,
+   "window": [
+    2,
+    11
+   ],
+   "information_sets": 2,
+   "observed_before_review": [
+    "demand"
+   ],
+   "branches": [
+    {
+     "probability": 0.5,
+     "condition": [
+      "confirmed demand for svc_north through period 1 of about 140 units",
+      "confirmed demand for svc_south through period 1 of about 140 units"
+     ],
+     "purchases": {
+      "src_A": 486.264
+     },
+     "transfers": {
+      "lane_north": 377.469,
+      "lane_south": 394.751
+     },
+     "difference_from_static": [
+      "buys 486 units from src_A over periods 2-11 against 2,450 in the static plan"
+     ]
+    },
+    {
+     "probability": 0.5,
+     "condition": [
+      "confirmed demand for svc_north through period 1 of about 300 units",
+      "confirmed demand for svc_south through period 1 of about 310 units"
+     ],
+     "purchases": {
+      "src_A": 2449.517
+     },
+     "transfers": {
+      "lane_north": 1323.273,
+      "lane_south": 1372.935
+     },
+     "difference_from_static": [
+      "same commitments as the static plan in this branch"
+     ]
+    }
+   ]
+  }
+ ],
+ "explanations": [
+  "Commit periods 0-1 now; reassess at period 2 on demand confirmed by then.",
+  "Keeping the later periods flexible is worth 1,323 against the best static plan on the same worlds (8.66% of its expected cost), above the declared materiality of 1.0%."
+ ],
+ "approval_required": true,
+ "executable_purchase_order": false,
+ "engineering": {
+  "worlds": 4,
+  "information_sets": {
+   "2": [
+    {
+     "id": "e2.0",
+     "members": [
+      0,
+      1
+     ],
+     "probability": 0.5
+    },
+    {
+     "id": "e2.1",
+     "members": [
+      2,
+      3
+     ],
+     "probability": 0.5
+    }
+   ]
+  },
+  "policy_lookup_on_confirmation_worlds": [],
+  "adaptive_solve": {
+   "status": "OPTIMAL",
+   "variables": 4002,
+   "constraints": 2613,
+   "seconds": 0.07697950024157763,
+   "nodes": 1,
+   "gap": 0.0
+  },
+  "static_solve": {
+   "status": "OPTIMAL",
+   "variables": 3732,
+   "constraints": 2583,
+   "seconds": 0.07519804080948234,
+   "built_as_comparator": true
+  },
+  "perfect_solve": {
+   "status": "OPTIMAL",
+   "variables": 4704,
+   "seconds": 0.07099154079332948
+  }
+ }
+}
