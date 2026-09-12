@@ -13,10 +13,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import resource
-import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -96,7 +94,9 @@ def parse_log(path: Path) -> dict[str, Any]:
     if m:
         out["coefficient_ranges"] = {"matrix": m[1], "cost": m[2], "bound": m[3], "rhs": m[4]}
     # B&B table rows: the last column is the elapsed time; the first row with a finite BestSol is the first incumbent
-    first = None; root = None; last_t = None
+    first = None
+    root = None
+    last_t = None
     for line in txt.splitlines():
         cols = line.split()
         if len(cols) < 12 or not re.fullmatch(r"[\d.]+s?", cols[-1]) or not (cols[-6].endswith("%") or cols[-6] in ("inf", "Large")):
