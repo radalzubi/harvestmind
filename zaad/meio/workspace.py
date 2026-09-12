@@ -82,10 +82,10 @@ def estimate_demand_correlation(weekly: pd.DataFrame) -> tuple[float | None, int
 def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days: int = 7, as_of: datetime | None = None,
                           service_target: float = .95, history_weeks: int = 52, seed: int = 41001, scenarios: int = 3,
                           max_solve_seconds: float = 15., skus: list[str] | None = None, sector_mode: str | None = None,
-                          sourcing: bool = False, recourse: bool = False) -> tuple[Request, dict[str, Any]]:
+                          sourcing: bool = False, recourse: bool = False, atp: bool = False) -> tuple[Request, dict[str, Any]]:
     base, report = build_request(conn, operator_id, horizon=horizon, period_days=period_days, as_of=as_of, service_target=service_target,
                                  history_weeks=history_weeks, seed=seed, scenarios=scenarios, max_solve_seconds=max_solve_seconds, skus=skus,
-                                 sector_mode=sector_mode, sourcing=sourcing, recourse=recourse)
+                                 sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp)
     locations = _location_rows(conn)
     if len(locations) < 2:
         report["network"] = {"locations": int(len(locations)), "mode": "single_location", "note": "fewer than two declared locations: the frozen single-location request"}

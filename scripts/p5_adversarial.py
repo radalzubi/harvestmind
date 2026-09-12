@@ -136,6 +136,12 @@ def case_malformed_economics():
     return a[0] and b[0] and c[0], " | ".join(x[1][:35] for x in (a, b, c))
 
 
+def case_probabilistic_inbound():
+    """A confidence factor on inbound would turn uncertain supply into a firm promise: refused at the contract."""
+    req = scene(base(), 10.)
+    return refused(lambda: with_atp(req, [order("o1", "c1", "std", [line("l1", 10.)])], STD, include_inbound=True, inbound_confidence=.8))
+
+
 def case_cross_tenant_reference():
     req = scene(base(), 100.)
     # a customer id of another operator's vault is simply unknown here: refused at the contract; the API adds the operator match (403)
@@ -148,7 +154,8 @@ CASES = [("duplicate customer order id", case_duplicate_order_id), ("negative de
          ("conflicting service policies", case_conflicting_policies), ("double reservation attempt", case_double_reservation),
          ("expired produce", case_expired_produce), ("cold-chain invalid shipment", case_cold_chain_invalid_shipment),
          ("substitution not approved", case_substitution_not_approved), ("huge order count (resource abuse)", case_huge_order_count),
-         ("malformed economics", case_malformed_economics), ("cross-tenant order reference", case_cross_tenant_reference)]
+         ("malformed economics", case_malformed_economics), ("cross-tenant order reference", case_cross_tenant_reference),
+         ("probabilistic inbound (confidence factor)", case_probabilistic_inbound)]
 
 
 def main() -> int:

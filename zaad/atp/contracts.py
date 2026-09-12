@@ -94,7 +94,10 @@ class AtpSpec(Record):
     incumbent_policy: IncumbentPolicy = "FIFO_PROMISE"
     manual_sequence: tuple[str, ...] = ()
     fairness: Fairness = "NONE"
-    include_inbound: bool = False
+    include_inbound: bool = False                 # count FIRM inbound (accepted in-flight transfers) by arrival period
+    # Kept for schema compatibility (migration 020). Only 1 is accepted: a probabilistic inbound is never
+    # converted into a firm promise by a confidence factor; open purchase orders are classified as
+    # non-firm availability and never promised (state.py). Any other value is refused (fail closed).
     inbound_confidence: float = Field(default=1., ge=0, le=1)
     promise_horizon: int = Field(default=8, ge=1, le=52)
     cross_location: bool = False
@@ -105,6 +108,9 @@ class AtpSpec(Record):
         ids = [o.id for o in self.orders]
         if len(set(ids)) != len(ids):
             raise ValueError("atp: duplicate customer order id")
+        if abs(self.inbound_confidence - 1.) > 1e-12:
+            raise ValueError("atp: inbound_confidence must be 1: probabilistic inbound is never promised (open purchase orders are classified as non-firm availability; "
+                             "only accepted in-flight transfers are firm)")
         line_ids = [line.id for o in self.orders for line in o.lines]
         if len(set(line_ids)) != len(line_ids):
             raise ValueError("atp: duplicate line id across orders")

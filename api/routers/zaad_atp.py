@@ -1,7 +1,7 @@
 """P5 ATP / scarce-supply allocation: isolated, default-off endpoint (parallel phase).
 
-POST /api/zaad/atp/promise runs the isolated P5 engine on a frozen `Request` that carries an
-enabled `atp` block: the operator's incumbent promising rule and the exact allocation on the same
+POST /api/zaad/atp/promise runs the P5 engine (shared orchestration, `zaad/atp/integration.py`) on a
+frozen `Request` that carries an enabled `atp` block: the operator's incumbent promising rule and the exact allocation on the same
 supply state, priced on the shared ledger, the request's materiality standard, the operator report.
 It never calls the planner (no P0-P4 decision is made or changed here), never persists a promise,
 and always answers `approval_required: true`, `executable_promise: false`. A request without an
@@ -18,8 +18,8 @@ from pydantic import ValidationError
 from api.dependencies import require_operator
 from api.routers.zaad import bounded_rate
 from zaad.atp.contracts import INTERACTIVE_LIMITS, resolve
-from zaad.atp.promise import promise_with
-from zaad.atp.validation import AtpRefused, within_interactive_limits
+from zaad.atp.integration import atp_block
+from zaad.atp.validation import within_interactive_limits
 from zaad.full.contracts import Request
 
 router = APIRouter(prefix="/api/zaad/atp", tags=["zaad-atp"])
@@ -60,9 +60,9 @@ async def promise_endpoint(request: HTTPRequest, operator: str | None = Depends(
     if operator is not None and req.operator_id != operator:
         raise HTTPException(403, "Operator mismatch")
     atp = resolve(req)
-    assert atp is not None
-    try:
-        report = await run_in_threadpool(promise_with, req, atp, min(30., float(req.max_solve_seconds)))
-    except AtpRefused as exc:
-        raise HTTPException(422, {"code": "atp_refused", "message": str(exc)}) from exc
+    if atp is None:   # payload() already refused an absent block; defensive, never reached
+        raise HTTPException(422, {"code": "atp_absent", "message": "an enabled `atp` block is required"})
+    report = await run_in_threadpool(atp_block, req, atp, seconds=min(30., float(req.max_solve_seconds)))
+    if report is None or report["verdict"].startswith("REFUSED"):
+        raise HTTPException(422, {"code": "atp_refused", "message": (report or {}).get("reason", "refused")})
     return {"atp": report, "approval_required": True, "executable_promise": False, "executable_purchase_order": False}

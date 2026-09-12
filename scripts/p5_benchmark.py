@@ -1,4 +1,4 @@
-"""P5 fixture matrix + invariants (isolated engine): runs every pre-registered fixture, checks its
+"""P5 fixture matrix + invariants (engine on the allocatable-supply envelope): runs every pre-registered fixture, checks its
 principle and the release-level invariants 1-19 on the recommended allocation, writes
 docs/zaad_full/evidence/p5/benchmarks/<tag>.{json,md} and P5_INVARIANTS.md. Engineering evidence only.
 """
@@ -66,11 +66,11 @@ def principle(name: str, kind: str, req, rep) -> dict[str, Any]:
         ok = abs(s.get("l1", 0.) - 60.) < TOL and all(p["promise_period"] == 2 for p in rep["promised"]) and not unmet
         return {"pass": ok, "evidence": {"shipped": s}}
     if kind == "inbound_excluded":
-        ok = not rep["promised"] and abs(unmet.get("l1", 0.) - 60.) < TOL and rep["next_promise"]["l1"]["earliest_period_with_supply"] == 4
+        ok = not rep["promised"] and abs(unmet.get("l1", 0.) - 60.) < TOL and rep["next_promise"]["l1"]["earliest_period_with_firm_supply"] == 4
         return {"pass": ok, "evidence": {"unmet": unmet, "next": rep["next_promise"]}}
     if kind == "alternative_priced":
         via = [p for p in rep["promised"] if p["ship_from"] == "central"]
-        ok = abs(sum(p["quantity"] for p in via) - 50.) < TOL and all(p["lane"] for p in via) and abs(rep["ledger"]["transfer"] - 50 * .2) < TOL and not unmet
+        ok = abs(sum(p["quantity"] for p in via) - 50.) < TOL and all(p["lane"] for p in via) and abs(rep["ledger"]["alternative_ship_from"] - 50 * .2) < TOL and not unmet
         return {"pass": ok, "evidence": {"via_lane": [(p["quantity"], p["lane"], p["promise_period"]) for p in via], "ledger": rep["ledger"]}}
     if kind == "lead_respected_unmet":
         ok = all(p["ship_from"] == "north" for p in rep["promised"]) and abs(unmet.get("l1", 0.) - 50.) < TOL

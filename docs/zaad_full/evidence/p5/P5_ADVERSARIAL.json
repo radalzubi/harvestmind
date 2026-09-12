@@ -1,6 +1,6 @@
 {
- "passed": 16,
- "total": 16,
+ "passed": 17,
+ "total": 17,
  "results": [
   {
    "case": "duplicate customer order id",
@@ -81,6 +81,11 @@
    "case": "cross-tenant order reference",
    "pass": true,
    "outcome": "REFUSED_AT_CONTRACT: Value error, atp: order o1 names an unknown customer op_other:customer_7 [type=value_error"
+  },
+  {
+   "case": "probabilistic inbound (confidence factor)",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: inbound_confidence must be 1: probabilistic inbound is never promised (o"
   }
  ]
 }

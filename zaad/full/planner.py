@@ -30,6 +30,7 @@ from zaad.full.screen import MINIMUM_SAFE, screen
 from zaad.full.settlement import PhysicalViolation, settle
 from zaad.full.uncertainty import profile_dict, stress_credibility, supply_profiles
 from zaad.full.worlds import dates, draw, forecast_all
+from zaad.atp.contracts import resolve as resolve_atp
 from zaad.recourse.contracts import resolve as resolve_recourse
 
 
@@ -1612,6 +1613,13 @@ def plan(req: Request) -> dict:
         # language, the policy per review epoch and its reasons. Absent on a frozen request.
         from zaad.recourse.explain import recourse_block
         report["recourse"] = recourse_block(req, recourse_view, recourse_result, report, recourse_result["tree_worlds"], selection + confirmation)
+    atp_view = resolve_atp(req)
+    if atp_view is not None:
+        # ATP / scarce-supply allocation (P5): the promising report on the allocatable-supply envelope of
+        # this request, with the P0 protection profile as an overlay. Attached after the frozen report is
+        # complete; it changes no P0-P4 decision. Absent on a frozen request (identity).
+        from zaad.atp.integration import atp_block
+        report["atp"] = atp_block(req, atp_view, protection=protection, planner_path=True)
     return report
 
 

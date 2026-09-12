@@ -1,9 +1,32 @@
-"""P5 economics: the price of an allocation on the shared ledger.
+"""P5 economics: the price of an allocation on the shared ledger, with the owner of every term.
 
-A unit of a line ends in exactly one state: shipped on time, shipped late (backordered), shipped as
-a declared substitute (on time or late), unmet (lost), or refused (CANCEL_IF_LATE shortfall). Every
-charge lands on one settlement ledger key; the only keys P5 adds are `backorder_carry` and
-`refusal`. Nothing is charged twice, and the ledger total equals the engine objective.
+A unit of a line ends in exactly one state: shipped on time, shipped late (backordered), shipped as a
+declared substitute (on time or late), unmet (lost), or refused (CANCEL_IF_LATE shortfall). Every
+charge lands on one ledger key; the keys, their basis and their owner (audited against the frozen
+settlement, `zaad/full/settlement.py`, and the frozen model, `zaad/full/model.py`):
+
+| key                     | per unit in state        | basis                                                   | owner                        |
+|-------------------------|--------------------------|---------------------------------------------------------|------------------------------|
+| lost_sales_opportunity  | unmet, refused           | Service.selling_price (the frozen settlement's basis:   | frozen settlement convention |
+|                         |                          | `ledger["lost_sales_opportunity"] += need * selling_price`), or a DECLARED |            |
+|                         |                          | class / line margin when the operator declares one      | (P5 declaration)             |
+| sla                     | unmet                    | Service.sla_per_unmet (`ledger["sla"] += need * sla`)   | frozen Service record        |
+| shortage_penalty        | unmet                    | ServiceClass.shortage_penalty_per_unit (declared class  | P5 declaration               |
+|                         |                          | term, ADDITIONAL to the Service SLA, its own key)       |                              |
+| backorder_carry         | late (per period late)   | ServiceClass.late_penalty_per_unit_period               | P5 declaration               |
+| substitution            | substituted              | Substitute.penalty_per_output / service_equivalence     | frozen Substitute record     |
+|                         |                          | (the settlement's `compatible()` fee)                   |                              |
+| alternative_ship_from   | shipped from an eligible | Transfer.cost_per_unit x physical units on the approved | P2 lane record (read-only,   |
+|                         | alternative location     | lane; a PRICE, not a P2 transfer action                 | priced, never moved)         |
+| refusal                 | refused                  | ServiceClass.refusal_cost_per_unit                      | P5 declaration               |
+
+No double charge: unmet and refused are disjoint (an order's late semantics decide which one its
+shortfall is); a late unit is not unmet; a substituted unit is not unmet; a substitute shipped late
+carries both the substitution and the lateness (two distinct declared outcomes on one unit, each
+charged once); margin is never charged on a shipped unit. Not carried here, by ownership: holding,
+handling, financing and the asset value of retained stock belong to the planner's settlement ledger
+(`opening_assets` / `closing_assets`), and the two ledgers are never summed. The ledger total equals
+the engine objective (invariant 13).
 """
 from __future__ import annotations
 
@@ -13,7 +36,14 @@ from typing import Any
 from zaad.atp.contracts import Atp, CustomerOrder, PromiseLine
 
 TOL = 1e-9
-LEDGER_KEYS = ("lost_sales_opportunity", "sla", "backorder_carry", "substitution", "transfer", "refusal")
+LEDGER_KEYS = ("lost_sales_opportunity", "sla", "shortage_penalty", "backorder_carry", "substitution", "alternative_ship_from", "refusal")
+OWNER = {"lost_sales_opportunity": "frozen settlement convention (Service.selling_price) or a declared margin",
+         "sla": "frozen Service.sla_per_unmet", "shortage_penalty": "declared ServiceClass.shortage_penalty_per_unit",
+         "backorder_carry": "declared ServiceClass.late_penalty_per_unit_period x periods late", "substitution": "frozen Substitute penalty (settlement fee)",
+         "alternative_ship_from": "frozen P2 Transfer.cost_per_unit on the approved lane, priced only (no transfer is created)",
+         "refusal": "declared ServiceClass.refusal_cost_per_unit"}
+DIRECT = "DIRECT"
+ALTERNATIVE = "ALTERNATIVE_SHIP_FROM"
 
 
 @dataclass(frozen=True)
@@ -27,11 +57,12 @@ class Shipment:
     substitution: str | None        # frozen Substitute id when a substitute is shipped
     lot: str
     ship_from: str
-    lane: str | None                # lane id when shipped from an alternative location
+    lane: str | None                # lane id when shipped from an alternative location (priced, never moved)
     promise_period: int
     requested_period: int
     quantity: float                 # requested (service-equivalent) units
     physical_units: float           # units drawn from the lot (conversion applied)
+    fulfilment: str = DIRECT        # DIRECT | ALTERNATIVE_SHIP_FROM (structurally distinct from a P2 transfer)
 
 
 @dataclass
@@ -49,9 +80,10 @@ class Allocation:
 @dataclass(frozen=True)
 class Drivers:
     """The declared numbers that rank a line; every one of them can be cited by the report."""
-    lost_margin: float               # per unmet or refused unit (declared class value, else the Service selling price - the settlement basis)
+    lost_margin: float               # per unmet or refused unit: declared line margin, else declared class margin, else Service.selling_price
+    lost_basis: str                  # declared_line_margin | declared_class_margin | service_selling_price (frozen settlement basis)
     sla: float                       # Service.sla_per_unmet (stream-level, frozen)
-    shortage_penalty: float          # class
+    shortage_penalty: float          # class (its own ledger key)
     late_penalty: float              # class, per unit per period late
     refusal_cost: float              # class
     floor: float                     # class contractual floor
@@ -74,14 +106,19 @@ def drivers(req, atp: Atp, order: CustomerOrder, line: PromiseLine) -> Drivers:
     cls = atp.classes[order.service_class]
     service = next(s for s in req.services if s.customer == order.customer and s.sku == line.sku)
     customer = next(c for c in req.customers if c.id == order.customer)
-    lost = line.unit_margin if line.unit_margin is not None else (cls.lost_margin_per_unit if cls.lost_margin_per_unit is not None else float(service.selling_price))
-    return Drivers(lost_margin=float(lost), sla=float(service.sla_per_unmet), shortage_penalty=cls.shortage_penalty_per_unit,
+    if line.unit_margin is not None:
+        lost, basis = float(line.unit_margin), "declared_line_margin"
+    elif cls.lost_margin_per_unit is not None:
+        lost, basis = float(cls.lost_margin_per_unit), "declared_class_margin"
+    else:
+        lost, basis = float(service.selling_price), "service_selling_price"
+    return Drivers(lost_margin=lost, lost_basis=basis, sla=float(service.sla_per_unmet), shortage_penalty=cls.shortage_penalty_per_unit,
                    late_penalty=cls.late_penalty_per_unit_period, refusal_cost=cls.refusal_cost_per_unit, floor=cls.contractual_service_floor,
                    strategic=cls.strategic, reference=cls.reference, customer_priority=float(customer.priority), tier=cls.tier, provenance=cls.provenance)
 
 
 def price(alloc: Allocation, req, atp: Atp, state) -> dict[str, Any]:
-    """Ledger by key, total, and the unit-state table per line (reconciliation invariant 3 / 13)."""
+    """Ledger by key, total, and the unit-state table per line (reconciliation invariants 3 / 13)."""
     ledger = {k: 0. for k in LEDGER_KEYS}
     units: dict[str, dict[str, float]] = {}
     subs = {s.id: s for s in req.substitutions}
@@ -105,9 +142,10 @@ def price(alloc: Allocation, req, atp: Atp, state) -> dict[str, Any]:
                     rule = subs[s.substitution]
                     ledger["substitution"] += s.quantity * rule.penalty_per_output / rule.service_equivalence
                 if s.lane is not None:
-                    ledger["transfer"] += s.physical_units * lanes[s.lane].cost_per_unit
+                    ledger["alternative_ship_from"] += s.physical_units * lanes[s.lane].cost_per_unit
             ledger["lost_sales_opportunity"] += (row["unmet"] + row["refused"]) * d.lost_margin
-            ledger["sla"] += row["unmet"] * (d.sla + d.shortage_penalty)
+            ledger["sla"] += row["unmet"] * d.sla
+            ledger["shortage_penalty"] += row["unmet"] * d.shortage_penalty
             ledger["refusal"] += row["refused"] * d.refusal_cost
             row["balance_residual"] = row["on_time"] + row["late"] + row["unmet"] + row["refused"] - line.quantity
             units[line.id] = row

@@ -14,7 +14,7 @@ from typing import Any, Callable
 
 from zaad.atp.allocation import Channel, channels
 from zaad.atp.contracts import Atp
-from zaad.atp.economics import Allocation, Shipment
+from zaad.atp.economics import ALTERNATIVE, DIRECT, Allocation, Shipment
 from zaad.atp.state import SupplyState
 
 POLICIES = ("FIFO_PROMISE", "FCFS_ORDER_DATE", "TIER_PRIORITY", "PROPORTIONAL", "CONTRACTUAL_THEN_PRIORITY", "DECLARED_MANUAL")
@@ -44,7 +44,7 @@ def _take(alloc: Allocation, order, line, chans: list[Channel], remaining: dict[
     then earliest-expiring lot (FEFO), then cheapest route. Returns the quantity shipped."""
     mine = [c for c in chans if c.line == line.id]
     lots_expiry = {c.lot: getattr(c, "expiry", 0) for c in mine}
-    mine.sort(key=lambda c: (c.substitution is not None, c.promise_period, lots_expiry.get(c.lot, 0), c.lane_cost + c.sub_penalty, c.lot, c.lane or ""))
+    mine.sort(key=lambda c: (c.substitution is not None, c.promise_period, not c.home, lots_expiry.get(c.lot, 0), c.lane_cost + c.sub_penalty, c.lot, c.lane or ""))
     got = 0.
     for c in mine:
         if want - got <= 1e-9:
@@ -60,7 +60,8 @@ def _take(alloc: Allocation, order, line, chans: list[Channel], remaining: dict[
             lane_left[c.lane, c.promise_period - c.lead] -= q * c.ratio
         alloc.shipments.append(Shipment(order=order.id, line=line.id, customer=order.customer, service_class=order.service_class, sku_requested=line.sku,
                                         sku_supplied=c.sku_supplied, substitution=c.substitution, lot=c.lot, ship_from=c.ship_from, lane=c.lane,
-                                        promise_period=c.promise_period, requested_period=line.requested_period, quantity=q, physical_units=q * c.ratio))
+                                        promise_period=c.promise_period, requested_period=line.requested_period, quantity=q, physical_units=q * c.ratio,
+                                        fulfilment=ALTERNATIVE if c.lane is not None else DIRECT))
         got += q
     return got
 

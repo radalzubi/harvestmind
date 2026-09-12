@@ -78,11 +78,11 @@ def test_time_and_physics_are_respected():
     late = [p for p in f["promised"] if p["periods_late"]]
     assert sum(p["quantity"] for p in late) == 50. and all(p["promise_period"] == 2 for p in late) and f["ledger"]["backorder_carry"] == 100.
     j = promise(build("J_inbound_too_late"))
-    assert not j["promised"] and j["next_promise"]["l1"]["earliest_period_with_supply"] == 4
+    assert not j["promised"] and j["next_promise"]["l1"]["earliest_period_with_firm_supply"] == 4
     m = promise(build("M_produce_remaining_life"))
     assert all(p["lot"] != "stock:north_lot" for p in m["promised"]) and sum(p["quantity"] for p in m["promised"]) == 100.
     k = promise(build("K_multiple_locations"))
-    assert abs(k["ledger"]["transfer"] - 10.) < 1e-9 and all(p["lane"] for p in k["promised"] if p["ship_from"] == "central")
+    assert abs(k["ledger"]["alternative_ship_from"] - 10.) < 1e-9 and all(p["lane"] for p in k["promised"] if p["ship_from"] == "central")
 
 
 def test_incumbent_first_and_deterministic_ties():

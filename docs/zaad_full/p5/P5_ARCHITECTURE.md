@@ -1,7 +1,10 @@
 # P5 — ATP / scarce-supply allocation / economic service classes: architecture
 
-Status: parallel-phase design (TRACK B). Isolated implementation in `zaad/atp/`; no shared-core
-integration until TRACK A (P4 performance closure) is merged and this branch is rebased.
+Status: parallel-phase design (TRACK B), then shared-core integration engineering (2026-09-12; see
+`P5_INTEGRATION.md` for the state contract, the ledger audit and the integration architecture, which
+supersede sections 5, 8, 11 and 12 below where they differ: firm / non-firm supply tiers instead of a
+confidence factor, `shortage_penalty` and `alternative_ship_from` as their own ledger keys, the planner
+hook with the P0 protection overlay, the workspace `atp` flag and the API gate). Not released.
 
 ## 1. Business question
 

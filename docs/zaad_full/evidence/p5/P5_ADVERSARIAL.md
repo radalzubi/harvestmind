@@ -1,6 +1,6 @@
 # P5 adversarial matrix (fail closed)
 
-16 / 16 PASS
+17 / 17 PASS
 
 | case | outcome | result |
 |---|---|---|
@@ -20,3 +20,4 @@
 | huge order count (resource abuse) | REFUSED_AT_BOUNDS: orders 201 over the interactive limit 200 | REFUSED_AT_CONTRACT: Value error, atp: order count beyond th | PASS |
 | malformed economics | REFUSED_AT_CONTRACT: 1 validation e | REFUSED_AT_CONTRACT: 1 validation e | REFUSED_AT_CONTRACT: 1 validation e | PASS |
 | cross-tenant order reference | REFUSED_AT_CONTRACT: Value error, atp: order o1 names an unknown customer op_other:customer_7 [type=value_error | PASS |
+| probabilistic inbound (confidence factor) | REFUSED_AT_CONTRACT: Value error, atp: inbound_confidence must be 1: probabilistic inbound is never promised (o | PASS |

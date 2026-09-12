@@ -59,6 +59,7 @@ async def large_payload(request: HTTPRequest) -> Request:
         from zaad.recourse.contracts import BATCH_LIMITS, tree_worlds
         if tree_worlds(result) > BATCH_LIMITS["tree_worlds"] or len(result.recourse.review_periods) > BATCH_LIMITS["review_epochs"]:
             raise HTTPException(413, f"Recourse scenario tree over the batch envelope: {BATCH_LIMITS} (worlds {tree_worlds(result)}).")
+    atp_gate(result, batch=True)
     if (len(result.skus) > LARGE_LIMITS["skus"] or len(result.sources) > LARGE_LIMITS["sources"]
             or len(result.services) > LARGE_LIMITS["services"] or result.horizon > LARGE_LIMITS["horizon"]
             or result.scenarios > LARGE_LIMITS["scenarios"] or len(result.stresses) > LARGE_LIMITS["stresses"]):
@@ -77,6 +78,23 @@ def authenticated(operator: str | None = Depends(require_operator)) -> str:
     if operator is None:
         raise HTTPException(401, "Persistent shadow records require authentication, including in development.")
     return operator
+
+
+def atp_gate(result: Request, *, batch: bool) -> None:
+    """P5 (ATP / scarce-supply allocation) on the planner paths: default off in every environment
+    (`ZAAD_ATP_ENABLED=1` switches it on, 422 `atp_disabled` otherwise), and on the interactive path the
+    same deterministic bounds as the standalone endpoint (413). Nothing runs before this check."""
+    from zaad.atp.contracts import INTERACTIVE_LIMITS as ATP_LIMITS, resolve as resolve_atp
+    from zaad.atp.validation import within_interactive_limits
+    atp = resolve_atp(result)
+    if atp is None:
+        return
+    if os.getenv("ZAAD_ATP_ENABLED", "0") != "1":
+        raise HTTPException(422, {"code": "atp_disabled", "message": "ATP / allocation is not enabled in this environment (ZAAD_ATP_ENABLED); remove the `atp` block or disable it."})
+    if not batch:
+        ok, why = within_interactive_limits(atp)
+        if not ok:
+            raise HTTPException(413, f"Interactive ATP bounds exceeded: {why}; limits {ATP_LIMITS}; submit the request to /api/zaad/network/jobs.")
 
 
 async def payload(request: HTTPRequest) -> Request:
@@ -109,6 +127,7 @@ async def payload(request: HTTPRequest) -> Request:
                 or len(result.sourcing.share_constraints) > INTERACTIVE_LIMITS["share_constraints"] or len(result.sourcing.switching_costs) > INTERACTIVE_LIMITS["switching_costs"]
                 or len(result.sourcing.incumbent_shares) > INTERACTIVE_LIMITS["incumbent_shares"]):
             raise HTTPException(413, f"Interactive sourcing bounds exceeded: {INTERACTIVE_LIMITS}; use offline batch planning.")
+    atp_gate(result, batch=False)
     if result.recourse is not None and result.recourse.enabled:
         # P4 interactive bounds (deterministic, before any model): the scenario tree at most 8 worlds
         # and never the P3 shared-supplier-order class; both are served by the asynchronous jobs path
@@ -159,21 +178,22 @@ async def recommend(request: HTTPRequest, operator: str | None = Depends(require
 
 
 def _workspace_request(conn, operator: str, horizon: int, service_target: float, skus: str | None, max_solve_seconds: float, network: bool = False,
-                       sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False):
+                       sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False, atp: bool = False):
     from zaad.full.workspace import WorkspaceError, build_request
     subset = [x.strip() for x in skus.split(",") if x.strip()] if skus else None
     try:
         if network:
             # P2: the vault's declared locations and lanes; identical to the frozen adapter below two locations
             from zaad.meio.workspace import build_network_request
-            return build_network_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing, recourse=recourse)
-        return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing, recourse=recourse)
+            return build_network_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp)
+        return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp)
     except WorkspaceError as exc:
         raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
     except ValueError as exc:
         # sector physics or sourcing declared inconsistently in the vault (unknown state, threshold above
         # shelf life, share limits the incumbent mix does not meet, unknown supplier in a risk group, ...)
-        code = "recourse_invalid" if "recourse:" in str(exc) else ("sourcing_invalid" if "sourcing:" in str(exc) else "sector_physics_invalid")
+        code = ("atp_invalid" if "atp:" in str(exc) else "recourse_invalid" if "recourse:" in str(exc)
+                else ("sourcing_invalid" if "sourcing:" in str(exc) else "sector_physics_invalid"))
         raise HTTPException(422, {"code": code, "message": str(exc)}) from exc
 
 
@@ -184,11 +204,13 @@ def workspace_request(operator: str = Depends(authenticated), conn=Depends(get_c
                       network: bool = Query(False, description="P2: build the multi-location network from stg_fmcg_locations / lanes / transfers"),
                       sector_mode: Literal["COMMERCIAL", "PRODUCE", "MEAT_SEAFOOD"] | None = Query(None, description="sector physics: the request's default sector (per-SKU columns override it)"),
                       sourcing: bool = Query(False, description="P3: attach the vault's declared source options, shares, incumbent mix and risk groups (stg_fmcg_sources, migration 018)"),
-                      recourse: bool = Query(False, description="P4: attach the vault's declared adaptive-recourse specification (stg_recourse_spec, migration 019)")):
+                      recourse: bool = Query(False, description="P4: attach the vault's declared adaptive-recourse specification (stg_recourse_spec, migration 019)"),
+                      atp: bool = Query(False, description="P5: attach the vault's declared customer orders, service classes and promising policy (migration 020); needs ZAAD_ATP_ENABLED=1")):
     """The frozen contract built from the operator's own vault (the canonical customer-data path), with
     the build report: rows read, compact dimensions, fitted supplier fill and lead with sample sizes,
     provenance, warnings and the leakage guard. No plan is run."""
-    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode, sourcing, recourse)
+    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode, sourcing, recourse, atp)
+    atp_gate(req, batch=False)
     return {"request": req.model_dump(mode="json"), "build": build}
 
 
@@ -200,19 +222,29 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
                          network: bool = Query(False, description="P2: plan the declared multi-location network (purchases, transfers, allocation)"),
                          sector_mode: Literal["COMMERCIAL", "PRODUCE", "MEAT_SEAFOOD"] | None = Query(None, description="sector physics: the request's default sector (per-SKU columns override it)"),
                          sourcing: bool = Query(False, description="P3: attach the vault's declared source options, shares, incumbent mix and risk groups (stg_fmcg_sources, migration 018)"),
-                      recourse: bool = Query(False, description="P4: attach the vault's declared adaptive-recourse specification (stg_recourse_spec, migration 019)")):
+                      recourse: bool = Query(False, description="P4: attach the vault's declared adaptive-recourse specification (stg_recourse_spec, migration 019)"),
+                      atp: bool = Query(False, description="P5: attach the vault's declared customer orders, service classes and promising policy (migration 020); needs ZAAD_ATP_ENABLED=1")):
     """Plan the operator's workspace with the frozen P1 optimizer: vault -> compact Request -> plan.
     `shape=purchase_plan` returns the workspace purchase-plan rows (approval stays with the operator,
     never an executable order); `shape=network` returns the full network report with the build."""
     from zaad.full.workspace import to_purchase_plan
-    req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode, sourcing)
+    # NOTE (recorded in the P5 API audit, not changed here): the frozen call site passes `sourcing` but not
+    # `recourse`; the P5 flag is passed by keyword so this closed P4 plumbing is left exactly as released.
+    req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode, sourcing, atp=atp)
+    atp_gate(req, batch=False)
     report = await compute(req)
     if shape == "network":
         return {"report": report, "build": build, "executable_purchase_order": False}
     if network and (req.transfers or len(req.locations) > 1):
         from zaad.meio.workspace import to_network_plan
-        return to_network_plan(req, report, build, commit_window_weeks=commit_window_weeks, run_id=str(report.get("input_fingerprint", "")))
-    return to_purchase_plan(req, report, build, commit_window_weeks=commit_window_weeks, run_id=str(report.get("input_fingerprint", "")))
+        out = to_network_plan(req, report, build, commit_window_weeks=commit_window_weeks, run_id=str(report.get("input_fingerprint", "")))
+    else:
+        out = to_purchase_plan(req, report, build, commit_window_weeks=commit_window_weeks, run_id=str(report.get("input_fingerprint", "")))
+    if "atp" in report:
+        # the P5 promising report travels with the plan shape (approval stays with the operator; no promise executes)
+        out["atp"] = report["atp"]
+        out["executable_promise"] = False
+    return out
 
 
 @router.post("/shadow", dependencies=[Depends(bounded_rate)])

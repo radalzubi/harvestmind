@@ -18,10 +18,12 @@ from scipy.optimize import Bounds, LinearConstraint, milp
 from scipy.sparse import coo_matrix
 
 from zaad.atp.contracts import Atp
-from zaad.atp.economics import Allocation, Drivers, Shipment, drivers
+from zaad.atp.economics import ALTERNATIVE, DIRECT, Allocation, Drivers, Shipment, drivers
 from zaad.atp.state import SupplyState
 
 TIE_PERIOD = 1e-6      # earlier promise wins among equal-cost channels
+TIE_HOME = 5e-8        # then the service's own location among equal-cost direct channels
+TIE_FEFO = 1e-8        # then the earlier-expiring cohort (the frozen model's fefo rule as a tie)
 TIE_RANK = 1e-9        # then the documented line rank (order period, line id)
 FLOOR_INFEASIBLE = "INFEASIBLE_CONTRACTUAL_FLOORS"
 
@@ -41,6 +43,7 @@ class Channel:
     lane_cost: float             # per physical unit
     promise_period: int
     requested_period: int
+    home: bool = True            # shipped from the service's own location
 
 
 def channels(req, atp: Atp, state: SupplyState) -> tuple[list[Channel], dict[str, Drivers], dict[str, Any]]:
@@ -87,7 +90,8 @@ def channels(req, atp: Atp, state: SupplyState) -> tuple[list[Channel], dict[str
                             if not state.sellable(lot, depart) or not state.sellable(lot, t):
                                 continue
                             out.append(Channel(line=line.id, order=order.id, lot=lot.id, ship_from=lot.location, lane=lane_id, lead=lead, sku_supplied=sku,
-                                               substitution=sub, ratio=ratio, sub_penalty=pen, lane_cost=cost, promise_period=t, requested_period=line.requested_period))
+                                               substitution=sub, ratio=ratio, sub_penalty=pen, lane_cost=cost, promise_period=t, requested_period=line.requested_period,
+                                               home=(dest == home and lane_id is None and lot.location == home)))
     return out, drv, meta
 
 
@@ -113,10 +117,12 @@ def solve(req, atp: Atp, state: SupplyState, seconds: float = 30.) -> Allocation
     upper = np.full(n, np.inf)
     integrality = np.zeros(n)
     refuses = {line.id: (order.late_semantics == "CANCEL_IF_LATE") for order, line in lines}
+    expiry_rank = {lot.id: i for i, lot in enumerate(sorted(state.lots, key=lambda lot: (lot.expiry, lot.available_from, lot.id)))}
     for j, c in enumerate(chans):
         d = drv[c.line]
         late = max(0, c.promise_period - c.requested_period)
-        cost[j] = late * d.late_penalty + c.sub_penalty + c.lane_cost * c.ratio + TIE_PERIOD * c.promise_period + TIE_RANK * rank[c.line]
+        cost[j] = (late * d.late_penalty + c.sub_penalty + c.lane_cost * c.ratio + TIE_PERIOD * c.promise_period + TIE_HOME * (0. if c.home else 1.)
+                   + TIE_FEFO * expiry_rank[c.lot] / max(1, len(expiry_rank)) + TIE_RANK * rank[c.line])
         upper[j] = next(line.quantity for _o, line in lines if line.id == c.line)
     for order, line in lines:
         d = drv[line.id]
@@ -209,7 +215,8 @@ def solve(req, atp: Atp, state: SupplyState, seconds: float = 30.) -> Allocation
             alloc.shipments.append(Shipment(order=c.order, line=c.line, customer=next(o.customer for o in spec.orders if o.id == c.order),
                                             service_class=next(o.service_class for o in spec.orders if o.id == c.order), sku_requested=next(line.sku for _o, line in lines if line.id == c.line),
                                             sku_supplied=c.sku_supplied, substitution=c.substitution, lot=c.lot, ship_from=c.ship_from, lane=c.lane,
-                                            promise_period=c.promise_period, requested_period=c.requested_period, quantity=q, physical_units=q * c.ratio))
+                                            promise_period=c.promise_period, requested_period=c.requested_period, quantity=q, physical_units=q * c.ratio,
+                                            fulfilment=ALTERNATIVE if c.lane is not None else DIRECT))
     for order, line in lines:
         short = float(x[idx_unmet[line.id]])
         if short > 1e-7:
@@ -237,7 +244,8 @@ def proportional_redistribution(alloc: Allocation, lines, drv, meta) -> None:
     groups: dict[tuple, list] = {}
     for order, line in lines:
         d = drv[line.id]
-        key = (order.service_class, d.lost_margin, d.sla, line.sku, line.requested_period, order.order_period, tuple(meta[line.id]["eligible"]),
+        # economic indifference is a property of the declared NUMBERS (never of a class id, name or tier)
+        key = (d.lost_margin, d.sla, d.shortage_penalty, d.late_penalty, d.refusal_cost, d.floor, line.sku, line.requested_period, order.order_period, tuple(meta[line.id]["eligible"]),
                order.partial_fulfillment_allowed, order.backorder_allowed, order.max_backorder_periods, order.late_semantics, order.substitution_allowed, line.minimum_ship_quantity)
         groups.setdefault(key, []).append((order, line))
     for key, members in groups.items():
@@ -266,7 +274,8 @@ def proportional_redistribution(alloc: Allocation, lines, drv, meta) -> None:
                 if part > 1e-9:
                     alloc.shipments.append(Shipment(order=order.id, line=line.id, customer=order.customer, service_class=order.service_class, sku_requested=line.sku,
                                                     sku_supplied=t.sku_supplied, substitution=t.substitution, lot=t.lot, ship_from=t.ship_from, lane=t.lane,
-                                                    promise_period=t.promise_period, requested_period=line.requested_period, quantity=part, physical_units=part * (t.physical_units / t.quantity)))
+                                                    promise_period=t.promise_period, requested_period=line.requested_period, quantity=part, physical_units=part * (t.physical_units / t.quantity),
+                                                    fulfilment=t.fulfilment))
                     got += part
             short = line.quantity - got
             target = alloc.refused if order.late_semantics == "CANCEL_IF_LATE" else alloc.unmet
@@ -274,3 +283,37 @@ def proportional_redistribution(alloc: Allocation, lines, drv, meta) -> None:
             if short > 1e-7:
                 target[line.id] = short
         alloc.notes.append(f"proportional redistribution among {len(members)} economically indifferent lines ({shipped_total:.1f} units shared pro-rata to quantity; ledger unchanged)")
+
+
+def blocked_supply(req, atp: Atp, state: SupplyState) -> list[dict[str, Any]]:
+    """Supply of a requested SKU that P5 knows about but may not draw on for a line, with the structural
+    reason: an ineligible location without an approved eligible lane (an implicit transfer is never
+    created), a lane the SKU's storage state may not use, a location the state may not occupy, or a
+    non-firm open purchase order. Reporting only; nothing here changes the allocation."""
+    spec = atp.spec
+    services = {(s.customer, s.sku): s for s in req.services}
+    out: list[dict[str, Any]] = []
+    approved = {a.id: a for a in req.transfers if a.approved}
+    for order in spec.orders:
+        for line in order.lines:
+            eligible = set(line.ship_from) or {services[order.customer, line.sku].location}
+            for lot in state.lots:
+                if lot.sku != line.sku or lot.quantity <= 0 or lot.location in eligible:
+                    continue
+                lanes = {a.id for a in approved.values() if a.sku == lot.sku and a.origin == lot.location and a.destination in eligible}
+                usable_lanes = [ln for ln in state.lanes if ln.id in lanes and state.location_ok(lot.sku, ln.destination)]   # state.lanes already passed lane_ok
+                if not spec.cross_location:
+                    reason = "location not eligible for the line and cross_location is off: no implicit transfer is created"
+                elif not lanes:
+                    reason = "location not eligible for the line and no approved lane reaches an eligible location: no implicit transfer is created"
+                elif not usable_lanes:
+                    reason = "the approved lane or its destination is not eligible for the SKU's storage state (sector physics)"
+                else:
+                    continue   # reachable through an eligible lane: priced as ALTERNATIVE_SHIP_FROM, not blocked
+                out.append({"line": line.id, "lot": lot.id, "sku": lot.sku, "location": lot.location, "quantity": round(lot.quantity, 3), "reason": reason})
+            for loc in eligible:
+                if not state.location_ok(line.sku, loc):
+                    out.append({"line": line.id, "lot": None, "sku": line.sku, "location": loc, "quantity": 0., "reason": "eligible location cannot hold the SKU's storage state (sector physics)"})
+    for n in state.non_firm:
+        out.append({"line": None, "lot": n.id, "sku": n.sku, "location": n.location, "quantity": round(n.quantity, 3), "reason": n.reason, "expected_period": n.expected_period})
+    return out
