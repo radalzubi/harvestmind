@@ -65,7 +65,26 @@ invariants 1-19 pass on every recommendation; 20 (disabled-path identity) by I20
 
 ## Frozen regression results
 
-REGRESSION_PLACEHOLDER
+One pass on the candidate `b984543` (`gates/`, chain identical to the P4 performance closure's, arm
+`p5_integration` added to `scripts/p1_p0_arms.py`); every gate green, no rerun needed:
+
+| gate | result |
+|---|---|
+| P3 shared-MOV production snapshot (P5 absent) | 11.96 s local, 18 HiGHS calls, decision view and candidates identical to the P4 closure record (timing stripped), no `atp` block |
+| P1 canonical B / T / Q / A + P0 cell 15 | CANONICAL REGRESSION PASS; P1 invariants 720 checks, 0 failures |
+| P2 | 20 / 20 fixtures, 18 / 18 principles, INVARIANTS PASS, 1,720 / 1,720 reviews identical vs `p2_perf_closure` (`p2_under_p5int`) |
+| sector physics | 26 / 26, 19 / 19, 416 / 416 identical vs `sector_perf_closure` (`sector_under_p5int`) |
+| P3 (current baseline) | 30 / 30, 34 / 34, 23 / 23 adversarial, 2,304 / 2,304 identical vs `p3_perf_closure` (`p3_under_p5int`; historical 2,273 / 2,304 + 31 proven ties unchanged) |
+| P0 six-cell arm `p5_integration` vs `router_cycle` | 120 / 120 P0-owned reviews decision-identical (`p1/closure/p0_arm_p5_integration.json`) |
+| P4 | unchanged code path; `tests/unit/test_zaad_recourse*.py` and the P4 release-audit tests inside the full suite (1,964 passed, 2 skipped) |
+
+Released invariant / adversarial records the chain regenerates in place (`P2_INVARIANTS`,
+`P3_INVARIANTS`, `P3_ADVERSARIAL`, `SECTOR_PHYSICS_INVARIANTS`) differed by timing and, in the P3 adversarial record, by the
+validator's echo of the refused request dict (which now ends `'atp': None`); they were restored to
+their released content; the `*_under_p5int` run records are kept beside the earlier
+`*_under_p4perf` ones. P5-disabled requests preserve frozen behaviour by construction
+(`resolve()` None -> no P5 code) and by measurement (I20, the P3 snapshot, every gate above).
+Validation7, Validation8 and holdout4 were not accessed.
 
 ## Performance profile
 

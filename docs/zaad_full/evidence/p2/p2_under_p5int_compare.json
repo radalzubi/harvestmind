@@ -1,0 +1,3219 @@
+{
+ "cells": [
+  {
+   "cell": [
+    "A_independent_demand",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.850680112838745,
+   "seconds_after": 2.849796772003174,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A_independent_demand",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.860527992248535,
+   "seconds_after": 2.873814105987549,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "B_correlated_demand",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.066520929336548,
+   "seconds_after": 3.053818941116333,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "B_correlated_demand",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.2300479412078857,
+   "seconds_after": 3.2291300296783447,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C_short_transfer_lead",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.8179728984832764,
+   "seconds_after": 2.8276119232177734,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C_short_transfer_lead",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.8526570796966553,
+   "seconds_after": 2.874631881713867,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "D_long_transfer_lead",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.4822211265563965,
+   "seconds_after": 4.436506032943726,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "D_long_transfer_lead",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.34797215461731,
+   "seconds_after": 4.26537299156189,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E_high_transfer_cost",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.2828080654144287,
+   "seconds_after": 3.2821590900421143,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E_high_transfer_cost",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.183177947998047,
+   "seconds_after": 3.184638023376465,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "F_low_transfer_cost",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.6081459522247314,
+   "seconds_after": 2.64188814163208,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "F_low_transfer_cost",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.7601938247680664,
+   "seconds_after": 2.7717881202697754,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "G_central_supply_shortage",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 5.270090103149414,
+   "seconds_after": 5.114609718322754,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "G_central_supply_shortage",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 6.967970848083496,
+   "seconds_after": 6.742568016052246,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "H_one_branch_demand_shock",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 5.546926736831665,
+   "seconds_after": 5.3783087730407715,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "H_one_branch_demand_shock",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 5.877435922622681,
+   "seconds_after": 5.66112208366394,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "I_shared_supplier_disruption",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.274245023727417,
+   "seconds_after": 2.213536024093628,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "I_shared_supplier_disruption",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.370457887649536,
+   "seconds_after": 2.2988076210021973,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "J_asymmetric_service_targets",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.980743885040283,
+   "seconds_after": 3.8330070972442627,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "J_asymmetric_service_targets",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.498189926147461,
+   "seconds_after": 3.368727207183838,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "K_unequal_demand_scale",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.218217134475708,
+   "seconds_after": 3.0769591331481934,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "K_unequal_demand_scale",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.874366044998169,
+   "seconds_after": 2.7521228790283203,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "L_already_efficient_network",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.7544121742248535,
+   "seconds_after": 2.6167819499969482,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "L_already_efficient_network",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.994765043258667,
+   "seconds_after": 2.802396774291992,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "M_transfer_not_reachable_in_time",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 7.652469873428345,
+   "seconds_after": 7.149681091308594,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "M_transfer_not_reachable_in_time",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 7.487498998641968,
+   "seconds_after": 7.01850700378418,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N_pipeline_already_solves_shortage",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.5257821083068848,
+   "seconds_after": 3.3001179695129395,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N_pipeline_already_solves_shortage",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.7393009662628174,
+   "seconds_after": 2.5814740657806396,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "O_multiple_transfer_options",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 5.804111003875732,
+   "seconds_after": 5.431834936141968,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "O_multiple_transfer_options",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 5.59279203414917,
+   "seconds_after": 5.255306959152222,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P_transfer_capacity_limit",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 7.141967058181763,
+   "seconds_after": 6.72719669342041,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P_transfer_capacity_limit",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 7.492385149002075,
+   "seconds_after": 7.1090309619903564,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "Q_pack_constraint_on_transfer",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 65.17623090744019,
+   "seconds_after": 62.03213334083557,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "Q_pack_constraint_on_transfer",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 78.14408707618713,
+   "seconds_after": 74.70070505142212,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R_order_transfer_interaction",
+    "gated",
+    41001
+   ],
+   "reviews": 20,
+   "identical": 20,
+   "first_difference": null,
+   "seconds_before": 81.58246612548828,
+   "seconds_after": 77.87920618057251,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R_order_transfer_interaction",
+    "gated",
+    41002
+   ],
+   "reviews": 20,
+   "identical": 20,
+   "first_difference": null,
+   "seconds_before": 90.3010139465332,
+   "seconds_after": 86.08568692207336,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S_recovery_after_imbalance",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.049755096435547,
+   "seconds_after": 2.8427088260650635,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S_recovery_after_imbalance",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.129359006881714,
+   "seconds_after": 2.9364020824432373,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "T_single_node_network_off",
+    "gated",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.06791615486145,
+   "seconds_after": 3.8582358360290527,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "T_single_node_network_off",
+    "gated",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.052540302276611,
+   "seconds_after": 3.865381956100464,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A_independent_demand",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21774721145629883,
+   "seconds_after": 0.21621084213256836,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A_independent_demand",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21802306175231934,
+   "seconds_after": 0.2137441635131836,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A_independent_demand",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22198820114135742,
+   "seconds_after": 0.21900320053100586,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A_independent_demand",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22729897499084473,
+   "seconds_after": 0.22073721885681152,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A_independent_demand",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.6582190990448,
+   "seconds_after": 3.5098488330841064,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A_independent_demand",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.067328929901123,
+   "seconds_after": 2.9403977394104004,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A_independent_demand",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2892930507659912,
+   "seconds_after": 0.27251100540161133,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "A_independent_demand",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.27525901794433594,
+   "seconds_after": 0.27106308937072754,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "B_correlated_demand",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2259690761566162,
+   "seconds_after": 0.22044110298156738,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "B_correlated_demand",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22769808769226074,
+   "seconds_after": 0.22623610496520996,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "B_correlated_demand",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23075294494628906,
+   "seconds_after": 0.20877790451049805,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "B_correlated_demand",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22625994682312012,
+   "seconds_after": 0.2184278964996338,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "B_correlated_demand",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.9102373123168945,
+   "seconds_after": 2.757366895675659,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "B_correlated_demand",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.781153917312622,
+   "seconds_after": 2.639832019805908,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "B_correlated_demand",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2845768928527832,
+   "seconds_after": 0.2697868347167969,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "B_correlated_demand",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.28266310691833496,
+   "seconds_after": 0.26755595207214355,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C_short_transfer_lead",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22957515716552734,
+   "seconds_after": 0.21124935150146484,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C_short_transfer_lead",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23593497276306152,
+   "seconds_after": 0.21125197410583496,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C_short_transfer_lead",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22834992408752441,
+   "seconds_after": 0.21185874938964844,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C_short_transfer_lead",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23186111450195312,
+   "seconds_after": 0.2148606777191162,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C_short_transfer_lead",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.6821799278259277,
+   "seconds_after": 3.5332038402557373,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C_short_transfer_lead",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.1217710971832275,
+   "seconds_after": 2.9442861080169678,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C_short_transfer_lead",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.28783106803894043,
+   "seconds_after": 0.271543025970459,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "C_short_transfer_lead",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2699778079986572,
+   "seconds_after": 0.2606959342956543,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "D_long_transfer_lead",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22696685791015625,
+   "seconds_after": 0.2155749797821045,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "D_long_transfer_lead",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22923493385314941,
+   "seconds_after": 0.21411991119384766,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "D_long_transfer_lead",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2261521816253662,
+   "seconds_after": 0.22052383422851562,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "D_long_transfer_lead",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22192716598510742,
+   "seconds_after": 0.21149301528930664,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "D_long_transfer_lead",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 8.461324214935303,
+   "seconds_after": 8.144361019134521,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "D_long_transfer_lead",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 10.772874116897583,
+   "seconds_after": 10.336784839630127,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "D_long_transfer_lead",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2839040756225586,
+   "seconds_after": 0.27564001083374023,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "D_long_transfer_lead",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2771880626678467,
+   "seconds_after": 0.2534210681915283,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E_high_transfer_cost",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22587800025939941,
+   "seconds_after": 0.21395301818847656,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E_high_transfer_cost",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21533703804016113,
+   "seconds_after": 0.22387194633483887,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E_high_transfer_cost",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22585701942443848,
+   "seconds_after": 0.2171170711517334,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E_high_transfer_cost",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2275230884552002,
+   "seconds_after": 0.22184109687805176,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E_high_transfer_cost",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.113268852233887,
+   "seconds_after": 3.9095921516418457,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E_high_transfer_cost",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.050601005554199,
+   "seconds_after": 2.98067307472229,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E_high_transfer_cost",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2706618309020996,
+   "seconds_after": 0.27118587493896484,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "E_high_transfer_cost",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2708470821380615,
+   "seconds_after": 0.253551721572876,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "F_low_transfer_cost",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.206254243850708,
+   "seconds_after": 0.20820999145507812,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "F_low_transfer_cost",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21762800216674805,
+   "seconds_after": 0.2129988670349121,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "F_low_transfer_cost",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21552586555480957,
+   "seconds_after": 0.2077620029449463,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "F_low_transfer_cost",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22932100296020508,
+   "seconds_after": 0.20656085014343262,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "F_low_transfer_cost",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.9864559173583984,
+   "seconds_after": 2.862104892730713,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "F_low_transfer_cost",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.2536561489105225,
+   "seconds_after": 3.10996413230896,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "F_low_transfer_cost",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.27137184143066406,
+   "seconds_after": 0.26845812797546387,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "F_low_transfer_cost",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.27094006538391113,
+   "seconds_after": 0.26754307746887207,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "G_central_supply_shortage",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.17579913139343262,
+   "seconds_after": 0.17676281929016113,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "G_central_supply_shortage",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.17427897453308105,
+   "seconds_after": 0.17294001579284668,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "G_central_supply_shortage",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.17235112190246582,
+   "seconds_after": 0.16673994064331055,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "G_central_supply_shortage",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.17480778694152832,
+   "seconds_after": 0.16569900512695312,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "G_central_supply_shortage",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 15.594429016113281,
+   "seconds_after": 14.834351062774658,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "G_central_supply_shortage",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 16.11912989616394,
+   "seconds_after": 15.328924894332886,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "G_central_supply_shortage",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.32522130012512207,
+   "seconds_after": 0.3274266719818115,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "G_central_supply_shortage",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.3218529224395752,
+   "seconds_after": 0.3122520446777344,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "H_one_branch_demand_shock",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2074413299560547,
+   "seconds_after": 0.2014482021331787,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "H_one_branch_demand_shock",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2045300006866455,
+   "seconds_after": 0.19915080070495605,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "H_one_branch_demand_shock",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.20578670501708984,
+   "seconds_after": 0.1989598274230957,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "H_one_branch_demand_shock",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.20344805717468262,
+   "seconds_after": 0.19738388061523438,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "H_one_branch_demand_shock",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.800156831741333,
+   "seconds_after": 3.661262035369873,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "H_one_branch_demand_shock",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.429018974304199,
+   "seconds_after": 3.2997748851776123,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "H_one_branch_demand_shock",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2892758846282959,
+   "seconds_after": 0.29206013679504395,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "H_one_branch_demand_shock",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.28864502906799316,
+   "seconds_after": 0.2847318649291992,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "I_shared_supplier_disruption",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23394298553466797,
+   "seconds_after": 0.2248690128326416,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "I_shared_supplier_disruption",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22604584693908691,
+   "seconds_after": 0.21921682357788086,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "I_shared_supplier_disruption",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22816896438598633,
+   "seconds_after": 0.21989202499389648,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "I_shared_supplier_disruption",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22748899459838867,
+   "seconds_after": 0.21824097633361816,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "I_shared_supplier_disruption",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.426486015319824,
+   "seconds_after": 3.2989611625671387,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "I_shared_supplier_disruption",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.3072619438171387,
+   "seconds_after": 3.188502073287964,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "I_shared_supplier_disruption",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2960221767425537,
+   "seconds_after": 0.2878899574279785,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "I_shared_supplier_disruption",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2771949768066406,
+   "seconds_after": 0.27173590660095215,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "J_asymmetric_service_targets",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.226179838180542,
+   "seconds_after": 0.21873807907104492,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "J_asymmetric_service_targets",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2291240692138672,
+   "seconds_after": 0.21713805198669434,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "J_asymmetric_service_targets",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22579002380371094,
+   "seconds_after": 0.2151038646697998,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "J_asymmetric_service_targets",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22574090957641602,
+   "seconds_after": 0.21584486961364746,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "J_asymmetric_service_targets",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 5.082985877990723,
+   "seconds_after": 4.903557062149048,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "J_asymmetric_service_targets",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.250581979751587,
+   "seconds_after": 4.085856914520264,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "J_asymmetric_service_targets",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2975270748138428,
+   "seconds_after": 0.2920377254486084,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "J_asymmetric_service_targets",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.28353214263916016,
+   "seconds_after": 0.27214717864990234,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "K_unequal_demand_scale",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2242598533630371,
+   "seconds_after": 0.21616792678833008,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "K_unequal_demand_scale",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22736406326293945,
+   "seconds_after": 0.21573495864868164,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "K_unequal_demand_scale",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22544312477111816,
+   "seconds_after": 0.21707701683044434,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "K_unequal_demand_scale",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22626805305480957,
+   "seconds_after": 0.21794891357421875,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "K_unequal_demand_scale",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.3652122020721436,
+   "seconds_after": 3.242295980453491,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "K_unequal_demand_scale",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.0204169750213623,
+   "seconds_after": 2.924792766571045,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "K_unequal_demand_scale",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2680230140686035,
+   "seconds_after": 0.2647531032562256,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "K_unequal_demand_scale",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2580859661102295,
+   "seconds_after": 0.2600679397583008,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "L_already_efficient_network",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21261215209960938,
+   "seconds_after": 0.20766210556030273,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "L_already_efficient_network",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2146453857421875,
+   "seconds_after": 0.21089506149291992,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "L_already_efficient_network",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2156980037689209,
+   "seconds_after": 0.20642518997192383,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "L_already_efficient_network",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21673297882080078,
+   "seconds_after": 0.21038007736206055,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "L_already_efficient_network",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.526592969894409,
+   "seconds_after": 3.4065868854522705,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "L_already_efficient_network",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.8387768268585205,
+   "seconds_after": 2.7669358253479004,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "L_already_efficient_network",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2732200622558594,
+   "seconds_after": 0.27213311195373535,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "L_already_efficient_network",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.27579689025878906,
+   "seconds_after": 0.2680699825286865,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "M_transfer_not_reachable_in_time",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2204301357269287,
+   "seconds_after": 0.21436500549316406,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "M_transfer_not_reachable_in_time",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21855783462524414,
+   "seconds_after": 0.21484923362731934,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "M_transfer_not_reachable_in_time",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21725082397460938,
+   "seconds_after": 0.21438884735107422,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "M_transfer_not_reachable_in_time",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22341036796569824,
+   "seconds_after": 0.21540093421936035,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "M_transfer_not_reachable_in_time",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 12.485682249069214,
+   "seconds_after": 12.096708297729492,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "M_transfer_not_reachable_in_time",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 10.675673007965088,
+   "seconds_after": 10.355701923370361,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "M_transfer_not_reachable_in_time",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.27750706672668457,
+   "seconds_after": 0.2681550979614258,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "M_transfer_not_reachable_in_time",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.26772499084472656,
+   "seconds_after": 0.26026105880737305,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N_pipeline_already_solves_shortage",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.20618414878845215,
+   "seconds_after": 0.20170116424560547,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N_pipeline_already_solves_shortage",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21164703369140625,
+   "seconds_after": 0.2080528736114502,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N_pipeline_already_solves_shortage",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.20572471618652344,
+   "seconds_after": 0.2013380527496338,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N_pipeline_already_solves_shortage",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21222305297851562,
+   "seconds_after": 0.2016890048980713,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N_pipeline_already_solves_shortage",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.419917106628418,
+   "seconds_after": 3.3108317852020264,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N_pipeline_already_solves_shortage",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.1744136810302734,
+   "seconds_after": 3.089165210723877,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N_pipeline_already_solves_shortage",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.27808690071105957,
+   "seconds_after": 0.2675669193267822,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "N_pipeline_already_solves_shortage",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2786400318145752,
+   "seconds_after": 0.27004575729370117,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "O_multiple_transfer_options",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2426002025604248,
+   "seconds_after": 0.23029613494873047,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "O_multiple_transfer_options",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23509597778320312,
+   "seconds_after": 0.22730612754821777,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "O_multiple_transfer_options",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2362229824066162,
+   "seconds_after": 0.233320951461792,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "O_multiple_transfer_options",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.23820996284484863,
+   "seconds_after": 0.23099994659423828,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "O_multiple_transfer_options",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 9.786787033081055,
+   "seconds_after": 9.491568088531494,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "O_multiple_transfer_options",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 12.282906293869019,
+   "seconds_after": 11.863749265670776,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "O_multiple_transfer_options",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.32883787155151367,
+   "seconds_after": 0.31628894805908203,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "O_multiple_transfer_options",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.30335307121276855,
+   "seconds_after": 0.2959578037261963,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P_transfer_capacity_limit",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.1985788345336914,
+   "seconds_after": 0.19826602935791016,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P_transfer_capacity_limit",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2100820541381836,
+   "seconds_after": 0.20468425750732422,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P_transfer_capacity_limit",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2013998031616211,
+   "seconds_after": 0.19371604919433594,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P_transfer_capacity_limit",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21111392974853516,
+   "seconds_after": 0.20346307754516602,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P_transfer_capacity_limit",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 13.709517002105713,
+   "seconds_after": 13.308891773223877,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P_transfer_capacity_limit",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 15.287872076034546,
+   "seconds_after": 14.735030889511108,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P_transfer_capacity_limit",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.6338281631469727,
+   "seconds_after": 0.6199207305908203,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "P_transfer_capacity_limit",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.6050927639007568,
+   "seconds_after": 0.5795891284942627,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "Q_pack_constraint_on_transfer",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.24929094314575195,
+   "seconds_after": 0.24292993545532227,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "Q_pack_constraint_on_transfer",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.26230597496032715,
+   "seconds_after": 0.25499796867370605,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "Q_pack_constraint_on_transfer",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2536900043487549,
+   "seconds_after": 0.23988699913024902,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "Q_pack_constraint_on_transfer",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.26322317123413086,
+   "seconds_after": 0.25563597679138184,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "Q_pack_constraint_on_transfer",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 34.20211410522461,
+   "seconds_after": 33.527791261672974,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "Q_pack_constraint_on_transfer",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 26.73281502723694,
+   "seconds_after": 26.04275608062744,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "Q_pack_constraint_on_transfer",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.5302679538726807,
+   "seconds_after": 0.5216541290283203,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "Q_pack_constraint_on_transfer",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.44405293464660645,
+   "seconds_after": 0.4581460952758789,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R_order_transfer_interaction",
+    "network_rop",
+    41001
+   ],
+   "reviews": 20,
+   "identical": 20,
+   "first_difference": null,
+   "seconds_before": 0.6392030715942383,
+   "seconds_after": 0.6309587955474854,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R_order_transfer_interaction",
+    "network_rop",
+    41002
+   ],
+   "reviews": 20,
+   "identical": 20,
+   "first_difference": null,
+   "seconds_before": 0.6431019306182861,
+   "seconds_after": 0.6332180500030518,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R_order_transfer_interaction",
+    "central_pool",
+    41001
+   ],
+   "reviews": 20,
+   "identical": 20,
+   "first_difference": null,
+   "seconds_before": 0.6388731002807617,
+   "seconds_after": 0.6240451335906982,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R_order_transfer_interaction",
+    "central_pool",
+    41002
+   ],
+   "reviews": 20,
+   "identical": 20,
+   "first_difference": null,
+   "seconds_before": 0.6393918991088867,
+   "seconds_after": 0.615386962890625,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R_order_transfer_interaction",
+    "independent",
+    41001
+   ],
+   "reviews": 20,
+   "identical": 20,
+   "first_difference": null,
+   "seconds_before": 64.05248498916626,
+   "seconds_after": 63.687114000320435,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R_order_transfer_interaction",
+    "independent",
+    41002
+   ],
+   "reviews": 20,
+   "identical": 20,
+   "first_difference": null,
+   "seconds_before": 58.929636001586914,
+   "seconds_after": 58.376298904418945,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R_order_transfer_interaction",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 20,
+   "identical": 20,
+   "first_difference": null,
+   "seconds_before": 0.7617788314819336,
+   "seconds_after": 0.7387921810150146,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "R_order_transfer_interaction",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 20,
+   "identical": 20,
+   "first_difference": null,
+   "seconds_before": 0.7772071361541748,
+   "seconds_after": 0.7397470474243164,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S_recovery_after_imbalance",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.22246003150939941,
+   "seconds_after": 0.20777201652526855,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S_recovery_after_imbalance",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21512985229492188,
+   "seconds_after": 0.20889687538146973,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S_recovery_after_imbalance",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.21592307090759277,
+   "seconds_after": 0.20698094367980957,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S_recovery_after_imbalance",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2193737030029297,
+   "seconds_after": 0.20960497856140137,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S_recovery_after_imbalance",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 3.3154921531677246,
+   "seconds_after": 3.1716270446777344,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S_recovery_after_imbalance",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 2.8952713012695312,
+   "seconds_after": 2.8032360076904297,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S_recovery_after_imbalance",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.28753018379211426,
+   "seconds_after": 0.2790980339050293,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "S_recovery_after_imbalance",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.2816288471221924,
+   "seconds_after": 0.27418994903564453,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "T_single_node_network_off",
+    "network_rop",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.09337997436523438,
+   "seconds_after": 0.0890510082244873,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "T_single_node_network_off",
+    "network_rop",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.09221386909484863,
+   "seconds_after": 0.08819198608398438,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "T_single_node_network_off",
+    "central_pool",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.09247779846191406,
+   "seconds_after": 0.09003925323486328,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "T_single_node_network_off",
+    "central_pool",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.0909111499786377,
+   "seconds_after": 0.08866000175476074,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "T_single_node_network_off",
+    "independent",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.180840015411377,
+   "seconds_after": 4.050716876983643,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "T_single_node_network_off",
+    "independent",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 4.135028123855591,
+   "seconds_after": 4.018570899963379,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "T_single_node_network_off",
+    "echelon_base_stock",
+    41001
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 0.9805300235748291,
+   "seconds_after": 0.9490139484405518,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  },
+  {
+   "cell": [
+    "T_single_node_network_off",
+    "echelon_base_stock",
+    41002
+   ],
+   "reviews": 8,
+   "identical": 8,
+   "first_difference": null,
+   "seconds_before": 1.0389649868011475,
+   "seconds_after": 1.0017609596252441,
+   "cost_before": null,
+   "cost_after": null,
+   "status_before": "COMPLETE",
+   "status_after": "COMPLETE"
+  }
+ ],
+ "differing_reviews": [],
+ "reviews_compared": 1720,
+ "reviews_identical": 1720,
+ "runtime_before": {
+  "reviews": 344,
+  "p50": 0.5020832086447626,
+  "p95": 7.242635750211775,
+  "max": 16.147970917169005
+ },
+ "runtime_after": {
+  "reviews": 344,
+  "p50": 0.48682895861566067,
+  "p95": 6.966242959257215,
+  "max": 15.539962416049093
+ }
+}
