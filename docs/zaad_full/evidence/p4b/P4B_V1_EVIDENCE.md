@@ -159,6 +159,7 @@ gap change. No performance work attempted.
 | P0 six-cell arm `p4b_v1` vs `router_cycle` | 120 / 120 decision-identical (`p1/closure/p0_arm_p4b_v1.json`) |
 | no-declaration identity | F00 against the pre-P4B runtime checkout `2fc7b50`: identical report |
 | full suite | 1,973 passed, 2 skipped, 0 failed (6 m 11 s); ruff (CI scope), mypy (CI scope + `zaad/commitments`), bandit `-ll` clean |
+| CI (PR #75, head `7311d00`) | run 34759841637 success: docker build, frontend, mypy, ruff, gitleaks, bandit/pip-audit, zaad frozen regression, pytest integration + unit-core + unit-zaad-a/n/b all pass. CodeQL run 34759841665 fails at the repository level ("Code scanning is not enabled for this repository"), the same pre-existing condition as every earlier branch; not a P4B finding |
 
 Released records the chain regenerates in place differed by timing and the validator's request echo
 only and were restored. Validation7, Validation8, holdout4 not accessed.

@@ -37,3 +37,7 @@ merged; runtime `2fc7b50`, tag `p5-release-runtime`). BUILD V1 authorization onl
   assumption sentence; F00's pre-P4B comparison serialised the old runtime's report with `report_json`
   (no datetime encoder). Fixed; no engine change.
 * run 5 (`p4b_v1`): 21 / 21 including F00 (no-declaration identity against the pre-P4B runtime `2fc7b50`).
+
+### CI
+
+PR #75 head `7311d00`: CI run 34759841637 success (all twelve jobs). CodeQL run 34759841665 fails because code scanning is not enabled on the repository (pre-existing, identical on the P5 branches); recorded, not a P4B finding.
