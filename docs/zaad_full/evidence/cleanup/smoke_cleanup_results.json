@@ -1,0 +1,100 @@
+{
+ "01_health": {
+  "code": 200,
+  "seconds": 0.5,
+  "body": {
+   "status": "ok",
+   "service": "zaad-api",
+   "env": "pilot",
+   "auth_enforced": true,
+   "rate_limit_per_min": 60
+  }
+ },
+ "workspaces": {
+  "A": [
+   200,
+   "op_6ed41ae5"
+  ],
+  "B": [
+   200,
+   "op_88315e52"
+  ]
+ },
+ "02_no_declaration_plan": {
+  "code": 200,
+  "seconds": 0.6,
+  "status": "RETAIN_INCUMBENT",
+  "commitments_present": false,
+  "commitment_action": null,
+  "commitment_verdict": null,
+  "approval_required": true,
+  "executable_purchase_order": false,
+  "block_executable_amendment": null,
+  "atp_present": false
+ },
+ "03_p4b_keep": {
+  "code": 200,
+  "seconds": 1.0,
+  "status": "RETAIN_INCUMBENT",
+  "commitments_present": true,
+  "commitment_action": "KEEP",
+  "commitment_verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "approval_required": true,
+  "executable_purchase_order": false,
+  "block_executable_amendment": false,
+  "atp_present": false,
+  "exact_verdict": true
+ },
+ "04_p4b_recommendation": {
+  "code": 200,
+  "seconds": 0.6,
+  "status": "PENDING_REVIEW",
+  "commitments_present": true,
+  "commitment_action": "CANCEL",
+  "commitment_verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "approval_required": true,
+  "executable_purchase_order": false,
+  "block_executable_amendment": false,
+  "atp_present": false,
+  "exact_verdict": true
+ },
+ "05_p5_atp_standalone": {
+  "code": 200,
+  "seconds": 0.4,
+  "verdict": "ALLOCATION CHANGE RECOMMENDED",
+  "reservations": 2,
+  "approval": true,
+  "executable_promise": false
+ },
+ "05_p5_atp_planner_path": {
+  "code": 200,
+  "seconds": 1.6,
+  "status": "RETAIN_INCUMBENT",
+  "commitments_present": false,
+  "commitment_action": null,
+  "commitment_verdict": null,
+  "approval_required": true,
+  "executable_purchase_order": false,
+  "block_executable_amendment": null,
+  "atp_present": true
+ },
+ "06_tenant_isolation_plan": {
+  "code": 403,
+  "detail": "Operator mismatch"
+ },
+ "06_tenant_isolation_atp": {
+  "code": 403
+ },
+ "07_job_submit": {
+  "code": 202,
+  "job": "job_c72776ab2a3148708ac7f2bc18cb9a4a"
+ },
+ "07_job_result": {
+  "status": "DONE",
+  "wall_s": 11,
+  "commitments_present": true,
+  "commitment_action": "DEFER",
+  "executable_amendment": false,
+  "error": null
+ }
+}

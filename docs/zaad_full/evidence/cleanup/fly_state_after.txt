@@ -1,0 +1,19 @@
+== releases
+ VERSION │ STATUS   │ DESCRIPTION │ USER                     │ DATE              
+ v24     │ complete │ Release     │ rad.alzubi2005@gmail.com │ 57s ago           
+ v23     │ complete │ Release     │ rad.alzubi2005@gmail.com │ 4h25m ago         
+== machines
+ 0804e0dfd1e948 │ falling-sea-7629 │ started │ 1/1    │ fra    │      │ zaad-api:canonical-4b8621e │ fdaa:c2:809:a7b:61d:f08e:9605:2 │ vol_4m3pel5k9mdm95gv │ 2026-09-05T18:44:43Z │ 2026-09-13T23:48:03Z │ app           │ shared-cpu-2x:2048MB 
+== secrets (names only)
+
+CORS_ALLOWED_ORIGINS
+FLY_API_TOKEN
+HARVESTMIND_ADMIN_KEY
+HARVESTMIND_APP_URL
+HARVESTMIND_RATE_LIMIT_PER_MIN
+HARVESTMIND_SEED_WORKSPACES
+HARVESTMIND_SOLVER_THREADS
+HARVESTMIND_WORKER_TOKEN
+ZAAD_JOB_STORE
+ZAAD_LEGACY_PLANNERS
+ZAAD_SHADOW_LEDGER
