@@ -1,0 +1,35 @@
+== releases
+ VERSION │ STATUS   │ DESCRIPTION │ USER                     │ DATE              
+ v22     │ complete │ Release     │ rad.alzubi2005@gmail.com │ 11h4m ago         
+ v21     │ complete │ Release     │ rad.alzubi2005@gmail.com │ Sep 12 2026 14:28 
+== machines
+1 machines have been retrieved from app zaad-api.
+View them in the UI here (​https://fly.io/apps/zaad-api/machines/)
+
+[1mzaad-api[0m
+ ID             │ NAME             │ STATE   │ CHECKS │ REGION │ ROLE │ IMAGE                      │ IP ADDRESS                      │ VOLUME               │ CREATED              │ LAST UPDATED         │ PROCESS GROUP │ SIZE                 
+ 0804e0dfd1e948 │ falling-sea-7629 │ started │ 1/1    │ fra    │      │ zaad-api:canonical-2fc7b50 │ fdaa:c2:809:a7b:61d:f08e:9605:2 │ vol_4m3pel5k9mdm95gv │ 2026-09-05T18:44:43Z │ 2026-09-13T07:29:30Z │ app           │ shared-cpu-2x:2048MB 
+== secrets (names only)
+
+CORS_ALLOWED_ORIGINS
+FLY_API_TOKEN
+HARVESTMIND_ADMIN_KEY
+HARVESTMIND_APP_URL
+HARVESTMIND_RATE_LIMIT_PER_MIN
+HARVESTMIND_SEED_WORKSPACES
+HARVESTMIND_SOLVER_THREADS
+HARVESTMIND_WORKER_TOKEN
+ZAAD_JOB_STORE
+ZAAD_LEGACY_PLANNERS
+ZAAD_SHADOW_LEDGER
+== status
+[1mApp[0m
+ Name     │ zaad-api                   
+ Owner    │ personal                   
+ Hostname │ zaad-api.fly.dev           
+ Image    │ zaad-api:canonical-2fc7b50 
+
+[1mMachines[0m
+ PROCESS │ ID             │ VERSION │ REGION │ STATE   │ ROLE │ CHECKS             │ LAST UPDATED         
+ app     │ 0804e0dfd1e948 │ 22      │ fra    │ started │      │ 1 total, 1 passing │ 2026-09-13T07:29:30Z 
+
