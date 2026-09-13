@@ -1,0 +1,15 @@
+{
+ "health": {
+  "code": 200,
+  "body": "{\"status\":\"ok\",\"service\":\"zaad-api\",\"env\":\"pilot\",\"auth_enforced\":true,\"rate_limit_per_min\":60}"
+ },
+ "workspace": {
+  "code": 200,
+  "operator": "op_cb22e3f8"
+ },
+ "keep_only_plan_on_released_runtime": {
+  "code": 500,
+  "seconds": 0.4,
+  "body": "{\"detail\":\"Internal error. Quote this request id to support.\",\"request_id\":\"req-b379888a10da\"}"
+ }
+}

@@ -1,0 +1,851 @@
+[
+ {
+  "fixture": "F01_cancel_optimal",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "cancel": 100.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "CANCEL",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {}
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "CANCEL",
+  "plan_status": "PENDING_REVIEW",
+  "value": 111.667,
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "F02_cancel_not_worthwhile",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 100.0
+    },
+    "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+    "action": "KEEP",
+    "status": "RETAIN_INCUMBENT",
+    "purchases_p0": {}
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "action": "KEEP",
+  "plan_status": "RETAIN_INCUMBENT",
+  "value": 0.0,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F03_cancel_prohibited",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 100.0
+    },
+    "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+    "action": "KEEP",
+    "status": "RETAIN_INCUMBENT",
+    "purchases_p0": {},
+    "blocking_reasons": {
+     "deadline": [
+      [
+       "deadline 2026-08-31 has passed (as of 2026-09-01)"
+      ]
+     ],
+     "stage": [
+      [
+       "order stage 'confirmed' is not among the option's eligible stages ['placed']"
+      ]
+     ],
+     "absent": "no block (KEEP-only)"
+    }
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "action": "KEEP",
+  "plan_status": "RETAIN_INCUMBENT",
+  "value": 0.0,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F04_partial_reduction",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 40.0,
+     "cancel": 60.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "REDUCE",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {
+     "main": 5.268446319183777
+    }
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "REDUCE",
+  "plan_status": "PENDING_REVIEW",
+  "value": 182.799,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F05_minimum_remaining",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 40.0,
+     "cancel": 60.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "REDUCE",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {}
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "REDUCE",
+  "plan_status": "PENDING_REVIEW",
+  "value": 67.0,
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "F06_defer_reduces_excess",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "defer": 100.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "DEFER",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {}
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "DEFER",
+  "plan_status": "PENDING_REVIEW",
+  "value": 122.404,
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "F07_defer_stockout",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 100.0
+    },
+    "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+    "action": "KEEP",
+    "status": "RETAIN_INCUMBENT",
+    "purchases_p0": {}
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "action": "KEEP",
+  "plan_status": "RETAIN_INCUMBENT",
+  "value": 0.0,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F08_expedite_justified",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "expedite": 100.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "EXPEDITE",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {
+     "main": 41.28045605460166
+    }
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "EXPEDITE",
+  "plan_status": "PENDING_REVIEW",
+  "value": 335.081,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F09_expedite_too_expensive",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 100.0
+    },
+    "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+    "action": "KEEP",
+    "status": "RETAIN_INCUMBENT",
+    "purchases_p0": {}
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "action": "KEEP",
+  "plan_status": "RETAIN_INCUMBENT",
+  "value": 0.0,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F10_already_shipped",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 100.0
+    },
+    "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+    "action": "KEEP",
+    "status": "RETAIN_INCUMBENT",
+    "purchases_p0": {},
+    "forced_amendment": "PhysicalViolation: expired or stage-ineligible amendment"
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "action": "KEEP",
+  "plan_status": "RETAIN_INCUMBENT",
+  "value": 0.0,
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "F11_sunk_deposit",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "cancel": 100.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "CANCEL",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {}
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "CANCEL",
+  "plan_status": "PENDING_REVIEW",
+  "value": 136.667,
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "F12_refundable_deposit",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "cancel": 100.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "CANCEL",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {}
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "CANCEL",
+  "plan_status": "PENDING_REVIEW",
+  "value": 336.667,
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "F13_short_fill",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "expedite": 100.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "EXPEDITE",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {
+     "main": 41.28045605460166
+    }
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "EXPEDITE",
+  "plan_status": "PENDING_REVIEW",
+  "value": 287.64,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F14_alternative_source",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 100.0
+    },
+    "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+    "action": "KEEP",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {
+     "main": 20.314631279936574,
+     "alt": 22.127299419174296
+    }
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "action": "KEEP",
+  "plan_status": "PENDING_REVIEW",
+  "value": 332.586,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F15_correlated_disruption",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "cancel": 100.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "CANCEL",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {
+     "main": 19.15315663542736,
+     "alt": 22.127299419174296
+    }
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "CANCEL",
+  "plan_status": "PENDING_REVIEW",
+  "value": 458.305,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F16_perishable_delay",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 100.0
+    },
+    "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+    "action": "KEEP",
+    "status": "RETAIN_INCUMBENT",
+    "purchases_p0": {}
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "action": "KEEP",
+  "plan_status": "RETAIN_INCUMBENT",
+  "value": 0.0,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F17_payment_timing",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "defer": 100.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "DEFER",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {}
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "DEFER",
+  "plan_status": "PENDING_REVIEW",
+  "value": 153.22,
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "F18_deterministic",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "defer": 100.0
+    },
+    "verdict": "COMMITMENT CHANGE RECOMMENDED",
+    "action": "DEFER",
+    "status": "PENDING_REVIEW",
+    "purchases_p0": {},
+    "identical_runs": 3
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "action": "DEFER",
+  "plan_status": "PENDING_REVIEW",
+  "value": 122.404,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F19_information_changes_action",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 100.0
+    },
+    "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+    "action": "KEEP",
+    "status": "RETAIN_INCUMBENT",
+    "purchases_p0": {},
+    "changed": {
+     "low_stock": "KEEP",
+     "high_stock": "CANCEL"
+    }
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "action": "KEEP",
+  "plan_status": "RETAIN_INCUMBENT",
+  "value": 0.0,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F20_keep_optimal",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "amendments": {
+     "keep": 100.0
+    },
+    "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+    "action": "KEEP",
+    "status": "RETAIN_INCUMBENT",
+    "purchases_p0": {},
+    "non_po_actions_identical": true
+   }
+  },
+  "invariants": {
+   "01_amendments_sum_to_open": true,
+   "02_never_cancel_above_open": true,
+   "03_never_below_minimum": true,
+   "04_no_amendment_after_deadline": true,
+   "05_no_amendment_in_prohibited_stage": true,
+   "06_received_unchanged": true,
+   "07_no_negative_balance": true,
+   "08_split_rule": true,
+   "09_payment_reconciliation": true,
+   "10_credit_bounds": true,
+   "11_sunk_cost_remains_sunk": true,
+   "12_no_double_freight": true,
+   "13_no_duplicate_procurement": true,
+   "14_no_p3_source_leakage": true,
+   "15_no_p7_routing": true,
+   "17_approval_required": true,
+   "18_keep_feasible": true
+  },
+  "verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "action": "KEEP",
+  "plan_status": "RETAIN_INCUMBENT",
+  "value": 0.0,
+  "pass": true,
+  "seconds": 0.1
+ },
+ {
+  "fixture": "F00_no_declaration_identity",
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "commitments_key_absent": true,
+    "pre_p4b_runtime_identical": true
+   }
+  },
+  "invariants": {
+   "19_no_declaration_identical": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ }
+]
