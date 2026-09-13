@@ -4,13 +4,14 @@
 
 | item | value |
 |---|---|
-| production runtime | `1851f40` = tag `p4b-v1-release-runtime` (Fly `zaad-api` v23, image `canonical-1851f40`) |
-| current `main` | ahead of production by docs, CI and repository cleanup only (the cleanup PR records whether a runtime-bearing change forced a deployment) |
+| production runtime | `4b8621e` = tag `zaad-post-p4b-cleanup-runtime` (Fly `zaad-api` v24, image `canonical-4b8621e`): the P4B V1 release runtime `1851f40` (`p4b-v1-release-runtime`) plus the post-P4B cleanup, whose only runtime-bearing change is six unused dependencies removed from `pyproject.toml`; optimizer, API and web bytes identical |
+| current `main` | = production plus this closeout's docs (`docs/zaad_full/REPOSITORY_CLEANUP_AUDIT.md` records the cleanup, its validation and its deployment) |
 | RELEASED | P0 protection / recovery; P1 purchasing economics; P2 multi-echelon network; sector physics; P3 sourcing portfolio; P4 adaptive recourse; P5 ATP / scarce-supply allocation; P4B V1 open PO / commitment intervention |
 | DEFERRED | Network Twin V1 (PR #39) |
 | NOT STARTED | P4B V2 (node-indexed amendments), P6, P7, P8, P9 — each needs its own authorization; new optimizer phases are paused until stronger operator evidence exists |
 | tags that never move | `p0-frozen`, `p1-frozen-product`, `p1-frozen`, `pre-canonical-integration`, `sector-physics-release-runtime`, `p3-performance-closure-runtime`, `p4-release-runtime`, `p4-performance-closure-runtime`, `p5-frozen-product`, `p5-frozen`, `p5-release-runtime`, `p4b-v1-frozen-product`, `p4b-v1-frozen`, `p4b-v1-release-runtime` |
 | current entry point | `docs/zaad_full/CURRENT_SYSTEM.md` |
+| CI | one workflow (`.github/workflows/ci.yml`): 13 jobs, critical path ~6.5 min; Markdown-only changes do not run it; CodeQL removed (unavailable on this plan); branch protection unavailable on this plan (manual action recorded in the cleanup audit) |
 
 Every section below this line is historical: it records the state at the time it was written and is not
 updated retroactively. "Next action" sentences inside historical sections are superseded by this table.

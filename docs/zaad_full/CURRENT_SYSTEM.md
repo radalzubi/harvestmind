@@ -1,8 +1,9 @@
 # ZAAD — current system (read this first)
 
-**Status line (2026-09-13):** production runtime `1851f40` (tag `p4b-v1-release-runtime`, Fly `zaad-api` v23,
-image `canonical-1851f40`). `main` may be ahead of production by docs, CI and repository cleanup only; the
-release ledger records when that is not the case.
+**Status line (2026-09-13):** production runtime `4b8621e` (tag `zaad-post-p4b-cleanup-runtime`, Fly `zaad-api` v24,
+image `canonical-4b8621e`) = the P4B V1 release runtime `1851f40` (`p4b-v1-release-runtime`) with six unused
+dependencies removed; optimizer, API and web bytes identical. `main` may be ahead of production by docs only; the
+release ledger's current-state table records when that is not the case.
 
 ## What is released
 

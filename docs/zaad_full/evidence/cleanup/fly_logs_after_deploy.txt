@@ -1,0 +1,100 @@
+2026-09-13T23:26:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:34182 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:26:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:52532 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:27:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:54084 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:27:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:56050 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:28:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:41042 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:28:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:59316 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:29:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:44216 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:29:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:61912 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:30:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:47664 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:30:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:59602 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:31:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:39346 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:31:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:49248 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:32:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:53524 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:32:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:42030 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:33:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:41040 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:33:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:36414 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:34:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:35048 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:34:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:47650 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:35:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:48568 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:35:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:40656 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:36:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:34252 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:36:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:62486 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:37:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:32858 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:37:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:43244 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:38:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:49304 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:38:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:60424 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:39:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:57794 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:39:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:62306 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:40:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:49700 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:40:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:42664 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:41:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:47884 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:41:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:46970 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:42:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:43640 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:42:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:37900 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:43:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:49530 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:43:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:48098 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:44:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:39538 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:44:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:36836 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:45:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:58578 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:45:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:50058 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:46:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:33612 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:46:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:36122 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:47:07Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:41500 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:47:37Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:48934 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:47:45Z runner[0804e0dfd1e948] fra [info]Pulling container image registry.fly.io/zaad-api@sha256:5fb0211737c07600100f3420e66bb8c0da75835ab6de1033f5753fcc76263370
+2026-09-13T23:48:00Z runner[0804e0dfd1e948] fra [info]Successfully prepared image registry.fly.io/zaad-api@sha256:5fb0211737c07600100f3420e66bb8c0da75835ab6de1033f5753fcc76263370 (14.741082346s)
+2026-09-13T23:48:00Z runner[0804e0dfd1e948] fra [info]Setting up volume 'harvestmind_data'
+2026-09-13T23:48:00Z runner[0804e0dfd1e948] fra [info]Opening encrypted volume
+2026-09-13T23:48:00Z runner[0804e0dfd1e948] fra [info]Configuring firecracker
+2026-09-13T23:48:00Z app[0804e0dfd1e948] fra [info] INFO Sending signal SIGINT to main child process w/ PID 655
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]INFO:     Shutting down
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]INFO:     Waiting for application shutdown.
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]INFO:     Application shutdown complete.
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]INFO:     Finished server process [655]
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]Traceback (most recent call last):
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]    return self._loop.run_until_complete(task)
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]asyncio.exceptions.CancelledError
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]During handling of the above exception, another exception occurred:
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]Traceback (most recent call last):
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]  File "<frozen runpy>", line 198, in _run_module_as_main
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]  File "<frozen runpy>", line 88, in _run_code
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]  File "/app/api/serve.py", line 52, in <module>
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]    sys.exit(main())
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]             ^^^^^^
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]  File "/app/api/serve.py", line 47, in main
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]    server.run(sockets=socks)
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]  File "/usr/local/lib/python3.12/site-packages/uvicorn/server.py", line 77, in run
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]  File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]    return runner.run(main)
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]           ^^^^^^^^^^^^^^^^
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]  File "/usr/local/lib/python3.12/asyncio/runners.py", line 123, in run
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]    raise KeyboardInterrupt()
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info]KeyboardInterrupt
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info] INFO Main child exited with signal (with signal 'SIGINT', core dumped? false)
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info] INFO Starting clean up.
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info] INFO Umounting /dev/vdc from /var/lib/harvestmind
+2026-09-13T23:48:01Z app[0804e0dfd1e948] fra [info][15890.722423] reboot: Restarting system
+2026-09-13T23:48:02Z app[0804e0dfd1e948] fra [info]2026-09-13T23:48:02.775263933 [01M2EJPWE7P8XDD50BWNNMTE1V:main] Running Firecracker v1.14.4
+2026-09-13T23:48:02Z app[0804e0dfd1e948] fra [info]2026-09-13T23:48:02.775468506 [01M2EJPWE7P8XDD50BWNNMTE1V:main] Listening on API socket ("/fc.sock").
+2026-09-13T23:48:03Z app[0804e0dfd1e948] fra [info] INFO Starting init (commit: 6172d83)...
+2026-09-13T23:48:03Z app[0804e0dfd1e948] fra [info] INFO Checking filesystem on /var/lib/harvestmind
+2026-09-13T23:48:03Z app[0804e0dfd1e948] fra [info]/dev/vdc: clean, 204/655360 files, 97404/2617344 blocks
+2026-09-13T23:48:03Z app[0804e0dfd1e948] fra [info] INFO Mounting /dev/vdc at /var/lib/harvestmind w/ uid: 10001, gid: 10001 and chmod 0755
+2026-09-13T23:48:03Z app[0804e0dfd1e948] fra [info] INFO Resized /var/lib/harvestmind to 10720641024 bytes
+2026-09-13T23:48:03Z app[0804e0dfd1e948] fra [info] INFO Preparing to run: `python -m api.serve` as harvestmind
+2026-09-13T23:48:03Z app[0804e0dfd1e948] fra [info] INFO [fly api proxy] listening at /.fly/api
+2026-09-13T23:48:03Z app[0804e0dfd1e948] fra [info]2026/09/13 23:48:03 INFO SSH listening listen_address=[fdaa:c2:809:a7b:61d:f08e:9605:2]:22
+2026-09-13T23:48:04Z runner[0804e0dfd1e948] fra [info]Machine created and started in 18.535s
+2026-09-13T23:48:04Z health[0804e0dfd1e948] fra [error]Health check 'servicecheck-00-http-8000' on port 8000 has failed. Your app is not responding properly. Services exposed on ports [80, 443] will have intermittent failures until the health check passes.
+2026-09-13T23:48:25Z app[0804e0dfd1e948] fra [info]INFO:     Started server process [652]
+2026-09-13T23:48:25Z app[0804e0dfd1e948] fra [info]INFO:     Waiting for application startup.
+2026-09-13T23:48:25Z app[0804e0dfd1e948] fra [info]INFO:     Application startup complete.
+2026-09-13T23:48:25Z app[0804e0dfd1e948] fra [info]INFO:     172.19.44.241:59658 - "GET /health HTTP/1.1" 200 OK
+2026-09-13T23:48:26Z health[0804e0dfd1e948] fra [info]Health check 'servicecheck-00-http-8000' on port 8000 is now passing.
+2026-09-13T23:48:43Z app[0804e0dfd1e948] fra [info]INFO:     52.119.103.17:0 - "GET /health HTTP/1.1" 200 OK

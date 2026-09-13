@@ -371,3 +371,32 @@ records, the matrix tables and the P0 arm record). The regenerated full run file
 are reproducible from the scripts and are not committed; released records the matrices regenerate in place
 (P2 / P3 / P4 / sector invariants, P3 / P4B adversarial, the P4B P0 arm) differed by tag, timing and the validator's
 request echo only and were restored.
+
+## Release of the cleanup (rule 30)
+
+The dependency trim changed the Docker image, so the merged commit was deployed. PR #78 merged as `main` `4b8621e`
+(tree = tested head `5dbff16`; CI run 34790234804 green on all thirteen jobs); runtime-bearing diff against the
+production runtime `1851f40`: `pyproject.toml` only (six dependency lines). Deployed from the clean detached checkout
+`harvestmind-deploy` at `4b8621e`: Fly `zaad-api` **v24**, image `canonical-4b8621e`, machine `0804e0dfd1e948`, health
+1 / 1, eleven secrets identical (`evidence/cleanup/fly_state_before.txt`, `fly_state_after.txt`, `fly_deploy.log`).
+Production smoke (`evidence/cleanup/smoke_cleanup.py`, `smoke_cleanup_results.json`): health 200; no-declaration plan
+200 without a commitments block; P4B KEEP with the exact `NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE`; P4B CANCEL
+recommendation, approval required, block `executable_amendment` false; P5 standalone (2 reservations, approval only)
+and planner path (`atp` block present); tenant isolation 403 on both engines; job path 202 -> DONE in 11 s with the
+block. Logs after startup and after the smoke: 43 x 200, 1 x 202, 2 x 403, no 5xx, no traceback, no restart. Tag
+`zaad-post-p4b-cleanup-runtime` = `4b8621e`; `p4b-v1-release-runtime` stays at `1851f40`.
+
+## CI runtime before / after
+
+| | critical path | job-minutes | jobs |
+|---|---|---|---|
+| before (run 34774980685, P4B release head) | 45.6 min (unit-zaad-b) | 152 | 12 + CodeQL (always red) |
+| after (run 34790234804, cleanup head) | 6.4 min (frozen regression) | 39 | 13, no CodeQL |
+
+The ZAAD shards now take 2.9-4.3 minutes each; the frozen-regression job (6.4 min) is the critical path.
+
+## Branches after the cleanup
+
+66 remote branches deleted (every branch merged with no unique history, the squash-merged #4 / #15 / #26 / #27 / #28,
+the superseded P3 closeout drafts #61 / #62, the cleanup branch). Remaining: `main`, `claude/zaad-network-twin-v1`
+(PR #39 deferred), `docs/brief-al-burger` (unique, no PR), ten `dependabot/*` branches (open PRs).
