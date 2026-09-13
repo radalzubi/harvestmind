@@ -31,6 +31,7 @@ from zaad.full.settlement import PhysicalViolation, settle
 from zaad.full.uncertainty import profile_dict, stress_credibility, supply_profiles
 from zaad.full.worlds import dates, draw, forecast_all
 from zaad.atp.contracts import resolve as resolve_atp
+from zaad.commitments.contracts import resolve as resolve_commitments
 from zaad.recourse.contracts import resolve as resolve_recourse
 
 
@@ -415,7 +416,8 @@ def classify_service(req: Request, service, selected: float | None, best_joint: 
     if selected >= service.target - tolerance:
         return {"class": "MET", "reason": "target met within tolerance under independent confirmation"}
     if best_joint is not None and best_joint < service.target - tolerance:
-        pre_existing = best_individual is not None and best_individual < service.target - tolerance
+        # release audit (P4B): a native bool - `best_individual` is a numpy float, and a numpy bool in the report breaks the API's JSON encoder
+        pre_existing = bool(best_individual is not None and best_individual < service.target - tolerance)
         return {"class": "UNAVOIDABLE", "pre_existing": pre_existing,
                 "reason": ("no feasible action meets the target even when this service alone is maximized" if pre_existing
                            else "the target is not jointly achievable with the other services' targets and priorities")
@@ -655,7 +657,11 @@ def plan(req: Request) -> dict:
     selection = draw(req_draw, req.seed, req.scenarios)
     deterministic = draw(req, req.seed, 1, deterministic=True)
     baseline_targets = targets(req)
-    base = solve(req, deterministic, targets=baseline_targets)
+    # P4B V1: when the request declares a non-keep amendment option, the projected base-stock proxy that
+    # serves as the incumbent keeps every commitment (KEEP is the incumbent); candidates stay free to
+    # amend. Without a declaration the call is the released one.
+    commitment_view = resolve_commitments(req)
+    base = solve(req, deterministic, targets=baseline_targets, disabled=(commitment_view.non_keep_actions if commitment_view is not None else frozenset()))
     incumbent = base
     incumbent_label = "projected_base_stock_proxy"
     if req.incumbent_orders:
@@ -1620,6 +1626,11 @@ def plan(req: Request) -> dict:
         # complete; it changes no P0-P4 decision. Absent on a frozen request (identity).
         from zaad.atp.integration import atp_block
         report["atp"] = atp_block(req, atp_view, protection=protection, planner_path=True)
+    if commitment_view is not None:
+        # Open PO / commitment intervention (P4B V1): what the selected plan changes about each declared
+        # commitment against the KEEP incumbent, in operator language. Absent on a frozen request.
+        from zaad.commitments.explain import commitment_block
+        report["commitments"] = commitment_block(req, commitment_view, report)
     return report
 
 

@@ -1,0 +1,6745 @@
+{
+ "snapshot": "docs/zaad_full/evidence/p3/perf_closure/shared_mov_prod_snapshot.json",
+ "view": {
+  "plan_wall_s": 12.45,
+  "serialize_s": 0.003,
+  "bytes": 132146,
+  "status": "PENDING_REVIEW",
+  "owner": "PURCHASING_ECONOMICS",
+  "state": "NO_ACTION",
+  "selected": null,
+  "approval": true,
+  "epo": false,
+  "materiality": {
+   "material": true,
+   "verdict": "MATERIAL_IMPROVEMENT",
+   "cost_delta_fraction": -0.0027150079750825518,
+   "inventory_delta_fraction": -0.2415139339361507,
+   "service_delta": 0.0,
+   "better_on": [
+    "inventory"
+   ],
+   "worse_on": [],
+   "thresholds": {
+    "cost_fraction": 0.01,
+    "inventory_fraction": 0.05,
+    "service": 0.005
+   },
+   "reason": "cost -0.27%, inventory -24.15%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+  },
+  "p0": [
+   [
+    "src_S2",
+    24.6
+   ],
+   [
+    "src_S2_B",
+    29.0
+   ]
+  ],
+  "purchases": [
+   [
+    "src_A",
+    1,
+    621.3
+   ],
+   [
+    "src_A",
+    4,
+    2187.4
+   ],
+   [
+    "src_S2",
+    0,
+    24.6
+   ],
+   [
+    "src_A_B",
+    1,
+    621.7
+   ],
+   [
+    "src_A_B",
+    4,
+    2209.4
+   ],
+   [
+    "src_S2_B",
+    0,
+    29.0
+   ]
+  ],
+  "transfers_p0": 238.6,
+  "pairs": [
+   {
+    "sku": "A",
+    "destination": "central",
+    "order_period": 0,
+    "total_committed_period_0": 24.58821240106208,
+    "total_committed_plan": 2833.3097984739015,
+    "incumbent_total_period_0": 2044.7628089964237,
+    "incumbent_total_plan": 4089.5256179928474,
+    "sources_used_plan": [
+     "src_A",
+     "src_S2"
+    ],
+    "recommendation": "COMMIT_AS_INCUMBENT_MIX",
+    "owner": {
+     "total_commitment": "P1 purchasing economics (or P0 protection / recovery when it owns the review)",
+     "source_split": "P3 sourcing portfolio"
+    },
+    "options": [
+     {
+      "source": "src_A",
+      "supplier": "supplier",
+      "route": [
+       "supplier",
+       "central"
+      ],
+      "eligible": true,
+      "ineligible_reason": null,
+      "quantity_period_0": 0.0,
+      "share_period_0": 0.0,
+      "quantity_plan": 2808.7215860728393,
+      "share_plan": 0.9913217353025404,
+      "incumbent_quantity_period_0": 2044.7628089964237,
+      "incumbent_share_period_0": 1.0,
+      "incumbent_share_plan": 1.0,
+      "declared_incumbent_share": 1.0,
+      "in_incumbent_mix": true,
+      "expected_receipt_period": 1,
+      "expected_fill": 0.98,
+      "lead_days": 7,
+      "lead_sd_days": 0.0,
+      "capacity_period_0": 1000000.0,
+      "capacity_binding": false,
+      "minimum_order": 0.0,
+      "packs": [],
+      "executable": true,
+      "landed": {
+       "unit_price": 5.0,
+       "freight_per_unit": 0.0,
+       "handling_per_unit": 0.0,
+       "financing_fee_per_unit": 0.0,
+       "fixed_order_fee": 0.0,
+       "landed_unit_cost": 5.0,
+       "payment_terms": {
+        "deposit_fraction": 0.0,
+        "balance_trigger": "arrival",
+        "net_days": 0,
+        "expected_payment_period": 1
+       },
+       "payment_timing_value_per_unit": 0.0,
+       "landed_unit_cost_after_terms": 5.0,
+       "scope": "per unit, report only; the plan's economics come from the settled ledger"
+      },
+      "reliability": {
+       "scope": "declared",
+       "records": 0,
+       "fill_mean": 0.98,
+       "fill_sd": 0.01,
+       "late_probability": 0.0,
+       "fill_provenance": null,
+       "lead_provenance": null,
+       "weak_evidence": true
+      },
+      "risk_groups": [],
+      "shared_risk_weak_evidence": false,
+      "share_constraints": [],
+      "switching_cost": null
+     },
+     {
+      "source": "src_S2",
+      "supplier": "supplier_s2",
+      "route": [
+       "supplier_s2",
+       "central"
+      ],
+      "eligible": true,
+      "ineligible_reason": null,
+      "quantity_period_0": 24.58821240106208,
+      "share_period_0": 1.0,
+      "quantity_plan": 24.58821240106208,
+      "share_plan": 0.008678264697459475,
+      "incumbent_quantity_period_0": 0.0,
+      "incumbent_share_period_0": 0.0,
+      "incumbent_share_plan": 0.0,
+      "declared_incumbent_share": null,
+      "in_incumbent_mix": false,
+      "expected_receipt_period": 1,
+      "expected_fill": 0.98,
+      "lead_days": 7,
+      "lead_sd_days": 0.0,
+      "capacity_period_0": 1000000.0,
+      "capacity_binding": false,
+      "minimum_order": 0.0,
+      "packs": [],
+      "executable": true,
+      "landed": {
+       "unit_price": 5.4,
+       "freight_per_unit": 0.0,
+       "handling_per_unit": 0.0,
+       "financing_fee_per_unit": 0.0,
+       "fixed_order_fee": 0.0,
+       "landed_unit_cost": 5.4,
+       "payment_terms": {
+        "deposit_fraction": 0.0,
+        "balance_trigger": "arrival",
+        "net_days": 0,
+        "expected_payment_period": 1
+       },
+       "payment_timing_value_per_unit": 0.0,
+       "landed_unit_cost_after_terms": 5.4,
+       "scope": "per unit, report only; the plan's economics come from the settled ledger"
+      },
+      "reliability": {
+       "scope": "declared",
+       "records": 0,
+       "fill_mean": 0.98,
+       "fill_sd": 0.01,
+       "late_probability": 0.0,
+       "fill_provenance": null,
+       "lead_provenance": null,
+       "weak_evidence": true
+      },
+      "risk_groups": [],
+      "shared_risk_weak_evidence": false,
+      "share_constraints": [],
+      "switching_cost": null
+     }
+    ]
+   },
+   {
+    "sku": "B",
+    "destination": "central",
+    "order_period": 0,
+    "total_committed_period_0": 28.96975945025897,
+    "total_committed_plan": 2860.0590590467596,
+    "incumbent_total_period_0": 2044.7628089964237,
+    "incumbent_total_plan": 4089.5256179928474,
+    "sources_used_plan": [
+     "src_A_B",
+     "src_S2_B"
+    ],
+    "recommendation": "COMMIT_AS_INCUMBENT_MIX",
+    "owner": {
+     "total_commitment": "P1 purchasing economics (or P0 protection / recovery when it owns the review)",
+     "source_split": "P3 sourcing portfolio"
+    },
+    "options": [
+     {
+      "source": "src_A_B",
+      "supplier": "supplier",
+      "route": [
+       "supplier",
+       "central"
+      ],
+      "eligible": true,
+      "ineligible_reason": null,
+      "quantity_period_0": 0.0,
+      "share_period_0": 0.0,
+      "quantity_plan": 2831.0892995965005,
+      "share_plan": 0.9898709226445433,
+      "incumbent_quantity_period_0": 2044.7628089964237,
+      "incumbent_share_period_0": 1.0,
+      "incumbent_share_plan": 1.0,
+      "declared_incumbent_share": 1.0,
+      "in_incumbent_mix": true,
+      "expected_receipt_period": 1,
+      "expected_fill": 0.98,
+      "lead_days": 7,
+      "lead_sd_days": 0.0,
+      "capacity_period_0": 1000000.0,
+      "capacity_binding": false,
+      "minimum_order": 0.0,
+      "packs": [],
+      "executable": true,
+      "landed": {
+       "unit_price": 5.0,
+       "freight_per_unit": 0.0,
+       "handling_per_unit": 0.0,
+       "financing_fee_per_unit": 0.0,
+       "fixed_order_fee": 0.0,
+       "landed_unit_cost": 5.0,
+       "payment_terms": {
+        "deposit_fraction": 0.0,
+        "balance_trigger": "arrival",
+        "net_days": 0,
+        "expected_payment_period": 1
+       },
+       "payment_timing_value_per_unit": 0.0,
+       "landed_unit_cost_after_terms": 5.0,
+       "scope": "per unit, report only; the plan's economics come from the settled ledger"
+      },
+      "reliability": {
+       "scope": "declared",
+       "records": 0,
+       "fill_mean": 0.98,
+       "fill_sd": 0.01,
+       "late_probability": 0.0,
+       "fill_provenance": null,
+       "lead_provenance": null,
+       "weak_evidence": true
+      },
+      "risk_groups": [],
+      "shared_risk_weak_evidence": false,
+      "share_constraints": [],
+      "switching_cost": null
+     },
+     {
+      "source": "src_S2_B",
+      "supplier": "supplier_s2",
+      "route": [
+       "supplier_s2",
+       "central"
+      ],
+      "eligible": true,
+      "ineligible_reason": null,
+      "quantity_period_0": 28.96975945025897,
+      "share_period_0": 1.0,
+      "quantity_plan": 28.96975945025897,
+      "share_plan": 0.010129077355456574,
+      "incumbent_quantity_period_0": 0.0,
+      "incumbent_share_period_0": 0.0,
+      "incumbent_share_plan": 0.0,
+      "declared_incumbent_share": null,
+      "in_incumbent_mix": false,
+      "expected_receipt_period": 1,
+      "expected_fill": 0.98,
+      "lead_days": 7,
+      "lead_sd_days": 0.0,
+      "capacity_period_0": 1000000.0,
+      "capacity_binding": false,
+      "minimum_order": 0.0,
+      "packs": [],
+      "executable": true,
+      "landed": {
+       "unit_price": 5.4,
+       "freight_per_unit": 0.0,
+       "handling_per_unit": 0.0,
+       "financing_fee_per_unit": 0.0,
+       "fixed_order_fee": 0.0,
+       "landed_unit_cost": 5.4,
+       "payment_terms": {
+        "deposit_fraction": 0.0,
+        "balance_trigger": "arrival",
+        "net_days": 0,
+        "expected_payment_period": 1
+       },
+       "payment_timing_value_per_unit": 0.0,
+       "landed_unit_cost_after_terms": 5.4,
+       "scope": "per unit, report only; the plan's economics come from the settled ledger"
+      },
+      "reliability": {
+       "scope": "declared",
+       "records": 0,
+       "fill_mean": 0.98,
+       "fill_sd": 0.01,
+       "late_probability": 0.0,
+       "fill_provenance": null,
+       "lead_provenance": null,
+       "weak_evidence": true
+      },
+      "risk_groups": [],
+      "shared_risk_weak_evidence": false,
+      "share_constraints": [],
+      "switching_cost": null
+     }
+    ]
+   }
+  ],
+  "service": null,
+  "economics_keys": [
+   "scope",
+   "incumbent_costs",
+   "selected_costs",
+   "incumbent_working_capital",
+   "selected_working_capital",
+   "reconciled",
+   "unmapped_ledger_keys",
+   "orders",
+   "incumbent_orders",
+   "supplier_orders",
+   "materiality",
+   "action_recommended",
+   "recommendation",
+   "provenance",
+   "fallbacks"
+  ]
+ },
+ "candidates": [
+  {
+   "label": "01:base_stock(deterministic)",
+   "worlds": 1,
+   "wall": 0.14,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.139,
+   "variables": 2476,
+   "rows": 1363,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 51267.05184404638,
+   "best_bound": 60788356.88424522,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "02:fixed_plan(incumbent/base)",
+   "worlds": 1,
+   "wall": 0.023,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.022,
+   "variables": 2364,
+   "rows": 1979,
+   "gap": 0.0,
+   "nodes": 0,
+   "objective": 30899.02737303027,
+   "best_bound": 24901.25802336734,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "03:deterministic_network",
+   "worlds": 1,
+   "wall": 2.949,
+   "status": "OPTIMAL",
+   "solve_seconds": 2.948,
+   "variables": 2472,
+   "rows": 1969,
+   "gap": 0.0,
+   "nodes": 29,
+   "objective": 25656.573567630618,
+   "best_bound": 19658.292622248788,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "04:stochastic_network",
+   "worlds": 3,
+   "wall": 3.209,
+   "status": "OPTIMAL",
+   "solve_seconds": 3.207,
+   "variables": 5904,
+   "rows": 3759,
+   "gap": 0.0,
+   "nodes": 9,
+   "objective": 25408.163075915494,
+   "best_bound": 19410.155982316857,
+   "warm": "improved",
+   "warm_completion_s": 0.10450299922376871
+  },
+  {
+   "label": "05:cadence_6",
+   "worlds": 3,
+   "wall": 2.315,
+   "status": "OPTIMAL",
+   "solve_seconds": 2.313,
+   "variables": 5904,
+   "rows": 3759,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25458.359048235598,
+   "best_bound": 19460.40965901249,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "06:cadence_3",
+   "worlds": 3,
+   "wall": 0.879,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.877,
+   "variables": 5904,
+   "rows": 3759,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25458.359048235572,
+   "best_bound": 19460.40965901249,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "07:joint_service_first",
+   "worlds": 1,
+   "wall": 0.502,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.501,
+   "variables": 2364,
+   "rows": 1308,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25633.399105395598,
+   "best_bound": 19635.07424340044,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "08:joint_service_first",
+   "worlds": 1,
+   "wall": 0.414,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.413,
+   "variables": 2364,
+   "rows": 1308,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25633.39910539558,
+   "best_bound": 19635.07424340043,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "09:joint_service_first",
+   "worlds": 1,
+   "wall": 0.529,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.528,
+   "variables": 2364,
+   "rows": 1308,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25633.399105395583,
+   "best_bound": 19635.074243400435,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "10:joint_service_first",
+   "worlds": 1,
+   "wall": 0.424,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.423,
+   "variables": 2364,
+   "rows": 1308,
+   "gap": 0.0,
+   "nodes": 1,
+   "objective": 25633.39910539558,
+   "best_bound": 19635.074243400435,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "11:protected/hedged_network",
+   "worlds": 3,
+   "wall": 0.826,
+   "status": "OPTIMAL",
+   "solve_seconds": 0.824,
+   "variables": 5724,
+   "rows": 3657,
+   "gap": 0.0,
+   "nodes": 3,
+   "objective": 25703.196767533,
+   "best_bound": 19704.638141683008,
+   "warm": null,
+   "warm_completion_s": null
+  },
+  {
+   "label": "12:protected/hedged_network",
+   "worlds": 3,
+   "wall": 0.059,
+   "status": "INFEASIBLE",
+   "solve_seconds": 0.058,
+   "variables": 5724,
+   "rows": 3657,
+   "gap": null,
+   "nodes": 0,
+   "objective": null,
+   "best_bound": null,
+   "warm": null,
+   "warm_completion_s": null
+  }
+ ],
+ "highs_calls": [
+  {
+   "cand": "01:base_stock(deterministic)",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 0.126,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2476,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1363,
+   "nnz": 9462,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 60788356.88424522
+  },
+  {
+   "cand": "02:fixed_plan(incumbent/base)",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 0.009,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1979,
+   "nnz": 9870,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 0,
+   "gap": 0.0,
+   "fun": 24901.25802336736
+  },
+  {
+   "cand": "03:deterministic_network",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 2.928,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2472,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1969,
+   "nnz": 18228,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 29,
+   "gap": 0.0,
+   "fun": 19658.29262224879
+  },
+  {
+   "cand": "04:stochastic_network",
+   "kind": "warm_complete(equal)",
+   "budget": 15.6,
+   "wall": 0.018,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5904,
+   "integer": 156,
+   "binary": null,
+   "rows": 3759,
+   "nnz": null,
+   "status": false,
+   "msg": "highspy HighsModelStatus.kInfeasible",
+   "nodes": null,
+   "gap": null,
+   "fun": null
+  },
+  {
+   "cand": "04:stochastic_network",
+   "kind": "warm_complete(floor)",
+   "budget": 15.58,
+   "wall": 0.087,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5904,
+   "integer": 156,
+   "binary": null,
+   "rows": 3759,
+   "nnz": null,
+   "status": true,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": null,
+   "gap": null,
+   "fun": null
+  },
+  {
+   "cand": "04:stochastic_network",
+   "kind": "solve",
+   "budget": 25.9,
+   "wall": 3.063,
+   "solver": "highspy",
+   "seeded": true,
+   "vars": 5904,
+   "integer": 156,
+   "binary": 156,
+   "rows": 3759,
+   "nnz": 26860,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 9,
+   "gap": 0.0,
+   "fun": 19410.155982316857
+  },
+  {
+   "cand": "05:cadence_6",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 2.27,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5904,
+   "integer": 156,
+   "binary": 156,
+   "rows": 3759,
+   "nnz": 26860,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19460.40965901249
+  },
+  {
+   "cand": "06:cadence_3",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 0.838,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5904,
+   "integer": 156,
+   "binary": 156,
+   "rows": 3759,
+   "nnz": 26860,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19460.40965901249
+  },
+  {
+   "cand": "07:joint_service_first",
+   "kind": "phase(objective)",
+   "budget": 26.0,
+   "wall": 0.025,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1307,
+   "nnz": 9198,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 0.0
+  },
+  {
+   "cand": "07:joint_service_first",
+   "kind": "solve",
+   "budget": 25.96,
+   "wall": 0.463,
+   "solver": "highspy",
+   "seeded": true,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1308,
+   "nnz": 9210,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19635.074243400435
+  },
+  {
+   "cand": "08:joint_service_first",
+   "kind": "phase(objective)",
+   "budget": 26.0,
+   "wall": 0.026,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1307,
+   "nnz": 9198,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 0.0
+  },
+  {
+   "cand": "08:joint_service_first",
+   "kind": "solve",
+   "budget": 25.96,
+   "wall": 0.375,
+   "solver": "highspy",
+   "seeded": true,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1308,
+   "nnz": 9210,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19635.07424340043
+  },
+  {
+   "cand": "09:joint_service_first",
+   "kind": "phase(objective)",
+   "budget": 26.0,
+   "wall": 0.025,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1307,
+   "nnz": 9198,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 0.0
+  },
+  {
+   "cand": "09:joint_service_first",
+   "kind": "solve",
+   "budget": 25.96,
+   "wall": 0.491,
+   "solver": "highspy",
+   "seeded": true,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1308,
+   "nnz": 9210,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19635.074243400435
+  },
+  {
+   "cand": "10:joint_service_first",
+   "kind": "phase(objective)",
+   "budget": 26.0,
+   "wall": 0.025,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1307,
+   "nnz": 9198,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 0.0
+  },
+  {
+   "cand": "10:joint_service_first",
+   "kind": "solve",
+   "budget": 25.96,
+   "wall": 0.385,
+   "solver": "highspy",
+   "seeded": true,
+   "vars": 2364,
+   "integer": 60,
+   "binary": 60,
+   "rows": 1308,
+   "nnz": 9210,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 1,
+   "gap": 0.0,
+   "fun": 19635.074243400435
+  },
+  {
+   "cand": "11:protected/hedged_network",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 0.783,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5724,
+   "integer": 156,
+   "binary": 156,
+   "rows": 3657,
+   "nnz": 26122,
+   "status": 0,
+   "msg": "highspy HighsModelStatus.kOptimal",
+   "nodes": 3,
+   "gap": 0.0,
+   "fun": 19704.638141683008
+  },
+  {
+   "cand": "12:protected/hedged_network",
+   "kind": "solve",
+   "budget": 26.0,
+   "wall": 0.018,
+   "solver": "highspy",
+   "seeded": false,
+   "vars": 5724,
+   "integer": 156,
+   "binary": 156,
+   "rows": 3657,
+   "nnz": 26122,
+   "status": 2,
+   "msg": "highspy HighsModelStatus.kInfeasible",
+   "nodes": 0,
+   "gap": null,
+   "fun": null
+  }
+ ],
+ "phases": {
+  "validate_network": 0.0,
+  "forecast_all": 0.01,
+  "supply_profiles": 0.0,
+  "protection_profile": 0.002,
+  "draw": 0.045,
+  "settle": 0.04,
+  "evaluate": 0.077,
+  "screen": 0.0,
+  "stress_credibility": 0.0,
+  "economics_block": 0.001,
+  "network_state": 0.0,
+  "network_router": 0.0,
+  "network_accounting": 0.013,
+  "explain_network": 0.0
+ },
+ "matrix_build_s": 0.125,
+ "solver_wall_total_s": 11.955,
+ "n_highs_calls": 18,
+ "cprofile_cumulative": "         2531395 function calls (2525742 primitive calls) in 12.454 seconds\n\n   Ordered by: cumulative time\n   List reduced from 990 to 45 due to restriction <45>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n        1    0.001    0.001   12.452   12.452 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/meio/planner.py:128(plan_network)\n        1    0.001    0.001   12.426   12.426 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/planner.py:641(plan)\n       12    0.007    0.001   12.271    1.023 /private/tmp/claude-501/-Users-radalzubi-Desktop-harvestmind/ff795fbd-41f4-4af5-afd4-b87ad517d896/scratchpad/perf/profile_e2e.py:28(solve_wrapped)\n       12    0.204    0.017   12.264    1.022 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:501(solve)\n       16    0.000    0.000   11.859    0.741 /private/tmp/claude-501/-Users-radalzubi-Desktop-harvestmind/ff795fbd-41f4-4af5-afd4-b87ad517d896/scratchpad/perf/profile_e2e.py:38(lsolve)\n       16    0.001    0.000   11.852    0.741 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:74(solve)\n       18    0.028    0.002   11.826    0.657 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:105(_highspy_solve)\n       18   11.786    0.655   11.786    0.655 {built-in method highspy._core.run}\n        1    0.000    0.000    0.889    0.889 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/planner.py:351(alternative_value)\n    73/34    0.001    0.000    0.149    0.004 /private/tmp/claude-501/-Users-radalzubi-Desktop-harvestmind/ff795fbd-41f4-4af5-afd4-b87ad517d896/scratchpad/perf/profile_e2e.py:61(w)\n       18    0.001    0.000    0.125    0.007 /private/tmp/claude-501/-Users-radalzubi-Desktop-harvestmind/ff795fbd-41f4-4af5-afd4-b87ad517d896/scratchpad/perf/profile_e2e.py:55(matrix)\n       18    0.055    0.003    0.124    0.007 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:64(matrix)\n        1    0.000    0.000    0.105    0.105 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:327(warm_start_vector)\n        2    0.000    0.000    0.105    0.052 /private/tmp/claude-501/-Users-radalzubi-Desktop-harvestmind/ff795fbd-41f4-4af5-afd4-b87ad517d896/scratchpad/perf/profile_e2e.py:47(complete)\n        2    0.000    0.000    0.105    0.052 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:172(complete)\n       13    0.000    0.000    0.076    0.006 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/planner.py:137(evaluate)\n       45    0.026    0.001    0.057    0.001 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/settlement.py:25(settle)\n  1286066    0.054    0.000    0.054    0.000 {method 'append' of 'list' objects}\n       10    0.000    0.000    0.052    0.005 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/worlds.py:78(forecast_all)\n        7    0.003    0.000    0.052    0.007 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/worlds.py:93(draw)\n       40    0.000    0.000    0.047    0.001 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/forecast.py:75(estimate)\n    45928    0.020    0.000    0.032    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:50(var)\n13355/13104    0.011    0.000    0.031    0.000 {built-in method builtins.sum}\n       18    0.000    0.000    0.031    0.002 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/scipy/sparse/_coo.py:32(__init__)\n       33    0.018    0.001    0.025    0.001 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/terminal.py:30(continuation_value)\n       40    0.003    0.000    0.024    0.001 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/forecast.py:11(change_origin)\n      965    0.023    0.000    0.023    0.000 {built-in method numpy.asarray}\n       40    0.002    0.000    0.022    0.001 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/forecast.py:53(_fit_segment)\n     2440    0.001    0.000    0.018    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/forecast.py:58(predict)\n     2440    0.013    0.000    0.018    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/forecast.py:9(point)\n     5933    0.002    0.000    0.016    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/numpy/_core/fromnumeric.py:3699(mean)\n     6029    0.005    0.000    0.014    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/numpy/_core/_methods.py:115(_mean)\n     2160    0.005    0.000    0.014    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/worlds.py:42(dates)\n        1    0.000    0.000    0.013    0.013 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/policies.py:146(baseline_plan)\n      516    0.013    0.000    0.013    0.000 {built-in method numpy.array}\n    29134    0.009    0.000    0.013    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:59(row)\n        1    0.000    0.000    0.013    0.013 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/meio/baselines.py:73(network_rule_plan)\n        2    0.000    0.000    0.013    0.006 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/meio/accounting.py:189(network_accounting)\n       72    0.000    0.000    0.011    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/scipy/sparse/_base.py:1525(_get_index_dtype)\n       72    0.001    0.000    0.011    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/scipy/sparse/_sputils.py:264(get_index_dtype)\n        1    0.000    0.000    0.010    0.010 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/planner.py:47(targets)\n     10/7    0.000    0.000    0.010    0.001 <frozen importlib._bootstrap>:1360(_find_and_load)\n     10/7    0.000    0.000    0.010    0.001 <frozen importlib._bootstrap>:1308(_find_and_load_unlocked)\n     1520    0.001    0.000    0.010    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/numpy/_core/fromnumeric.py:3833(std)\n     10/7    0.000    0.000    0.009    0.001 <frozen importlib._bootstrap>:914(_load_unlocked)\n\n\n",
+ "cprofile_tottime": "         2531395 function calls (2525742 primitive calls) in 12.454 seconds\n\n   Ordered by: internal time\n   List reduced from 990 to 30 due to restriction <30>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n       18   11.786    0.655   11.786    0.655 {built-in method highspy._core.run}\n       12    0.204    0.017   12.264    1.022 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:501(solve)\n       18    0.055    0.003    0.124    0.007 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:64(matrix)\n  1286066    0.054    0.000    0.054    0.000 {method 'append' of 'list' objects}\n       18    0.028    0.002   11.826    0.657 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:105(_highspy_solve)\n       45    0.026    0.001    0.057    0.001 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/settlement.py:25(settle)\n      965    0.023    0.000    0.023    0.000 {built-in method numpy.asarray}\n    45928    0.020    0.000    0.032    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:50(var)\n       33    0.018    0.001    0.025    0.001 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/terminal.py:30(continuation_value)\n      516    0.013    0.000    0.013    0.000 {built-in method numpy.array}\n     2440    0.013    0.000    0.018    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/forecast.py:9(point)\n13355/13104    0.011    0.000    0.031    0.000 {built-in method builtins.sum}\n    29134    0.009    0.000    0.013    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:59(row)\n154271/154247    0.008    0.000    0.009    0.000 {built-in method builtins.max}\n       12    0.007    0.001   12.271    1.023 /private/tmp/claude-501/-Users-radalzubi-Desktop-harvestmind/ff795fbd-41f4-4af5-afd4-b87ad517d896/scratchpad/perf/profile_e2e.py:28(solve_wrapped)\n   117621    0.007    0.000    0.007    0.000 {method 'items' of 'dict' objects}\n    10224    0.006    0.000    0.006    0.000 {method 'reduce' of 'numpy.ufunc' objects}\n     6029    0.005    0.000    0.014    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/numpy/_core/_methods.py:115(_mean)\n    70151    0.005    0.000    0.005    0.000 {method 'get' of 'dict' objects}\n     2160    0.005    0.000    0.014    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/worlds.py:42(dates)\n     1520    0.005    0.000    0.008    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/numpy/_core/_methods.py:148(_var)\n     9506    0.004    0.000    0.008    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/worlds.py:31(next_open)\n90561/90549    0.004    0.000    0.008    0.000 {built-in method builtins.min}\n    44604    0.004    0.000    0.004    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:1423(<genexpr>)\n     9823    0.004    0.000    0.005    0.000 {built-in method builtins.sorted}\n    96700    0.004    0.000    0.004    0.000 {built-in method builtins.len}\n     7549    0.003    0.000    0.004    0.000 /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/numpy/_core/_methods.py:73(_count_reduce_items)\n       40    0.003    0.000    0.024    0.001 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/forecast.py:11(change_origin)\n    34378    0.003    0.000    0.004    0.000 /private/tmp/claude-501/-Users-radalzubi-Desktop-harvestmind/ff795fbd-41f4-4af5-afd4-b87ad517d896/scratchpad/perf/profile_e2e.py:42(<genexpr>)\n    13992    0.003    0.000    0.003    0.000 /Users/radalzubi/Desktop/harvestmind-p4b/zaad/full/model.py:637(expense)\n\n\n",
+ "report": {
+  "schema_version": "zaad.network.report.v2",
+  "brand": "ZAAD",
+  "version": "zaad.network.2.0",
+  "operator_id": "p2_fixture",
+  "as_of": "2026-09-07T00:00:00+00:00",
+  "information_hash": "637417e75b10eb5bac1e88687bdb8adeb4fb3e236d4e7b7cedfe88773e298fc0",
+  "evidence_label": "SYNTHETIC",
+  "status": "PENDING_REVIEW",
+  "mode": "LEAN",
+  "engine_profile": "reliability",
+  "selected_policy": "stochastic_network",
+  "actions": [
+   {
+    "action": "purchase",
+    "source": "src_A",
+    "period": 1,
+    "quantity": 621.3136693105382,
+    "first_review": false
+   },
+   {
+    "action": "purchase",
+    "source": "src_A",
+    "period": 4,
+    "quantity": 2187.4079167623013,
+    "first_review": false
+   },
+   {
+    "action": "purchase",
+    "source": "src_S2",
+    "period": 0,
+    "quantity": 24.58821240106208,
+    "first_review": true
+   },
+   {
+    "action": "purchase",
+    "source": "src_A_B",
+    "period": 1,
+    "quantity": 621.684972300974,
+    "first_review": false
+   },
+   {
+    "action": "purchase",
+    "source": "src_A_B",
+    "period": 4,
+    "quantity": 2209.4043272955264,
+    "first_review": false
+   },
+   {
+    "action": "purchase",
+    "source": "src_S2_B",
+    "period": 0,
+    "quantity": 28.96975945025897,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 69.63801102340656,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 77.75303017341905,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 1,
+    "quantity": 23.241233823950946,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 54,
+    "period": 2,
+    "quantity": 300.2353281347797,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 57,
+    "period": 5,
+    "quantity": 587.7144787152112,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 57,
+    "period": 11,
+    "quantity": 447.9629302343939,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 52.76858804158286,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 99.84037076159153,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 1,
+    "quantity": 0.35387964256227883,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 54,
+    "period": 2,
+    "quantity": 308.4307721974116,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 57,
+    "period": 5,
+    "quantity": 1120.932426676439,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 49.0469605688083,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 79.34557560362964,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 1,
+    "quantity": 27.799693209780813,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 54,
+    "period": 2,
+    "quantity": 308.8628787753984,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 57,
+    "period": 5,
+    "quantity": 179.18422748551785,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 57,
+    "period": 7,
+    "quantity": 414.9709498123753,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 57,
+    "period": 11,
+    "quantity": 451.98232020795456,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 67.14639790198011,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 104.46106592558198,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 54,
+    "period": 2,
+    "quantity": 300.1669662390579,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 57,
+    "period": 5,
+    "quantity": 1132.1590454512354,
+    "first_review": false
+   }
+  ],
+  "incumbent_actions": [
+   {
+    "action": "purchase",
+    "source": "src_A",
+    "period": 0,
+    "quantity": 2044.7628089964237,
+    "first_review": true
+   },
+   {
+    "action": "purchase",
+    "source": "src_A",
+    "period": 10,
+    "quantity": 2044.7628089964237,
+    "first_review": false
+   },
+   {
+    "action": "purchase",
+    "source": "src_A_B",
+    "period": 0,
+    "quantity": 2044.7628089964237,
+    "first_review": true
+   },
+   {
+    "action": "purchase",
+    "source": "src_A_B",
+    "period": 10,
+    "quantity": 2044.7628089964237,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 68.05479042135508,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 2,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 3,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 4,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 5,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 6,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 7,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 8,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 9,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 10,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north",
+    "expiry_cohort": 53,
+    "period": 11,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 76.54632770689315,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 57.01426648713638,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 1,
+    "quantity": 45.0626565897867,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 2,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 3,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 4,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 5,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 6,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 7,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 8,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 9,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 10,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 53,
+    "period": 11,
+    "quantity": 56.26643468824645,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south",
+    "expiry_cohort": 63,
+    "period": 11,
+    "quantity": 45.81048838867663,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 68.05479042135508,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 2,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 3,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 4,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 5,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 6,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 7,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 8,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 9,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 10,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_north_B",
+    "expiry_cohort": 53,
+    "period": 11,
+    "quantity": 98.38461538461539,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 52,
+    "period": 0,
+    "quantity": 76.54632770689315,
+    "first_review": true
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 52,
+    "period": 1,
+    "quantity": 57.01426648713638,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 1,
+    "quantity": 45.0626565897867,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 2,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 3,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 4,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 5,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 6,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 7,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 8,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 9,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 10,
+    "quantity": 102.07692307692308,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 53,
+    "period": 11,
+    "quantity": 56.26643468824645,
+    "first_review": false
+   },
+   {
+    "action": "transfer",
+    "transfer": "lane_south_B",
+    "expiry_cohort": 63,
+    "period": 11,
+    "quantity": 45.81048838867663,
+    "first_review": false
+   }
+  ],
+  "approval_required": true,
+  "executable_purchase_order": false,
+  "forecasts": {
+   "svc_north": {
+    "method": "moving_average",
+    "mean": 98.38461538461539,
+    "segment_origin": 0,
+    "adaptation": "symmetric",
+    "history_count": 52,
+    "segment_count": 52,
+    "zero_probability": 0.0,
+    "decision_losses": {
+     "moving_average": 44.05400421496313,
+     "ewma": 48.57662654309374,
+     "croston_sba": 116.51071291936141,
+     "tsb": 48.57662654309374,
+     "recent_level": 54.759417808219204
+    },
+    "sd": 9.149643508430312,
+    "sizes": [
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0
+    ],
+    "interval_status": "empirical; no coverage guarantee after drift",
+    "uncertainty": {
+     "sd_fitted": 9.149643508430312,
+     "sd_effective": 9.183232497839247,
+     "intermittent": null,
+     "residual_sd": 9.183232497839247,
+     "residual_rms": 9.281829930779024,
+     "calibration_ratio": 1.0,
+     "calibration_ratio_raw": 1.003671070832212,
+     "bias": -0.9038461538461521,
+     "level_se": 1.2734852171333328,
+     "regime_uncertainty": 0.0,
+     "regime_age": null,
+     "pre_change_level": null,
+     "pre_change_weight": 0.0,
+     "last_outlier_age": null,
+     "outliers": 0,
+     "segment_count": 52,
+     "history_count": 52,
+     "data_sufficiency": "adequate",
+     "decay": true,
+     "scope": "one-step residuals of the chosen method since the last detected change"
+    }
+   },
+   "svc_south": {
+    "method": "moving_average",
+    "mean": 102.07692307692308,
+    "segment_origin": 0,
+    "adaptation": "symmetric",
+    "history_count": 52,
+    "segment_count": 52,
+    "zero_probability": 0.0,
+    "decision_losses": {
+     "moving_average": 56.54100368809276,
+     "ewma": 63.026940743589364,
+     "croston_sba": 141.19478211167078,
+     "tsb": 63.026940743589364,
+     "recent_level": 72.71917808219182
+    },
+    "sd": 9.62545626368037,
+    "sizes": [
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001
+    ],
+    "interval_status": "empirical; no coverage guarantee after drift",
+    "uncertainty": {
+     "sd_fitted": 9.62545626368037,
+     "sd_effective": 9.62545626368037,
+     "intermittent": null,
+     "residual_sd": 9.363295880149824,
+     "residual_rms": 9.399420855884449,
+     "calibration_ratio": 1.0,
+     "calibration_ratio_raw": 0.9727638486582965,
+     "bias": 1.0000000000000024,
+     "level_se": 1.2984555155084967,
+     "regime_uncertainty": 0.0,
+     "regime_age": null,
+     "pre_change_level": null,
+     "pre_change_weight": 0.0,
+     "last_outlier_age": null,
+     "outliers": 0,
+     "segment_count": 52,
+     "history_count": 52,
+     "data_sufficiency": "adequate",
+     "decay": true,
+     "scope": "one-step residuals of the chosen method since the last detected change"
+    }
+   },
+   "svc_north_B": {
+    "method": "moving_average",
+    "mean": 98.38461538461539,
+    "segment_origin": 0,
+    "adaptation": "symmetric",
+    "history_count": 52,
+    "segment_count": 52,
+    "zero_probability": 0.0,
+    "decision_losses": {
+     "moving_average": 44.05400421496313,
+     "ewma": 48.57662654309374,
+     "croston_sba": 116.51071291936141,
+     "tsb": 48.57662654309374,
+     "recent_level": 54.759417808219204
+    },
+    "sd": 9.149643508430312,
+    "sizes": [
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0
+    ],
+    "interval_status": "empirical; no coverage guarantee after drift",
+    "uncertainty": {
+     "sd_fitted": 9.149643508430312,
+     "sd_effective": 9.183232497839247,
+     "intermittent": null,
+     "residual_sd": 9.183232497839247,
+     "residual_rms": 9.281829930779024,
+     "calibration_ratio": 1.0,
+     "calibration_ratio_raw": 1.003671070832212,
+     "bias": -0.9038461538461521,
+     "level_se": 1.2734852171333328,
+     "regime_uncertainty": 0.0,
+     "regime_age": null,
+     "pre_change_level": null,
+     "pre_change_weight": 0.0,
+     "last_outlier_age": null,
+     "outliers": 0,
+     "segment_count": 52,
+     "history_count": 52,
+     "data_sufficiency": "adequate",
+     "decay": true,
+     "scope": "one-step residuals of the chosen method since the last detected change"
+    }
+   },
+   "svc_south_B": {
+    "method": "moving_average",
+    "mean": 102.07692307692308,
+    "segment_origin": 0,
+    "adaptation": "symmetric",
+    "history_count": 52,
+    "segment_count": 52,
+    "zero_probability": 0.0,
+    "decision_losses": {
+     "moving_average": 56.54100368809276,
+     "ewma": 63.026940743589364,
+     "croston_sba": 141.19478211167078,
+     "tsb": 63.026940743589364,
+     "recent_level": 72.71917808219182
+    },
+    "sd": 9.62545626368037,
+    "sizes": [
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001,
+     109.00000000000001,
+     106.0,
+     103.0,
+     100.0,
+     97.0,
+     94.0,
+     91.0,
+     88.0,
+     85.0,
+     114.99999999999999,
+     112.00000000000001
+    ],
+    "interval_status": "empirical; no coverage guarantee after drift",
+    "uncertainty": {
+     "sd_fitted": 9.62545626368037,
+     "sd_effective": 9.62545626368037,
+     "intermittent": null,
+     "residual_sd": 9.363295880149824,
+     "residual_rms": 9.399420855884449,
+     "calibration_ratio": 1.0,
+     "calibration_ratio_raw": 0.9727638486582965,
+     "bias": 1.0000000000000024,
+     "level_se": 1.2984555155084967,
+     "regime_uncertainty": 0.0,
+     "regime_age": null,
+     "pre_change_level": null,
+     "pre_change_weight": 0.0,
+     "last_outlier_age": null,
+     "outliers": 0,
+     "segment_count": 52,
+     "history_count": 52,
+     "data_sufficiency": "adequate",
+     "decay": true,
+     "scope": "one-step residuals of the chosen method since the last detected change"
+    }
+   }
+  },
+  "eta": {},
+  "service_frontier": [
+   {
+    "service": "svc_north",
+    "requested": 0.95,
+    "metric": "unit_fill",
+    "best_modeled_individual_unit_fill": 1.0,
+    "selected_modeled_unit_fill": 1.0,
+    "unavoidable_gap_under_mean_world": 0.0,
+    "bound_scope": "single-service physical/financial optimum under mean world, not a guarantee or simultaneous bound"
+   },
+   {
+    "service": "svc_south",
+    "requested": 0.95,
+    "metric": "unit_fill",
+    "best_modeled_individual_unit_fill": 1.0,
+    "selected_modeled_unit_fill": 1.0,
+    "unavoidable_gap_under_mean_world": 0.0,
+    "bound_scope": "single-service physical/financial optimum under mean world, not a guarantee or simultaneous bound"
+   },
+   {
+    "service": "svc_north_B",
+    "requested": 0.95,
+    "metric": "unit_fill",
+    "best_modeled_individual_unit_fill": 1.0,
+    "selected_modeled_unit_fill": 1.0,
+    "unavoidable_gap_under_mean_world": 0.0,
+    "bound_scope": "single-service physical/financial optimum under mean world, not a guarantee or simultaneous bound"
+   },
+   {
+    "service": "svc_south_B",
+    "requested": 0.95,
+    "metric": "unit_fill",
+    "best_modeled_individual_unit_fill": 1.0,
+    "selected_modeled_unit_fill": 1.0,
+    "unavoidable_gap_under_mean_world": 0.0,
+    "bound_scope": "single-service physical/financial optimum under mean world, not a guarantee or simultaneous bound"
+   }
+  ],
+  "protection": [
+   {
+    "sku": "A",
+    "location": "central",
+    "services": [
+     "svc_north",
+     "svc_south"
+    ],
+    "echelon_origin": true,
+    "weighted_target": 0.95,
+    "top_target": 0.95,
+    "top_priority": 1.0,
+    "quantile_z": 1.644853626951472,
+    "mean_demand_per_period": 200.46153846153845,
+    "replenishment_periods": 2,
+    "protection_units": 31.862233090857583,
+    "protection_periods_of_demand": 0.15894437075255127,
+    "replenished_by_transfer_arc": null,
+    "on_hand_units": 300.0,
+    "drivers_units": {
+     "demand_spread": 30.946089864128652,
+     "forecast_level": 5.983064412975989,
+     "lead_time_spread": 0.0,
+     "fill_spread": 4.663084803817556,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 1.9315129682371144
+    },
+    "calibration_ratio": 1.0,
+    "supply_scope": "declared",
+    "late_probability": 0.0,
+    "effective_independent_sources": 2.0,
+    "shared_domains": [],
+    "substitute_cover_units": 0.0,
+    "criticality_margin_ratio": 1.5,
+    "data_sufficiency": "adequate",
+    "stance": "lean",
+    "state": {
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "resilience": 1.0,
+     "demand_decline_confirmed": false,
+     "demand_decline_ratio": null,
+     "lean_base_stock_units": 432.1652404787262,
+     "liquidation_units": 0.0,
+     "duplicated_buffer_units": 0.0,
+     "duplicated_buffer_explanation": "",
+     "exit": {
+      "active_risk_source": null,
+      "driver_kind": null,
+      "last_evidence": null,
+      "recovery_evidence_receipts": 0,
+      "receipts_needed": 0,
+      "backlog_open": false,
+      "reviews_remaining_until_lean_eligible": 0,
+      "risk_recovery_confidence": null,
+      "recovery_evidence_count": 0,
+      "reviews_to_exit_protect": 0,
+      "reason_not_lean": null
+     },
+     "alternate_inside_window": true,
+     "echelon": {
+      "local_service_units": 31.862233090857583,
+      "pooled_network_units": 0.0,
+      "source_protection_units": 0.0,
+      "temporary_risk_units": 0.0,
+      "scope": "partition of recommended protection; local = transfer-lead demand spread at the branch, pooled = the remainder that can sit upstream, source = declared lead/fill spread, temporary = active-driver increment"
+     },
+     "transition": "LEAN: no active driver; protection is the lean baseline",
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "lean_baseline_units": 31.2421635556493,
+     "incremental_protection_units": 0.6200695352082839,
+     "active_drivers": [],
+     "regime": "LEAN",
+     "flags": [],
+     "placement": {
+      "local_service_units": 31.862233090857583,
+      "pooled_network_units": 0.0,
+      "transfer_lead_periods": null,
+      "upstream_stock_units": 0.0
+     },
+     "false_protection_flag": false,
+     "scope": "activity scales the optimizer's quantile protection and the stress hedge; zero is lean"
+    },
+    "explanation": "A at central does not need extra inventory: replenishment lands within 2 period(s) from 2.0 effectively independent sources. Risk state: lean (no active driver)."
+   },
+   {
+    "sku": "A",
+    "location": "north",
+    "services": [
+     "svc_north"
+    ],
+    "echelon_origin": false,
+    "weighted_target": 0.9499999999999998,
+    "top_target": 0.95,
+    "top_priority": 1.0,
+    "quantile_z": 1.644853626951471,
+    "mean_demand_per_period": 98.38461538461539,
+    "replenishment_periods": 2,
+    "protection_units": 21.76872747849565,
+    "protection_periods_of_demand": 0.22126149899956485,
+    "replenished_by_transfer_arc": "lane_north",
+    "on_hand_units": 150.0,
+    "drivers_units": {
+     "demand_spread": 21.361799494925947,
+     "forecast_level": 4.189393556541688,
+     "lead_time_spread": 0.0,
+     "fill_spread": 0.0,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 0.0
+    },
+    "calibration_ratio": 1.0,
+    "supply_scope": "transfer_arc",
+    "late_probability": 0.0,
+    "effective_independent_sources": 1.0,
+    "shared_domains": [],
+    "substitute_cover_units": 0.0,
+    "criticality_margin_ratio": 1.5,
+    "data_sufficiency": "adequate",
+    "stance": "lean",
+    "state": {
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "resilience": 0.5,
+     "demand_decline_confirmed": false,
+     "demand_decline_ratio": null,
+     "lean_base_stock_units": 218.05289641998368,
+     "liquidation_units": 0.0,
+     "duplicated_buffer_units": 128.7163343492471,
+     "duplicated_buffer_explanation": "129 units buffer the same demand spread twice: north holds 150 against a local need of 21 while central holds 300 against a pooled need of 0; the transfer lead of 1 review(s) is inside the 2-period service window with capacity 1000000 per period",
+     "exit": {
+      "active_risk_source": null,
+      "driver_kind": null,
+      "last_evidence": null,
+      "recovery_evidence_receipts": 0,
+      "receipts_needed": 0,
+      "backlog_open": false,
+      "reviews_remaining_until_lean_eligible": 0,
+      "risk_recovery_confidence": null,
+      "recovery_evidence_count": 0,
+      "reviews_to_exit_protect": 0,
+      "reason_not_lean": null
+     },
+     "alternate_inside_window": null,
+     "echelon": {
+      "local_service_units": 21.28366565075292,
+      "pooled_network_units": 0.48506182774272943,
+      "source_protection_units": 0.0,
+      "temporary_risk_units": 0.0,
+      "scope": "partition of recommended protection; local = transfer-lead demand spread at the branch, pooled = the remainder that can sit upstream, source = declared lead/fill spread, temporary = active-driver increment"
+     },
+     "transition": "LEAN: no active driver; protection is the lean baseline",
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "lean_baseline_units": 21.28366565075292,
+     "incremental_protection_units": 0.48506182774272943,
+     "active_drivers": [],
+     "regime": "LEAN",
+     "flags": [
+      "DUPLICATED_NETWORK_BUFFER"
+     ],
+     "placement": {
+      "local_service_units": 21.28366565075292,
+      "pooled_network_units": 0.48506182774272943,
+      "transfer_lead_periods": 1,
+      "upstream_stock_units": 300.0
+     },
+     "false_protection_flag": false,
+     "scope": "activity scales the optimizer's quantile protection and the stress hedge; zero is lean"
+    },
+    "explanation": "A at north has no approved cleared source; protection cannot be replenished, only allocated. Risk state: lean (no active driver)."
+   },
+   {
+    "sku": "A",
+    "location": "south",
+    "services": [
+     "svc_south"
+    ],
+    "echelon_origin": false,
+    "weighted_target": 0.95,
+    "top_target": 0.95,
+    "top_priority": 1.0,
+    "quantile_z": 1.644853626951472,
+    "mean_demand_per_period": 102.07692307692308,
+    "replenishment_periods": 2,
+    "protection_units": 22.79429844534667,
+    "protection_periods_of_demand": 0.22330510911040444,
+    "replenished_by_transfer_arc": "lane_south",
+    "on_hand_units": 150.0,
+    "drivers_units": {
+     "demand_spread": 22.390489057126622,
+     "forecast_level": 4.2715385282385885,
+     "lead_time_spread": 0.0,
+     "fill_spread": 0.0,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 0.0
+    },
+    "calibration_ratio": 1.0,
+    "supply_scope": "transfer_arc",
+    "late_probability": 0.0,
+    "effective_independent_sources": 1.0,
+    "shared_domains": [],
+    "substitute_cover_units": 0.0,
+    "criticality_margin_ratio": 1.5,
+    "data_sufficiency": "adequate",
+    "stance": "lean",
+    "state": {
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "resilience": 0.5,
+     "demand_decline_confirmed": false,
+     "demand_decline_ratio": null,
+     "lean_base_stock_units": 226.54433521097278,
+     "liquidation_units": 0.0,
+     "duplicated_buffer_units": 127.60951094287338,
+     "duplicated_buffer_explanation": "128 units buffer the same demand spread twice: south holds 150 against a local need of 22 while central holds 300 against a pooled need of 0; the transfer lead of 1 review(s) is inside the 2-period service window with capacity 1000000 per period",
+     "exit": {
+      "active_risk_source": null,
+      "driver_kind": null,
+      "last_evidence": null,
+      "recovery_evidence_receipts": 0,
+      "receipts_needed": 0,
+      "backlog_open": false,
+      "reviews_remaining_until_lean_eligible": 0,
+      "risk_recovery_confidence": null,
+      "recovery_evidence_count": 0,
+      "reviews_to_exit_protect": 0,
+      "reason_not_lean": null
+     },
+     "alternate_inside_window": null,
+     "echelon": {
+      "local_service_units": 22.390489057126622,
+      "pooled_network_units": 0.4038093882200471,
+      "source_protection_units": 0.0,
+      "temporary_risk_units": 0.0,
+      "scope": "partition of recommended protection; local = transfer-lead demand spread at the branch, pooled = the remainder that can sit upstream, source = declared lead/fill spread, temporary = active-driver increment"
+     },
+     "transition": "LEAN: no active driver; protection is the lean baseline",
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "lean_baseline_units": 22.390489057126622,
+     "incremental_protection_units": 0.4038093882200471,
+     "active_drivers": [],
+     "regime": "LEAN",
+     "flags": [
+      "DUPLICATED_NETWORK_BUFFER"
+     ],
+     "placement": {
+      "local_service_units": 22.390489057126622,
+      "pooled_network_units": 0.4038093882200471,
+      "transfer_lead_periods": 1,
+      "upstream_stock_units": 300.0
+     },
+     "false_protection_flag": false,
+     "scope": "activity scales the optimizer's quantile protection and the stress hedge; zero is lean"
+    },
+    "explanation": "A at south has no approved cleared source; protection cannot be replenished, only allocated. Risk state: lean (no active driver)."
+   },
+   {
+    "sku": "B",
+    "location": "central",
+    "services": [
+     "svc_north_B",
+     "svc_south_B"
+    ],
+    "echelon_origin": true,
+    "weighted_target": 0.95,
+    "top_target": 0.95,
+    "top_priority": 1.0,
+    "quantile_z": 1.644853626951472,
+    "mean_demand_per_period": 200.46153846153845,
+    "replenishment_periods": 2,
+    "protection_units": 31.862233090857583,
+    "protection_periods_of_demand": 0.15894437075255127,
+    "replenished_by_transfer_arc": null,
+    "on_hand_units": 300.0,
+    "drivers_units": {
+     "demand_spread": 30.946089864128652,
+     "forecast_level": 5.983064412975989,
+     "lead_time_spread": 0.0,
+     "fill_spread": 4.663084803817556,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 1.9315129682371144
+    },
+    "calibration_ratio": 1.0,
+    "supply_scope": "declared",
+    "late_probability": 0.0,
+    "effective_independent_sources": 2.0,
+    "shared_domains": [],
+    "substitute_cover_units": 0.0,
+    "criticality_margin_ratio": 1.5,
+    "data_sufficiency": "adequate",
+    "stance": "lean",
+    "state": {
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "resilience": 1.0,
+     "demand_decline_confirmed": false,
+     "demand_decline_ratio": null,
+     "lean_base_stock_units": 432.1652404787262,
+     "liquidation_units": 0.0,
+     "duplicated_buffer_units": 0.0,
+     "duplicated_buffer_explanation": "",
+     "exit": {
+      "active_risk_source": null,
+      "driver_kind": null,
+      "last_evidence": null,
+      "recovery_evidence_receipts": 0,
+      "receipts_needed": 0,
+      "backlog_open": false,
+      "reviews_remaining_until_lean_eligible": 0,
+      "risk_recovery_confidence": null,
+      "recovery_evidence_count": 0,
+      "reviews_to_exit_protect": 0,
+      "reason_not_lean": null
+     },
+     "alternate_inside_window": true,
+     "echelon": {
+      "local_service_units": 31.862233090857583,
+      "pooled_network_units": 0.0,
+      "source_protection_units": 0.0,
+      "temporary_risk_units": 0.0,
+      "scope": "partition of recommended protection; local = transfer-lead demand spread at the branch, pooled = the remainder that can sit upstream, source = declared lead/fill spread, temporary = active-driver increment"
+     },
+     "transition": "LEAN: no active driver; protection is the lean baseline",
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "lean_baseline_units": 31.2421635556493,
+     "incremental_protection_units": 0.6200695352082839,
+     "active_drivers": [],
+     "regime": "LEAN",
+     "flags": [],
+     "placement": {
+      "local_service_units": 31.862233090857583,
+      "pooled_network_units": 0.0,
+      "transfer_lead_periods": null,
+      "upstream_stock_units": 0.0
+     },
+     "false_protection_flag": false,
+     "scope": "activity scales the optimizer's quantile protection and the stress hedge; zero is lean"
+    },
+    "explanation": "B at central does not need extra inventory: replenishment lands within 2 period(s) from 2.0 effectively independent sources. Risk state: lean (no active driver)."
+   },
+   {
+    "sku": "B",
+    "location": "north",
+    "services": [
+     "svc_north_B"
+    ],
+    "echelon_origin": false,
+    "weighted_target": 0.9499999999999998,
+    "top_target": 0.95,
+    "top_priority": 1.0,
+    "quantile_z": 1.644853626951471,
+    "mean_demand_per_period": 98.38461538461539,
+    "replenishment_periods": 2,
+    "protection_units": 21.76872747849565,
+    "protection_periods_of_demand": 0.22126149899956485,
+    "replenished_by_transfer_arc": "lane_north_B",
+    "on_hand_units": 150.0,
+    "drivers_units": {
+     "demand_spread": 21.361799494925947,
+     "forecast_level": 4.189393556541688,
+     "lead_time_spread": 0.0,
+     "fill_spread": 0.0,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 0.0
+    },
+    "calibration_ratio": 1.0,
+    "supply_scope": "transfer_arc",
+    "late_probability": 0.0,
+    "effective_independent_sources": 1.0,
+    "shared_domains": [],
+    "substitute_cover_units": 0.0,
+    "criticality_margin_ratio": 1.5,
+    "data_sufficiency": "adequate",
+    "stance": "lean",
+    "state": {
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "resilience": 0.5,
+     "demand_decline_confirmed": false,
+     "demand_decline_ratio": null,
+     "lean_base_stock_units": 218.05289641998368,
+     "liquidation_units": 0.0,
+     "duplicated_buffer_units": 128.7163343492471,
+     "duplicated_buffer_explanation": "129 units buffer the same demand spread twice: north holds 150 against a local need of 21 while central holds 300 against a pooled need of 0; the transfer lead of 1 review(s) is inside the 2-period service window with capacity 1000000 per period",
+     "exit": {
+      "active_risk_source": null,
+      "driver_kind": null,
+      "last_evidence": null,
+      "recovery_evidence_receipts": 0,
+      "receipts_needed": 0,
+      "backlog_open": false,
+      "reviews_remaining_until_lean_eligible": 0,
+      "risk_recovery_confidence": null,
+      "recovery_evidence_count": 0,
+      "reviews_to_exit_protect": 0,
+      "reason_not_lean": null
+     },
+     "alternate_inside_window": null,
+     "echelon": {
+      "local_service_units": 21.28366565075292,
+      "pooled_network_units": 0.48506182774272943,
+      "source_protection_units": 0.0,
+      "temporary_risk_units": 0.0,
+      "scope": "partition of recommended protection; local = transfer-lead demand spread at the branch, pooled = the remainder that can sit upstream, source = declared lead/fill spread, temporary = active-driver increment"
+     },
+     "transition": "LEAN: no active driver; protection is the lean baseline",
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "lean_baseline_units": 21.28366565075292,
+     "incremental_protection_units": 0.48506182774272943,
+     "active_drivers": [],
+     "regime": "LEAN",
+     "flags": [
+      "DUPLICATED_NETWORK_BUFFER"
+     ],
+     "placement": {
+      "local_service_units": 21.28366565075292,
+      "pooled_network_units": 0.48506182774272943,
+      "transfer_lead_periods": 1,
+      "upstream_stock_units": 300.0
+     },
+     "false_protection_flag": false,
+     "scope": "activity scales the optimizer's quantile protection and the stress hedge; zero is lean"
+    },
+    "explanation": "B at north has no approved cleared source; protection cannot be replenished, only allocated. Risk state: lean (no active driver)."
+   },
+   {
+    "sku": "B",
+    "location": "south",
+    "services": [
+     "svc_south_B"
+    ],
+    "echelon_origin": false,
+    "weighted_target": 0.95,
+    "top_target": 0.95,
+    "top_priority": 1.0,
+    "quantile_z": 1.644853626951472,
+    "mean_demand_per_period": 102.07692307692308,
+    "replenishment_periods": 2,
+    "protection_units": 22.79429844534667,
+    "protection_periods_of_demand": 0.22330510911040444,
+    "replenished_by_transfer_arc": "lane_south_B",
+    "on_hand_units": 150.0,
+    "drivers_units": {
+     "demand_spread": 22.390489057126622,
+     "forecast_level": 4.2715385282385885,
+     "lead_time_spread": 0.0,
+     "fill_spread": 0.0,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 0.0
+    },
+    "calibration_ratio": 1.0,
+    "supply_scope": "transfer_arc",
+    "late_probability": 0.0,
+    "effective_independent_sources": 1.0,
+    "shared_domains": [],
+    "substitute_cover_units": 0.0,
+    "criticality_margin_ratio": 1.5,
+    "data_sufficiency": "adequate",
+    "stance": "lean",
+    "state": {
+     "activity": 0.0,
+     "demand_score": 0.0,
+     "supply_score": 0.0,
+     "resilience": 0.5,
+     "demand_decline_confirmed": false,
+     "demand_decline_ratio": null,
+     "lean_base_stock_units": 226.54433521097278,
+     "liquidation_units": 0.0,
+     "duplicated_buffer_units": 127.60951094287338,
+     "duplicated_buffer_explanation": "128 units buffer the same demand spread twice: south holds 150 against a local need of 22 while central holds 300 against a pooled need of 0; the transfer lead of 1 review(s) is inside the 2-period service window with capacity 1000000 per period",
+     "exit": {
+      "active_risk_source": null,
+      "driver_kind": null,
+      "last_evidence": null,
+      "recovery_evidence_receipts": 0,
+      "receipts_needed": 0,
+      "backlog_open": false,
+      "reviews_remaining_until_lean_eligible": 0,
+      "risk_recovery_confidence": null,
+      "recovery_evidence_count": 0,
+      "reviews_to_exit_protect": 0,
+      "reason_not_lean": null
+     },
+     "alternate_inside_window": null,
+     "echelon": {
+      "local_service_units": 22.390489057126622,
+      "pooled_network_units": 0.4038093882200471,
+      "source_protection_units": 0.0,
+      "temporary_risk_units": 0.0,
+      "scope": "partition of recommended protection; local = transfer-lead demand spread at the branch, pooled = the remainder that can sit upstream, source = declared lead/fill spread, temporary = active-driver increment"
+     },
+     "transition": "LEAN: no active driver; protection is the lean baseline",
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "lean_baseline_units": 22.390489057126622,
+     "incremental_protection_units": 0.4038093882200471,
+     "active_drivers": [],
+     "regime": "LEAN",
+     "flags": [
+      "DUPLICATED_NETWORK_BUFFER"
+     ],
+     "placement": {
+      "local_service_units": 22.390489057126622,
+      "pooled_network_units": 0.4038093882200471,
+      "transfer_lead_periods": 1,
+      "upstream_stock_units": 300.0
+     },
+     "false_protection_flag": false,
+     "scope": "activity scales the optimizer's quantile protection and the stress hedge; zero is lean"
+    },
+    "explanation": "B at south has no approved cleared source; protection cannot be replenished, only allocated. Risk state: lean (no active driver)."
+   }
+  ],
+  "false_protection": {
+   "rows": [
+    {
+     "sku": "A",
+     "location": "central",
+     "protection_units": 31.862233090857583,
+     "lean_baseline_units": 31.2421635556493,
+     "incremental_protection_units": 0.6200695352082839,
+     "active_drivers": [],
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "false_protection_flag": false,
+     "activity": 0.0
+    },
+    {
+     "sku": "A",
+     "location": "north",
+     "protection_units": 21.76872747849565,
+     "lean_baseline_units": 21.28366565075292,
+     "incremental_protection_units": 0.48506182774272943,
+     "active_drivers": [],
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "false_protection_flag": false,
+     "activity": 0.0
+    },
+    {
+     "sku": "A",
+     "location": "south",
+     "protection_units": 22.79429844534667,
+     "lean_baseline_units": 22.390489057126622,
+     "incremental_protection_units": 0.4038093882200471,
+     "active_drivers": [],
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "false_protection_flag": false,
+     "activity": 0.0
+    },
+    {
+     "sku": "B",
+     "location": "central",
+     "protection_units": 31.862233090857583,
+     "lean_baseline_units": 31.2421635556493,
+     "incremental_protection_units": 0.6200695352082839,
+     "active_drivers": [],
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "false_protection_flag": false,
+     "activity": 0.0
+    },
+    {
+     "sku": "B",
+     "location": "north",
+     "protection_units": 21.76872747849565,
+     "lean_baseline_units": 21.28366565075292,
+     "incremental_protection_units": 0.48506182774272943,
+     "active_drivers": [],
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "false_protection_flag": false,
+     "activity": 0.0
+    },
+    {
+     "sku": "B",
+     "location": "south",
+     "protection_units": 22.79429844534667,
+     "lean_baseline_units": 22.390489057126622,
+     "incremental_protection_units": 0.4038093882200471,
+     "active_drivers": [],
+     "risk_active": false,
+     "decaying": false,
+     "periods_to_lean": 0,
+     "false_protection_flag": false,
+     "activity": 0.0
+    }
+   ],
+   "quantile_levels": {
+    "svc_north": 0.0,
+    "svc_south": 0.0,
+    "svc_north_B": 0.0,
+    "svc_south_B": 0.0
+   },
+   "scope": "lean baseline is demand-only protection at the fitted spread; incremental is what active drivers add"
+  },
+  "explain": [
+   {
+    "sku": "A",
+    "location": "central",
+    "state": "LEAN",
+    "lean_baseline_units": 31.2421635556493,
+    "current_inventory_units": 300.0,
+    "current_pipeline_units": 0.0,
+    "recommended_protection_units": 31.862233090857583,
+    "incremental_protection_units": 0.6200695352082839,
+    "active_risk_drivers": [],
+    "driver_contribution_units": {
+     "demand_spread": 30.946089864128652,
+     "forecast_level": 5.983064412975989,
+     "lead_time_spread": 0.0,
+     "fill_spread": 4.663084803817556,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 1.9315129682371144
+    },
+    "service_targets": {},
+    "expected_service": null,
+    "stress_service": null,
+    "marginal_value_of_protection": {
+     "leanest_feasible_candidate": "deterministic_network",
+     "chosen": "stochastic_network",
+     "extra_inventory_value": 2522.7824685936603,
+     "carrying_cost_over_horizon": 87.08783316241129,
+     "hedged_shortage_avoided": 202.28402051590356,
+     "justified": true,
+     "scope": "selection worlds; stress at its evidence weight; not a guarantee"
+    },
+    "alternatives_available": true,
+    "transfer_available": false,
+    "substitution_available": false,
+    "expected_periods_to_lean": 0,
+    "flags": [],
+    "placement": {
+     "local_service_units": 31.862233090857583,
+     "pooled_network_units": 0.0,
+     "transfer_lead_periods": null,
+     "upstream_stock_units": 0.0
+    },
+    "intervention": "ZAAD intervened: stochastic_network",
+    "explanation": "A at central does not need extra inventory: replenishment lands within 2 period(s) from 2.0 effectively independent sources. Risk state: lean (no active driver)."
+   },
+   {
+    "sku": "A",
+    "location": "north",
+    "state": "LEAN",
+    "lean_baseline_units": 21.28366565075292,
+    "current_inventory_units": 150.0,
+    "current_pipeline_units": 0.0,
+    "recommended_protection_units": 21.76872747849565,
+    "incremental_protection_units": 0.48506182774272943,
+    "active_risk_drivers": [],
+    "driver_contribution_units": {
+     "demand_spread": 21.361799494925947,
+     "forecast_level": 4.189393556541688,
+     "lead_time_spread": 0.0,
+     "fill_spread": 0.0,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 0.0
+    },
+    "service_targets": {
+     "svc_north": 0.95
+    },
+    "expected_service": 0.9984428505591275,
+    "stress_service": 0.9916127100424897,
+    "marginal_value_of_protection": {
+     "leanest_feasible_candidate": "deterministic_network",
+     "chosen": "stochastic_network",
+     "extra_inventory_value": 2522.7824685936603,
+     "carrying_cost_over_horizon": 87.08783316241129,
+     "hedged_shortage_avoided": 202.28402051590356,
+     "justified": true,
+     "scope": "selection worlds; stress at its evidence weight; not a guarantee"
+    },
+    "alternatives_available": false,
+    "transfer_available": true,
+    "substitution_available": false,
+    "expected_periods_to_lean": 0,
+    "flags": [
+     "DUPLICATED_NETWORK_BUFFER"
+    ],
+    "placement": {
+     "local_service_units": 21.28366565075292,
+     "pooled_network_units": 0.48506182774272943,
+     "transfer_lead_periods": 1,
+     "upstream_stock_units": 300.0
+    },
+    "intervention": "ZAAD intervened: stochastic_network",
+    "explanation": "A at north has no approved cleared source; protection cannot be replenished, only allocated. Risk state: lean (no active driver)."
+   },
+   {
+    "sku": "A",
+    "location": "south",
+    "state": "LEAN",
+    "lean_baseline_units": 22.390489057126622,
+    "current_inventory_units": 150.0,
+    "current_pipeline_units": 0.0,
+    "recommended_protection_units": 22.79429844534667,
+    "incremental_protection_units": 0.4038093882200471,
+    "active_risk_drivers": [],
+    "driver_contribution_units": {
+     "demand_spread": 22.390489057126622,
+     "forecast_level": 4.2715385282385885,
+     "lead_time_spread": 0.0,
+     "fill_spread": 0.0,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 0.0
+    },
+    "service_targets": {
+     "svc_south": 0.95
+    },
+    "expected_service": 0.9828114411472252,
+    "stress_service": 0.9954323160329742,
+    "marginal_value_of_protection": {
+     "leanest_feasible_candidate": "deterministic_network",
+     "chosen": "stochastic_network",
+     "extra_inventory_value": 2522.7824685936603,
+     "carrying_cost_over_horizon": 87.08783316241129,
+     "hedged_shortage_avoided": 202.28402051590356,
+     "justified": true,
+     "scope": "selection worlds; stress at its evidence weight; not a guarantee"
+    },
+    "alternatives_available": false,
+    "transfer_available": true,
+    "substitution_available": false,
+    "expected_periods_to_lean": 0,
+    "flags": [
+     "DUPLICATED_NETWORK_BUFFER"
+    ],
+    "placement": {
+     "local_service_units": 22.390489057126622,
+     "pooled_network_units": 0.4038093882200471,
+     "transfer_lead_periods": 1,
+     "upstream_stock_units": 300.0
+    },
+    "intervention": "ZAAD intervened: stochastic_network",
+    "explanation": "A at south has no approved cleared source; protection cannot be replenished, only allocated. Risk state: lean (no active driver)."
+   },
+   {
+    "sku": "B",
+    "location": "central",
+    "state": "LEAN",
+    "lean_baseline_units": 31.2421635556493,
+    "current_inventory_units": 300.0,
+    "current_pipeline_units": 0.0,
+    "recommended_protection_units": 31.862233090857583,
+    "incremental_protection_units": 0.6200695352082839,
+    "active_risk_drivers": [],
+    "driver_contribution_units": {
+     "demand_spread": 30.946089864128652,
+     "forecast_level": 5.983064412975989,
+     "lead_time_spread": 0.0,
+     "fill_spread": 4.663084803817556,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 1.9315129682371144
+    },
+    "service_targets": {},
+    "expected_service": null,
+    "stress_service": null,
+    "marginal_value_of_protection": {
+     "leanest_feasible_candidate": "deterministic_network",
+     "chosen": "stochastic_network",
+     "extra_inventory_value": 2522.7824685936603,
+     "carrying_cost_over_horizon": 87.08783316241129,
+     "hedged_shortage_avoided": 202.28402051590356,
+     "justified": true,
+     "scope": "selection worlds; stress at its evidence weight; not a guarantee"
+    },
+    "alternatives_available": true,
+    "transfer_available": false,
+    "substitution_available": false,
+    "expected_periods_to_lean": 0,
+    "flags": [],
+    "placement": {
+     "local_service_units": 31.862233090857583,
+     "pooled_network_units": 0.0,
+     "transfer_lead_periods": null,
+     "upstream_stock_units": 0.0
+    },
+    "intervention": "ZAAD intervened: stochastic_network",
+    "explanation": "B at central does not need extra inventory: replenishment lands within 2 period(s) from 2.0 effectively independent sources. Risk state: lean (no active driver)."
+   },
+   {
+    "sku": "B",
+    "location": "north",
+    "state": "LEAN",
+    "lean_baseline_units": 21.28366565075292,
+    "current_inventory_units": 150.0,
+    "current_pipeline_units": 0.0,
+    "recommended_protection_units": 21.76872747849565,
+    "incremental_protection_units": 0.48506182774272943,
+    "active_risk_drivers": [],
+    "driver_contribution_units": {
+     "demand_spread": 21.361799494925947,
+     "forecast_level": 4.189393556541688,
+     "lead_time_spread": 0.0,
+     "fill_spread": 0.0,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 0.0
+    },
+    "service_targets": {
+     "svc_north_B": 0.95
+    },
+    "expected_service": 0.996263394263278,
+    "stress_service": 0.9976077768044235,
+    "marginal_value_of_protection": {
+     "leanest_feasible_candidate": "deterministic_network",
+     "chosen": "stochastic_network",
+     "extra_inventory_value": 2522.7824685936603,
+     "carrying_cost_over_horizon": 87.08783316241129,
+     "hedged_shortage_avoided": 202.28402051590356,
+     "justified": true,
+     "scope": "selection worlds; stress at its evidence weight; not a guarantee"
+    },
+    "alternatives_available": false,
+    "transfer_available": true,
+    "substitution_available": false,
+    "expected_periods_to_lean": 0,
+    "flags": [
+     "DUPLICATED_NETWORK_BUFFER"
+    ],
+    "placement": {
+     "local_service_units": 21.28366565075292,
+     "pooled_network_units": 0.48506182774272943,
+     "transfer_lead_periods": 1,
+     "upstream_stock_units": 300.0
+    },
+    "intervention": "ZAAD intervened: stochastic_network",
+    "explanation": "B at north has no approved cleared source; protection cannot be replenished, only allocated. Risk state: lean (no active driver)."
+   },
+   {
+    "sku": "B",
+    "location": "south",
+    "state": "LEAN",
+    "lean_baseline_units": 22.390489057126622,
+    "current_inventory_units": 150.0,
+    "current_pipeline_units": 0.0,
+    "recommended_protection_units": 22.79429844534667,
+    "incremental_protection_units": 0.4038093882200471,
+    "active_risk_drivers": [],
+    "driver_contribution_units": {
+     "demand_spread": 22.390489057126622,
+     "forecast_level": 4.2715385282385885,
+     "lead_time_spread": 0.0,
+     "fill_spread": 0.0,
+     "inbound_eta_risk": 0.0,
+     "substitution_credit": -0.0,
+     "correlation_penalty": 0.0
+    },
+    "service_targets": {
+     "svc_south_B": 0.95
+    },
+    "expected_service": 0.9963072160245997,
+    "stress_service": 0.9920693592272111,
+    "marginal_value_of_protection": {
+     "leanest_feasible_candidate": "deterministic_network",
+     "chosen": "stochastic_network",
+     "extra_inventory_value": 2522.7824685936603,
+     "carrying_cost_over_horizon": 87.08783316241129,
+     "hedged_shortage_avoided": 202.28402051590356,
+     "justified": true,
+     "scope": "selection worlds; stress at its evidence weight; not a guarantee"
+    },
+    "alternatives_available": false,
+    "transfer_available": true,
+    "substitution_available": false,
+    "expected_periods_to_lean": 0,
+    "flags": [
+     "DUPLICATED_NETWORK_BUFFER"
+    ],
+    "placement": {
+     "local_service_units": 22.390489057126622,
+     "pooled_network_units": 0.4038093882200471,
+     "transfer_lead_periods": 1,
+     "upstream_stock_units": 300.0
+    },
+    "intervention": "ZAAD intervened: stochastic_network",
+    "explanation": "B at south has no approved cleared source; protection cannot be replenished, only allocated. Risk state: lean (no active driver)."
+   }
+  ],
+  "protection_value": {
+   "leanest_feasible_candidate": "deterministic_network",
+   "chosen": "stochastic_network",
+   "extra_inventory_value": 2522.7824685936603,
+   "carrying_cost_over_horizon": 87.08783316241129,
+   "hedged_shortage_avoided": 202.28402051590356,
+   "justified": true,
+   "scope": "selection worlds; stress at its evidence weight; not a guarantee"
+  },
+  "network_service": [
+   {
+    "service": "svc_north",
+    "location": "north",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9984428505591275,
+    "incumbent_achieved": 0.9955325022739636,
+    "selected_achieved": 0.9984428505591275
+   },
+   {
+    "service": "svc_south",
+    "location": "south",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9828114411472252,
+    "incumbent_achieved": 0.9918238049799634,
+    "selected_achieved": 0.9828114411472252
+   },
+   {
+    "service": "svc_north_B",
+    "location": "north",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.996263394263278,
+    "incumbent_achieved": 1.0,
+    "selected_achieved": 0.996263394263278
+   },
+   {
+    "service": "svc_south_B",
+    "location": "south",
+    "requested": 0.95,
+    "jointly_feasible": null,
+    "expected_achieved": 0.9963072160245997,
+    "incumbent_achieved": 0.9988971323307372,
+    "selected_achieved": 0.9963072160245997
+   }
+  ],
+  "procurement_timing": [
+   {
+    "source": "src_S2",
+    "period": 0,
+    "quantity": 24.58821240106208,
+    "arrival_period": 1,
+    "needed_by_period": 1,
+    "early_periods": 0,
+    "cash_committed_early": 0.0,
+    "earliest_feasible_period": 0,
+    "selected_order_period": 0,
+    "latest_safe_order_period": 0,
+    "latest_safe_order_date": "2026-09-07T00:00:00+00:00",
+    "periods_earlier_than_latest_safe": 0,
+    "cash_commitment_period": 0,
+    "payment_period": 1,
+    "cash_days_advanced": 0,
+    "premature_units": 0.0,
+    "premature_inventory_days": 0.0,
+    "storage_days": 0,
+    "service_slack_periods": 0
+   },
+   {
+    "source": "src_S2_B",
+    "period": 0,
+    "quantity": 28.96975945025897,
+    "arrival_period": 1,
+    "needed_by_period": 1,
+    "early_periods": 0,
+    "cash_committed_early": 0.0,
+    "earliest_feasible_period": 0,
+    "selected_order_period": 0,
+    "latest_safe_order_period": 0,
+    "latest_safe_order_date": "2026-09-07T00:00:00+00:00",
+    "periods_earlier_than_latest_safe": 0,
+    "cash_commitment_period": 0,
+    "payment_period": 1,
+    "cash_days_advanced": 0,
+    "premature_units": 0.0,
+    "premature_inventory_days": 0.0,
+    "storage_days": 0,
+    "service_slack_periods": 0
+   },
+   {
+    "source": "src_A",
+    "period": 1,
+    "quantity": 621.3136693105382,
+    "arrival_period": 2,
+    "needed_by_period": 2,
+    "early_periods": 0,
+    "cash_committed_early": 0.0,
+    "earliest_feasible_period": 0,
+    "selected_order_period": 1,
+    "latest_safe_order_period": 1,
+    "latest_safe_order_date": "2026-09-14T00:00:00+00:00",
+    "periods_earlier_than_latest_safe": 0,
+    "cash_commitment_period": 1,
+    "payment_period": 2,
+    "cash_days_advanced": 0,
+    "premature_units": 0.0,
+    "premature_inventory_days": 0.0,
+    "storage_days": 0,
+    "service_slack_periods": 0
+   },
+   {
+    "source": "src_A_B",
+    "period": 1,
+    "quantity": 621.684972300974,
+    "arrival_period": 2,
+    "needed_by_period": 2,
+    "early_periods": 0,
+    "cash_committed_early": 0.0,
+    "earliest_feasible_period": 0,
+    "selected_order_period": 1,
+    "latest_safe_order_period": 1,
+    "latest_safe_order_date": "2026-09-14T00:00:00+00:00",
+    "periods_earlier_than_latest_safe": 0,
+    "cash_commitment_period": 1,
+    "payment_period": 2,
+    "cash_days_advanced": 0,
+    "premature_units": 0.0,
+    "premature_inventory_days": 0.0,
+    "storage_days": 0,
+    "service_slack_periods": 0
+   },
+   {
+    "source": "src_A",
+    "period": 4,
+    "quantity": 2187.4079167623013,
+    "arrival_period": 5,
+    "needed_by_period": 5,
+    "early_periods": 0,
+    "cash_committed_early": 0.0,
+    "earliest_feasible_period": 0,
+    "selected_order_period": 4,
+    "latest_safe_order_period": 4,
+    "latest_safe_order_date": "2026-10-05T00:00:00+00:00",
+    "periods_earlier_than_latest_safe": 0,
+    "cash_commitment_period": 4,
+    "payment_period": 5,
+    "cash_days_advanced": 0,
+    "premature_units": 0.0,
+    "premature_inventory_days": 0.0,
+    "storage_days": 0,
+    "service_slack_periods": 0
+   },
+   {
+    "source": "src_A_B",
+    "period": 4,
+    "quantity": 2209.4043272955264,
+    "arrival_period": 5,
+    "needed_by_period": 5,
+    "early_periods": 0,
+    "cash_committed_early": 0.0,
+    "earliest_feasible_period": 0,
+    "selected_order_period": 4,
+    "latest_safe_order_period": 4,
+    "latest_safe_order_date": "2026-10-05T00:00:00+00:00",
+    "periods_earlier_than_latest_safe": 0,
+    "cash_commitment_period": 4,
+    "payment_period": 5,
+    "cash_days_advanced": 0,
+    "premature_units": 0.0,
+    "premature_inventory_days": 0.0,
+    "storage_days": 0,
+    "service_slack_periods": 0
+   }
+  ],
+  "economics": {
+   "scope": "confirmation worlds; components reconcile to the settlement's economic cost; attribution partitions each order exactly",
+   "incumbent_costs": {
+    "PURCHASE": 40895.256179928474,
+    "FREIGHT": 0.0,
+    "ORDERING": 300.0,
+    "RECEIVING": 0.0,
+    "CARRYING": 381.64782186605515,
+    "FINANCING": 0.0,
+    "SHORTAGE": 209.65295697592055,
+    "OTHER": 934.1470430632951,
+    "INVENTORY_VALUE_CHANGE": -16675.437235226622,
+    "TOTAL": 26045.26676660712,
+    "OPERATING_TOTAL": 42720.70400183374
+   },
+   "selected_costs": {
+    "PURCHASE": 28488.26747634383,
+    "FREIGHT": 0.0,
+    "ORDERING": 300.0,
+    "RECEIVING": 0.0,
+    "CARRYING": 289.47455502902096,
+    "FINANCING": 0.0,
+    "SHORTAGE": 401.41748405338643,
+    "OTHER": 1233.6322236409417,
+    "INVENTORY_VALUE_CHANGE": -4738.238079444549,
+    "TOTAL": 25974.55365962263,
+    "OPERATING_TOTAL": 30712.79173906718
+   },
+   "incumbent_working_capital": 21139.22799578726,
+   "selected_working_capital": 19288.154619468074,
+   "reconciled": true,
+   "unmapped_ledger_keys": [],
+   "orders": [
+    {
+     "source": "src_S2",
+     "supplier": "supplier_s2",
+     "sku": "A",
+     "location": "central",
+     "period": 0,
+     "quantity": 24.58821240106208,
+     "arrival_period": 1,
+     "next_realistic_replenishment_period": 2,
+     "demand_rate_per_period": 0.0,
+     "lead_time_demand": 0.0,
+     "demand_until_next_replenishment": 0.0,
+     "justified_protection_units": 31.862233090857583,
+     "usable_on_hand": 300.0,
+     "usable_inbound": 0,
+     "economic_need": 0.0,
+     "after_moq": 0.0,
+     "after_case": 0.0,
+     "after_pallet": 0.0,
+     "after_mov": 0.0,
+     "under_need_units": 0.0,
+     "cycle_economics": null,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 0.0,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 0.0,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 24.58821240106208
+     },
+     "attribution_sum": 24.58821240106208,
+     "protection_regime": "LEAN",
+     "explanation": "Order 25 units of A from supplier_s2 at review 0 (arrives period 1): 25 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 300 and inbound 0 were netted off."
+    },
+    {
+     "source": "src_S2_B",
+     "supplier": "supplier_s2",
+     "sku": "B",
+     "location": "central",
+     "period": 0,
+     "quantity": 28.96975945025897,
+     "arrival_period": 1,
+     "next_realistic_replenishment_period": 2,
+     "demand_rate_per_period": 0.0,
+     "lead_time_demand": 0.0,
+     "demand_until_next_replenishment": 0.0,
+     "justified_protection_units": 31.862233090857583,
+     "usable_on_hand": 300.0,
+     "usable_inbound": 0,
+     "economic_need": 0.0,
+     "after_moq": 0.0,
+     "after_case": 0.0,
+     "after_pallet": 0.0,
+     "after_mov": 0.0,
+     "under_need_units": 0.0,
+     "cycle_economics": null,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 0.0,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 0.0,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 28.96975945025897
+     },
+     "attribution_sum": 28.96975945025897,
+     "protection_regime": "LEAN",
+     "explanation": "Order 29 units of B from supplier_s2 at review 0 (arrives period 1): 29 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 300 and inbound 0 were netted off."
+    }
+   ],
+   "incumbent_orders": [
+    {
+     "source": "src_A",
+     "supplier": "supplier",
+     "sku": "A",
+     "location": "central",
+     "period": 0,
+     "quantity": 2044.7628089964237,
+     "arrival_period": 1,
+     "next_realistic_replenishment_period": 2,
+     "demand_rate_per_period": 0.0,
+     "lead_time_demand": 0.0,
+     "demand_until_next_replenishment": 0.0,
+     "justified_protection_units": 31.862233090857583,
+     "usable_on_hand": 300.0,
+     "usable_inbound": 0,
+     "economic_need": 0.0,
+     "after_moq": 0.0,
+     "after_case": 0.0,
+     "after_pallet": 0.0,
+     "after_mov": 0.0,
+     "under_need_units": 0.0,
+     "cycle_economics": null,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 0.0,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 0.0,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 2044.7628089964237
+     },
+     "attribution_sum": 2044.7628089964237,
+     "protection_regime": "LEAN",
+     "explanation": "Order 2045 units of A from supplier at review 0 (arrives period 1): 2045 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 300 and inbound 0 were netted off."
+    },
+    {
+     "source": "src_A_B",
+     "supplier": "supplier",
+     "sku": "B",
+     "location": "central",
+     "period": 0,
+     "quantity": 2044.7628089964237,
+     "arrival_period": 1,
+     "next_realistic_replenishment_period": 2,
+     "demand_rate_per_period": 0.0,
+     "lead_time_demand": 0.0,
+     "demand_until_next_replenishment": 0.0,
+     "justified_protection_units": 31.862233090857583,
+     "usable_on_hand": 300.0,
+     "usable_inbound": 0,
+     "economic_need": 0.0,
+     "after_moq": 0.0,
+     "after_case": 0.0,
+     "after_pallet": 0.0,
+     "after_mov": 0.0,
+     "under_need_units": 0.0,
+     "cycle_economics": null,
+     "attribution": {
+      "LEAD_TIME_EXPOSURE": 0.0,
+      "DEMAND_CYCLE": 0.0,
+      "SUPPLIER_CALENDAR": 0.0,
+      "SERVICE_PROTECTION": 0.0,
+      "MOQ": 0.0,
+      "CASE_ROUNDING": 0.0,
+      "PALLET_ROUNDING": 0.0,
+      "MOV": 0.0,
+      "FREIGHT_ECONOMICS": 0.0,
+      "ORDER_COST_ECONOMICS": 0.0,
+      "OTHER_EXPLAINED": 2044.7628089964237
+     },
+     "attribution_sum": 2044.7628089964237,
+     "protection_regime": "LEAN",
+     "explanation": "Order 2045 units of B from supplier at review 0 (arrives period 1): 2045 is not explained by the waterfall arithmetic (the joint solve found it cheaper; see the cost comparison). Usable on hand 300 and inbound 0 were netted off."
+    }
+   ],
+   "supplier_orders": [],
+   "materiality": {
+    "material": true,
+    "verdict": "MATERIAL_IMPROVEMENT",
+    "cost_delta_fraction": -0.0027150079750825518,
+    "inventory_delta_fraction": -0.2415139339361507,
+    "service_delta": 0.0,
+    "better_on": [
+     "inventory"
+    ],
+    "worse_on": [],
+    "thresholds": {
+     "cost_fraction": 0.01,
+     "inventory_fraction": 0.05,
+     "service": 0.005
+    },
+    "reason": "cost -0.27%, inventory -24.15%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+   },
+   "action_recommended": true,
+   "recommendation": "ZAAD intervenes: stochastic_network",
+   "provenance": {
+    "source.src_A.unit_price": {
+     "value": 5.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_A.freight_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.handling_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.fixed_order_fee": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.minimum": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.case_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.pallet_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.transport_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A.lead_days": {
+     "value": 7.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_S2.unit_price": {
+     "value": 5.4,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_S2.freight_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.handling_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.fixed_order_fee": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.minimum": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.case_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.pallet_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.transport_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2.lead_days": {
+     "value": 7.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_A_B.unit_price": {
+     "value": 5.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_A_B.freight_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.handling_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.fixed_order_fee": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.minimum": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.case_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.pallet_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.transport_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_A_B.lead_days": {
+     "value": 7.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_S2_B.unit_price": {
+     "value": 5.4,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "source.src_S2_B.freight_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.handling_per_unit": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.fixed_order_fee": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.minimum": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.case_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.pallet_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.transport_multiple": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "source.src_S2_B.lead_days": {
+     "value": 7.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "location.central.holding_per_value_period": {
+     "value": 0.0028767123287671234,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "location.north.holding_per_value_period": {
+     "value": 0.0028767123287671234,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "location.south.holding_per_value_period": {
+     "value": 0.0028767123287671234,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "terms.terms.net_days": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "terms.terms.deposit_fraction": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "terms.terms.financing_fee_fraction": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "liquidity.interest_per_period": {
+     "value": 0.0019178082191780824,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "liquidity.cost_of_capital_per_period": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "liquidity.credit_limit": {
+     "value": 1000000.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "supplier_terms.supplier.minimum_order_value": {
+     "value": 5000.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "supplier_terms.supplier.fixed_order_cost": {
+     "value": 150.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "supplier_terms.supplier.receiving_fee_per_receipt": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "supplier_terms.supplier.receiving_per_pallet": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "supplier_terms.supplier.freight_per_pallet": {
+     "value": 0.0,
+     "provenance": "NOT_AVAILABLE"
+    },
+    "supplier_terms.supplier.freight_tiers": {
+     "value": [],
+     "provenance": "NOT_AVAILABLE"
+    },
+    "supplier_terms.supplier.units_per_pallet": {
+     "value": {},
+     "provenance": "NOT_AVAILABLE"
+    },
+    "service.svc_north.selling_price": {
+     "value": 10.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_north.sla_per_unmet": {
+     "value": 2.5,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_south.selling_price": {
+     "value": 10.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_south.sla_per_unmet": {
+     "value": 2.5,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_north_B.selling_price": {
+     "value": 10.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_north_B.sla_per_unmet": {
+     "value": 2.5,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_south_B.selling_price": {
+     "value": 10.0,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    },
+    "service.svc_south_B.sla_per_unmet": {
+     "value": 2.5,
+     "provenance": "CONFIGURED_ASSUMPTION"
+    }
+   },
+   "fallbacks": [
+    "cost of capital NOT_AVAILABLE: payment timing is valued only through interest on drawn credit"
+   ]
+  },
+  "orchestration": {
+   "state": "NO_ACTION",
+   "reasons": [
+    "the incumbent plan is physically usable, meets every requested service target, carries no active risk driver and holds no materially avoidable inventory"
+   ],
+   "minimum_safe_candidates": [
+    "deterministic_network"
+   ],
+   "optional_candidates": [],
+   "incumbent_service_deficit": -0.04323007895314823,
+   "joint_recovery_required_by_rule": false,
+   "units_above_lean_base_stock": 0.0,
+   "periods_above_lean_base_stock": 0.0,
+   "incumbent_feasible_and_meeting_service": true,
+   "scope": "deterministic classification from the forecast, protection profile, topology and the incumbent's own outcome; it selects candidate classes and never prunes on a score",
+   "classification": {
+    "deterministic_network": "REQUIRED",
+    "stochastic_network": "REQUIRED",
+    "cadence_2_network": "OPTIONAL",
+    "cadence_4_network": "OPTIONAL"
+   },
+   "outcomes": {
+    "deterministic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "stochastic_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cadence_2_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    },
+    "cadence_4_network": {
+     "outcome": "SOLVED",
+     "reason": "optimal"
+    }
+   },
+   "required_candidate_count": 2,
+   "required_candidate_completed": 2,
+   "required_candidate_starved": 0,
+   "required_candidate_infeasible": 0,
+   "required_candidate_starvation_rate": 0.0,
+   "required_starved_names": [],
+   "optional_candidate_count": 2,
+   "optional_candidate_completed": 2,
+   "optional_candidate_skipped": 0,
+   "not_applicable_count": 0,
+   "physically_invalid_candidates": [],
+   "omissions": [
+    {
+     "candidate": "cvar_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "protected_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "hedged_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "stress_network",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    },
+    {
+     "candidate": "joint_recovery",
+     "outcome": "not_requested",
+     "reason": "the NO_ACTION state does not require or offer this class"
+    }
+   ],
+   "completeness_scope": "a required class is complete only with a usable plan that is physically valid on every scenario world; INFEASIBLE is a definitive answer reported apart from starvation; NOT_APPLICABLE classes cannot exist under the review's state and are never starvation; every omission carries a reason and none is silent",
+   "candidate_classes_requested": [
+    "deterministic_network",
+    "stochastic_network",
+    "cadence_2_network",
+    "cadence_4_network"
+   ],
+   "planner_owner": "PURCHASING_ECONOMICS",
+   "ownership_reasons": [
+    "no declared protection mandate, calm screen state, no active or decaying driver, every SKU/location lean, no recovery obligation"
+   ],
+   "ownership_notes": [],
+   "gate_basis": "incumbent",
+   "p1_terminal_landed": {
+    "A": 5.205806067569539,
+    "B": 5.205806067569539
+   },
+   "p1_economics": {
+    "terminal_economic_basis": "cycle",
+    "detailed_horizon": 12,
+    "economic_cycle": {
+     "supplier": {
+      "lot_units": 2891.7312963188488,
+      "demand_per_period": 400.9230769230769,
+      "cycle_periods": 7.212683586367044
+     },
+     "supplier_s2": {
+      "lot_units": 400.9230769230769,
+      "demand_per_period": 400.9230769230769,
+      "cycle_periods": 1.0
+     }
+    },
+    "economic_cycle_periods": {
+     "supplier": 7.212683586367044,
+     "supplier_s2": 1.0
+    },
+    "economic_lot_reference": {
+     "supplier": 2891.7312963188488,
+     "supplier_s2": 400.9230769230769
+    },
+    "steady_state_unit_cost": {
+     "A": 5.205806067569539,
+     "B": 5.205806067569539
+    },
+    "continuation_slabs": {
+     "A@north": 8,
+     "A@south": 8,
+     "B@north": 8,
+     "B@south": 8
+    },
+    "residual_units_credited_up_to": {
+     "A": 1445.8656481594242,
+     "B": 1445.8656481594242
+    },
+    "continuation_feeds": {
+     "A@central": [
+      {
+       "branch": "north",
+       "lead": 1,
+       "cost": 0.2,
+       "lane": "lane_north"
+      },
+      {
+       "branch": "south",
+       "lead": 1,
+       "cost": 0.2,
+       "lane": "lane_south"
+      }
+     ],
+     "B@central": [
+      {
+       "branch": "north",
+       "lead": 1,
+       "cost": 0.2,
+       "lane": "lane_north_B"
+      },
+      {
+       "branch": "south",
+       "lead": 1,
+       "cost": 0.2,
+       "lane": "lane_south_B"
+      }
+     ]
+    },
+    "continuation_value": 2737.581183918294
+   },
+   "p1_classes_added": [
+    "stochastic_network"
+   ],
+   "candidate_classes_skipped": [
+    "cvar_network",
+    "hedged_network",
+    "joint_recovery",
+    "protected_network",
+    "stress_network"
+   ],
+   "candidates_built": [
+    "cadence_2_network",
+    "cadence_4_network",
+    "deterministic_network",
+    "stochastic_network"
+   ],
+   "milps_attempted": 6,
+   "milps_optimal": 6,
+   "milps_feasible_time_limited": 0,
+   "milps_no_feasible_solution": 0,
+   "milps_infeasible": 0,
+   "solver_seconds_total": 9.505652418360114,
+   "adaptive_escalation": true
+  },
+  "solve_quality": {
+   "comparable_gap_threshold": 0.02,
+   "requested_mip_gap": 1e-06,
+   "max_solve_seconds": 5.0,
+   "candidates": {
+    "incumbent": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 24901.25802336734,
+     "nodes": 0,
+     "solve_seconds": 0.02174704149365425,
+     "variables": 2364,
+     "constraints": 1979,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": null,
+     "economically_comparable": true
+    },
+    "base_stock": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 60788356.88424522,
+     "nodes": 1,
+     "solve_seconds": 0.13896750006824732,
+     "variables": 2476,
+     "constraints": 1363,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": null,
+     "economically_comparable": true
+    },
+    "deterministic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 19658.292622248788,
+     "nodes": 29,
+     "solve_seconds": 2.9481740426272154,
+     "variables": 2472,
+     "constraints": 1969,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": null,
+     "economically_comparable": true
+    },
+    "stochastic_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 19410.155982316857,
+     "nodes": 9,
+     "solve_seconds": 3.2069531669840217,
+     "variables": 5904,
+     "constraints": 3759,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": {
+      "supplied": true,
+      "source": "OPTIMAL",
+      "controls_seeded": 672,
+      "accepted": true,
+      "reason": "completed by the formulation (floor pins)",
+      "mode": "floor",
+      "completion_seconds": 0.10450299922376871,
+      "completion_status": "highspy HighsModelStatus.kOptimal",
+      "attempts": [
+       {
+        "accepted": false,
+        "reason": "equal-pinned controls are not feasible for this formulation within 16 s (highspy HighsModelStatus.kInfeasible)",
+        "completion_seconds": 0.017957458272576332,
+        "completion_status": "highspy HighsModelStatus.kInfeasible",
+        "mode": "equal"
+       },
+       {
+        "accepted": true,
+        "reason": "completed by the formulation (floor pins)",
+        "completion_seconds": 0.08654554095119238,
+        "completion_status": "highspy HighsModelStatus.kOptimal",
+        "mode": "floor"
+       }
+      ],
+      "seed_status": "HighsStatus.kOk",
+      "seed_objective": 21157.54922963405,
+      "solver_accepted": true,
+      "phase1_objective": 19410.155982316857,
+      "phase1_status": 0,
+      "outcome": "improved",
+      "final_objective": 19410.155982316857,
+      "model_variables": 5904,
+      "solve_seconds": 3.2069572499021888,
+      "highs_integrality_violation": 1.1346089469396008e-17,
+      "highs_primal_infeasibility": 1.107973654261736e-10
+     },
+     "economically_comparable": true
+    },
+    "cadence_2_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 19460.40965901249,
+     "nodes": 1,
+     "solve_seconds": 2.3129584174603224,
+     "variables": 5904,
+     "constraints": 3759,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": null,
+     "economically_comparable": true
+    },
+    "cadence_4_network": {
+     "status": "OPTIMAL",
+     "achieved_gap": 0.0,
+     "best_bound": 19460.40965901249,
+     "nodes": 1,
+     "solve_seconds": 0.8768522497266531,
+     "variables": 5904,
+     "constraints": 3759,
+     "quality": "HIGH",
+     "physically_validated": true,
+     "physical_failures": [],
+     "warm_start": null,
+     "economically_comparable": true
+    }
+   },
+   "feasible_time_limited_admitted": [],
+   "selected_is_comparable": true,
+   "scope": "a candidate whose achieved optimality gap exceeds the threshold is a feasible point the solver did not optimise; it is excluded from cost ranking and cost-based acceptance"
+  },
+  "capital": {
+   "decomposition": [
+    {
+     "sku": "A",
+     "location": "central",
+     "on_hand_units": 300.0,
+     "mean_demand_per_period": 0,
+     "periods_meaningful": false,
+     "periods_of_demand": null,
+     "reason": {
+      "demand_cycle": 0.0,
+      "local_service": 31.862233090857583,
+      "source_lead": 0.0,
+      "pooled_network": 268.13776690914244,
+      "active_protection": 0.0,
+      "moq_pack": 0.0,
+      "early_order": 0.0,
+      "transfer_positioning": 0.0,
+      "stale_protection": 0.0,
+      "inherited_excess": 0.0,
+      "unexplained": 0.0
+     },
+     "reason_periods": {
+      "demand_cycle": null,
+      "local_service": null,
+      "source_lead": null,
+      "pooled_network": null,
+      "active_protection": null,
+      "moq_pack": null,
+      "early_order": null,
+      "transfer_positioning": null,
+      "stale_protection": null,
+      "inherited_excess": null,
+      "unexplained": null
+     },
+     "owner": null,
+     "risk_source": null,
+     "incremental_vs_lean": 268.7578364443507,
+     "justified_units": 300.0,
+     "reconciles": true
+    },
+    {
+     "sku": "A",
+     "location": "north",
+     "on_hand_units": 150.0,
+     "mean_demand_per_period": 98.38461538461539,
+     "periods_meaningful": true,
+     "periods_of_demand": 1.524628616106333,
+     "reason": {
+      "demand_cycle": 150.0,
+      "local_service": 0.0,
+      "source_lead": 0.0,
+      "pooled_network": 0.0,
+      "active_protection": 0.0,
+      "moq_pack": 0.0,
+      "early_order": 0.0,
+      "transfer_positioning": 0.0,
+      "stale_protection": 0.0,
+      "inherited_excess": 0.0,
+      "unexplained": 0.0
+     },
+     "reason_periods": {
+      "demand_cycle": 1.524628616106333,
+      "local_service": 0.0,
+      "source_lead": 0.0,
+      "pooled_network": 0.0,
+      "active_protection": 0.0,
+      "moq_pack": 0.0,
+      "early_order": 0.0,
+      "transfer_positioning": 0.0,
+      "stale_protection": 0.0,
+      "inherited_excess": 0.0,
+      "unexplained": 0.0
+     },
+     "owner": null,
+     "risk_source": null,
+     "incremental_vs_lean": 128.7163343492471,
+     "justified_units": 150.0,
+     "reconciles": true
+    },
+    {
+     "sku": "A",
+     "location": "south",
+     "on_hand_units": 150.0,
+     "mean_demand_per_period": 102.07692307692308,
+     "periods_meaningful": true,
+     "periods_of_demand": 1.46948003014318,
+     "reason": {
+      "demand_cycle": 150.0,
+      "local_service": 0.0,
+      "source_lead": 0.0,
+      "pooled_network": 0.0,
+      "active_protection": 0.0,
+      "moq_pack": 0.0,
+      "early_order": 0.0,
+      "transfer_positioning": 0.0,
+      "stale_protection": 0.0,
+      "inherited_excess": 0.0,
+      "unexplained": 0.0
+     },
+     "reason_periods": {
+      "demand_cycle": 1.46948003014318,
+      "local_service": 0.0,
+      "source_lead": 0.0,
+      "pooled_network": 0.0,
+      "active_protection": 0.0,
+      "moq_pack": 0.0,
+      "early_order": 0.0,
+      "transfer_positioning": 0.0,
+      "stale_protection": 0.0,
+      "inherited_excess": 0.0,
+      "unexplained": 0.0
+     },
+     "owner": null,
+     "risk_source": null,
+     "incremental_vs_lean": 127.60951094287338,
+     "justified_units": 150.0,
+     "reconciles": true
+    },
+    {
+     "sku": "B",
+     "location": "central",
+     "on_hand_units": 300.0,
+     "mean_demand_per_period": 0,
+     "periods_meaningful": false,
+     "periods_of_demand": null,
+     "reason": {
+      "demand_cycle": 0.0,
+      "local_service": 31.862233090857583,
+      "source_lead": 0.0,
+      "pooled_network": 268.13776690914244,
+      "active_protection": 0.0,
+      "moq_pack": 0.0,
+      "early_order": 0.0,
+      "transfer_positioning": 0.0,
+      "stale_protection": 0.0,
+      "inherited_excess": 0.0,
+      "unexplained": 0.0
+     },
+     "reason_periods": {
+      "demand_cycle": null,
+      "local_service": null,
+      "source_lead": null,
+      "pooled_network": null,
+      "active_protection": null,
+      "moq_pack": null,
+      "early_order": null,
+      "transfer_positioning": null,
+      "stale_protection": null,
+      "inherited_excess": null,
+      "unexplained": null
+     },
+     "owner": null,
+     "risk_source": null,
+     "incremental_vs_lean": 268.7578364443507,
+     "justified_units": 300.0,
+     "reconciles": true
+    },
+    {
+     "sku": "B",
+     "location": "north",
+     "on_hand_units": 150.0,
+     "mean_demand_per_period": 98.38461538461539,
+     "periods_meaningful": true,
+     "periods_of_demand": 1.524628616106333,
+     "reason": {
+      "demand_cycle": 150.0,
+      "local_service": 0.0,
+      "source_lead": 0.0,
+      "pooled_network": 0.0,
+      "active_protection": 0.0,
+      "moq_pack": 0.0,
+      "early_order": 0.0,
+      "transfer_positioning": 0.0,
+      "stale_protection": 0.0,
+      "inherited_excess": 0.0,
+      "unexplained": 0.0
+     },
+     "reason_periods": {
+      "demand_cycle": 1.524628616106333,
+      "local_service": 0.0,
+      "source_lead": 0.0,
+      "pooled_network": 0.0,
+      "active_protection": 0.0,
+      "moq_pack": 0.0,
+      "early_order": 0.0,
+      "transfer_positioning": 0.0,
+      "stale_protection": 0.0,
+      "inherited_excess": 0.0,
+      "unexplained": 0.0
+     },
+     "owner": null,
+     "risk_source": null,
+     "incremental_vs_lean": 128.7163343492471,
+     "justified_units": 150.0,
+     "reconciles": true
+    },
+    {
+     "sku": "B",
+     "location": "south",
+     "on_hand_units": 150.0,
+     "mean_demand_per_period": 102.07692307692308,
+     "periods_meaningful": true,
+     "periods_of_demand": 1.46948003014318,
+     "reason": {
+      "demand_cycle": 150.0,
+      "local_service": 0.0,
+      "source_lead": 0.0,
+      "pooled_network": 0.0,
+      "active_protection": 0.0,
+      "moq_pack": 0.0,
+      "early_order": 0.0,
+      "transfer_positioning": 0.0,
+      "stale_protection": 0.0,
+      "inherited_excess": 0.0,
+      "unexplained": 0.0
+     },
+     "reason_periods": {
+      "demand_cycle": 1.46948003014318,
+      "local_service": 0.0,
+      "source_lead": 0.0,
+      "pooled_network": 0.0,
+      "active_protection": 0.0,
+      "moq_pack": 0.0,
+      "early_order": 0.0,
+      "transfer_positioning": 0.0,
+      "stale_protection": 0.0,
+      "inherited_excess": 0.0,
+      "unexplained": 0.0
+     },
+     "owner": null,
+     "risk_source": null,
+     "incremental_vs_lean": 127.60951094287338,
+     "justified_units": 150.0,
+     "reconciles": true
+    }
+   ],
+   "duplication": [
+    {
+     "sku": "A",
+     "branch": "north",
+     "origin": "central",
+     "arc": "lane_north",
+     "transfer_lead_periods": 1,
+     "arc_capacity": 1000000.0,
+     "branch_stock_units": 150.0,
+     "branch_local_need_units": 119.66828103536831,
+     "origin_stock_units": 300.0,
+     "origin_need_units": 431.8152834443072,
+     "risk_source_branch": "demand_spread",
+     "risk_source_origin": "demand_spread",
+     "same_risk_source": true,
+     "arc_reachable_inside_window": true,
+     "duplicated_buffer_units": 0.0,
+     "explanation": "no duplication: no surplus at both echelons"
+    },
+    {
+     "sku": "A",
+     "branch": "south",
+     "origin": "central",
+     "arc": "lane_south",
+     "transfer_lead_periods": 1,
+     "arc_capacity": 1000000.0,
+     "branch_stock_units": 150.0,
+     "branch_local_need_units": 124.46741213404971,
+     "origin_stock_units": 300.0,
+     "origin_need_units": 431.8152834443073,
+     "risk_source_branch": "demand_spread",
+     "risk_source_origin": "demand_spread",
+     "same_risk_source": true,
+     "arc_reachable_inside_window": true,
+     "duplicated_buffer_units": 0.0,
+     "explanation": "no duplication: no surplus at both echelons"
+    },
+    {
+     "sku": "B",
+     "branch": "north",
+     "origin": "central",
+     "arc": "lane_north_B",
+     "transfer_lead_periods": 1,
+     "arc_capacity": 1000000.0,
+     "branch_stock_units": 150.0,
+     "branch_local_need_units": 119.66828103536831,
+     "origin_stock_units": 300.0,
+     "origin_need_units": 431.8152834443072,
+     "risk_source_branch": "demand_spread",
+     "risk_source_origin": "demand_spread",
+     "same_risk_source": true,
+     "arc_reachable_inside_window": true,
+     "duplicated_buffer_units": 0.0,
+     "explanation": "no duplication: no surplus at both echelons"
+    },
+    {
+     "sku": "B",
+     "branch": "south",
+     "origin": "central",
+     "arc": "lane_south_B",
+     "transfer_lead_periods": 1,
+     "arc_capacity": 1000000.0,
+     "branch_stock_units": 150.0,
+     "branch_local_need_units": 124.46741213404971,
+     "origin_stock_units": 300.0,
+     "origin_need_units": 431.8152834443073,
+     "risk_source_branch": "demand_spread",
+     "risk_source_origin": "demand_spread",
+     "same_risk_source": true,
+     "arc_reachable_inside_window": true,
+     "duplicated_buffer_units": 0.0,
+     "explanation": "no duplication: no surplus at both echelons"
+    }
+   ],
+   "pooling": [
+    {
+     "sku": "A",
+     "branch": "north",
+     "origin": "central",
+     "arc": "lane_north",
+     "transfer_lead_periods": 1,
+     "arc_capacity": 1000000.0,
+     "window_periods": 2,
+     "local_immediate_units": 113.43443969476996,
+     "pooled_units": 98.38461538461539,
+     "on_hand_units": 150.0,
+     "excess_over_local_immediate": 36.565560305230036,
+     "per_period": [
+      {
+       "period": 0,
+       "servable_from": "branch_only",
+       "units": 98.38461538461539
+      },
+      {
+       "period": 1,
+       "servable_from": "origin",
+       "units": 98.38461538461539,
+       "arc_limited_units": 0.0
+      }
+     ]
+    },
+    {
+     "sku": "A",
+     "branch": "south",
+     "origin": "central",
+     "arc": "lane_south",
+     "transfer_lead_periods": 1,
+     "arc_capacity": 1000000.0,
+     "window_periods": 2,
+     "local_immediate_units": 117.9093897233005,
+     "pooled_units": 102.07692307692308,
+     "on_hand_units": 150.0,
+     "excess_over_local_immediate": 32.09061027669949,
+     "per_period": [
+      {
+       "period": 0,
+       "servable_from": "branch_only",
+       "units": 102.07692307692308
+      },
+      {
+       "period": 1,
+       "servable_from": "origin",
+       "units": 102.07692307692308,
+       "arc_limited_units": 0.0
+      }
+     ]
+    },
+    {
+     "sku": "B",
+     "branch": "north",
+     "origin": "central",
+     "arc": "lane_north_B",
+     "transfer_lead_periods": 1,
+     "arc_capacity": 1000000.0,
+     "window_periods": 2,
+     "local_immediate_units": 113.43443969476996,
+     "pooled_units": 98.38461538461539,
+     "on_hand_units": 150.0,
+     "excess_over_local_immediate": 36.565560305230036,
+     "per_period": [
+      {
+       "period": 0,
+       "servable_from": "branch_only",
+       "units": 98.38461538461539
+      },
+      {
+       "period": 1,
+       "servable_from": "origin",
+       "units": 98.38461538461539,
+       "arc_limited_units": 0.0
+      }
+     ]
+    },
+    {
+     "sku": "B",
+     "branch": "south",
+     "origin": "central",
+     "arc": "lane_south_B",
+     "transfer_lead_periods": 1,
+     "arc_capacity": 1000000.0,
+     "window_periods": 2,
+     "local_immediate_units": 117.9093897233005,
+     "pooled_units": 102.07692307692308,
+     "on_hand_units": 150.0,
+     "excess_over_local_immediate": 32.09061027669949,
+     "per_period": [
+      {
+       "period": 0,
+       "servable_from": "branch_only",
+       "units": 102.07692307692308
+      },
+      {
+       "period": 1,
+       "servable_from": "origin",
+       "units": 102.07692307692308,
+       "arc_limited_units": 0.0
+      }
+     ]
+    }
+   ],
+   "scope": "reason categories partition the units on hand exactly; duplication and pooling are stated per arc"
+  },
+  "supply_profiles": {
+   "src_A": {
+    "source": "src_A",
+    "scope": "declared",
+    "records": 0,
+    "censored": 0,
+    "fill_mean": 0.98,
+    "fill_sd": 0.01,
+    "partial_probability": 0.0013498980316300818,
+    "fill_samples": [],
+    "declared_lead_days": 7,
+    "lead_sd_days": 0.0,
+    "lead_support": [],
+    "lead_p50": null,
+    "lead_p90": 7,
+    "late_probability": 0.0,
+    "tail_days": 0,
+    "unresolved_mass": 1.0,
+    "recent_late_probability": 0.0,
+    "recent_partial_probability": 0.0013498980316300818,
+    "recent_records": 0,
+    "recent_fill_mean": 0.98,
+    "recent_clean_run": 0,
+    "exit_receipts_needed": 0,
+    "backlog_open": false,
+    "last_adverse_known_at": null,
+    "driver_kind": null,
+    "clean_run_fill_mean": 0.98
+   },
+   "src_S2": {
+    "source": "src_S2",
+    "scope": "declared",
+    "records": 0,
+    "censored": 0,
+    "fill_mean": 0.98,
+    "fill_sd": 0.01,
+    "partial_probability": 0.0013498980316300818,
+    "fill_samples": [],
+    "declared_lead_days": 7,
+    "lead_sd_days": 0.0,
+    "lead_support": [],
+    "lead_p50": null,
+    "lead_p90": 7,
+    "late_probability": 0.0,
+    "tail_days": 0,
+    "unresolved_mass": 1.0,
+    "recent_late_probability": 0.0,
+    "recent_partial_probability": 0.0013498980316300818,
+    "recent_records": 0,
+    "recent_fill_mean": 0.98,
+    "recent_clean_run": 0,
+    "exit_receipts_needed": 0,
+    "backlog_open": false,
+    "last_adverse_known_at": null,
+    "driver_kind": null,
+    "clean_run_fill_mean": 0.98
+   },
+   "src_A_B": {
+    "source": "src_A_B",
+    "scope": "declared",
+    "records": 0,
+    "censored": 0,
+    "fill_mean": 0.98,
+    "fill_sd": 0.01,
+    "partial_probability": 0.0013498980316300818,
+    "fill_samples": [],
+    "declared_lead_days": 7,
+    "lead_sd_days": 0.0,
+    "lead_support": [],
+    "lead_p50": null,
+    "lead_p90": 7,
+    "late_probability": 0.0,
+    "tail_days": 0,
+    "unresolved_mass": 1.0,
+    "recent_late_probability": 0.0,
+    "recent_partial_probability": 0.0013498980316300818,
+    "recent_records": 0,
+    "recent_fill_mean": 0.98,
+    "recent_clean_run": 0,
+    "exit_receipts_needed": 0,
+    "backlog_open": false,
+    "last_adverse_known_at": null,
+    "driver_kind": null,
+    "clean_run_fill_mean": 0.98
+   },
+   "src_S2_B": {
+    "source": "src_S2_B",
+    "scope": "declared",
+    "records": 0,
+    "censored": 0,
+    "fill_mean": 0.98,
+    "fill_sd": 0.01,
+    "partial_probability": 0.0013498980316300818,
+    "fill_samples": [],
+    "declared_lead_days": 7,
+    "lead_sd_days": 0.0,
+    "lead_support": [],
+    "lead_p50": null,
+    "lead_p90": 7,
+    "late_probability": 0.0,
+    "tail_days": 0,
+    "unresolved_mass": 1.0,
+    "recent_late_probability": 0.0,
+    "recent_partial_probability": 0.0013498980316300818,
+    "recent_records": 0,
+    "recent_fill_mean": 0.98,
+    "recent_clean_run": 0,
+    "exit_receipts_needed": 0,
+    "backlog_open": false,
+    "last_adverse_known_at": null,
+    "driver_kind": null,
+    "clean_run_fill_mean": 0.98
+   }
+  },
+  "alternatives": {
+   "alternates": {
+    "option": "alternates",
+    "status": "OPTIMAL",
+    "total_cost_with_option": 25407.995660486937,
+    "total_cost_without_option": 25703.196767533005,
+    "extra_cost_of_using_option": -295.2011070460685,
+    "expected_shortage_avoided": -2.83176260218454e-12,
+    "worst_world_shortage_avoided": -6.750155989720952e-12,
+    "service_change": {
+     "svc_north": -1.1102230246251565e-16,
+     "svc_south": 0.0,
+     "svc_north_B": -1.1102230246251565e-16,
+     "svc_south_B": 0.0
+    },
+    "units_through_option": 5693.368857520661,
+    "verdict": "cost_saving",
+    "sentence": "Using the approved alternates changes modeled total cost by -295 and reduces expected shortage exposure by -0 (worst world -0)."
+   },
+   "transfers": {
+    "option": "transfers",
+    "status": "INFEASIBLE",
+    "sentence": "Without the approved transfers the service targets cannot be met on the selection worlds; the option is structurally necessary.",
+    "verdict": "necessary"
+   },
+   "reference_candidate": "stochastic_network"
+  },
+  "service_reliability": {
+   "scope": "independent confirmation worlds; stress values from the declared stress envelopes; not a guarantee",
+   "services": [
+    {
+     "service": "svc_north",
+     "customer": "customer_north",
+     "customer_class": null,
+     "priority": 1.0,
+     "metric": "unit_fill",
+     "requested_service": 0.95,
+     "achieved_service": 0.9984428505591275,
+     "best_modeled_jointly_feasible_service": 0.9984428505591275,
+     "best_modeled_individual_service": 1.0,
+     "incumbent_service": 0.9955325022739636,
+     "zaad_service": 0.9984428505591275,
+     "avoidable_service_loss": 0.0,
+     "unavoidable_shortfall": 0.0,
+     "service_regret": 0.0,
+     "worst_case_stress_service": 0.9916127100424897,
+     "stockout_period_share": 0.027777777777777776,
+     "classification": {
+      "class": "MET",
+      "reason": "target met within tolerance under independent confirmation"
+     }
+    },
+    {
+     "service": "svc_south",
+     "customer": "customer_south",
+     "customer_class": null,
+     "priority": 1.0,
+     "metric": "unit_fill",
+     "requested_service": 0.95,
+     "achieved_service": 0.9828114411472252,
+     "best_modeled_jointly_feasible_service": 0.9828114411472252,
+     "best_modeled_individual_service": 1.0,
+     "incumbent_service": 0.9918238049799634,
+     "zaad_service": 0.9828114411472252,
+     "avoidable_service_loss": 0.0,
+     "unavoidable_shortfall": 0.0,
+     "service_regret": 0.0,
+     "worst_case_stress_service": 0.9954323160329742,
+     "stockout_period_share": 0.1388888888888889,
+     "classification": {
+      "class": "MET",
+      "reason": "target met within tolerance under independent confirmation"
+     }
+    },
+    {
+     "service": "svc_north_B",
+     "customer": "customer_north",
+     "customer_class": null,
+     "priority": 1.0,
+     "metric": "unit_fill",
+     "requested_service": 0.95,
+     "achieved_service": 0.996263394263278,
+     "best_modeled_jointly_feasible_service": 0.996263394263278,
+     "best_modeled_individual_service": 1.0,
+     "incumbent_service": 1.0,
+     "zaad_service": 0.996263394263278,
+     "avoidable_service_loss": 0.0,
+     "unavoidable_shortfall": 0.0,
+     "service_regret": 0.0,
+     "worst_case_stress_service": 0.9976077768044235,
+     "stockout_period_share": 0.05555555555555555,
+     "classification": {
+      "class": "MET",
+      "reason": "target met within tolerance under independent confirmation"
+     }
+    },
+    {
+     "service": "svc_south_B",
+     "customer": "customer_south",
+     "customer_class": null,
+     "priority": 1.0,
+     "metric": "unit_fill",
+     "requested_service": 0.95,
+     "achieved_service": 0.9963072160245997,
+     "best_modeled_jointly_feasible_service": 0.9963072160245997,
+     "best_modeled_individual_service": 1.0,
+     "incumbent_service": 0.9988971323307372,
+     "zaad_service": 0.9963072160245997,
+     "avoidable_service_loss": 0.0,
+     "unavoidable_shortfall": 0.0,
+     "service_regret": 0.0,
+     "worst_case_stress_service": 0.9920693592272111,
+     "stockout_period_share": 0.08333333333333333,
+     "classification": {
+      "class": "MET",
+      "reason": "target met within tolerance under independent confirmation"
+     }
+    }
+   ],
+   "weighted_service_shortfall": 0.0,
+   "customer_priority_weighted_service": 0.9934562254985576,
+   "by_customer_class": {
+    "unclassified": {
+     "services": 4,
+     "requested_mean": 0.95,
+     "achieved_mean": 0.9934562254985576,
+     "met": 4
+    }
+   },
+   "services_met": 4,
+   "classes": {
+    "MET": 4,
+    "UNAVOIDABLE": 0,
+    "AVOIDABLE": 0,
+    "ECONOMIC_TRADEOFF": 0,
+    "DATA_INSUFFICIENCY": 0
+   }
+  },
+  "selection_costs": {
+   "incumbent": {
+    "fitted": 26045.647196319485,
+    "hedged": 26045.647196319485
+   },
+   "base_stock": {
+    "fitted": 51154.83616969265,
+    "hedged": 51154.83616969265
+   },
+   "deterministic_network": {
+    "fitted": 25685.10960787363,
+    "hedged": 25685.10960787363
+   },
+   "stochastic_network": {
+    "fitted": 25407.995660486937,
+    "hedged": 25407.995660486937
+   },
+   "cadence_2_network": {
+    "fitted": 25458.183877685315,
+    "hedged": 25458.183877685315
+   },
+   "cadence_4_network": {
+    "fitted": 25458.124807215678,
+    "hedged": 25458.124807215678
+   }
+  },
+  "stress_weight": 0.0,
+  "stress_credibility": {
+   "credibility": 0.0,
+   "effective_stress_weight": 0.0,
+   "floor": 0.0,
+   "drivers": {
+    "src_A": {
+     "late_probability": 0.0,
+     "partial_probability": 0.0013498980316300818,
+     "signal_severity": 0.0,
+     "scope": "declared",
+     "score": 0.0
+    },
+    "src_S2": {
+     "late_probability": 0.0,
+     "partial_probability": 0.0013498980316300818,
+     "signal_severity": 0.0,
+     "scope": "declared",
+     "score": 0.0
+    },
+    "src_A_B": {
+     "late_probability": 0.0,
+     "partial_probability": 0.0013498980316300818,
+     "signal_severity": 0.0,
+     "scope": "declared",
+     "score": 0.0
+    },
+    "src_S2_B": {
+     "late_probability": 0.0,
+     "partial_probability": 0.0013498980316300818,
+     "signal_severity": 0.0,
+     "scope": "declared",
+     "score": 0.0
+    }
+   },
+   "scope": "max over approved sources of the supply risk state (lateness, fill shortfall, fill spread, signals); floored only while a source has no observed record"
+  },
+  "stress_targets_feasible": null,
+  "joint_service_feasibility": {
+   "target_vector_feasible": true,
+   "recovery_mode": false,
+   "material_gap": 0.04,
+   "recovery_ranking": [],
+   "incumbent_weighted_shortfall": 0.0,
+   "recovery_weighted_shortfall": null,
+   "selected_weighted_shortfall": 0.0,
+   "scope": "joint priority-weighted modeled shortfall under independent confirmation; not a guaranteed ex-post frontier"
+  },
+  "cash": [
+   {
+    "period": 0,
+    "scenario": 0,
+    "cash": 999952.2800084929,
+    "debt": 0.0
+   },
+   {
+    "period": 1,
+    "scenario": 0,
+    "cash": 999430.5079906676,
+    "debt": 0.0
+   },
+   {
+    "period": 2,
+    "scenario": 0,
+    "cash": 992971.9755935407,
+    "debt": 0.0
+   },
+   {
+    "period": 3,
+    "scenario": 0,
+    "cash": 992971.9755935407,
+    "debt": 0.0
+   },
+   {
+    "period": 4,
+    "scenario": 0,
+    "cash": 992821.9755935407,
+    "debt": 0.0
+   },
+   {
+    "period": 5,
+    "scenario": 0,
+    "cash": 970233.9163375859,
+    "debt": 0.0
+   },
+   {
+    "period": 6,
+    "scenario": 0,
+    "cash": 970233.9163375859,
+    "debt": 0.0
+   },
+   {
+    "period": 7,
+    "scenario": 0,
+    "cash": 970150.9221476234,
+    "debt": 0.0
+   },
+   {
+    "period": 8,
+    "scenario": 0,
+    "cash": 970150.9221476234,
+    "debt": 0.0
+   },
+   {
+    "period": 9,
+    "scenario": 0,
+    "cash": 970150.9221476234,
+    "debt": 0.0
+   },
+   {
+    "period": 10,
+    "scenario": 0,
+    "cash": 970150.9221476234,
+    "debt": 0.0
+   },
+   {
+    "period": 11,
+    "scenario": 0,
+    "cash": 1969970.9330975348,
+    "debt": 1000000.0
+   },
+   {
+    "period": 0,
+    "scenario": 1,
+    "cash": 999952.2800084929,
+    "debt": 0.0
+   },
+   {
+    "period": 1,
+    "scenario": 1,
+    "cash": 999430.5079906676,
+    "debt": 0.0
+   },
+   {
+    "period": 2,
+    "scenario": 1,
+    "cash": 992971.9755935408,
+    "debt": 0.0
+   },
+   {
+    "period": 3,
+    "scenario": 1,
+    "cash": 992971.9755935408,
+    "debt": 0.0
+   },
+   {
+    "period": 4,
+    "scenario": 1,
+    "cash": 992821.9755935408,
+    "debt": 0.0
+   },
+   {
+    "period": 5,
+    "scenario": 1,
+    "cash": 970233.916337586,
+    "debt": 0.0
+   },
+   {
+    "period": 6,
+    "scenario": 1,
+    "cash": 970233.916337586,
+    "debt": 0.0
+   },
+   {
+    "period": 7,
+    "scenario": 1,
+    "cash": 970150.9221476235,
+    "debt": 0.0
+   },
+   {
+    "period": 8,
+    "scenario": 1,
+    "cash": 970150.9221476235,
+    "debt": 0.0
+   },
+   {
+    "period": 9,
+    "scenario": 1,
+    "cash": 970150.9221476235,
+    "debt": 0.0
+   },
+   {
+    "period": 10,
+    "scenario": 1,
+    "cash": 970150.9221476235,
+    "debt": 0.0
+   },
+   {
+    "period": 11,
+    "scenario": 1,
+    "cash": 1969970.933097535,
+    "debt": 1000000.0
+   },
+   {
+    "period": 0,
+    "scenario": 2,
+    "cash": 999952.2800084929,
+    "debt": 0.0
+   },
+   {
+    "period": 1,
+    "scenario": 2,
+    "cash": 999430.5079906676,
+    "debt": 0.0
+   },
+   {
+    "period": 2,
+    "scenario": 2,
+    "cash": 992971.9755935408,
+    "debt": 0.0
+   },
+   {
+    "period": 3,
+    "scenario": 2,
+    "cash": 992971.9755935408,
+    "debt": 0.0
+   },
+   {
+    "period": 4,
+    "scenario": 2,
+    "cash": 992821.9755935408,
+    "debt": 0.0
+   },
+   {
+    "period": 5,
+    "scenario": 2,
+    "cash": 970233.916337586,
+    "debt": 0.0
+   },
+   {
+    "period": 6,
+    "scenario": 2,
+    "cash": 970233.916337586,
+    "debt": 0.0
+   },
+   {
+    "period": 7,
+    "scenario": 2,
+    "cash": 970150.9221476235,
+    "debt": 0.0
+   },
+   {
+    "period": 8,
+    "scenario": 2,
+    "cash": 970150.9221476235,
+    "debt": 0.0
+   },
+   {
+    "period": 9,
+    "scenario": 2,
+    "cash": 970150.9221476235,
+    "debt": 0.0
+   },
+   {
+    "period": 10,
+    "scenario": 2,
+    "cash": 970150.9221476235,
+    "debt": 0.0
+   },
+   {
+    "period": 11,
+    "scenario": 2,
+    "cash": 1969970.933097535,
+    "debt": 1000000.0
+   }
+  ],
+  "reasons": [
+   "Candidate meets every service target with no material economic penalty and materially less carried inventory; the plan horizon credits closing stock back at terminal value and cannot price that capital (capital tie-break)."
+  ],
+  "confirmation_benefit_lower": -46.677647975047876,
+  "confirmation": {
+   "incumbent": {
+    "runs": 3,
+    "physical_failures": 0,
+    "cost_mean": 26045.26676660712,
+    "cost_min": 25934.59589492838,
+    "cost_max": 26194.188469945,
+    "weighted_service_shortfall": 0.0,
+    "failures": []
+   },
+   "candidate": {
+    "runs": 3,
+    "physical_failures": 0,
+    "cost_mean": 25974.553659622634,
+    "cost_min": 25681.073454881775,
+    "cost_max": 26136.92176420613,
+    "weighted_service_shortfall": 0.0,
+    "failures": []
+   }
+  },
+  "stress_confirmation": [
+   {
+    "stress": {
+     "name": "nil",
+     "fill_multiplier": 1.0,
+     "extra_lead_days": 0,
+     "demand_multiplier": 1.0,
+     "recovery_period": 12,
+     "shared_failure": true,
+     "affected_resources": []
+    },
+    "pass": true,
+    "gate_mode": "not_worse",
+    "physically_usable": true,
+    "within_downside": false,
+    "service_met": true,
+    "incumbent": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 26028.484279718134,
+     "cost_min": 25699.95794169763,
+     "cost_max": 26271.7315548081,
+     "weighted_service_shortfall": 0.0,
+     "failures": [],
+     "service": {
+      "svc_north": 0.9891128614614776,
+      "svc_south": 0.9950330404000998,
+      "svc_north_B": 0.9977405168954715,
+      "svc_south_B": 0.996052637128008
+     }
+    },
+    "candidate": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 25842.868265048284,
+     "cost_min": 25523.02597602314,
+     "cost_max": 26444.387760031128,
+     "weighted_service_shortfall": 0.0,
+     "failures": [],
+     "service": {
+      "svc_north": 0.9916127100424897,
+      "svc_south": 0.9954323160329742,
+      "svc_north_B": 0.9976077768044235,
+      "svc_south_B": 0.9920693592272111
+     }
+    }
+   }
+  ],
+  "candidate_gates": {
+   "stochastic_network": {
+    "accepted": true,
+    "stress": [
+     {
+      "stress": {
+       "name": "nil",
+       "fill_multiplier": 1.0,
+       "extra_lead_days": 0,
+       "demand_multiplier": 1.0,
+       "recovery_period": 12,
+       "shared_failure": true,
+       "affected_resources": []
+      },
+      "pass": true,
+      "gate_mode": "not_worse",
+      "physically_usable": true,
+      "within_downside": false,
+      "service_met": true,
+      "incumbent": {
+       "runs": 3,
+       "physical_failures": 0,
+       "cost_mean": 26028.484279718134,
+       "cost_min": 25699.95794169763,
+       "cost_max": 26271.7315548081,
+       "weighted_service_shortfall": 0.0,
+       "failures": [],
+       "service": {
+        "svc_north": 0.9891128614614776,
+        "svc_south": 0.9950330404000998,
+        "svc_north_B": 0.9977405168954715,
+        "svc_south_B": 0.996052637128008
+       }
+      },
+      "candidate": {
+       "runs": 3,
+       "physical_failures": 0,
+       "cost_mean": 25842.868265048284,
+       "cost_min": 25523.02597602314,
+       "cost_max": 26444.387760031128,
+       "weighted_service_shortfall": 0.0,
+       "failures": [],
+       "service": {
+        "svc_north": 0.9916127100424897,
+        "svc_south": 0.9954323160329742,
+        "svc_north_B": 0.9976077768044235,
+        "svc_south_B": 0.9920693592272111
+       }
+      }
+     }
+    ],
+    "reason": "accepted"
+   }
+  },
+  "recovery_guidance": null,
+  "candidates": {
+   "incumbent": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.02174704149365425,
+    "variables": 2364,
+    "constraints": 1979,
+    "gap": 0.0,
+    "residual": 2.3283064365386963e-10,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 26045.647196319485,
+     "cost_min": 25309.904133344262,
+     "cost_max": 26896.0927537106,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   },
+   "base_stock": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.13896750006824732,
+    "variables": 2476,
+    "constraints": 1363,
+    "gap": 0.0,
+    "residual": 2.3283064365386963e-10,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 51154.83616969265,
+     "cost_min": 49954.48644038159,
+     "cost_max": 52005.095815635694,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   },
+   "deterministic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 2.9481740426272154,
+    "variables": 2472,
+    "constraints": 1969,
+    "gap": 0.0,
+    "residual": 1.1641532182693481e-10,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 25685.10960787363,
+     "cost_min": 25141.670485155617,
+     "cost_max": 26273.919539146624,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   },
+   "stochastic_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 3.2069531669840217,
+    "variables": 5904,
+    "constraints": 3759,
+    "gap": 0.0,
+    "residual": 1.1641532182693481e-10,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 25407.995660486937,
+     "cost_min": 24942.32565667634,
+     "cost_max": 25670.330103003816,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   },
+   "cadence_2_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 2.3129584174603224,
+    "variables": 5904,
+    "constraints": 3759,
+    "gap": 0.0,
+    "residual": 6.821210263296962e-13,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 25458.183877685315,
+     "cost_min": 25092.809686906192,
+     "cost_max": 25652.241341209075,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   },
+   "cadence_4_network": {
+    "status": "OPTIMAL",
+    "solve_seconds": 0.8768522497266531,
+    "variables": 5904,
+    "constraints": 3759,
+    "gap": 0.0,
+    "residual": 1.1641532182693481e-10,
+    "selection": {
+     "runs": 3,
+     "physical_failures": 0,
+     "cost_mean": 25458.124807215678,
+     "cost_min": 25092.44813123058,
+     "cost_max": 25652.397451226556,
+     "weighted_service_shortfall": null,
+     "failures": []
+    }
+   }
+  },
+  "limitations": [
+   "Synthetic evidence is not customer validation.",
+   "Stress envelopes are assumptions, not calibrated guarantees.",
+   "Only period-zero actions may be reviewed; future actions are replanning guidance.",
+   "Cash excludes forecast sales receipts; enter only dated known receivables.",
+   "A retained incumbent is not certified safe when it also fails the reported stress tests."
+  ],
+  "sourcing": {
+   "version": "zaad.sourcing.1.0",
+   "principles": [
+    "Source where total landed economics and supply resilience are best, not where unit price is lowest.",
+    "Diversification is not the objective. Better decisions under real supply uncertainty are the objective."
+   ],
+   "recommendation_status": "PENDING_REVIEW",
+   "selected_policy": "stochastic_network",
+   "abstained": false,
+   "materiality": {
+    "material": true,
+    "verdict": "MATERIAL_IMPROVEMENT",
+    "cost_delta_fraction": -0.0027150079750825518,
+    "inventory_delta_fraction": -0.2415139339361507,
+    "service_delta": 0.0,
+    "better_on": [
+     "inventory"
+    ],
+    "worse_on": [],
+    "thresholds": {
+     "cost_fraction": 0.01,
+     "inventory_fraction": 0.05,
+     "service": 0.005
+    },
+    "reason": "cost -0.27%, inventory -24.15%, worst service +0.000 against the incumbent; improvement exceeds the declared materiality on inventory"
+   },
+   "risk_groups": [],
+   "pairs": [
+    {
+     "sku": "A",
+     "destination": "central",
+     "order_period": 0,
+     "total_committed_period_0": 24.58821240106208,
+     "total_committed_plan": 2833.3097984739015,
+     "incumbent_total_period_0": 2044.7628089964237,
+     "incumbent_total_plan": 4089.5256179928474,
+     "sources_used_plan": [
+      "src_A",
+      "src_S2"
+     ],
+     "recommendation": "COMMIT_AS_INCUMBENT_MIX",
+     "owner": {
+      "total_commitment": "P1 purchasing economics (or P0 protection / recovery when it owns the review)",
+      "source_split": "P3 sourcing portfolio"
+     },
+     "options": [
+      {
+       "source": "src_A",
+       "supplier": "supplier",
+       "route": [
+        "supplier",
+        "central"
+       ],
+       "eligible": true,
+       "ineligible_reason": null,
+       "quantity_period_0": 0.0,
+       "share_period_0": 0.0,
+       "quantity_plan": 2808.7215860728393,
+       "share_plan": 0.9913217353025404,
+       "incumbent_quantity_period_0": 2044.7628089964237,
+       "incumbent_share_period_0": 1.0,
+       "incumbent_share_plan": 1.0,
+       "declared_incumbent_share": 1.0,
+       "in_incumbent_mix": true,
+       "expected_receipt_period": 1,
+       "expected_fill": 0.98,
+       "lead_days": 7,
+       "lead_sd_days": 0.0,
+       "capacity_period_0": 1000000.0,
+       "capacity_binding": false,
+       "minimum_order": 0.0,
+       "packs": [],
+       "executable": true,
+       "landed": {
+        "unit_price": 5.0,
+        "freight_per_unit": 0.0,
+        "handling_per_unit": 0.0,
+        "financing_fee_per_unit": 0.0,
+        "fixed_order_fee": 0.0,
+        "landed_unit_cost": 5.0,
+        "payment_terms": {
+         "deposit_fraction": 0.0,
+         "balance_trigger": "arrival",
+         "net_days": 0,
+         "expected_payment_period": 1
+        },
+        "payment_timing_value_per_unit": 0.0,
+        "landed_unit_cost_after_terms": 5.0,
+        "scope": "per unit, report only; the plan's economics come from the settled ledger"
+       },
+       "reliability": {
+        "scope": "declared",
+        "records": 0,
+        "fill_mean": 0.98,
+        "fill_sd": 0.01,
+        "late_probability": 0.0,
+        "fill_provenance": null,
+        "lead_provenance": null,
+        "weak_evidence": true
+       },
+       "risk_groups": [],
+       "shared_risk_weak_evidence": false,
+       "share_constraints": [],
+       "switching_cost": null
+      },
+      {
+       "source": "src_S2",
+       "supplier": "supplier_s2",
+       "route": [
+        "supplier_s2",
+        "central"
+       ],
+       "eligible": true,
+       "ineligible_reason": null,
+       "quantity_period_0": 24.58821240106208,
+       "share_period_0": 1.0,
+       "quantity_plan": 24.58821240106208,
+       "share_plan": 0.008678264697459475,
+       "incumbent_quantity_period_0": 0.0,
+       "incumbent_share_period_0": 0.0,
+       "incumbent_share_plan": 0.0,
+       "declared_incumbent_share": null,
+       "in_incumbent_mix": false,
+       "expected_receipt_period": 1,
+       "expected_fill": 0.98,
+       "lead_days": 7,
+       "lead_sd_days": 0.0,
+       "capacity_period_0": 1000000.0,
+       "capacity_binding": false,
+       "minimum_order": 0.0,
+       "packs": [],
+       "executable": true,
+       "landed": {
+        "unit_price": 5.4,
+        "freight_per_unit": 0.0,
+        "handling_per_unit": 0.0,
+        "financing_fee_per_unit": 0.0,
+        "fixed_order_fee": 0.0,
+        "landed_unit_cost": 5.4,
+        "payment_terms": {
+         "deposit_fraction": 0.0,
+         "balance_trigger": "arrival",
+         "net_days": 0,
+         "expected_payment_period": 1
+        },
+        "payment_timing_value_per_unit": 0.0,
+        "landed_unit_cost_after_terms": 5.4,
+        "scope": "per unit, report only; the plan's economics come from the settled ledger"
+       },
+       "reliability": {
+        "scope": "declared",
+        "records": 0,
+        "fill_mean": 0.98,
+        "fill_sd": 0.01,
+        "late_probability": 0.0,
+        "fill_provenance": null,
+        "lead_provenance": null,
+        "weak_evidence": true
+       },
+       "risk_groups": [],
+       "shared_risk_weak_evidence": false,
+       "share_constraints": [],
+       "switching_cost": null
+      }
+     ]
+    },
+    {
+     "sku": "B",
+     "destination": "central",
+     "order_period": 0,
+     "total_committed_period_0": 28.96975945025897,
+     "total_committed_plan": 2860.0590590467596,
+     "incumbent_total_period_0": 2044.7628089964237,
+     "incumbent_total_plan": 4089.5256179928474,
+     "sources_used_plan": [
+      "src_A_B",
+      "src_S2_B"
+     ],
+     "recommendation": "COMMIT_AS_INCUMBENT_MIX",
+     "owner": {
+      "total_commitment": "P1 purchasing economics (or P0 protection / recovery when it owns the review)",
+      "source_split": "P3 sourcing portfolio"
+     },
+     "options": [
+      {
+       "source": "src_A_B",
+       "supplier": "supplier",
+       "route": [
+        "supplier",
+        "central"
+       ],
+       "eligible": true,
+       "ineligible_reason": null,
+       "quantity_period_0": 0.0,
+       "share_period_0": 0.0,
+       "quantity_plan": 2831.0892995965005,
+       "share_plan": 0.9898709226445433,
+       "incumbent_quantity_period_0": 2044.7628089964237,
+       "incumbent_share_period_0": 1.0,
+       "incumbent_share_plan": 1.0,
+       "declared_incumbent_share": 1.0,
+       "in_incumbent_mix": true,
+       "expected_receipt_period": 1,
+       "expected_fill": 0.98,
+       "lead_days": 7,
+       "lead_sd_days": 0.0,
+       "capacity_period_0": 1000000.0,
+       "capacity_binding": false,
+       "minimum_order": 0.0,
+       "packs": [],
+       "executable": true,
+       "landed": {
+        "unit_price": 5.0,
+        "freight_per_unit": 0.0,
+        "handling_per_unit": 0.0,
+        "financing_fee_per_unit": 0.0,
+        "fixed_order_fee": 0.0,
+        "landed_unit_cost": 5.0,
+        "payment_terms": {
+         "deposit_fraction": 0.0,
+         "balance_trigger": "arrival",
+         "net_days": 0,
+         "expected_payment_period": 1
+        },
+        "payment_timing_value_per_unit": 0.0,
+        "landed_unit_cost_after_terms": 5.0,
+        "scope": "per unit, report only; the plan's economics come from the settled ledger"
+       },
+       "reliability": {
+        "scope": "declared",
+        "records": 0,
+        "fill_mean": 0.98,
+        "fill_sd": 0.01,
+        "late_probability": 0.0,
+        "fill_provenance": null,
+        "lead_provenance": null,
+        "weak_evidence": true
+       },
+       "risk_groups": [],
+       "shared_risk_weak_evidence": false,
+       "share_constraints": [],
+       "switching_cost": null
+      },
+      {
+       "source": "src_S2_B",
+       "supplier": "supplier_s2",
+       "route": [
+        "supplier_s2",
+        "central"
+       ],
+       "eligible": true,
+       "ineligible_reason": null,
+       "quantity_period_0": 28.96975945025897,
+       "share_period_0": 1.0,
+       "quantity_plan": 28.96975945025897,
+       "share_plan": 0.010129077355456574,
+       "incumbent_quantity_period_0": 0.0,
+       "incumbent_share_period_0": 0.0,
+       "incumbent_share_plan": 0.0,
+       "declared_incumbent_share": null,
+       "in_incumbent_mix": false,
+       "expected_receipt_period": 1,
+       "expected_fill": 0.98,
+       "lead_days": 7,
+       "lead_sd_days": 0.0,
+       "capacity_period_0": 1000000.0,
+       "capacity_binding": false,
+       "minimum_order": 0.0,
+       "packs": [],
+       "executable": true,
+       "landed": {
+        "unit_price": 5.4,
+        "freight_per_unit": 0.0,
+        "handling_per_unit": 0.0,
+        "financing_fee_per_unit": 0.0,
+        "fixed_order_fee": 0.0,
+        "landed_unit_cost": 5.4,
+        "payment_terms": {
+         "deposit_fraction": 0.0,
+         "balance_trigger": "arrival",
+         "net_days": 0,
+         "expected_payment_period": 1
+        },
+        "payment_timing_value_per_unit": 0.0,
+        "landed_unit_cost_after_terms": 5.4,
+        "scope": "per unit, report only; the plan's economics come from the settled ledger"
+       },
+       "reliability": {
+        "scope": "declared",
+        "records": 0,
+        "fill_mean": 0.98,
+        "fill_sd": 0.01,
+        "late_probability": 0.0,
+        "fill_provenance": null,
+        "lead_provenance": null,
+        "weak_evidence": true
+       },
+       "risk_groups": [],
+       "shared_risk_weak_evidence": false,
+       "share_constraints": [],
+       "switching_cost": null
+      }
+     ]
+    }
+   ],
+   "explanations": [],
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "scope": "the frozen joint decision chose the total commitment (P1) and its split across approved sources (P3) under the declared economics, capacity, uncertainty and shared risk; no source score, no diversification rule, no autonomous order"
+  },
+  "network": {
+   "version": "zaad.meio.2.0",
+   "state": {
+    "nodes": {
+     "central": {
+      "kind": "central_dc",
+      "echelon": 0,
+      "buys": [
+       "src_A",
+       "src_S2",
+       "src_A_B",
+       "src_S2_B"
+      ],
+      "serves": [],
+      "fed_by": [],
+      "feeds": [
+       "lane_north",
+       "lane_south",
+       "lane_north_B",
+       "lane_south_B"
+      ]
+     },
+     "north": {
+      "kind": "branch",
+      "echelon": 1,
+      "buys": [],
+      "serves": [
+       "svc_north",
+       "svc_north_B"
+      ],
+      "fed_by": [
+       "lane_north",
+       "lane_north_B"
+      ],
+      "feeds": []
+     },
+     "south": {
+      "kind": "branch",
+      "echelon": 1,
+      "buys": [],
+      "serves": [
+       "svc_south",
+       "svc_south_B"
+      ],
+      "fed_by": [
+       "lane_south",
+       "lane_south_B"
+      ],
+      "feeds": []
+     }
+    },
+    "lanes": {
+     "lane_north": {
+      "sku": "A",
+      "origin": "central",
+      "destination": "north",
+      "lead_periods": 1,
+      "earliest_arrival": 1,
+      "capacity": 1000000.0,
+      "cost_per_unit": 0.2,
+      "fixed_cost_per_dispatch": 0.0,
+      "multiple": 0.0,
+      "loss_fraction": 0.0,
+      "approved": true
+     },
+     "lane_south": {
+      "sku": "A",
+      "origin": "central",
+      "destination": "south",
+      "lead_periods": 1,
+      "earliest_arrival": 1,
+      "capacity": 1000000.0,
+      "cost_per_unit": 0.2,
+      "fixed_cost_per_dispatch": 0.0,
+      "multiple": 0.0,
+      "loss_fraction": 0.0,
+      "approved": true
+     },
+     "lane_north_B": {
+      "sku": "B",
+      "origin": "central",
+      "destination": "north",
+      "lead_periods": 1,
+      "earliest_arrival": 1,
+      "capacity": 1000000.0,
+      "cost_per_unit": 0.2,
+      "fixed_cost_per_dispatch": 0.0,
+      "multiple": 0.0,
+      "loss_fraction": 0.0,
+      "approved": true
+     },
+     "lane_south_B": {
+      "sku": "B",
+      "origin": "central",
+      "destination": "south",
+      "lead_periods": 1,
+      "earliest_arrival": 1,
+      "capacity": 1000000.0,
+      "cost_per_unit": 0.2,
+      "fixed_cost_per_dispatch": 0.0,
+      "multiple": 0.0,
+      "loss_fraction": 0.0,
+      "approved": true
+     }
+    },
+    "positions": [
+     {
+      "sku": "A",
+      "location": "central",
+      "on_hand_usable": 300.0,
+      "on_hand_unusable": 0.0,
+      "supplier_transit": 0,
+      "supplier_transit_next_due": null,
+      "transfer_transit": 0,
+      "transfer_transit_next_due": null,
+      "demand_rate": 0,
+      "targets": {},
+      "priority": 0.0
+     },
+     {
+      "sku": "A",
+      "location": "north",
+      "on_hand_usable": 150.0,
+      "on_hand_unusable": 0.0,
+      "supplier_transit": 0,
+      "supplier_transit_next_due": null,
+      "transfer_transit": 0,
+      "transfer_transit_next_due": null,
+      "demand_rate": 98.38461538461539,
+      "targets": {
+       "svc_north": 0.95
+      },
+      "priority": 1.0
+     },
+     {
+      "sku": "A",
+      "location": "south",
+      "on_hand_usable": 150.0,
+      "on_hand_unusable": 0.0,
+      "supplier_transit": 0,
+      "supplier_transit_next_due": null,
+      "transfer_transit": 0,
+      "transfer_transit_next_due": null,
+      "demand_rate": 102.07692307692308,
+      "targets": {
+       "svc_south": 0.95
+      },
+      "priority": 1.0
+     },
+     {
+      "sku": "B",
+      "location": "central",
+      "on_hand_usable": 300.0,
+      "on_hand_unusable": 0.0,
+      "supplier_transit": 0,
+      "supplier_transit_next_due": null,
+      "transfer_transit": 0,
+      "transfer_transit_next_due": null,
+      "demand_rate": 0,
+      "targets": {},
+      "priority": 0.0
+     },
+     {
+      "sku": "B",
+      "location": "north",
+      "on_hand_usable": 150.0,
+      "on_hand_unusable": 0.0,
+      "supplier_transit": 0,
+      "supplier_transit_next_due": null,
+      "transfer_transit": 0,
+      "transfer_transit_next_due": null,
+      "demand_rate": 98.38461538461539,
+      "targets": {
+       "svc_north_B": 0.95
+      },
+      "priority": 1.0
+     },
+     {
+      "sku": "B",
+      "location": "south",
+      "on_hand_usable": 150.0,
+      "on_hand_unusable": 0.0,
+      "supplier_transit": 0,
+      "supplier_transit_next_due": null,
+      "transfer_transit": 0,
+      "transfer_transit_next_due": null,
+      "demand_rate": 102.07692307692308,
+      "targets": {
+       "svc_south_B": 0.95
+      },
+      "priority": 1.0
+     }
+    ],
+    "reachability": [
+     {
+      "sku": "A",
+      "location": "north",
+      "local_only_periods": 1,
+      "lanes": [
+       {
+        "lane": "lane_north",
+        "origin": "central",
+        "earliest_arrival": 1,
+        "capacity": 1000000.0,
+        "cost_per_unit": 0.2,
+        "origin_usable": 300.0
+       }
+      ],
+      "transit_due": []
+     },
+     {
+      "sku": "A",
+      "location": "south",
+      "local_only_periods": 1,
+      "lanes": [
+       {
+        "lane": "lane_south",
+        "origin": "central",
+        "earliest_arrival": 1,
+        "capacity": 1000000.0,
+        "cost_per_unit": 0.2,
+        "origin_usable": 300.0
+       }
+      ],
+      "transit_due": []
+     },
+     {
+      "sku": "B",
+      "location": "north",
+      "local_only_periods": 1,
+      "lanes": [
+       {
+        "lane": "lane_north_B",
+        "origin": "central",
+        "earliest_arrival": 1,
+        "capacity": 1000000.0,
+        "cost_per_unit": 0.2,
+        "origin_usable": 300.0
+       }
+      ],
+      "transit_due": []
+     },
+     {
+      "sku": "B",
+      "location": "south",
+      "local_only_periods": 1,
+      "lanes": [
+       {
+        "lane": "lane_south_B",
+        "origin": "central",
+        "earliest_arrival": 1,
+        "capacity": 1000000.0,
+        "cost_per_unit": 0.2,
+        "origin_usable": 300.0
+       }
+      ],
+      "transit_due": []
+     }
+    ],
+    "stranded": [],
+    "shared_resources": {
+     "supplier": [],
+     "resource": [
+      {
+       "resource": "supplier_cap",
+       "sources": [
+        "src_A",
+        "src_A_B"
+       ],
+       "capacity_period_0": 1000000.0
+      },
+      {
+       "resource": "cap_supplier_s2",
+       "sources": [
+        "src_S2",
+        "src_S2_B"
+       ],
+       "capacity_period_0": 1000000.0
+      }
+     ],
+     "origin": [
+      {
+       "sku": "A",
+       "origin": "central",
+       "destinations": [
+        "north",
+        "south"
+       ],
+       "usable_now": 300.0
+      },
+      {
+       "sku": "B",
+       "origin": "central",
+       "destinations": [
+        "north",
+        "south"
+       ],
+       "usable_now": 300.0
+      }
+     ]
+    },
+    "correlation_groups": {
+     "A": [
+      "svc_north",
+      "svc_south"
+     ],
+     "B": [
+      "svc_north_B",
+      "svc_south_B"
+     ]
+    },
+    "issues": [],
+    "topology": "central_branches",
+    "scope": "read-only view of the request; reachability applies the lane lead and the receiving calendar exactly as the frozen model does"
+   },
+   "router": {
+    "scarce_origins": [
+     {
+      "sku": "A",
+      "origin": "central",
+      "destinations": [
+       "north",
+       "south"
+      ],
+      "available": 300.0,
+      "requirements": [
+       {
+        "location": "north",
+        "window_periods": 2,
+        "requirement": 46.769230769230774,
+        "rate": 98.38461538461539
+       },
+       {
+        "location": "south",
+        "window_periods": 2,
+        "requirement": 54.15384615384616,
+        "rate": 102.07692307692308
+       }
+      ],
+      "total_requirement": 100.92307692307693,
+      "scarce": false,
+      "competing": [
+       "north",
+       "south"
+      ]
+     },
+     {
+      "sku": "B",
+      "origin": "central",
+      "destinations": [
+       "north",
+       "south"
+      ],
+      "available": 300.0,
+      "requirements": [
+       {
+        "location": "north",
+        "window_periods": 2,
+        "requirement": 46.769230769230774,
+        "rate": 98.38461538461539
+       },
+       {
+        "location": "south",
+        "window_periods": 2,
+        "requirement": 54.15384615384616,
+        "rate": 102.07692307692308
+       }
+      ],
+      "total_requirement": 100.92307692307693,
+      "scarce": false,
+      "competing": [
+       "north",
+       "south"
+      ]
+     }
+    ],
+    "supplier_contention": [
+     {
+      "resource": "supplier_cap",
+      "sources": [
+       "src_A",
+       "src_A_B"
+      ],
+      "capacity_period_0": 1000000.0,
+      "lead_window_demand": 801.8461538461538,
+      "contended": false
+     },
+     {
+      "resource": "cap_supplier_s2",
+      "sources": [
+       "src_S2",
+       "src_S2_B"
+      ],
+      "capacity_period_0": 1000000.0,
+      "lead_window_demand": 801.8461538461538,
+      "contended": false
+     }
+    ],
+    "unreachable": [],
+    "affected_locations": [],
+    "reasons": [],
+    "scope": "decided before the frozen planner from the request and the fitted demand rate; names the contested resources, never overrides the frozen decision"
+   },
+   "selected": {
+    "label": "selected",
+    "usable_worlds": 3,
+    "worlds": 3,
+    "unusable": [],
+    "flows": [
+     {
+      "sku": "A",
+      "location": "central",
+      "opening": 300.0,
+      "external_receipts": 2776.3899869106,
+      "transfer_receipts": 0.0,
+      "served": 0.0,
+      "transfer_out": 3071.040256664604,
+      "expired": 0.0,
+      "closing": 5.349730245995767,
+      "holding_cost": 40.466469942267814
+     },
+     {
+      "sku": "A",
+      "location": "north",
+      "opening": 150.0,
+      "external_receipts": 0.0,
+      "transfer_receipts": 1058.5820818707675,
+      "served": 1171.855656670753,
+      "transfer_out": 0.0,
+      "expired": 0.0,
+      "closing": 36.72642520001432,
+      "holding_cost": 30.79744940978469
+     },
+     {
+      "sku": "A",
+      "location": "south",
+      "opening": 150.0,
+      "external_receipts": 0.0,
+      "transfer_receipts": 1581.8102754779654,
+      "served": 1223.6597169069803,
+      "transfer_out": 0.0,
+      "expired": 0.0,
+      "closing": 508.15055857098514,
+      "holding_cost": 71.86084106647496
+     },
+     {
+      "sku": "B",
+      "location": "central",
+      "opening": 300.0,
+      "external_receipts": 2802.576269883998,
+      "transfer_receipts": 0.0,
+      "served": 0.0,
+      "transfer_out": 3097.1208615401038,
+      "expired": 0.0,
+      "closing": 5.455408343894683,
+      "holding_cost": 52.84148462499569
+     },
+     {
+      "sku": "B",
+      "location": "north",
+      "opening": 150.0,
+      "external_receipts": 0.0,
+      "transfer_receipts": 1059.2102854555103,
+      "served": 1164.672348180006,
+      "transfer_out": 0.0,
+      "expired": 0.0,
+      "closing": 44.53793727550433,
+      "holding_cost": 19.657044611029995
+     },
+     {
+      "sku": "B",
+      "location": "south",
+      "opening": 150.0,
+      "external_receipts": 0.0,
+      "transfer_receipts": 1603.4174054520247,
+      "served": 1218.6143111552954,
+      "transfer_out": 0.0,
+      "expired": 0.0,
+      "closing": 534.8030942967295,
+      "holding_cost": 73.85126537446777
+     }
+    ],
+    "conservation": {
+     "holds_on_every_world": true,
+     "max_row_residual": 3.979039320256561e-13
+    },
+    "lanes": {
+     "lane_north": {
+      "sku": "A",
+      "origin": "central",
+      "destination": "north",
+      "capacity": 1000000.0,
+      "lead_periods": 1,
+      "multiple": 0.0,
+      "reverse_lanes": [],
+      "units": 1489.229981186639,
+      "received": 1489.229981186639,
+      "dispatches": 5.0,
+      "periods_used": [
+       0,
+       1,
+       2,
+       5,
+       11
+      ],
+      "peak_utilisation": 0.0005877144787152112,
+      "cost": 297.84599623732777,
+      "pack_legal": true,
+      "capacity_respected": true,
+      "ping_pong_units": 0.0
+     },
+     "lane_south": {
+      "sku": "A",
+      "origin": "central",
+      "destination": "south",
+      "capacity": 1000000.0,
+      "lead_periods": 1,
+      "multiple": 0.0,
+      "reverse_lanes": [],
+      "units": 1581.8102754779654,
+      "received": 1581.8102754779654,
+      "dispatches": 4.0,
+      "periods_used": [
+       0,
+       1,
+       2,
+       5
+      ],
+      "peak_utilisation": 0.001120932426676439,
+      "cost": 316.3620550955932,
+      "pack_legal": true,
+      "capacity_respected": true,
+      "ping_pong_units": 0.0
+     },
+     "lane_north_B": {
+      "sku": "B",
+      "origin": "central",
+      "destination": "north",
+      "capacity": 1000000.0,
+      "lead_periods": 1,
+      "multiple": 0.0,
+      "reverse_lanes": [],
+      "units": 1493.7034560880788,
+      "received": 1493.7034560880788,
+      "dispatches": 6.0,
+      "periods_used": [
+       0,
+       1,
+       2,
+       5,
+       7,
+       11
+      ],
+      "peak_utilisation": 0.0004519823202079546,
+      "cost": 298.7406912176158,
+      "pack_legal": true,
+      "capacity_respected": true,
+      "ping_pong_units": 0.0
+     },
+     "lane_south_B": {
+      "sku": "B",
+      "origin": "central",
+      "destination": "south",
+      "capacity": 1000000.0,
+      "lead_periods": 1,
+      "multiple": 0.0,
+      "reverse_lanes": [],
+      "units": 1603.4174054520247,
+      "received": 1603.4174054520247,
+      "dispatches": 4.0,
+      "periods_used": [
+       0,
+       1,
+       2,
+       5
+      ],
+      "peak_utilisation": 0.0011321590454512354,
+      "cost": 320.68348109040494,
+      "pack_legal": true,
+      "capacity_respected": true,
+      "ping_pong_units": 0.0
+     }
+    },
+    "services": [
+     {
+      "service": "svc_north",
+      "sku": "A",
+      "location": "north",
+      "customer": "customer_north",
+      "priority": 1.0,
+      "target": 0.95,
+      "achieved": 0.9984946436936734,
+      "worst_world": 0.9954839310810202,
+      "breach_share": 0.0,
+      "severe_starvation_share": 0.0,
+      "demand": 1173.683256897993,
+      "unmet": 1.8276002272400547,
+      "stockout_periods": 0.3333333333333333,
+      "shortage_cost": 22.845002840500683
+     },
+     {
+      "service": "svc_south",
+      "sku": "A",
+      "location": "south",
+      "customer": "customer_south",
+      "priority": 1.0,
+      "target": 0.95,
+      "achieved": 0.982961400017524,
+      "worst_world": 0.9616410522151607,
+      "breach_share": 0.0,
+      "severe_starvation_share": 0.0,
+      "demand": 1245.060512806623,
+      "unmet": 21.400795899642613,
+      "stockout_periods": 1.6666666666666665,
+      "shortage_cost": 267.5099487455327
+     },
+     {
+      "service": "svc_north_B",
+      "sku": "B",
+      "location": "north",
+      "customer": "customer_north",
+      "priority": 1.0,
+      "target": 0.95,
+      "achieved": 0.9962720292573267,
+      "worst_world": 0.9923974358854161,
+      "breach_share": 0.0,
+      "severe_starvation_share": 0.0,
+      "demand": 1169.0405919623936,
+      "unmet": 4.368243782387632,
+      "stockout_periods": 0.6666666666666666,
+      "shortage_cost": 54.6030472798454
+     },
+     {
+      "service": "svc_south_B",
+      "sku": "B",
+      "location": "south",
+      "customer": "customer_south",
+      "priority": 1.0,
+      "target": 0.95,
+      "achieved": 0.9963262231970333,
+      "worst_world": 0.9934649205265214,
+      "breach_share": 0.0,
+      "severe_starvation_share": 0.0,
+      "demand": 1223.131069970296,
+      "unmet": 4.516758815000609,
+      "stockout_periods": 1.0,
+      "shortage_cost": 56.45948518750761
+     }
+    ],
+    "network_service": {
+     "demand_weighted": 0.9933248881256384,
+     "priority_weighted": 0.9935135740413894,
+     "breaches": [],
+     "severe_starvation": [],
+     "min_location_service": 0.982961400017524
+    },
+    "stranded_units_at_end": 0.0,
+    "stranded": [],
+    "in_transit_after_horizon_units": 865.14106994844,
+    "economics": {
+     "economic_cost": 28712.134843540924,
+     "ledger": {
+      "closing_assets": -8000.6568955262555,
+      "financing": 0.0,
+      "freight": 0.0,
+      "handling": 0.0,
+      "holding": 289.47455502902096,
+      "lost_sales_opportunity": 321.13398724270917,
+      "opening_assets": 6000.0,
+      "order_fees": 0.0,
+      "ordering": 300.0,
+      "procurement": 28488.26747634383,
+      "receiving": 0.0,
+      "sla": 80.28349681067729,
+      "substitution": 0.0,
+      "transfer": 1233.6322236409417,
+      "working_capital": 0.0
+     },
+     "node": {
+      "central": {
+       "holding": 93.3079545672635,
+       "shortage": 0.0,
+       "purchase": 28488.26747634383,
+       "freight_handling": 0.0,
+       "disposal": 0.0
+      },
+      "north": {
+       "holding": 50.454494020814685,
+       "shortage": 77.44805012034608,
+       "purchase": 0.0,
+       "freight_handling": 0.0,
+       "disposal": 0.0
+      },
+      "south": {
+       "holding": 145.7121064409427,
+       "shortage": 323.9694339330403,
+       "purchase": 0.0,
+       "freight_handling": 0.0,
+       "disposal": 0.0
+      }
+     },
+     "lane": {
+      "lane_north": {
+       "transfer": 297.84599623732777
+      },
+      "lane_south": {
+       "transfer": 316.3620550955932
+      },
+      "lane_north_B": {
+       "transfer": 298.7406912176158
+      },
+      "lane_south_B": {
+       "transfer": 320.68348109040494
+      }
+     },
+     "buckets": {
+      "node": 29179.15951542624,
+      "lane": 1233.6322236409417,
+      "upstream": 300.0,
+      "network": -2000.6568955262555
+     },
+     "reconciles_on_every_world": true,
+     "worst_check": 2.3021584638627246e-12,
+     "unmapped_ledger_keys": [],
+     "inventory_value_mean": 8385.572427427986
+    },
+    "actions": {
+     "purchases_period_0": 53.55797185132105,
+     "purchase_lines": 6,
+     "transfers_period_0": 238.59995753577783,
+     "transfer_lines": 22,
+     "no_action": false
+    },
+    "scope": "frozen independent settlement on the given worlds; scenario-weighted means; nothing here is a solver value"
+   },
+   "incumbent": {
+    "label": "incumbent",
+    "usable_worlds": 3,
+    "worlds": 3,
+    "unusable": [],
+    "flows": [
+     {
+      "sku": "A",
+      "location": "central",
+      "opening": 300.0,
+      "external_receipts": 3999.5355813836013,
+      "transfer_receipts": 0.0,
+      "served": 0.0,
+      "transfer_out": 2335.367607658238,
+      "expired": 0.0,
+      "closing": 1964.1679737253635,
+      "holding_cost": 182.10650259040833
+     },
+     {
+      "sku": "A",
+      "location": "north",
+      "opening": 150.0,
+      "external_receipts": 0.0,
+      "transfer_receipts": 1051.9009442675087,
+      "served": 1168.4398296167144,
+      "transfer_out": 0.0,
+      "expired": 0.0,
+      "closing": 33.46111465079447,
+      "holding_cost": 4.426230290328889
+     },
+     {
+      "sku": "A",
+      "location": "south",
+      "opening": 150.0,
+      "external_receipts": 0.0,
+      "transfer_receipts": 1097.315558476124,
+      "served": 1234.880655242169,
+      "transfer_out": 0.0,
+      "expired": 0.0,
+      "closing": 12.434903233954874,
+      "holding_cost": 3.7541866069529997
+     },
+     {
+      "sku": "B",
+      "location": "central",
+      "opening": 300.0,
+      "external_receipts": 3999.5355813836013,
+      "transfer_receipts": 0.0,
+      "served": 0.0,
+      "transfer_out": 2335.367607658238,
+      "expired": 0.0,
+      "closing": 1964.1679737253635,
+      "holding_cost": 182.10650259040833
+     },
+     {
+      "sku": "B",
+      "location": "north",
+      "opening": 150.0,
+      "external_receipts": 0.0,
+      "transfer_receipts": 1051.9009442675087,
+      "served": 1169.0405919623938,
+      "transfer_out": 0.0,
+      "expired": 0.0,
+      "closing": 32.86035230511527,
+      "holding_cost": 5.071847463534281
+     },
+     {
+      "sku": "B",
+      "location": "south",
+      "opening": 150.0,
+      "external_receipts": 0.0,
+      "transfer_receipts": 1097.315558476124,
+      "served": 1221.7821182579548,
+      "transfer_out": 0.0,
+      "expired": 0.0,
+      "closing": 25.533440218169112,
+      "holding_cost": 4.182552324422378
+     }
+    ],
+    "conservation": {
+     "holds_on_every_world": true,
+     "max_row_residual": 2.2737367544323206e-13
+    },
+    "lanes": {
+     "lane_north": {
+      "sku": "A",
+      "origin": "central",
+      "destination": "north",
+      "capacity": 1000000.0,
+      "lead_periods": 1,
+      "multiple": 0.0,
+      "reverse_lanes": [],
+      "units": 1150.2855596521244,
+      "received": 1150.2855596521244,
+      "dispatches": 12.0,
+      "periods_used": [
+       0,
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11
+      ],
+      "peak_utilisation": 9.838461538461539e-05,
+      "cost": 230.0571119304249,
+      "pack_legal": true,
+      "capacity_respected": true,
+      "ping_pong_units": 0.0
+     },
+     "lane_south": {
+      "sku": "A",
+      "origin": "central",
+      "destination": "south",
+      "capacity": 1000000.0,
+      "lead_periods": 1,
+      "multiple": 0.0,
+      "reverse_lanes": [],
+      "units": 1185.0820480061134,
+      "received": 1185.0820480061134,
+      "dispatches": 12.0,
+      "periods_used": [
+       0,
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11
+      ],
+      "peak_utilisation": 0.00010207692307692307,
+      "cost": 237.01640960122268,
+      "pack_legal": true,
+      "capacity_respected": true,
+      "ping_pong_units": 0.0
+     },
+     "lane_north_B": {
+      "sku": "B",
+      "origin": "central",
+      "destination": "north",
+      "capacity": 1000000.0,
+      "lead_periods": 1,
+      "multiple": 0.0,
+      "reverse_lanes": [],
+      "units": 1150.2855596521244,
+      "received": 1150.2855596521244,
+      "dispatches": 12.0,
+      "periods_used": [
+       0,
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11
+      ],
+      "peak_utilisation": 9.838461538461539e-05,
+      "cost": 230.0571119304249,
+      "pack_legal": true,
+      "capacity_respected": true,
+      "ping_pong_units": 0.0
+     },
+     "lane_south_B": {
+      "sku": "B",
+      "origin": "central",
+      "destination": "south",
+      "capacity": 1000000.0,
+      "lead_periods": 1,
+      "multiple": 0.0,
+      "reverse_lanes": [],
+      "units": 1185.0820480061134,
+      "received": 1185.0820480061134,
+      "dispatches": 12.0,
+      "periods_used": [
+       0,
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11
+      ],
+      "peak_utilisation": 0.00010207692307692307,
+      "cost": 237.01640960122268,
+      "pack_legal": true,
+      "capacity_respected": true,
+      "ping_pong_units": 0.0
+     }
+    },
+    "services": [
+     {
+      "service": "svc_north",
+      "sku": "A",
+      "location": "north",
+      "customer": "customer_north",
+      "priority": 1.0,
+      "target": 0.95,
+      "achieved": 0.9956810979737303,
+      "worst_world": 0.9870432939211911,
+      "breach_share": 0.0,
+      "severe_starvation_share": 0.0,
+      "demand": 1173.683256897993,
+      "unmet": 5.2434272812787786,
+      "stockout_periods": 0.6666666666666666,
+      "shortage_cost": 65.54284101598473
+     },
+     {
+      "service": "svc_south",
+      "sku": "A",
+      "location": "south",
+      "customer": "customer_south",
+      "priority": 1.0,
+      "target": 0.95,
+      "achieved": 0.991942638789729,
+      "worst_world": 0.975827916369187,
+      "breach_share": 0.0,
+      "severe_starvation_share": 0.0,
+      "demand": 1245.060512806623,
+      "unmet": 10.179857564453792,
+      "stockout_periods": 1.3333333333333333,
+      "shortage_cost": 127.2482195556724
+     },
+     {
+      "service": "svc_north_B",
+      "sku": "B",
+      "location": "north",
+      "customer": "customer_north",
+      "priority": 1.0,
+      "target": 0.95,
+      "achieved": 1.0,
+      "worst_world": 1.0,
+      "breach_share": 0.0,
+      "severe_starvation_share": 0.0,
+      "demand": 1169.0405919623936,
+      "unmet": 0.0,
+      "stockout_periods": 0.0,
+      "shortage_cost": 0.0
+     },
+     {
+      "service": "svc_south_B",
+      "sku": "B",
+      "location": "south",
+      "customer": "customer_south",
+      "priority": 1.0,
+      "target": 0.95,
+      "achieved": 0.9989034928989213,
+      "worst_world": 0.9967104786967641,
+      "breach_share": 0.0,
+      "severe_starvation_share": 0.0,
+      "demand": 1223.131069970296,
+      "unmet": 1.3489517123411283,
+      "stockout_periods": 0.3333333333333333,
+      "shortage_cost": 16.861896404264105
+     }
+    ],
+    "network_service": {
+     "demand_weighted": 0.9965137120374685,
+     "priority_weighted": 0.9966318074155951,
+     "breaches": [],
+     "severe_starvation": [],
+     "min_location_service": 0.991942638789729
+    },
+    "stranded_units_at_end": 0.0,
+    "stranded": [],
+    "in_transit_after_horizon_units": 372.3022098292096,
+    "economics": {
+     "economic_cost": 31100.99213108186,
+     "ledger": {
+      "closing_assets": -17619.711870751882,
+      "financing": 0.0,
+      "freight": 0.0,
+      "handling": 0.0,
+      "holding": 381.64782186605515,
+      "lost_sales_opportunity": 167.72236558073644,
+      "opening_assets": 6000.0,
+      "order_fees": 0.0,
+      "ordering": 300.0,
+      "procurement": 40895.256179928474,
+      "receiving": 0.0,
+      "sla": 41.93059139518411,
+      "substitution": 0.0,
+      "transfer": 934.1470430632951,
+      "working_capital": 0.0
+     },
+     "node": {
+      "central": {
+       "holding": 364.21300518081665,
+       "shortage": 0.0,
+       "purchase": 40895.256179928474,
+       "freight_handling": 0.0,
+       "disposal": 0.0
+      },
+      "north": {
+       "holding": 9.498077753863171,
+       "shortage": 65.54284101598473,
+       "purchase": 0.0,
+       "freight_handling": 0.0,
+       "disposal": 0.0
+      },
+      "south": {
+       "holding": 7.936738931375378,
+       "shortage": 144.1101159599365,
+       "purchase": 0.0,
+       "freight_handling": 0.0,
+       "disposal": 0.0
+      }
+     },
+     "lane": {
+      "lane_north": {
+       "transfer": 230.0571119304249
+      },
+      "lane_south": {
+       "transfer": 237.01640960122268
+      },
+      "lane_north_B": {
+       "transfer": 230.0571119304249
+      },
+      "lane_south_B": {
+       "transfer": 237.01640960122268
+      }
+     },
+     "buckets": {
+      "node": 41486.55695877045,
+      "lane": 934.1470430632951,
+      "upstream": 300.0,
+      "network": -11619.711870751882
+     },
+     "reconciles_on_every_world": true,
+     "worst_check": 1.9610979506978765e-12,
+     "unmapped_ledger_keys": [],
+     "inventory_value_mean": 11055.671030246836
+    },
+    "actions": {
+     "purchases_period_0": 4089.5256179928474,
+     "purchase_lines": 4,
+     "transfers_period_0": 289.20223625649646,
+     "transfer_lines": 52,
+     "no_action": false
+    },
+    "scope": "frozen independent settlement on the given worlds; scenario-weighted means; nothing here is a solver value"
+   },
+   "explanations": {
+    "verdict": "ZAAD recommends the changes below for your approval.",
+    "drivers": [
+     "Candidate meets every service target with no material economic penalty and materially less carried inventory; the plan horizon credits closing stock back at terminal value and cannot price that capital (capital tie-break)."
+    ],
+    "purchases": [
+     {
+      "source": "src_A",
+      "sku": "A",
+      "supplier": "supplier",
+      "destination": "central",
+      "units": 0.0,
+      "incumbent_units": 2044.7628089964237,
+      "serves_locations": [
+       "north",
+       "south"
+      ],
+      "demand_rate_covered": 200.46153846153845,
+      "summary": "No purchase of A from supplier this period; your current policy would buy 2,045."
+     },
+     {
+      "source": "src_A_B",
+      "sku": "B",
+      "supplier": "supplier",
+      "destination": "central",
+      "units": 0.0,
+      "incumbent_units": 2044.7628089964237,
+      "serves_locations": [
+       "north",
+       "south"
+      ],
+      "demand_rate_covered": 200.46153846153845,
+      "summary": "No purchase of B from supplier this period; your current policy would buy 2,045."
+     },
+     {
+      "source": "src_S2",
+      "sku": "A",
+      "supplier": "supplier_s2",
+      "destination": "central",
+      "units": 24.58821240106208,
+      "incumbent_units": 0.0,
+      "serves_locations": [
+       "north",
+       "south"
+      ],
+      "demand_rate_covered": 200.46153846153845,
+      "summary": "Buy 25 of A from supplier_s2 into central: it covers about 0.1 weeks of the demand it serves (north, south) at the current rate of 200 per period. Your current policy would not buy this period."
+     },
+     {
+      "source": "src_S2_B",
+      "sku": "B",
+      "supplier": "supplier_s2",
+      "destination": "central",
+      "units": 28.96975945025897,
+      "incumbent_units": 0.0,
+      "serves_locations": [
+       "north",
+       "south"
+      ],
+      "demand_rate_covered": 200.46153846153845,
+      "summary": "Buy 29 of B from supplier_s2 into central: it covers about 0.1 weeks of the demand it serves (north, south) at the current rate of 200 per period. Your current policy would not buy this period."
+     }
+    ],
+    "transfers": [
+     {
+      "transfer": "lane_north",
+      "sku": "A",
+      "origin": "central",
+      "destination": "north",
+      "units": 69.63801102340656,
+      "incumbent_units": 68.05479042135508,
+      "arrives_period": 1,
+      "lead_periods": 1,
+      "cost_per_unit": 0.2,
+      "branch_cover_periods_before_arrival": 1.524628616106333,
+      "local_only_periods": 1,
+      "origin_usable_now": 300.0,
+      "branch_has_own_source": false,
+      "summary": "Move 70 of A from central to north now; it lands in period 1 and serves demand from then on. north holds about 1.5 periods of demand before it arrives. Your current policy would move 68."
+     },
+     {
+      "transfer": "lane_north_B",
+      "sku": "B",
+      "origin": "central",
+      "destination": "north",
+      "units": 49.0469605688083,
+      "incumbent_units": 68.05479042135508,
+      "arrives_period": 1,
+      "lead_periods": 1,
+      "cost_per_unit": 0.2,
+      "branch_cover_periods_before_arrival": 1.524628616106333,
+      "local_only_periods": 1,
+      "origin_usable_now": 300.0,
+      "branch_has_own_source": false,
+      "summary": "Move 49 of B from central to north now; it lands in period 1 and serves demand from then on. north holds about 1.5 periods of demand before it arrives. Your current policy would move 68."
+     },
+     {
+      "transfer": "lane_south",
+      "sku": "A",
+      "origin": "central",
+      "destination": "south",
+      "units": 52.76858804158286,
+      "incumbent_units": 76.54632770689315,
+      "arrives_period": 1,
+      "lead_periods": 1,
+      "cost_per_unit": 0.2,
+      "branch_cover_periods_before_arrival": 1.46948003014318,
+      "local_only_periods": 1,
+      "origin_usable_now": 300.0,
+      "branch_has_own_source": false,
+      "summary": "Move 53 of A from central to south now; it lands in period 1 and serves demand from then on. south holds about 1.5 periods of demand before it arrives. Your current policy would move 77."
+     },
+     {
+      "transfer": "lane_south_B",
+      "sku": "B",
+      "origin": "central",
+      "destination": "south",
+      "units": 67.14639790198011,
+      "incumbent_units": 76.54632770689315,
+      "arrives_period": 1,
+      "lead_periods": 1,
+      "cost_per_unit": 0.2,
+      "branch_cover_periods_before_arrival": 1.46948003014318,
+      "local_only_periods": 1,
+      "origin_usable_now": 300.0,
+      "branch_has_own_source": false,
+      "summary": "Move 67 of B from central to south now; it lands in period 1 and serves demand from then on. south holds about 1.5 periods of demand before it arrives. Your current policy would move 77."
+     }
+    ],
+    "held_centrally": [
+     {
+      "sku": "A",
+      "origin": "central",
+      "destinations": [
+       "north",
+       "south"
+      ],
+      "held_units": 177.59340093501058,
+      "moved_units": 122.40659906498942,
+      "correlation": 0.0,
+      "pooled_units_reference": 98.38461538461539,
+      "summary": "Keep 178 of A at central for now: it can still reach north, south within 1 period(s), so one pooled stock covers whichever branch runs short first."
+     },
+     {
+      "sku": "B",
+      "origin": "central",
+      "destinations": [
+       "north",
+       "south"
+      ],
+      "held_units": 183.8066415292116,
+      "moved_units": 116.19335847078841,
+      "correlation": 0.0,
+      "pooled_units_reference": 98.38461538461539,
+      "summary": "Keep 184 of B at central for now: it can still reach north, south within 1 period(s), so one pooled stock covers whichever branch runs short first."
+     }
+    ],
+    "allocation": [
+     {
+      "sku": "A",
+      "origin": "central",
+      "available": 300.0,
+      "rows": [
+       {
+        "location": "north",
+        "requested": 46.769230769230774,
+        "received": 69.63801102340656,
+        "priority": 1.0,
+        "target": 0.95,
+        "unit_shortage_cost": 12.5,
+        "projected_service": 0.9984946436936734,
+        "incumbent_service": 0.9956810979737303
+       },
+       {
+        "location": "south",
+        "requested": 54.15384615384616,
+        "received": 52.76858804158286,
+        "priority": 1.0,
+        "target": 0.95,
+        "unit_shortage_cost": 12.5,
+        "projected_service": 0.982961400017524,
+        "incumbent_service": 0.991942638789729
+       }
+      ],
+      "summary": "central can cover every request for A this period; no branch is rationed."
+     },
+     {
+      "sku": "B",
+      "origin": "central",
+      "available": 300.0,
+      "rows": [
+       {
+        "location": "north",
+        "requested": 46.769230769230774,
+        "received": 49.0469605688083,
+        "priority": 1.0,
+        "target": 0.95,
+        "unit_shortage_cost": 12.5,
+        "projected_service": 0.9962720292573267,
+        "incumbent_service": 1.0
+       },
+       {
+        "location": "south",
+        "requested": 54.15384615384616,
+        "received": 67.14639790198011,
+        "priority": 1.0,
+        "target": 0.95,
+        "unit_shortage_cost": 12.5,
+        "projected_service": 0.9963262231970333,
+        "incumbent_service": 0.9989034928989213
+       }
+      ],
+      "summary": "central can cover every request for B this period; no branch is rationed."
+     }
+    ],
+    "do_nothing": {
+     "incumbent_service": {
+      "svc_north": {
+       "location": "north",
+       "achieved": 0.9956810979737303,
+       "target": 0.95,
+       "breach_share": 0.0
+      },
+      "svc_south": {
+       "location": "south",
+       "achieved": 0.991942638789729,
+       "target": 0.95,
+       "breach_share": 0.0
+      },
+      "svc_north_B": {
+       "location": "north",
+       "achieved": 1.0,
+       "target": 0.95,
+       "breach_share": 0.0
+      },
+      "svc_south_B": {
+       "location": "south",
+       "achieved": 0.9989034928989213,
+       "target": 0.95,
+       "breach_share": 0.0
+      }
+     },
+     "incumbent_cost": 31100.99213108186,
+     "selected_cost": 28712.134843540924,
+     "summary": "Doing nothing beyond your current policy keeps every location at target."
+    },
+    "if_rejected": {
+     "summary": "If this recommendation is rejected the current policy runs: it keeps every location at target.",
+     "alternatives_considered": {
+      "stochastic_network": "accepted"
+     }
+    },
+    "unreachable_stock": [],
+    "issues": [],
+    "scope": "generated from the plan, the incumbent, the network view and the confirmation-world settlement; no fixture knowledge"
+   },
+   "declared": {
+    "demand_correlation": 0.0,
+    "incumbent_rule": "network:rop",
+    "lanes_with_packs": [],
+    "lanes_with_dispatch_cost": []
+   },
+   "scope": "P2 network layer around the frozen joint decision; approval stays with the operator; no executable order"
+  }
+ }
+}

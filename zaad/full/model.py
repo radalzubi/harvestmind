@@ -858,6 +858,10 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 m.row({q: 1}, amount, amount)
             for w, world in enumerate(worlds):
                 expense(q, option.fee_per_unit, w, 0)
+                if option.credit_per_unit > 0:
+                    # P4B V1: a declared refund / credit note per amended unit, bounded at the contract by the
+                    # PO's refundable deposit (cash in at period 0). Absent (0) the frozen build is untouched.
+                    expense(q, -option.credit_per_unit, w, 0)
                 expense(q, option.remaining_invoice_per_unit, w, option.payment_due_in)
                 if option.action == "cancel":
                     continue

@@ -1,0 +1,86 @@
+{
+ "passed": 16,
+ "total": 16,
+ "results": [
+  {
+   "case": "unknown action",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: 1 validation error for Request\npipeline.0.options.1.action\n  Input should be 'keep', 'cancel', 'expedite', 'de_expedite' or 'reschedule'"
+  },
+  {
+   "case": "malformed stage",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: 1 validation error for Request\npipeline.0.stage\n  Input should be 'placed', 'ordered', 'confirmed', 'in_production', 'shipped', 'in_transit', 'arrived"
+  },
+  {
+   "case": "expired option",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: expired or stage-ineligible amendment"
+  },
+  {
+   "case": "prohibited stage",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: expired or stage-ineligible amendment"
+  },
+  {
+   "case": "negative fee",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: 1 validation error for Request\npipeline.0.options.1.fee_per_unit\n  Input should be greater than or equal to 0"
+  },
+  {
+   "case": "negative credit",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: 1 validation error for Request\npipeline.0.options.1.credit_per_unit\n  Input should be greater than or equal to 0"
+  },
+  {
+   "case": "excessive refund",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: 1 validation error for Request\npipeline.0\n  Value error, commitments: option cancel credits 3.0 per unit above the refundable deposit 2.0 (prepaid 2.0"
+  },
+  {
+   "case": "credit above paid / refundable amount",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: 1 validation error for Request\npipeline.0\n  Value | REFUSED_AT_CONTRACT: 1 validation error for Request\npipeline.0\n  Value"
+  },
+  {
+   "case": "cancel quantity above remaining",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: amendment quantity outside contract"
+  },
+  {
+   "case": "minimum remaining violation",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: 1 validation error for Request\npipeline.0\n  Value error, commitments: cancel option cancel may cancel 70.0 but the order may not fall below 40.0 of 10"
+  },
+  {
+   "case": "split when split prohibited",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: PO amendment conservation or exclusivity"
+  },
+  {
+   "case": "unknown PO in declarations",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: commitments: declared options for open orders the workspace does not carry: ['ghost']"
+  },
+  {
+   "case": "cross-tenant declaration",
+   "pass": true,
+   "outcome": "IGNORED: another tenant's declaration attaches nothing (KEEP-only)"
+  },
+  {
+   "case": "missing provenance (assumption)",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: 1 validation error for Request\npipeline.0.options.1\n  Value error, commitments: option cancel (cancel) rests on a CONFIGURED_ASSUMPTION; amendment rig"
+  },
+  {
+   "case": "declared keep row",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: commitments: option k declares keep for order po1; the keep option is built from the order itself"
+  },
+  {
+   "case": "option without deadline",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: commitments: option c declares no deadline (an amendment right needs its window)"
+  }
+ ]
+}

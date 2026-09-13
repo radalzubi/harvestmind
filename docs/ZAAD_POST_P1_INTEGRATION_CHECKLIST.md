@@ -119,5 +119,10 @@ consolidation, start P2.
 - [x] P5 release: freeze `p5-frozen-product` `eacf3c3` / `p5-frozen` `6919379`, CI green on `e33e027`, merged `2fc7b50` (tree-identical), Fly v22 `canonical-2fc7b50`, production smoke + logs clean, tag `p5-release-runtime` = `2fc7b50` — ZAAD P5 RELEASE AUDIT PASS
 - [ ] P6 not started (separate authorization)
 
+## Step 14: P4B V1 open PO / commitment intervention — IMPLEMENTED (not released)
+- [x] design gate PR #74 (BUILD, V1 scope); implementation on `claude/zaad-commitments-p4b` from `5dc87b4`: KEEP incumbent, bounded credit, ledger mapping, commitment block, migration 022, workspace flag; fixtures 1-20, invariants, adversarial, profile, frozen chain (`docs/zaad_full/evidence/p4b/`)
+- [x] P4B release audit (`release/p4b-v1-release-audit`, `docs/zaad_full/evidence/p4b/release_audit/P4B_RELEASE_AUDIT.md`): six corrections R1-R6, 35 / 35 audit cases, fixtures 21 / 21, chain green; product `28c1fa7`, evidence tag `p4b-v1-frozen`, tags `p4b-v1-frozen-product` / `p4b-v1-frozen`
+- [ ] P4B release: merge, deploy, production smoke, tag `p4b-v1-release-runtime` (this authorization; recorded in the release ledger when done); V2 not started
+
 - [ ] requires a separate authorization
 

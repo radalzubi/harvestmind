@@ -260,6 +260,13 @@ class ShipmentObservation(Dated):
     accepted_ratio: float | None = Field(default=None, ge=0, le=1)
 
 
+# Controlled commitment stage vocabulary (P4B V1). The values every released path writes (workspace
+# "ordered" / "received", replay "placed", fixtures "confirmed") are members; a stage outside it is refused.
+POStage = Literal["placed", "ordered", "confirmed", "in_production", "shipped", "in_transit", "arrived", "delivered", "received"]
+PO_STAGES: tuple[str, ...] = ("placed", "ordered", "confirmed", "in_production", "shipped", "in_transit", "arrived", "delivered", "received")
+AmendmentProvenance = Literal["CONTRACT", "OPERATOR_DECLARED", "CONFIGURED_ASSUMPTION"]
+
+
 class POOption(Dated):
     id: str
     action: Literal["keep", "cancel", "expedite", "de_expedite", "reschedule"]
@@ -271,6 +278,27 @@ class POOption(Dated):
     deadline: datetime
     allowed_stages: tuple[str, ...]
     contract_reference: str
+    # P4B V1 (additive, default-neutral). A refund / credit note per amended unit, paid at period 0 with
+    # the fee: bounded at the PO by the refundable share of the deposit already paid (nothing else has
+    # been paid on an open order), so cancelling can never create value beyond recovering that share.
+    credit_per_unit: float = Field(default=0., ge=0)
+    # Where the amendment right comes from. A non-keep option resting on a CONFIGURED_ASSUMPTION is
+    # refused: amendment rights are never assumed or inferred (the released default is CONTRACT, the
+    # option's own contract_reference).
+    provenance: AmendmentProvenance = "CONTRACT"
+
+    @model_validator(mode="after")
+    def stages_known(self):
+        unknown = [s for s in self.allowed_stages if s not in PO_STAGES]
+        if unknown:
+            raise ValueError(f"commitments: option {self.id} names unknown stages {unknown}")
+        if self.action != "keep" and self.provenance == "CONFIGURED_ASSUMPTION":
+            raise ValueError(f"commitments: option {self.id} ({self.action}) rests on a CONFIGURED_ASSUMPTION; amendment rights are never assumed")
+        if self.action != "cancel" and self.credit_per_unit > 0:
+            # release audit (B): a refund is declared only on a cancel option; on a deferral or an expedite the
+            # deposit stays applied to units that still arrive, so a credit there would cut the contract price
+            raise ValueError(f"commitments: option {self.id} ({self.action}) carries a credit; a refund is declared only on a cancel option")
+        return self
 
 
 class OpenPO(Dated):
@@ -287,12 +315,17 @@ class OpenPO(Dated):
     confirmed_at: datetime | None
     departed_at: datetime | None
     current_eta: datetime
-    stage: str
+    stage: POStage
     carrier: str
     cancellation_status: str
     prepaid_per_remaining_unit: float = Field(ge=0)
     allow_split_amendments: bool
     options: tuple[POOption, ...]
+    # P4B V1 (additive, default-neutral). The contractual floor the order may not be reduced below (a
+    # cancel option's cap may not breach it), and the share of the prepaid deposit the supplier refunds
+    # on an amendment (0 = the deposit is sunk; every option credit is bounded by prepaid x this share).
+    minimum_remaining_quantity: float = Field(default=0., ge=0)
+    deposit_refundable_fraction: float = Field(default=0., ge=0, le=1)
 
     @property
     def remaining(self) -> float:
@@ -306,6 +339,27 @@ class OpenPO(Dated):
             raise ValueError("expected remaining receipt exceeds open units")
         if sum(o.action == "keep" for o in self.options) != 1:
             raise ValueError("exactly one keep option required")
+        if len({o.id for o in self.options}) != len(self.options):
+            raise ValueError("commitments: duplicate option id")
+        if self.minimum_remaining_quantity > self.remaining + 1e-9:
+            raise ValueError(f"commitments: PO {self.id} minimum remaining quantity above its open quantity")
+        refundable = self.prepaid_per_remaining_unit * self.deposit_refundable_fraction
+        for option in self.options:
+            if option.credit_per_unit > refundable + 1e-9:
+                raise ValueError(f"commitments: option {option.id} credits {option.credit_per_unit} per unit above the refundable deposit "
+                                 f"{refundable} (prepaid {self.prepaid_per_remaining_unit} x refundable fraction {self.deposit_refundable_fraction})")
+            # the model clips an option's cap to the open quantity (released semantics); a declared floor only refuses a
+            # cap that, after that clipping, would still take the order below the floor
+            if option.action == "cancel" and self.minimum_remaining_quantity > 0 and min(option.max_quantity, self.remaining) > self.remaining - self.minimum_remaining_quantity + 1e-9:
+                raise ValueError(f"commitments: cancel option {option.id} may cancel {min(option.max_quantity, self.remaining)} but the order may not fall below "
+                                 f"{self.minimum_remaining_quantity} of {self.remaining} open units")
+        if self.minimum_remaining_quantity > 0 and self.allow_split_amendments:
+            # release audit (G): with splitting allowed several cancel options can be active together, so their
+            # clipped caps are bounded as a sum (each alone inside the floor is not enough)
+            together = sum(min(o.max_quantity, self.remaining) for o in self.options if o.action == "cancel")
+            if together > self.remaining - self.minimum_remaining_quantity + 1e-9:
+                raise ValueError(f"commitments: PO {self.id} allows split amendments and its cancel options together may cancel {together} units, "
+                                 f"more than the {self.remaining - self.minimum_remaining_quantity} its floor of {self.minimum_remaining_quantity} leaves")
         return self
 
 
