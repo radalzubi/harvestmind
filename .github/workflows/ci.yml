@@ -30,7 +30,10 @@ jobs:
     # exceeded 90 minutes in one job, so the same tests run as shards in parallel; the P3 suite's
     # zaad unit files (224 s locally) exceeded the budget again as one shard, so they run as two
     # disjoint name ranges ([a-r] and [s-z], every test_zaad_*.py file begins with a lowercase
-    # letter). Every test still runs exactly once, no timeout is widened, no optimizer change.
+    # letter). The [a-r] shard measured 71 minutes on the P5 integration run and was cancelled at
+    # the 90-minute cap on the P5 release-audit run (the P5 planner-path tests add about seven
+    # minutes on this runner), so it is split again into [a-m] and [n-r] (about 28 and 27 minutes of
+    # measured test time). Every test still runs exactly once, no timeout is widened, no optimizer change.
     timeout-minutes: 90
     strategy:
       fail-fast: false
@@ -41,7 +44,9 @@ jobs:
           - shard: unit-core
             paths: tests/unit --ignore-glob='tests/unit/test_zaad_*.py'
           - shard: unit-zaad-a
-            paths: tests/unit/test_zaad_[a-r]*.py
+            paths: tests/unit/test_zaad_[a-m]*.py
+          - shard: unit-zaad-n
+            paths: tests/unit/test_zaad_[n-r]*.py
           - shard: unit-zaad-b
             paths: tests/unit/test_zaad_[s-z]*.py
     steps:

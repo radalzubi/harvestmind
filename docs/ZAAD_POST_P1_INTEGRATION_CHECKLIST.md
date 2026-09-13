@@ -111,9 +111,12 @@ consolidation, start P2.
 - [x] production performance closure 2026-09-12: warm-started adaptive tree solve, PR #69 merged `6b58764`, Fly v21 `canonical-6b58764`, tag `p4-performance-closure-runtime` (`evidence/p4/perf_closure/P4_PERF_CLOSEOUT.md`)
 - [ ] residual: shared-order recourse through `/jobs` times out under host steal on shared-cpu-2x (machine-class decision deferred with the P3 residual); produce at 12 / 16 tree worlds bounded by FEFO indicators (exact stock bound to be proven)
 
-## Step 13: P5 ATP / scarce-supply allocation — ISOLATED ENGINE BUILT (parallel phase), shared-core integration NOT STARTED
+## Step 13: P5 ATP / scarce-supply allocation — ISOLATED ENGINE BUILT, SHARED-CORE INTEGRATION ENGINEERED (not released)
 - [x] architecture, contracts, fixture matrix A-V (24 / 24), invariants, adversarial (16 / 16), isolated engine, migration 020, default-off endpoint; rebased onto `6b58764` (`docs/zaad_full/p5/`)
-- [ ] shared-core integration, freeze, release (separate authorization)
+- [x] isolated baseline tag `p5-isolated-baseline` = `660e5fc` (re-run from the exact SHA: 9 tests, 24 / 24, 16 / 16)
+- [x] shared-core integration: allocatable-supply envelope (P0 protection = overlay, `Stock.reserved` the only hard reservation), firm / non-firm inbound (no confidence factor), DIRECT vs ALTERNATIVE_SHIP_FROM (no transfer created), traceable PROPOSED reservations, owned ledger keys; planner hook after the frozen report, workspace `atp` flag, API gate `ZAAD_ATP_ENABLED` (422 `atp_disabled`, 413, 403); integration matrix I01-I20 20 / 20, isolated 24 / 24, adversarial 17 / 17, profile (`docs/zaad_full/p5/P5_INTEGRATION.md`, `evidence/p5/integration/`)
+- [x] release audit (branch `release/p5-atp-release-audit` from `17d2d74`): lost-contribution basis (`selling_price - asset_value`, the frozen ranking basis; declared margins override; gross reported), `shortage_penalty_basis` fail-closed rule (migration 021), P4 workspace `recourse` keyword fix; audit cases R01-R18 18 / 18 (runs 1-2 preserved), isolated 24 / 24, integration 20 / 20, adversarial 18 / 18, profile unchanged, frozen chain (`docs/zaad_full/evidence/p5/release_audit/`)
+- [ ] P5 release: freeze, CI, merge, deploy, production smoke, tag `p5-release-runtime` (this audit's release step)
 
 - [ ] requires a separate authorization
 

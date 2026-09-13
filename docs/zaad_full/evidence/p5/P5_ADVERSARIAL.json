@@ -1,0 +1,96 @@
+{
+ "passed": 18,
+ "total": 18,
+ "results": [
+  {
+   "case": "duplicate customer order id",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: duplicate customer order id [type=value_error, input_value={'enabled': T"
+  },
+  {
+   "case": "negative demand",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: 1 validation error for PromiseLine"
+  },
+  {
+   "case": "impossible requested date",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: line l1 requests delivery beyond the promise horizon (impossible request | REFUSED_AT_CONTRACT: 1 validation error for PromiseLine"
+  },
+  {
+   "case": "unknown SKU",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: line l1 names an unknown SKU ZZZ [type=value_error, input_value={'schema"
+  },
+  {
+   "case": "unknown customer",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: order o1 names an unknown customer nobody [type=value_error, input_value"
+  },
+  {
+   "case": "unknown location",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: line l1 names an unknown location mars [type=value_error, input_value={'"
+  },
+  {
+   "case": "invalid priority class",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: order o1 references an undeclared service class gold (invalid priority c"
+  },
+  {
+   "case": "undeclared strategic flag",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: a strategic flag needs OPERATOR_DECLARED provenance and a reference (und"
+  },
+  {
+   "case": "conflicting service policies",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: D | REFUSED_AT_CONTRACT: Value error, atp: m | REFUSED_AT_CONTRACT: 1 validation error  | REFUSED_AT_CONTRACT: Value error, atp: m"
+  },
+  {
+   "case": "double reservation attempt",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, unusable quantities exceed | STRUCTURALLY_IMPOSSIBLE: 40.0 of 100 promised (60 reserved)"
+  },
+  {
+   "case": "expired produce",
+   "pass": true,
+   "outcome": "STRUCTURALLY_IMPOSSIBLE: expired cohort never promised"
+  },
+  {
+   "case": "cold-chain invalid shipment",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, stock lot_A_south_2: A (CHILLED) is  | STRUCTURALLY_IMPOSSIBLE: no shipment on an ineligible lane"
+  },
+  {
+   "case": "substitution not approved",
+   "pass": true,
+   "outcome": "STRUCTURALLY_IMPOSSIBLE: no column for an unapproved rule"
+  },
+  {
+   "case": "huge order count (resource abuse)",
+   "pass": true,
+   "outcome": "REFUSED_AT_BOUNDS: orders 201 over the interactive limit 200 | REFUSED_AT_CONTRACT: Value error, atp: order count beyond th"
+  },
+  {
+   "case": "malformed economics",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: 1 validation e | REFUSED_AT_CONTRACT: 1 validation e | REFUSED_AT_CONTRACT: 1 validation e"
+  },
+  {
+   "case": "cross-tenant order reference",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: order o1 names an unknown customer op_other:customer_7 [type=value_error"
+  },
+  {
+   "case": "probabilistic inbound (confidence factor)",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: inbound_confidence must be 1: probabilistic inbound is never promised (o"
+  },
+  {
+   "case": "double shortage declaration (SLA + class penalty)",
+   "pass": true,
+   "outcome": "REFUSED_AT_CONTRACT: Value error, atp: class k declares a sh | REFUSED_AT_CONTRACT: Value error, atp: class k declares a sh | REFUSED_AT_CONTRACT: Value error, atp: a shortage penalty AD | REFUSED_AT_CONTRACT: Value error, atp: a shortage penalty AD"
+  }
+ ]
+}

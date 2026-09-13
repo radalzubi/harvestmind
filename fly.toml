@@ -18,6 +18,9 @@ primary_region = 'fra'
   HARVESTMIND_GATE_SCENARIOS = '20'
   HARVESTMIND_WORKER_CPUS = '4'
   HARVESTMIND_WORKER_MEMORY_MB = '8192'
+  # P5 ATP / scarce-supply allocation (release audit): the promising paths exist in this environment;
+  # every request must still declare an enabled `atp` block, is authenticated, bounded, and approval-only.
+  ZAAD_ATP_ENABLED = '1'
   HARVESTMIND_GATE_WORKERS = '4'
 
 [[mounts]]

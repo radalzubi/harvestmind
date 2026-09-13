@@ -1,0 +1,1558 @@
+[
+ {
+  "fixture": "A_enough_for_everyone",
+  "principle": "incumbent_retained",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 0.0,
+  "optimised_cost": 0.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 4,
+    "channels": 2,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 3.0000000000000004e-08,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0007,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 2,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+    "shipped": {
+     "l1": 40.0,
+     "l2": 30.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "B_true_scarcity",
+  "principle": "higher_penalty_first",
+  "deterministic": true,
+  "verdict": "ALLOCATION CHANGE RECOMMENDED",
+  "incumbent_cost": 1100.0,
+  "optimised_cost": 300.0,
+  "value": 800.0,
+  "engine": {
+   "optimised": {
+    "columns": 4,
+    "channels": 2,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 300.00040005,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "FCFS_ORDER_DATE"
+   },
+   "solve_seconds": 0.0004,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 2,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "lX": 50.0,
+     "lY": 10.0
+    },
+    "unmet": {
+     "lY": 40.0
+    },
+    "why": [
+     "lX before lY: shortage penalty per unit 20.00 against 0.00"
+    ]
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "C_penalty_vs_margin",
+  "principle": "higher_total_driver_first",
+  "deterministic": true,
+  "verdict": "ALLOCATION CHANGE RECOMMENDED",
+  "incumbent_cost": 2000.0,
+  "optimised_cost": 1625.0,
+  "value": 375.0,
+  "engine": {
+   "optimised": {
+    "columns": 4,
+    "channels": 2,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 1625.0005,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "PROPORTIONAL"
+   },
+   "solve_seconds": 0.0005,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 2,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "lX": 50.0
+    },
+    "why": [
+     "lX before lY: shortage penalty per unit 40.00 against 0.00"
+    ],
+    "value": 375.0
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "D_partial_allowed",
+  "principle": "every_line_share",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 450.0,
+  "optimised_cost": 450.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 6,
+    "channels": 3,
+    "rows": 4,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 450.00060010000004,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 3,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 3,
+   "lines": 3
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "l1": 20.0,
+     "l2": 20.0,
+     "l3": 20.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "E_partial_forbidden",
+  "principle": "all_or_nothing",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 450.0,
+  "optimised_cost": 450.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 8,
+    "channels": 3,
+    "rows": 6,
+    "binaries": 2,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 450.00060004,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 3,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 3,
+   "lines": 3
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "l1": 40.0,
+     "l3": 20.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "F_backorder_allowed",
+  "principle": "backordered_at_arrival",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 100.0,
+  "optimised_cost": 100.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 7,
+    "channels": 6,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 100.00010024999999,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 6,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 1,
+   "lines": 1
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "backordered": [
+     [
+      50.0,
+      2
+     ]
+    ],
+    "ledger": {
+     "lost_contribution": 0.0,
+     "sla": 0.0,
+     "shortage_penalty": 0.0,
+     "backorder_carry": 100.0,
+     "substitution": 0.0,
+     "alternative_ship_from": 0.0,
+     "refusal": 0.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "G_backorder_forbidden",
+  "principle": "no_late_promise",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 375.0,
+  "optimised_cost": 375.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 2,
+    "channels": 1,
+    "rows": 2,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 375.0005,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 1,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0004,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 1,
+   "lines": 1
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "l1": 50.0
+    },
+    "unmet": {
+     "l1": 50.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "H_different_dates",
+  "principle": "own_dates",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 0.0,
+  "optimised_cost": 0.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 5,
+    "channels": 3,
+    "rows": 4,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 0.00012024,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 3,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 2,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "promised": [
+     [
+      "la",
+      0
+     ],
+     [
+      "lb",
+      3
+     ]
+    ]
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "I_inbound_in_time",
+  "principle": "inbound_counts",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 0.0,
+  "optimised_cost": 0.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 2,
+    "channels": 1,
+    "rows": 2,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 0.0001203,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 1,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 1,
+   "lines": 1
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "l1": 60.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "J_inbound_too_late",
+  "principle": "inbound_excluded",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 450.0,
+  "optimised_cost": 450.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 1,
+    "channels": 0,
+    "rows": 1,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 450.00059999999996,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 0,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0004,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 1,
+   "lines": 1
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "unmet": {
+     "l1": 60.0
+    },
+    "next": {
+     "l1": {
+      "quantity": 60.0,
+      "earliest_period_with_firm_supply": 4,
+      "earliest_period_with_non_firm_supply": null,
+      "note": "outside the order's backorder window or beyond the promise horizon"
+     }
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "K_multiple_locations",
+  "principle": "alternative_priced",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 10.0,
+  "optimised_cost": 10.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 3,
+    "channels": 2,
+    "rows": 4,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 10.000082650000001,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 2,
+   "orders": 1,
+   "lines": 1
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "via_lane": [
+     [
+      50.0,
+      "lane_north",
+      1
+     ]
+    ],
+    "ledger": {
+     "lost_contribution": 0.0,
+     "sla": 0.0,
+     "shortage_penalty": 0.0,
+     "backorder_carry": 0.0,
+     "substitution": 0.0,
+     "alternative_ship_from": 10.0,
+     "refusal": 0.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "L_transfer_lead",
+  "principle": "lead_respected_unmet",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 375.0,
+  "optimised_cost": 375.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 2,
+    "channels": 1,
+    "rows": 2,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 375.00050015,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 1,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 2,
+   "orders": 1,
+   "lines": 1
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "l1": 30.0
+    },
+    "unmet": {
+     "l1": 50.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "L2_transfer_lead_backorder",
+  "principle": "lead_respected_backorder",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 35.0,
+  "optimised_cost": 35.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 6,
+    "channels": 5,
+    "rows": 5,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 35.00005265,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 5,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 2,
+   "orders": 1,
+   "lines": 1
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "via_lane": [
+     [
+      50.0,
+      1
+     ]
+    ]
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "M_produce_remaining_life",
+  "principle": "no_expiring_cohort",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 20.0,
+  "optimised_cost": 20.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 2,
+    "channels": 1,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 20.0002055,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 1,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0004,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 2,
+   "orders": 1,
+   "lines": 1
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "promised": [
+     [
+      "stock:central_lot",
+      100.0,
+      2
+     ]
+    ]
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "N_cold_chain",
+  "principle": "no_ineligible_state",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 450.0,
+  "optimised_cost": 450.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 2,
+    "channels": 1,
+    "rows": 2,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 450.00064019999996,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 1,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 1,
+   "orders": 1,
+   "lines": 1
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "promised": [
+     [
+      "north",
+      40.0
+     ]
+    ],
+    "unmet": {
+     "l1": 60.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "O_service_floor",
+  "principle": "floor_met",
+  "deterministic": true,
+  "verdict": "ALLOCATION CHANGE RECOMMENDED",
+  "incumbent_cost": 500.0,
+  "optimised_cost": 449.99999999500005,
+  "value": 50.00000000499995,
+  "engine": {
+   "optimised": {
+    "columns": 4,
+    "channels": 2,
+    "rows": 4,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 450.00040001499997,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 2,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "lF": 40.0,
+     "lZ": 20.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "P1_indifferent_lexical",
+  "principle": "deterministic_tie",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 375.0,
+  "optimised_cost": 375.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 4,
+    "channels": 2,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 375.0005,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0004,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 2,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "l1": 50.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "P2_indifferent_proportional",
+  "principle": "proportional_tie",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 375.0,
+  "optimised_cost": 375.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 4,
+    "channels": 2,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 375.0005,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 2,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "l1": 25.0,
+     "l2": 25.0
+    }
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "Q_optimal_incumbent",
+  "principle": "incumbent_retained_zero_value",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 300.0,
+  "optimised_cost": 300.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 4,
+    "channels": 2,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 300.00040001,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "TIER_PRIORITY"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 2,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "value": 0.0,
+    "policy": "TIER_PRIORITY"
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "R_strategic_declared",
+  "principle": "strategic_through_economics",
+  "deterministic": true,
+  "verdict": "ALLOCATION CHANGE RECOMMENDED",
+  "incumbent_cost": 900.0,
+  "optimised_cost": 300.0,
+  "value": 600.0,
+  "engine": {
+   "optimised": {
+    "columns": 4,
+    "channels": 2,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 300.00040005,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "FCFS_ORDER_DATE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 2,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "with_penalty": {
+     "lK": 50.0,
+     "lS": 10.0
+    },
+    "flag_only": {
+     "lK": 10.0,
+     "lS": 50.0
+    },
+    "flag_only_verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE"
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "S_malformed_provenance",
+  "principle": "refused_at_contract",
+  "refused_at_contract": "1 validation error for ServiceClass\n  Value error, atp: a strategic flag needs OPERATOR_DECLARED provenance and a reference (undeclared strategic flag) [type=va",
+  "seconds": 0.0,
+  "pass": true
+ },
+ {
+  "fixture": "T_double_reservation",
+  "principle": "reserved_never_promised",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 150.0,
+  "optimised_cost": 150.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 4,
+    "channels": 2,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 150.00020003,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 1,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 2,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "shipped": {
+     "l1": 30.0,
+     "l2": 10.0
+    },
+    "remaining": [
+     {
+      "lot": "stock:north_stock",
+      "record": "Stock:north_stock",
+      "sku": "A",
+      "location": "north",
+      "available_from": 0,
+      "tier": "on_hand",
+      "physical": 100.0,
+      "reserved_before": 60.0,
+      "unusable": 0.0,
+      "promised_now": 40.0,
+      "remaining_unreserved": 0.0
+     }
+    ]
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "U_substitution",
+  "principle": "declared_substitute_used",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 20.0,
+  "optimised_cost": 20.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 3,
+    "channels": 2,
+    "rows": 3,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 20.0000002,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 2,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 1,
+   "lines": 1
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "substituted": [
+     [
+      40.0,
+      "B",
+      "A_by_B"
+     ]
+    ],
+    "blocked_unmet": [
+     {
+      "order": "o1",
+      "line": "l1",
+      "customer": "c1",
+      "sku": "A",
+      "quantity": 40.0,
+      "driver": "lost contribution 5.00 (selling price less asset value, the frozen allocation-ranking basis) + SLA 2.50 + shortage penalty 0.00 per unit; no feasible supply at a lower total cost"
+     }
+    ]
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ },
+ {
+  "fixture": "V_mixed_sectors",
+  "principle": "each_line_own_physics",
+  "deterministic": true,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "incumbent_cost": 340.0,
+  "optimised_cost": 340.0,
+  "value": 0.0,
+  "engine": {
+   "optimised": {
+    "columns": 4,
+    "channels": 2,
+    "rows": 4,
+    "binaries": 0,
+    "status": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "objective": 340.00044037333333,
+    "mip_gap": 0.0
+   },
+   "incumbent": {
+    "channels": 2,
+    "rule": "FIFO_PROMISE"
+   },
+   "solve_seconds": 0.0003,
+   "lots": 3,
+   "non_firm": 0,
+   "lanes": 0,
+   "orders": 1,
+   "lines": 2
+  },
+  "principle_result": {
+   "pass": true,
+   "evidence": {
+    "promised": [
+     [
+      "la",
+      "stock:a_north",
+      30.0,
+      0
+     ],
+     [
+      "lb",
+      "stock:b_north_new",
+      40.0,
+      1
+     ]
+    ]
+   }
+  },
+  "invariants": {
+   "01_no_unit_twice": true,
+   "02_within_usable_unreserved": true,
+   "03_reservation_conservation": true,
+   "04_promise_period_feasible": true,
+   "05_location_feasible": true,
+   "06_lane_lead_respected": true,
+   "07_minimum_ship": true,
+   "08_partial_rule": true,
+   "09_backorder_rule": true,
+   "10_provenance_valid": true,
+   "11_no_negative": true,
+   "12_sector_rules": true,
+   "13_ledger_reconciles": true,
+   "14_no_source_leakage": true,
+   "15_no_purchase_leakage": true,
+   "16_no_future_information": true,
+   "18_approval": true,
+   "19_incumbent_first": true,
+   "17_deterministic_ties": true
+  },
+  "pass": true,
+  "seconds": 0.0
+ }
+]
