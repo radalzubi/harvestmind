@@ -348,3 +348,26 @@ upgrade the owner to GitHub Pro (or make the repository public), then set on `ma
 `CI` workflow's jobs, block force pushes and deletions, no reviewer count. Code scanning: `Code scanning is not enabled for
 this repository` (default setup 403) and cannot be enabled on this plan, so the CodeQL workflow (which never produced a
 green status) is removed; bandit, pip-audit and gitleaks remain the security gates.
+
+## Validation after cleanup (rule 25)
+
+| gate | result on the cleanup tree |
+|---|---|
+| full pytest (fresh venv from the trimmed closure) | 1,980 passed, 2 skipped, 0 failed (6 m 18 s) |
+| ruff (CI scope) / mypy (CI scope) / bandit (CI scope) | clean |
+| pip-audit on the trimmed closure | no known vulnerabilities |
+| P3 shared-MOV production snapshot | identical to the P4B release-audit gate, 18 HiGHS calls, no `commitments` key |
+| P1 canonical regression / invariants | CANONICAL REGRESSION PASS; 720 checks, 60 / 60 records, 0 failures |
+| P2 | 20 / 20, 18 / 18 principles, INVARIANTS PASS, 1,720 / 1,720 identical vs `p2_perf_closure` |
+| sector physics | 26 / 26, 19 / 19, 416 / 416 identical vs `sector_perf_closure` |
+| P3 | 30 / 30, 34 / 34, 23 / 23 adversarial, 2,304 / 2,304 identical vs `p3_perf_closure` |
+| P4 | 28 / 28 fixtures, 27 / 27 invariants, 25 / 25 adversarial (= the release record) |
+| P5 | 24 / 24 isolated, 20 / 20 integration, 18 / 18 adversarial (= the release record) |
+| P4B | 21 / 21 fixtures incl. F00 identity against the production runtime checkout `1851f40`, 16 / 16 adversarial, 35 / 35 release-audit cases |
+| P0 six-cell arm `p4b_release` vs `router_cycle` | 120 / 120 decision-identical |
+
+Records: `docs/zaad_full/evidence/cleanup/` (`chain.sh`, `chain.log`, `gates/`: every log, the three decision-compare
+records, the matrix tables and the P0 arm record). The regenerated full run files (`*_under_cleanup.jsonl`, 12 MB)
+are reproducible from the scripts and are not committed; released records the matrices regenerate in place
+(P2 / P3 / P4 / sector invariants, P3 / P4B adversarial, the P4B P0 arm) differed by tag, timing and the validator's
+request echo only and were restored.
