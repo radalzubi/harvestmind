@@ -2,8 +2,8 @@
 
 **Purpose:** This folder is the canonical human/AI onboarding layer for a new ZAAD co-founder. It does not replace phase evidence or source code; it tells the reader what to read, what is authoritative, and how the pieces fit together.
 
-**Current repository baseline used for this onboarding set:** `main` at `ebcd1d0` before this docs branch.  
-**Current deployed P3 performance-closed runtime:** `61a3e75`.  
+**Current source of truth for the system:** [`docs/zaad_full/CURRENT_SYSTEM.md`](../zaad_full/CURRENT_SYSTEM.md) (released stack P0-P5 + P4B V1, runtime `1851f40` / Fly v23, tag `p4b-v1-release-runtime`).  
+**This onboarding set was written at `main` `ebcd1d0` (P3 runtime `61a3e75`); phase lines below are historical where they predate P4, P5 and P4B.**  
 **Current product validation status:** **ENGINEERING VALIDATED; NOT REAL-DATA VALIDATED.**  
 **No customer savings claims are established by the repository.**
 
@@ -26,7 +26,9 @@ The current decision stack answers:
 3. **P2 — Where should inventory sit across the network?**
 4. **Sector Physics — What physical rules differ across commercial goods, produce, and meat/seafood?**
 5. **P3 — Which supplier/source mix should provide the commitment?**
-6. **P4 next — What should change later when new information actually becomes observable?**
+6. **P4 — What should change later when new information actually becomes observable?** (released)
+7. **P5 — Which customer order gets scarce supply, and what is promised?** (released)
+8. **P4B V1 — Keep, defer, expedite, reduce, cancel or split an open purchase order?** (released)
 
 The expanded strategic roadmap then adds open-PO intervention, scarce-supply allocation/ATP, uncertainty calibration, import-logistics decisions, container composition, capital allocation, and lifecycle/supersession.
 
@@ -44,7 +46,7 @@ Read the full industry-backed roadmap:
 4. [`03_PHASE_STATUS_AND_LINEAGE.md`](./03_PHASE_STATUS_AND_LINEAGE.md) — exact phase status, important SHAs/tags, current release lineage, known corrections.
 5. [`04_ENGINEERING_OPERATING_RULES.md`](./04_ENGINEERING_OPERATING_RULES.md) — how ZAAD engineering should be changed, validated, frozen, released, and protected from false evidence.
 6. [`05_TEAM_AND_WORKING_OWNERSHIP.md`](./05_TEAM_AND_WORKING_OWNERSHIP.md) — current co-founder team and recommended working ownership.
-7. [`06_REPOSITORY_READING_MAP.md`](./06_REPOSITORY_READING_MAP.md) — where to go next in the repo for source-of-truth evidence and implementation.
+7. [`docs/zaad_full/REPOSITORY_CLEANUP_AUDIT.md`](../zaad_full/REPOSITORY_CLEANUP_AUDIT.md) — what every directory is, its classification and why it is kept (replaces the never-written reading map).
 8. [`docs/zaad_full/OPTIMIZER_PRODUCT_STRATEGY_AND_INDUSTRY_ROADMAP.md`](../zaad_full/OPTIMIZER_PRODUCT_STRATEGY_AND_INDUSTRY_ROADMAP.md) — full future roadmap and verified industry context.
 
 Then read the authoritative phase closeouts:

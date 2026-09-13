@@ -1,5 +1,8 @@
 # ZAAD
 
+> **Current system:** [`docs/zaad_full/CURRENT_SYSTEM.md`](docs/zaad_full/CURRENT_SYSTEM.md) — released optimizer stack (P0-P5, P4B V1),
+> production runtime, validation chain and release procedure. The sections below predate it and are kept as history.
+
 Repository: `radalzubi/harvestmind` (unchanged). Company/product: **ZAAD** —
 [zaadsupply.com](https://zaadsupply.com).
 
