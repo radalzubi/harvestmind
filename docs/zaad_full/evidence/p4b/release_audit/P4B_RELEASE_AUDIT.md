@@ -188,11 +188,28 @@ validator's request echo and the run tag only and were restored; the audit's own
 
 ## CI
 
-CI_PLACEHOLDER
+Release PR #76 (`release/p4b-v1-release-audit` -> `main`, head `a9d5a87`): CI run 34774980685 completed
+success on all twelve ZAAD jobs (ruff, mypy, security bandit + pip-audit on the dependency closure, gitleaks,
+docker build, frontend, zaad frozen regression, pytest integration / unit-core / unit-zaad-a / unit-zaad-n /
+unit-zaad-b). CodeQL run 34774980725 fails at the repository level ("code scanning is not enabled"), not a
+gate. The post-merge runs on `main` (34777336057 CI, 34777336046 CodeQL) were cancelled: the merge tree is
+byte-identical to the tested head.
 
 ## Release
 
-RELEASE_PLACEHOLDER
+| step | record |
+|---|---|
+| merge | PR #76 merged with a merge commit: `main` = `1851f40`, tree `dec17373` = tested head `a9d5a87` tree; non-docs content identical to the frozen product `28c1fa7` (tree `48b8d08f`) |
+| freeze | `p4b-v1-frozen-product` = `28c1fa7`, `p4b-v1-frozen` = `a9d5a87`; every older tag unchanged (`p5-release-runtime` 2fc7b50, `p5-frozen` 6919379, `p5-frozen-product` eacf3c3, `p4-performance-closure-runtime` 6b58764, `p4-release-runtime` 8c813ac) |
+| deployment | from the clean detached checkout `harvestmind-deploy` at `1851f40` (status clean; only `__pycache__` ignored entries): `fly deploy -a zaad-api --image-label canonical-1851f40 --strategy rolling --yes` -> release **v23**, image `registry.fly.io/zaad-api:canonical-1851f40`, machine `0804e0dfd1e948` (fra), health 1 / 1, eleven secrets identical before and after (`release/fly_state_before.txt`, `fly_state_after.txt`, `fly_deploy.log`) |
+| production smoke (`release/smoke_p4b.py`, `smoke_p4b_results.json`, addendum) | 1 health 200; 2 no declaration -> 200, no `commitments` key, no `executable_amendment` key (the same state answered 500 on `2fc7b50`: R6 verified in production); 3 KEEP-only -> KEEP, no recommendation; 4 cancel-optimal -> CANCEL, `COMMITMENT CHANGE RECOMMENDED`, `approval_required` true, block and order `executable_amendment` false; 5 exact `NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE`; 6 refundable deposit -> `commitment_credit` -200 = `refundable_credits` 200, sunk 0; 7 excessive credit -> 422 with the contract message; 8 expired option -> window ineligible ("deadline ... has passed"), capacity 0, KEEP; 9 invalid stage -> 422; 10 cross-tenant -> 403 on `/plan`, and the from-workspace flag path is tenant-scoped (each empty self-serve vault: its own `workspace_not_ready` 422); 11 jobs -> 202, DONE in 11 s, block preserved (DEFER, `executable_amendment` false); 12 mixed -> `commitment_action` KEEP, `overall_plan_status` PENDING_REVIEW, `commitment_value_vs_keep` 0, the alternate purchase rows listed outside the commitments |
+| production logs (`release/fly_logs_after_deploy.txt`, `fly_logs_after_smoke.txt`) | old VM's SIGINT shutdown traces and one health miss inside the boot grace only; after `Application startup complete`: 41 x 200, 1 x 202, 1 x 403, 1 x 405 (a smoke-script method error, re-issued), 2 x 422; no 5xx, no traceback, no OOM, no restart, no migration / validation / tenant / database error |
+| release tag | `p4b-v1-release-runtime` = `1851f40` (created after deploy + smoke + clean logs) |
+| PR #75 | marked merged by GitHub because its head `aacb7b9` is an ancestor of the merge commit through the release branch; never merged independently |
+
+Follow-up (not a gate): the raw `/plan` response carries `executable_purchase_order: false` and `approval_required: true`
+at the top level and `executable_amendment: false` inside the block and on every order; the top-level
+`executable_amendment` mirror exists on the workspace plan shape only.
 
 ## Known limitations (preserved)
 

@@ -1,0 +1,205 @@
+{
+ "01_health": {
+  "code": 200,
+  "seconds": 0.3,
+  "body": {
+   "status": "ok",
+   "service": "zaad-api",
+   "env": "pilot",
+   "auth_enforced": true,
+   "rate_limit_per_min": 60
+  }
+ },
+ "workspace": {
+  "code": 200,
+  "operator": "op_e6d466be"
+ },
+ "workspace_b": {
+  "code": 200,
+  "operator": "op_500c0ff7"
+ },
+ "02_no_declaration": {
+  "code": 200,
+  "seconds": 0.9,
+  "status": "RETAIN_INCUMBENT",
+  "commitments_present": false,
+  "commitment_action": null,
+  "commitment_verdict": null,
+  "commitment_value_vs_keep": null,
+  "overall_plan_status": null,
+  "approval_required": true,
+  "executable_amendment": null,
+  "executable_purchase_order": false,
+  "reading": "",
+  "executable_amendment_key_present": false
+ },
+ "03_keep_only_balanced": {
+  "code": 200,
+  "seconds": 0.5,
+  "status": "RETAIN_INCUMBENT",
+  "commitments_present": true,
+  "commitment_action": "KEEP",
+  "commitment_verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "commitment_value_vs_keep": 0.0,
+  "overall_plan_status": "RETAIN_INCUMBENT",
+  "approval_required": true,
+  "executable_amendment": null,
+  "executable_purchase_order": false,
+  "reading": "Commitment verdict: KEEP every declared order (NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE). The plan is retained as a whole; no order is amended."
+ },
+ "04_cancel_optimal": {
+  "code": 200,
+  "seconds": 0.4,
+  "status": "PENDING_REVIEW",
+  "commitments_present": true,
+  "commitment_action": "CANCEL",
+  "commitment_verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "commitment_value_vs_keep": 111.667,
+  "overall_plan_status": "PENDING_REVIEW",
+  "approval_required": true,
+  "executable_amendment": null,
+  "executable_purchase_order": false,
+  "reading": "Commitment verdict: COMMITMENT CHANGE RECOMMENDED - CANCEL po1 (100.0 units); the value is the whole plan's against the KEEP incumbent. Approval required; nothing executes.",
+  "quantities": {
+   "cancel": 100.0
+  }
+ },
+ "05_no_material_improvement": {
+  "code": 200,
+  "seconds": 0.5,
+  "status": "RETAIN_INCUMBENT",
+  "commitments_present": true,
+  "commitment_action": "KEEP",
+  "commitment_verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "commitment_value_vs_keep": 0.0,
+  "overall_plan_status": "RETAIN_INCUMBENT",
+  "approval_required": true,
+  "executable_amendment": null,
+  "executable_purchase_order": false,
+  "reading": "Commitment verdict: KEEP every declared order (NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE). The plan is retained as a whole; no order is amended.",
+  "exact": true
+ },
+ "06_refundable_deposit": {
+  "code": 200,
+  "seconds": 0.5,
+  "status": "PENDING_REVIEW",
+  "commitments_present": true,
+  "commitment_action": "CANCEL",
+  "commitment_verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "commitment_value_vs_keep": 336.667,
+  "overall_plan_status": "PENDING_REVIEW",
+  "approval_required": true,
+  "executable_amendment": null,
+  "executable_purchase_order": false,
+  "reading": "Commitment verdict: COMMITMENT CHANGE RECOMMENDED - CANCEL po1 (100.0 units); the value is the whole plan's against the KEEP incumbent. Approval required; nothing executes.",
+  "commitment_credit_ledger": {
+   "selected": -200.0,
+   "incumbent": 0.0
+  },
+  "refundable_credits": 200.0,
+  "sunk_per_unit": 0.0
+ },
+ "07_excessive_credit": {
+  "code": 422,
+  "detail": "[{'loc': ['pipeline', 0], 'msg': 'Value error, commitments: option cancel credits 3.0 per unit above the refundable deposit 0.5 (prepaid 2.0 x refundable fraction 0.25)', 'type': 'value_error'}]"
+ },
+ "08_expired_option": {
+  "code": 200,
+  "seconds": 1.0,
+  "status": "RETAIN_INCUMBENT",
+  "commitments_present": true,
+  "commitment_action": "KEEP",
+  "commitment_verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "commitment_value_vs_keep": 0.0,
+  "overall_plan_status": "RETAIN_INCUMBENT",
+  "approval_required": true,
+  "executable_amendment": null,
+  "executable_purchase_order": false,
+  "reading": "Commitment verdict: KEEP every declared order (NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE). The plan is retained as a whole; no order is amended.",
+  "window": {
+   "option": "cancel",
+   "action": "cancel",
+   "label": "CANCEL",
+   "eligible": false,
+   "reasons": [
+    "deadline 2026-08-31 has passed (as of 2026-09-01)"
+   ],
+   "capacity_units": 0.0,
+   "deadline": "2026-08-31T00:00:00+00:00",
+   "allowed_stages": [
+    "confirmed"
+   ],
+   "contract_reference": "contract-PO-1",
+   "provenance": "CONTRACT",
+   "due_in": 2,
+   "fee_per_unit": 0.25,
+   "credit_per_unit": 0.0,
+   "remaining_invoice_per_unit": 0.0,
+   "payment_due_in": 2
+  }
+ },
+ "09_invalid_stage": {
+  "code": 422,
+  "detail": "[{'loc': ['pipeline', 0, 'stage'], 'msg': \"Input should be 'placed', 'ordered', 'confirmed', 'in_production', 'shipped', 'in_transit', 'arrived', 'delivered' or 'received'\", 'type': 'literal_error'}]"
+ },
+ "10_cross_tenant_plan": {
+  "code": 403,
+  "detail": "Operator mismatch"
+ },
+ "10_cross_tenant_from_workspace_flag": {
+  "code": 405,
+  "detail": "Method Not Allowed"
+ },
+ "11_job_submit": {
+  "code": 202,
+  "job": "job_fc6917eda830486b877fb3acde9e50ed",
+  "approval_required": true
+ },
+ "11_job_result": {
+  "status": "DONE",
+  "wall_s": 11,
+  "commitments_present": true,
+  "commitment_action": "DEFER",
+  "commitment_verdict": "COMMITMENT CHANGE RECOMMENDED",
+  "approval_required": true,
+  "executable_amendment": false,
+  "error": null
+ },
+ "12_mixed_plan_vs_commitment": {
+  "code": 200,
+  "seconds": 0.5,
+  "status": "PENDING_REVIEW",
+  "commitments_present": true,
+  "commitment_action": "KEEP",
+  "commitment_verdict": "NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE",
+  "commitment_value_vs_keep": 0.0,
+  "overall_plan_status": "PENDING_REVIEW",
+  "approval_required": true,
+  "executable_amendment": null,
+  "executable_purchase_order": false,
+  "reading": "Commitment verdict: KEEP every declared order (NO MATERIAL COMMITMENT IMPROVEMENT AVAILABLE). The overall plan status PENDING_REVIEW refers to 7 purchase / transfer row(s) outside the commitments; ZAA",
+  "changes_outside": [
+   {
+    "kind": "purchase",
+    "id": "alt",
+    "period": 0,
+    "incumbent_quantity": 0.0,
+    "selected_quantity": 22.127
+   },
+   {
+    "kind": "purchase",
+    "id": "main",
+    "period": 0,
+    "incumbent_quantity": 0.0,
+    "selected_quantity": 20.315
+   },
+   {
+    "kind": "purchase",
+    "id": "main",
+    "period": 1,
+    "incumbent_quantity": 0.0,
+    "selected_quantity": 20.315
+   }
+  ]
+ }
+}

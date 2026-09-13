@@ -1,0 +1,41 @@
+{
+ "workspace_A": {
+  "code": 200,
+  "operator": "op_2fd752d6"
+ },
+ "workspace_B": {
+  "code": 200,
+  "operator": "op_9c15343b"
+ },
+ "04b_cancel_optimal_flags": {
+  "code": 200,
+  "top_level": {
+   "approval_required": true,
+   "executable_purchase_order": false,
+   "executable_amendment": null
+  },
+  "block": {
+   "approval_required": true,
+   "executable_amendment": false,
+   "commitment_action": "CANCEL",
+   "commitment_verdict": "COMMITMENT CHANGE RECOMMENDED"
+  },
+  "order": {
+   "approval_required": true,
+   "executable_amendment": false,
+   "recommended_action": "CANCEL"
+  }
+ },
+ "10c_from_workspace_flag_tenant_B": {
+  "code": 422,
+  "detail": "{'code': 'workspace_not_ready', 'message': 'Upload stg_fmcg_skus and stg_fmcg_orders before planning.'}",
+  "commitments_key": false,
+  "build_commitments": null
+ },
+ "10c_from_workspace_flag_tenant_A": {
+  "code": 422,
+  "detail": "{'code': 'workspace_not_ready', 'message': 'Upload stg_fmcg_skus and stg_fmcg_orders before planning.'}",
+  "commitments_key": false,
+  "build_commitments": null
+ }
+}

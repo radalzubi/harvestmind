@@ -122,7 +122,7 @@ consolidation, start P2.
 ## Step 14: P4B V1 open PO / commitment intervention — IMPLEMENTED (not released)
 - [x] design gate PR #74 (BUILD, V1 scope); implementation on `claude/zaad-commitments-p4b` from `5dc87b4`: KEEP incumbent, bounded credit, ledger mapping, commitment block, migration 022, workspace flag; fixtures 1-20, invariants, adversarial, profile, frozen chain (`docs/zaad_full/evidence/p4b/`)
 - [x] P4B release audit (`release/p4b-v1-release-audit`, `docs/zaad_full/evidence/p4b/release_audit/P4B_RELEASE_AUDIT.md`): six corrections R1-R6, 35 / 35 audit cases, fixtures 21 / 21, chain green; product `28c1fa7`, evidence tag `p4b-v1-frozen`, tags `p4b-v1-frozen-product` / `p4b-v1-frozen`
-- [ ] P4B release: merge, deploy, production smoke, tag `p4b-v1-release-runtime` (this authorization; recorded in the release ledger when done); V2 not started
+- [x] P4B release: PR #76 merged as `main` `1851f40`, Fly v23 `canonical-1851f40`, production smoke 12 / 12, logs clean, tag `p4b-v1-release-runtime` = `1851f40`; V2 not started
 
 - [ ] requires a separate authorization
 

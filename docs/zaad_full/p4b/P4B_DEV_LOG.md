@@ -58,4 +58,4 @@ PR #75 head `7311d00`: CI run 34759841637 success (all twelve jobs). CodeQL run 
 * Release-audit cases 35 / 35 (`run1.log` 30 / 34 preserved: three runner assumptions, E1 split into the
   released multi-dimensional materiality case and a below-every-threshold case); fixtures 21 / 21 with the
   pre-P4B identity; adversarial 16 / 16; profile structurally identical; suite 1,979 passed / 2 skipped.
-
+* Release: CI 34774980685 green, PR #76 merged as `1851f40` (tree = tested head), Fly v23 `canonical-1851f40`, production smoke 12 / 12 + addendum, logs clean, tag `p4b-v1-release-runtime`.
