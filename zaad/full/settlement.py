@@ -116,6 +116,11 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
                 pending.append((source.sku, source.destination, due + life, due, quantity, "external"))
         if abs(total - po.remaining) > 1e-5 or (not po.allow_split_amendments and active != 1):
             raise PhysicalViolation("PO amendment conservation or exclusivity")
+        if po.minimum_remaining_quantity > 0:
+            # P4B V1 (release audit G): a declared floor is physical for the settlement as well as the contract
+            cancelled = sum(plan.amendments.get((po.id, o.id), 0.) for o in po.options if o.action == "cancel")
+            if po.remaining - cancelled < po.minimum_remaining_quantity - 1e-6:
+                raise PhysicalViolation("PO reduced below its declared minimum remaining quantity")
         ledger["opening_assets"] += po.prepaid_per_remaining_unit * po.remaining
     cash, debt = req.liquidity.opening_cash, req.liquidity.opening_debt
     service_by_period: list[dict] = []

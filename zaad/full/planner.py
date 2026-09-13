@@ -416,7 +416,8 @@ def classify_service(req: Request, service, selected: float | None, best_joint: 
     if selected >= service.target - tolerance:
         return {"class": "MET", "reason": "target met within tolerance under independent confirmation"}
     if best_joint is not None and best_joint < service.target - tolerance:
-        pre_existing = best_individual is not None and best_individual < service.target - tolerance
+        # release audit (P4B): a native bool - `best_individual` is a numpy float, and a numpy bool in the report breaks the API's JSON encoder
+        pre_existing = bool(best_individual is not None and best_individual < service.target - tolerance)
         return {"class": "UNAVOIDABLE", "pre_existing": pre_existing,
                 "reason": ("no feasible action meets the target even when this service alone is maximized" if pre_existing
                            else "the target is not jointly achievable with the other services' targets and priorities")

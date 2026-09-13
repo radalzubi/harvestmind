@@ -60,6 +60,7 @@ async def large_payload(request: HTTPRequest) -> Request:
         if tree_worlds(result) > BATCH_LIMITS["tree_worlds"] or len(result.recourse.review_periods) > BATCH_LIMITS["review_epochs"]:
             raise HTTPException(413, f"Recourse scenario tree over the batch envelope: {BATCH_LIMITS} (worlds {tree_worlds(result)}).")
     atp_gate(result, batch=True)
+    commitments_gate(result, batch=True)
     if (len(result.skus) > LARGE_LIMITS["skus"] or len(result.sources) > LARGE_LIMITS["sources"]
             or len(result.services) > LARGE_LIMITS["services"] or result.horizon > LARGE_LIMITS["horizon"]
             or result.scenarios > LARGE_LIMITS["scenarios"] or len(result.stresses) > LARGE_LIMITS["stresses"]):
@@ -97,6 +98,16 @@ def atp_gate(result: Request, *, batch: bool) -> None:
             raise HTTPException(413, f"Interactive ATP bounds exceeded: {why}; limits {ATP_LIMITS}; submit the request to /api/zaad/network/jobs.")
 
 
+def commitments_gate(result: Request, *, batch: bool) -> None:
+    """P4B V1 (release audit K): the declared option set is bounded before any model is built (413), on the
+    interactive paths at the module's limits and on the batch path at four times them."""
+    from zaad.commitments.contracts import INTERACTIVE_LIMITS as COMMITMENT_LIMITS, over_limits
+    why = over_limits(result, factor=4 if batch else 1)
+    if why:
+        raise HTTPException(413, f"{'Batch' if batch else 'Interactive'} commitment bounds exceeded: {why}; limits {COMMITMENT_LIMITS}"
+                                 + ("" if batch else "; submit the request to /api/zaad/network/jobs."))
+
+
 async def payload(request: HTTPRequest) -> Request:
     if request.headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
         raise HTTPException(415, "application/json required")
@@ -128,6 +139,7 @@ async def payload(request: HTTPRequest) -> Request:
                 or len(result.sourcing.incumbent_shares) > INTERACTIVE_LIMITS["incumbent_shares"]):
             raise HTTPException(413, f"Interactive sourcing bounds exceeded: {INTERACTIVE_LIMITS}; use offline batch planning.")
     atp_gate(result, batch=False)
+    commitments_gate(result, batch=False)
     if result.recourse is not None and result.recourse.enabled:
         # P4 interactive bounds (deterministic, before any model): the scenario tree at most 8 worlds
         # and never the P3 shared-supplier-order class; both are served by the asynchronous jobs path

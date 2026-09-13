@@ -5,9 +5,52 @@ or a malformed value is refused: flexibility is never manufactured."""
 from __future__ import annotations
 
 import json
+import math
 from typing import Any
 
 import pandas as pd
+
+from zaad.commitments.contracts import INTERACTIVE_LIMITS
+from zaad.full.contracts import PO_STAGES
+
+# Release audit (C / K): the explicit boundary between vault text and the contract's vocabularies. Case and
+# surrounding whitespace are normalised (a vault writes "Ordered"); every other value is refused with an
+# operator-facing `commitments:` message, never mapped to a neighbour.
+ACTIONS = ("cancel", "expedite", "de_expedite", "reschedule")
+PROVENANCES = ("CONTRACT", "OPERATOR_DECLARED", "CONFIGURED_ASSUMPTION")
+
+
+def normalize_stage(value: Any, where: str) -> str:
+    stage = str(value).strip().lower().replace(" ", "_").replace("-", "_")
+    if stage not in PO_STAGES:
+        raise ValueError(f"commitments: {where} declares stage '{value}' outside the vocabulary {list(PO_STAGES)}")
+    return stage
+
+
+def normalize_action(value: Any, where: str) -> str:
+    action = str(value).strip().lower().replace(" ", "_").replace("-", "_")
+    if action == "keep":
+        raise ValueError(f"commitments: {where} declares keep; the keep option is built from the order itself")
+    if action not in ACTIONS:
+        raise ValueError(f"commitments: {where} declares action '{value}' outside {list(ACTIONS)} (a route / mode change is not a commitment option)")
+    return action
+
+
+def normalize_provenance(value: Any, where: str) -> str:
+    provenance = str(value).strip().upper().replace(" ", "_").replace("-", "_")
+    if provenance not in PROVENANCES:
+        raise ValueError(f"commitments: {where} declares provenance '{value}' outside {list(PROVENANCES)}")
+    return provenance
+
+
+def number(value: Any, name: str, where: str, *, upper: float | None = None) -> float:
+    try:
+        v = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"commitments: {where} declares {name} '{value}'; a number is required") from exc
+    if not math.isfinite(v) or v < 0 or (upper is not None and v > upper):
+        raise ValueError(f"commitments: {where} declares {name} {value}; a finite number in [0, {upper if upper is not None else 'inf'}) is required")
+    return v
 
 
 def _present(value: Any) -> bool:
@@ -51,28 +94,43 @@ def attach(pipeline_rows: list[dict[str, Any]], declarations, *, as_of, period_d
     if unknown:
         raise ValueError(f"commitments: declared options for open orders the workspace does not carry: {unknown}")
     attached = 0
+    total_non_keep = sum(len(v) for v in by_po.values())
+    if total_non_keep > INTERACTIVE_LIMITS["non_keep_options"]:
+        raise ValueError(f"commitments: {total_non_keep} amendment options declared, over the limit {INTERACTIVE_LIMITS['non_keep_options']}")
     for row in pipeline_rows:
         terms = po_terms.get(row["id"], {})
-        for k in ("stage", "cancellation_status"):
+        where = f"order {row['id']}"
+        if _present(terms.get("stage")):
+            row["stage"] = normalize_stage(terms["stage"], where)
+        if _present(terms.get("cancellation_status")):
+            row["cancellation_status"] = str(terms["cancellation_status"])
+        if _present(terms.get("allow_split_amendments")):
+            row["allow_split_amendments"] = bool(terms["allow_split_amendments"])
+        for k in ("minimum_remaining_quantity", "prepaid_per_remaining_unit"):
             if _present(terms.get(k)):
-                row[k] = str(terms[k])
-        for k in ("allow_split_amendments",):
-            if _present(terms.get(k)):
-                row[k] = bool(terms[k])
-        for k in ("minimum_remaining_quantity", "prepaid_per_remaining_unit", "deposit_refundable_fraction"):
-            if _present(terms.get(k)):
-                row[k] = float(terms[k])
+                row[k] = number(terms[k], k, where)
+        if _present(terms.get("deposit_refundable_fraction")):
+            row["deposit_refundable_fraction"] = number(terms["deposit_refundable_fraction"], "deposit_refundable_fraction", where, upper=1.)
+        declared = by_po.get(row["id"], [])
+        if len(declared) + len(row["options"]) > INTERACTIVE_LIMITS["options_per_order"]:
+            raise ValueError(f"commitments: {where} declares {len(declared)} amendment options, over the limit {INTERACTIVE_LIMITS['options_per_order'] - 1}")
+        if len({o["id"] for o in declared}) != len(declared) or any(o["id"] in {x["id"] for x in row["options"]} for o in declared):
+            raise ValueError(f"commitments: {where} declares the same option id more than once")
         keep = next(o for o in row["options"] if o["action"] == "keep")
-        for opt in by_po.get(row["id"], []):
-            if opt["action"] == "keep":
-                raise ValueError(f"commitments: option {opt['id']} declares keep for order {row['id']}; the keep option is built from the order itself")
+        for opt in declared:
+            where_o = f"option {opt['id']} of order {row['id']}"
+            opt["action"] = normalize_action(opt["action"], where_o)
+            for k in ("fee_per_unit", "credit_per_unit", "remaining_invoice_per_unit", "max_quantity"):
+                if _present(opt.get(k)):
+                    opt[k] = number(opt[k], k, where_o)
             due = int(opt["due_offset_periods"]) if _present(opt.get("due_offset_periods")) else keep["due_in"]
             deadline = pd.Timestamp(opt["deadline"]).to_pydatetime() if _present(opt.get("deadline")) else None
             if deadline is None:
                 raise ValueError(f"commitments: option {opt['id']} declares no deadline (an amendment right needs its window)")
             if deadline.tzinfo is None:
                 deadline = deadline.replace(tzinfo=as_of.tzinfo)
-            stages = json.loads(opt["allowed_stages"]) if _present(opt.get("allowed_stages")) and isinstance(opt["allowed_stages"], str) else (list(opt["allowed_stages"]) if _present(opt.get("allowed_stages")) else [row["stage"]])
+            raw_stages = json.loads(opt["allowed_stages"]) if _present(opt.get("allowed_stages")) and isinstance(opt["allowed_stages"], str) else (list(opt["allowed_stages"]) if _present(opt.get("allowed_stages")) else [row["stage"]])
+            stages = [normalize_stage(x, where_o) for x in raw_stages]
             row["options"].append({"known_at": keep["known_at"], "id": opt["id"], "action": opt["action"], "due_in": max(0, due),
                                    "fee_per_unit": float(opt["fee_per_unit"]) if _present(opt.get("fee_per_unit")) else 0.,
                                    "credit_per_unit": float(opt["credit_per_unit"]) if _present(opt.get("credit_per_unit")) else 0.,
@@ -81,6 +139,6 @@ def attach(pipeline_rows: list[dict[str, Any]], declarations, *, as_of, period_d
                                    "max_quantity": float(opt["max_quantity"]) if _present(opt.get("max_quantity")) else float(keep["max_quantity"]),
                                    "deadline": deadline, "allowed_stages": stages,
                                    "contract_reference": str(opt["contract_reference"]) if _present(opt.get("contract_reference")) else "",
-                                   "provenance": str(opt["provenance"]) if _present(opt.get("provenance")) else "CONTRACT"})
+                                   "provenance": normalize_provenance(opt["provenance"], where_o) if _present(opt.get("provenance")) else "CONTRACT"})
             attached += 1
     return {"orders_with_terms": len(po_terms), "options_attached": attached}

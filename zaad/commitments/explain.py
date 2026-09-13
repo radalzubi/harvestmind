@@ -37,6 +37,21 @@ def _classify(po, chosen: dict[str, float]) -> str:
     return ACTION_LABEL[action]
 
 
+def _changes_outside(report: dict[str, Any]) -> list[dict[str, Any]]:
+    """Purchase / transfer rows where the selected plan differs from the incumbent (the part of the plan that is
+    not a commitment decision), so a PENDING_REVIEW plan next to a KEEP verdict reads unambiguously."""
+    def key(r: dict) -> tuple:
+        return (r["action"], r.get("source") or r.get("transfer"), r.get("period"), r.get("expiry_cohort"))
+    sel = {key(r): float(r["quantity"]) for r in (report.get("actions") or []) if r.get("action") != "po_option"}
+    inc = {key(r): float(r["quantity"]) for r in (report.get("incumbent_actions") or []) if r.get("action") != "po_option"}
+    out = []
+    for k in sorted(set(sel) | set(inc), key=str):
+        a, b = inc.get(k, 0.), sel.get(k, 0.)
+        if abs(a - b) > 1e-6:
+            out.append({"kind": k[0], "id": k[1], "period": k[2], "incumbent_quantity": round(a, 3), "selected_quantity": round(b, 3)})
+    return out[:50]
+
+
 def _settle_ledger(req: Request, rows: list[dict]) -> dict[str, float] | None:
     from zaad.meio.planner import solution_from_actions
     try:
@@ -100,14 +115,34 @@ def commitment_block(req: Request, view: Commitments, report: dict[str, Any]) ->
     value = None
     if inc_costs.get("TOTAL") is not None and sel_costs.get("TOTAL") is not None:
         value = round(float(inc_costs["TOTAL"]) - float(sel_costs["TOTAL"]), 3)
+    # release audit (D): the commitment verdict is stated apart from the overall plan status. A plan can be
+    # PENDING_REVIEW for purchases or transfers while every declared order is KEEP; the value attributed to
+    # the commitment is then exactly 0 and the changes outside the commitments are listed.
+    actions: list[str] = [str(o["recommended_action"]) for o in orders]
+    changed: list[str] = sorted({a for a in actions if a != "KEEP"})
+    commitment_action = "KEEP" if not changed else (changed[0] if len(changed) == 1 else "MIXED")
+    outside = _changes_outside(report)
+    plan_status = report.get("status")
+    if commitment_action == "KEEP":
+        reading = (f"Commitment verdict: KEEP every declared order ({NO_IMPROVEMENT}). "
+                   + (f"The overall plan status {plan_status} refers to {len(outside)} purchase / transfer row(s) outside the commitments; ZAAD does not recommend amending any order."
+                      if outside and plan_status != "RETAIN_INCUMBENT" else "The plan is retained as a whole; no order is amended."))
+    else:
+        named = ", ".join(f"{o['recommended_action']} {o['po']} ({o['quantity_affected']} units)" for o in orders if o["recommended_action"] != "KEEP")
+        reading = (f"Commitment verdict: {RECOMMENDED} - {named}; the value is the whole plan's against the KEEP incumbent"
+                   + (f" and {len(outside)} purchase / transfer row(s) also differ" if outside else "") + ". Approval required; nothing executes.")
     def _delta(name: str):
         if inc_costs.get(name) is None or sel_costs.get(name) is None:
             return None
         return round(float(sel_costs[name]) - float(inc_costs[name]), 3)
     ledger_lines = {k: {"selected": round(sel_ledger.get(k, 0.), 3) if sel_ledger else None, "incumbent": round(inc_ledger.get(k, 0.), 3) if inc_ledger else None}
                     for k in (*FEE_KEYS, "commitment_credit", "procurement", "holding", "lost_sales_opportunity", "sla", "opening_assets")}
-    return {"version": "zaad.commitments.1.0", "verdict": verdict, "incumbent": "KEEP every declared commitment (the projected base-stock proxy or the declared incumbent keeps all)",
-            "plan_status": report.get("status"), "selected_policy": report.get("selected_policy"),
+    return {"version": "zaad.commitments.1.1", "verdict": verdict,
+            "commitment_action": commitment_action, "commitment_verdict": verdict,
+            "commitment_value_vs_keep": 0. if commitment_action == "KEEP" else value,
+            "overall_plan_status": plan_status, "plan_changes_outside_commitments": outside, "reading": reading,
+            "incumbent": "KEEP every declared commitment (the projected base-stock proxy or the declared incumbent keeps all)",
+            "plan_status": plan_status, "selected_policy": report.get("selected_policy"),
             "material_improvement_vs_keep": {"plan_level_value": value, "materiality": materiality, "note": "materiality is the released plan-level gate against the KEEP incumbent; the value is the whole plan's, purchases included"},
             "orders": orders,
             "inventory_service_effect": {"carrying_delta": _delta("CARRYING"), "shortage_delta": _delta("SHORTAGE"), "ordering_delta": _delta("ORDERING"),

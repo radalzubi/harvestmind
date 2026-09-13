@@ -294,8 +294,10 @@ class POOption(Dated):
             raise ValueError(f"commitments: option {self.id} names unknown stages {unknown}")
         if self.action != "keep" and self.provenance == "CONFIGURED_ASSUMPTION":
             raise ValueError(f"commitments: option {self.id} ({self.action}) rests on a CONFIGURED_ASSUMPTION; amendment rights are never assumed")
-        if self.action == "keep" and self.credit_per_unit > 0:
-            raise ValueError("commitments: the keep option carries no credit")
+        if self.action != "cancel" and self.credit_per_unit > 0:
+            # release audit (B): a refund is declared only on a cancel option; on a deferral or an expedite the
+            # deposit stays applied to units that still arrive, so a credit there would cut the contract price
+            raise ValueError(f"commitments: option {self.id} ({self.action}) carries a credit; a refund is declared only on a cancel option")
         return self
 
 
@@ -351,6 +353,13 @@ class OpenPO(Dated):
             if option.action == "cancel" and self.minimum_remaining_quantity > 0 and min(option.max_quantity, self.remaining) > self.remaining - self.minimum_remaining_quantity + 1e-9:
                 raise ValueError(f"commitments: cancel option {option.id} may cancel {min(option.max_quantity, self.remaining)} but the order may not fall below "
                                  f"{self.minimum_remaining_quantity} of {self.remaining} open units")
+        if self.minimum_remaining_quantity > 0 and self.allow_split_amendments:
+            # release audit (G): with splitting allowed several cancel options can be active together, so their
+            # clipped caps are bounded as a sum (each alone inside the floor is not enough)
+            together = sum(min(o.max_quantity, self.remaining) for o in self.options if o.action == "cancel")
+            if together > self.remaining - self.minimum_remaining_quantity + 1e-9:
+                raise ValueError(f"commitments: PO {self.id} allows split amendments and its cancel options together may cancel {together} units, "
+                                 f"more than the {self.remaining - self.minimum_remaining_quantity} its floor of {self.minimum_remaining_quantity} leaves")
         return self
 
 

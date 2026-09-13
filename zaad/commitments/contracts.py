@@ -16,6 +16,20 @@ from zaad.full.tolerance import po_closed
 
 NON_KEEP: frozenset[str] = frozenset({"cancel", "expedite", "de_expedite", "reschedule"})
 ACTION_LABEL = {"keep": "KEEP", "cancel": "CANCEL", "expedite": "EXPEDITE", "de_expedite": "DEFER", "reschedule": "DEFER"}
+# Release audit (K): a declared option set is bounded before any model is built. Each option adds columns (and,
+# on an exclusive order, one binary); the interactive paths refuse above these, the batch path above four times.
+INTERACTIVE_LIMITS = {"options_per_order": 12, "non_keep_options": 200}
+
+
+def over_limits(req: Request, factor: int = 1) -> str:
+    """The reason a request's declared option set is over the bound, or an empty string."""
+    per_order = max((len(po.options) for po in req.pipeline), default=0)
+    if per_order > INTERACTIVE_LIMITS["options_per_order"] * factor:
+        return f"an order declares {per_order} options, over the limit {INTERACTIVE_LIMITS['options_per_order'] * factor}"
+    non_keep = sum(1 for po in req.pipeline for o in po.options if o.action != "keep")
+    if non_keep > INTERACTIVE_LIMITS["non_keep_options"] * factor:
+        return f"{non_keep} non-keep options declared, over the limit {INTERACTIVE_LIMITS['non_keep_options'] * factor}"
+    return ""
 
 
 @dataclass(frozen=True)
