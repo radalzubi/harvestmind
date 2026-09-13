@@ -120,3 +120,8 @@ artifacts/full_suite_mid.txt
 # audit-trail sidecars written at runtime (tests included)
 data/runs/
 .vercel
+
+# macOS Finder duplicates ("name 2.ext", "name 3.ext") created by copy/paste in the worktrees; 50 byte-identical
+# copies were committed before the post-P4B cleanup and are refused here
+* 2.*
+* 3.*

@@ -1,6 +1,9 @@
-# HarvestMind — Folder Map
+# HarvestMind — Folder Map (legacy platform)
 
-Plain-English guide to what every folder in this repo is. Read this first.
+> Current system: read [`docs/zaad_full/CURRENT_SYSTEM.md`](docs/zaad_full/CURRENT_SYSTEM.md) first. This map describes the
+> legacy HarvestMind platform that the repository still carries (mounted, gated); the ZAAD optimizer lives in `zaad/full`.
+
+Plain-English guide to what every folder in this repo is.
 
 HarvestMind is two things in one repo: a **Python backend + diagnostic engine**,
 and a **Next.js frontend**. They run independently.
