@@ -144,7 +144,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                   service_target: float = .95, history_weeks: int = 52, seed: int = 41001, scenarios: int = 3,
                   max_solve_seconds: float = 15., min_history_weeks: int = MIN_HISTORY_WEEKS,
                   shipment_observations_per_source: int = 60, skus: list[str] | None = None,
-                  sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False, atp: bool = False) -> tuple[Request, dict[str, Any]]:
+                  sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False, atp: bool = False, commitments: bool = False) -> tuple[Request, dict[str, Any]]:
     """The frozen contract built from the operator's vault, plus the build report (rows read, compact
     dimensions, fits with sample sizes, provenance, warnings, leakage guard). Raises WorkspaceError with
     an operator-facing message when the workspace cannot be planned yet."""
@@ -495,6 +495,16 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                                       "current_eta": pd.Timestamp(eta).to_pydatetime().replace(tzinfo=timezone.utc), "stage": "ordered", "carrier": "unknown",
                                       "cancellation_status": "none", "prepaid_per_remaining_unit": 0., "allow_split_amendments": False, "options": [keep]})
 
+    # open PO commitment terms and amendment options (P4B V1, migration 022): attached only when asked for and
+    # declared; otherwise every open order stays KEEP-only exactly as built above
+    commitments_report: dict[str, Any] = {"requested": bool(commitments), "declared": False, "options_attached": 0}
+    if commitments:
+        from zaad.commitments.workspace import attach, commitment_declarations
+        declared_commitments = commitment_declarations(conn, operator_id)
+        if declared_commitments is None:
+            warnings.append("commitments requested but the vault declares no PO options (stg_po_options / stg_po_commitments, migration 022): every open order stays KEEP-only")
+        else:
+            commitments_report.update(attach(pipeline_rows, declared_commitments, as_of=known_at, period_days=period_days), declared=True)
     # compaction: the engine's supply profile uses quantiles and the recent receipts of each source; the
     # most recent observations per source are enough, the raw purchase-order table stays in the vault
     by_source: dict[str, list[dict[str, Any]]] = {}
@@ -553,6 +563,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         "atp": {"requested": bool(atp), "declared": declared_atp is not None, "enabled": bool(declared_atp and declared_atp.get("enabled")),
                 "orders": len((declared_atp or {}).get("orders", [])), "lines": sum(len(o.get("lines", [])) for o in (declared_atp or {}).get("orders", [])),
                 "service_classes": len((declared_atp or {}).get("service_classes", []))},
+        "commitments": commitments_report,
         "rows_read": rows_read,
         "compact": {"skus": len(sku_rows), "sources": len(source_rows), "services": len(service_rows), "history_observations": len(history_rows),
                     "history_weeks": span, "shipment_observations": len(shipment_rows), "open_purchase_orders": len(pipeline_rows),

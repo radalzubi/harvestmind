@@ -102,6 +102,10 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             ledger["procurement"] += q * option.remaining_invoice_per_unit
             payments[0] += q * option.fee_per_unit
             payments[option.payment_due_in] += q * option.remaining_invoice_per_unit
+            if option.credit_per_unit > 0:
+                # P4B V1: the declared refund / credit note (bounded by the refundable deposit at the contract)
+                ledger["commitment_credit"] -= q * option.credit_per_unit
+                payments[0] -= q * option.credit_per_unit
             if option.action != "cancel":
                 due = world.po_due[po.id]
                 if option.action != "keep":

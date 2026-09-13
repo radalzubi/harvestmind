@@ -31,6 +31,7 @@ from zaad.full.settlement import PhysicalViolation, settle
 from zaad.full.uncertainty import profile_dict, stress_credibility, supply_profiles
 from zaad.full.worlds import dates, draw, forecast_all
 from zaad.atp.contracts import resolve as resolve_atp
+from zaad.commitments.contracts import resolve as resolve_commitments
 from zaad.recourse.contracts import resolve as resolve_recourse
 
 
@@ -655,7 +656,11 @@ def plan(req: Request) -> dict:
     selection = draw(req_draw, req.seed, req.scenarios)
     deterministic = draw(req, req.seed, 1, deterministic=True)
     baseline_targets = targets(req)
-    base = solve(req, deterministic, targets=baseline_targets)
+    # P4B V1: when the request declares a non-keep amendment option, the projected base-stock proxy that
+    # serves as the incumbent keeps every commitment (KEEP is the incumbent); candidates stay free to
+    # amend. Without a declaration the call is the released one.
+    commitment_view = resolve_commitments(req)
+    base = solve(req, deterministic, targets=baseline_targets, disabled=(commitment_view.non_keep_actions if commitment_view is not None else frozenset()))
     incumbent = base
     incumbent_label = "projected_base_stock_proxy"
     if req.incumbent_orders:
@@ -1620,6 +1625,11 @@ def plan(req: Request) -> dict:
         # complete; it changes no P0-P4 decision. Absent on a frozen request (identity).
         from zaad.atp.integration import atp_block
         report["atp"] = atp_block(req, atp_view, protection=protection, planner_path=True)
+    if commitment_view is not None:
+        # Open PO / commitment intervention (P4B V1): what the selected plan changes about each declared
+        # commitment against the KEEP incumbent, in operator language. Absent on a frozen request.
+        from zaad.commitments.explain import commitment_block
+        report["commitments"] = commitment_block(req, commitment_view, report)
     return report
 
 

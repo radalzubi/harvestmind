@@ -178,21 +178,21 @@ async def recommend(request: HTTPRequest, operator: str | None = Depends(require
 
 
 def _workspace_request(conn, operator: str, horizon: int, service_target: float, skus: str | None, max_solve_seconds: float, network: bool = False,
-                       sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False, atp: bool = False):
+                       sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False, atp: bool = False, commitments: bool = False):
     from zaad.full.workspace import WorkspaceError, build_request
     subset = [x.strip() for x in skus.split(",") if x.strip()] if skus else None
     try:
         if network:
             # P2: the vault's declared locations and lanes; identical to the frozen adapter below two locations
             from zaad.meio.workspace import build_network_request
-            return build_network_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp)
-        return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp)
+            return build_network_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp, commitments=commitments)
+        return build_request(conn, operator, horizon=horizon, service_target=service_target, skus=subset, max_solve_seconds=max_solve_seconds, sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp, commitments=commitments)
     except WorkspaceError as exc:
         raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
     except ValueError as exc:
         # sector physics or sourcing declared inconsistently in the vault (unknown state, threshold above
         # shelf life, share limits the incumbent mix does not meet, unknown supplier in a risk group, ...)
-        code = ("atp_invalid" if "atp:" in str(exc) else "recourse_invalid" if "recourse:" in str(exc)
+        code = ("commitments_invalid" if "commitments:" in str(exc) else "atp_invalid" if "atp:" in str(exc) else "recourse_invalid" if "recourse:" in str(exc)
                 else ("sourcing_invalid" if "sourcing:" in str(exc) else "sector_physics_invalid"))
         raise HTTPException(422, {"code": code, "message": str(exc)}) from exc
 
@@ -205,11 +205,12 @@ def workspace_request(operator: str = Depends(authenticated), conn=Depends(get_c
                       sector_mode: Literal["COMMERCIAL", "PRODUCE", "MEAT_SEAFOOD"] | None = Query(None, description="sector physics: the request's default sector (per-SKU columns override it)"),
                       sourcing: bool = Query(False, description="P3: attach the vault's declared source options, shares, incumbent mix and risk groups (stg_fmcg_sources, migration 018)"),
                       recourse: bool = Query(False, description="P4: attach the vault's declared adaptive-recourse specification (stg_recourse_spec, migration 019)"),
-                      atp: bool = Query(False, description="P5: attach the vault's declared customer orders, service classes and promising policy (migration 020); needs ZAAD_ATP_ENABLED=1")):
+                      atp: bool = Query(False, description="P5: attach the vault's declared customer orders, service classes and promising policy (migration 020); needs ZAAD_ATP_ENABLED=1"),
+                      commitments: bool = Query(False, description="P4B: attach the vault's declared open-PO commitment terms and amendment options (migration 022); absent declarations keep every order KEEP-only")):
     """The frozen contract built from the operator's own vault (the canonical customer-data path), with
     the build report: rows read, compact dimensions, fitted supplier fill and lead with sample sizes,
     provenance, warnings and the leakage guard. No plan is run."""
-    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode, sourcing, recourse, atp)
+    req, build = _workspace_request(conn, operator, horizon, service_target, skus, max_solve_seconds, network, sector_mode, sourcing, recourse, atp, commitments)
     atp_gate(req, batch=False)
     return {"request": req.model_dump(mode="json"), "build": build}
 
@@ -223,7 +224,8 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
                          sector_mode: Literal["COMMERCIAL", "PRODUCE", "MEAT_SEAFOOD"] | None = Query(None, description="sector physics: the request's default sector (per-SKU columns override it)"),
                          sourcing: bool = Query(False, description="P3: attach the vault's declared source options, shares, incumbent mix and risk groups (stg_fmcg_sources, migration 018)"),
                       recourse: bool = Query(False, description="P4: attach the vault's declared adaptive-recourse specification (stg_recourse_spec, migration 019)"),
-                      atp: bool = Query(False, description="P5: attach the vault's declared customer orders, service classes and promising policy (migration 020); needs ZAAD_ATP_ENABLED=1")):
+                      atp: bool = Query(False, description="P5: attach the vault's declared customer orders, service classes and promising policy (migration 020); needs ZAAD_ATP_ENABLED=1"),
+                      commitments: bool = Query(False, description="P4B: attach the vault's declared open-PO commitment terms and amendment options (migration 022); absent declarations keep every order KEEP-only")):
     """Plan the operator's workspace with the frozen P1 optimizer: vault -> compact Request -> plan.
     `shape=purchase_plan` returns the workspace purchase-plan rows (approval stays with the operator,
     never an executable order); `shape=network` returns the full network report with the build."""
@@ -231,7 +233,7 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
     # P5 release audit (item C): the released call site dropped `recourse` (P4 plumbing defect, recorded in the
     # P5 integration API audit); every phase flag is now passed by keyword, so no flag depends on its position.
     req, build = await run_in_threadpool(_workspace_request, conn, operator, horizon, service_target, skus, max_solve_seconds, network,
-                                         sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp)
+                                         sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp, commitments=commitments)
     atp_gate(req, batch=False)
     report = await compute(req)
     if shape == "network":
@@ -245,6 +247,10 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
         # the P5 promising report travels with the plan shape (approval stays with the operator; no promise executes)
         out["atp"] = report["atp"]
         out["executable_promise"] = False
+    if "commitments" in report:
+        # the P4B commitment report travels with the plan shape (approval stays with the operator; no amendment executes)
+        out["commitments"] = report["commitments"]
+        out["executable_amendment"] = False
     return out
 
 

@@ -28,6 +28,11 @@ COMPONENT_OF = {
     "sla": "SHORTAGE", "lost_sales_opportunity": "SHORTAGE",
     "substitution": "OTHER", "transfer": "OTHER",
     "switching": "ORDERING",   # P3: a declared switching / qualification cost, charged once per newly used source
+    # P4B V1: declared amendment fees on an existing commitment and the declared refund / credit note are
+    # order-level commercial charges (like the fixed order cost and the switching cost). `keep_fee` (always 0)
+    # is left as the released runtime reports it so the no-declaration report is unchanged.
+    "cancel_fee": "ORDERING", "expedite_fee": "ORDERING", "de_expedite_fee": "ORDERING", "reschedule_fee": "ORDERING",
+    "commitment_credit": "ORDERING",
     "opening_assets": "INVENTORY_VALUE_CHANGE", "closing_assets": "INVENTORY_VALUE_CHANGE",
     "terminal_continuation": "INVENTORY_VALUE_CHANGE",   # P1 lot-sizing terminal valuation on evaluation rows (planner.evaluate)
 }
