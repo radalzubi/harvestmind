@@ -182,7 +182,22 @@ tests add about seven minutes on that runner). Remedy in the workflow only: the 
 `[a-m]` and `[n-r]`; no timeout widened, no product file changed (the product freeze tree is
 unchanged). The re-run on the resharded head is recorded in the release record below.
 
-CI_PLACEHOLDER
+Second run on the resharded head `e33e027` (run 34727673056): green on every gate - ruff, gitleaks,
+security (bandit, pip-audit), mypy, docker build, frontend, zaad frozen regression, pytest five
+shards (integration, unit-core, unit-zaad-a `[a-m]`, unit-zaad-n `[n-r]`, unit-zaad-b). CodeQL fails
+as on every prior release (code scanning not enabled on the private repository; environment defect,
+not a gate, and every real gate above is green). The merge-triggered runs on `main` were cancelled
+(cost discipline; the merged tree is identical to the tested head).
+
+### Release record
+
+| step | value |
+|---|---|
+| merge | PR #72 -> `main` `2fc7b50`; whole-tree hash `082470f` identical to the tested head `e33e027`; product paths identical to `p5-frozen-product` (`eacf3c3`, tree `dd064f3`) |
+| deploy | from the clean detached checkout `harvestmind-deploy` at `2fc7b50` (0 status entries): Fly `zaad-api` v22, `registry.fly.io/zaad-api:canonical-2fc7b50` (digest `sha256:0e3f735f3c17...`), machine `0804e0dfd1e948` started, volume and 12 secrets unchanged (`release/fly_secret_names.txt`), env now carries `ZAAD_ATP_ENABLED=1` (`release/fly_deploy_v22.log`) |
+| production smoke (`release/smoke_p5.py`, `smoke_p5_results.json`) | health 200; disabled path: frozen plan 200 without an `atp` key (RETAIN_INCUMBENT); standalone `/atp/promise`: B scarcity 200 ALLOCATION CHANGE RECOMMENDED (2 reservations, 0 transfers), I17 every unit state 200 with all seven ledger keys populated; refusals 422 `atp_invalid` (double shortage declaration), 422 `atp_absent`, 413 bounds; planner `/plan` with a block 200 (frozen decision RETAIN_INCUMBENT, `atp` block on the planner path, protection overlay 3 rows); tenant mismatch 403 on `/atp/promise`, `/plan`, `/jobs`; `/jobs` 202 -> DONE in 11 s with the block; every response `approval_required: true`, `executable_promise: false` |
+| logs after the smoke (`release/fly_logs_after_smoke.txt`) | 0 x 5xx, 0 errors, 0 OOM; the two "Traceback" lines are the replaced v21 process's shutdown at the rolling deploy (SIGINT -> asyncio CancelledError, 07:29:27Z) before any request reached v22; the v22 process logged none; 39 x 200, 1 x 202, 3 x 403, 1 x 413, 2 x 422 |
+| release tag | `p5-release-runtime` -> `2fc7b50` (pushed); `p5-frozen-product` `eacf3c3`, `p5-frozen` `6919379`, `p5-isolated-baseline` `660e5fc`, `p4-performance-closure-runtime` `6b58764`, `p4-release-runtime` `8c813ac` and every older tag unmoved |
 
 
 ## Known limitations
@@ -200,4 +215,14 @@ CI_PLACEHOLDER
 
 ## Verdict
 
-VERDICT_PLACEHOLDER
+Every audit gate passed: the lost-sale economics are established (contribution basis, frozen
+ranking convention, declared overrides, no silent change to frozen economics), the SLA / shortage
+double declaration fails closed, the P4 workspace plumbing is fixed without touching P4 semantics,
+R01-R18 18 / 18, the P5 matrices 24 / 24 and 20 / 20, adversarial 18 / 18, invariants 1-20, no
+performance regression, migration additive and idempotent, API gated and tenant-isolated, P0-P5
+frozen regressions identical in one pass, CI green once on the tested head, merge tree-identical,
+deployed from a clean detached checkout, production smoke and logs clean, release tag created after
+verification, no historical tag moved, P6 not started.
+
+**ZAAD P5 RELEASE AUDIT — PASS.** Validation status unchanged: ENGINEERING VALIDATED, NOT REAL-DATA
+VALIDATED.

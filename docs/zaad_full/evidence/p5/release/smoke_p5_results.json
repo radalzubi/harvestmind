@@ -1,0 +1,102 @@
+{
+ "workspace": {
+  "code": 200,
+  "operator": "op_c336a650"
+ },
+ "workspace_b": {
+  "code": 200,
+  "operator": "op_8cd9a89f"
+ },
+ "health": {
+  "code": 200,
+  "seconds": 0.3
+ },
+ "A_disabled_plan": {
+  "code": 200,
+  "seconds": 1.5,
+  "atp_key_present": false,
+  "status": "RETAIN_INCUMBENT",
+  "approval": true
+ },
+ "S_B_scarcity": {
+  "code": 200,
+  "seconds": 0.4,
+  "verdict": "ALLOCATION CHANGE RECOMMENDED",
+  "ledger": {
+   "lost_contribution": 200.0,
+   "sla": 100.0,
+   "shortage_penalty": 0.0,
+   "backorder_carry": 0.0,
+   "substitution": 0.0,
+   "alternative_ship_from": 0.0,
+   "refusal": 0.0
+  },
+  "reservations": 2,
+  "p2_transfers": 0,
+  "approval": true,
+  "executable_promise": false,
+  "path": "standalone"
+ },
+ "S_I17_every_state": {
+  "code": 200,
+  "seconds": 0.4,
+  "verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "ledger": {
+   "lost_contribution": 350.0,
+   "sla": 50.0,
+   "shortage_penalty": 60.0,
+   "backorder_carry": 80.0,
+   "substitution": 15.0,
+   "alternative_ship_from": 8.0,
+   "refusal": 100.0
+  },
+  "reservations": 4,
+  "p2_transfers": 0,
+  "approval": true,
+  "executable_promise": false,
+  "path": "standalone"
+ },
+ "R_double_declaration": {
+  "code": 422,
+  "detail": "{'code': 'atp_invalid', 'errors': [{'loc': [], 'msg': 'Value error, atp: class k declares a shortage penalty and the service for line l1 already carries sla_per_unmet 2.5: declare shortage_penalty_basis (ADDITIONAL_TO_SE"
+ },
+ "R_absent_block": {
+  "code": 422,
+  "detail": "{'code': 'atp_absent', 'message': 'This endpoint needs an enabled `atp` block; planning without one is /api/zaad/network"
+ },
+ "R_bounds": {
+  "code": 413,
+  "detail": "Interactive ATP bounds exceeded: orders 201 over the interactive limit 200; limits {'orders': 200, 'lines': 500, 'promis"
+ },
+ "P_planner_with_block": {
+  "code": 200,
+  "seconds": 1.6,
+  "status": "RETAIN_INCUMBENT",
+  "selected": "operator_rule:network:rop",
+  "atp_verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE",
+  "path": "planner",
+  "overlay_rows": 3,
+  "overlay_available": true,
+  "approval": true,
+  "epo": false
+ },
+ "T_standalone_other_tenant": {
+  "code": 403
+ },
+ "T_planner_other_tenant": {
+  "code": 403
+ },
+ "T_jobs_other_tenant": {
+  "code": 403
+ },
+ "J_submit": {
+  "code": 202,
+  "job": "job_47c1ac6a51834f2696e63aeab1f20556"
+ },
+ "J_job": {
+  "status": "DONE",
+  "wall_s": 11,
+  "atp_present": true,
+  "atp_verdict": "NO MATERIAL ALLOCATION IMPROVEMENT AVAILABLE"
+ }
+}
