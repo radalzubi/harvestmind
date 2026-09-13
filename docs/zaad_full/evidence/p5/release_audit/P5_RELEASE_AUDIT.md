@@ -175,6 +175,13 @@ ruff and mypy (CI scope + `zaad/atp`) clean; gitleaks and pip-audit on CI.
 
 ### CI
 
+First run on the evidence freeze `6919379` (run 34723634159): ten gates green, the `unit-zaad-a`
+pytest shard (`test_zaad_[a-r]*.py`, 71 minutes on the P5 integration run) cancelled by the
+workflow's 90-minute job cap (not a test failure: every test that ran passed; the P5 planner-path
+tests add about seven minutes on that runner). Remedy in the workflow only: the shard is split into
+`[a-m]` and `[n-r]`; no timeout widened, no product file changed (the product freeze tree is
+unchanged). The re-run on the resharded head is recorded in the release record below.
+
 CI_PLACEHOLDER
 
 
