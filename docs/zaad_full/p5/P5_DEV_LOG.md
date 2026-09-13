@@ -165,3 +165,4 @@ any release need their own authorization.
   `recourse`); R16 / R17 and `test_workspace_plan_forwards_every_phase_flag_by_keyword`.
 * `fly.toml` `[env]` gains `ZAAD_ATP_ENABLED = '1'` for the production environment (release
   configuration, versioned; the code default stays off; every request must declare its block).
+* Released: CI 34727673056 green on `e33e027` (after a CI-only reshard; the first run's `[a-r]` shard hit the 90-minute cap), merged `2fc7b50`, Fly v22 `canonical-2fc7b50`, production smoke and logs clean, tag `p5-release-runtime`. ZAAD P5 RELEASE AUDIT — PASS.
