@@ -25,8 +25,9 @@ changed, and the frozen regression passes in CI on this branch.
 
 ## 2. What is in the diff
 
-51 files: 32 under `web/`, 10 under `api/`, 3 tests, 2 scripts, 1 migration, 1 document,
+60 files: 36 under `web/`, 11 under `api/`, 5 test files, 2 scripts, 1 migration, 3 documents,
 `pyproject.toml` (one dependency), `.claude/launch.json` (a local dev entry).
+`git diff --stat main...HEAD` — 11,925 insertions, 634 deletions.
 
 | Area | Files |
 |---|---|
@@ -37,6 +38,7 @@ changed, and the frozen regression passes in CI on this branch.
 | Shared frontend | `web/src/components/workspace/{Table,OrderForm,Shell}.tsx`, `web/src/lib/zaad/{product,standing}.ts` |
 | Network | `web/src/lib/network/{groups,geo}.ts`, `adapters/canonical.ts`, `components/network/{IntelligencePanel,NetworkMap}.tsx` |
 | QA tooling | `scripts/zaad_qa_workspaces.py`, `scripts/zaad_product_scale_bench.py` |
+| Tests | `tests/integration/test_operating_product_api.py`, `tests/unit/test_product_{exporting,evaluation,drafts_schema,catalog_labels}.py` |
 
 ## 3. Requirements implemented
 
@@ -104,17 +106,18 @@ Stated plainly rather than left to be discovered.
 |---|---|
 | `tests/integration/test_operating_product_api.py` | 36 passed |
 | `tests/unit/test_product_exporting.py` | 24 passed |
-| `tests/unit/test_product_evaluation.py` | 13 passed |
+| `tests/unit/test_product_evaluation.py` | 26 passed |
 | `tests/unit/test_product_drafts_schema.py` | 9 passed |
+| `tests/unit/test_product_catalog_labels.py` | 6 passed |
 | Whole integration shard (`tests/integration`) | **316 passed** |
 | Whole local suite (`tests/unit` + `tests/integration`) | 2,058 passed, 2 skipped |
-| Frontend (`npm test`) | **92 passed**, 31 new |
+| Frontend (`npm test`) | **99 passed**, 38 new |
 | Frontend typecheck / lint / production build | green |
 | `ruff`, `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
 | **zaad frozen regression** | **green** |
 
 New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `abandoned.test.ts` (6),
-plus tests added to `canonical.test.ts`.
+`format.test.ts` (7), plus tests added to `canonical.test.ts`.
 
 ## 6. Scale
 
@@ -144,17 +147,35 @@ path) and a **production build** of this branch, on synthetic workspaces created
   workspace.
 * **A real proposal evaluation ran end to end**: two jobs on the released path, QUEUED → RUNNING →
   DONE, and the three-column comparison rendered from the two reports.
-* **Mobile** at 375×812: the four-tab bar plus More, the reduced Inventory table, wrapped filters.
-* **RTL** with `dir="rtl"`: rail, tables, drawers, buttons and forms all mirrored; horizontal
-  overflow zero.
+* **The whole lifecycle again, on a second workspace, start to finish:** a proposal created from a
+  product on Inventory (supplier, pack size and unit cost prefilled from the master), evaluated
+  (two engine runs, eight minutes, three columns of the engine's own ledger), approved with a
+  recorded reason, and **exported** — a real CSV with `X-ZAAD-Transmitted: false`, a UTF-8 BOM, and
+  the filename the profile's template produces. Then a **proposed amendment** to an imported order
+  carrying three declared rights, from the drawer through the editor to the rights table.
+* **The spreadsheet path** end to end through the API: headings read, a mapping proposed, a wrong
+  field name refused by name, and a file with one broken row read into two lines with
+  `Row 4 (not-a-sku): 'abc' is not a quantity.`
+* **Mobile** at 375×812, measuring `document.scrollWidth` against `clientWidth` on twelve
+  surfaces — Home, Decisions, Inventory, both Purchase orders tabs, the imported-order drawer, one
+  proposal, Create, Export formats, Upload, Diagnostics, a supplier's page and Data — then the
+  heaviest of them in **RTL** (`dir="rtl"`, `lang="ar"`, reached through the product's own language
+  switch, not by setting an attribute), then RTL at 375×812 as well. Zero horizontal overflow
+  everywhere, after one fix (see below).
 * **Every table's heading row read back out of the live DOM** rather than out of the source, and
   every column set in `web/src/` checked for a label used twice in one table. One table was showing
   two columns called "Ordered" — the date and the quantity. Both are now unambiguous.
+* **Every page's controls listed from the DOM and checked for duplicates**, which is how the run
+  control appearing twice on Decisions and "Cancel" twice on the order editor were found.
+* **Every rendered page scanned for leaked internal tokens** (`undefined`, `NaN`, `[object Object]`,
+  snake_case identifiers). One leak: `de_expedite` in the declared-rights table. The route id
+  `road_saudi` also appears — that one is the operator's own declared value and is left verbatim,
+  because inventing a display name for it would be fabrication.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats
   answered `500`. See below.
 
-Fifteen defects were found this way and fixed; they are listed in the PR description. The three most
-serious were invisible to the build and to the existing tests:
+**Twenty-one defects were found this way and fixed**; they are listed in the PR description. The
+four most serious were invisible to the build and to the existing tests:
 
 * `ensure_tables` — the fallback that prepares the product's own tables on a vault that predates
   migration 023 — split the migration file on `";"`. Migration 023 carries `COMMENT ON … IS '…;…'`
@@ -167,6 +188,15 @@ serious were invisible to the build and to the existing tests:
   they do not**, and `api/main.py` maps that refusal to a 422 so no order endpoint can turn it back
   into a 500. Nine unit tests in `tests/unit/test_product_drafts_schema.py` pin it. Repaired live:
   the signed-in vault was complete on the next request.
+
+* **A KEEP was reported as "no contractual right to change this order is declared."** In P4B's
+  report, `contractual_basis` is the option the plan *chose*, and it is empty on every KEEP — the
+  declared rights live in `amendment_windows`. The product read the first as the second, so on the
+  common case, and the one where a buyer most wants to know what they may do instead, ZAAD told
+  them their contract gave them nothing while the drawer one click earlier listed three rights with
+  fees and deadlines. `amendment_view` now reads both, reports the eligible declared windows with
+  the engine's own per-unit terms, marks the one being proposed, and distinguishes four cases in
+  words. Six unit tests, one per branch.
 
 * `ZaadBuild.fits` declared `fill`; every API response has always carried `fill_mean`. Supplier
   reliability therefore never reached the Network Twin's risk scoring, the Decisions evidence line

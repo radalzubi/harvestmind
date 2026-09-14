@@ -113,7 +113,7 @@ export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkI
     const standing = e.risk.level === "critical" ? "is severely disrupted" : e.risk.level === "high" ? "is disrupted" : e.risk.level === "medium" ? "is showing early signs of strain" : "is running normally";
     parts.push(`The lane from ${from} to ${to} ${standing}${e.risk.reasons[0] && e.risk.level !== "low" ? `: ${lower(e.risk.reasons[0])}` : ""}.`);
     if (e.leadDays.current != null && e.leadDays.normal != null && e.leadDays.current !== e.leadDays.normal)
-      parts.push(`Transit is taking ${e.leadDays.current} days against a usual ${e.leadDays.normal}.`);
+      parts.push(`Transit is taking ${e.leadDays.current} ${e.leadDays.current === 1 ? "day" : "days"} against a usual ${e.leadDays.normal}.`);
     const ships = model.shipments.filter((s) => s.edgeId === e.id);
     const delayed = ships.filter((s) => s.status === "delayed");
     if (delayed.length) parts.push(`${delayed.length === 1 ? "One shipment is" : `${delayed.length} shipments are`} delayed (${list(delayed.map((s) => `${s.ref}, ${n(s.units)} units`), 2)}).`);
@@ -157,7 +157,7 @@ export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkI
     parts.push(`${x.name}${m.onHandUnits != null ? ` holds ${n(m.onHandUnits)} units${m.onHandValue != null ? ` (about $${n(Math.round(m.onHandValue))})` : ""}` : ""}${m.inboundUnits != null ? `, with ${n(m.inboundUnits)} on the way` : ""}.`);
     if (m.shortages?.length) parts.push(`${list(m.shortages.map((s) => `${shortName(s.sku)} runs short ${s.when}`), 2)}.`);
     if (m.serviceProjected != null && m.serviceTarget != null) parts.push(`Service is projected at ${pct(m.serviceProjected, 1)} against a ${pct(m.serviceTarget, 1)} target${m.serviceProjected < m.serviceTarget ? ", below where it should be" : ""}.`);
-    if (m.excess?.length) parts.push(`${list(m.excess.map((s) => `${shortName(s.sku)} has ${s.weeksOfCover} weeks of cover`), 2)}.`);
+    if (m.excess?.length) parts.push(`${list(m.excess.map((s) => `${shortName(s.sku)} has ${s.weeksOfCover} ${s.weeksOfCover === 1 ? "week" : "weeks"} of cover`), 2)}.`);
     // The service sentence above may already be the risk reason; do not say it twice.
     const reasonSaid = x.risk.reasons[0] && parts.some((p) => p.toLowerCase().includes("service is projected"));
     if (x.risk.level !== "low" && x.risk.reasons[0] && !reasonSaid) parts.push(`${x.risk.reasons[0]}.`.replace(/\.\.$/, "."));

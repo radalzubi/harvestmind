@@ -103,8 +103,8 @@ function NodeBody({ node }: { node: NetworkNode }) {
 
   const facts = node.kind === "supplier"
     ? [
-        { label: "Delivery reliability", value: m.fill?.mean != null ? `${(m.fill.mean * 100).toFixed(1)}%` : null, note: m.fill?.n != null ? `from ${m.fill.n} deliveries` : "not enough history yet" },
-        { label: "Lead time", value: m.leadDays?.mean != null ? `${Math.round(m.leadDays.mean)} days` : null },
+        { label: "Delivery reliability", value: m.fill?.mean != null ? `${(m.fill.mean * 100).toFixed(1)}%` : null, note: m.fill?.n != null ? `from ${m.fill.n.toLocaleString("en-US")} ${m.fill.n === 1 ? "delivery" : "deliveries"}` : "not enough history yet" },
+        { label: "Lead time", value: m.leadDays?.mean != null ? `${Math.round(m.leadDays.mean)} ${Math.round(m.leadDays.mean) === 1 ? "day" : "days"}` : null },
         { label: "Open orders", value: m.openPOs?.length ? String(m.openPOs.length) : "0" },
         { label: "Weekly capacity", value: m.capacityPerWeek != null ? m.capacityPerWeek.toLocaleString("en-US") : null },
       ]
@@ -191,7 +191,7 @@ function EdgeBody({ edge }: { edge: NetworkEdge }) {
       </p>
       <div style={{ marginTop: 14 }}>
         <Facts items={[
-          { label: "Usual transit", value: edge.leadDays.normal != null ? `${edge.leadDays.normal} days` : null },
+          { label: "Usual transit", value: edge.leadDays.normal != null ? `${edge.leadDays.normal} ${edge.leadDays.normal === 1 ? "day" : "days"}` : null },
           { label: "Capacity", value: edge.capacityPerWeek != null ? `${edge.capacityPerWeek.toLocaleString("en-US")} / week` : null },
           { label: "Cost per unit", value: edge.transportCostPerUnit != null ? money(edge.transportCostPerUnit, currency) : null },
           { label: "Products carried", value: edge.skus.length ? String(edge.skus.length) : null },
