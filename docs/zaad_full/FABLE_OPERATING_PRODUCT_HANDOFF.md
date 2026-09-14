@@ -31,6 +31,13 @@ handoff head, twice** — `PYTHONPATH=. python3 scripts/zaad_canonical_regressio
 **CANONICAL REGRESSION PASS**, every P1 arm identical over 12 reviews and the P0 router_cycle cell
 identical and still protection-owned.
 
+**One file in the diff is named `zaad_full` and is not in the frozen tree.** `api/routers/zaad_full.py`
+is a router under `api/`, not `zaad/full/`; the diff there is eleven lines, and all it does is map a
+*size* violation to a `workspace_too_large` code instead of letting it fall through to
+`sector_physics_invalid`, which sent a reader looking in entirely the wrong place for a workspace
+that is simply larger than one planning request can carry. Nothing under `zaad/` is touched;
+`git diff --name-only main...HEAD | grep -cE '^(zaad|evidence)/'` returns **0**.
+
 One import crosses the line and is worth naming so it is not mistaken for something it is not:
 `api/product/catalog.py` reads `ACTION_LABEL` from `zaad.commitments.contracts` to call a declared
 contract option what P4B calls it. It is a read of a constant, lazily, inside one function. The
