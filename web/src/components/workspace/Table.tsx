@@ -124,17 +124,9 @@ export function DataTable<T>({
 /**
  * Offset paging over a server-side total. Always says where you are, never guesses the count.
  *
- * `shown` is how many rows this page actually rendered, and it is what makes the pager truthful in
- * the two cases arithmetic over `total` gets wrong:
- *
- *   * **Past the end.** A stale bookmark or the back button lands on a page beyond the results.
- *     `offset + 1` then reads past `total`, and one table printed "101–1 of 1 product" under an
- *     empty list saying nothing matched — when the search matched and the page number did not.
- *   * **A floored total.** The data explorer stops counting at 100,000 rows (`COUNT_CEILING`) and
- *     says "more than", but the *rows* keep coming: at offset 150,000 a 371,140-row dataset still
- *     serves a full page. Ending the range at `total` would have read "150,001–100,000", and
- *     disabling Next at the ceiling would have put 271,140 records out of reach of the one control
- *     that reaches them.
+ * `shown` — how many rows this page actually rendered — is what makes it truthful where arithmetic
+ * over `total` is not; `pagerState` in `lib/zaad/product.ts` holds that rule and its tests, and
+ * this component only draws what it decides.
  */
 export function Pager({ total, limit, offset, onOffset, unit = "rows", one, isFloor, shown }: {
   total: number; limit: number; offset: number; onOffset: (next: number) => void;
