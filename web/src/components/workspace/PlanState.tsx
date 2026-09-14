@@ -12,6 +12,7 @@
  * covered the whole catalogue.
  */
 import { useState } from "react";
+import Link from "next/link";
 import { Play, RotateCw } from "lucide-react";
 import { DEFAULT_SCOPE, SCOPE_CHOICES, useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { Button, ButtonLink, EmptyState, ErrorState, Notice } from "./ui";
@@ -32,9 +33,9 @@ export function ScopeNotice() {
           <strong>ZAAD is looking at {readScope.skus.length.toLocaleString("en-US")} of your{" "}
           {readScope.total.toLocaleString("en-US")} products here</strong> —
           {" "}{readScope.rule}. A catalogue this size is larger than one planning request can carry, so Home,
-          Decisions and the network are built over that selection. <a href="/inventory">Inventory</a>,{" "}
-          <a href="/orders">Purchase orders</a>, <a href="/diagnostics">Diagnostics</a> and{" "}
-          <a href="/data">Data</a> cover every product.
+          Decisions and the network are built over that selection. <Link href="/inventory">Inventory</Link>,{" "}
+          <Link href="/orders">Purchase orders</Link>, <Link href="/diagnostics">Diagnostics</Link> and{" "}
+          <Link href="/data">Data</Link> cover every product.
         </Notice>
       )}
       {scope && (

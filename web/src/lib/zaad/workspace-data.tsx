@@ -326,6 +326,9 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
             setReport(detail.report);
             setComputedAt(detail.finished_at ? new Date(detail.finished_at) : new Date());
             setPlanPhase("ready");
+            // An earlier failure is history once a later run has finished; leaving the notice up
+            // would tell an operator their most recent run failed while showing its result.
+            setLastRunFailed(null);
           } else {
             setPlanPhase("failed");
             setPlanError(

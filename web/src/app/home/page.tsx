@@ -241,8 +241,10 @@ function HomeBody() {
             <EmptyState title="Nothing needs changing right now"
               actions={<><ButtonLink href="/decisions">See what was compared</ButtonLink>
                 <ButtonLink href="/orders/new">Create a purchase order anyway</ButtonLink></>}>
-              ZAAD reviewed {closed.length || "every"} open commitment{closed.length === 1 ? "" : "s"} and the week&rsquo;s
-              purchases against your current plan and found no change worth making.
+              {closed.length
+                ? `ZAAD reviewed ${closed.length} open commitment${closed.length === 1 ? "" : "s"} and the week's purchases`
+                : "ZAAD reviewed every open commitment and the week's purchases"}{" "}
+              against your current plan and found no change worth making.
             </EmptyState>
           )}
         </PlanGate>
