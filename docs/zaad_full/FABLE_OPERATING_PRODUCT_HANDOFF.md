@@ -541,6 +541,11 @@ process, never `zaad-api`.
   fix data that is already there. The code is shown, the placement still correctly does not happen,
   and the note now distinguishes *undeclared* from *declared but not one ZAAD can place*. Latent on
   both QA workspaces, whose origins (DEU, SAU, ARE, CHN, IRQ, TUR) are all mapped; a test covers it.
+* **"ZAAD reviewed 6 open commitments", a screen above "Open orders: 205".** Both true, both on
+  Home, nothing between them saying they are the same kind of thing counted over different scopes —
+  the six are the open orders belonging to the ten products the plan covered. The denominator was
+  already on the page, in the snapshot below; the sentence uses it: **"ZAAD reviewed 6 of your 205
+  open commitments and the week's purchases"**.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →

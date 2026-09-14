@@ -25,7 +25,7 @@ import { KIND_LABEL } from "@/lib/network/model";
 import { standing, type Standing } from "@/lib/zaad/standing";
 import { useSession } from "@/lib/session";
 import { Onboarding } from "@/components/workspace/Onboarding";
-import { DATE, MONEY, NUMBER, fetchSummary, listDrafts, type DraftSummary, type OperatingSummary } from "@/lib/zaad/product";
+import { COUNT, DATE, MONEY, NUMBER, fetchSummary, listDrafts, type DraftSummary, type OperatingSummary } from "@/lib/zaad/product";
 import { STATE_LABEL } from "@/lib/zaad/product";
 import { operatorWarning } from "@/lib/zaad/warnings";
 
@@ -229,8 +229,13 @@ function HomeBody() {
             <EmptyState title="Nothing needs changing right now"
               actions={<><ButtonLink href="/decisions">See what was compared</ButtonLink>
                 <ButtonLink href="/orders/new">Create a purchase order anyway</ButtonLink></>}>
+              {/* "ZAAD reviewed 6 open commitments" sat a screen above "Open orders: 205", with
+                  nothing between them saying they are the same kind of thing counted over
+                  different scopes. The denominator is on the page already; the sentence uses it. */}
               {closed.length
-                ? `ZAAD reviewed ${closed.length} open commitment${closed.length === 1 ? "" : "s"} and the week's purchases`
+                ? snapshot?.open_purchase_orders != null && snapshot.open_purchase_orders > closed.length
+                  ? `ZAAD reviewed ${NUMBER(closed.length)} of your ${NUMBER(snapshot.open_purchase_orders)} open commitments and the week's purchases`
+                  : `ZAAD reviewed ${COUNT(closed.length, "open commitment")} and the week's purchases`
                 : "ZAAD reviewed every open commitment and the week's purchases"}{" "}
               against your current plan and found no change worth making.
             </EmptyState>
