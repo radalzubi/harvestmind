@@ -396,7 +396,7 @@ function InventoryBody() {
           )}
         />
       </div>
-      <Pager total={page.total} limit={page.limit} offset={page.offset} unit="products"
+      <Pager total={page.total} limit={page.limit} offset={page.offset} shown={page.rows.length} unit="products"
         onOffset={(next) => set({ offset: String(next) })} />
 
       {selected && <SkuPanel sku={selected} onClose={() => set({ sku: null, offset: String(offset) })} />}

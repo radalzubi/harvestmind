@@ -108,7 +108,7 @@ function Proposals({ params, set }: { params: URLSearchParams; set: (c: Record<s
           you export it in your own format.
         </EmptyState>}
       />
-      <Pager total={page.total} limit={page.limit} offset={page.offset} unit="proposals"
+      <Pager total={page.total} limit={page.limit} offset={page.offset} shown={page.rows.length} unit="proposals"
         onOffset={(next) => set({ offset: String(next) })} />
     </>
   );
@@ -286,7 +286,7 @@ function Imported({ params, set }: { params: URLSearchParams; set: (c: Record<st
           empty={page.offset >= page.total && page.total > 0 ? undefined
             : <EmptyState title="No order matches that">Change the search or the status filter.</EmptyState>} />
       </div>
-      <Pager total={page.total} limit={page.limit} offset={page.offset} unit="orders"
+      <Pager total={page.total} limit={page.limit} offset={page.offset} shown={page.rows.length} unit="orders"
         onOffset={(next) => set({ pooffset: String(next) })} />
       {selected && <ImportedPanel poId={selected} onClose={() => set({ po: null })} />}
     </>

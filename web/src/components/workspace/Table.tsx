@@ -121,33 +121,46 @@ export function DataTable<T>({
   );
 }
 
-/** Offset paging over a server-side total. Always says where you are, never guesses the count. */
-export function Pager({ total, limit, offset, onOffset, unit = "rows", one, isFloor }: {
+/**
+ * Offset paging over a server-side total. Always says where you are, never guesses the count.
+ *
+ * `shown` is how many rows this page actually rendered, and it is what makes the pager truthful in
+ * the two cases arithmetic over `total` gets wrong:
+ *
+ *   * **Past the end.** A stale bookmark or the back button lands on a page beyond the results.
+ *     `offset + 1` then reads past `total`, and one table printed "101–1 of 1 product" under an
+ *     empty list saying nothing matched — when the search matched and the page number did not.
+ *   * **A floored total.** The data explorer stops counting at 100,000 rows (`COUNT_CEILING`) and
+ *     says "more than", but the *rows* keep coming: at offset 150,000 a 371,140-row dataset still
+ *     serves a full page. Ending the range at `total` would have read "150,001–100,000", and
+ *     disabling Next at the ceiling would have put 271,140 records out of reach of the one control
+ *     that reaches them.
+ */
+export function Pager({ total, limit, offset, onOffset, unit = "rows", one, isFloor, shown }: {
   total: number; limit: number; offset: number; onOffset: (next: number) => void;
-  unit?: string; one?: string; isFloor?: boolean;
+  unit?: string; one?: string; isFloor?: boolean; shown?: number;
 }) {
   // A filtered list of one used to read "1 proposals". Every unit this takes is a regular plural,
   // so dropping the "s" is right; `one` is there for the day one of them is not.
   const noun = total === 1 ? (one ?? unit.replace(/s$/, "")) : unit;
-  if (total <= limit && offset === 0) {
+  const rows = shown ?? Math.max(0, Math.min(limit, total - offset));
+  if (!isFloor && total <= limit && offset === 0) {
     return <p className="tbl-count">{total.toLocaleString("en-US")} {noun}</p>;
   }
-  // A page past the end — a stale link, a bookmark, the back button into one. `offset + 1` then
-  // reads past `total`: one table printed "101–1 of 1 product" under an empty list saying nothing
-  // matched, when the thing that did not match was the page number, not the search.
-  if (total > 0 && offset >= total) {
+  if (offset > 0 && rows === 0) {
     return (
       <div className="tbl-pager">
         <p className="tbl-count">
           Page {(Math.floor(offset / limit) + 1).toLocaleString("en-US")} is past the end of{" "}
-          {total.toLocaleString("en-US")} {noun}. Nothing is missing; this link points beyond them.
+          {isFloor ? `these ${noun}` : `${total.toLocaleString("en-US")} ${noun}`}. Nothing is
+          missing; this link points beyond them.
         </p>
         <Button size="sm" role="secondary" onClick={() => onOffset(0)}>Back to the first page</Button>
       </div>
     );
   }
   const from = offset + 1;
-  const to = Math.min(offset + limit, total);
+  const to = offset + rows;
   return (
     <div className="tbl-pager">
       <p className="tbl-count">
@@ -157,8 +170,12 @@ export function Pager({ total, limit, offset, onOffset, unit = "rows", one, isFl
       <div style={{ display: "flex", gap: 6 }}>
         <Button size="sm" role="tertiary" icon={<ChevronLeft size={15} aria-hidden />} label="Previous page"
           disabled={offset === 0} onClick={() => onOffset(Math.max(0, offset - limit))} />
+        {/* A short page is always the last one. An exact total ends the list too — but a *floored*
+            total does not, which is why it is not enough on its own: at the explorer's ceiling a
+            full page is still a full page and there are more behind it. A last page that happens
+            to be exactly full needs the second clause, or Next walks off the end. */}
         <Button size="sm" role="tertiary" icon={<ChevronRight size={15} aria-hidden />} label="Next page"
-          disabled={to >= total} onClick={() => onOffset(offset + limit)} />
+          disabled={rows < limit || (!isFloor && to >= total)} onClick={() => onOffset(offset + limit)} />
       </div>
     </div>
   );

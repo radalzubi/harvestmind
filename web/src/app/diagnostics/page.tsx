@@ -111,7 +111,7 @@ function Suppliers({ params, set }: { params: URLSearchParams; set: (c: Record<s
         onSelect={(r) => { window.location.href = `/diagnostics/supplier/${encodeURIComponent(r.supplier_id)}`; }}
         empty={offset >= page.total && page.total > 0 ? undefined
           : <EmptyState title="No supplier matches that">Clear the search to see every supplier.</EmptyState>} />
-      <Pager total={page.total} limit={PAGE} offset={offset} unit="suppliers"
+      <Pager total={page.total} limit={PAGE} offset={offset} shown={page.rows.length} unit="suppliers"
         onOffset={(next) => set({ offset: String(next) })} />
       <p className="zhelp" style={{ marginTop: 10 }}>
         Every figure is measured from your own purchase orders matched to your own receipts. An asterisk means

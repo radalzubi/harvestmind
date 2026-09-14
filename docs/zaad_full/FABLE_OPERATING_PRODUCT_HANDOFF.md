@@ -560,6 +560,19 @@ process, never `zaad-api`.
   rendering the contradicting empty state in that case — only in that case, so a search that
   genuinely matches nothing still says so. Verified all three ways: past the end, a real match, and
   a search matching nothing.
+
+  **Probing that fix found a worse one underneath it.** The data explorer stops counting at
+  `COUNT_CEILING` (100,000) and says "more than", but the *rows* keep coming — a 371,140-row
+  dataset serves a full page at offset 150,000. Two consequences, both shipping: the range read
+  **"150,001–100,000 of more than 100,000 records"**, and **Next was disabled at the ceiling**, so
+  the remaining **271,140 records were unreachable by the one control that reaches them**. The
+  pager now takes `shown` — how many rows the page actually rendered — which is the only thing that
+  is true in both worlds: the range ends where the rows end, a short page is the last page, and an
+  *exact* total ends the list as well (without that second clause a last page that is exactly full
+  lets Next walk off the end — a regression I introduced with the first version of this fix and
+  caught before it was committed). Verified on four pages: the last page of an exact total (Next
+  off), a middle page (Next on), the ceiling (Next **on**, range 150,001–150,050), and genuinely
+  past the end.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →

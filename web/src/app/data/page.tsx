@@ -182,7 +182,7 @@ function Explorer({ datasets }: { datasets: DatasetInfo[] }) {
             onSort={(key) => set({ sort: key, dir: page.sort === key && page.direction === "asc" ? "desc" : "asc" })}
             empty={page.offset >= page.total && page.total > 0 ? undefined
               : <EmptyState title="No record matches that">Clear the search or the filter.</EmptyState>} />
-          <Pager total={page.total} limit={page.limit} offset={page.offset} unit="records"
+          <Pager total={page.total} limit={page.limit} offset={page.offset} shown={page.rows.length} unit="records"
             isFloor={page.total_is_floor} onOffset={(next) => set({ offset: String(next) })} />
         </>
       )}
