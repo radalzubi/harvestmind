@@ -98,7 +98,9 @@ function SkuPanel({ sku, onClose }: { sku: string; onClose: () => void }) {
               Supplier
             </ButtonLink>
           )}
-          <ButtonLink size="sm" href={`/network?q=${encodeURIComponent(sku)}`} icon={<Share2 size={14} aria-hidden />}>
+          {/* `?q=` was read by nothing: the twin takes `node`, `edge`, `sku` and `view`, so this
+              button opened the network with no product filter at all. */}
+          <ButtonLink size="sm" href={`/network?sku=${encodeURIComponent(sku)}`} icon={<Share2 size={14} aria-hidden />}>
             In the network
           </ButtonLink>
         </>

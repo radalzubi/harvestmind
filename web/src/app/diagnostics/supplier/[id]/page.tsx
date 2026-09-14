@@ -104,7 +104,9 @@ function SupplierBody({ id }: { id: string }) {
         actions={<>
           <ButtonLink size="sm" href={`/inventory?supplier=${encodeURIComponent(id)}`}>Products</ButtonLink>
           <ButtonLink size="sm" href={`/orders?tab=imported&poq=${encodeURIComponent(id)}`}>Orders</ButtonLink>
-          <ButtonLink size="sm" href={`/network?q=${encodeURIComponent(id)}`}>In the network</ButtonLink>
+          {/* A supplier is a node in the twin, not a product filter, and `?q=` was read by nothing —
+              this button opened the network at whatever it would have shown anyway. */}
+          <ButtonLink size="sm" href={`/network?node=${encodeURIComponent(`sup:${id}`)}`}>In the network</ButtonLink>
         </>}
       />
 

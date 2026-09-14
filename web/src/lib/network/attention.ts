@@ -103,6 +103,17 @@ export function statusLine(areas: AttentionArea[]): { headline: string; detail: 
 }
 
 /** One paragraph a person could read aloud, from the fields that exist. */
+/**
+ * "1 SKU depend on this supplier" — the count agrees and the verb does not.
+ *
+ * Every one of these sentences is assembled from a list whose length is usually more than one, so
+ * the plural was written once and never revisited. The subject is singular only when the list has
+ * a single entry and that entry is itself singular.
+ */
+function dependVerb(counts: number[]): string {
+  return counts.length === 1 && counts[0] <= 1 ? "depends" : "depend";
+}
+
 export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkIndex): string {
   const a = affectedBy(ref, model, index);
   const parts: string[] = [];
@@ -118,7 +129,16 @@ export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkI
     const delayed = ships.filter((s) => s.status === "delayed");
     if (delayed.length) parts.push(`${delayed.length === 1 ? "One shipment is" : `${delayed.length} shipments are`} delayed (${list(delayed.map((s) => `${s.ref}, ${n(s.units)} units`), 2)}).`);
     else if (ships.length) parts.push(`${ships.length === 1 ? "One shipment is" : `${ships.length} shipments are`} on the way.`);
-    if (a.skus.length || a.customers.length) parts.push(`${a.skus.length ? `${a.skus.length} SKU${a.skus.length === 1 ? "" : "s"}` : "Stock"}${a.customers.length ? ` and ${a.customers.length} customer${a.customers.length === 1 ? "" : " groups"}` : ""} depend on this lane.`);
+    if (a.skus.length || a.customers.length) {
+      // "Stock" stands in when no product is named, and it is singular; so is one SKU.
+      const subjects = [a.skus.length ? `${a.skus.length} SKU${a.skus.length === 1 ? "" : "s"}` : "Stock"];
+      const counts = [a.skus.length || 1];
+      if (a.customers.length) {
+        subjects.push(`${a.customers.length} customer group${a.customers.length === 1 ? "" : "s"}`);
+        counts.push(a.customers.length);
+      }
+      parts.push(`${subjects.join(" and ")} ${dependVerb(counts)} on this lane.`);
+    }
     const alt = e.alternatives.map((id) => index.edgeById.get(id)).find(Boolean);
     if (alt) parts.push(`${alt.name.replace(/ \(alternative\)$/i, "")} is approved as an alternative${alt.leadDays.normal != null && e.leadDays.normal != null ? ` (${alt.leadDays.normal - e.leadDays.normal >= 0 ? "+" : ""}${alt.leadDays.normal - e.leadDays.normal} days)` : ""}.`);
     return parts.join(" ");
@@ -131,9 +151,10 @@ export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkI
     const standing = x.risk.level === "critical" ? "is at risk of failing to deliver" : x.risk.level === "high" ? "is delivering less reliably than usual" : x.risk.level === "medium" ? "is showing early signs of strain" : "is delivering reliably";
     parts.push(`${x.name} ${standing}${reason}.`);
     const deps: string[] = [];
-    if (m.openPOs?.length) deps.push(`${m.openPOs.length} open order${m.openPOs.length === 1 ? "" : "s"}`);
-    if (x.skus.length) deps.push(`${x.skus.length} SKU${x.skus.length === 1 ? "" : "s"}`);
-    if (deps.length) parts.push(`${deps.join(" and ")} depend on this supplier.`);
+    const depCounts: number[] = [];
+    if (m.openPOs?.length) { deps.push(`${m.openPOs.length} open order${m.openPOs.length === 1 ? "" : "s"}`); depCounts.push(m.openPOs.length); }
+    if (x.skus.length) { deps.push(`${x.skus.length} SKU${x.skus.length === 1 ? "" : "s"}`); depCounts.push(x.skus.length); }
+    if (deps.length) parts.push(`${deps.join(" and ")} ${dependVerb(depCounts)} on this supplier.`);
     const late = m.openPOs?.filter((po) => po.status === "late") ?? [];
     if (late.length) parts.push(`${late.length === 1 ? `${late[0].id} is` : `${late.length} orders are`} already late.`);
     const alts = (x.alternatives ?? []).map((id) => index.nodeById.get(id)).filter((y): y is NetworkNode => !!y);

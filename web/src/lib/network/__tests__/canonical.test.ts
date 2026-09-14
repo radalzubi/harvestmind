@@ -239,3 +239,34 @@ test("the layout is deterministic and lays supply out left to right", () => {
   assert.ok(a.get("port:aqaba")!.x < a.get("loc:MAIN")!.x);
   assert.ok(a.get("loc:MAIN")!.x < a.get("cust:RETAIL")!.x);
 });
+
+/**
+ * Subject-verb agreement in the twin's sentences. These strings are assembled from lists whose
+ * length is usually more than one, so the plural was written once: a supplier carrying a single
+ * product read "1 SKU depend on this supplier" in the panel a person is asked to act on.
+ */
+test("a single dependency takes a singular verb", () => {
+  const sentences = model.nodes.map((n) => describeItem({ type: "node", id: n.id }, model, index))
+    .concat(model.edges.map((e) => describeItem({ type: "edge", id: e.id }, model, index)));
+  // The subject opens its own sentence, so the check anchors there: "1 open order and 1 SKU depend"
+  // is a compound subject and correctly plural, while a sentence *starting* "1 SKU depend" is not.
+  for (const clause of sentences.flatMap((said) => said.split(/(?<=\.)\s+/))) {
+    assert.ok(!/^1 SKU depend\b/.test(clause), `"1 SKU depend" in: ${clause}`);
+    assert.ok(!/^1 open order depend\b/.test(clause), `"1 open order depend" in: ${clause}`);
+    assert.ok(!/^Stock depend\b/.test(clause), `"Stock depend" in: ${clause}`);
+    assert.ok(!/\b1 customer groups\b/.test(clause), `"1 customer groups" in: ${clause}`);
+    assert.ok(!/\b\d+ customers? (?!group)/.test(clause) || !/depend/.test(clause),
+              `a customer count without its noun in: ${clause}`);
+  }
+});
+
+test("the fixture actually reaches both sides of the rule", () => {
+  // Without this the test above passes on a fixture that never produces a singular subject.
+  const clauses = model.nodes.map((n) => describeItem({ type: "node", id: n.id }, model, index))
+    .concat(model.edges.map((e) => describeItem({ type: "edge", id: e.id }, model, index)))
+    .flatMap((said) => said.split(/(?<=\.)\s+/))
+    .filter((c) => /\bdepends?\b/.test(c));
+  assert.ok(clauses.some((c) => /^1 SKU depends on/.test(c)), "no singular subject in the fixture");
+  // And the rule must not over-correct: subjects joined by "and" stay plural whatever their counts.
+  assert.ok(clauses.some((c) => /^1 open order and 1 SKU depend on/.test(c)), "no compound subject");
+});

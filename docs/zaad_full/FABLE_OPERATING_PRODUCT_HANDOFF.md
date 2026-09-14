@@ -384,6 +384,21 @@ process, never `zaad-api`.
   action. The row says "· not in this plan" before it is clicked. Verified live: the drawer opens
   on PO-016700. The apologetic notice stays, because a stale link a colleague was sent still needs
   it; nothing in the product generates one any more.
+* **Two buttons labelled "In the network" that did not take you to anything in the network.** The
+  product drawer's and the supplier page's both linked to `/network?q=<id>`. The twin reads `node`,
+  `edge`, `sku` and `view`; **nothing reads `q`**, so both opened the canvas at whatever it would
+  have shown anyway — a link that looks like it worked. The product one is `?sku=` now (verified:
+  the canvas drops from twelve nodes to six, filtered to SKU-0001) and the supplier one is
+  `?node=sup:<id>`, which opens that supplier's panel — verified on both workspaces, including the
+  ten-thousand-product one where suppliers are drawn collapsed into groups and the panel opens
+  anyway.
+* **"1 SKU depend on this supplier."** The twin's panel sentences are assembled from lists that are
+  usually longer than one, so the plural was written once and never revisited: a supplier carrying a
+  single product, and a lane carrying none (where the subject is the word "Stock"), both read
+  `depend`. And a lane serving one customer read "1 customer" where two read "2 customer groups" —
+  the noun changed with the number. One helper now decides the verb, and it does not over-correct:
+  a compound subject stays plural ("1 open order and 1 SKU depend"). Two tests, one of which asserts
+  the fixture reaches **both** sides of the rule so the other cannot pass vacuously.
 * **What was left alone, deliberately.** The supplier table's **Route** column prints `aqaba`,
   `iraq_overland`, `road_saudi` — slugs, and tempting to prettify. They are values from the
   operator's own `stg_fmcg_suppliers` upload, not engine constants, so formatting them would be
