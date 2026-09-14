@@ -352,7 +352,9 @@ process, never `zaad-api`.
   for a true zero). Verified both ways live — "Not available" on the workspace with no promised
   dates, "25,621 / 25,500 / 25,462" on the ten-thousand-product workspace, which has them. Two
   tests, one per branch. This is the only **backend** change in the day's defect commits; it adds a
-  field and changes no existing one.
+  field and changes no existing one. The reason each cell gives lives in a `title`, which is
+  unreachable by touch and unreliable to a screen reader, so where it is true of every row — as it
+  is on that workspace — it is also said once under the table, in the open.
 * **The network canvas never said what it was drawn over.** A catalogue too large for one planning
   request is read down to a selection, and the twin is built from that read — so on the
   ten-thousand-product workspace the canvas drew 98 of 120 suppliers and three sites with nothing

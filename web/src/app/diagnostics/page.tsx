@@ -126,6 +126,10 @@ function Corridors() {
   useEffect(() => { fetchCorridors().then(setData).catch(() => setData({ served: false, rows: [], note: "" })); }, []);
   if (!data) return <Loading label="Grouping arrivals by route…" cards={1} />;
   if (!data.served) return <EmptyState title="No route is declared">{data.note}</EmptyState>;
+  // Every "Not available" in the Arrived late column has the same cause, and a per-cell tooltip is
+  // not a place a reason can live: it is unreachable by touch and unreliable to a screen reader.
+  // When it is true of the whole table, it is said once, in the open, under the table.
+  const noPromise = data.rows.length > 0 && data.rows.every((r) => r.orders_with_promise === 0);
   return (
     <>
       <DataTable caption="Arrivals grouped by declared route" rows={data.rows} rowKey={(r) => r.route}
@@ -146,7 +150,16 @@ function Corridors() {
               : <span className="na" title={r.orders_with_promise === 0 ? "No expected delivery date was uploaded for this route." : "No order on this route arrived after its expected date."}>—</span> },
           { key: "mean_lead_days", label: "Lead (days)", numeric: true, render: (r) => r.mean_lead_days != null ? NUMBER(r.mean_lead_days, 1) : <span className="na">—</span> },
         ]} />
-      <div style={{ marginTop: 12 }}><Notice>{data.note}</Notice></div>
+      <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+        {noPromise && (
+          <Notice tone="warn">
+            No purchase order in this workspace carries an expected delivery date, so lateness cannot
+            be measured on any route — that is why the column says Not available rather than zero.
+            Lead time is measured from your own order and receipt dates and is unaffected.
+          </Notice>
+        )}
+        <Notice>{data.note}</Notice>
+      </div>
       <p className="zhelp" style={{ marginTop: 10 }}>
         ZAAD does not choose routes. Route and port optimisation is not part of the released engine, so this is a
         diagnostic over the paths your suppliers declare, not a recommendation to move to another one.
