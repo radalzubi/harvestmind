@@ -610,6 +610,10 @@ different things and the reader was left to notice.
   | "**ZAAD does not send it anywhere** — not to the supplier, not to your ERP" (Export) | No `requests`, `httpx`, `urllib`, `aiohttp`, `smtplib`, `socket` or `boto3` appears in `api/product/` or in either router. There is no client to send with. |
   | "ZAAD prices only the amendment rights you have declared for it, and **never infers one**" | The amendment payload carries `declared_windows` read back from the plan, each stamped `operator declared`, and a `proposed_window` that is one of them. |
   | "**nothing is multiplied out into a total**" (declared terms) | The terms table prints per-unit fees and credits and no total; checked on screen against a PO carrying three declared rights. |
+* **WCAG 1.4.12's text spacing applied live, and 200 %-zoom-equivalent reflow**, both described in
+  §3's caveat. The spacing pass found the last defect of the day: Home's watch cards clamped their
+  summary to three lines, and the clamped part is the sentence naming which products have no route
+  to be replenished. The clamp is gone; the cards stretch.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab against the **final** build, on **both** workspaces. Seventeen surfaces on
