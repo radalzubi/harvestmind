@@ -1076,7 +1076,10 @@ screenshot would show.
 **State at handoff.** Working tree clean. Branch pushed. PR #81 **draft**, reflecting the exact head,
 **not merged and not deployed**. Production is untouched on `e0fecdc`.
 
-**One loose end, unchanged since the first day.** Two untracked leftovers from the superseded PR #39
-(`.github/workflows/codeql.yml`, `tests/unit/test_fmcg_network_block.py`) were in the working tree
-at the start. They are outside this pass's scope, were briefly staged by accident and removed from
-the commit; they are not in the branch and are still absent from `main`. They remain un-owned.
+**The loose end from the first day is closed, and here is what closed it.** Two untracked leftovers
+from the superseded PR #39 (`.github/workflows/codeql.yml`, `tests/unit/test_fmcg_network_block.py`)
+sat in the working tree at the start. They were outside this pass's scope, were briefly staged by
+accident and removed from the commit. They are **not in this branch and not in `main`** — checked
+with `git cat-file -e main:<path>`, both absent — and they are no longer on disk either:
+`git status --untracked-files=all` on the handoff head reports **nothing at all**. Whatever they
+were for went with PR #39, which was superseded; nobody needs to own them now.
