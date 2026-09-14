@@ -221,8 +221,11 @@ path) and a **production build** of this branch, on synthetic workspaces created
   independently in DuckDB against `stg_fmcg_inventory`, `stg_fmcg_skus`, `stg_fmcg_purchase_orders`
   and `stg_fmcg_receipts`: **identical to the last cent**. One product's row the same way: on hand
   5,669 (the three sites at the latest snapshot), in transit 1,536, value 5,725.69 (5,669 × 1.01),
-  inbound 3,312 under the planner's own open-order rule, cover 3.26 weeks (5,669 ÷ 1,737). What the
-  screen says is what the vault holds.
+  inbound 3,312 under the planner's own open-order rule, cover 3.26 weeks (5,669 ÷ 1,737). And one
+  supplier's diagnostics the same way: 1,865 matched orders, fill rate **0.95666**, p50 lead 14
+  days, p90 21 days, short-fill rate **0.5056** — every figure identical to an independent
+  computation over `stg_fmcg_purchase_orders` and `stg_fmcg_receipts`. What the screen says is what
+  the vault holds, and it can be shown rather than asserted.
 * **The spreadsheet path** end to end through the API: headings read, a mapping proposed, a wrong
   field name refused by name, and a file with one broken row read into two lines with
   `Row 4 (not-a-sku): 'abc' is not a quantity.`
