@@ -27,19 +27,7 @@ import { useSession } from "@/lib/session";
 import { Onboarding } from "@/components/workspace/Onboarding";
 import { DATE, MONEY, NUMBER, fetchSummary, listDrafts, type DraftSummary, type OperatingSummary } from "@/lib/zaad/product";
 import { STATE_LABEL } from "@/lib/zaad/product";
-
-/**
- * A phase the workspace never declared is not a data problem — the engine says so on every build
- * and the operator does not need to hear about `stg_recourse_spec`. Only things a person can act
- * on reach this strip, in their own words.
- */
-function operatorWarning(warning: string): string | null {
-  if (/requested but the vault declares no/i.test(warning)) return null;
-  return warning
-    .replace(/\s*\(stg_[a-z_]+(, migration \d+)?\)/gi, "")
-    .replace(/\bstg_fmcg_([a-z_]+)\b/gi, (_, name: string) => String(name).replaceAll("_", " "))
-    .replace(/\bstg_([a-z_]+)\b/gi, (_, name: string) => String(name).replaceAll("_", " "));
-}
+import { operatorWarning } from "@/lib/zaad/warnings";
 
 function useStanding(): { state: Standing; snapshot: OperatingSummary | null; recent: DraftSummary[] } {
   const data = useWorkspaceData();

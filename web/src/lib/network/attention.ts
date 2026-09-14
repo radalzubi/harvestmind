@@ -155,7 +155,9 @@ export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkI
   }
   if (x.kind === "dc" || x.kind === "branch") {
     parts.push(`${x.name}${m.onHandUnits != null ? ` holds ${n(m.onHandUnits)} units${m.onHandValue != null ? ` (about $${n(Math.round(m.onHandValue))})` : ""}` : ""}${m.inboundUnits != null ? `, with ${n(m.inboundUnits)} on the way` : ""}.`);
-    if (m.shortages?.length) parts.push(`${list(m.shortages.map((s) => `${shortName(s.sku)} runs short ${s.when}`), 2)}.`);
+    // "QA-001209 runs short no replenishment route" — the clause is written by whoever knows what
+    // the flag means, not assembled from a verb this file guesses at.
+    if (m.shortages?.length) parts.push(`${list(m.shortages.map((s) => `${shortName(s.sku)} ${s.said}`), 2)}.`);
     if (m.serviceProjected != null && m.serviceTarget != null) parts.push(`Service is projected at ${pct(m.serviceProjected, 1)} against a ${pct(m.serviceTarget, 1)} target${m.serviceProjected < m.serviceTarget ? ", below where it should be" : ""}.`);
     if (m.excess?.length) parts.push(`${list(m.excess.map((s) => `${shortName(s.sku)} has ${s.weeksOfCover} ${s.weeksOfCover === 1 ? "week" : "weeks"} of cover`), 2)}.`);
     // The service sentence above may already be the risk reason; do not say it twice.

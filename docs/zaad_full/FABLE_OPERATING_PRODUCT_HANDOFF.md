@@ -158,14 +158,14 @@ Stated plainly rather than left to be discovered.
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
 | Whole integration shard (`tests/integration`) | **324 passed** |
 | Whole local suite (`tests/unit` + `tests/integration`) | **2,100 passed, 2 skipped** (7 m 03 s) |
-| Frontend (`npm test`) | **99 passed**, 38 new |
+| Frontend (`npm test`) | **106 passed**, 45 new |
 | Frontend typecheck / production build | green |
 | Frontend lint | green **in CI** — see §10.13 |
 | `ruff`, `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
 | **zaad frozen regression** | **green** — in CI, and run directly on the handoff head |
 
 New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `abandoned.test.ts` (6),
-`format.test.ts` (7), plus tests added to `canonical.test.ts`.
+`format.test.ts` (7), `warnings.test.ts` (7), plus tests added to `canonical.test.ts`.
 
 ## 6. Scale
 
@@ -309,6 +309,13 @@ process, never `zaad-api`.
   than always on the right.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats
   answered `500`. See below.
+* **The engine's own build warnings, read as an operator would.** They are the only place the
+  product says that something in the operator's data limits what ZAAD could do, and they arrive
+  written for an engineer. Two read badly: a table name stripped to a bare noun produced "no lanes
+  declared in **lanes**:", and the engine's `SKU@LOCATION` service id went through untouched. They
+  are formatted now — "in **your lanes upload**", "QA-001075 **at** QA-BR-AQABA" — and **never
+  paraphrased**: a test asserts every content word of the engine's sentence survives. The formatter
+  moved out of the page into `lib/zaad/warnings.ts` so it could be tested at all; seven tests.
 * **A plan run on the second workspace, where the engine keeps everything and prices it anyway.**
   The cost breakdown printed `+USD 0.00` on all seven components under a heading reading "7
   components" — the same defect as the day-one `−USD 0.00` "saving", in the one place that had been

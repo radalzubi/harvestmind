@@ -66,7 +66,13 @@ export interface NodeMetrics {
   inboundUnits?: number | null;
   serviceTarget?: number | null;
   serviceProjected?: number | null;
-  shortages?: Array<{ sku: string; units: number; when: string }>;
+  /**
+   * Products the plan flags at this place, each with the clause that says what is true of it.
+   * `said` is a finished clause because the only producer today is the `no_replenishment` stance,
+   * which is "there is no route to resupply this" — not "this runs short", which is a different
+   * claim and one the stance does not make.
+   */
+  shortages?: Array<{ sku: string; units: number; said: string }>;
   excess?: Array<{ sku: string; units: number; weeksOfCover: number }>;
   transferOpportunities?: Array<{ to: string; sku: string; units: number }>;
   protection?: { localUnits: number | null; pooledUnits: number | null };

@@ -146,7 +146,8 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
         serviceProjected: service.length
           ? Math.min(...service.map((s) => s.selected_achieved ?? s.expected_achieved ?? 1))
           : null,
-        shortages: rows.filter((r) => r.stance === "no_replenishment").map((r) => ({ sku: r.sku, units: 0, when: "no replenishment route" })),
+        shortages: rows.filter((r) => r.stance === "no_replenishment")
+          .map((r) => ({ sku: r.sku, units: 0, said: "has no route to be replenished here" })),
         protection: {
           localUnits: rows.length ? rows.reduce((a, r) => a + (r.protection_units ?? 0), 0) : null,
           pooledUnits: null,
