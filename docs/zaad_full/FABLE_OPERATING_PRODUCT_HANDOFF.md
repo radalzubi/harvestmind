@@ -76,6 +76,7 @@ Against the brief's own numbering.
 | 48–53 | Upload before Data; a real data explorer; the source-name/row-count collision fixed | done |
 | 55 | Global search, server-side | done |
 | 56 | Engine connection matrix | done (table in `OPERATING_PRODUCT_V1.md` §11) |
+| 57 | No economics computed in frontend TypeScript | done — see the note below |
 | 59–61 | Async jobs, honest states, scoping stated and never silent | done |
 | 62 | 10k and 50k fixtures, measured | done |
 | 64–65 | User-created objects with actor, timestamp, version, audit; capability seam kept | done |
@@ -86,6 +87,17 @@ Against the brief's own numbering.
 | 84 | Migration additive and idempotent | done |
 | 85 | Functional tests | done, see §5 |
 | 93–95 | Documentation, branch, PR, commits | done |
+
+**§57, and the one piece of arithmetic that is in the frontend.** Nothing in `web/src/lib/` or
+`web/src/components/` computes shortage, service, purchase, holding, switching or cancellation
+economics, materiality or candidate selection — a grep for multiplication against a quantity,
+a unit cost or a margin over those trees returns CSS `margin` and prose and nothing else. The one
+arithmetic that *is* there is in `OrderForm.tsx`: a draft's own line value, the operator's own
+quantity times the operator's own price, recomputed as they type. That is not an engine decision
+being re-derived — the backend computes the stored value itself from the same two columns, and sets
+`value_incomplete` where a price is absent exactly as the form marks it incomplete. A reviewer who
+wants that moved server-side has a fair case on principle; it is called out here rather than left
+to be found.
 
 **The accessibility caveat.** Read "done" on §78–80 as *measured*, not *certified*. What was
 checked, by driving the product rather than reading it:
