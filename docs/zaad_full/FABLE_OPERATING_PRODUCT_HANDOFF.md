@@ -185,7 +185,9 @@ path) and a **production build** of this branch, on synthetic workspaces created
 * **The keyboard path walked with the mouse untouched**: a table row focused, Enter pressed, the
   drawer opened, focus confirmed inside it, Escape pressed. That is how closing a drawer turned out
   to drop focus on `<body>` — a reader who opened the fourth product in a fifty-row table was
-  returned to the top of the page. The drawer restores focus to whatever opened it. One leak: `de_expedite` in the declared-rights table. The route id
+  returned to the top of the page. The drawer restores focus to whatever opened it, and so does
+  the search palette — but only when it is dismissed; when it opens something, that page owns the
+  focus and is left alone. One leak: `de_expedite` in the declared-rights table. The route id
   `road_saudi` also appears — that one is the operator's own declared value and is left verbatim,
   because inventing a display name for it would be fabrication.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats

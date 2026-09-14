@@ -37,8 +37,23 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const [active, setActive] = useState(0);
   const [remote, setRemote] = useState<SearchHit[]>([]);
   const input = useRef<HTMLInputElement>(null);
+  const opener = useRef<HTMLElement | null>(null);
+  const navigated = useRef(false);
 
-  useEffect(() => { input.current?.focus(); }, []);
+  useEffect(() => {
+    // Search is reached from the keyboard and left from the keyboard. Closing it used to leave the
+    // caret on <body>, so escaping out of a search meant tabbing back from the top of the page to
+    // wherever the reader had been. The search button lives in the shell and survives navigation,
+    // so restoring focus to it is only right when the palette was dismissed — when it opened
+    // something, that page owns the focus.
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    input.current?.focus();
+    return () => {
+      const back = opener.current;
+      if (!navigated.current && back?.isConnected) back.focus();
+      opener.current = null;
+    };
+  }, []);
 
   // The whole catalogue, from the server, debounced. A failure here narrows the results to what
   // the plan holds rather than emptying the palette.
@@ -116,6 +131,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
 
   const go = (hit: Hit | undefined) => {
     if (!hit) return;
+    navigated.current = true;
     router.push(hit.href);
     onClose();
   };
