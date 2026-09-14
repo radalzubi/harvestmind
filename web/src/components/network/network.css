@@ -17,7 +17,12 @@
 /* Flex, not a fixed row count: the attention strip is conditional, and a three-row grid put the
    canvas in an `auto` row whenever it was absent, collapsing it to nothing. */
 .twin { display: flex; flex-direction: column; height: calc(100vh - 58px); min-height: 0; }
-.twin-bar, .twin-areas { flex: none; }
+.twin-bar, .twin-areas, .twin-scope { flex: none; }
+.twin-scope {
+  padding: 8px 20px; border-bottom: 1px solid var(--line); background: var(--surface);
+  font-size: 12.5px; line-height: 1.5; color: var(--ink-600);
+}
+.twin-scope strong { color: var(--ink-950); font-weight: 600; }
 .twin-bar {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   padding: 10px 20px; border-bottom: 1px solid var(--line); background: var(--bg);

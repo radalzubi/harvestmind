@@ -353,6 +353,18 @@ process, never `zaad-api`.
   dates, "25,621 / 25,500 / 25,462" on the ten-thousand-product workspace, which has them. Two
   tests, one per branch. This is the only **backend** change in the day's defect commits; it adds a
   field and changes no existing one.
+* **The network canvas never said what it was drawn over.** A catalogue too large for one planning
+  request is read down to a selection, and the twin is built from that read — so on the
+  ten-thousand-product workspace the canvas drew 98 of 120 suppliers and three sites with nothing
+  on screen saying so, while its status line read "2 areas need attention" as though that were a
+  statement about the business. The scope sentence existed, on Home and Decisions, and even said
+  "Home, Decisions **and the network** are built over that selection" — on two pages out of the
+  three it names. `TwinScope` now sits under the twin's bar and carries the two facts separately,
+  because a workspace can have either: what the canvas is drawn from, and what the last plan
+  reached. Verified on both — "Drawn over 150 of your 10,000 products … ZAAD's last plan covered 5
+  of them, so only those carry a recommendation here" on the large workspace, and on the
+  150-product one, whose catalogue needs no read-down, only the second clause: "ZAAD's last plan
+  covered 10 of your 150 products". A colleague sent a `/network?node=…` link lands on this.
 * **What was left alone, deliberately.** The supplier table's **Route** column prints `aqaba`,
   `iraq_overland`, `road_saudi` — slugs, and tempting to prettify. They are values from the
   operator's own `stg_fmcg_suppliers` upload, not engine constants, so formatting them would be

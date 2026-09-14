@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Map as MapIcon, Search, Share2 } from "lucide-react";
 import { searchModel } from "@/lib/network/graph";
 import type { SelectionRef } from "@/lib/network/model";
+import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { IntelligencePanel } from "./IntelligencePanel";
 import { useTwin } from "./store";
 import "./network.css";
@@ -84,6 +85,40 @@ function SkuFilter() {
   );
 }
 
+/**
+ * What this canvas is drawn over, when that is less than the whole business.
+ *
+ * A catalogue too large for one planning request is read down to a selection, and the network is
+ * built from that read — so on a ten-thousand-product workspace the canvas showed 98 of 120
+ * suppliers with nothing on screen saying so. Home and Decisions carry that sentence; the network,
+ * which Home links to and which a colleague can be sent straight into, did not. It does now.
+ */
+function TwinScope() {
+  const { readScope, scope } = useWorkspaceData();
+  const N = (n: number) => n.toLocaleString("en-US");
+  // Two separate facts, and a workspace can have either: what the canvas is drawn from, and what
+  // the last plan reached. On a catalogue that fits in one request there is no read scope at all,
+  // but the plan can still be narrower than the canvas — and the recommendation markers are its.
+  const planned = scope && (!readScope || scope.skus.length < readScope.skus.length) ? scope : null;
+  if (!readScope && !planned) return null;
+  return (
+    <p className="twin-scope">
+      {readScope && (
+        <>
+          <strong>Drawn over {N(readScope.skus.length)} of your {N(readScope.total)} products</strong> —{" "}
+          {readScope.rule}. Suppliers, lanes and customers that serve only the rest are not on this canvas.{" "}
+        </>
+      )}
+      {planned && (
+        <>
+          ZAAD&rsquo;s last plan covered {N(planned.skus.length)}{readScope ? " of them" : ` of your ${N(planned.total)} products`},
+          so only those carry a recommendation here.
+        </>
+      )}
+    </p>
+  );
+}
+
 export function NetworkTwin() {
   const { state, status, areas, select, dispatch } = useTwin();
   const router = useRouter();
@@ -120,6 +155,8 @@ export function NetworkTwin() {
         <SkuFilter />
         <ViewSwitch />
       </header>
+
+      <TwinScope />
 
       {attention.length > 0 && (
         <div className="twin-areas" role="list" aria-label="Areas needing attention">
