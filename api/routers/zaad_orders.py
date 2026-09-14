@@ -188,11 +188,31 @@ def evaluation_jobs(operator: Operator, conn=Depends(get_conn)):
     that shows "the last completed plan" would otherwise show a plan of a workspace *plus an order
     nobody has placed* and present it as the operator's position. This is the list to exclude.
     """
+    from api.routers.zaad_full import runner
+
     drafts.ensure_tables(conn)
     rows = _rows(conn, "SELECT baseline_job_id, proposal_job_id FROM zaad_evaluations WHERE operator_id = ?",
                  [operator])
-    identities = sorted({str(value) for row in rows for value in row.values() if value})
-    return {"evaluation_job_ids": identities}
+    identities = {str(value) for row in rows for value in row.values() if value}
+
+    # A second, independent guard. The record above is the normal answer, but it lives in the
+    # operator's vault and a vault that is replaced (a re-upload, a restore) loses it while the job
+    # store keeps the runs. So the overlaid run is also recognised from its own request: the
+    # proposal's pipeline entries are the only ones ZAAD ever writes with a `proposal_` id.
+    try:
+        store = runner().store
+        for job in store.list(operator):
+            identity = str(job.get("id"))
+            if identity in identities:
+                continue
+            try:
+                if '"proposal_' in store.request_json(identity):
+                    identities.add(identity)
+            except Exception:  # noqa: BLE001 - a job whose request has been pruned is simply not one
+                continue
+    except HTTPException:
+        pass  # no job store configured in this environment; the vault record is the whole answer
+    return {"evaluation_job_ids": sorted(identities)}
 
 
 @router.get("/{draft_id}")
@@ -285,7 +305,7 @@ def export_order(draft_id: str, operator: Operator, conn=Depends(get_conn),
             names[str(draft["supplier_id"])] = str(found)
     if has_table(conn, "stg_fmcg_skus") and draft["lines"]:
         for row in _rows(conn, f"""SELECT sku, any_value(sku_name) AS n FROM stg_fmcg_skus
-                                   WHERE sku IN ({', '.join('?' for _ in draft['lines'])}) GROUP BY sku""",
+                                   WHERE sku IN ({', '.join('?' for _ in draft['lines'])}) GROUP BY sku""",  # nosec B608 - bound placeholders only; values bind
                          [str(line["sku"]) for line in draft["lines"]]):
             if row.get("n"):
                 descriptions[str(row["sku"])] = str(row["n"])
@@ -396,10 +416,13 @@ def read_evaluation(draft_id: str, operator: Operator, conn=Depends(get_conn),
         draft = drafts.read_draft(conn, operator, draft_id)
     except KeyError as exc:
         raise HTTPException(404, "That proposal is not in this workspace.") from exc
-    rows = _rows(conn, "SELECT * FROM zaad_evaluations WHERE draft_id = ? AND operator_id = ? "
-                       + ("AND evaluation_id = ? " if evaluation_id else "")
-                       + "ORDER BY created_at DESC LIMIT 1",
-                 [draft_id, operator, *([evaluation_id] if evaluation_id else [])])
+    # Two literal statements rather than one built by concatenation: the only difference is a bound
+    # placeholder, and a reader should not have to prove that to themselves.
+    newest = ("SELECT * FROM zaad_evaluations WHERE draft_id = ? AND operator_id = ? "
+              "AND evaluation_id = ? ORDER BY created_at DESC LIMIT 1") if evaluation_id else (
+              "SELECT * FROM zaad_evaluations WHERE draft_id = ? AND operator_id = ? "
+              "ORDER BY created_at DESC LIMIT 1")
+    rows = _rows(conn, newest, [draft_id, operator, *([evaluation_id] if evaluation_id else [])])
     if not rows:
         return {"status": "NONE", "draft_id": draft_id,
                 "message": "This proposal has not been evaluated yet."}

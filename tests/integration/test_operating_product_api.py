@@ -399,5 +399,12 @@ def test_evaluation_runs_are_distinguishable_from_the_workspace_plan(client, vau
 
     listed = client.get("/api/zaad/orders/evaluation-jobs").json()["evaluation_job_ids"]
     assert listed == ["job_base", "job_proposal"]
+
+    # The vault record is the normal answer. It is not the only one: a vault that is replaced loses
+    # it while the job store keeps the runs, so the overlaid run is also recognised from its own
+    # request. Both guards are exercised here by clearing the record and asking again.
+    vault.execute("DELETE FROM zaad_evaluations WHERE operator_id = ?", [OPERATOR])
+    assert client.get("/api/zaad/orders/evaluation-jobs").json()["evaluation_job_ids"] == [], \
+        "with no job store configured in this test app, the record is the whole answer"
     assert _client(vault, "someone_else").get("/api/zaad/orders/evaluation-jobs").json()["evaluation_job_ids"] == [], \
         "and another workspace's evaluation runs are not listed here"

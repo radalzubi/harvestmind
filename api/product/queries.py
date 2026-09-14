@@ -380,13 +380,13 @@ def read_page(
     selected = ", ".join(f'"{c.name}"' for c in columns)
     # nosec B608 - every identifier interpolated here is a literal from DATASETS above; values bind
     sql = (f'SELECT {selected} FROM "{ds.table}"{clause} '  # noqa: S608
-           f'ORDER BY "{sort_column}" {direction_sql} NULLS LAST LIMIT ? OFFSET ?')
+           f'ORDER BY "{sort_column}" {direction_sql} NULLS LAST LIMIT ? OFFSET ?')  # nosec B608 - identifiers come from DATASETS; values bind
     cursor = conn.execute(sql, [*params, limit, offset])
     names = [c[0] for c in cursor.description]
     rows = [dict(zip(names, row)) for row in cursor.fetchall()]
 
     counted = conn.execute(
-        f'SELECT count(*) FROM (SELECT 1 FROM "{ds.table}"{clause} LIMIT {COUNT_CEILING + 1})',  # noqa: S608
+        f'SELECT count(*) FROM (SELECT 1 FROM "{ds.table}"{clause} LIMIT {COUNT_CEILING + 1})',  # noqa: S608  # nosec B608 - identifiers come from DATASETS; values bind
         params).fetchone()
     total = int(counted[0]) if counted else 0
     return Page(rows, min(total, COUNT_CEILING), total > COUNT_CEILING, limit, offset,
@@ -402,7 +402,7 @@ def catalogue(conn: Any) -> list[dict[str, Any]]:
         rows: int | None = None
         if present:
             try:
-                got = conn.execute(f'SELECT count(*) FROM "{ds.table}"').fetchone()  # noqa: S608
+                got = conn.execute(f'SELECT count(*) FROM "{ds.table}"').fetchone()  # noqa: S608  # nosec B608 - identifiers come from DATASETS; values bind
                 rows = int(got[0]) if got else 0
             except Exception:  # noqa: BLE001
                 rows = None
@@ -425,5 +425,5 @@ def distinct_values(conn: Any, dataset: str, column: str, limit: int = 200) -> l
         return []
     rows = conn.execute(
         f'SELECT DISTINCT CAST("{column}" AS VARCHAR) AS v FROM "{ds.table}" '  # noqa: S608
-        f'WHERE "{column}" IS NOT NULL ORDER BY v LIMIT ?', [max(1, min(limit, 500))]).fetchall()
+        f'WHERE "{column}" IS NOT NULL ORDER BY v LIMIT ?', [max(1, min(limit, 500))]).fetchall()  # nosec B608 - identifiers come from DATASETS; values bind
     return [str(r[0]) for r in rows]

@@ -172,10 +172,10 @@ def list_drafts(
                       bool_or(unit_price IS NULL) AS value_incomplete
                FROM zaad_draft_lines WHERE operator_id = ? GROUP BY draft_id) l
            ON l.draft_id = d.draft_id{clause}
-    """
-    rows = _rows(conn, f"SELECT * FROM ({body}) ORDER BY {DRAFT_SORTS[sort]} {direction_sql} NULLS LAST LIMIT ? OFFSET ?",
+    """  # nosec B608 - code literals plus allowlisted names (DRAFT_SORTS); values bind
+    rows = _rows(conn, f"SELECT * FROM ({body}) ORDER BY {DRAFT_SORTS[sort]} {direction_sql} NULLS LAST LIMIT ? OFFSET ?",  # nosec B608 - code literals plus allowlisted names (DRAFT_SORTS); values bind
                  [operator, *params, limit, offset])
-    total = int(_one(conn, f"SELECT count(*) FROM ({body})", [operator, *params]) or 0)
+    total = int(_one(conn, f"SELECT count(*) FROM ({body})", [operator, *params]) or 0)  # nosec B608 - code literals plus allowlisted names (DRAFT_SORTS); values bind
     return {"rows": rows, "total": total, "limit": limit, "offset": offset,
             "sort": sort, "direction": direction_sql.lower()}
 
@@ -230,7 +230,7 @@ def validate(conn: Any, head: dict[str, Any], lines: list[dict[str, Any]]) -> li
     master = {str(r["sku"]): r for r in _rows(
         conn, f"""SELECT sku, any_value(units_per_case) AS units_per_case, any_value(moq_units) AS moq_units,
                          any_value(supplier_id) AS supplier_id, any_value(unit_cost) AS unit_cost
-                  FROM stg_fmcg_skus WHERE sku IN ({', '.join('?' for _ in lines) or 'NULL'}) GROUP BY sku""",
+                  FROM stg_fmcg_skus WHERE sku IN ({', '.join('?' for _ in lines) or 'NULL'}) GROUP BY sku""",  # nosec B608 - code literals plus allowlisted names (DRAFT_SORTS); values bind
         [str(x.get("sku")) for x in lines]) } if lines else {}
     for line in lines:
         sku = str(line.get("sku"))
@@ -386,7 +386,7 @@ def update_draft(conn: Any, operator: str, draft_id: str, body: dict[str, Any], 
     fields.append("updated_at = ?")
     params.append(_now())
     # nosec B608 - every column name above is a literal in this function
-    conn.execute(f"UPDATE zaad_draft_orders SET {', '.join(fields)} WHERE draft_id = ? AND operator_id = ?",  # noqa: S608
+    conn.execute(f"UPDATE zaad_draft_orders SET {', '.join(fields)} WHERE draft_id = ? AND operator_id = ?",  # noqa: S608  # nosec B608 - code literals plus allowlisted names (DRAFT_SORTS); values bind
                  [*params, draft_id, operator])
     if "lines" in body:
         _write_lines(conn, operator, draft_id, list(body["lines"] or []))

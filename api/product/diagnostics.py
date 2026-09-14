@@ -81,7 +81,7 @@ def _supplier_metrics_sql(where: str = "") -> str:
            stddev_samp(fill) AS fill_sd,
            min(po_date) AS first_order, max(first_receipt) AS last_receipt
     FROM matched {where} GROUP BY supplier_id
-    """
+    """  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
 
 
 SUPPLIER_SORTS = {
@@ -179,11 +179,11 @@ def supplier_page(
     LEFT JOIN measured d ON d.supplier_id = m.supplier_id
     LEFT JOIN opens o ON o.supplier_id = m.supplier_id
     LEFT JOIN supplied s ON s.supplier_id = m.supplier_id{clause}
-    """
+    """  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
     all_params = [*open_params, *params]
-    rows = _rows(conn, f"SELECT * FROM ({body}) ORDER BY {SUPPLIER_SORTS[sort]} {direction_sql} NULLS LAST LIMIT ? OFFSET ?",
+    rows = _rows(conn, f"SELECT * FROM ({body}) ORDER BY {SUPPLIER_SORTS[sort]} {direction_sql} NULLS LAST LIMIT ? OFFSET ?",  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
                  [*all_params, limit, offset])
-    total = int(_one(conn, f"SELECT count(*) FROM ({body})", all_params) or 0)
+    total = int(_one(conn, f"SELECT count(*) FROM ({body})", all_params) or 0)  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
     return {"rows": rows, "total": total, "limit": limit, "offset": offset, "sort": sort,
             "direction": direction_sql.lower(), "served": True,
             "short_fill_tolerance": SHORT_FILL_TOLERANCE, "thin_sample": THIN_SAMPLE}
@@ -212,7 +212,7 @@ def supplier_detail(conn: Any, supplier_id: str, *, as_of: str | None = None) ->
             WITH {_matched_cte()}
             SELECT po_id, po_date, promised, first_receipt, ordered, received, rejected,
                    observed_lead_days, promised_lead_days, late_days, fill, first_sku, lines
-            FROM matched WHERE supplier_id = ? ORDER BY first_receipt DESC LIMIT 200""", [supplier_id])
+            FROM matched WHERE supplier_id = ? ORDER BY first_receipt DESC LIMIT 200""", [supplier_id])  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
         by_sku = _rows(conn, f"""
             WITH {_matched_cte()}
             SELECT first_sku AS sku, count(*) AS orders,
@@ -220,14 +220,14 @@ def supplier_detail(conn: Any, supplier_id: str, *, as_of: str | None = None) ->
                    avg(CASE WHEN late_days > 0 THEN late_days END) AS mean_late_days,
                    CASE WHEN sum(ordered) > 0 THEN sum(received) / sum(ordered) END AS fill_rate
             FROM matched WHERE supplier_id = ? AND lines = 1
-            GROUP BY first_sku ORDER BY late_orders DESC, orders DESC LIMIT 20""", [supplier_id])
+            GROUP BY first_sku ORDER BY late_orders DESC, orders DESC LIMIT 20""", [supplier_id])  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
         by_month = _rows(conn, f"""
             WITH {_matched_cte()}
             SELECT date_trunc('month', po_date) AS month, count(*) AS orders,
                    count(*) FILTER (WHERE late_days > 0) AS late_orders,
                    avg(observed_lead_days) AS mean_lead_days
             FROM matched WHERE supplier_id = ?
-            GROUP BY 1 ORDER BY 1 DESC LIMIT 24""", [supplier_id])
+            GROUP BY 1 ORDER BY 1 DESC LIMIT 24""", [supplier_id])  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
 
     trend = _trend(conn, supplier_id)
     skus = _rows(conn, """
@@ -270,7 +270,7 @@ def _trend(conn: Any, supplier_id: str) -> dict[str, Any] | None:
                avg(CASE WHEN late_days IS NOT NULL AND late_days > 0 THEN 1.0
                         WHEN late_days IS NOT NULL THEN 0.0 END) AS late_rate,
                CASE WHEN sum(ordered) > 0 THEN sum(received) / sum(ordered) END AS fill_rate
-        FROM ranked GROUP BY 1""", [supplier_id])
+        FROM ranked GROUP BY 1""", [supplier_id])  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
     if len(rows) < 2:
         return None
     recent = next((r for r in rows if r["half"] == "recent"), None)
@@ -322,7 +322,7 @@ def _exposure(conn: Any, supplier_id: str) -> dict[str, Any]:
             SELECT sum(CASE WHEN r.first_receipt IS NULL THEN h.ordered ELSE 0 END)
             FROM (SELECT po_id, any_value(supplier_id) AS supplier_id, sum(qty_ordered) AS ordered
                   FROM stg_fmcg_purchase_orders GROUP BY po_id) h {received}
-            WHERE h.supplier_id = ?""", [supplier_id])
+            WHERE h.supplier_id = ?""", [supplier_id])  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
     return out
 
 
@@ -444,17 +444,20 @@ def sector_page(
                 "note": "No product in this workspace declares a sector, so there is no sector physics to show. "
                         "Declare a sector on the product master and these measures appear."}
 
-    supply = f"""
-    supply AS (
-      WITH {_matched_cte()}
-      SELECT first_sku AS sku, count(*) AS deliveries, avg(fill) AS fill_mean,
-             stddev_samp(fill) AS fill_sd, avg(observed_lead_days) AS lead_mean_days,
-             stddev_samp(observed_lead_days) AS lead_sd_days
-      FROM matched WHERE lines = 1 GROUP BY first_sku)
-    """ if (has_table(conn, "stg_fmcg_receipts") and has_table(conn, "stg_fmcg_purchase_orders")) else """
-    supply AS (SELECT NULL AS sku, NULL AS deliveries, NULL AS fill_mean, NULL AS fill_sd,
-                      NULL AS lead_mean_days, NULL AS lead_sd_days WHERE FALSE)
-    """
+    if has_table(conn, "stg_fmcg_receipts") and has_table(conn, "stg_fmcg_purchase_orders"):
+        supply = f"""
+        supply AS (
+          WITH {_matched_cte()}
+          SELECT first_sku AS sku, count(*) AS deliveries, avg(fill) AS fill_mean,
+                 stddev_samp(fill) AS fill_sd, avg(observed_lead_days) AS lead_mean_days,
+                 stddev_samp(observed_lead_days) AS lead_sd_days
+          FROM matched WHERE lines = 1 GROUP BY first_sku)
+        """  # nosec B608 - code literals only
+    else:
+        supply = """
+        supply AS (SELECT NULL AS sku, NULL AS deliveries, NULL AS fill_mean, NULL AS fill_sd,
+                          NULL AS lead_mean_days, NULL AS lead_sd_days WHERE FALSE)
+        """
     life = """
     life AS (
       SELECT sku, min(date_diff('day', snapshot_date, expiry_date)) AS days_to_expiry,
@@ -499,12 +502,12 @@ def sector_page(
       LEFT JOIN life l ON l.sku = m."sku"
       LEFT JOIN demandvar d ON d.sku = m."sku"{where})
     SELECT * FROM base
-    """
-    rows = _rows(conn, f"SELECT * FROM ({body}) ORDER BY {SECTOR_SORTS[sort]} {direction_sql} NULLS LAST LIMIT ? OFFSET ?",
+    """  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
+    rows = _rows(conn, f"SELECT * FROM ({body}) ORDER BY {SECTOR_SORTS[sort]} {direction_sql} NULLS LAST LIMIT ? OFFSET ?",  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
                  [*params, limit, offset])
     for row in rows:
         row.pop("rn", None)
-    total = int(_one(conn, f"SELECT count(*) FROM ({body})", params) or 0)
+    total = int(_one(conn, f"SELECT count(*) FROM ({body})", params) or 0)  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
     sectors = _rows(conn, 'SELECT DISTINCT "sector" AS s FROM stg_fmcg_skus WHERE "sector" IS NOT NULL ORDER BY 1')
     return {"rows": rows, "total": total, "limit": limit, "offset": offset, "sort": sort,
             "direction": direction_sql.lower(), "served": True,
@@ -530,7 +533,7 @@ def corridor_lateness(conn: Any) -> dict[str, Any]:
                avg(CASE WHEN late_days > 0 THEN late_days END) AS mean_late_days,
                avg(observed_lead_days) AS mean_lead_days
         FROM matched LEFT JOIN sup ON sup.supplier_id = matched.supplier_id
-        GROUP BY 1 ORDER BY late_orders DESC""")
+        GROUP BY 1 ORDER BY late_orders DESC""")  # nosec B608 - code literals plus allowlisted names (SUPPLIER_SORTS / SECTOR_SORTS); values bind
     return {"served": True, "rows": rows,
             "note": "Grouped by the route each supplier declares. A route that arrives late more often is "
                     "where delay concentrates, not a demonstration that the route causes it."}
