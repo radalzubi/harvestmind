@@ -168,7 +168,10 @@ path) and a **production build** of this branch, on synthetic workspaces created
   two columns called "Ordered" — the date and the quantity. Both are now unambiguous.
 * **Every page's controls listed from the DOM and checked for duplicates**, which is how the run
   control appearing twice on Decisions and "Cancel" twice on the order editor were found.
-* **Screenshots taken and looked at**, not just text read back. That is how the network panel's
+* **Screenshots taken and looked at**, not just text read back. That is also how the Value tab's
+  two "Not available" rows turned out to carry their reason only in a `title` — readable by hovering
+  a mouse, and by nothing else. On a panel whose whole purpose is to say why a number is missing,
+  the reason is now printed under it. That is how the network panel's
   metric captions turned out to be drawn as a 22px-padded green panel: `.note` is a marketing-site
   class, both stylesheets load on a workspace page, and `.facts .note` overrode the colours without
   taking back the padding or the background. Every class the workspace uses was then checked
@@ -192,7 +195,7 @@ path) and a **production build** of this branch, on synthetic workspaces created
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Twenty-six defects were found this way and fixed**; they are listed in the PR description. The
+**Twenty-seven defects were found this way and fixed**; they are listed in the PR description. The
 six most serious were invisible to the build and to the existing tests:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from

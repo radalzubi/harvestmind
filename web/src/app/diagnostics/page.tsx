@@ -219,11 +219,12 @@ function Value() {
         <dl className="kv">
           <dt>Modelled cost difference</dt>
           <dd>{summary.valueVsCurrent == null
-            ? <NotAvailable why="The selector kept your current plan and priced no alternative against it." />
+            ? <NotAvailable shown why="The selector kept your current plan and priced no alternative against it, so there is no difference to report." />
             : Math.abs(summary.valueVsCurrent) < 0.005 ? "no difference"
             : `${summary.valueVsCurrent >= 0 ? "lower by " : "higher by "}${money(Math.abs(summary.valueVsCurrent), summary.currency)}`}</dd>
           <dt>Cash tied up</dt>
-          <dd>{summary.workingCapitalDelta == null ? <NotAvailable />
+          <dd>{summary.workingCapitalDelta == null
+            ? <NotAvailable shown why="Both plans are the same here, so no change in the money tied up was priced." />
             : Math.abs(summary.workingCapitalDelta) < 0.005 ? "no difference"
             : `${summary.workingCapitalDelta >= 0 ? "+" : "−"}${money(Math.abs(summary.workingCapitalDelta), summary.currency)}`}</dd>
           <dt>Products covered</dt>

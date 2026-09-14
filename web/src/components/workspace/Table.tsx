@@ -219,6 +219,21 @@ export function SelectField({ value, onChange, options, label, all = "All" }: {
 }
 
 /** A value the record does not carry. Never a zero, never a dash without meaning. */
-export function NotAvailable({ why }: { why?: string }) {
+/**
+ * A number that does not exist, and — where there is room to say it — why.
+ *
+ * In a dense table the reason is a `title`: printing it in every cell would drown the table. On a
+ * definition list or a panel, where the whole point is the explanation, pass `shown` and the reason
+ * is read without hovering, which is the only way it reaches a phone or a screen reader.
+ */
+export function NotAvailable({ why, shown }: { why?: string; shown?: boolean }) {
+  if (shown && why) {
+    return (
+      <span className="na">
+        Not available
+        <small style={{ display: "block", fontWeight: 400, marginTop: 2, lineHeight: 1.45 }}>{why}</small>
+      </span>
+    );
+  }
   return <span className="na" title={why}>Not available</span>;
 }
