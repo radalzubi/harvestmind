@@ -635,7 +635,18 @@ Ordered by how much they should worry you.
     built in this pass**: deciding which absent columns are worth flagging is a product judgement,
     and inventing thresholds on the last day is how a product starts nagging about data it never
     needed.
-14. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
+14. **A number and its unit come apart under `dir="rtl"`.** Forcing the workspace into RTL — which
+    is not a state it currently offers, since §79's Arabic copy is not implemented — the layout,
+    the logical alignment, the sidebar, the toast corner and the new scope line are all correct,
+    but `27 d` renders **`d 27`**: the digits are bidi-neutral and the unit is strongly LTR, so the
+    pair is reordered. It appears wherever a value carries a Latin unit — `27 d`, `3.3 wks`,
+    `USD 5,726` — in table cells, in `Facts` rows and inside prose. **Deliberately not fixed
+    here**: the complete fix is bidi isolation at every site that appends a unit, and a partial one
+    (a CSS rule on numeric table cells, which is all I could verify) would leave the same defect in
+    every summary row and sentence while looking as though the class had been dealt with. Whoever
+    implements §79 should do it once, in the formatters, and check it against real Arabic copy.
+    Verified not to affect LTR: the defect exists only under `dir="rtl"`.
+15. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
     7–12 minutes earlier in the pass and passed; by the end the eslint process parked with the
     config's `globals.json` open, sleeping, and **0.94 s of CPU consumed in 3 m 24 s** — it was
     blocked, not slow. Two separate invocations behaved identically and were killed. The lint
