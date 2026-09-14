@@ -193,13 +193,19 @@ exclusions and the difference is the excluded directories.
 Fixtures: `python3 scripts/zaad_qa_workspaces.py {corridor|scale} --db <path> [--skus N]`.
 Benchmark: `python3 scripts/zaad_product_scale_bench.py <db> [<db>…]`.
 
-| | 10,000 products / 800k rows | 50,000 products / 4.0M rows |
+| | 10,000 products / 780k rows | 50,000 products / 3.9M rows |
 |---|---|---|
-| slowest median query | 61 ms | **298 ms** (re-measured on the final head: **305 ms**) |
+| slowest median query | **81 ms** (one supplier) | **316 ms** (the explorer's search) |
 | queries over the 800 ms budget | 0 | **0** |
-| fixture build time | 0.9 s | 2.6 s |
+| fixture build time | 1.2 s | 2.6 s |
 
 Full per-query table in `OPERATING_PRODUCT_V1.md` §7.
+
+Measured three times across this pass: **298 ms**, then **305 ms** on the second day's head, then
+**316 ms** on the final one. The last step is the LIKE-escaping change (§7) — an `ESCAPE` clause
+rules out any pattern shortcut, and the two search queries at 50,000 products moved from about
+300 ms to 312 and 316. It is 2 % of the budget for a search that stops silently reinterpreting
+what a person typed, and it is stated here rather than rounded away.
 
 **That is catalogue scale, which is not the same question as how much can be planned at once.** A
 solve over a three-site workspace took 62 s and 92 s for 6 products, 108 s for 8 and 232 s for 10 —
