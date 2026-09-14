@@ -210,6 +210,12 @@ path) and a **production build** of this branch, on synthetic workspaces created
   placed and may be kept. Nothing else about the two runs differs, so the difference between their
   reports is the order and nothing else. **This is the claim to re-check first if you doubt the
   evaluation**, and it is checkable from the job store without reading any application code.
+* **Then every cell of a finished comparison was re-derived from the two stored reports.** For all
+  **11 ledger rows**: the left column equals that report's `economics.incumbent_costs[key]`, the
+  middle equals `economics.selected_costs[key]` from the same run, the right equals the proposal
+  run's `incumbent_costs[key]`, and the difference column equals right minus left to within a
+  floating-point epsilon. Nothing in the comparison is computed by application code. That is the
+  release's central honesty claim and it is now an observation rather than a design intention.
 * **The whole lifecycle again, on a second workspace, start to finish:** a proposal created from a
   product on Inventory (supplier, pack size and unit cost prefilled from the master), evaluated
   (two engine runs, eight minutes, three columns of the engine's own ledger), approved with a

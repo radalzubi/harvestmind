@@ -138,6 +138,11 @@ Both go through the released `POST /api/zaad/network/jobs` path, share `as_of`, 
 configuration and product set, and each evaluation therefore uses **two** of the workspace's daily
 job allowance (`ZAAD_JOB_QUOTA_DAILY`, default 24; active quota 2).
 
+**Verified from the reports, not from this file.** Every one of the 11 ledger rows of a finished
+comparison was re-derived from the two stored engine reports: left = the baseline's
+`economics.incumbent_costs[key]`, middle = the baseline's `selected_costs[key]`, right = the
+proposal run's `incumbent_costs[key]`, difference = right − left. All 11 matched exactly.
+
 **Verified from the job store, not from this file.** The two stored requests of one evaluation were
 diffed field by field: `as_of`, `seed`, `horizon`, the product set, sources, locations, services,
 scenarios and stresses identical; the pipeline differing by exactly one entry,
