@@ -575,6 +575,16 @@ process, never `zaad-api`.
   past the end. The rule is now `pagerState` in `lib/zaad/product.ts` — one function, the way
   `TALLY` is — with **seven tests** covering all four worlds, including the regression above, so
   the next person to touch it finds out from a test rather than from a screen.
+* **The product's own claims about itself, checked against the code that has to keep them.** The
+  interface makes four absolute statements, and an absolute statement is the most damaging kind of
+  defect to get wrong:
+
+  | What it says, and where | How it was checked |
+  |---|---|
+  | "These came from your system and **ZAAD never changes them**" (Purchase orders) | Every write in `api/product/` enumerated: six tables, `zaad_draft_orders`, `zaad_draft_lines`, `zaad_draft_events`, `zaad_evaluations`, `zaad_export_log`, `zaad_export_profiles`. **No `INSERT`, `UPDATE` or `DELETE` touches a `stg_` table anywhere in the product.** |
+  | "**ZAAD does not send it anywhere** — not to the supplier, not to your ERP" (Export) | No `requests`, `httpx`, `urllib`, `aiohttp`, `smtplib`, `socket` or `boto3` appears in `api/product/` or in either router. There is no client to send with. |
+  | "ZAAD prices only the amendment rights you have declared for it, and **never infers one**" | The amendment payload carries `declared_windows` read back from the plan, each stamped `operator declared`, and a `proposed_window` that is one of them. |
+  | "**nothing is multiplied out into a total**" (declared terms) | The terms table prints per-unit fees and credits and no total; checked on screen against a PO carrying three declared rights. |
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab against the **final** build, on **both** workspaces. Seventeen surfaces on
