@@ -284,8 +284,12 @@ function HomeBody() {
       {planPhase === "ready" && computedAt && (
         <Section title="This plan">
           <div className="notice">
+            {/* `as_of` is midnight UTC. Rendered in the reader's own zone it slid to the previous
+                day west of Greenwich, so this sentence said "as at 4 January" while the Value tab,
+                which uses DATE(), said "As at 5 Jan 2026" — one date, two days, one product.
+                `computedAt` is a wall-clock moment and stays local, which is what it means. */}
             Computed {computedAt.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} from your data as at{" "}
-            {summary ? new Date(summary.asOf).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "—"}.
+            {summary ? DATE(summary.asOf) : "—"}.
             Approvals you record are kept against that information set. <Link href="/decisions">Review it</Link>.
           </div>
         </Section>

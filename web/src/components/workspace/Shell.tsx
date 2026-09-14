@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/site/Logo";
 import { useSession } from "@/lib/session";
+import { DATE } from "@/lib/zaad/product";
 import { useOpenDecisions, useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { AssistantButton } from "@/components/Assistant";
 import { CommandPalette } from "./CommandPalette";
@@ -208,7 +209,8 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           <div className="ws-top-id">
             <span className="ws-top-name">{session.workspace?.name ?? "Workspace"}</span>
             {summary && <span className="ws-top-sub" title={`Information set ${summary.informationHash.slice(0, 12)}`}>
-              · as at {new Date(summary.asOf).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+              {/* One formatter for one field: DATE() reads it in UTC, the way it is stated. */}
+              · as at {DATE(summary.asOf)}
             </span>}
           </div>
           <div className="ws-top-spacer" />

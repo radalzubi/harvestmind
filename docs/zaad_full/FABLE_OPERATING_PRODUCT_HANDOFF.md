@@ -610,6 +610,15 @@ different things and the reader was left to notice.
   | "**ZAAD does not send it anywhere** — not to the supplier, not to your ERP" (Export) | No `requests`, `httpx`, `urllib`, `aiohttp`, `smtplib`, `socket` or `boto3` appears in `api/product/` or in either router. There is no client to send with. |
   | "ZAAD prices only the amendment rights you have declared for it, and **never infers one**" | The amendment payload carries `declared_windows` read back from the plan, each stamped `operator declared`, and a `proposed_window` that is one of them. |
   | "**nothing is multiplied out into a total**" (declared terms) | The terms table prints per-unit fees and credits and no total; checked on screen against a PO carrying three declared rights. |
+* **One date, two days, one product.** The workspace header and Home's plan notice rendered the
+  report's `as_of` with `toLocaleDateString` and **no time zone**, so midnight UTC on the 5th slid
+  to the 4th for any reader west of Greenwich. The Diagnostics Value tab, which goes through
+  `DATE()`, said **5 Jan 2026** on the same screen — beside a sentence reading "Approvals you record
+  are kept against that information set", which is a date an operator is being asked to trust.
+  Both now go through `DATE()`, which reads it in UTC the way the engine states it; the three
+  surfaces agree. `computedAt` stays local, because *when this ran* is a wall-clock moment and that
+  is what it means. This is the "two renderers for one field" shape §11 names, found by reading
+  the same value on three screens rather than by any tool.
 * **WCAG 1.4.12's text spacing applied live, and 200 %-zoom-equivalent reflow**, both described in
   §3's caveat. The spacing pass found the last defect of the day: Home's watch cards clamped their
   summary to three lines, and the clamped part is the sentence naming which products have no route
