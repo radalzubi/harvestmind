@@ -169,7 +169,7 @@ Stated plainly rather than left to be discovered.
 | `tests/unit/test_product_drafts_schema.py` | 14 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
 | Whole local suite (`tests/unit` + `tests/integration`) | **2,105 passed, 2 skipped** (6 m 37 s) |
-| Frontend (`npm test`) | **121 passed**, 60 new |
+| Frontend (`npm test`) | **124 passed**, 63 new |
 | Frontend typecheck / production build | green |
 | Frontend lint | green **in CI** — see §10.15 |
 | `ruff` (CI's own scope), `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
@@ -179,7 +179,7 @@ New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `aban
 `format.test.ts` (11), `warnings.test.ts` (7), plus tests added to `canonical.test.ts`.
 
 The last run of each, on the handoff head: `python3 -m pytest tests/ -q -p no:randomly` →
-`2105 passed, 2 skipped` in 397 s; `npm test` → `# pass 121 / # fail 0`;
+`2105 passed, 2 skipped` in 397 s; `npm test` → `# pass 124 / # fail 0`;
 `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` → `CANONICAL REGRESSION PASS`;
 `ruff check . --extend-exclude "docs,dashboard,scripts/p1_*.py"` → `All checks passed!`;
 `mypy … api zaad/full` → `Success: no issues found in 67 source files`; bandit over CI's package
@@ -897,6 +897,17 @@ Ordered by how much they should worry you.
   three need a convention more than a tool: one formatter per kind of value, and a field that
   carries its own denominator. That, rather than more tests of the same shape, is what I would
   spend the next pass's first hour on.
+
+  **The fourth one is built.** `web/src/lib/zaad/__tests__/links.test.ts` walks the source for
+  internal links carrying query parameters and asserts that each route's **own** page reads each
+  one — "own" matters, because a repo-wide search would have passed `/network?q=`, `q` being a
+  parameter Inventory reads. Three tests: the scan, a named list of the deep links a colleague is
+  actually sent, and one that checks the allowlist is still accurate. Its teeth were checked by
+  putting `?q=` back and watching it fail. It found one more dead pair while being written —
+  `/get-started?mode` and `/get-started?sector`, linked from the welcome page and the marketing
+  home, read by neither — which is on the **marketing site this pass did not touch**, so it is
+  allowlisted by name with the reason rather than fixed here or hidden. An allowlist entry is a
+  record; an exclusion is a silence.
 * **The per-site inventory view** (`OPERATING_PRODUCT_V1.md` §16.13). The list sums stock across
   every location, so the network's site panel can only link to "Stock (all sites)". A location
   filter would close that, and it is a small change to `catalog.py` plus one facet.
