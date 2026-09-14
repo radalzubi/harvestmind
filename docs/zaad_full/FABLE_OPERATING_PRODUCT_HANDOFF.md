@@ -800,7 +800,10 @@ build and to every test in this repository:
   raised on `None`, so `-O` changes nothing), two `B112` (a `try/except/continue` in `drafts.py`
   and one in `zaad_orders.py`), and one `B406` — `xml.sax.saxutils` in `exporting.py`, imported for
   `escape()`, which is a string function and not a parser.
-* Uploads are bounded (size, sheets, columns, rows, cell length). Workbook formulas are read as
+* Uploads are bounded, and the bounds are constants rather than prose: `MAX_TEMPLATE_BYTES` 2 MiB,
+  `MAX_TEMPLATE_SHEETS` 20, `MAX_TEMPLATE_COLUMNS` 200, `MAX_CELL_CHARS` 500, `MAX_IMPORT_ROWS`
+  2,000 (`exporting.py`); `MAX_LINES` 500, `MAX_NOTE` 2,000, `MAX_LINE_VALUE` 10⁹ (`drafts.py`);
+  `MAX_PAGE` 200 and `MAX_ROWS` 200 on reads, `MAX_SKU_FILTER` 400. Workbook formulas are read as
   cached text and never evaluated.
 * Every cell written to a CSV or XLSX passes through one function so a value beginning `=`, `+`, `-`
   or `@` cannot leave as a formula.
