@@ -163,7 +163,7 @@ Stated plainly rather than left to be discovered.
 
 | Suite | Result |
 |---|---|
-| `tests/integration/test_operating_product_api.py` | 47 passed |
+| `tests/integration/test_operating_product_api.py` | 49 passed |
 | `tests/unit/test_product_exporting.py` | 25 passed |
 | `tests/unit/test_product_evaluation.py` | 26 passed |
 | `tests/unit/test_product_drafts_schema.py` | 14 passed |
@@ -179,7 +179,7 @@ New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `aban
 `format.test.ts` (11), `warnings.test.ts` (7), plus tests added to `canonical.test.ts`.
 
 The last run of each, on the handoff head: `python3 -m pytest tests/ -q -p no:randomly` →
-`2103 passed, 2 skipped` in 414 s; `npm test` → `# pass 112 / # fail 0`;
+`2105 passed, 2 skipped` in 397 s; `npm test` → `# pass 114 / # fail 0`;
 `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` → `CANONICAL REGRESSION PASS`;
 `ruff check . --extend-exclude "docs,dashboard,scripts/p1_*.py"` → `All checks passed!`;
 `mypy … api zaad/full` → `Success: no issues found in 67 source files`; bandit over CI's package
