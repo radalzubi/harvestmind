@@ -683,9 +683,13 @@ different things and the reader was left to notice.
 * **Every write verb exercised from a browser, watching the network tab**, which is the only way
   the CORS defects below could have been found. POST, PATCH, PUT and DELETE all answer 200/204 now;
   three of them could not be sent at all before, and no exported file carried its own name.
-* **All three export formats produced and opened.** The CSV read back field by field, the XLSX
-  loaded with `openpyxl` and its cells checked, **and the PDF rendered and looked at** — which is
-  how the last defect below was found. A file that is bytes on disk is not evidence that it is a
+* **All three export formats produced and opened, and again on the handoff head.** The CSV read
+  back field by field, the XLSX loaded with `openpyxl` and its cells checked, **and the PDF
+  rendered and looked at** — which is how the last defect below was found. Repeated on the final
+  commit: CSV with its BOM and twelve headings, XLSX with every cell still of text type, and the
+  PDF opened as a picture — landscape, all twelve columns on the page including **Currency**, which
+  is the column that used to fall off the right edge. A file that is bytes on disk is not evidence
+  that it is a
   document anyone can use.
 
 **Everything found this way was fixed** — **57 of this branch's 100 commits were defect fixes** as
