@@ -168,6 +168,12 @@ path) and a **production build** of this branch, on synthetic workspaces created
   two columns called "Ordered" — the date and the quantity. Both are now unambiguous.
 * **Every page's controls listed from the DOM and checked for duplicates**, which is how the run
   control appearing twice on Decisions and "Cancel" twice on the order editor were found.
+* **Screenshots taken and looked at**, not just text read back. That is how the network panel's
+  metric captions turned out to be drawn as a 22px-padded green panel: `.note` is a marketing-site
+  class, both stylesheets load on a workspace page, and `.facts .note` overrode the colours without
+  taking back the padding or the background. Every class the workspace uses was then checked
+  against `site.css`; `.note` was the only real collision (`.exposed` and `.zfield` are scoped
+  under a marketing ancestor and cannot reach a workspace page).
 * **Every rendered page scanned for leaked internal tokens** (`undefined`, `NaN`, `[object Object]`,
   snake_case identifiers). One leak: `de_expedite` in the declared-rights table. The route id
   `road_saudi` also appears — that one is the operator's own declared value and is left verbatim,
@@ -186,7 +192,7 @@ path) and a **production build** of this branch, on synthetic workspaces created
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Twenty-five defects were found this way and fixed**; they are listed in the PR description. The
+**Twenty-six defects were found this way and fixed**; they are listed in the PR description. The
 six most serious were invisible to the build and to the existing tests:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from
