@@ -299,6 +299,9 @@ process, never `zaad-api`.
   wrong order's reasoning. It says so now.
 * **Every page's controls listed from the DOM and checked for duplicates**, which is how the run
   control appearing twice on Decisions and "Cancel" twice on the order editor were found.
+
+### The second day: breaking it from the outside
+
 * **Screenshots taken and looked at**, not just text read back. The words on the network panel were
   right the whole time; the 22px-padded green box drawn around them was not. `.note` is a
   marketing-site class, both stylesheets load on a workspace page, and `.facts .note` overrode the
@@ -363,6 +366,13 @@ process, never `zaad-api`.
   three now suppress a difference that rounds to nothing. The same screen said "Products covered:
   5 of 150" on a workspace holding ten thousand products, which invites the reading that the
   catalogue is 150; the denominator is what ZAAD read for the plan, and it now says so.
+### The third day: one question, asked of every surface
+
+*Where does ZAAD state a fact in one register and contradict it in another?* Everything below came
+out of that, on the same two workspaces and a production build of this branch. They are individually
+small; what they have in common is that each was a place where two parts of the product knew
+different things and the reader was left to notice.
+
 * **Zero read as ignorance in four more columns.** `value ? NUMBER(value) : "—"` reads naturally
   and is wrong: it prints the dash this product reserves for *not available* over a zero the vault
   states plainly. On the ten-thousand-product workspace, where every purchase order has been
