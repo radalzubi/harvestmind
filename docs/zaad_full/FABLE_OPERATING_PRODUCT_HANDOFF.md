@@ -682,8 +682,9 @@ different things and the reader was left to notice.
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Everything found this way was fixed** — **54 of this branch's 79 commits are defect fixes**, and
-several carry more than one. The subject line of each is the defect in the words of what a person
+**Everything found this way was fixed** — **57 of this branch's 100 commits were defect fixes** as
+this was written, and several carry more than one;
+`git log main..HEAD --oneline | grep -cE '^[0-9a-f]+ fix'` is the number on whatever head you have. The subject line of each is the defect in the words of what a person
 would have seen, so `git log main..HEAD` is the list; the PR description groups the ones worth
 naming. The six most serious were invisible to the
 build and to every test in this repository:
