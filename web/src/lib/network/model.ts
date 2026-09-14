@@ -161,6 +161,14 @@ export interface NetworkModel {
   recommendations: NetworkRecommendation[];
   /** Data-quality notes for the whole model (row counts, missing tables). */
   notes: string[];
+  /**
+   * The workspace's own currency, so a sentence that quotes money does not assume one.
+   *
+   * `describe()` printed a site's stock value as `about $5,726` — a hard `$` — three lines from a
+   * facts row printing the same number through the workspace's currency. On a workspace that does
+   * not trade in dollars the two disagreed, and one of them was simply wrong.
+   */
+  currency: string;
 }
 
 export type SelectionRef = { type: "node" | "edge"; id: string };

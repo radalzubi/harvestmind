@@ -412,5 +412,6 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
     shipments: [],
     recommendations,
     notes,
+    currency: request.currency,
   };
 }

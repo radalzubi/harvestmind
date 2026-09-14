@@ -55,7 +55,7 @@ function fanIn(suppliers: number, customers = 0, nameLength = 16): NetworkModel 
   }
   return {
     id: "crowd", name: "Crowded", provenance: "workspace", asOf: "2026-01-05T00:00:00Z",
-    nodes, edges, shipments: [], recommendations: [], notes: [],
+    nodes, edges, shipments: [], recommendations: [], notes: [], currency: "USD",
   };
 }
 

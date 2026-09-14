@@ -514,6 +514,13 @@ process, never `zaad-api`.
   1,865 deliveries: the twin was showing the **mean** and the diagnostics page the **median**,
   neither saying which. The twin's label now says "Average lead time" and carries the p90 where the
   distribution has one, the way its Delivery reliability already carries its sample size.
+* **A hard-coded dollar sign in a sentence the twin reads aloud.** A site's paragraph printed
+  "…holds 31,866 units (about **$**5,726)" while the facts row three lines below printed the same
+  number through the workspace's own currency. On these QA workspaces both say dollars, so it is
+  invisible here and wrong the moment a workspace does not trade in them — the `NetworkModel`
+  carried no currency at all, so `describe()` could not have known. It carries one now, from the
+  planning request, and a test builds the same fixture as `JOD` and asserts the sentence says JOD
+  and contains no `$`.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →

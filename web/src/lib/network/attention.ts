@@ -102,7 +102,6 @@ export function statusLine(areas: AttentionArea[]): { headline: string; detail: 
   return { headline: "Everything looks normal", detail: null, tone: "ok" };
 }
 
-/** One paragraph a person could read aloud, from the fields that exist. */
 /**
  * "1 SKU depend on this supplier" — the count agrees and the verb does not.
  *
@@ -114,6 +113,7 @@ function dependVerb(counts: number[]): string {
   return counts.length === 1 && counts[0] <= 1 ? "depends" : "depend";
 }
 
+/** One paragraph a person could read aloud, from the fields that exist. */
 export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkIndex): string {
   const a = affectedBy(ref, model, index);
   const parts: string[] = [];
@@ -175,7 +175,9 @@ export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkI
     return parts.join(" ");
   }
   if (x.kind === "dc" || x.kind === "branch") {
-    parts.push(`${x.name}${m.onHandUnits != null ? ` holds ${n(m.onHandUnits)} units${m.onHandValue != null ? ` (about $${n(Math.round(m.onHandValue))})` : ""}` : ""}${m.inboundUnits != null ? `, with ${n(m.inboundUnits)} on the way` : ""}.`);
+    // The `$` here was hard-coded, three lines from a facts row printing the same number through
+    // the workspace's own currency. The model carries the currency now; nothing assumes one.
+    parts.push(`${x.name}${m.onHandUnits != null ? ` holds ${n(m.onHandUnits)} units${m.onHandValue != null ? ` (about ${model.currency} ${n(Math.round(m.onHandValue))})` : ""}` : ""}${m.inboundUnits != null ? `, with ${n(m.inboundUnits)} on the way` : ""}.`);
     // "QA-001209 runs short no replenishment route" — the clause is written by whoever knows what
     // the flag means, not assembled from a verb this file guesses at.
     if (m.shortages?.length) parts.push(`${list(m.shortages.map((s) => `${shortName(s.sku)} ${s.said}`), 2)}.`);

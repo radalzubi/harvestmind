@@ -270,3 +270,24 @@ test("the fixture actually reaches both sides of the rule", () => {
   // And the rule must not over-correct: subjects joined by "and" stay plural whatever their counts.
   assert.ok(clauses.some((c) => /^1 open order and 1 SKU depend on/.test(c)), "no compound subject");
 });
+
+/**
+ * A sentence that quotes money must quote the workspace's money. `describe()` had a hard `$` in
+ * it, three lines from a facts row that formats the same number through the workspace currency.
+ */
+test("a site's stock value is quoted in the workspace's own currency", () => {
+  const jod = buildCanonicalModel({
+    request: { ...request, currency: "JOD" }, build, report, directory,
+    homeRegion: "JO", workspaceName: "Acme",
+  });
+  const jodIndex = buildIndex(jod);
+  const site = jod.nodes.find((n) => (n.kind === "dc" || n.kind === "branch") && n.metrics.onHandValue != null);
+  assert.ok(site, "the fixture has a site with a stock value");
+  const said = describeItem({ type: "node", id: site.id }, jod, jodIndex);
+  assert.ok(said.includes("JOD"), `no workspace currency in: ${said}`);
+  assert.ok(!said.includes("$"), `a dollar sign survived in: ${said}`);
+
+  // And the default fixture, which does trade in dollars, says so by name rather than by symbol.
+  const usd = describeItem({ type: "node", id: site.id }, model, index);
+  assert.ok(usd.includes("USD"), usd);
+});
