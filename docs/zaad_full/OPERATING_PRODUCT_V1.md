@@ -287,8 +287,14 @@ An operator can read the records ZAAD holds — a row count is not evidence. The
   as "more than" beyond it.
 * **Nothing is writable.** Writes live in `drafts.py`, which touches only the product's own tables.
 
-Thirteen datasets are declared. A table a workspace has not uploaded is an empty dataset, not an
-error.
+Twelve datasets are declared (`DATASETS` in `api/product/queries.py`). A table a workspace has not
+uploaded is an empty dataset, not an error — `GET /datasets` lists the ones a given vault holds, so
+a workspace without declared alternative sources simply sees that dataset at zero rows.
+
+Probed live with `'; DROP TABLE stg_fmcg_skus; --`, `%' OR '1'='1` and `../../etc/passwd` as the
+search value, an undeclared dataset name, an undeclared sort column, a limit of 100,000 and a
+negative offset: each returns nothing or is refused by name, and the tables were still there
+afterwards.
 
 Corrections belong in the source system and a fresh upload; the explorer is evidence, not a
 workbench. Operating on the business happens in Inventory, Purchase orders, Decisions and Network.
@@ -469,6 +475,13 @@ Stated here so nobody has to discover it:
 * **Bulk creation across suppliers** is not built: grouping recommended purchases into one draft per
   supplier and destination is only safe where both are unambiguous in the report, and where they are
   not, guessing would put the wrong lines on the wrong order.
+* **No transfer proposals.** P2 says where inventory should sit; there is no recorded-transfer
+  object in the released system to write one into, and inventing one would be a new object model
+  with no engine behind it.
+* **No telemetry.** The semantic events are not emitted and no analytics vendor was added. The seam
+  is the action handlers, which are in two files.
+* **No Arabic copy for the new surfaces.** Direction and structure are right in RTL and verified;
+  the new copy is English, and belongs in `lib/i18n` rather than in ad hoc runtime strings.
 
 ## 15. Migration 023
 

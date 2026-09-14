@@ -157,7 +157,7 @@ Stated plainly rather than left to be discovered.
 | `tests/unit/test_product_drafts_schema.py` | 14 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
 | Whole integration shard (`tests/integration`) | **324 passed** |
-| Whole local suite (`tests/unit` + `tests/integration`) | **2,089 passed, 2 skipped** |
+| Whole local suite (`tests/unit` + `tests/integration`) | **2,100 passed, 2 skipped** (7 m 03 s) |
 | Frontend (`npm test`) | **99 passed**, 38 new |
 | Frontend typecheck / production build | green |
 | Frontend lint | green **in CI** — see §10.13 |
@@ -180,11 +180,18 @@ Benchmark: `python3 scripts/zaad_product_scale_bench.py <db> [<db>…]`.
 
 Full per-query table in `OPERATING_PRODUCT_V1.md` §7.
 
+**That is catalogue scale, which is not the same question as how much can be planned at once.** A
+solve over a three-site workspace took 62 s and 92 s for 6 products, 108 s for 8 and 232 s for 10 —
+measured, and the reason §10.2 exists. Read the two together or the product looks faster than it is.
+
 ## 7. Live QA performed
 
 Against a running API (`HARVESTMIND_AUTH_REQUIRED=true`, `ZAAD_LEGACY_PLANNERS=0`, released jobs
-path) and a **production build** of this branch, on synthetic workspaces created by the QA generator
-— never against a live operator vault, and nothing was written to any production registry.
+path) and a **production build** of this branch, on two workspaces in the local development
+registry — one of 150 products over three sites with declared amendment rights, one of 10,000
+products and 120 suppliers — both holding data the QA generator made. **No real operator's data was
+read and nothing was written to any production registry**, and the API this ran against was a local
+process, never `zaad-api`.
 
 * Home (no plan / run in flight / plan ready / watch state), Decisions, Inventory (list, search,
   filters, sort, SKU drawer), Purchase orders (both tabs, imported-order panel with declared
@@ -257,20 +264,23 @@ path) and a **production build** of this branch, on synthetic workspaces created
   wrong order's reasoning. It says so now.
 * **Every page's controls listed from the DOM and checked for duplicates**, which is how the run
   control appearing twice on Decisions and "Cancel" twice on the order editor were found.
-* **Screenshots taken and looked at**, not just text read back. That is also how the Value tab's
-  two "Not available" rows turned out to carry their reason only in a `title` — readable by hovering
-  a mouse, and by nothing else. On a panel whose whole purpose is to say why a number is missing,
-  the reason is now printed under it. That is how the network panel's
-  metric captions turned out to be drawn as a 22px-padded green panel: `.note` is a marketing-site
-  class, both stylesheets load on a workspace page, and `.facts .note` overrode the colours without
-  taking back the padding or the background. Every class the workspace uses was then checked
-  against `site.css`; `.note` was the only real collision (`.exposed` and `.zfield` are scoped
-  under a marketing ancestor and cannot reach a workspace page).
+* **Screenshots taken and looked at**, not just text read back. The words on the network panel were
+  right the whole time; the 22px-padded green box drawn around them was not. `.note` is a
+  marketing-site class, both stylesheets load on a workspace page, and `.facts .note` overrode the
+  colours without taking back the padding or the background. Every class the workspace uses was
+  then checked against `site.css`; `.note` was the only real collision (`.exposed` and `.zfield`
+  are scoped under a marketing ancestor and cannot reach a workspace page).
+* **The Value tab's two "Not available" rows** turned out to carry their reason only in a `title` —
+  readable by hovering a mouse, and by nothing else. On the one panel whose whole purpose is to say
+  why a number is missing, the reason is printed under it now.
 * **Every rendered page scanned for leaked internal tokens** (`undefined`, `NaN`, `[object Object]`,
   snake_case identifiers) — **and every `aria-label` scanned for the same thing**, which is a
   channel nothing visible would have shown. Tabbing the network graph with a screen reader
   announced React Flow's default labels: "Edge from sup:SUP-001 to port:aqaba". Every node and edge
-  already carried the sentence a person would say, and now says it.
+  already carried the sentence a person would say, and now says it. In visible text there was one
+  leak, `de_expedite` in the declared-rights table. The route id `road_saudi` appears too and is
+  **left verbatim on purpose**: it is the operator's own declared value, and inventing a display
+  name for it would be fabrication.
 * **Contrast computed from the rendered DOM** — every text node against its own resolved
   background, at the AA threshold for its size and weight. `.na`, the "Not available" marker this
   product puts in every table to say it does not know something, measured **2.39:1**: the least
@@ -296,9 +306,7 @@ path) and a **production build** of this branch, on synthetic workspaces created
   "Approved. Nothing has been sent to a supplier", "Format saved" — the toast stack had no live
   region, so an action a person could not see appeared to do nothing at all. It is a polite live
   region now, announcing only the new message, and it sits in the trailing corner in Arabic rather
-  than always on the right. One leak: `de_expedite` in the declared-rights table. The route id
-  `road_saudi` also appears — that one is the operator's own declared value and is left verbatim,
-  because inventing a display name for it would be fabrication.
+  than always on the right.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats
   answered `500`. See below.
 * **Every refusal path on the proposal endpoint probed by hand** — a negative quantity, zero, a
@@ -444,7 +452,10 @@ Ordered by how much they should worry you.
    detects it on the reader's side — a run that outlives the time the engine gave it is reported as
    interrupted rather than spun on for ever — but the row stays RUNNING and the quota stays spent.
    **The fix belongs in `JobStore`** (mark a row TIMEOUT when `started_at + timeout_s` has passed and
-   no process owns it) and needs the frozen-regression treatment.
+   no process owns it) and needs the frozen-regression treatment. It is not theoretical: the second
+   day of this session restarted the API a dozen times to pick up backend changes, and each restart
+   had to be preceded by checking the job list and waiting for anything RUNNING to finish. An
+   operator will not do that.
 2. **Nothing in this pass raises the ceiling on how much can be planned at once, and the ceiling is
    low.** Three separate caps stack: `zaad.network.v2` allows at most 5,000 products in a `Request`;
    the jobs path allows 200 (`LARGE_LIMITS` in `api/routers/zaad_full.py`); and this product reads
@@ -538,6 +549,13 @@ Ordered by how much they should worry you.
   one a buyer proposes. Deciding whether that number should exist — and if so, whether it is a new
   run or a new engine capability — is the largest open product question in this surface.
 * Whether the Arabic copy for the new surfaces belongs in this release or the next.
+* The two accessibility passes this session could not do from here: a run with a real screen
+  reader, and a browser-zoom pass. Everything else in that class was measured (§3's caveat).
+* **A view on how much of the second day's method should become a standing gate.** Six of the
+  defects it found were invisible to every test in this repository and would have reached an
+  operator. Some of it is automatable — a duplicate-column check, an `aria-label` scan for internal
+  ids, a contrast sweep, a preflight test per method — and some of it is not: opening the PDF and
+  looking at it is not a check a CI job can make.
 * Merge and deploy, which this pass deliberately did not do.
 
 ## 12. Session record
