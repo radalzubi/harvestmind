@@ -456,6 +456,13 @@ process, never `zaad-api`.
   behaviour the module docstring was corrected to describe rather than the other way round.
   `DELETE` answered 204 and the next read 404; the workspace holds the three proposals it held
   before.
+* **The "Cover not measurable" filter, which is a page of identical dashes.** Choosing it gives a
+  table where every Cover cell reads "Not available" for one reason, and that reason lived only in
+  a `title`. It is said in the open now, once, with the count — *"22 products here have stock
+  counted but no demand history ZAAD can divide it by, so cover is not a number it can give — not a
+  cover of zero"* — and only when the filter actually matches something: on the ten-thousand-product
+  workspace, where every product has measurable cover, the filter returns nothing and the sentence
+  is absent. Same reasoning as the routes table above; a tooltip is not a place a reason can live.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →

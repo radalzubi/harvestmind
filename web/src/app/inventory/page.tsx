@@ -22,7 +22,7 @@ import { Button, ButtonLink, Disclosure, EmptyState, ErrorState, Loading, Notice
 import { Column, DataTable, Drawer, NotAvailable, Pager, SearchField, SelectField, Tally, Toolbar } from "@/components/workspace/Table";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import {
-  DATE, MONEY, NUMBER, fetchDatasetValues, fetchInventory, fetchSku,
+  COUNT, DATE, MONEY, NUMBER, fetchDatasetValues, fetchInventory, fetchSku,
   type InventoryPage, type InventoryRow, type SkuDetail,
 } from "@/lib/zaad/product";
 
@@ -349,6 +349,20 @@ function InventoryBody() {
         <div className="tbar-spacer" />
         {filtered && <Button size="sm" role="tertiary" onClick={() => router.replace("/inventory")}>Clear filters</Button>}
       </Toolbar>
+
+      {/* Filtering to "Cover not measurable" gives a page where every Cover cell says the same
+          thing for the same reason, and that reason only exists in a `title` — unreachable by
+          touch, unreliable to a screen reader. When it is the whole page, it is said in the open. */}
+      {cover === "unknown" && page.total > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <Notice>
+            Weeks of cover needs both a stock count and twelve weeks of customer orders for the
+            product. {COUNT(page.total, "product")} here {page.total === 1 ? "has" : "have"} stock
+            counted but no demand history ZAAD can divide it by, so cover is not a number it can
+            give — not a cover of zero.
+          </Notice>
+        </div>
+      )}
 
       {scope && planPhase === "ready" && (
         <div style={{ marginBottom: 12 }}>
