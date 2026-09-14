@@ -105,8 +105,18 @@ checked, by driving the product rather than reading it:
 * **Reflow (1.4.10)** — zero horizontal overflow on twelve surfaces at 375×812, in RTL, and in
   both, and zero again at **320 CSS px**, which is the width the criterion actually names.
 * **Text spacing (1.4.12)** — the WCAG override applied live (line-height 1.5, letter-spacing
-  0.12em, word-spacing 0.16em, paragraph spacing 2em): no overflow and nothing clipped but the
-  `sr-only` elements, which are clipped on purpose.
+  0.12em, word-spacing 0.16em, paragraph spacing 2em) on Home, Decisions, Inventory and
+  Diagnostics: no overflow and nothing clipped but the `sr-only` elements, which are clipped on
+  purpose. **It found one**, on the last day: Home's "Worth watching" cards clamped their summary
+  to three lines with `overflow: hidden`, so the wider spacing pushed words out of the card — and
+  the clamped text is the sentence naming which products have no route to be replenished. The
+  cards are grid items that stretch to their row, so the clamp is gone and the summary is whole.
+* **Zoom (1.4.4)** — the workspace at a **640×512** viewport, which is what 200 % page zoom leaves
+  of a 1280×1024 screen: zero horizontal overflow on Home, Decisions, Purchase orders, Diagnostics
+  and the Network. Two honest qualifications: this is emulation of the viewport, not the browser's
+  own zoom, and the product sets its font sizes in `px`, so a reader who raises only the *text*
+  size rather than zooming the page gets no change. That second one is a real limitation, not a
+  measurement artefact.
 * **Structure** — one `h1` per page, no skipped heading levels, no unnamed button, no image
   without `alt`.
 * **Names** — every `aria-label` in the workspace free of internal identifiers. The network graph
@@ -129,9 +139,8 @@ checked, by driving the product rather than reading it:
   export; this is for the times someone prints the screen.
 
 **Six of those classes were broken when this session started and are fixed here.** What was *not*
-done: a pass with an actual screen reader, a browser-zoom pass (reflow at 320 px is the stronger
-evidence, but it is not the same criterion), and any check of the marketing site — only the
-workspace was swept. Those are open, and the table above should not be read as
+done: a pass with an actual screen reader, a pass with the browser's own zoom rather than an
+emulated viewport, and any check of the marketing site — only the workspace was swept. Those are open, and the table above should not be read as
 claiming otherwise. One residual contrast failure is left deliberately: React Flow's own
 "React Flow" attribution link, at 2.85:1, which the library styles and the licence asks to keep.
 

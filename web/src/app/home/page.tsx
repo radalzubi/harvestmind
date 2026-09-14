@@ -160,9 +160,12 @@ function Watches({ state }: { state: Standing }) {
                 <span className="dec-cat">{node ? KIND_LABEL[node.kind] : "Lane"}</span>
               </div>
               <h3 className="dec-h" style={{ fontSize: 14 }}>{area.title}</h3>
-              <p className="dec-sub" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                {area.summary}
-              </p>
+              {/* This was clamped to three lines with `overflow: hidden`. A watch summary names
+                  the products with no route to be replenished, and the fourth line is as much a
+                  fact as the first — worse, under WCAG 1.4.12's text spacing the same words need
+                  more lines and more of them disappear. The cards are grid items that stretch to
+                  their row, so letting this one grow costs a little height and no content. */}
+              <p className="dec-sub">{area.summary}</p>
             </Link>
           );
         })}
