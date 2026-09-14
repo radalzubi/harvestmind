@@ -803,8 +803,11 @@ build and to every test in this repository:
 * Uploads are bounded, and the bounds are constants rather than prose: `MAX_TEMPLATE_BYTES` 2 MiB,
   `MAX_TEMPLATE_SHEETS` 20, `MAX_TEMPLATE_COLUMNS` 200, `MAX_CELL_CHARS` 500, `MAX_IMPORT_ROWS`
   2,000 (`exporting.py`); `MAX_LINES` 500, `MAX_NOTE` 2,000, `MAX_LINE_VALUE` 10⁹ (`drafts.py`);
-  `MAX_PAGE` 200 and `MAX_ROWS` 200 on reads, `MAX_SKU_FILTER` 400. Workbook formulas are read as
-  cached text and never evaluated.
+  `MAX_PAGE` 200 and `MAX_ROWS` 200 on reads, `MAX_SKU_FILTER` 400. Each is enforced before
+  anything is written, and the refusal is a sentence: 500 lines are accepted and 501 answers
+  *"A proposal carries at most 500 lines; this one has 501"* — checked on the handoff head, and the
+  workspace held the same three proposals afterwards. Workbook formulas are read as cached text and
+  never evaluated.
 * Every cell written to a CSV or XLSX passes through one function so a value beginning `=`, `+`, `-`
   or `@` cannot leave as a formula.
 * No endpoint transmits anything. `executable: false` on every write response;
