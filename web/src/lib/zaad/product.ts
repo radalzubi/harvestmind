@@ -395,6 +395,11 @@ export interface EvaluationState {
   runs?: Record<string, { status: string; job_id?: string; error?: string | null; finished_at?: string | null }>;
   scope?: string[];
   as_of?: string | null;
+  /** When this evaluation was submitted. */
+  evaluated_at?: string | null;
+  /** True when the proposal has been edited since, so the comparison describes different lines. */
+  stale?: boolean;
+  stale_reason?: string | null;
   comparison?: Comparison | null;
   executable?: boolean;
 }

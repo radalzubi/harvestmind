@@ -194,14 +194,24 @@ function Evaluation({ draft, onChanged }: { draft: Draft; onChanged: () => void 
           {Object.entries(state.runs ?? {}).map(([key, run]) => run.error ? `${key}: ${run.error}` : null).filter(Boolean).join(" ")}
         </Notice>
       )}
+      {/* A draft stays editable and an edit does not start a new revision, so a comparison can
+          outlive the lines it was computed for. Saying so is the difference between an honest
+          answer and a confident wrong one. */}
+      {state?.stale && !running && state.stale_reason && (
+        <div style={{ marginBottom: 12 }}>
+          <Notice tone="warn">
+            <strong>This comparison is out of date.</strong> {state.stale_reason}
+          </Notice>
+        </div>
+      )}
       {state?.comparison && !running && <ComparisonTable comparison={state.comparison} />}
       {state?.comparison?.unavailable?.length ? (
         <div style={{ marginTop: 12 }}><Notice tone="warn">{state.comparison.unavailable.join(" ")}</Notice></div>
       ) : null}
       <div style={{ marginTop: 14 }}>
-        <Button role={state?.comparison ? "secondary" : "primary"} pending={busy} disabled={running || !draft.lines.length}
+        <Button role={state?.comparison && !state?.stale ? "secondary" : "primary"} pending={busy} disabled={running || !draft.lines.length}
           icon={<FileSearch size={15} aria-hidden />} onClick={run}>
-          {state?.comparison ? "Evaluate again" : "Ask ZAAD to evaluate this"}
+          {state?.stale ? "Evaluate what you have now" : state?.comparison ? "Evaluate again" : "Ask ZAAD to evaluate this"}
         </Button>
       </div>
     </Section>

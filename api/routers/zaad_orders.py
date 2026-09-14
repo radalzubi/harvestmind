@@ -456,8 +456,19 @@ def read_evaluation(draft_id: str, operator: Operator, conn=Depends(get_conn),
         reports.get("baseline"), reports.get("proposal"), draft=draft, scope=scope,
         currency=str(draft.get("currency") or "USD"),
         notes=[record["note"]] if record.get("note") else None) if reports else None
+
+    # An evaluation describes the lines as they were when it was submitted. A draft stays editable,
+    # and an edit does not start a new revision — so without this the page would keep showing an
+    # engine answer for an order that no longer exists on the screen above it.
+    edited_at, evaluated_at = draft.get("updated_at"), record.get("created_at")
+    stale = bool(edited_at and evaluated_at and edited_at > evaluated_at)
+
     return {"evaluation_id": record["evaluation_id"], "draft_id": draft_id, "status": status,
             "runs": states, "scope": scope, "as_of": record.get("as_of"),
+            "evaluated_at": evaluated_at, "stale": stale,
+            "stale_reason": ("This proposal was changed after it was evaluated, so the comparison "
+                             "below describes the order as it was, not as it is now. Evaluate it "
+                             "again to compare what you have.") if stale else None,
             "comparison": comparison, "executable": False}
 
 

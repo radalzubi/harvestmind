@@ -425,3 +425,42 @@ def test_evaluation_runs_are_distinguishable_from_the_workspace_plan(client, vau
         "with no job store configured in this test app, the record is the whole answer"
     assert _client(vault, "someone_else").get("/api/zaad/orders/evaluation-jobs").json()["evaluation_job_ids"] == [], \
         "and another workspace's evaluation runs are not listed here"
+
+
+def test_an_evaluation_is_marked_out_of_date_once_the_proposal_is_edited(
+        client, vault, skus, tmp_path, monkeypatch):
+    """A draft stays editable and an edit does not start a new revision.
+
+    So a comparison can outlive the lines it was computed for, and the page would keep showing an
+    engine answer for an order that no longer exists above it. The read says when that has happened.
+    """
+    from api.product import evaluation
+
+    # Reading an evaluation asks the job store for the two runs, so this test needs one. It is a
+    # throwaway file and holds no jobs: the runs come back MISSING, which is the point — the
+    # staleness answer must not depend on them.
+    monkeypatch.setenv("ZAAD_JOB_STORE", str(tmp_path / "jobs.sqlite"))
+
+    draft = _create(client, skus)
+    draft_id = draft["draft_id"]
+    evaluation.store_evaluation(
+        vault, OPERATOR, draft_id=draft_id, revision=1,
+        baseline_job_id="job_a", proposal_job_id="job_b",
+        as_of="2026-01-05T00:00:00Z", scope=[skus[0]], status="QUEUED")
+
+    fresh = client.get(f"/api/zaad/orders/{draft_id}/evaluation").json()
+    assert fresh["stale"] is False
+    assert fresh["stale_reason"] is None
+    assert fresh["evaluated_at"]
+
+    edited = client.patch(f"/api/zaad/orders/{draft_id}",
+                          json={"lines": [{"sku": skus[0], "quantity": 2400, "unit_price": 4.5}]})
+    assert edited.status_code == 200, edited.text
+
+    after = client.get(f"/api/zaad/orders/{draft_id}/evaluation").json()
+    assert after["stale"] is True
+    assert "changed after it was evaluated" in after["stale_reason"]
+    # The evaluation is still returned rather than hidden: it is a true answer about a past state.
+    assert after["evaluation_id"] == fresh["evaluation_id"]
+
+    client.delete(f"/api/zaad/orders/{draft_id}")

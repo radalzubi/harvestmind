@@ -104,15 +104,16 @@ Stated plainly rather than left to be discovered.
 
 | Suite | Result |
 |---|---|
-| `tests/integration/test_operating_product_api.py` | 36 passed |
+| `tests/integration/test_operating_product_api.py` | 37 passed |
 | `tests/unit/test_product_exporting.py` | 24 passed |
 | `tests/unit/test_product_evaluation.py` | 26 passed |
 | `tests/unit/test_product_drafts_schema.py` | 9 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
-| Whole integration shard (`tests/integration`) | **316 passed** |
-| Whole local suite (`tests/unit` + `tests/integration`) | 2,058 passed, 2 skipped |
+| Whole integration shard (`tests/integration`) | **317 passed** |
+| Whole local suite (`tests/unit` + `tests/integration`) | **2,082 passed, 2 skipped** (7 m 05 s) |
 | Frontend (`npm test`) | **99 passed**, 38 new |
-| Frontend typecheck / lint / production build | green |
+| Frontend typecheck / production build | green |
+| Frontend lint | green **in CI** — see §10.12 |
 | `ruff`, `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
 | **zaad frozen regression** | **green** |
 
@@ -173,8 +174,12 @@ path) and a **production build** of this branch, on synthetic workspaces created
   because inventing a display name for it would be fabrication.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats
   answered `500`. See below.
+* **A proposal edited after it was evaluated.** The page kept the old comparison on screen with no
+  sign that the lines above it had changed — a draft stays editable and an edit does not start a
+  new revision, so nothing in the record said the answer was out of date. The read now reports it
+  and the page says so before the table.
 
-**Twenty-one defects were found this way and fixed**; they are listed in the PR description. The
+**Twenty-two defects were found this way and fixed**; they are listed in the PR description. The
 four most serious were invisible to the build and to the existing tests:
 
 * `ensure_tables` — the fallback that prepares the product's own tables on a vault that predates
@@ -254,10 +259,21 @@ Ordered by how much they should worry you.
    the jobs path allows 200 (`LARGE_LIMITS` in `api/routers/zaad_full.py`); and this product reads
    150 and says so on every page that shows a plan. The last of those is a product decision and
    reversible; the first two are the engine's and are not. The binding constraint is not the caps
-   but the solve: a **ten-product, three-site, twelve-week run measured 3 m 52 s** on the corridor QA
-   workspace (job `job_60c29e10`, 2026-09-14), and an eight-product one 1 m 48 s. So on a multi-site
-   workspace the scope choices the product offers (5 / 10 / 25 / 50) are not interchangeable — the
-   larger ones will approach or exceed the budget the job is given. **Record surfaces are unaffected:**
+   but the solve. Measured on a three-site, twelve-week QA workspace on 2026-09-14, each run to
+   completion on the released jobs path:
+
+   | products | sources | solve |
+   |---|---|---|
+   | 6 | 6 | **62 s** and **92 s** (the two runs of one evaluation) |
+   | 8 | 8 | **108 s** |
+   | 10 | 10 | **232 s** |
+
+   Four points are not a growth law, and two runs of the same size differed by half a minute — but
+   the direction is unambiguous and it is not linear: adding a quarter more products (8 → 10) more
+   than doubled the solve. So the scope choices the
+   product offers (5 / 10 / 25 / 50) are **not** interchangeable on a multi-site workspace: the
+   larger ones will approach or exceed the budget the job is given, and the interface already says
+   so beside the "all products" choice. **Record surfaces are unaffected:**
    inventory, purchase orders, diagnostics and the data explorer query the vault directly and were
    benchmarked at 50,000 products / 4.0 M rows with a slowest median query of 298 ms. The limit is on
    one optimization problem, not on the platform.
@@ -281,17 +297,27 @@ Ordered by how much they should worry you.
    plan. The baseline is a genuine plan, so nothing false is shown, but its scope is the proposal's
    products rather than the workspace's, and the operator did not ask for it. The window is short
    (two queue writes and a DuckDB insert) and was not observed in QA. The fix is to write the
-   evaluation record first, or to carry a purpose field on the job — see item 10.
-7. **Receipts that do not name a product** are attributed only when the order has one line; otherwise
+   evaluation record first, or to carry a purpose field on the job — see item 11.
+7. **A proposed amendment is never priced outside a plan, by design, and that is a real gap in the
+   product.** The declared terms are now shown — fee per unit, credit per unit, capacity, deadline,
+   provenance — but ZAAD does not multiply them by the quantity affected, because the worth of a
+   change is a plan-level question (what the units do instead, what the shortage costs, what the
+   money is worth elsewhere) and the fee is only one term of it. A buyer who wants a number must
+   have a plan that covers the order and reads its commitment block. Two consequences: an amendment
+   cannot be sent through the proposal-evaluation path at all (`amendment_not_evaluated`, 422, with
+   the reason), and on a KEEP the buyer sees the terms but no figure. **If you disagree with that
+   boundary, this is the first place to look** — the honest alternative is a P4B-priced "what would
+   this change be worth" run, which is new engine work, not a frontend change.
+8. **Receipts that do not name a product** are attributed only when the order has one line; otherwise
    the line's received quantity is reported as unattributed, never apportioned.
-8. **Sites are not placed on the map** in a multi-site workspace — the planning contract carries no
+9. **Sites are not placed on the map** in a multi-site workspace — the planning contract carries no
    coordinates and the operator's country would stack every site on one point.
-9. **No supported delay driver** is produced: the canonical upload has no event timestamps between
-   order and receipt. The five fields that would settle it are named on the page.
-10. **The evaluation-run guard has two bases and neither is the job store itself.** The vault record
+10. **No supported delay driver** is produced: the canonical upload has no event timestamps between
+    order and receipt. The five fields that would settle it are named on the page.
+11. **The evaluation-run guard has two bases and neither is the job store itself.** The vault record
     is the normal answer; the overlaid run's own request is the fallback. A cleaner answer would be a
     purpose field on the job record — which is in `zaad/`, so not this pass.
-11. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
+12. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
     7–12 minutes earlier in the pass and passed; by the end the eslint process parked with the
     config's `globals.json` open, sleeping, and **0.94 s of CPU consumed in 3 m 24 s** — it was
     blocked, not slow. Two separate invocations behaved identically and were killed. The lint
@@ -308,6 +334,11 @@ Ordered by how much they should worry you.
   both are product decisions rather than implementation gaps.
 * A decision on the orphaned-job defect (§10.1): it is real, it is in the frozen package, and it
   predates this work.
+* **The question this pass could not answer honestly: what is a proposed change to an existing
+  order worth?** (§10.7.) The declared terms are shown; the number is not, because producing it
+  means pricing the change through the engine, and P4B prices the amendment it *chooses*, not the
+  one a buyer proposes. Deciding whether that number should exist — and if so, whether it is a new
+  run or a new engine capability — is the largest open product question in this surface.
 * Whether the Arabic copy for the new surfaces belongs in this release or the next.
 * Merge and deploy, which this pass deliberately did not do.
 

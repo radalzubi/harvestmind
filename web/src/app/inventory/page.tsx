@@ -156,7 +156,7 @@ function SkuPanel({ sku, onClose }: { sku: string; onClose: () => void }) {
                 rows={detail.purchase_orders.slice(0, 12)} rowKey={(r) => r.po_id}
                 columns={[
                   { key: "po_id", label: "PO", render: (r) => <Link href={`/orders?po=${encodeURIComponent(r.po_id)}`}>{r.po_id}</Link> },
-                  { key: "po_date", label: "Ordered", render: (r) => DATE(r.po_date) },
+                  { key: "po_date", label: "Ordered on", render: (r) => DATE(r.po_date) },
                   { key: "qty_ordered", label: "Quantity", numeric: true, render: (r) => NUMBER(r.qty_ordered) },
                   { key: "qty_received", label: "Received", numeric: true, render: (r) => r.qty_received != null ? NUMBER(r.qty_received) : "—" },
                   { key: "first_receipt", label: "Arrived", render: (r) => r.first_receipt ? DATE(r.first_receipt) : <span className="chip" data-tone="warn">Open</span> },

@@ -228,7 +228,7 @@ function SupplierBody({ id }: { id: string }) {
             rowKey={(r) => r.po_id}
             columns={[
               { key: "po_id", label: "PO", render: (r) => <Link href={`/orders?po=${encodeURIComponent(r.po_id)}`}>{r.po_id}</Link> },
-              { key: "po_date", label: "Ordered", render: (r) => DATE(r.po_date) },
+              { key: "po_date", label: "Ordered on", render: (r) => DATE(r.po_date) },
               { key: "promised", label: "Promised", render: (r) => r.promised ? DATE(r.promised) : <span className="na">—</span> },
               { key: "first_receipt", label: "Arrived", render: (r) => DATE(r.first_receipt) },
               { key: "late_days", label: "Against promise", numeric: true,

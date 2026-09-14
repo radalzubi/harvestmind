@@ -439,12 +439,16 @@ def store_evaluation(conn: Any, operator: str, *, draft_id: str, revision: int |
 
     ensure_tables(conn)
     identity = evaluation_id()
+    # One timestamp for both writes. Two calls to now() put the draft's `updated_at` a few hundred
+    # microseconds after the evaluation's `created_at`, and "has this proposal changed since it was
+    # evaluated?" is exactly that comparison — so every evaluation would have been born out of date.
+    stamp = datetime.now(timezone.utc).replace(tzinfo=None)
     conn.execute(
         "INSERT INTO zaad_evaluations (evaluation_id, operator_id, draft_id, revision, baseline_job_id, "
         "proposal_job_id, as_of, scope_skus, status, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [identity, operator, draft_id, revision, baseline_job_id, proposal_job_id, as_of,
-         json.dumps(scope), status, note, datetime.now(timezone.utc).replace(tzinfo=None)])
+         json.dumps(scope), status, note, stamp])
     conn.execute("UPDATE zaad_draft_orders SET evaluation_id = ?, updated_at = ? "
                  "WHERE draft_id = ? AND operator_id = ?",
-                 [identity, datetime.now(timezone.utc).replace(tzinfo=None), draft_id, operator])
+                 [identity, stamp, draft_id, operator])
     return identity
