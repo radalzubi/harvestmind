@@ -216,6 +216,10 @@ path) and a **production build** of this branch, on synthetic workspaces created
   run's `incumbent_costs[key]`, and the difference column equals right minus left to within a
   floating-point epsilon. Nothing in the comparison is computed by application code. That is the
   release's central honesty claim and it is now an observation rather than a design intention.
+* **And the Decisions page against the plan report**: the six decisions under "Open POs" are the
+  six orders in the report's `commitments.orders`, each headline carrying that order's own
+  `recommended_action`; "Limits of this plan — 5 stated" is the report's own five `limitations`,
+  verbatim. The page is a rendering of the block, not a summary of it.
 * **The whole lifecycle again, on a second workspace, start to finish:** a proposal created from a
   product on Inventory (supplier, pack size and unit cost prefilled from the master), evaluated
   (two engine runs, eight minutes, three columns of the engine's own ledger), approved with a
