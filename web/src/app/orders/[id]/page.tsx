@@ -131,6 +131,9 @@ function Evaluation({ draft, onChanged }: { draft: Draft; onChanged: () => void 
   const [busy, setBusy] = useState(false);
   const timer = useRef<number | null>(null);
 
+  // `updated_at` is in the dependency list on purpose: saving an edit is what makes an existing
+  // comparison out of date, and the answer to "is it?" comes from the server. Without it the page
+  // would keep the stale comparison, unmarked, until the next reload.
   const poll = useCallback(async () => {
     try {
       const next = await readEvaluation(draft.draft_id);
@@ -141,7 +144,7 @@ function Evaluation({ draft, onChanged }: { draft: Draft; onChanged: () => void 
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, [draft.draft_id]);
+  }, [draft.draft_id, draft.updated_at]);
 
   useEffect(() => {
     poll();

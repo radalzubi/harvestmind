@@ -464,3 +464,38 @@ def test_an_evaluation_is_marked_out_of_date_once_the_proposal_is_edited(
     assert after["evaluation_id"] == fresh["evaluation_id"]
 
     client.delete(f"/api/zaad/orders/{draft_id}")
+
+
+@pytest.mark.parametrize("method", ["GET", "POST", "PATCH", "PUT", "DELETE"])
+def test_a_browser_may_preflight_every_method_the_product_writes_with(method):
+    """CORS is an allowlist, and the allowlist has to include what the endpoints are.
+
+    It listed GET/POST/OPTIONS, which was true until this product declared PATCH (edit a proposal),
+    PUT (update an export format) and DELETE (remove either). A browser answers its own preflight
+    for an unlisted method with a 400 and never sends the request, so three write paths could not
+    work from the interface — invisible to every test here, because a test client does not
+    preflight. This one does.
+    """
+    from api.main import app as real_app
+
+    with TestClient(real_app) as probe:
+        response = probe.options("/api/zaad/orders", headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": method,
+            "Access-Control-Request-Headers": "content-type,authorization",
+        })
+    assert response.status_code == 200, response.text
+    allowed = response.headers.get("access-control-allow-methods", "")
+    assert method in allowed, f"{method} is not in {allowed!r}"
+
+
+def test_a_method_the_api_does_not_serve_is_still_refused():
+    """The allowlist is still an allowlist."""
+    from api.main import app as real_app
+
+    with TestClient(real_app) as probe:
+        response = probe.options("/api/zaad/orders", headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "TRACE",
+        })
+    assert response.status_code == 400

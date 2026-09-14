@@ -148,9 +148,31 @@ must travel together or the workspace adapter rightly refuses the build). Capped
 needing more is refused with an explanation rather than silently trimmed. The scope and its
 limitation are stated with every answer.
 
+**Staleness.** A draft stays editable after it has been evaluated, and an edit does not start a new
+revision, so the comparison can outlive the lines it was computed for. `GET /{id}/evaluation`
+therefore reports `evaluated_at` and `stale`, and the page says so above the table rather than
+presenting an engine answer about an order that is no longer on the screen. The comparison is still
+shown: it is a true answer about a past state. `store_evaluation` writes the evaluation row and the
+draft's `updated_at` from **one** timestamp, because two calls to `now()` would leave every
+evaluation microseconds older than its own draft and therefore born stale.
+
 **Amendments are not evaluated this way.** A change to an existing order is worth what the contract
-says it is worth. ZAAD reads its own P4B commitment block for that order; where no amendment right
-is declared, it reports that it cannot price the change. It never estimates one.
+says it is worth, so `POST /{id}/evaluate` refuses an `IMPORTED_AMENDMENT` (`amendment_not_evaluated`)
+and points at the plan instead. What the page shows is the engine's own commitment block for that
+order, read through `amendment_view`:
+
+* **`contractual_basis` is the option the plan chose**, and it is empty on every KEEP. It is not a
+  statement about what the contract allows. Reading it as one told a buyer their contract gave them
+  nothing on the most common case.
+* **`amendment_windows` is what the contract allows.** The eligible ones are reported with the
+  engine's own per-unit terms — fee, credit, capacity, deadline, provenance — and the one matching
+  the proposed change is marked. The built-in KEEP window is constructed from the order rather than
+  declared by anyone, so it is excluded.
+* Four cases are distinguished in words: no right declared; a right declared but not for this
+  change; a change P4B has no option type for at all; rights declared and the plan still chose KEEP.
+* **No total is produced.** The declared fee is one term of what a change is worth, not the answer,
+  and multiplying it out here would be modelling. A buyer who wants the number needs a plan that
+  covers the order.
 
 ## 6. Export — the last mile
 
@@ -360,6 +382,7 @@ POST       /{id}/export                   the file
 GET|POST|PUT|DELETE /profiles[/{id}]      export formats
 POST       /profiles/read-template        heading row of an operator's template
 POST       /read-proposal                 a proposed order from a spreadsheet
+GET        /evaluation-jobs               which job ids are evaluation runs, not plans
 ```
 
 **Rate limiting.** These are indexed reads a page makes on every view, so they are not on the
@@ -379,6 +402,13 @@ bounded limiter.
   search value binds as a parameter (held by a test that checks the table still exists afterwards).
 * Uploads are bounded: file size, sheet count, column count, row count, cell length. Formulas in an
   uploaded workbook are read as cached text, never evaluated.
+* **CORS names every method the API serves and nothing more.** It used to say GET/POST/OPTIONS,
+  which was true of the API before this product; PATCH, PUT and DELETE are this product's, and a
+  browser refuses its own preflight for a method the server has not listed — so editing a proposal,
+  deleting one, and updating or removing an export format could not work at all. There is still no
+  wildcard origin, no credentials, and no method the API does not serve. Preflight tests cover
+  each method, including one the API does not serve, because a test client never preflights and so
+  none of the other tests can see this.
 
 ## 14. What this release does not do
 

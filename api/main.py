@@ -44,11 +44,16 @@ if not _cors_origins:
     # fall back to the localhost allowlist only for dev.
     _cors_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
+# The methods this API actually serves. It was GET/POST/OPTIONS, which was true until the operating
+# product declared PATCH (edit a proposal), PUT (update an export format) and DELETE (remove
+# either) — and a browser's preflight for an unlisted method is answered 400, so those three write
+# paths could not work from the interface at all. Server-side tests never see it: a test client
+# does not preflight. Still an allowlist, still no wildcard, still no credentials.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Admin-Key", "Accept"],
 )
 

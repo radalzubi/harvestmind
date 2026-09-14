@@ -104,13 +104,13 @@ Stated plainly rather than left to be discovered.
 
 | Suite | Result |
 |---|---|
-| `tests/integration/test_operating_product_api.py` | 37 passed |
+| `tests/integration/test_operating_product_api.py` | 43 passed |
 | `tests/unit/test_product_exporting.py` | 24 passed |
 | `tests/unit/test_product_evaluation.py` | 26 passed |
 | `tests/unit/test_product_drafts_schema.py` | 9 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
-| Whole integration shard (`tests/integration`) | **317 passed** |
-| Whole local suite (`tests/unit` + `tests/integration`) | **2,082 passed, 2 skipped** (7 m 05 s) |
+| Whole integration shard (`tests/integration`) | **323 passed** |
+| Whole local suite (`tests/unit` + `tests/integration`) | **2,088 passed, 2 skipped** |
 | Frontend (`npm test`) | **99 passed**, 38 new |
 | Frontend typecheck / production build | green |
 | Frontend lint | green **in CI** — see §10.12 |
@@ -178,9 +178,24 @@ path) and a **production build** of this branch, on synthetic workspaces created
   sign that the lines above it had changed — a draft stays editable and an edit does not start a
   new revision, so nothing in the record said the answer was out of date. The read now reports it
   and the page says so before the table.
+* **Every write verb exercised from a browser, watching the network tab**, which is the only way
+  the CORS defect below could have been found. POST, PATCH, PUT and DELETE all answer 200/204 now;
+  three of them could not be sent at all before.
 
-**Twenty-two defects were found this way and fixed**; they are listed in the PR description. The
-four most serious were invisible to the build and to the existing tests:
+**Twenty-three defects were found this way and fixed**; they are listed in the PR description. The
+five most serious were invisible to the build and to the existing tests:
+
+* **Editing a proposal, deleting one, and updating or removing an export format could not work from
+  a browser at all.** The CORS allowlist in `api/main.py` said
+  `allow_methods=["GET", "POST", "OPTIONS"]` — true of the API before this product, and this
+  product declares PATCH, PUT and DELETE. A browser answers its own preflight for an unlisted
+  method with a 400 and never sends the request, so "Save changes" failed with `net::ERR_FAILED`
+  and nothing was stored. **No server-side test could have caught it**: a test client does not
+  preflight, so all 43 integration tests passed against an API three of whose write paths were
+  unreachable. Found by watching the network tab while clicking Save. The allowlist now names
+  every method the API serves — still an allowlist, still no wildcard, still no credentials — and
+  seven new tests preflight each method against the real app and check that a method the API does
+  not serve is still refused.
 
 * `ensure_tables` — the fallback that prepares the product's own tables on a vault that predates
   migration 023 — split the migration file on `";"`. Migration 023 carries `COMMENT ON … IS '…;…'`
@@ -212,15 +227,17 @@ four most serious were invisible to the build and to the existing tests:
 
 ## 8. API, tables and migrations
 
-* **27 new endpoints** under `/api/zaad/workspace/*` (read-only) and `/api/zaad/orders/*` (writes,
-  export, evaluation). Full list in `OPERATING_PRODUCT_V1.md` §12.
+* **31 new endpoints** — 13 under `/api/zaad/workspace/*` (read-only) and 18 under
+  `/api/zaad/orders/*` (writes, export, evaluation). Full list in `OPERATING_PRODUCT_V1.md` §12.
 * **Migration 023** — additive, nullable, idempotent. Six new tables (`zaad_draft_orders`,
   `zaad_draft_lines`, `zaad_draft_events`, `zaad_export_profiles`, `zaad_export_log`,
   `zaad_evaluations`) and two nullable columns on `stg_fmcg_skus` (`brand`, `sub_category`). No
   existing column is altered and no historical migration is rewritten. Verified against both an
   empty database and an upgraded one (`scripts/setup_db.py` runs it in every test fixture).
 * `api/product/drafts.py::ensure_tables` creates the product's own tables on first use for a vault
-  created before this release. It never creates or alters a staging table.
+  created before this release. It never creates or alters a staging table, it verifies the six
+  tables exist afterwards, and it refuses in words rather than letting a catalogue error reach a
+  buyer. **It was broken and is the most serious defect this pass found** — see §7.
 * **One dependency added**: `openpyxl>=3.1`, for XLSX export and for reading an operator's own XLSX
   import template. Nothing else in the closure changed; `pip-audit` is green.
 
