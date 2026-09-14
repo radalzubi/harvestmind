@@ -151,12 +151,17 @@ export default function DataPage() {
 
   const ready = readiness.canPlan;
   const missing = readiness.sources.filter((s) => s.state === "missing");
+  // How fresh the data is, in the only terms the engine states it: the origin it read up to.
+  const originMonday = workspace.build?.origin_monday;
+  const origin = originMonday
+    ? new Date(`${originMonday}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
+    : null;
 
   return (
     <>
       <PageHead
         title="Data"
-        sub="What ZAAD reads, how fresh it is and what is still missing."
+        sub="What ZAAD reads, what state it is in and what is still missing."
         actions={<Button role="tertiary" size="sm" icon={<RefreshCw size={14} aria-hidden />} onClick={() => { readiness.refresh(); workspace.refresh(); }}>Refresh</Button>}
       />
 
@@ -168,7 +173,8 @@ export default function DataPage() {
           </h2>
           <p className="status-sub">
             {ready
-              ? <>{readiness.totalRows.toLocaleString("en-US")} rows across {readiness.sources.filter((s) => s.state !== "missing").length} sources.{" "}
+              ? <>{readiness.totalRows.toLocaleString("en-US")} rows across {readiness.sources.filter((s) => s.state !== "missing").length} sources
+                {origin && <>, read up to <strong style={{ color: "var(--ink-950)", fontWeight: 500 }}>{origin}</strong></>}.{" "}
                 {readiness.nextStep ? readiness.nextStep.title : "Nothing needs your attention here."}{" "}
                 <Link href="/home">Go to Home</Link> to see what to change.</>
               : <>{readiness.nextStep?.title ?? "Something required is missing"}. {readiness.nextStep?.detail}</>}
