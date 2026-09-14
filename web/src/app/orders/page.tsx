@@ -177,7 +177,11 @@ function ImportedPanel({ poId, onClose }: { poId: string; onClose: () => void })
                       const named = r.action_label ? String(r.action_label) : String(r.action).replaceAll("_", " ");
                       const raw = String(r.action ?? "");
                       return named.toLowerCase() === raw.replaceAll("_", " ").toLowerCase() ? named : (
-                        <>{named}<br /><small style={{ color: "var(--ink-500)" }}>in your contract: {raw}</small></>
+                        // Two lines in one cell: the cell must be allowed to wrap, or the narrow
+                        // rule (max-width 180px, nowrap) ellipsises the contract word away.
+                        <span style={{ whiteSpace: "normal", display: "inline-block" }}>
+                          {named}<br /><small style={{ color: "var(--ink-500)" }}>in your contract: {raw}</small>
+                        </span>
                       );
                     } },
                     { key: "fee_per_unit", label: "Fee/unit", numeric: true, render: (r) => r.fee_per_unit != null ? MONEY(Number(r.fee_per_unit)) : "—" },

@@ -230,12 +230,14 @@ function AmendmentView({ draft }: { draft: Draft }) {
             rows={view.declared_windows} rowKey={(w) => String(w.option)}
             columns={[
               { key: "action", label: "Right", render: (w) => (
-                <>
+                // The chip must survive the narrow rule (max-width 180px, nowrap), so this cell
+                // wraps rather than ellipsising "you are proposing this" off the end.
+                <span style={{ whiteSpace: "normal", display: "inline-block" }}>
                   {String(w.label ?? w.action)}
                   {draft.amendment_action && String(w.option) === String(view.proposed_window?.option)
                     ? <span className="chip" data-tone="good" style={{ marginInlineStart: 6 }}>you are proposing this</span>
                     : null}
-                </>
+                </span>
               ) },
               { key: "fee_per_unit", label: "Fee/unit", numeric: true,
                 render: (w) => w.fee_per_unit != null ? MONEY(Number(w.fee_per_unit), draft.currency ?? "USD") : <NotAvailable /> },
