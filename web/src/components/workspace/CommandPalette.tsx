@@ -93,7 +93,18 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     }
     for (const po of request?.pipeline ?? []) {
       const s = score(needle, po.id, po.id.replace(/^PO-?/i, ""));
-      if (s) out.push({ id: po.id, label: po.id, meta: `Open order · ${po.stage.replaceAll("_", " ").toLowerCase()}`, href: `/decisions?decision=${encodeURIComponent(`po:${po.id}`)}`, Icon: FileText, rank: s + 1 });
+      if (!s) continue;
+      // The request's pipeline is every open commitment; the report's decisions are the ones the
+      // plan reached. Sending the second kind to Decisions opened a *different* order under a
+      // notice apologising for it. The order itself is on Purchase orders, where it can be shown.
+      const decided = decisions.some((d) => d.id === `po:${po.id}`);
+      const stage = po.stage.replaceAll("_", " ").toLowerCase();
+      out.push({
+        id: po.id, label: po.id,
+        meta: decided ? `Open order · ${stage}` : `Open order · ${stage} · not in this plan`,
+        href: decided ? `/decisions?decision=${encodeURIComponent(`po:${po.id}`)}` : `/orders?po=${encodeURIComponent(po.id)}`,
+        Icon: FileText, rank: s + 1,
+      });
     }
     for (const sku of request?.skus ?? []) {
       const s = score(needle, sku.id);

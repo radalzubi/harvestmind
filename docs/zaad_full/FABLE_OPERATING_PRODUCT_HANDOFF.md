@@ -365,6 +365,17 @@ process, never `zaad-api`.
   of them, so only those carry a recommendation here" on the large workspace, and on the
   150-product one, whose catalogue needs no read-down, only the second clause: "ZAAD's last plan
   covered 10 of your 150 products". A colleague sent a `/network?node=…` link lands on this.
+* **The command palette sent an order to a page that could not show it.** Searching `PO-016700`
+  on the 150-product workspace offered "Open order · ordered" and opened **Decisions**, which then
+  showed PO-016648 under the notice added earlier that day — *the decision this link points at is
+  not in the plan on screen*. The palette was reading the planning **request's pipeline**, which is
+  every open commitment, and linking every one of them to a decision, which only exists for the
+  ones the plan reached. It now checks: a decided order still goes to Decisions, an undecided one
+  goes to `/orders?po=…` — a deep link the server's own search already returned for the same
+  object, and which opens the order's drawer with its lines and a "Propose a change to this order"
+  action. The row says "· not in this plan" before it is clicked. Verified live: the drawer opens
+  on PO-016700. The apologetic notice stays, because a stale link a colleague was sent still needs
+  it; nothing in the product generates one any more.
 * **What was left alone, deliberately.** The supplier table's **Route** column prints `aqaba`,
   `iraq_overland`, `road_saudi` — slugs, and tempting to prettify. They are values from the
   operator's own `stg_fmcg_suppliers` upload, not engine constants, so formatting them would be
