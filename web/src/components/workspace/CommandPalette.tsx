@@ -63,11 +63,18 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       if (s) out.push({ id: d.id, label: d.headline, meta: d.category, href: `/decisions?decision=${encodeURIComponent(d.id)}`, Icon: FileText, rank: s + 1 });
     }
     for (const n of network?.nodes ?? []) {
-      const s = score(needle, n.name, n.id.split(":")[1] ?? "", ...(n.skus ?? []));
-      if (!s) continue;
+      // A node matches on its own name, or because it handles the product being searched for. Both
+      // are worth showing — but typing a product code and getting back "DC · Site" with no reason
+      // reads as noise, so a match on the product says so, and ranks below the product itself.
+      const byName = score(needle, n.name, n.id.split(":")[1] ?? "");
+      const carried = byName ? null : (n.skus ?? []).find((sku) => score(needle, sku) >= 3) ?? null;
+      if (!byName && !carried) continue;
       const Icon = n.kind === "supplier" ? Building2 : n.kind === "customer" ? Users : n.kind === "port" ? MapPin : Share2;
-      const meta = n.kind === "supplier" ? "Supplier" : n.kind === "customer" ? "Customer" : n.kind === "port" ? "Port" : n.kind === "branch" ? "Branch" : "Site";
-      out.push({ id: n.id, label: n.name, meta, href: `/network?node=${encodeURIComponent(n.id)}`, Icon, rank: s });
+      const kind = n.kind === "supplier" ? "Supplier" : n.kind === "customer" ? "Customer" : n.kind === "port" ? "Port" : n.kind === "branch" ? "Branch" : "Site";
+      out.push({
+        id: n.id, label: n.name, meta: carried ? `${kind} · handles ${carried}` : kind,
+        href: `/network?node=${encodeURIComponent(n.id)}`, Icon, rank: byName || 0.5,
+      });
     }
     for (const po of request?.pipeline ?? []) {
       const s = score(needle, po.id, po.id.replace(/^PO-?/i, ""));
