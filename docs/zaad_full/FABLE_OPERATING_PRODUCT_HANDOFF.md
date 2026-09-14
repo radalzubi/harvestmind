@@ -130,7 +130,11 @@ checked, by driving the product rather than reading it:
 * **Announcement** — every confirmation now goes through a live region; none did before.
 * **Contrast** — computed from the rendered DOM, every text node against its own resolved
   background, at the WCAG AA thresholds for its size and weight. **Zero failures** on Home,
-  Decisions, Inventory, Purchase orders, Diagnostics and the Network. Nine rules had to move to
+  Decisions, Inventory, Purchase orders, Diagnostics and the Network, and **re-run on the final
+  head** over the words the last day added — "none", "none late", "not measurable", "Not priced",
+  "no change", the pager's past-the-end sentence — which are all in the `.na` style at 13 px and
+  measure **4.83:1**. 519 text nodes checked on Diagnostics, 154 on Inventory, 40 on Purchase
+  orders: no failure. Nine rules had to move to
   reach that, including `.na` — "Not available", this product's honesty marker, which appears in
   every table and measured **2.39:1**.
 * **Motion** — the three looping or entrance animations (skeleton, spinner, drawer) are already
