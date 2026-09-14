@@ -23,9 +23,11 @@ The work is **not merged and not deployed**. PR #81 is a draft awaiting your aud
 returns nothing. Outside `web/ api/ tests/ docs/ scripts/ db/` the diff touches exactly two files:
 `pyproject.toml` (one dependency) and `.claude/launch.json` (a local dev entry). No objective
 function, constraint, phase, economic assumption or frozen baseline changed; the frozen regression
-has **never failed on this branch** — it is green on all 24 CI runs including the
-one that failed, which failed on the frontend job alone — and was also run
-directly on the handoff head — `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` →
+has **never failed on this branch** — green on **every run that reached it**: 27 successful runs
+and the one that failed, which failed on the frontend job alone while its other twelve jobs,
+including the regression, were green. (A further 25 runs were cancelled mid-flight by a newer push;
+the regression did not finish on those and is not counted.) It was also run **directly on the
+handoff head, twice** — `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` →
 **CANONICAL REGRESSION PASS**, every P1 arm identical over 12 reviews and the P0 router_cycle cell
 identical and still protection-owned.
 
@@ -36,9 +38,10 @@ alternative was a second copy of the engine's vocabulary in the product, driftin
 
 ## 2. What is in the diff
 
-71 files: 47 under `web/`, 11 under `api/`, 5 test files, 2 scripts, 1 migration, 3 documents,
+73 files: 49 under `web/`, 11 under `api/`, 5 backend test files, 2 scripts, 1 migration,
+3 documents,
 `pyproject.toml` (one dependency — `openpyxl`, nothing else), `.claude/launch.json` (a local dev
-entry). `git diff --stat main...HEAD` — 13,928 insertions, 685 deletions.
+entry). `git diff --stat main...HEAD` — 14,301 insertions, 688 deletions.
 
 | Area | Files |
 |---|---|
