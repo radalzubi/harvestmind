@@ -88,7 +88,11 @@ Against the brief's own numbering.
 **The accessibility caveat.** Read "done" on §78–80 as *measured*, not *certified*. What was
 checked, by driving the product rather than reading it:
 
-* **Reflow** — zero horizontal overflow on twelve surfaces at 375×812, in RTL, and in both.
+* **Reflow (1.4.10)** — zero horizontal overflow on twelve surfaces at 375×812, in RTL, and in
+  both, and zero again at **320 CSS px**, which is the width the criterion actually names.
+* **Text spacing (1.4.12)** — the WCAG override applied live (line-height 1.5, letter-spacing
+  0.12em, word-spacing 0.16em, paragraph spacing 2em): no overflow and nothing clipped but the
+  `sr-only` elements, which are clipped on purpose.
 * **Structure** — one `h1` per page, no skipped heading levels, no unnamed button, no image
   without `alt`.
 * **Names** — every `aria-label` in the workspace free of internal identifiers. The network graph
@@ -106,8 +110,9 @@ checked, by driving the product rather than reading it:
   behind `prefers-reduced-motion`.
 
 **Six of those classes were broken when this session started and are fixed here.** What was *not*
-done: a pass with an actual screen reader, a zoom-to-200 % pass, and any check of the marketing
-site (only the workspace was swept). Those are open, and the table above should not be read as
+done: a pass with an actual screen reader, a browser-zoom pass (reflow at 320 px is the stronger
+evidence, but it is not the same criterion), and any check of the marketing site — only the
+workspace was swept. Those are open, and the table above should not be read as
 claiming otherwise. One residual contrast failure is left deliberately: React Flow's own
 "React Flow" attribution link, at 2.85:1, which the library styles and the licence asks to keep.
 
