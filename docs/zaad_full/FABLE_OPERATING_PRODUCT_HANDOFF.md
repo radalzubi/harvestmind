@@ -36,9 +36,9 @@ alternative was a second copy of the engine's vocabulary in the product, driftin
 
 ## 2. What is in the diff
 
-64 files: 40 under `web/`, 11 under `api/`, 5 test files, 2 scripts, 1 migration, 3 documents,
+71 files: 47 under `web/`, 11 under `api/`, 5 test files, 2 scripts, 1 migration, 3 documents,
 `pyproject.toml` (one dependency — `openpyxl`, nothing else), `.claude/launch.json` (a local dev
-entry). `git diff --stat main...HEAD` — 12,566 insertions, 648 deletions.
+entry). `git diff --stat main...HEAD` — 13,357 insertions, 677 deletions.
 
 | Area | Files |
 |---|---|
@@ -47,9 +47,9 @@ entry). `git diff --stat main...HEAD` — 12,566 insertions, 648 deletions.
 | Persistence | `db/migrations/023_operating_product.sql` |
 | Surfaces | `web/src/app/{inventory,orders,orders/new,orders/[id],orders/formats,orders/upload,diagnostics,diagnostics/supplier/[id],upload,data,home}/page.tsx` |
 | Shared frontend | `web/src/components/workspace/{Table,OrderForm,Shell,Gate,PlanState,CommandPalette}.tsx`, `web/src/components/Toast.tsx`, `web/src/lib/zaad/{product,standing,workspace-data}.ts(x)` |
-| Network | `web/src/lib/network/{groups,geo,attention}.ts`, `adapters/canonical.ts`, `components/network/{IntelligencePanel,NetworkMap,NetworkGraph}.tsx` |
+| Network | `web/src/lib/network/{groups,geo,attention,model}.ts`, `adapters/canonical.ts`, `components/network/{IntelligencePanel,NetworkMap,NetworkGraph,NetworkTwin}.tsx`, `network.css` |
 | QA tooling | `scripts/zaad_qa_workspaces.py`, `scripts/zaad_product_scale_bench.py` |
-| Tests | `tests/integration/test_operating_product_api.py`, `tests/unit/test_product_{exporting,evaluation,drafts_schema,catalog_labels}.py` |
+| Tests | `tests/integration/test_operating_product_api.py`, `tests/unit/test_product_{exporting,evaluation,drafts_schema,catalog_labels}.py`, and under `web/src/**/__tests__/`: `format`, `warnings`, `standing`, `abandoned`, `readiness`, `reasons`, `decisions`, `canonical`, `crowding`, `twin-state` |
 
 ## 3. Requirements implemented
 
@@ -151,21 +151,30 @@ Stated plainly rather than left to be discovered.
 
 | Suite | Result |
 |---|---|
-| `tests/integration/test_operating_product_api.py` | 44 passed |
+| `tests/integration/test_operating_product_api.py` | 47 passed |
 | `tests/unit/test_product_exporting.py` | 25 passed |
 | `tests/unit/test_product_evaluation.py` | 26 passed |
 | `tests/unit/test_product_drafts_schema.py` | 14 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
-| Whole integration shard (`tests/integration`) | **324 passed** |
-| Whole local suite (`tests/unit` + `tests/integration`) | **2,100 passed, 2 skipped** (7 m 03 s) |
-| Frontend (`npm test`) | **106 passed**, 45 new |
+| Whole local suite (`tests/unit` + `tests/integration`) | **2,103 passed, 2 skipped** (6 m 54 s) |
+| Frontend (`npm test`) | **112 passed**, 51 new |
 | Frontend typecheck / production build | green |
-| Frontend lint | green **in CI** — see §10.13 |
-| `ruff`, `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
+| Frontend lint | green **in CI** — see §10.15 |
+| `ruff` (CI's own scope), `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
 | **zaad frozen regression** | **green** — in CI, and run directly on the handoff head |
 
 New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `abandoned.test.ts` (6),
-`format.test.ts` (7), `warnings.test.ts` (7), plus tests added to `canonical.test.ts`.
+`format.test.ts` (11), `warnings.test.ts` (7), plus tests added to `canonical.test.ts`.
+
+The last run of each, on the handoff head: `python3 -m pytest tests/ -q -p no:randomly` →
+`2103 passed, 2 skipped` in 414 s; `npm test` → `# pass 112 / # fail 0`;
+`PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` → `CANONICAL REGRESSION PASS`;
+`ruff check . --extend-exclude "docs,dashboard,scripts/p1_*.py"` → `All checks passed!`;
+`mypy … api zaad/full` → `Success: no issues found in 67 source files`; bandit over CI's package
+list → exit 0. **`ruff check` over the whole tree without CI's exclusions reports 119 findings, all
+in `docs/`, `dashboard/` and `scripts/p1_*.py`** — paths CI lints with `|| true` and which this
+branch does not touch. Do not read that number as a regression; reproduce it with and without the
+exclusions and the difference is the excluded directories.
 
 ## 6. Scale
 
@@ -399,6 +408,11 @@ process, never `zaad-api`.
   the noun changed with the number. One helper now decides the verb, and it does not over-correct:
   a compound subject stays plural ("1 open order and 1 SKU depend"). Two tests, one of which asserts
   the fixture reaches **both** sides of the rule so the other cannot pass vacuously.
+* **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
+  this session was polluted by my own probes and by the dozen API restarts, so the last check was
+  made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →
+  Diagnostics (Routes) → a supplier page → Data → Upload. **No console output of any level**, and
+  every request in the network log 200. That is the state of the build being handed over.
 * **What was left alone, deliberately.** The supplier table's **Route** column prints `aqaba`,
   `iraq_overland`, `road_saudi` — slugs, and tempting to prettify. They are values from the
   operator's own `stg_fmcg_suppliers` upload, not engine constants, so formatting them would be
