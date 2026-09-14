@@ -183,7 +183,7 @@ Stated plainly rather than left to be discovered.
 | Whole local suite (`tests/unit` + `tests/integration`) | **2,105 passed, 2 skipped** (6 m 37 s) |
 | Frontend (`npm test`) | **129 passed**, 68 new |
 | Frontend typecheck / production build | green |
-| Frontend lint | green **in CI** — see §10.15 |
+| Frontend lint | green **in CI** — see §10.17 |
 | `ruff` (CI's own scope), `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
 | **zaad frozen regression** | **green** — in CI, and run directly on the handoff head |
 
@@ -904,7 +904,18 @@ Ordered by how much they should worry you.
     every summary row and sentence while looking as though the class had been dealt with. Whoever
     implements §79 should do it once, in the formatters, and check it against real Arabic copy.
     Verified not to affect LTR: the defect exists only under `dir="rtl"`.
-15. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
+15. **Inventory has no per-site view.** The list sums `on_hand` across every location per product
+    and carries a count of the sites it is spread over; per-site stock exists one product at a
+    time, in the drawer's *Where it is*. The network's site panel therefore links to "Stock (all
+    sites)" and says so rather than pretending to filter. A location filter on the list and on
+    `INVENTORY_SORTS` would close it, and it is a small change — but it changes what `on_hand`
+    *means* in that table, which is a product decision, not a patch.
+16. **Two dead links on the marketing site**, found by the link check and deliberately not fixed:
+    `/get-started?mode=` and `/get-started?sector=`, linked from `welcome/page.tsx` and the
+    marketing home, read by neither. They are outside this pass's diff, so they are allowlisted by
+    name in `links.test.ts` with the reason. Whoever owns that page should either read them or drop
+    them, and the check will notice when they do.
+17. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
     7–12 minutes earlier in the pass and passed; by the end the eslint process parked with the
     config's `globals.json` open, sleeping, and **0.94 s of CPU consumed in 3 m 24 s** — it was
     blocked, not slow. Two separate invocations behaved identically and were killed. The lint
@@ -974,9 +985,9 @@ Ordered by how much they should worry you.
   sentence that says why. That marker is the only escape, it must be written at the site, and the
   third test asserts the scan is still reaching the files it claims to, so none of this can pass on
   an empty list the day a directory is renamed.
-* **The per-site inventory view** (`OPERATING_PRODUCT_V1.md` §16.13). The list sums stock across
-  every location, so the network's site panel can only link to "Stock (all sites)". A location
-  filter would close that, and it is a small change to `catalog.py` plus one facet.
+* **The per-site inventory view** (§10.15, and `OPERATING_PRODUCT_V1.md` §16.13). A location filter
+  is a small change to `catalog.py` plus one facet — but it changes what `on_hand` means in that
+  table, which is yours to decide rather than mine to patch.
 * Merge and deploy, which this pass deliberately did not do.
 
 ## 12. Session record
