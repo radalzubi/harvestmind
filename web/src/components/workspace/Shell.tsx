@@ -220,7 +220,11 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           <AssistantButton label="Help" variant="tertiary" icon={<HelpCircle size={15} aria-hidden />} />
           <Account />
         </header>
-        <main id="ws-content" className={pathname.startsWith("/network") ? "ws-page wide" : "ws-page"}>{children}</main>
+        {/* tabIndex -1 keeps this out of the tab order but lets it *take* focus, which is the
+            whole point of the skip link: without it the link scrolls the page and the keyboard
+            stays where it was, so the next Tab goes to the second nav item rather than the page. */}
+        <main id="ws-content" tabIndex={-1}
+          className={pathname.startsWith("/network") ? "ws-page wide" : "ws-page"}>{children}</main>
       </div>
 
       <nav className="ws-tabs" aria-label="Workspace">
