@@ -189,7 +189,15 @@ path) and a **production build** of this branch, on synthetic workspaces created
   the search palette — but only when it is dismissed; when it opens something, that page owns the
   focus and is left alone. The skip link had the same shape of problem from the other end: it moved
   the *page* to the content and left the keyboard on the link, so the next Tab went to the second
-  nav item. `<main>` takes focus now. One leak: `de_expedite` in the declared-rights table. The route id
+  nav item. `<main>` takes focus now.
+* **The product's front door walked with a wrong token, and with the API stopped.** A refused token
+  said "Connection failed: Error: Invalid API token" in a toast that was gone in three seconds —
+  the word "Error:" is the language's, not ours, and a blocking failure at the front door should
+  not disappear while the person is looking at the keyboard. It is a sentence now, beside the
+  field, with `role="alert"`, and it stays. With the API stopped, every surface said "Your
+  workspace could not be reached … your access may have been rotated" — true of a refused token,
+  wrong for a dropped connection, and it sent the reader to re-enter a credential that was fine.
+  The two are told apart by the message the browser already produced. One leak: `de_expedite` in the declared-rights table. The route id
   `road_saudi` also appears — that one is the operator's own declared value and is left verbatim,
   because inventing a display name for it would be fabrication.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats
@@ -213,7 +221,7 @@ path) and a **production build** of this branch, on synthetic workspaces created
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Thirty defects were found this way and fixed**; they are listed in the PR description. The
+**Thirty-three defects were found this way and fixed**; they are listed in the PR description. The
 six most serious were invisible to the build and to the existing tests:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from

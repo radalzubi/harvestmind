@@ -402,6 +402,15 @@ POST       /read-proposal                 a proposed order from a spreadsheet
 GET        /evaluation-jobs               which job ids are evaluation runs, not plans
 ```
 
+**Every JSON write demands `Content-Type: application/json`**, including the ones whose body is
+optional (`/actions/{action}` carries a reason or nothing): without it the request is refused `415`
+rather than read as a form. An empty body is then read as `{}`, so the header is the only
+requirement. This is defence in depth, not the defence: what actually makes a cross-site write
+impossible is that the API authenticates with a bearer token and no cookie, and CORS sets
+`allow_credentials=False` — there is no ambient authority for another origin to borrow. The two
+multipart endpoints (reading a template, reading a proposed order) take a content type a form could
+send, and rely on exactly that.
+
 **Rate limiting.** These are indexed reads a page makes on every view, so they are not on the
 recommendation limiter (the precedent set by job status and `/directory`): sharing it would let a
 table scroll spend the budget and answer 429 for a lookup that costs nothing. The configurable

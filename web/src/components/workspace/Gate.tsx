@@ -48,11 +48,22 @@ export function Gate({ children, loadingLabel = "Reading your workspace…", nee
   }
 
   if (session.status === "error") {
+    // A browser that never reached the server and a server that refused the token are different
+    // problems with different answers, and the message already says which one happened. Telling
+    // someone whose wifi dropped that their access "may have been rotated" sends them to re-enter
+    // a credential that is fine.
+    const said = session.error ?? "";
+    const unreachable = /failed to fetch|networkerror|load failed|network request failed/i.test(said);
+    const refused = /\b401\b|unauthor|forbidden|\b403\b|token/i.test(said);
     return (
       <ErrorState
-        title="Your workspace could not be reached"
+        title={unreachable ? "ZAAD could not be reached" : "Your workspace could not be opened"}
         affects="Nothing was changed, and none of your data was affected."
-        whatToDo="Try again in a moment; if it keeps happening, your access may have been rotated."
+        whatToDo={unreachable
+          ? "The request never got to the server. Check your connection and try again."
+          : refused
+            ? "The access you entered was not accepted. Enter it again, or ask for a new one."
+            : "Try again in a moment; if it keeps happening, your access may have been rotated."}
         detail={session.error ?? undefined}
         actions={<><Button role="primary" onClick={session.refresh}>Try again</Button><ButtonLink href="/access">Enter access again</ButtonLink></>}
       />
