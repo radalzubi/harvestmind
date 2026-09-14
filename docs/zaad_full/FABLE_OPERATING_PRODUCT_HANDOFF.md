@@ -919,7 +919,13 @@ Ordered by how much they should worry you.
     marketing home, read by neither. They are outside this pass's diff, so they are allowlisted by
     name in `links.test.ts` with the reason. Whoever owns that page should either read them or drop
     them, and the check will notice when they do.
-17. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
+17. **`npm run lint` could not be completed locally in the last hours of this session** — and it
+    cost something, which is the honest way to state the limitation. `conventions.test.ts` shipped
+    with `require("node:path").sep` inline where the file already imported from `node:path` at the
+    top; `tsc`, all 129 unit tests and the production build passed, and **CI caught it**:
+    `A require() style import is forbidden`, one error among 52 pre-existing warnings, on the
+    frontend job alone. Fixed by importing `sep`. Nothing else in `web/src` uses `require`. Read
+    §10.17 with that in mind: the gap is real, CI is the net, and the net worked. It ran in
     7–12 minutes earlier in the pass and passed; by the end the eslint process parked with the
     config's `globals.json` open, sleeping, and **0.94 s of CPU consumed in 3 m 24 s** — it was
     blocked, not slow. Two separate invocations behaved identically and were killed. The lint

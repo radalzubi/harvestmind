@@ -14,7 +14,7 @@
  */
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { test } from "node:test";
 
 const SRC = join(process.cwd(), "src");
@@ -131,7 +131,6 @@ test("the scan actually reaches the files it claims to", () => {
   assert.ok(files.length > 30, `only ${files.length} files in scope`);
   for (const must of ["lib/zaad/product.ts", "components/workspace/Table.tsx",
                       "lib/network/attention.ts", "app/inventory/page.tsx"]) {
-    assert.ok(files.some((f) => f.endsWith(must.replaceAll("/", require("node:path").sep))),
-              `${must} is not being scanned`);
+    assert.ok(files.some((f) => f.endsWith(must.replaceAll("/", sep))), `${must} is not being scanned`);
   }
 });
