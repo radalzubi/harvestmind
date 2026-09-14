@@ -250,26 +250,35 @@ on every order a supplier had ever under-shipped: on the released sample vault t
 `scripts/zaad_qa_workspaces.py` builds the fixtures; `scripts/zaad_product_scale_bench.py` measures
 the endpoints' own work against them (median of three, developer laptop, DuckDB, not HTTP).
 
-| Query | 10,000 products / 800k rows | 50,000 products / 4.0M rows |
+Medians below are the **final head's** run, on freshly built fixtures (10,000 products / 780k rows
+and 50,000 / 3.9M).
+
+| Query | 10,000 products | 50,000 products |
 |---|---|---|
-| inventory first page | 44 ms | 108 ms |
-| inventory sorted by stock value | 40 ms | 107 ms |
-| inventory sorted by weeks of cover | 41 ms | 112 ms |
-| inventory search | 61 ms | 298 ms |
-| inventory deep page (offset 5,000) | 42 ms | 118 ms |
-| one product | 46 ms | 118 ms |
-| purchase orders, open | 33 ms | 153 ms |
-| supplier diagnostics list | 27 ms | 73 ms |
-| one supplier | 82 ms | 195 ms |
-| data explorer page | 5 ms | 5 ms |
-| data explorer deep page (offset 100,000) | 14 ms | 30 ms |
-| global search | 13 ms | 38 ms |
+| inventory first page | 37 ms | 100 ms |
+| inventory sorted by stock value | 35 ms | 99 ms |
+| inventory sorted by weeks of cover | 35 ms | 98 ms |
+| inventory search | 58 ms | **313 ms** |
+| inventory filtered to thin cover | 35 ms | 101 ms |
+| inventory deep page | 36 ms | 102 ms |
+| one product | 42 ms | 105 ms |
+| purchase orders, open | 32 ms | 126 ms |
+| purchase orders search | 32 ms | 101 ms |
+| supplier diagnostics list | 24 ms | 64 ms |
+| one supplier | 81 ms | 179 ms |
+| data explorer page | 4 ms | 5 ms |
+| data explorer deep page (offset 100,000) | 14 ms | 28 ms |
+| data explorer search | 74 ms | **316 ms** |
+| dataset catalogue | 3 ms | 2 ms |
+| global search | 14 ms | 27 ms |
 | operating snapshot | 21 ms | 68 ms |
 
-Slowest median 298 ms against an 800 ms budget; 0 queries over it. **Re-measured on the final head
-of this branch**, after every change in it, on a freshly built 50,000-product fixture: slowest
-median **305 ms**, 0 over. The two runs differ by machine load, not by anything in the code — no
-query in this pass changed.
+Slowest median **316 ms** against an 800 ms budget; **0 queries over it**. Measured three times
+across the pass: 298 ms, 305 ms, and 316 ms on this head. The first two differ by machine load; the
+last step is real and attributable — the two search queries carry an `ESCAPE` clause now (see *Search
+matches what was typed* above), which rules out any pattern shortcut, and they moved from about
+300 ms to 313 and 316. Two per cent of the budget, for a search that no longer reinterprets the
+operator's punctuation.
 
 **Platform catalogue scale and one optimization problem size are separate.** The product holds
 50,000 products comfortably; a solve still covers a bounded selection, which is stated wherever a
@@ -553,7 +562,7 @@ of producing a catalogue error. `tests/unit/test_product_drafts_schema.py` pins 
    question. A buyer who wants the number needs a plan covering that order.
 10. **A run's size is the real ceiling, not the row counts.** Measured on a three-site, twelve-week
     workspace: 6 products 62 s and 92 s, 8 products 108 s, 10 products 232 s. The record surfaces
-    are unaffected (50,000 products, slowest median query 298 ms); this is one optimization problem,
+    are unaffected (50,000 products, slowest median query 316 ms); this is one optimization problem,
     and the interface says which products a plan covered wherever it shows one.
 11. **XLSX writes every cell as text**, which is what stops a value being re-typed as a formula or
     a date by the reader. The cost is Excel's "number stored as text" marker on quantity and price.
