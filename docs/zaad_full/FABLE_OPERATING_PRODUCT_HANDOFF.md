@@ -1067,7 +1067,7 @@ worth repeating:
    this is what it is.
 
 **A note on the final day.** A third pass was made after the second, by one question: *where does
-ZAAD state a fact in one register and contradict it in another?* Fourteen more defect commits came
+ZAAD state a fact in one register and contradict it in another?* Twenty-one more defect commits came
 out of it — a route reporting no late arrivals over 16,546 orders it had no promised date for, four
 columns printing the dash that means "not available" over a counted zero, a lane panel whose
 "Products carried" button opened one of the 150 it had just counted, a customer panel whose only
@@ -1075,6 +1075,14 @@ action matched nothing, a twin quoting money in a currency nobody had read, two 
 under one heading, and "1 SKU depend on this supplier". They are individually small; what they had
 in common is that each was a place where two parts of the product knew different things, and the
 reader was left to notice.
+
+It also left something behind that the other two days did not: **six checks over the source
+itself**, in `links.test.ts` and `conventions.test.ts`, each covering a class that had been wrong in
+more than one place at once and each proved by putting the defect back and watching it fail. A link
+may carry only parameters its destination reads; a number is never tested for truth before it is
+formatted; money is never quoted in a currency nobody read; nothing is formatted in the reader's own
+locale; one function turns a date into words; and the scan must still be reaching the files it
+claims to. The one deliberate exception carries a marker and a sentence at the site.
 
 **Twenty-three defect commits came out of the second day** (twenty-two `fix`, one `feat`
 for the print stylesheet that did not exist), each named for the defect rather than the
