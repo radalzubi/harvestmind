@@ -527,7 +527,14 @@ def sector_page(
 
 
 def corridor_lateness(conn: Any) -> dict[str, Any]:
-    """Late arrivals grouped by the route each supplier declares. An association across suppliers."""
+    """Late arrivals grouped by the route each supplier declares. An association across suppliers.
+
+    ``late_days`` is NULL wherever the order carries no promised date, so ``late_orders`` counts
+    zero both for a route that always arrived on time and for a route nothing could be judged
+    against. ``orders_with_promise`` is the denominator that tells those apart, and the caller must
+    read it: a workspace whose purchase orders carry no expected delivery date reported "0 arrived
+    late" over sixteen thousand orders it had no promise for.
+    """
     if not (has_table(conn, "stg_fmcg_suppliers") and has_table(conn, "stg_fmcg_receipts")
             and has_table(conn, "stg_fmcg_purchase_orders")):
         return {"served": False, "rows": [],
@@ -539,6 +546,7 @@ def corridor_lateness(conn: Any) -> dict[str, Any]:
         sup AS (SELECT supplier_id, any_value(route) AS route FROM stg_fmcg_suppliers GROUP BY supplier_id)
         SELECT coalesce(sup.route, 'not declared') AS route,
                count(*) AS orders, count(DISTINCT matched.supplier_id) AS suppliers,
+               count(*) FILTER (WHERE promised IS NOT NULL) AS orders_with_promise,
                count(*) FILTER (WHERE late_days > 0) AS late_orders,
                avg(CASE WHEN late_days > 0 THEN late_days END) AS mean_late_days,
                avg(observed_lead_days) AS mean_lead_days

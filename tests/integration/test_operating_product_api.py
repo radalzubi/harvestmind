@@ -163,6 +163,40 @@ def test_a_supplier_from_another_workspace_is_not_found(client):
     assert client.get("/api/zaad/workspace/suppliers/SUP-NOT-HERE").status_code == 404
 
 
+def test_route_lateness_carries_the_denominator_it_is_measured_against(client):
+    body = client.get("/api/zaad/workspace/corridors").json()
+    assert body["served"], "this fixture declares routes and receipts"
+    for row in body["rows"]:
+        assert "orders_with_promise" in row, "a count of late orders is meaningless without it"
+        assert row["orders_with_promise"] > 0, "half this fixture's orders carry a promised date"
+        assert row["late_orders"] <= row["orders_with_promise"]
+
+
+def test_route_lateness_reports_no_promise_rather_than_no_lateness(vault):
+    """A workspace whose orders carry no expected delivery date is not a punctual workspace.
+
+    ``late_days`` is NULL without a promise, so ``count(*) FILTER (WHERE late_days > 0)`` is zero
+    for a route nothing could be judged against — indistinguishable, in the payload alone, from a
+    route where every order arrived on time. One live workspace reported "0 arrived late" over
+    16,546 matched orders, none of which carried a promised date at all.
+    """
+    conn = duckdb.connect(":memory:")
+    setup_db(conn)
+    from scripts.zaad_network_workspace_smoke import make_network_vault
+    make_network_vault(conn, seed=7)
+    conn.execute("UPDATE stg_fmcg_purchase_orders SET expected_delivery_date = NULL")
+
+    body = _client(conn).get("/api/zaad/workspace/corridors").json()
+    assert body["served"], "routes are still declared; only the promise is missing"
+    assert body["rows"], "the arrivals themselves are still measurable"
+    for row in body["rows"]:
+        assert row["orders"] > 0, "orders matched receipts"
+        assert row["orders_with_promise"] == 0, "and none of them carried a promised date"
+        assert row["late_orders"] == 0
+        assert row["mean_late_days"] is None
+        assert row["mean_lead_days"] is not None, "lead time needs no promise and is still measured"
+
+
 def test_sector_diagnostics_say_so_when_nothing_is_declared(client):
     body = client.get("/api/zaad/workspace/sector").json()
     assert body["served"] is False

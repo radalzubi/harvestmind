@@ -133,8 +133,17 @@ function Corridors() {
           { key: "route", label: "Route", render: (r) => r.route },
           { key: "suppliers", label: "Suppliers", numeric: true, render: (r) => NUMBER(r.suppliers) },
           { key: "orders", label: "Matched orders", numeric: true, render: (r) => NUMBER(r.orders) },
-          { key: "late_orders", label: "Arrived late", numeric: true, render: (r) => NUMBER(r.late_orders) },
-          { key: "mean_late_days", label: "Days late", numeric: true, render: (r) => r.mean_late_days != null ? NUMBER(r.mean_late_days, 1) : <span className="na">—</span> },
+          // Lateness is measured against a promised date. Where no order on the route carries one,
+          // the engine's count of late orders is zero because nothing could be judged, not because
+          // nothing was late — and this table printed that zero over sixteen thousand orders. The
+          // supplier table beside it already told the two apart; this one did not.
+          { key: "late_orders", label: "Arrived late", numeric: true,
+            render: (r) => r.orders_with_promise === 0
+              ? <NotAvailable why={`No order on this route carries an expected delivery date, so lateness cannot be measured. ${COUNT(r.orders, "order")} matched a receipt.`} />
+              : <Tally value={r.late_orders} none="none late" /> },
+          { key: "mean_late_days", label: "Days late", numeric: true,
+            render: (r) => r.mean_late_days != null ? NUMBER(r.mean_late_days, 1)
+              : <span className="na" title={r.orders_with_promise === 0 ? "No expected delivery date was uploaded for this route." : "No order on this route arrived after its expected date."}>—</span> },
           { key: "mean_lead_days", label: "Lead (days)", numeric: true, render: (r) => r.mean_lead_days != null ? NUMBER(r.mean_lead_days, 1) : <span className="na">—</span> },
         ]} />
       <div style={{ marginTop: 12 }}><Notice>{data.note}</Notice></div>

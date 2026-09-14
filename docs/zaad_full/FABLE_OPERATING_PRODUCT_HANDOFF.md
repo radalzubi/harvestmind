@@ -341,6 +341,18 @@ process, never `zaad-api`.
   scanning for late orders was looking for. The fourth was a proposal every line of which carries
   no price: value `0.0` with `value_incomplete` true, shown as "—", now **"Not priced"** — the flag
   was already in the payload and already used on the proposal list's tooltip, just not read here.
+* **A route that reported no late arrivals over sixteen thousand orders it could not judge.**
+  Diagnostics → Routes read "Arrived late: **0**" for both routes on the 150-product workspace.
+  Every one of that vault's 16,751 purchase-order lines carries a NULL `expected_delivery_date`, so
+  `late_days` is NULL throughout and `count(*) FILTER (WHERE late_days > 0)` is zero because
+  nothing could be measured, not because nothing was late. The supplier table beside it already
+  said "Not available" for the same fact, from the same vault, on the same screen. `corridor_lateness`
+  now returns **`orders_with_promise`**, the denominator lateness is measured against, and the page
+  reads it: zero promises is `Not available` with the reason, otherwise the count (and "none late"
+  for a true zero). Verified both ways live — "Not available" on the workspace with no promised
+  dates, "25,621 / 25,500 / 25,462" on the ten-thousand-product workspace, which has them. Two
+  tests, one per branch. This is the only **backend** change in the day's defect commits; it adds a
+  field and changes no existing one.
 * **What was left alone, deliberately.** The supplier table's **Route** column prints `aqaba`,
   `iraq_overland`, `road_saudi` — slugs, and tempting to prettify. They are values from the
   operator's own `stg_fmcg_suppliers` upload, not engine constants, so formatting them would be

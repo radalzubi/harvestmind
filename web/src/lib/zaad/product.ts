@@ -240,7 +240,7 @@ export const fetchSector = (options: { sector?: string; sort?: string; direction
     `/api/zaad/workspace/sector${query(options as Record<string, string>)}`);
 
 export const fetchCorridors = () =>
-  call<{ served: boolean; rows: Array<{ route: string; orders: number; suppliers: number; late_orders: number; mean_late_days: number | null; mean_lead_days: number | null }>; note: string }>(
+  call<{ served: boolean; rows: Array<{ route: string; orders: number; suppliers: number; orders_with_promise: number | null; late_orders: number; mean_late_days: number | null; mean_lead_days: number | null }>; note: string }>(
     "/api/zaad/workspace/corridors");
 
 // ── the data explorer ─────────────────────────────────────────────────────────
