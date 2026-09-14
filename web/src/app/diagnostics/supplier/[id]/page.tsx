@@ -20,7 +20,7 @@ import { useParams } from "next/navigation";
 import { AlertTriangle, Info } from "lucide-react";
 import { Gate } from "@/components/workspace/Gate";
 import { Button, ButtonLink, Disclosure, ErrorState, Loading, Notice, PageHead, Section } from "@/components/workspace/ui";
-import { Column, DataTable, NotAvailable } from "@/components/workspace/Table";
+import { Column, DataTable, NotAvailable, Tally } from "@/components/workspace/Table";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import {
   COUNT, DATE, MONEY, NUMBER, PERCENT, fetchSupplier, type SupplierDetail,
@@ -184,7 +184,12 @@ function SupplierBody({ id }: { id: string }) {
             columns={[
               { key: "sku", label: "Product", render: (r) => <Link href={`/inventory?sku=${encodeURIComponent(r.sku)}`}>{r.sku}</Link> },
               { key: "orders", label: "Orders", numeric: true, render: (r) => NUMBER(r.orders) },
-              { key: "late_orders", label: "Arrived late", numeric: true, render: (r) => NUMBER(r.late_orders) },
+              // The page's own summary says lateness cannot be measured when no order carries a
+              // promised date. This table printed 0 under the same heading, on the same screen.
+              { key: "late_orders", label: "Arrived late", numeric: true,
+                render: (r) => r.orders_with_promise === 0
+                  ? <span className="na">not measurable</span>
+                  : <Tally value={r.late_orders} none="none late" /> },
               { key: "mean_late_days", label: "Days late", numeric: true, render: (r) => r.mean_late_days != null ? NUMBER(r.mean_late_days, 1) : <span className="na">—</span> },
               { key: "fill_rate", label: "Quantity arrived", numeric: true, render: (r) => r.fill_rate != null ? PERCENT(r.fill_rate) : <NotAvailable /> },
             ]} />

@@ -172,6 +172,20 @@ def test_route_lateness_carries_the_denominator_it_is_measured_against(client):
         assert row["late_orders"] <= row["orders_with_promise"]
 
 
+def test_supplier_by_product_carries_the_same_denominator(client):
+    """The supplier page's own summary says when lateness cannot be measured; its table must agree.
+
+    On a live workspace the header read "Arrived late — no promised dates uploaded" while the
+    By product table two sections below printed 0 for all nineteen products.
+    """
+    listing = client.get("/api/zaad/workspace/suppliers?limit=1").json()
+    supplier = listing["rows"][0]["supplier_id"]
+    body = client.get(f"/api/zaad/workspace/suppliers/{supplier}").json()
+    for row in body["by_product"]:
+        assert "orders_with_promise" in row
+        assert row["late_orders"] <= row["orders_with_promise"]
+
+
 def test_route_lateness_reports_no_promise_rather_than_no_lateness(vault):
     """A workspace whose orders carry no expected delivery date is not a punctual workspace.
 

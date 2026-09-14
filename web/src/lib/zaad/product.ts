@@ -206,7 +206,7 @@ export interface SupplierDetail {
   deliveries: Array<{ po_id: string; po_date: string; promised: string | null; first_receipt: string;
     ordered: number; received: number; rejected: number; observed_lead_days: number | null;
     promised_lead_days: number | null; late_days: number | null; fill: number | null; first_sku: string; lines: number }>;
-  by_product: Array<{ sku: string; orders: number; late_orders: number; mean_late_days: number | null; fill_rate: number | null }>;
+  by_product: Array<{ sku: string; orders: number; orders_with_promise: number | null; late_orders: number; mean_late_days: number | null; fill_rate: number | null }>;
   by_month: Array<{ month: string; orders: number; late_orders: number; mean_lead_days: number | null }>;
   trend: { recent: Record<string, number>; earlier: Record<string, number> } | null;
   skus: Array<{ sku: string; sku_name: string | null; category: string | null }>;

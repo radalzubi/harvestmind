@@ -354,7 +354,13 @@ process, never `zaad-api`.
   tests, one per branch. This is the only **backend** change in the day's defect commits; it adds a
   field and changes no existing one. The reason each cell gives lives in a `title`, which is
   unreachable by touch and unreliable to a screen reader, so where it is true of every row — as it
-  is on that workspace — it is also said once under the table, in the open.
+  is on that workspace — it is also said once under the table, in the open. The **supplier page's
+  By product table** carried the same false zero and was worse for being beside the cure: its own
+  header read "Arrived late — **no promised dates uploaded**" and its own prose read "None of the
+  1,865 matched orders carries a promised delivery date, so lateness cannot be measured", while the
+  table two sections below printed **0** for all nineteen products. `by_product` now carries
+  `orders_with_promise` too and the column reads "not measurable"; on the ten-thousand-product
+  workspace, which has promised dates, the same rows read 12, 11, 11, 10 out of 12. A third test.
 * **The network canvas never said what it was drawn over.** A catalogue too large for one planning
   request is read down to a selection, and the twin is built from that read — so on the
   ten-thousand-product workspace the canvas drew 98 of 120 suppliers and three sites with nothing

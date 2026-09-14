@@ -226,6 +226,7 @@ def supplier_detail(conn: Any, supplier_id: str, *, as_of: str | None = None) ->
         by_sku = _rows(conn, f"""
             WITH {_matched_cte()}
             SELECT first_sku AS sku, count(*) AS orders,
+                   count(*) FILTER (WHERE promised IS NOT NULL) AS orders_with_promise,
                    count(*) FILTER (WHERE late_days > 0) AS late_orders,
                    avg(CASE WHEN late_days > 0 THEN late_days END) AS mean_late_days,
                    CASE WHEN sum(ordered) > 0 THEN sum(received) / sum(ordered) END AS fill_rate
