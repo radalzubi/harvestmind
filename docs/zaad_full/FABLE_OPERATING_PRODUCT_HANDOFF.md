@@ -20,9 +20,11 @@ The work is **not merged and not deployed**. PR #81 is a draft awaiting your aud
 | Merged or deployed | **no** |
 
 **`zaad/` and `evidence/` are untouched.** `git diff --name-only main...HEAD | grep -E '^(zaad|evidence)/'`
-returns nothing, and the only file the diff touches outside `web/ api/ tests/ docs/ scripts/ db/`
-is `pyproject.toml`. No objective function, constraint, phase, economic assumption or frozen
-baseline changed; the frozen regression passes in CI on every head of this branch, and was also run
+returns nothing. Outside `web/ api/ tests/ docs/ scripts/ db/` the diff touches exactly two files:
+`pyproject.toml` (one dependency) and `.claude/launch.json` (a local dev entry). No objective
+function, constraint, phase, economic assumption or frozen baseline changed; the frozen regression
+has **never failed on this branch** — it is green on all 24 CI runs including the
+one that failed, which failed on the frontend job alone — and was also run
 directly on the handoff head — `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` →
 **CANONICAL REGRESSION PASS**, every P1 arm identical over 12 reviews and the P0 router_cycle cell
 identical and still protection-owned.
@@ -541,8 +543,9 @@ Ordered by how much they should worry you.
 ## 12. Session record
 
 **CI.** Every head of this branch has been run. At the time of writing: **18 green runs**, one
-failure (`5d20221`, a frontend defect found and fixed the same hour), and four cancelled because a
-newer push superseded them. A green run is all **13 jobs** — the zaad frozen regression, five pytest
+failure (`5d20221`, a frontend defect found and fixed the same hour — every other job on that run,
+**including the zaad frozen regression**, was green), and four cancelled because a newer push
+superseded them. The frozen regression has never failed on this branch. A green run is all **13 jobs** — the zaad frozen regression, five pytest
 shards, ruff, mypy, bandit + pip-audit, gitleaks, the Docker build, and the frontend job
 (typecheck, **lint**, test, build). The run on the handoff head is named in the session's closing
 report; the head before it, `b46074b`, was 13/13 green.
