@@ -18,10 +18,11 @@ export const SHARE_IMAGE = { url: `${SITE_URL}/og/zaad-supply-network.png`, widt
 
 /** Public, indexable pages and when their content last materially changed (ISO date). */
 export const PUBLIC_PAGES: { path: string; updated: string }[] = [
-  { path: "/", updated: "2026-09-06" },
-  { path: "/product", updated: "2026-09-06" },
-  { path: "/how-it-works", updated: "2026-09-06" },
-  { path: "/sectors", updated: "2026-09-06" },
+  { path: "/", updated: "2026-09-13" },
+  { path: "/quote", updated: "2026-09-13" },
+  { path: "/product", updated: "2026-09-13" },
+  { path: "/how-it-works", updated: "2026-09-13" },
+  { path: "/sectors", updated: "2026-09-13" },
   { path: "/about", updated: "2026-09-06" },
   { path: "/security", updated: "2026-09-06" },
   { path: "/contact", updated: "2026-09-06" },
@@ -35,6 +36,8 @@ export const PRIVATE_PREFIXES = [
   "/upload", "/inventory", "/atp", "/backtest", "/data-quality", "/forecasts", "/loss", "/overview", "/partners",
   "/performance", "/recommendations", "/reports", "/supply-risk", "/traceability", "/access", "/admin", "/welcome",
   "/state", "/fmcg", "/zaad", "/api",
+  // the rebuilt workspace
+  "/home", "/decisions", "/network", "/data", "/advanced", "/start",
 ];
 
 export function absolute(path: string): string {
