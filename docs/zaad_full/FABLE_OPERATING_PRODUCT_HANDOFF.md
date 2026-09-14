@@ -104,13 +104,13 @@ Stated plainly rather than left to be discovered.
 
 | Suite | Result |
 |---|---|
-| `tests/integration/test_operating_product_api.py` | 43 passed |
+| `tests/integration/test_operating_product_api.py` | 44 passed |
 | `tests/unit/test_product_exporting.py` | 24 passed |
 | `tests/unit/test_product_evaluation.py` | 26 passed |
 | `tests/unit/test_product_drafts_schema.py` | 9 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
-| Whole integration shard (`tests/integration`) | **323 passed** |
-| Whole local suite (`tests/unit` + `tests/integration`) | **2,088 passed, 2 skipped** |
+| Whole integration shard (`tests/integration`) | **324 passed** |
+| Whole local suite (`tests/unit` + `tests/integration`) | **2,089 passed, 2 skipped** |
 | Frontend (`npm test`) | **99 passed**, 38 new |
 | Frontend typecheck / production build | green |
 | Frontend lint | green **in CI** — see §10.12 |
@@ -179,10 +179,10 @@ path) and a **production build** of this branch, on synthetic workspaces created
   new revision, so nothing in the record said the answer was out of date. The read now reports it
   and the page says so before the table.
 * **Every write verb exercised from a browser, watching the network tab**, which is the only way
-  the CORS defect below could have been found. POST, PATCH, PUT and DELETE all answer 200/204 now;
-  three of them could not be sent at all before.
+  the CORS defects below could have been found. POST, PATCH, PUT and DELETE all answer 200/204 now;
+  three of them could not be sent at all before, and no exported file carried its own name.
 
-**Twenty-three defects were found this way and fixed**; they are listed in the PR description. The
+**Twenty-four defects were found this way and fixed**; they are listed in the PR description. The
 five most serious were invisible to the build and to the existing tests:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from
@@ -196,6 +196,15 @@ five most serious were invisible to the build and to the existing tests:
   every method the API serves — still an allowlist, still no wildcard, still no credentials — and
   seven new tests preflight each method against the real app and check that a method the API does
   not serve is still refused.
+
+  **The same rule broke export a second way.** Cross-origin JavaScript reads only the six "simple"
+  response headers unless the server lists more, and the download helper reads the filename out of
+  `Content-Disposition` — so every exported file landed as `purchase-order`, no extension, and the
+  operator's own filename template was silently discarded. `X-Request-ID`, which the error copy
+  tells a person to quote to support, and `X-ZAAD-Transmitted: false`, which is an assertion this
+  product makes, were equally unreadable. All three are exposed now; measured from the browser
+  afterwards, an export returns
+  `Change_to_PO-016648_SUP-001_20260914.csv` and `x-zaad-transmitted: false`.
 
 * `ensure_tables` — the fallback that prepares the product's own tables on a vault that predates
   migration 023 — split the migration file on `";"`. Migration 023 carries `COMMENT ON … IS '…;…'`

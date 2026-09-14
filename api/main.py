@@ -55,6 +55,13 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Admin-Key", "Accept"],
+    # Cross-origin JavaScript can read only the six "simple" response headers unless the server
+    # says otherwise — and the web app is on a different origin from this API in every deployment.
+    # `Content-Disposition` carries the filename the operator's own export profile produced, so
+    # without it every exported file downloaded as "purchase-order" with no extension; the request
+    # id is what the error copy tells a person to quote to support; and `X-ZAAD-Transmitted` is an
+    # assertion this product makes, which a reviewer should be able to check from the browser.
+    expose_headers=["Content-Disposition", "X-Request-ID", "X-ZAAD-Transmitted"],
 )
 
 

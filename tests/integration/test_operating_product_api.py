@@ -499,3 +499,22 @@ def test_a_method_the_api_does_not_serve_is_still_refused():
             "Access-Control-Request-Method": "TRACE",
         })
     assert response.status_code == 400
+
+
+def test_a_browser_can_read_the_filename_the_export_profile_produced():
+    """Cross-origin JavaScript reads only the six "simple" response headers by default.
+
+    The web app is on a different origin from this API in every deployment, so without
+    `Access-Control-Expose-Headers` the download helper cannot see `Content-Disposition` and every
+    exported file lands as "purchase-order" with no extension — the operator's own filename
+    template, and the extension their spreadsheet program opens on, both silently lost.
+    """
+    from api.main import app as real_app
+
+    with TestClient(real_app) as probe:
+        response = probe.get("/health", headers={"Origin": "http://localhost:3000"})
+    exposed = {h.strip().lower() for h in
+               response.headers.get("access-control-expose-headers", "").split(",")}
+    assert "content-disposition" in exposed, "the export filename is unreadable without this"
+    assert "x-request-id" in exposed, "the error copy tells people to quote it"
+    assert "x-zaad-transmitted" in exposed, "the 'nothing was sent' assertion should be checkable"

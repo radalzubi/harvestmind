@@ -409,6 +409,11 @@ bounded limiter.
   wildcard origin, no credentials, and no method the API does not serve. Preflight tests cover
   each method, including one the API does not serve, because a test client never preflights and so
   none of the other tests can see this.
+* **`Access-Control-Expose-Headers` names the three headers the interface reads**:
+  `Content-Disposition` (the filename the operator's own export profile produced — without it every
+  export downloads as `purchase-order` with no extension), `X-Request-ID` (what the error copy asks
+  a person to quote), and `X-ZAAD-Transmitted` (so the "nothing was sent" assertion is checkable
+  from the browser rather than taken on trust). Nothing else is exposed.
 
 ## 14. What this release does not do
 
