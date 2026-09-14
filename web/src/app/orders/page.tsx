@@ -76,7 +76,11 @@ function Proposals({ params, set }: { params: URLSearchParams; set: (c: Record<s
     { key: "units", label: "Units", numeric: true, sortable: true, render: (r) => r.units != null ? NUMBER(r.units) : <span className="na">—</span> },
     { key: "value", label: "Value", numeric: true, sortable: true, hideBelow: 700,
       title: (r) => r.value_incomplete ? "Some lines carry no price, so this is the value of the lines that do." : undefined,
-      render: (r) => r.value ? <>{MONEY(r.value, r.currency ?? "USD")}{r.value_incomplete && <span className="na"> +</span>}</> : <span className="na">—</span> },
+      // A proposal every line of which carries no price is worth zero only in the sense that ZAAD
+      // has nothing to price it with. That is "not priced", not a dash, and not "USD 0.00".
+      render: (r) => r.value == null ? <span className="na">—</span>
+        : r.value === 0 && r.value_incomplete ? <span className="na">Not priced</span>
+        : <>{MONEY(r.value, r.currency ?? "USD")}{r.value_incomplete && <span className="na"> +</span>}</> },
     { key: "updated_at", label: "Updated", sortable: true, hideBelow: 1100, render: (r) => DATE(r.updated_at) },
   ], []);
 
@@ -248,7 +252,10 @@ function Imported({ params, set }: { params: URLSearchParams; set: (c: Record<st
     { key: "expected_delivery_date", label: "Expected", sortable: true, hideBelow: 900,
       render: (r) => r.eta ? DATE(r.eta) : <span className="na">Not given</span> },
     { key: "value", label: "Value", numeric: true, sortable: true, hideBelow: 900,
-      render: (r) => r.value ? MONEY(r.value) : <span className="na">—</span> },
+      title: (r) => r.value_incomplete ? "Some lines carry no price, so this is the value of the lines that do." : undefined,
+      render: (r) => r.value == null ? <span className="na">—</span>
+        : r.value === 0 && r.value_incomplete ? <span className="na">Not priced</span>
+        : <>{MONEY(r.value)}{r.value_incomplete && <span className="na"> +</span>}</> },
   ], []);
 
   if (error) return <Notice tone="warn">{error}</Notice>;

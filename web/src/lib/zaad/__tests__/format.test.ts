@@ -7,7 +7,7 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { COUNT, MONEY, NUMBER, PERCENT } from "../product";
+import { COUNT, MONEY, NUMBER, PERCENT, TALLY } from "../product";
 
 test("one is singular", () => {
   assert.equal(COUNT(1, "order"), "1 order");
@@ -44,4 +44,29 @@ test("the other formatters still say — rather than inventing a zero", () => {
   assert.equal(NUMBER(null), "—");
   assert.equal(MONEY(null), "—");
   assert.equal(PERCENT(null), "—");
+});
+
+/**
+ * TALLY is the rule three tables got wrong the same way: they tested a count for truth, so a
+ * measured zero printed the dash that the rest of the product reserves for "not available".
+ */
+test("a measured zero is a word, not the dash that means not available", () => {
+  assert.deepEqual(TALLY(0), { text: "none", muted: true });
+  assert.deepEqual(TALLY(0, "nothing on order"), { text: "nothing on order", muted: true });
+});
+
+test("only absence is the dash", () => {
+  assert.deepEqual(TALLY(null), { text: "—", muted: true });
+  assert.deepEqual(TALLY(undefined), { text: "—", muted: true });
+  assert.deepEqual(TALLY(Number.NaN), { text: "—", muted: true });
+});
+
+test("a count is the count, grouped as the tables group it", () => {
+  assert.deepEqual(TALLY(1), { text: "1", muted: false });
+  assert.deepEqual(TALLY(27), { text: "27", muted: false });
+  assert.deepEqual(TALLY(1865), { text: "1,865", muted: false });
+});
+
+test("zero and absence never render alike", () => {
+  assert.notEqual(TALLY(0).text, TALLY(null).text);
 });

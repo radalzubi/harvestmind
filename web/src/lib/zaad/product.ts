@@ -510,6 +510,19 @@ export const NUMBER = (value: number | null | undefined, digits = 0): string =>
     : value.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
 /**
+ * A measured count, told apart from a count ZAAD does not have.
+ *
+ * `value ? NUMBER(value) : "—"` reads naturally and is wrong: it prints the dash that means
+ * "not available" over a zero the vault states plainly. Three tables carried that line, and on a
+ * workspace where every purchase order has been received it turned whole columns into a claim of
+ * ignorance. Zero is a word here; only absence is the dash.
+ */
+export const TALLY = (value: number | null | undefined, none = "none"): { text: string; muted: boolean } =>
+  value == null || !Number.isFinite(value) ? { text: "—", muted: true }
+    : value === 0 ? { text: none, muted: true }
+    : { text: NUMBER(value), muted: false };
+
+/**
  * A count and its noun, agreeing. `COUNT(1, "order")` is "1 order", not "1 orders".
  *
  * A filtered list of one is the normal case, not the edge case, so every count printed beside a

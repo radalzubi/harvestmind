@@ -17,7 +17,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Gate } from "@/components/workspace/Gate";
 import { Button, ButtonLink, Disclosure, EmptyState, Loading, Notice, PageHead, Section } from "@/components/workspace/ui";
-import { Column, DataTable, NotAvailable, Pager, SearchField, SelectField, Toolbar } from "@/components/workspace/Table";
+import { Column, DataTable, NotAvailable, Pager, SearchField, SelectField, Tally, Toolbar } from "@/components/workspace/Table";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money } from "@/lib/zaad/decisions";
 import {
@@ -79,10 +79,15 @@ function Suppliers({ params, set }: { params: URLSearchParams; set: (c: Record<s
         render: (r) => r.fill_rate != null ? PERCENT(r.fill_rate) : <NotAvailable /> },
       { key: "p90_lead_days", label: "Slow lead (p90)", numeric: true, sortable: true, hideBelow: 900,
         render: (r) => r.p90_lead_days != null ? `${NUMBER(r.p90_lead_days)} d` : <span className="na">—</span> },
+      // Zero open orders is a fact the vault states; it is not the same as an unmeasured supplier,
+      // and it used to print the same dash. "Open and late" is null rather than zero when the
+      // workspace declared no receipts, because then lateness genuinely cannot be told.
       { key: "open_orders", label: "Open", numeric: true, sortable: true,
-        render: (r) => r.open_orders ? NUMBER(r.open_orders) : <span className="na">—</span> },
+        render: (r) => <Tally value={r.open_orders} why="No purchase order for this supplier" /> },
       { key: "late_open_orders", label: "Open and late", numeric: true, sortable: true, hideBelow: 700,
-        render: (r) => r.late_open_orders ? <span className="chip" data-tone="warn">{NUMBER(r.late_open_orders)}</span> : <span className="na">—</span> },
+        render: (r) => r.late_open_orders
+          ? <span className="chip" data-tone="warn">{NUMBER(r.late_open_orders)}</span>
+          : <Tally value={r.late_open_orders} why="No receipts uploaded, so lateness cannot be measured" /> },
     ];
   }, [page]);
 

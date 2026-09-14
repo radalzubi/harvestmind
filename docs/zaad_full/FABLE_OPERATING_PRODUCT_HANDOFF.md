@@ -328,6 +328,23 @@ process, never `zaad-api`.
   three now suppress a difference that rounds to nothing. The same screen said "Products covered:
   5 of 150" on a workspace holding ten thousand products, which invites the reading that the
   catalogue is 150; the denominator is what ZAAD read for the plan, and it now says so.
+* **Zero read as ignorance in four more columns.** `value ? NUMBER(value) : "—"` reads naturally
+  and is wrong: it prints the dash this product reserves for *not available* over a zero the vault
+  states plainly. On the ten-thousand-product workspace, where every purchase order has been
+  received, Diagnostics showed "—" under **Open** and **Open and late** for all 120 suppliers, and
+  Inventory showed "—" under **On order** for every product — three columns claiming ZAAD could not
+  tell, about a fact it had counted. The rule now lives in one place, `TALLY` in
+  `lib/zaad/product.ts` with the `Tally` renderer over it, and it distinguishes all three states
+  the backend actually returns: `null` is the dash (and carries its reason as a title), `0` is the
+  word "none", anything else is the count. Four tests. On the 150-product workspace the same
+  columns now read "25 open, none late" rather than "25 open, —", which is the answer an operator
+  scanning for late orders was looking for. The fourth was a proposal every line of which carries
+  no price: value `0.0` with `value_incomplete` true, shown as "—", now **"Not priced"** — the flag
+  was already in the payload and already used on the proposal list's tooltip, just not read here.
+* **What was left alone, deliberately.** The supplier table's **Route** column prints `aqaba`,
+  `iraq_overland`, `road_saudi` — slugs, and tempting to prettify. They are values from the
+  operator's own `stg_fmcg_suppliers` upload, not engine constants, so formatting them would be
+  renaming the operator's data. It stays verbatim.
 * **The pages this pass links to but did not write**, since an operator does not know the
   difference. `/upload/confirm` opened directly said "Something went wrong — No session id, start
   from the Upload page": nothing had gone wrong, the page had simply been opened without the upload

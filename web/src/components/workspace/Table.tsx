@@ -22,6 +22,7 @@
  */
 import { useEffect, useRef, type ReactNode } from "react";
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { NUMBER, TALLY } from "@/lib/zaad/product";
 import { Button } from "./ui";
 
 export interface Column<T> {
@@ -238,6 +239,23 @@ export function SelectField({ value, onChange, options, label, all = "All" }: {
  * definition list or a panel, where the whole point is the explanation, pass `shown` and the reason
  * is read without hovering, which is the only way it reaches a phone or a screen reader.
  */
+/**
+ * A measured count, where zero is an answer and absence is not.
+ *
+ * `value ? NUMBER(value) : "—"` collapses the two, and every table that wrote it said the same
+ * wrong thing: a supplier whose every order has arrived rendered exactly like a supplier ZAAD has
+ * never seen an order for, and a product with nothing on the water exactly like one whose inbound
+ * ZAAD cannot see. On a workspace where every order is received that is a whole column of dashes
+ * claiming ignorance of something the vault states plainly.
+ *
+ * So zero is a word, `null` is the dash, and the reason for the dash rides along as its title.
+ */
+export function Tally({ value, none = "none", why }: { value: number | null | undefined; none?: string; why?: string }) {
+  const said = TALLY(value, none);
+  if (!said.muted) return <>{said.text}</>;
+  return <span className="na" title={value == null ? why : undefined}>{said.text}</span>;
+}
+
 export function NotAvailable({ why, shown }: { why?: string; shown?: boolean }) {
   if (shown && why) {
     return (

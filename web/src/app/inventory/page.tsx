@@ -19,7 +19,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FileText, RefreshCw, Share2 } from "lucide-react";
 import { Gate } from "@/components/workspace/Gate";
 import { Button, ButtonLink, Disclosure, EmptyState, ErrorState, Loading, Notice, PageHead, Section } from "@/components/workspace/ui";
-import { Column, DataTable, Drawer, NotAvailable, Pager, SearchField, SelectField, Toolbar } from "@/components/workspace/Table";
+import { Column, DataTable, Drawer, NotAvailable, Pager, SearchField, SelectField, Tally, Toolbar } from "@/components/workspace/Table";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import {
   DATE, MONEY, NUMBER, fetchDatasetValues, fetchInventory, fetchSku,
@@ -298,7 +298,9 @@ function InventoryBody() {
         ? <Link href={`/diagnostics/supplier/${encodeURIComponent(r.supplier_id)}`} onClick={(e) => e.stopPropagation()}>{r.supplier_name || r.supplier_id}</Link>
         : <span className="na">—</span> },
     { key: "on_hand", label: "On hand", numeric: true, sortable: true, render: (r) => r.on_hand != null ? NUMBER(r.on_hand) : <span className="na">—</span> },
-    { key: "inbound_units", label: "On order", numeric: true, sortable: true, hideBelow: 700, render: (r) => r.inbound_units ? NUMBER(r.inbound_units) : <span className="na">—</span> },
+    // Nothing on order is an answer. A dash here said ZAAD could not see the inbound at all.
+    { key: "inbound_units", label: "On order", numeric: true, sortable: true, hideBelow: 700,
+      render: (r) => <Tally value={r.inbound_units} why="No purchase order carries this product" /> },
     { key: "weekly_demand", label: "Per week", numeric: true, sortable: true, hideBelow: 1100, render: (r) => r.weekly_demand != null ? NUMBER(r.weekly_demand) : <span className="na">—</span> },
     { key: "cover_weeks", label: "Cover", numeric: true, sortable: true, render: (r) => coverChip(r.cover_weeks, r.on_hand) },
     { key: "inventory_value", label: "Stock value", numeric: true, sortable: true, hideBelow: 700,
