@@ -512,3 +512,28 @@ textarea.fld { height: auto; padding: 8px 10px; line-height: 1.5; resize: vertic
 .tabs button:hover { color: var(--ink-950); }
 .tabs button[aria-selected="true"] { color: var(--ink-950); border-bottom-color: var(--ink-950); }
 .tabs button:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+/* ── Print ────────────────────────────────────────────────────────────────
+   A buyer takes the Decisions list into a meeting, or prints a supplier's page
+   for a call. There was no print stylesheet at all, so the navigation rail, the
+   sticky header, the phone tab bar and every button came out on paper with the
+   content squeezed beside them.
+
+   This changes nothing on screen. The considered printable artefact is still the
+   PDF export; this is for the times someone presses ⌘P on a page.             */
+
+@media print {
+  .ws { display: block; }
+  .ws-rail, .ws-top, .ws-tabs, .ws-more, .skip-link, .drw-scrim,
+  .ws-h-actions, .tbar, .tbl-pager > div, .zb, .tbl-sort svg { display: none !important; }
+  /* A sort header is still a heading; only its control disappears. */
+  .tbl-sort { color: inherit; }
+  .ws-page, .ws-page.wide { padding: 0; max-width: none; }
+  .drw { position: static; width: auto; box-shadow: none; border: 0; animation: none; }
+  .ws-sec { break-inside: avoid; }
+  .tbl thead { display: table-header-group; }   /* repeat the header on every page */
+  .tbl tr, .dec, .notice, .state-box { break-inside: avoid; }
+  .disc > div { display: block !important; }    /* a disclosure prints open */
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 10px; color: #555; }
+  body { background: #fff; }
+}

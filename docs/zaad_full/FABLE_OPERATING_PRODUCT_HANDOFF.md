@@ -108,6 +108,11 @@ checked, by driving the product rather than reading it:
   every table and measured **2.39:1**.
 * **Motion** — the three looping or entrance animations (skeleton, spinner, drawer) are already
   behind `prefers-reduced-motion`.
+* **Print** — there was no print stylesheet at all, so ⌘P on any workspace page put the navigation
+  rail, the sticky header, the phone tab bar and every button on paper. There is one now: it hides
+  the chrome, repeats a table's header on each page, keeps a row from breaking across pages, prints
+  a disclosure open and writes out link targets. The considered printable artefact is still the PDF
+  export; this is for the times someone prints the screen.
 
 **Six of those classes were broken when this session started and are fixed here.** What was *not*
 done: a pass with an actual screen reader, a browser-zoom pass (reflow at 320 px is the stronger
