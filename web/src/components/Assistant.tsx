@@ -19,14 +19,18 @@ const T = {
         model: "أجاب", noKey: "أدخل مفتاحك أولاً." },
 };
 
-export function AssistantButton({ label }: { label?: string } = {}) {
+/**
+ * Contextual help. Deliberately low emphasis in the workspace bar: it is a support route,
+ * not the operator's task, so it never renders as the loudest control on the page.
+ */
+export function AssistantButton({ label, variant = "brand", icon }: { label?: string; variant?: "brand" | "tertiary"; icon?: React.ReactNode } = {}) {
   const [open, setOpen] = useState(false);
   const { locale } = useLocale();
   const t = T[locale === "ar" ? "ar" : "en"];
   return (
     <>
-      <button className="tbtn brand" onClick={() => setOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-        <Sparkles size={13} /> {label ?? t.open}
+      <button className={variant === "tertiary" ? "zb zb--tertiary zb--sm" : "zb zb--brand zb--sm"} onClick={() => setOpen(true)}>
+        {icon ?? <Sparkles size={13} aria-hidden />} {label ?? t.open}
       </button>
       {open && <AssistantDrawer onClose={() => setOpen(false)} />}
     </>
