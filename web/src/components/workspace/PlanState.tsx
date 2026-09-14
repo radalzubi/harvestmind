@@ -17,10 +17,16 @@ import { DEFAULT_SCOPE, SCOPE_CHOICES, useWorkspaceData } from "@/lib/zaad/works
 import { Button, ButtonLink, EmptyState, ErrorState, Notice } from "./ui";
 
 export function ScopeNotice() {
-  const { scope, readScope } = useWorkspaceData();
-  if (!scope && !readScope) return null;
+  const { scope, readScope, lastRunFailed } = useWorkspaceData();
+  if (!scope && !readScope && !lastRunFailed) return null;
   return (
     <>
+      {lastRunFailed && (
+        <Notice tone="warn">
+          <strong>{lastRunFailed}</strong> Nothing was changed, and the plan below is the last one that
+          finished — its own date is on it.
+        </Notice>
+      )}
       {readScope && (
         <Notice tone="info">
           <strong>ZAAD is looking at {readScope.skus.length.toLocaleString("en-US")} of your{" "}

@@ -39,7 +39,13 @@ export type PlanPhase = "none" | "queued" | "running" | "ready" | "failed";
  * never presented as if it covered the whole catalogue.
  */
 export const DEFAULT_SCOPE = 10;
-export const SCOPE_CHOICES = [10, 25, 50] as const;
+/**
+ * A network workspace multiplies the work: three sites and thirty-six service lines make a
+ * ten-product run far heavier than a ten-product run on one site. Measured here: ten products over
+ * three sites did not finish inside the time the engine gave it, while two finished in twelve
+ * seconds. Five is offered so a multi-site operator has a size that returns.
+ */
+export const SCOPE_CHOICES = [5, 10, 25, 50] as const;
 
 /**
  * How many products the workspace *read* carries.
@@ -84,6 +90,12 @@ export interface WorkspaceData {
   scope: PlanScope | null;
   /** What the *read* covered, null when it covered the whole catalogue. */
   readScope: PlanScope | null;
+  /**
+   * Set when the most recent run ended without a plan and an older plan is what is on screen.
+   * Told as a notice rather than by hiding the older plan: the operator asked for something and it
+   * did not work, and they should hear that without losing what they already had.
+   */
+  lastRunFailed: string | null;
   /** When the plan in hand finished, from the job record. */
   computedAt: Date | null;
   /** Runs a new plan over `size` products, or every product when `size` is "all". */
@@ -200,6 +212,7 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
   const [directory, setDirectory] = useState<DirectoryResponse | null>(null);
   const [scope, setScope] = useState<PlanScope | null>(null);
   const [readScope, setReadScope] = useState<PlanScope | null>(null);
+  const [lastRunFailed, setLastRunFailed] = useState<string | null>(null);
   const [computedAt, setComputedAt] = useState<Date | null>(null);
   const [tick, setTick] = useState(0);
   const poll = useRef<number | null>(null);
@@ -260,6 +273,19 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
         const last = plans.find((j) => j.status === "DONE");
         const active = plans.find((j) => j.status === "RUNNING" || j.status === "QUEUED");
         if (active) { watch(active.id); return; }
+        // A run that failed after the last good plan is not silently forgotten on reload.
+        const newest = plans[0];
+        if (newest && newest !== last && ["FAILED", "TIMEOUT", "CANCELLED"].includes(newest.status)) {
+          setLastRunFailed(
+            newest.status === "TIMEOUT"
+              ? "Your most recent run did not finish inside the time it is given. Try a smaller selection of products."
+              : newest.status === "CANCELLED"
+                ? "Your most recent run was cancelled."
+                : "Your most recent run stopped without producing a plan.",
+          );
+        } else {
+          setLastRunFailed(null);
+        }
         if (!last || !live) return;
         const detail = await readPlanJob(last.id);
         if (!live || !detail.report) return;
@@ -358,10 +384,10 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
       phase, planPhase, notReady, error, planError,
       request, build, report, directory, decisions, summary, network,
       index: network ? buildIndex(network) : null,
-      scope, readScope, computedAt, run,
+      scope, readScope, lastRunFailed, computedAt, run,
       refresh: () => setTick((t) => t + 1),
     };
-  }, [phase, planPhase, notReady, error, planError, request, build, report, directory, scope, readScope, computedAt, run, session.workspace]);
+  }, [phase, planPhase, notReady, error, planError, request, build, report, directory, scope, readScope, lastRunFailed, computedAt, run, session.workspace]);
 
   return <WorkspaceDataContext.Provider value={value}>{children}</WorkspaceDataContext.Provider>;
 }
