@@ -40,8 +40,13 @@ function PlanEconomics() {
           </p>
         ) : (
           <Facts items={[
-            { label: "Modelled cost change", value: summary.valueVsCurrent != null ? `${summary.valueVsCurrent >= 0 ? "saves " : "costs "}${money(Math.abs(summary.valueVsCurrent), c)}` : null },
-            { label: "Cash tied up", value: summary.workingCapitalDelta != null ? `${summary.workingCapitalDelta >= 0 ? "+" : "−"}${money(Math.abs(summary.workingCapitalDelta), c)}` : null },
+            // A difference that rounds to nothing reads as a saving if it is printed as one.
+            { label: "Modelled cost change", value: summary.valueVsCurrent == null ? null
+                : Math.abs(summary.valueVsCurrent) < 0.005 ? "no difference"
+                : `${summary.valueVsCurrent >= 0 ? "saves " : "costs "}${money(Math.abs(summary.valueVsCurrent), c)}` },
+            { label: "Cash tied up", value: summary.workingCapitalDelta == null ? null
+                : Math.abs(summary.workingCapitalDelta) < 0.005 ? "no difference"
+                : `${summary.workingCapitalDelta >= 0 ? "+" : "−"}${money(Math.abs(summary.workingCapitalDelta), c)}` },
           ]} />
         )}
         {summary.service.length > 0 && summary.service.some((x) => x.recommended != null) && (
@@ -121,16 +126,6 @@ function DecisionsBody() {
 
   return (
     <>
-      <PageHead
-        title="Decisions"
-        sub={open.length
-          ? `${open.length} recommendation${open.length === 1 ? "" : "s"} waiting on you. ZAAD records your answer; it never contacts a supplier.`
-          : "ZAAD found nothing worth changing. Everything it compared is listed here."}
-        actions={<RunPlan label="Run again" role="secondary" />}
-      />
-
-      <div style={{ marginBottom: 14, display: "grid", gap: 10 }}><ScopeNotice /></div>
-
       <div role="tablist" aria-label="Filter decisions" style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
         {([["needs-review", `Needs review${open.length ? ` (${open.length})` : ""}`], ["all", `All (${decisions.length})`], ...categories.map((c) => [c, c] as const)] as Array<[Filter, string]>)
           .map(([id, label]) => (
@@ -175,10 +170,39 @@ function DecisionsBody() {
   );
 }
 
+/**
+ * The page's own heading and its run control, outside the plan gate.
+ *
+ * They used to be inside it, so while a run was in flight the page had no title, no scope notice
+ * and no way to do anything — a surface that erases itself for the minutes it is working is worse
+ * than one that says what it is doing.
+ */
+function DecisionsHeader() {
+  const { decisions, planPhase } = useWorkspaceData();
+  const open = decisions.filter((d) => d.needsReview);
+  return (
+    <>
+      <PageHead
+        title="Decisions"
+        sub={planPhase !== "ready"
+          ? "What ZAAD recommends changing, and why."
+          : open.length
+            ? `${open.length} recommendation${open.length === 1 ? "" : "s"} waiting on you. ZAAD records your answer; it never contacts a supplier.`
+            : "ZAAD found nothing worth changing. Everything it compared is listed here."}
+        // With no plan yet the gate below already offers the run, sized; a second copy of the same
+        // control in the header is one control too many. Home does the same.
+        actions={planPhase !== "none" ? <RunPlan label="Run again" role="secondary" /> : undefined}
+      />
+      <div style={{ marginBottom: 14, display: "grid", gap: 10 }}><ScopeNotice /></div>
+    </>
+  );
+}
+
 export default function DecisionsPage() {
   return (
     <Gate>
       <Suspense fallback={null}>
+        <DecisionsHeader />
         <PlanGate>
           <DecisionsBody />
         </PlanGate>

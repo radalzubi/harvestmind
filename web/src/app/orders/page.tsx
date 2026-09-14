@@ -158,7 +158,7 @@ function ImportedPanel({ poId, onClose }: { poId: string; onClose: () => void })
             <DataTable caption={`Lines on ${poId}`} dense rows={lines} rowKey={(r) => String(r.sku)}
               columns={[
                 { key: "sku", label: "Product", render: (r) => <Link href={`/inventory?sku=${encodeURIComponent(String(r.sku))}`}>{String(r.sku)}</Link> },
-                { key: "qty_ordered", label: "Ordered", numeric: true, render: (r) => NUMBER(Number(r.qty_ordered)) },
+                { key: "qty_ordered", label: "Units ordered", numeric: true, render: (r) => NUMBER(Number(r.qty_ordered)) },
                 { key: "unit_cost", label: "Unit cost", numeric: true, render: (r) => r.unit_cost != null ? MONEY(Number(r.unit_cost)) : <span className="na">—</span> },
                 { key: "expected_delivery_date", label: "Expected", render: (r) => r.expected_delivery_date ? DATE(String(r.expected_delivery_date)) : <span className="na">Not given</span> },
               ]} />
@@ -226,10 +226,10 @@ function Imported({ params, set }: { params: URLSearchParams; set: (c: Record<st
 
   const columns: Column<ImportedOrderRow>[] = useMemo(() => [
     { key: "po_id", label: "PO", width: 160, render: (r) => <strong style={{ fontWeight: 500, color: "var(--ink-950)" }}>{r.po_id}</strong> },
-    { key: "po_date", label: "Ordered", sortable: true, render: (r) => DATE(r.po_date) },
+    { key: "po_date", label: "Ordered on", sortable: true, render: (r) => DATE(r.po_date) },
     { key: "supplier_id", label: "Supplier", sortable: true, hideBelow: 700, render: (r) => r.supplier_id ?? <span className="na">—</span> },
     { key: "lines", label: "Lines", numeric: true, sortable: true, hideBelow: 1100, render: (r) => NUMBER(r.lines) },
-    { key: "ordered_units", label: "Ordered", numeric: true, render: (r) => NUMBER(r.ordered_units) },
+    { key: "ordered_units", label: "Units ordered", numeric: true, render: (r) => NUMBER(r.ordered_units) },
     { key: "open_units", label: "Still owed", numeric: true, sortable: true,
       render: (r) => r.open_units ? NUMBER(r.open_units) : <span className="chip" data-tone="good">Received</span> },
     { key: "expected_delivery_date", label: "Expected", sortable: true, hideBelow: 900,

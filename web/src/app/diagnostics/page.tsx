@@ -218,13 +218,14 @@ function Value() {
         </p>
         <dl className="kv">
           <dt>Modelled cost difference</dt>
-          <dd>{summary.valueVsCurrent != null
-            ? `${summary.valueVsCurrent >= 0 ? "lower by " : "higher by "}${money(Math.abs(summary.valueVsCurrent), summary.currency)}`
-            : <NotAvailable why="The selector kept your current plan and priced no alternative against it." />}</dd>
+          <dd>{summary.valueVsCurrent == null
+            ? <NotAvailable why="The selector kept your current plan and priced no alternative against it." />
+            : Math.abs(summary.valueVsCurrent) < 0.005 ? "no difference"
+            : `${summary.valueVsCurrent >= 0 ? "lower by " : "higher by "}${money(Math.abs(summary.valueVsCurrent), summary.currency)}`}</dd>
           <dt>Cash tied up</dt>
-          <dd>{summary.workingCapitalDelta != null
-            ? `${summary.workingCapitalDelta >= 0 ? "+" : "−"}${money(Math.abs(summary.workingCapitalDelta), summary.currency)}`
-            : <NotAvailable />}</dd>
+          <dd>{summary.workingCapitalDelta == null ? <NotAvailable />
+            : Math.abs(summary.workingCapitalDelta) < 0.005 ? "no difference"
+            : `${summary.workingCapitalDelta >= 0 ? "+" : "−"}${money(Math.abs(summary.workingCapitalDelta), summary.currency)}`}</dd>
           <dt>Products covered</dt>
           <dd>{scope ? `${scope.skus.length} of ${scope.total}` : "every product in the workspace"}</dd>
           <dt>As at</dt><dd>{DATE(summary.asOf)}</dd>

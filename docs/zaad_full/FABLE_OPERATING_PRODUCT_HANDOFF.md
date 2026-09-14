@@ -146,8 +146,11 @@ path) and a **production build** of this branch, on synthetic workspaces created
 * **Mobile** at 375×812: the four-tab bar plus More, the reduced Inventory table, wrapped filters.
 * **RTL** with `dir="rtl"`: rail, tables, drawers, buttons and forms all mirrored; horizontal
   overflow zero.
+* **Every table's heading row read back out of the live DOM** rather than out of the source, and
+  every column set in `web/src/` checked for a label used twice in one table. One table was showing
+  two columns called "Ordered" — the date and the quantity. Both are now unambiguous.
 
-Twelve defects were found this way and fixed; they are listed in the PR description. The two most
+Thirteen defects were found this way and fixed; they are listed in the PR description. The two most
 serious were invisible to the build and to the existing tests:
 
 * `ZaadBuild.fits` declared `fill`; every API response has always carried `fill_mean`. Supplier
@@ -201,22 +204,56 @@ Ordered by how much they should worry you.
    interrupted rather than spun on for ever — but the row stays RUNNING and the quota stays spent.
    **The fix belongs in `JobStore`** (mark a row TIMEOUT when `started_at + timeout_s` has passed and
    no process owns it) and needs the frozen-regression treatment.
-2. **An evaluation costs two of the daily job allowance** (default 24), so twelve evaluations a day.
+2. **Nothing in this pass raises the ceiling on how much can be planned at once, and the ceiling is
+   low.** Three separate caps stack: `zaad.network.v2` allows at most 5,000 products in a `Request`;
+   the jobs path allows 200 (`LARGE_LIMITS` in `api/routers/zaad_full.py`); and this product reads
+   150 and says so on every page that shows a plan. The last of those is a product decision and
+   reversible; the first two are the engine's and are not. The binding constraint is not the caps
+   but the solve: a **ten-product, three-site, twelve-week run measured 3 m 52 s** on the corridor QA
+   workspace (job `job_60c29e10`, 2026-09-14), and an eight-product one 1 m 48 s. So on a multi-site
+   workspace the scope choices the product offers (5 / 10 / 25 / 50) are not interchangeable — the
+   larger ones will approach or exceed the budget the job is given. **Record surfaces are unaffected:**
+   inventory, purchase orders, diagnostics and the data explorer query the vault directly and were
+   benchmarked at 50,000 products / 4.0 M rows with a slowest median query of 298 ms. The limit is on
+   one optimization problem, not on the platform.
+3. **An evaluation costs two of the daily job allowance** (default 24), so twelve evaluations a day.
    Stated in the 429 message; not hidden.
-3. **An evaluation covers the proposal's products only.** Effects reaching other products — a
+4. **An evaluation covers the proposal's products only.** Effects reaching other products — a
    supplier's weekly capacity shared with other orders — are outside the comparison. Every answer
    says so.
-4. **Receipts that do not name a product** are attributed only when the order has one line; otherwise
+5. **A refused declaration degrades the read rather than failing it, and the degraded mode is
+   silent about what it would have found.** One row in `stg_po_options` declaring a right on an
+   order the planning adapter drops (`po_date >= origin`) makes the whole workspace read refuse. The
+   product now retries once without `commitments` and reports the refusal verbatim, so Home,
+   Decisions and the Network survive — but in that state **no open-order recommendation can be
+   produced at all**, and ZAAD cannot say whether there would have been one. The banner says the
+   part that is missing is missing; it cannot say how much.
+6. **The evaluation-job exclusion is not atomic with submission.** `POST /orders/{id}/evaluate`
+   submits the baseline run, submits the overlaid run, and only then writes the `zaad_evaluations`
+   row that marks both as evaluation runs. A workspace read landing inside that window — or any
+   read at all, if the insert fails after the submits succeed — sees the baseline job in
+   `listPlanJobs()` and not in `evaluation_job_ids`, and will adopt it as the workspace's current
+   plan. The baseline is a genuine plan, so nothing false is shown, but its scope is the proposal's
+   products rather than the workspace's, and the operator did not ask for it. The window is short
+   (two queue writes and a DuckDB insert) and was not observed in QA. The fix is to write the
+   evaluation record first, or to carry a purpose field on the job — see item 10.
+7. **Receipts that do not name a product** are attributed only when the order has one line; otherwise
    the line's received quantity is reported as unattributed, never apportioned.
-5. **Sites are not placed on the map** in a multi-site workspace — the planning contract carries no
+8. **Sites are not placed on the map** in a multi-site workspace — the planning contract carries no
    coordinates and the operator's country would stack every site on one point.
-6. **No supported delay driver** is produced: the canonical upload has no event timestamps between
+9. **No supported delay driver** is produced: the canonical upload has no event timestamps between
    order and receipt. The five fields that would settle it are named on the page.
-7. **The evaluation-run guard has two bases and neither is the job store itself.** The vault record
-   is the normal answer; the overlaid run's own request is the fallback. A cleaner answer would be a
-   purpose field on the job record — which is in `zaad/`, so not this pass.
-8. **`npm run lint` takes 7–12 minutes on macOS** in this environment (it is fast in CI). If you run
-   it locally, expect to wait; it passes.
+10. **The evaluation-run guard has two bases and neither is the job store itself.** The vault record
+    is the normal answer; the overlaid run's own request is the fallback. A cleaner answer would be a
+    purpose field on the job record — which is in `zaad/`, so not this pass.
+11. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
+    7–12 minutes earlier in the pass and passed; by the end the eslint process parked with the
+    config's `globals.json` open, sleeping, and **0.94 s of CPU consumed in 3 m 24 s** — it was
+    blocked, not slow. Two separate invocations behaved identically and were killed. The lint
+    evidence for the final commits is therefore **CI's frontend job, not a local run**; CI has been
+    green on every head of this branch. If you reproduce the hang, it is an environment problem on
+    this machine and not a property of the code — `tsc --noEmit` and `next build` both complete in
+    seconds on the same tree.
 
 ## 11. What is left for you
 

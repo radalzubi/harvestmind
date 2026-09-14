@@ -18,7 +18,9 @@ import { DEFAULT_SCOPE, SCOPE_CHOICES, useWorkspaceData } from "@/lib/zaad/works
 import { Button, ButtonLink, EmptyState, ErrorState, Notice } from "./ui";
 
 export function ScopeNotice() {
-  const { scope, readScope, lastRunFailed, degraded } = useWorkspaceData();
+  const { scope, readScope, lastRunFailed, degraded, planPhase } = useWorkspaceData();
+  // While the solve is still going there is no plan yet, so the scope is the run's, not a plan's.
+  const inFlight = planPhase === "queued" || planPhase === "running";
   if (!scope && !readScope && !lastRunFailed && !degraded) return null;
   return (
     <>
@@ -41,9 +43,11 @@ export function ScopeNotice() {
       )}
       {scope && (
         <Notice tone="info">
-          <strong>This plan covers {scope.skus.length.toLocaleString("en-US")} of your{" "}
+          <strong>This {inFlight ? "run" : "plan"} covers {scope.skus.length.toLocaleString("en-US")} of your{" "}
           {scope.total.toLocaleString("en-US")} products</strong> — {scope.rule}.
-          Anything outside that selection was not looked at. Run again over more products to widen it.
+          {inFlight
+            ? " Anything outside that selection is not being looked at."
+            : " Anything outside that selection was not looked at. Run again over more products to widen it."}
         </Notice>
       )}
     </>

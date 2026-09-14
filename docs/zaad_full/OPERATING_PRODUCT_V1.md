@@ -419,3 +419,12 @@ vault created before this release; it never creates or alters a staging table.
 5. **No supported delay driver** is produced by this release; see §9.
 6. **Bulk PO creation** and **transfer proposals** are not implemented; the first is §14, the second
    would need a recorded-transfer workflow the engine does not currently offer.
+7. **A refused commitment declaration degrades the read.** One row in `stg_po_options` declaring a
+   right on an order the planning adapter drops (`po_date >= origin`) makes the whole workspace read
+   refuse. The product retries once without `commitments` and reports the engine's refusal verbatim,
+   so the rest of the workspace survives — but in that state no open-order recommendation can be
+   produced, and ZAAD cannot say whether there would have been one.
+8. **The evaluation-job exclusion is not atomic with submission.** `POST /orders/{id}/evaluate`
+   submits both runs and only then writes the `zaad_evaluations` row that marks them. A workspace
+   read landing in that window would adopt the baseline run as the current plan — a real plan, but
+   over the proposal's products rather than the workspace's, and not one the operator asked for.
