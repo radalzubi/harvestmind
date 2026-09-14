@@ -148,7 +148,7 @@ function DataStrip() {
 }
 
 function HomeBody() {
-  const { decisions, summary, computedAt } = useWorkspaceData();
+  const { decisions, summary, computedAt, planPhase } = useWorkspaceData();
   const open = decisions.filter((d) => d.needsReview);
   const closed = decisions.filter((d) => !d.needsReview);
 
@@ -158,13 +158,18 @@ function HomeBody() {
         <Standing />
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <Tag tone="live">Live workspace data</Tag>
-          <RunPlan label={computedAt ? "Run again" : "Run ZAAD"} role={computedAt ? "secondary" : "primary"} />
+          {/* With no plan yet the empty state below carries the run control, where it can say why. */}
+          {planPhase !== "none" && <RunPlan label="Run again" role="secondary" />}
         </div>
       </div>
 
       <div style={{ marginTop: 16, display: "grid", gap: 10 }}><ScopeNotice /></div>
 
-      <Section title={open.length ? "Needs your decision" : "What ZAAD looked at"} more={decisions.length > 4 ? "All decisions" : undefined} moreHref="/decisions">
+      <Section
+        title={open.length ? "Needs your decision" : planPhase === "ready" ? "What ZAAD looked at" : "Your plan"}
+        more={planPhase === "ready" && decisions.length > 4 ? "All decisions" : undefined}
+        moreHref="/decisions"
+      >
         <PlanGate>
         {open.length > 0 ? (
           <div className="dec-list">
@@ -199,15 +204,16 @@ function HomeBody() {
       <AttentionStrip />
       <DataStrip />
 
-      <Section title="This plan">
-        <div className="notice">
-          {computedAt
-            ? <>Computed {computedAt.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} from your data as at{" "}
-              {summary ? new Date(summary.asOf).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "—"}.
-              Approvals you record are kept against that information set. <Link href="/decisions">Review it</Link>.</>
-            : <>No plan has been computed for this workspace yet. Your network and your data are ready now — running ZAAD is what produces decisions.</>}
-        </div>
-      </Section>
+      {/* Only when there is a plan to describe: with none, the section above already said so. */}
+      {planPhase === "ready" && computedAt && (
+        <Section title="This plan">
+          <div className="notice">
+            Computed {computedAt.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} from your data as at{" "}
+            {summary ? new Date(summary.asOf).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "—"}.
+            Approvals you record are kept against that information set. <Link href="/decisions">Review it</Link>.
+          </div>
+        </Section>
+      )}
     </>
   );
 }
