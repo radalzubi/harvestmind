@@ -110,10 +110,14 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
     const short = rows.filter((r) => r.stance === "no_replenishment");
     if (short.length) reasons.push(`${short.length} product${short.length === 1 ? " has" : "s have"} no replenishment route to this site`);
     const protectRows = rows.filter((r) => r.stance === "protect");
-    if (protectRows.length && !reasons.length) reasons.push(`${protectRows.length} product${protectRows.length === 1 ? "" : "s"} need extra cover here`);
 
-    // score from measured gaps only; with no service reading there is no basis for a score
-    const score = Math.min(1, worstGap * 8 + (short.length ? 0.5 : 0) + protectRows.length * 0.05);
+    // Score from measured conditions only: a service shortfall the optimizer projects, and a
+    // product it cannot resupply to this site. Protection is deliberately NOT scored — the
+    // `protect` stance is P0 holding cover where cover is justified, which is the system working,
+    // not a warning. Counting it once made a site read "Critical" while its service was projected
+    // at 100% against a 95% target, with the panel saying no change was recommended. Three true
+    // statements that could not all be true of the same warehouse.
+    const score = Math.min(1, worstGap * 8 + (short.length ? 0.5 : 0));
     const missing: string[] = [];
     if (!home) missing.push("This site has no declared country, so it is not placed on the map.");
     if (!stock) missing.push("No stock snapshot has been uploaded for this site.");
@@ -132,6 +136,7 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
       state: stateFromStance(rows, report?.mode as ZaadState ?? "LEAN"),
       risk: risk(score, reasons, [
         ...(service.length ? [`${service.length} service target${service.length === 1 ? "" : "s"} measured`] : []),
+        ...(protectRows.length ? [`${protectRows.length} product${protectRows.length === 1 ? " is" : "s are"} being held with extra cover, as planned`] : []),
         ...(rows.length ? [`${rows.length} product protection row${rows.length === 1 ? "" : "s"}`] : []),
       ]),
       metrics: {

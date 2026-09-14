@@ -95,6 +95,45 @@ test("a site's service reading is the report's, and a shortfall raises its risk"
   assert.equal(node("loc:MAIN").risk.reasons.length, 0);
 });
 
+test("holding planned cover is not a warning, however much of it there is", () => {
+  // The production defect this closes: a site marked Critical while its service was projected at
+  // 100% against a 95% target and the panel said no change was recommended. The score was being
+  // driven by `protect` rows — which are P0 holding cover where cover is justified, i.e. the
+  // system working. Twenty of them must still leave the site calm.
+  const many = {
+    ...report,
+    protection: Array.from({ length: 20 }, (_, i) => ({
+      sku: `SKU-${i}`, location: "MAIN", stance: "protect", protection_units: 100,
+    })),
+    network_service: [
+      { service: "svc_main", location: "MAIN", requested: 0.95, jointly_feasible: 1,
+        expected_achieved: 1, incumbent_achieved: 1, selected_achieved: 1 },
+    ],
+  };
+  const m = buildCanonicalModel({ request, build, report: many, directory, homeRegion: "JO", workspaceName: "Acme" });
+  const main = m.nodes.find((n) => n.id === "loc:MAIN")!;
+  assert.equal(main.risk.score, 0, "planned protection contributes nothing to risk");
+  assert.equal(main.risk.level, "low");
+  assert.deepEqual(main.risk.reasons, [], "and it is not offered as a reason to worry");
+  assert.ok(main.risk.evidence.some((e) => /being held with extra cover, as planned/.test(e)),
+    "it is still visible — as evidence, in the language of a plan working");
+  assert.equal(main.state, "PROTECT", "the optimizer's stance is unchanged; only the alarm is");
+  const led = attentionAreas(m, buildIndex(m)).map((x) => x.lead.id);
+  assert.ok(!led.includes("loc:MAIN"),
+    `nothing reaches Home claiming the warehouse needs attention, got ${led.join(", ")}`);
+});
+
+test("a site that genuinely cannot be resupplied still raises its hand", () => {
+  const stuck = {
+    ...report,
+    protection: [{ sku: "SKU-1", location: "MAIN", stance: "no_replenishment" }],
+  };
+  const m = buildCanonicalModel({ request, build, report: stuck, directory, homeRegion: "JO", workspaceName: "Acme" });
+  const main = m.nodes.find((n) => n.id === "loc:MAIN")!;
+  assert.ok(main.risk.score >= 0.5);
+  assert.match(main.risk.reasons[0], /no replenishment route/);
+});
+
 test("stock is summed from the snapshot and valued at the declared unit value", () => {
   assert.equal(node("loc:MAIN").metrics.onHandUnits, 4000);
   assert.equal(node("loc:MAIN").metrics.onHandValue, 48000);

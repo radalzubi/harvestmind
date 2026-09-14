@@ -1,14 +1,19 @@
 "use client";
 
 /**
- * Search across what the workspace actually holds: decisions, suppliers, open orders,
- * products, sites, customers and lanes. Everything it offers is already loaded, so a
- * result always resolves to a real object — there is no index to go stale.
+ * Search across what the workspace actually holds.
+ *
+ * Two sources, deliberately. What the *plan* holds — decisions, the products it covered, the open
+ * orders it evaluated — is already in the browser and matched instantly. Everything else is asked
+ * of the server, because a catalogue of fifty thousand products cannot live in a React state and a
+ * buyer searching for one of them should not be limited to the bounded set the last run happened
+ * to cover.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Building2, FileText, MapPin, Share2, Users } from "lucide-react";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
+import { searchWorkspace, type SearchHit } from "@/lib/zaad/product";
 
 type Hit = { id: string; label: string; meta: string; href: string; Icon: typeof Box; rank: number };
 
@@ -30,11 +35,26 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const { request, decisions, network } = useWorkspaceData();
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
+  const [remote, setRemote] = useState<SearchHit[]>([]);
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => { input.current?.focus(); }, []);
 
-  const hits = useMemo<Hit[]>(() => {
+  // The whole catalogue, from the server, debounced. A failure here narrows the results to what
+  // the plan holds rather than emptying the palette.
+  useEffect(() => {
+    const needle = q.trim();
+    if (needle.length < 2) { setRemote([]); return; }
+    let alive = true;
+    const handle = window.setTimeout(() => {
+      searchWorkspace(needle, 8)
+        .then((r) => { if (alive) setRemote(r.results); })
+        .catch(() => { if (alive) setRemote([]); });
+    }, 180);
+    return () => { alive = false; window.clearTimeout(handle); };
+  }, [q]);
+
+  const local = useMemo<Hit[]>(() => {
     const needle = q.trim();
     if (!needle) return [];
     const out: Hit[] = [];
@@ -57,12 +77,35 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       const s = score(needle, sku.id);
       if (s) out.push({ id: sku.id, label: sku.id, meta: "Product", href: `/network?sku=${encodeURIComponent(sku.id)}`, Icon: Box, rank: s });
     }
+    return out;
+  }, [q, decisions, network, request]);
+
+  const REMOTE_ICON: Record<string, typeof Box> = {
+    product: Box, supplier: Building2, order: FileText, customer: Users,
+  };
+  const REMOTE_META: Record<string, string> = {
+    product: "Product", supplier: "Supplier", order: "Purchase order", customer: "Customer",
+  };
+
+  const hits = useMemo<Hit[]>(() => {
+    const out: Hit[] = [...local];
+    for (const hit of remote) {
+      out.push({
+        id: `${hit.kind}:${hit.id}`, label: hit.label || hit.id,
+        meta: hit.detail ? `${REMOTE_META[hit.kind] ?? hit.kind} · ${hit.detail}` : (REMOTE_META[hit.kind] ?? hit.kind),
+        href: hit.href, Icon: REMOTE_ICON[hit.kind] ?? Box, rank: 1.5,
+      });
+    }
     const seen = new Set<string>();
     return out
       .sort((a, b) => b.rank - a.rank || a.label.localeCompare(b.label))
-      .filter((h) => (seen.has(h.id) ? false : (seen.add(h.id), true)))
-      .slice(0, 9);
-  }, [q, decisions, network, request]);
+      .filter((h) => {
+        const key = h.label.toLowerCase();
+        return seen.has(key) ? false : (seen.add(key), true);
+      })
+      .slice(0, 10);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [local, remote]);
 
   const go = (hit: Hit | undefined) => {
     if (!hit) return;
@@ -79,8 +122,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       <div style={{ width: "min(620px, 100%)", background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-lg)", overflow: "hidden" }}>
         <input
           ref={input} value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }}
-          placeholder="Search suppliers, orders, products, sites and decisions"
-          aria-label="Search suppliers, orders, products, sites and decisions"
+          placeholder="Search products, suppliers, orders, customers and decisions"
+          aria-label="Search products, suppliers, orders, customers and decisions"
           aria-activedescendant={hits[active] ? `hit-${active}` : undefined}
           onKeyDown={(e) => {
             if (e.key === "Escape") { e.preventDefault(); onClose(); }

@@ -123,8 +123,10 @@
 .ws-page { padding: 24px 24px 96px; max-width: 1240px; width: 100%; margin: 0 auto; }
 .ws-page.wide { max-width: none; padding: 0; }
 
-/* Phone: the rail becomes a bottom bar with the same four destinations. */
+/* Phone: the rail becomes a bottom bar. The four most-opened destinations are tabs and the rest
+   are one tap behind More — the information architecture is the same, the shape is not. */
 .ws-tabs { display: none; }
+.ws-more { display: none; }
 @media (max-width: 860px) {
   .ws { grid-template-columns: 1fr; }
   .ws-rail { display: none; }
@@ -142,15 +144,32 @@
     backdrop-filter: saturate(160%) blur(12px); -webkit-backdrop-filter: saturate(160%) blur(12px);
     border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom);
   }
-  .ws-tabs a {
+  .ws-tabs a, .ws-tabs button {
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
     height: 56px; text-decoration: none; color: var(--ink-500); font-size: 11px; font-weight: 500; position: relative;
+    background: none; border: 0; font-family: var(--sans); cursor: pointer; padding: 0;
   }
-  .ws-tabs a[aria-current="page"] { color: var(--ink-950); }
-  .ws-tabs a:focus-visible { outline: none; box-shadow: inset var(--focus-ring); }
+  .ws-tabs a[aria-current="page"], .ws-tabs button[aria-current="page"] { color: var(--ink-950); }
+  .ws-tabs a:focus-visible, .ws-tabs button:focus-visible { outline: none; box-shadow: inset var(--focus-ring); }
   .ws-tabs svg { width: 19px; height: 19px; }
   .ws-tabs .ws-nav-count { position: absolute; top: 6px; margin-left: 22px; }
+  /* Everything the four tabs do not carry, one tap away. */
+  .ws-more {
+    position: fixed; inset: auto 0 56px 0; z-index: 62; background: var(--surface);
+    border-top: 1px solid var(--line); padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;
+    box-shadow: 0 -10px 30px rgba(26,26,24,.10);
+  }
+  .ws-more a {
+    display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px;
+    border-radius: var(--radius-sm); color: var(--ink-800); font-size: 13.5px; font-weight: 500; text-decoration: none;
+  }
+  .ws-more a[aria-current="page"] { background: var(--ink-100); color: var(--ink-950); }
+  .ws-more svg { width: 17px; height: 17px; color: var(--ink-500); }
 }
+
+/* The rail scrolls when three groups plus a sector list do not fit a short window. */
+.ws-rail-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 8px; }
 
 /* ── Section headers ─────────────────────────────────────────────────────── */
 
@@ -309,3 +328,154 @@
 /* Legacy aliases: existing pages keep working and inherit the one set of states. */
 .tbtn:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .tbtn.small { height: 28px; font-size: 12.5px; }
+
+/* ── Tables ────────────────────────────────────────────────────────────────
+   Thousands of business objects are a table, not a stack of cards. One row
+   height, one header treatment, numbers in tabular figures on the right, and
+   horizontal scroll contained inside the table so the page never moves.     */
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.tbl-wrap {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  overflow: auto; max-width: 100%;
+}
+.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.tbl thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--surface-2); border-bottom: 1px solid var(--line);
+  font-size: 11.5px; font-weight: 600; letter-spacing: .01em; color: var(--ink-600);
+  padding: 0 12px; height: 34px; text-align: start; white-space: nowrap;
+}
+.tbl th[data-align="end"], .tbl td[data-align="end"] { text-align: end; }
+.tbl tbody td {
+  padding: 0 12px; height: 40px; border-bottom: 1px solid var(--line-soft);
+  color: var(--ink-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;
+}
+.tbl--dense tbody td { height: 34px; }
+.tbl tbody tr:last-child td { border-bottom: none; }
+.tbl td[data-num] { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; color: var(--ink-950); }
+.tbl-row--clickable { cursor: pointer; }
+.tbl-row--clickable:hover td { background: var(--ink-50); }
+.tbl-row--clickable:focus-visible { outline: none; }
+.tbl-row--clickable:focus-visible td { background: var(--ink-50); box-shadow: inset 0 0 0 1px var(--ink-950); }
+.tbl tbody tr[data-selected] td { background: var(--ink-100); }
+.tbl-sort {
+  display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; padding: 0;
+  font: inherit; color: inherit; cursor: pointer;
+}
+.tbl-sort:hover { color: var(--ink-950); }
+.tbl-sort:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 3px; }
+
+.tbl-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+.tbl-count { margin: 10px 0 0; font-size: 12.5px; color: var(--ink-500); font-variant-numeric: tabular-nums; }
+.tbl-pager .tbl-count { margin: 0; }
+
+@media (max-width: 1100px) { .tbl [data-hide="1100"] { display: none; } }
+@media (max-width: 900px)  { .tbl [data-hide="900"]  { display: none; } }
+@media (max-width: 700px)  { .tbl [data-hide="700"]  { display: none; } .tbl tbody td { max-width: 180px; } }
+
+/* ── Toolbar and fields ──────────────────────────────────────────────────── */
+
+.tbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.tbar-spacer { flex: 1; min-width: 0; }
+.fld {
+  height: 34px; padding: 0 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong); background: var(--surface);
+  font-family: var(--sans); font-size: 13px; color: var(--ink-900); min-width: 0;
+}
+.fld:focus-visible { outline: none; box-shadow: var(--focus-ring); border-color: var(--ink-400); }
+.fld--search { min-width: 220px; flex: 1 1 220px; max-width: 360px; }
+.fld--block { width: 100%; }
+.fld-wrap { display: inline-flex; }
+textarea.fld { height: auto; padding: 8px 10px; line-height: 1.5; resize: vertical; }
+.fld-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.fld-label { display: block; font-size: 12px; font-weight: 500; color: var(--ink-600); margin-bottom: 4px; }
+
+/* ── Drawer ──────────────────────────────────────────────────────────────── */
+
+.drw-scrim { position: fixed; inset: 0; background: rgba(26,26,24,.18); z-index: 60; }
+.drw {
+  position: fixed; inset-block: 0; inset-inline-end: 0; z-index: 61;
+  width: min(520px, 100vw); background: var(--surface); border-inline-start: 1px solid var(--line);
+  box-shadow: var(--shadow-lg); display: flex; flex-direction: column;
+  animation: drw-in .18s cubic-bezier(.22,1,.36,1);
+}
+.drw--wide { width: min(760px, 100vw); }
+@keyframes drw-in { from { transform: translateX(2%); opacity: .6; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .drw { animation: none; } }
+.drw:focus-visible { outline: none; }
+.drw-h {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 16px 18px 14px; border-bottom: 1px solid var(--line); flex: none;
+}
+.drw-h h2 { margin: 0; font-size: 16px; font-weight: 600; color: var(--ink-950); letter-spacing: -.015em; overflow-wrap: anywhere; }
+.drw-h p { margin: 4px 0 0; font-size: 12.5px; color: var(--ink-500); }
+.drw-b { padding: 16px 18px 24px; overflow: auto; flex: 1; }
+.drw-f { padding: 12px 18px; border-top: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; flex: none; background: var(--surface-2); }
+@media (max-width: 700px) { .drw, .drw--wide { width: 100vw; } }
+
+/* ── Status hierarchy ─────────────────────────────────────────────────────
+   One ladder: blocked, decide, watch, normal. Home and every surface that
+   states a standing use these and nothing else, so two places can never
+   describe the same workspace differently.                                  */
+
+.lvl { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; }
+.lvl-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--attn-normal); flex: none; }
+.lvl[data-level="blocked"] .lvl-dot, .lvl[data-level="decide"] .lvl-dot { background: var(--attn-action); }
+.lvl[data-level="watch"] .lvl-dot { background: var(--attn-watch); }
+.lvl[data-level="blocked"] { color: var(--bad); }
+.lvl[data-level="decide"] { color: var(--high); }
+.lvl[data-level="watch"] { color: var(--warn); }
+
+/* ── Snapshot strip ──────────────────────────────────────────────────────── */
+
+.snap { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 1px; background: var(--line);
+        border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
+.snap > div { background: var(--surface); padding: 12px 14px; }
+.snap dt { font-size: 11.5px; color: var(--ink-500); margin: 0 0 3px; }
+.snap dd { margin: 0; font-size: 17px; font-weight: 600; color: var(--ink-950); font-variant-numeric: tabular-nums; letter-spacing: -.015em; }
+.snap dd small { display: block; font-size: 11.5px; font-weight: 400; color: var(--ink-500); letter-spacing: 0; margin-top: 2px; }
+
+/* ── Three-column comparison ─────────────────────────────────────────────── */
+
+.cmp-col { font-variant-numeric: tabular-nums; }
+.cmp-col[data-col="proposal"] { background: var(--surface-2); }
+.tbl td.cmp-delta[data-sign="up"] { color: var(--bad); }
+.tbl td.cmp-delta[data-sign="down"] { color: var(--good); }
+
+/* ── Chips ───────────────────────────────────────────────────────────────── */
+
+.chip {
+  display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 7px; border-radius: 5px;
+  font-size: 11px; font-weight: 500; border: 1px solid var(--line); background: var(--ink-100); color: var(--ink-600);
+  white-space: nowrap;
+}
+.chip[data-tone="good"] { background: var(--good-bg); color: var(--good); border-color: var(--good-line); }
+.chip[data-tone="warn"] { background: var(--warn-bg); color: var(--warn); border-color: var(--warn-line); }
+.chip[data-tone="bad"] { background: var(--bad-bg); color: var(--bad); border-color: var(--bad-line); }
+.chip[data-tone="high"] { background: var(--high-bg); color: var(--high); border-color: var(--high-line); }
+
+/* ── Split view: a list with its detail beside it ────────────────────────── */
+
+.split { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 1180px) { .split[data-open] { grid-template-columns: minmax(0, 1fr) 380px; } }
+
+/* ── Evidence rows: name and value never collide ─────────────────────────── */
+
+.kv { display: grid; grid-template-columns: minmax(140px, max-content) minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 13px; }
+.kv dt { color: var(--ink-500); overflow-wrap: anywhere; }
+.kv dd { margin: 0; color: var(--ink-900); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .kv { grid-template-columns: 1fr; gap: 2px 0; } .kv dd { margin-bottom: 8px; } }
+
+/* ── Tabs inside a page ──────────────────────────────────────────────────── */
+
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tabs button {
+  appearance: none; background: none; border: 0; border-bottom: 2px solid transparent;
+  padding: 8px 12px 9px; font-family: var(--sans); font-size: 13.5px; font-weight: 500;
+  color: var(--ink-500); cursor: pointer; white-space: nowrap;
+}
+.tabs button:hover { color: var(--ink-950); }
+.tabs button[aria-selected="true"] { color: var(--ink-950); border-bottom-color: var(--ink-950); }
+.tabs button:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }

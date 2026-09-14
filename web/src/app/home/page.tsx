@@ -1,117 +1,32 @@
 "use client";
 
 /**
- * HOME — what needs attention right now.
+ * HOME — the executive console. What is happening, and what needs me?
  *
- * Reading order is the priority order: the one-line standing of the business, the decisions
- * waiting on a person, where attention is concentrated in the network, then data only when
- * data needs something. Nothing here is a KPI for its own sake.
+ * One standing, from one ladder (`lib/zaad/standing.ts`), stated once at the top. Everything below
+ * it *elaborates* that sentence and is not allowed to contradict it: watches sit underneath a
+ * decision rather than beside it as a competing headline, and a network condition never announces
+ * itself as a crisis while the plan says nothing needs changing.
+ *
+ * Then, in reading order: what needs a decision, the shape of the business, where attention is
+ * concentrated, what the data needs, and what has happened recently. No KPI is here for its own
+ * sake and no table belongs on this page — depth lives in the surfaces built for it.
  */
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Gate } from "@/components/workspace/Gate";
-import { ButtonLink, EmptyState, Section, Tag } from "@/components/workspace/ui";
+import { ButtonLink, EmptyState, Notice, Section, Tag } from "@/components/workspace/ui";
 import { PlanGate, RunPlan, ScopeNotice } from "@/components/workspace/PlanState";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money } from "@/lib/zaad/decisions";
-import { attentionAreas, statusLine } from "@/lib/network/attention";
+import { attentionAreas } from "@/lib/network/attention";
 import { KIND_LABEL } from "@/lib/network/model";
+import { standing, LEVEL_LABEL, type Standing } from "@/lib/zaad/standing";
 import { useSession } from "@/lib/session";
 import { Onboarding } from "@/components/workspace/Onboarding";
-
-function Standing() {
-  const { decisions, summary, network, index, planPhase } = useWorkspaceData();
-  const open = decisions.filter((d) => d.needsReview);
-  if (planPhase !== "ready") {
-    const areasNow = network && index ? attentionAreas(network, index) : [];
-    const lineNow = statusLine(areasNow);
-    return (
-      <div className="status-line">
-        <span className="status-dot" data-tone={lineNow.tone} aria-hidden />
-        <div>
-          <h1 className="status-head">{lineNow.headline} in your network.</h1>
-          <p className="status-sub">
-            {lineNow.detail ? `${lineNow.detail}. ` : ""}
-            ZAAD has read your workspace. Run it to find out what to change.
-          </p>
-        </div>
-      </div>
-    );
-  }
-  const areas = network && index ? attentionAreas(network, index) : [];
-  const line = statusLine(areas);
-  const tone = open.length ? (areas.some((a) => a.level === "attention") ? "attention" : "watch") : line.tone;
-
-  const pressing = areas.some((a) => a.level === "attention");
-  const headline = open.length === 0
-    ? (pressing ? "Nothing ZAAD can improve right now." : "Nothing needs changing right now.")
-    : open.length === 1
-      ? "One thing needs your decision."
-      : `${open.length} things need your decision.`;
-
-  const value = summary?.valueVsCurrent != null && summary.valueVsCurrent > 0
-    ? money(summary.valueVsCurrent, summary.currency)
-    : null;
-
-  return (
-    <div className="status-line">
-      <span className="status-dot" data-tone={tone} aria-hidden />
-      <div>
-        <h1 className="status-head">{headline}</h1>
-        <p className="status-sub">
-          {open.length === 0
-            ? (pressing
-                ? "ZAAD compared your current plan against every alternative it can build and found none that does better, including where the network is under strain. What needs watching is below."
-                : "ZAAD compared your current plan against every alternative it can build and found nothing worth changing. Everything below is for reference.")
-            : <>Approving them changes the modelled cost of the next {summary?.service.length ? "period" : "plan"} by {value ?? "an amount the report does not price"} against keeping things as they are.{" "}
-              {line.headline === "Everything looks normal" ? "Your network is otherwise running normally." : `${line.headline} in the network.`}</>}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function AttentionStrip() {
-  const { network, index } = useWorkspaceData();
-  if (!network || !index) return null;
-  const areas = attentionAreas(network, index).slice(0, 4);
-  if (!areas.length) {
-    return (
-      <Section title="Your network">
-        <div className="notice">
-          Every supplier, lane and site ZAAD can see is running normally.{" "}
-          <Link href="/network">Open the network</Link> to look at it.
-        </div>
-      </Section>
-    );
-  }
-  return (
-    <Section title="Where attention is concentrated" more="Open the network" moreHref="/network">
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
-        {areas.map((a) => {
-          const node = a.lead.type === "node" ? index.nodeById.get(a.lead.id) : null;
-          const edge = a.lead.type === "edge" ? index.edgeById.get(a.lead.id) : null;
-          return (
-            <Link
-              key={a.id}
-              href={`/network?${a.lead.type === "node" ? "node" : "edge"}=${encodeURIComponent(a.lead.id)}`}
-              className="dec" style={{ textDecoration: "none" }}
-            >
-              <div className="dec-top">
-                <span className="dec-verb" data-tone={a.level === "attention" ? "change" : undefined}>
-                  {a.level === "attention" ? "Needs attention" : "Watch"}
-                </span>
-                {/* The badge already says how exposed it is; this says what kind of thing it is. */}
-                <span className="dec-cat">{node ? KIND_LABEL[node.kind] : "Lane"}</span>
-              </div>
-              <h3 className="dec-h" style={{ fontSize: 14 }}>{a.title}</h3>
-              <p className="dec-sub" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.summary}</p>
-            </Link>
-          );
-        })}
-      </div>
-    </Section>
-  );
-}
+import { DATE, MONEY, NUMBER, fetchSummary, listDrafts, type DraftSummary, type OperatingSummary } from "@/lib/zaad/product";
+import { STATE_LABEL } from "@/lib/zaad/product";
 
 /**
  * A phase the workspace never declared is not a data problem — the engine says so on every build
@@ -126,39 +41,166 @@ function operatorWarning(warning: string): string | null {
     .replace(/\bstg_([a-z_]+)\b/gi, (_, name: string) => String(name).replaceAll("_", " "));
 }
 
-function DataStrip() {
-  const { build, request, directory } = useWorkspaceData();
+function useStanding(): { state: Standing; snapshot: OperatingSummary | null; recent: DraftSummary[] } {
+  const data = useWorkspaceData();
+  const [snapshot, setSnapshot] = useState<OperatingSummary | null>(null);
+  const [recent, setRecent] = useState<DraftSummary[]>([]);
+
+  useEffect(() => {
+    if (data.phase !== "ready") return;
+    let alive = true;
+    fetchSummary(data.request?.as_of?.slice(0, 10)).then((s) => alive && setSnapshot(s)).catch(() => undefined);
+    listDrafts({ limit: 5 }).then((d) => alive && setRecent(d.rows)).catch(() => undefined);
+    return () => { alive = false; };
+  }, [data.phase, data.request]);
+
+  const areas = data.network && data.index ? attentionAreas(data.network, data.index) : [];
   const problems: string[] = [];
-  if (!request?.pipeline.length) problems.push("No open purchase orders are loaded, so no order change can be evaluated.");
-  if (!directory?.suppliers.length) problems.push("No supplier list is loaded, so suppliers show as ids and none can be placed on a map.");
-  for (const w of (build?.warnings ?? [])) {
-    const said = operatorWarning(w);
+  if (data.request && !data.request.pipeline.length) problems.push("No open purchase orders are loaded, so no order change can be evaluated.");
+  if (data.directory && !data.directory.suppliers.length) problems.push("No supplier list is loaded, so suppliers show as codes and none can be placed on a map.");
+  for (const warning of data.build?.warnings ?? []) {
+    const said = operatorWarning(warning);
     if (said && problems.length < 4) problems.push(said);
   }
-  if (!problems.length) return null;
+
+  return {
+    state: standing({
+      notReady: data.notReady,
+      readError: data.error,
+      planPhase: data.planPhase,
+      planError: data.planError,
+      openDecisions: data.decisions.filter((d) => d.needsReview),
+      proposalsAwaitingReview: snapshot?.proposals_awaiting_review ?? 0,
+      areas,
+      dataProblems: problems,
+    }),
+    snapshot,
+    recent,
+  };
+}
+
+function Snapshot({ summary }: { summary: OperatingSummary }) {
+  const items: Array<{ label: string; value: string; note?: string; href?: string }> = [];
+  if (summary.products != null) items.push({ label: "Products", value: NUMBER(summary.products), href: "/inventory" });
+  if (summary.inventory_value != null) {
+    items.push({
+      label: "Stock value", value: MONEY(summary.inventory_value),
+      note: summary.snapshot_date ? `as counted ${DATE(summary.snapshot_date)}` : undefined,
+      href: "/inventory?sort=inventory_value&dir=desc",
+    });
+  } else if (summary.on_hand_units != null) {
+    items.push({ label: "Units on hand", value: NUMBER(summary.on_hand_units), href: "/inventory" });
+  }
+  if (summary.open_purchase_orders != null) {
+    items.push({
+      label: "Open orders", value: NUMBER(summary.open_purchase_orders),
+      note: summary.late_purchase_orders ? `${NUMBER(summary.late_purchase_orders)} past their date` : undefined,
+      href: "/orders?tab=imported&postate=open",
+    });
+  }
+  if (summary.inbound_units != null) items.push({ label: "Units on order", value: NUMBER(summary.inbound_units), href: "/orders?tab=imported" });
+  if (summary.suppliers != null) items.push({ label: "Suppliers", value: NUMBER(summary.suppliers), href: "/diagnostics" });
+  if (summary.locations != null && summary.locations > 0) items.push({ label: "Sites", value: NUMBER(summary.locations), href: "/network" });
+  if (summary.proposals_open) items.push({ label: "Proposals open", value: NUMBER(summary.proposals_open), href: "/orders" });
+  if (!items.length) return null;
+
   return (
-    <Section title="Your data" more="Open Data" moreHref="/data">
-      <div className="notice" data-tone="warn">
-        <ul style={{ margin: 0, paddingInlineStart: 18 }}>
-          {problems.map((p, i) => <li key={i}>{p}</li>)}
-        </ul>
+    <Section title="Your business right now" more="Open Inventory" moreHref="/inventory">
+      <dl className="snap">
+        {items.map((item) => (
+          <div key={item.label}>
+            <dt>{item.href ? <Link href={item.href} style={{ color: "inherit" }}>{item.label}</Link> : item.label}</dt>
+            <dd>{item.value}{item.note && <small>{item.note}</small>}</dd>
+          </div>
+        ))}
+      </dl>
+    </Section>
+  );
+}
+
+function StandingLine({ state }: { state: Standing }) {
+  const { summary, planPhase } = useWorkspaceData();
+  const value = summary?.valueVsCurrent != null && summary.valueVsCurrent > 0
+    ? money(summary.valueVsCurrent, summary.currency) : null;
+  return (
+    <div className="status-line">
+      <span className="status-dot"
+        data-tone={state.level === "blocked" || state.level === "decide" ? "attention" : state.level === "watch" ? "watch" : "ok"}
+        aria-hidden />
+      <div>
+        <span className="lvl" data-level={state.level}><span className="lvl-dot" aria-hidden />{LEVEL_LABEL[state.level]}</span>
+        <h1 className="status-head" style={{ marginTop: 4 }}>{state.headline}</h1>
+        <p className="status-sub">
+          {state.detail}
+          {state.level === "decide" && planPhase === "ready" && value && (
+            <> Approving them changes the modelled cost of the plan by {value} against keeping things as they are.</>
+          )}
+        </p>
+        {state.next && (
+          <p style={{ margin: "8px 0 0" }}>
+            <Link href={state.next.href} className="zb zb--secondary zb--sm">
+              {state.next.label} <ArrowRight size={13} aria-hidden />
+            </Link>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Watches({ state }: { state: Standing }) {
+  const { index } = useWorkspaceData();
+  if (!state.watches.length || !index) {
+    return (
+      <Section title="Your network" more="Open the network" moreHref="/network">
+        <Notice>Every supplier, lane and site ZAAD can see is running normally.</Notice>
+      </Section>
+    );
+  }
+  return (
+    <Section title="Worth watching" more="Open the network" moreHref="/network">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
+        {state.watches.slice(0, 4).map((area) => {
+          const node = area.lead.type === "node" ? index.nodeById.get(area.lead.id) : null;
+          return (
+            <Link key={area.id} className="dec" style={{ textDecoration: "none" }}
+              href={`/network?${area.lead.type === "node" ? "node" : "edge"}=${encodeURIComponent(area.lead.id)}`}>
+              <div className="dec-top">
+                <span className="dec-verb" data-tone="change">Watch</span>
+                <span className="dec-cat">{node ? KIND_LABEL[node.kind] : "Lane"}</span>
+              </div>
+              <h3 className="dec-h" style={{ fontSize: 14 }}>{area.title}</h3>
+              <p className="dec-sub" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                {area.summary}
+              </p>
+            </Link>
+          );
+        })}
       </div>
     </Section>
   );
 }
 
 function HomeBody() {
-  const { decisions, summary, computedAt, planPhase } = useWorkspaceData();
+  const { decisions, computedAt, planPhase, summary, build, request, directory } = useWorkspaceData();
+  const { state, snapshot, recent } = useStanding();
   const open = decisions.filter((d) => d.needsReview);
   const closed = decisions.filter((d) => !d.needsReview);
+
+  const problems: string[] = [];
+  if (request && !request.pipeline.length) problems.push("No open purchase orders are loaded, so no order change can be evaluated.");
+  if (directory && !directory.suppliers.length) problems.push("No supplier list is loaded, so suppliers show as codes and none can be placed on a map.");
+  for (const warning of build?.warnings ?? []) {
+    const said = operatorWarning(warning);
+    if (said && problems.length < 4) problems.push(said);
+  }
 
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-        <Standing />
+        <StandingLine state={state} />
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <Tag tone="live">Live workspace data</Tag>
-          {/* With no plan yet the empty state below carries the run control, where it can say why. */}
           {planPhase !== "none" && <RunPlan label="Run again" role="secondary" />}
         </div>
       </div>
@@ -171,40 +213,74 @@ function HomeBody() {
         moreHref="/decisions"
       >
         <PlanGate>
-        {open.length > 0 ? (
-          <div className="dec-list">
-            {open.slice(0, 4).map((d) => (
-              <Link key={d.id} href={`/decisions?decision=${encodeURIComponent(d.id)}`} style={{ textDecoration: "none", color: "inherit" }}>
-                <div className="dec">
-                  <div className="dec-top">
-                    <span className="dec-verb" data-tone="change">{d.verb}</span>
-                    <span className="dec-cat">{d.category}</span>
-                  </div>
-                  <h3 className="dec-h">{d.headline}</h3>
-                  <p className="dec-sub">{d.target.label}</p>
-                  {d.effect.filter((f) => f.value != null).length > 0 && (
-                    <div className="dec-facts">
-                      {d.effect.filter((f) => f.value != null).slice(0, 3).map((f) => (
-                        <span className="dec-fact" key={f.label}>{f.label} <b>{f.value}</b></span>
-                      ))}
+          {open.length > 0 ? (
+            <div className="dec-list">
+              {open.slice(0, 4).map((d) => (
+                <Link key={d.id} href={`/decisions?decision=${encodeURIComponent(d.id)}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <div className="dec">
+                    <div className="dec-top">
+                      <span className="dec-verb" data-tone="change">{d.verb}</span>
+                      <span className="dec-cat">{d.category}</span>
                     </div>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <EmptyState title="Nothing needs changing right now" actions={<ButtonLink href="/decisions">See what was compared</ButtonLink>}>
-            ZAAD reviewed {closed.length || "every"} open commitment{closed.length === 1 ? "" : "s"} and the week&rsquo;s purchases against your current plan and found no change worth making.
-          </EmptyState>
-        )}
+                    <h3 className="dec-h">{d.headline}</h3>
+                    <p className="dec-sub">{d.target.label}</p>
+                    {d.effect.filter((f) => f.value != null).length > 0 && (
+                      <div className="dec-facts">
+                        {d.effect.filter((f) => f.value != null).slice(0, 3).map((f) => (
+                          <span className="dec-fact" key={f.label}>{f.label} <b>{f.value}</b></span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="Nothing needs changing right now"
+              actions={<><ButtonLink href="/decisions">See what was compared</ButtonLink>
+                <ButtonLink href="/orders/new">Create a purchase order anyway</ButtonLink></>}>
+              ZAAD reviewed {closed.length || "every"} open commitment{closed.length === 1 ? "" : "s"} and the week&rsquo;s
+              purchases against your current plan and found no change worth making.
+            </EmptyState>
+          )}
         </PlanGate>
       </Section>
 
-      <AttentionStrip />
-      <DataStrip />
+      {snapshot && <Snapshot summary={snapshot} />}
 
-      {/* Only when there is a plan to describe: with none, the section above already said so. */}
+      <Watches state={state} />
+
+      {problems.length > 0 && (
+        <Section title="Your data" more="Open Upload" moreHref="/upload">
+          <div className="notice" data-tone="warn">
+            <ul style={{ margin: 0, paddingInlineStart: 18 }}>
+              {problems.map((p, i) => <li key={i}>{p}</li>)}
+            </ul>
+          </div>
+        </Section>
+      )}
+
+      {recent.length > 0 && (
+        <Section title="Recent activity" more="All purchase orders" moreHref="/orders">
+          <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6 }}>
+            {recent.map((draft) => (
+              <li key={draft.draft_id}>
+                <Link href={`/orders/${encodeURIComponent(draft.draft_id)}`}
+                  style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 10px", borderRadius: "var(--radius-sm)",
+                    textDecoration: "none", color: "var(--ink-800)", border: "1px solid var(--line)", background: "var(--surface)" }}>
+                  <span className="chip">{STATE_LABEL[draft.state]}</span>
+                  <span style={{ fontWeight: 500, color: "var(--ink-950)" }}>{draft.reference || draft.draft_id.replace(/^draft_/, "")}</span>
+                  <span style={{ color: "var(--ink-500)", fontSize: 12.5 }}>
+                    {draft.supplier_id ?? "no supplier"} · {NUMBER(draft.lines)} line{draft.lines === 1 ? "" : "s"}
+                  </span>
+                  <span style={{ marginInlineStart: "auto", color: "var(--ink-400)", fontSize: 12 }}>{DATE(draft.updated_at)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
       {planPhase === "ready" && computedAt && (
         <Section title="This plan">
           <div className="notice">
@@ -221,8 +297,8 @@ function HomeBody() {
 export default function HomePage() {
   const session = useSession();
   const { phase } = useWorkspaceData();
-  // Onboarding is a state of Home, not a destination: a workspace that cannot plan yet gets
-  // the next single thing to do instead of an empty console.
+  // Onboarding is a state of Home, not a destination: a workspace that cannot plan yet gets the
+  // next single thing to do instead of an empty console.
   if (session.status === "authenticated" && phase === "not-ready") {
     return (
       <>

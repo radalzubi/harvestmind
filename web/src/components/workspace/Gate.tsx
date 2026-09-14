@@ -51,7 +51,7 @@ export function Gate({ children, loadingLabel = "Reading your workspace…", nee
     return (
       <EmptyState
         title="ZAAD needs a little more before it can plan"
-        actions={<ButtonLink href="/data" role="primary">Go to Data</ButtonLink>}
+        actions={<ButtonLink href="/upload" role="primary">Go to Upload</ButtonLink>}
       >
         {data.notReady}
       </EmptyState>
