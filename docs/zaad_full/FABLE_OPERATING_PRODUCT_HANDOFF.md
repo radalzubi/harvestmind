@@ -266,6 +266,14 @@ process, never `zaad-api`.
   days, p90 21 days, short-fill rate **0.5056** — every figure identical to an independent
   computation over `stg_fmcg_purchase_orders` and `stg_fmcg_receipts`. What the screen says is what
   the vault holds, and it can be shown rather than asserted.
+
+  **Repeated on the second workspace on the final day**, against a different vault and a catalogue
+  sixty-six times larger: Home's 10,000 products, 120 suppliers, 3 sites, stock counted 4 Jan 2026
+  and **USD 533,132,757** of it, 0 open orders — every figure identical to an independent DuckDB
+  computation. And one of that workspace's suppliers, QA-SUP-0114: **996** matched orders, late
+  rate **0.6757028112449799**, mean days late **3.9955423476968797**, fill **0.9526166466756402**,
+  p90 lead **27.0** — the API's numbers and mine agree to the last digit, which is the point: the
+  page rounds them to "68%", "4.0" and "95.3%" and rounds nothing else.
 * **The spreadsheet path** end to end through the API: headings read, a mapping proposed, a wrong
   field name refused by name, and a file with one broken row read into two lines with
   `Row 4 (not-a-sku): 'abc' is not a quantity.`
