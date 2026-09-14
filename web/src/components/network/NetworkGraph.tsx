@@ -96,6 +96,9 @@ function Graph() {
     const hovered = hov?.type === "node" && hov.id === n.id;
     return {
       id: n.id, type: "twin", position: { x: p.x, y: p.y }, width: NODE_W, height: NODE_H, draggable: false, selectable: true, focusable: true, selected,
+      // React Flow labels a focusable node from its id, and an id here is `sup:SUP-001`. Someone
+      // tabbing the graph with a screen reader would hear the internal key rather than the name.
+      ariaLabel: n.subtitle ? `${n.name}, ${n.subtitle}` : n.name,
       data: { node: n, dim: related != null && !related.nodes.has(n.id), exposed: false, active: selected || hovered,
         metric: metricFor(n), group: isGroupId(n.id), open: state.expandedGroups.has(n.id) },
     };
@@ -104,6 +107,9 @@ function Graph() {
   const edges = useMemo<TEdge[]>(() => display.edges.map((e) => ({
     id: e.id, type: "twin", source: e.from, target: e.to, selectable: true, focusable: true,
     selected: sel?.type === "edge" && sel.id === e.id,
+    // Otherwise "Edge from sup:SUP-001 to port:aqaba". Every edge already carries the sentence a
+    // person would say: "Rheinland Handels GmbH → Port of Aqaba".
+    ariaLabel: e.name,
     data: { edge: e, dim: related != null && !related.edges.has(e.id), exposed: false,
       showLabel: (sel?.type === "edge" && sel.id === e.id) || (hov?.type === "edge" && hov.id === e.id) },
   })), [display, sel, hov, related]);

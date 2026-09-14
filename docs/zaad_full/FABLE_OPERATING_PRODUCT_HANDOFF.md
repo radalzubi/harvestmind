@@ -178,7 +178,10 @@ path) and a **production build** of this branch, on synthetic workspaces created
   against `site.css`; `.note` was the only real collision (`.exposed` and `.zfield` are scoped
   under a marketing ancestor and cannot reach a workspace page).
 * **Every rendered page scanned for leaked internal tokens** (`undefined`, `NaN`, `[object Object]`,
-  snake_case identifiers). One leak: `de_expedite` in the declared-rights table. The route id
+  snake_case identifiers) — **and every `aria-label` scanned for the same thing**, which is a
+  channel nothing visible would have shown. Tabbing the network graph with a screen reader
+  announced React Flow's default labels: "Edge from sup:SUP-001 to port:aqaba". Every node and edge
+  already carried the sentence a person would say, and now says it. One leak: `de_expedite` in the declared-rights table. The route id
   `road_saudi` also appears — that one is the operator's own declared value and is left verbatim,
   because inventing a display name for it would be fabrication.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats
@@ -202,7 +205,7 @@ path) and a **production build** of this branch, on synthetic workspaces created
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Twenty-eight defects were found this way and fixed**; they are listed in the PR description. The
+**Twenty-nine defects were found this way and fixed**; they are listed in the PR description. The
 six most serious were invisible to the build and to the existing tests:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from
