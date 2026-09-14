@@ -422,6 +422,18 @@ process, never `zaad-api`.
   exactly `SELECT count(*) … WHERE category = 'cat_1'` in the vault. `_` alone → 150, also right:
   every product's category contains one. Two tests, one of which asserts it on all five searching
   endpoints at once.
+* **The export-format path end to end, with a thirteen-column template that is not ZAAD's.**
+  `POST /profiles/read-template` on a CSV headed *Our PO, Vendor Code, Ship To, Raised On, Wanted
+  By, Ln, Item, Item Name, Qty, Unit, Price, Ccy, Cost Centre* proposed a field for nine of the
+  thirteen and **left four null** rather than guessing. Saving it with a wrong field name was
+  refused by position and name — *"Column 5 (Wanted By) maps to 'receipt_date', which ZAAD does not
+  hold"* — and listed all 25 fields it does. Corrected, saved, and used to export: the file carries
+  the operator's own thirteen headings in their own order, the declared constant `CC-100` filled
+  in, and **every other cell blank exactly where the draft holds NULL** — currency, destination,
+  both dates, the unit price — none of them invented. `PUT` answered 200 and `DELETE` 204, and the
+  workspace was left with the standard format only, as it was found. Exporting a **another
+  workspace's** draft with this workspace's token answered `404 That proposal is not in this
+  workspace` — §82's fail-closed rule, on the export path.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →
