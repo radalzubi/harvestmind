@@ -37,6 +37,16 @@ SHORT_FILL_TOLERANCE = 0.96
 THIN_SAMPLE = 6
 
 
+def _count(value: Any) -> str:
+    """A count inside a sentence, grouped the way the rest of the interface groups numbers.
+
+    These statements are prose the backend writes, so the thousands separator has to be written
+    with them — "1865 matched orders" next to a tile reading "1,865" is the same number twice in
+    two styles.
+    """
+    return f"{int(value or 0):,}"
+
+
 def _matched_cte() -> str:
     """Orders that have at least one receipt, with the three dates the vault actually carries."""
     return """
@@ -345,11 +355,11 @@ def lateness_account(
         if late_rate is not None and with_promise:
             observed.append({
                 "statement": f"Arrived after the promised date on {late_rate * 100:.0f}% of "
-                             f"{int(with_promise)} order{'' if with_promise == 1 else 's'} that carried a promised date.",
+                             f"{_count(with_promise)} order{'' if with_promise == 1 else 's'} that carried a promised date.",
                 "sample": int(with_promise), "thin": with_promise < THIN_SAMPLE})
         elif not with_promise:
             observed.append({
-                "statement": f"None of the {int(n)} matched orders carries a promised delivery date, "
+                "statement": f"None of the {_count(n)} matched orders carries a promised delivery date, "
                              "so lateness cannot be measured — only how long delivery actually took.",
                 "sample": int(n), "thin": False})
         if measured.get("mean_late_days") is not None:
@@ -379,7 +389,7 @@ def lateness_account(
         if share >= 0.6 and len(by_sku) > len(top):
             names = ", ".join(str(r["sku"]) for r in top)
             associations.append({
-                "statement": f"{int(sum((r.get('late_orders') or 0) for r in top))} of {int(late_total)} "
+                "statement": f"{_count(sum((r.get('late_orders') or 0) for r in top))} of {_count(late_total)} "
                              f"late arrivals were on {names}.",
                 "note": "This is where lateness concentrates. It does not establish that these products cause it."})
     months_late = [r for r in by_month if (r.get("late_orders") or 0) > 0]

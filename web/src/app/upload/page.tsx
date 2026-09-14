@@ -132,9 +132,10 @@ export default function UploadPage() {
   const [seeding, setSeeding] = useState(false);
 
   if (session.status === "anonymous") {
-    return <EmptyState title="This workspace is not open on this device"
+    return <EmptyState title="This workspace is not open here"
       actions={<ButtonLink href="/get-started" role="primary">Open your workspace</ButtonLink>}>
-      Open your workspace to add or replace data.
+      ZAAD keeps your access to the browser tab you opened it in. Open your workspace to add or
+      replace data.
     </EmptyState>;
   }
   if (readiness.loading) return <Loading label="Checking what your workspace holds…" cards={2} />;

@@ -490,6 +490,16 @@ export const NUMBER = (value: number | null | undefined, digits = 0): string =>
   value == null || !Number.isFinite(value) ? "—"
     : value.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
+/**
+ * A count and its noun, agreeing. `COUNT(1, "order")` is "1 order", not "1 orders".
+ *
+ * A filtered list of one is the normal case, not the edge case, so every count printed beside a
+ * noun goes through this. An irregular plural is passed explicitly.
+ */
+export const COUNT = (value: number | null | undefined, one: string, many?: string): string =>
+  value == null || !Number.isFinite(value) ? "—"
+    : `${NUMBER(value)} ${Math.abs(value) === 1 ? one : (many ?? `${one}s`)}`;
+
 export const MONEY = (value: number | null | undefined, currency = "USD"): string =>
   value == null || !Number.isFinite(value) ? "—"
     : `${value < 0 ? "-" : ""}${currency} ${NUMBER(Math.abs(value), Math.abs(value) < 100 ? 2 : 0)}`;

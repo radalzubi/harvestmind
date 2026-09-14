@@ -376,6 +376,13 @@ function DraftBody({ id }: { id: string }) {
               <input className="fld fld--block" value={reason} onChange={(e) => setReason(e.target.value)}
                 placeholder="Cover is thin and the alternative costs more" />
             </label>
+            {/* Approve and Reject are disabled until this is written. Two greyed buttons with no
+                explanation is a puzzle; one sentence turns it into a rule. */}
+            <p className="zhelp" style={{ marginTop: 8 }}>
+              {reason.trim()
+                ? "This is stored with the decision and shown to whoever reads the order next."
+                : "Approving or rejecting needs this sentence first. It is stored with the decision and shown to whoever reads the order next."}
+            </p>
             <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
               {draft.state === "DRAFT" && (
                 <Button pending={busy === "submit"} onClick={() => act(() => actOnDraft(id, "submit"), "submit", "Sent for review.")}>

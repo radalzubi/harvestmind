@@ -23,7 +23,7 @@ import { Button, ButtonLink, Disclosure, ErrorState, Loading, Notice, PageHead, 
 import { Column, DataTable, NotAvailable } from "@/components/workspace/Table";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import {
-  DATE, MONEY, NUMBER, PERCENT, fetchSupplier, type SupplierDetail,
+  COUNT, DATE, MONEY, NUMBER, PERCENT, fetchSupplier, type SupplierDetail,
 } from "@/lib/zaad/product";
 
 function Statement({ text, sample, thin, note, tone }: {
@@ -33,7 +33,7 @@ function Statement({ text, sample, thin, note, tone }: {
     <li style={{ marginBottom: 10 }}>
       <span style={{ color: "var(--ink-900)" }}>{text}</span>
       {thin && sample != null && (
-        <span className="chip" data-tone="warn" style={{ marginInlineStart: 8 }}>only {sample} orders</span>
+        <span className="chip" data-tone="warn" style={{ marginInlineStart: 8 }}>only {COUNT(sample, "order")}</span>
       )}
       {tone === "association" && (
         <span className="chip" style={{ marginInlineStart: 8 }}>a pattern, not a cause</span>
@@ -110,13 +110,13 @@ function SupplierBody({ id }: { id: string }) {
 
       <dl className="snap">
         <div><dt>Arrived late</dt><dd>{m.late_rate != null ? PERCENT(m.late_rate, 0) : "—"}
-          <small>{m.orders_with_promise ? `of ${NUMBER(m.orders_with_promise)} orders with a promised date` : "no promised dates uploaded"}</small></dd></div>
+          <small>{m.orders_with_promise ? `of ${COUNT(m.orders_with_promise, "order")} with a promised date` : "no promised dates uploaded"}</small></dd></div>
         <div><dt>Quantity arrived</dt><dd>{m.fill_rate != null ? PERCENT(m.fill_rate) : "—"}
-          <small>{m.matched_orders ? `across ${NUMBER(m.matched_orders)} matched orders` : "nothing matched yet"}</small></dd></div>
+          <small>{m.matched_orders ? `across ${COUNT(m.matched_orders, "matched order")}` : "nothing matched yet"}</small></dd></div>
         <div><dt>Typical lead</dt><dd>{m.p50_lead_days != null ? `${NUMBER(m.p50_lead_days)} d` : "—"}
-          <small>{m.p90_lead_days != null ? `one in ten takes ${NUMBER(m.p90_lead_days)} days` : "not measured"}</small></dd></div>
+          <small>{m.p90_lead_days != null ? `one in ten takes ${COUNT(m.p90_lead_days, "day")}` : "not measured"}</small></dd></div>
         <div><dt>Open orders</dt><dd>{NUMBER(m.open_orders)}
-          <small>{m.late_open_orders ? `${NUMBER(m.late_open_orders)} past their date` : "none past their date"}</small></dd></div>
+          <small>{m.late_open_orders ? `${COUNT(m.late_open_orders, "order")} past their date` : "none past their date"}</small></dd></div>
         <div><dt>Products</dt><dd>{NUMBER(detail.exposure.skus)}
           <small>{detail.exposure.on_hand_value != null ? `${MONEY(detail.exposure.on_hand_value)} in stock` : "stock value not available"}</small></dd></div>
       </dl>

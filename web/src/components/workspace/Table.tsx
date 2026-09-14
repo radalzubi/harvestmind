@@ -121,12 +121,15 @@ export function DataTable<T>({
 }
 
 /** Offset paging over a server-side total. Always says where you are, never guesses the count. */
-export function Pager({ total, limit, offset, onOffset, unit = "rows", isFloor }: {
+export function Pager({ total, limit, offset, onOffset, unit = "rows", one, isFloor }: {
   total: number; limit: number; offset: number; onOffset: (next: number) => void;
-  unit?: string; isFloor?: boolean;
+  unit?: string; one?: string; isFloor?: boolean;
 }) {
+  // A filtered list of one used to read "1 proposals". Every unit this takes is a regular plural,
+  // so dropping the "s" is right; `one` is there for the day one of them is not.
+  const noun = total === 1 ? (one ?? unit.replace(/s$/, "")) : unit;
   if (total <= limit && offset === 0) {
-    return <p className="tbl-count">{total.toLocaleString("en-US")} {unit}</p>;
+    return <p className="tbl-count">{total.toLocaleString("en-US")} {noun}</p>;
   }
   const from = offset + 1;
   const to = Math.min(offset + limit, total);
@@ -134,7 +137,7 @@ export function Pager({ total, limit, offset, onOffset, unit = "rows", isFloor }
     <div className="tbl-pager">
       <p className="tbl-count">
         {from.toLocaleString("en-US")}–{to.toLocaleString("en-US")} of {isFloor ? "more than " : ""}
-        {total.toLocaleString("en-US")} {unit}
+        {total.toLocaleString("en-US")} {noun}
       </p>
       <div style={{ display: "flex", gap: 6 }}>
         <Button size="sm" role="tertiary" icon={<ChevronLeft size={15} aria-hidden />} label="Previous page"

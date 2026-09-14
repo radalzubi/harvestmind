@@ -35,11 +35,14 @@ export function Gate({ children, loadingLabel = "Reading your workspace…", nee
   if (session.status === "anonymous") {
     return (
       <EmptyState
-        title="This workspace is not open on this device"
+        // Not "on this device": access lives in the browser session, so a second tab of the same
+        // browser lands here too, and saying "device" is simply wrong there.
+        title="This workspace is not open here"
         actions={<ButtonLink href="/get-started" role="primary">Open your workspace</ButtonLink>}
       >
-        ZAAD keeps your access to the browser session you opened it in. Open your workspace again to
-        carry on where you left off.
+        ZAAD keeps your access to the browser tab you opened it in, and does not carry it to another
+        tab, another browser or another machine. Open your workspace again to carry on where you
+        left off.
       </EmptyState>
     );
   }

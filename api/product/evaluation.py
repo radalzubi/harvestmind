@@ -255,9 +255,22 @@ def compare(
     zaad_abstained = bool(comparable) and all(
         abs(row["zaad"] - row["current"]) < 0.005 for row in comparable)
 
-    limitations: list[str] = [
+    # The scope is the proposal's own products plus any product carrying a declared order-change
+    # right, so the commitments layer can be declared on both runs. Calling all of them "the
+    # products on this proposal" was wrong whenever the second group was not empty.
+    own = {str(line["sku"]) for line in (draft.get("lines") or []) if line.get("sku")}
+    carried = [sku for sku in scope if sku not in own]
+    covered = (
         f"The comparison covers the {len(scope)} product{'' if len(scope) == 1 else 's'} on this proposal. "
-        "Effects that reach other products — a supplier's weekly capacity shared with other orders, for "
+        if not carried else
+        f"The comparison covers {len(scope)} products: the {len(own)} "
+        f"product{'' if len(own) == 1 else 's'} on this proposal, and {len(carried)} more that "
+        f"{'carries' if len(carried) == 1 else 'carry'} a declared order-change right, so both runs "
+        "price those rights the same way. "
+    )
+    limitations: list[str] = [
+        covered
+        + "Effects that reach other products — a supplier's weekly capacity shared with other orders, for "
         "example — are outside it.",
         "Your current plan and your proposal are both the projection of your declared ordering policy: "
         "one without this order, one with it. The difference between them is this order.",

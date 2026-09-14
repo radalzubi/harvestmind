@@ -47,7 +47,10 @@ export function HeaderFields({ value, onChange, locations, disabled }: {
           placeholder="Supplier code" /></label>
       <label><span className="fld-label">Deliver to</span>
         {locations.length ? (
-          <select className="fld fld--block" value={value.destination_id} onChange={set("destination_id")} disabled={disabled}>
+          // A <label> wrapping a <select> takes every option's text into its own text content, so
+          // the computed name was "Deliver to Not set DC NORTH SOUTH". Naming it explicitly wins.
+          <select className="fld fld--block" aria-label="Deliver to" value={value.destination_id}
+            onChange={set("destination_id")} disabled={disabled}>
             <option value="">Not set</option>
             {locations.map((l) => <option key={l} value={l}>{l}</option>)}
           </select>

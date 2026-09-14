@@ -186,3 +186,29 @@ def test_an_amendment_with_a_declared_right_reads_the_engines_own_block():
 def test_an_order_outside_the_last_plan_says_so_rather_than_guessing():
     view = amendment_view({"commitments": {"orders": []}}, "PO-2")
     assert view["priced"] is False and "not in the last plan" in view["reason"]
+
+
+# ── what the comparison says it covered ───────────────────────────────────────
+
+def test_the_scope_sentence_separates_the_proposals_products_from_the_rights_it_carries():
+    """The scope is the proposal's products PLUS every product with a declared order-change right.
+
+    Calling all of them "the products on this proposal" was false whenever the second group was not
+    empty — a one-line proposal was reported as covering six products "on this proposal".
+    """
+    out = compare(BASELINE, PROPOSAL, draft=_draft(["SKU-0001"]),
+                  scope=["SKU-0001", "SKU-0002", "SKU-0003"])
+    said = out["limitations"][0]
+    assert "covers 3 products" in said
+    assert "1 product on this proposal" in said
+    assert "2 more that carry a declared order-change right" in said
+
+
+def test_a_proposal_whose_scope_is_only_its_own_products_keeps_the_short_sentence():
+    out = compare(BASELINE, PROPOSAL, draft=_draft(["SKU-0001"]), scope=["SKU-0001"])
+    assert out["limitations"][0].startswith("The comparison covers the 1 product on this proposal.")
+
+
+def test_one_carried_product_is_singular():
+    out = compare(BASELINE, PROPOSAL, draft=_draft(["SKU-0001"]), scope=["SKU-0001", "SKU-0002"])
+    assert "1 more that carries a declared order-change right" in out["limitations"][0]

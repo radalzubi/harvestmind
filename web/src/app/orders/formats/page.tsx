@@ -17,7 +17,7 @@ import { Gate } from "@/components/workspace/Gate";
 import { Button, ButtonLink, EmptyState, Loading, Notice, PageHead, Section } from "@/components/workspace/ui";
 import { useToast } from "@/components/Toast";
 import {
-  deleteProfile, fetchProfiles, readTemplate, saveProfile,
+  COUNT, deleteProfile, fetchProfiles, readTemplate, saveProfile,
   type ExportColumn, type ExportProfile,
 } from "@/lib/zaad/product";
 
@@ -85,8 +85,8 @@ function Editor({ profile, fields, onSaved, onCancel }: {
       }));
       const unmapped = found.suggested_columns.filter((c) => !c.field).length;
       toast.push(unmapped
-        ? `${found.headers.length} columns read. ${unmapped} need you to say what goes in them.`
-        : `${found.headers.length} columns read and mapped. Check each one before you save.`);
+        ? `${COUNT(found.headers.length, "column")} read. ${unmapped} need you to say what goes in them.`
+        : `${COUNT(found.headers.length, "column")} read and mapped. Check each one before you save.`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -114,13 +114,15 @@ function Editor({ profile, fields, onSaved, onCancel }: {
           <input className="fld fld--block" value={draft.name} placeholder="Oracle PO Import"
             onChange={(e) => setDraft({ ...draft, name: e.target.value })} /></label>
         <label><span className="fld-label">File type</span>
-          <select className="fld fld--block" value={draft.format} onChange={(e) => setDraft({ ...draft, format: e.target.value as ExportProfile["format"] })}>
+          <select className="fld fld--block" aria-label="File type" value={draft.format}
+            onChange={(e) => setDraft({ ...draft, format: e.target.value as ExportProfile["format"] })}>
             <option value="csv">CSV</option>
             <option value="xlsx">Excel (.xlsx)</option>
             <option value="print">Printable PDF</option>
           </select></label>
         <label><span className="fld-label">Dates</span>
-          <select className="fld fld--block" value={draft.date_format ?? "iso"} onChange={(e) => setDraft({ ...draft, date_format: e.target.value })}>
+          <select className="fld fld--block" aria-label="Date style" value={draft.date_format ?? "iso"}
+            onChange={(e) => setDraft({ ...draft, date_format: e.target.value })}>
             <option value="iso">2026-02-09</option>
             <option value="dmy">09/02/2026</option>
             <option value="mdy">02/09/2026</option>
@@ -215,7 +217,7 @@ function FormatsBody() {
                   <div key={profile.profile_id} className="dec" style={{ cursor: "default" }}>
                     <div className="dec-top">
                       <span className="dec-verb">{profile.format.toUpperCase()}</span>
-                      <span className="dec-cat">{profile.columns.length} columns</span>
+                      <span className="dec-cat">{COUNT(profile.columns.length, "column")}</span>
                     </div>
                     <h3 className="dec-h">{profile.name}</h3>
                     <p className="dec-sub">{profile.columns.map((c) => c.header).join(" · ")}</p>

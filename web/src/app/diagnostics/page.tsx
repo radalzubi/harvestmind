@@ -21,7 +21,7 @@ import { Column, DataTable, NotAvailable, Pager, SearchField, SelectField, Toolb
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money } from "@/lib/zaad/decisions";
 import {
-  DATE, MONEY, NUMBER, PERCENT, fetchCorridors, fetchSector, fetchSuppliers,
+  COUNT, DATE, MONEY, NUMBER, PERCENT, fetchCorridors, fetchSector, fetchSuppliers,
   type SectorRow, type SupplierRow,
 } from "@/lib/zaad/product";
 
@@ -70,7 +70,7 @@ function Suppliers({ params, set }: { params: URLSearchParams; set: (c: Record<s
       { key: "origin", label: "Origin", hideBelow: 1100, render: (r) => r.origin ?? <span className="na">—</span> },
       { key: "route", label: "Route", hideBelow: 900, render: (r) => r.route ?? <span className="na">—</span> },
       { key: "matched_orders", label: "Measured on", numeric: true, sortable: true, hideBelow: 1100,
-        render: (r) => r.matched_orders != null ? `${NUMBER(r.matched_orders)} orders` : <span className="na">—</span> },
+        render: (r) => r.matched_orders != null ? COUNT(r.matched_orders, "order") : <span className="na">—</span> },
       { key: "late_rate", label: "Arrived late", numeric: true, sortable: true,
         render: (r) => rate(r.late_rate, r.orders_with_promise, thin) },
       { key: "mean_late_days", label: "Days late", numeric: true, sortable: true, hideBelow: 700,
