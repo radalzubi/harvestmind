@@ -14,7 +14,7 @@ The work is **not merged and not deployed**. PR #81 is a draft awaiting your aud
 | Starting `main` | `4a564707eb6a27fa16816e7c6e12e78b38c1e3b1` (verified) |
 | Branch | `feat/zaad-operating-product-v1` |
 | Pull request | [#81](https://github.com/radalzubi/harvestmind/pull/81) — **draft** |
-| Head at handoff | *(see §12; recorded at the end of the session)* |
+| Head at handoff | *(named in the session's closing report; §12 records how to check it)* |
 | Production runtime, unchanged | `e0fecdc`, tag `frontend-rebuild-runtime`, Fly `zaad-api` v25 |
 | Working tree | clean |
 | Merged or deployed | **no** |
@@ -318,8 +318,11 @@ path) and a **production build** of this branch, on synthetic workspaces created
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Thirty-six defects were found this way and fixed**; they are listed in the PR description. The
-six most serious were invisible to the build and to the existing tests:
+**Everything found this way was fixed** — twelve defects on the first day and, on the second, one
+per commit across twenty-three defect commits, several of which carry more than one. The subject line
+of each is the defect in the words of what a person would have seen, so `git log main..HEAD` is the
+list; the PR description groups the ones worth naming. The six most serious were invisible to the
+build and to every test in this repository:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from
   a browser at all.** The CORS allowlist in `api/main.py` said
@@ -537,14 +540,47 @@ Ordered by how much they should worry you.
 
 ## 12. Session record
 
-* **CI:** run `34847967206` on `00eae63` — **13/13 green**, including the zaad frozen regression,
-  bandit/pip-audit, gitleaks, the Docker build and the frontend job (typecheck, lint, test, build).
-  A further run was triggered by the last commit; its result is recorded in the session's closing
-  report.
-* **Commits:** six, in the shape the brief suggested — application services; the operating surfaces;
-  the QA-driven fixes; documentation; the security annotations; the in-flight-run fixes.
-* **Working tree:** clean. **Branch:** pushed. **PR:** draft, reflecting the exact head.
-* Two untracked leftovers from the superseded PR #39 (`\.github/workflows/codeql.yml`,
-  `tests/unit/test_fmcg_network_block.py`) were found in the working tree at the start. They are
-  outside this pass's scope, were briefly staged by accident and were removed from the commit; they
-  are not in the branch. They are still absent from `main` and remain un-owned.
+**CI.** Every head of this branch has been run. At the time of writing: **18 green runs**, one
+failure (`5d20221`, a frontend defect found and fixed the same hour), and four cancelled because a
+newer push superseded them. A green run is all **13 jobs** — the zaad frozen regression, five pytest
+shards, ruff, mypy, bandit + pip-audit, gitleaks, the Docker build, and the frontend job
+(typecheck, **lint**, test, build). The run on the handoff head is named in the session's closing
+report; the head before it, `b46074b`, was 13/13 green.
+
+The frozen regression was also run directly on this tree, not only in CI:
+`PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` → **CANONICAL REGRESSION PASS**.
+
+**Commits.** 41 on the branch, 30 of them from the second day. The first day built the thing; the
+second took it apart. Each commit on the second day is one defect, named in its subject line in the
+words of what a person would have seen — "the printable order ran off the right edge of the page",
+"a KEEP is not 'your contract declares nothing'", "the text that says ZAAD does not know was the
+hardest to read" — so the history reads as a list of what was wrong rather than a list of files
+touched.
+
+**What the second day was.** Not more building: a systematic attempt to break the product from the
+outside, which is the work §64 asks for and the work that is easy to skip. The method, in case it is
+worth repeating:
+
+1. Walk every workflow against a running API and a production build, on two real workspaces.
+2. Read the **rendered DOM** back rather than the source — headings, controls, aria-labels, text.
+3. **Open the artefacts**: the CSV field by field, the XLSX in `openpyxl`, the PDF as a picture.
+4. Watch the **network tab** while clicking, which is the only way the CORS defects were visible.
+5. **Measure** rather than assert: contrast from computed styles, overflow from `scrollWidth`,
+   solve time from the job store, every figure on screen against the raw vault.
+6. Probe the refusals by hand — hostile SQL, undeclared names, absurd numbers, a wrong token, a
+   stopped API, another workspace's ids.
+
+**Twenty-three defect commits came out of the second day** (twenty-two `fix`, one `feat`
+for the print stylesheet that did not exist), each named for the defect rather than the
+file. Four of those defects could not have been caught by any test in this repository, and are the
+reason the method matters: three write paths a browser could not send, an export filename it could
+not read, a table clipped off the edge of a printed page, and a stylesheet collision only a
+screenshot would show.
+
+**State at handoff.** Working tree clean. Branch pushed. PR #81 **draft**, reflecting the exact head,
+**not merged and not deployed**. Production is untouched on `e0fecdc`.
+
+**One loose end, unchanged since the first day.** Two untracked leftovers from the superseded PR #39
+(`.github/workflows/codeql.yml`, `tests/unit/test_fmcg_network_block.py`) were in the working tree
+at the start. They are outside this pass's scope, were briefly staged by accident and removed from
+the commit; they are not in the branch and are still absent from `main`. They remain un-owned.
