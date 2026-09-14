@@ -38,7 +38,7 @@ alternative was a second copy of the engine's vocabulary in the product, driftin
 
 71 files: 47 under `web/`, 11 under `api/`, 5 test files, 2 scripts, 1 migration, 3 documents,
 `pyproject.toml` (one dependency — `openpyxl`, nothing else), `.claude/launch.json` (a local dev
-entry). `git diff --stat main...HEAD` — 13,357 insertions, 677 deletions.
+entry). `git diff --stat main...HEAD` — 13,928 insertions, 685 deletions.
 
 | Area | Files |
 |---|---|
@@ -621,7 +621,7 @@ process, never `zaad-api`.
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Everything found this way was fixed** — **41 of this branch's 54 commits are defect fixes**, and
+**Everything found this way was fixed** — **54 of this branch's 79 commits are defect fixes**, and
 several carry more than one. The subject line of each is the defect in the words of what a person
 would have seen, so `git log main..HEAD` is the list; the PR description groups the ones worth
 naming. The six most serious were invisible to the
@@ -874,10 +874,12 @@ Ordered by how much they should worry you.
 
 ## 12. Session record
 
-**CI.** Every head of this branch has been run. At the time of writing: **18 green runs**, one
+**CI.** Every head of this branch has been run. At the time of writing: **27 green runs**, one
 failure (`5d20221`, a frontend defect found and fixed the same hour — every other job on that run,
-**including the zaad frozen regression**, was green), and four cancelled because a newer push
-superseded them. The frozen regression has never failed on this branch. A green run is all **13 jobs** — the zaad frozen regression, five pytest
+**including the zaad frozen regression**, was green), and 25 cancelled because a newer push
+superseded them. The cancellations are the third day's own doing — a defect a quarter of an hour
+means a push a quarter of an hour, and each supersedes the run before it; the head that matters is
+the last one, and it is green. The frozen regression has never failed on this branch. A green run is all **13 jobs** — the zaad frozen regression, five pytest
 shards, ruff, mypy, bandit + pip-audit, gitleaks, the Docker build, and the frontend job
 (typecheck, **lint**, test, build). The run on the handoff head is named in the session's closing
 report; the head before it, `b46074b`, was 13/13 green.
