@@ -30,7 +30,8 @@ export interface Affected {
   delayedShipments: number;
 }
 
-const n = (v: number) => v.toLocaleString("en-US");
+// Prose says whole units: a warehouse does not hold a quarter of a case.
+const n = (v: number) => Math.round(v).toLocaleString("en-US");
 const pct = (v: number, d = 0) => `${(v * 100).toFixed(d)}%`;
 const list = (items: string[], max = 3) => items.length <= max ? items.join(", ") : `${items.slice(0, max).join(", ")} and ${items.length - max} more`;
 const lower = (s: string) => (s ? s[0].toLowerCase() + s.slice(1) : s);
@@ -157,7 +158,9 @@ export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkI
     if (m.shortages?.length) parts.push(`${list(m.shortages.map((s) => `${shortName(s.sku)} runs short ${s.when}`), 2)}.`);
     if (m.serviceProjected != null && m.serviceTarget != null) parts.push(`Service is projected at ${pct(m.serviceProjected, 1)} against a ${pct(m.serviceTarget, 1)} target${m.serviceProjected < m.serviceTarget ? ", below where it should be" : ""}.`);
     if (m.excess?.length) parts.push(`${list(m.excess.map((s) => `${shortName(s.sku)} has ${s.weeksOfCover} weeks of cover`), 2)}.`);
-    if (x.risk.level !== "low" && x.risk.reasons[0]) parts.push(`${x.risk.reasons[0]}.`.replace(/\.\.$/, "."));
+    // The service sentence above may already be the risk reason; do not say it twice.
+    const reasonSaid = x.risk.reasons[0] && parts.some((p) => p.toLowerCase().includes("service is projected"));
+    if (x.risk.level !== "low" && x.risk.reasons[0] && !reasonSaid) parts.push(`${x.risk.reasons[0]}.`.replace(/\.\.$/, "."));
     return parts.join(" ");
   }
   const up = [...index.upstream(x.id).nodes].map((id) => index.nodeById.get(id)!).filter((y) => y && (y.kind === "branch" || y.kind === "dc"));

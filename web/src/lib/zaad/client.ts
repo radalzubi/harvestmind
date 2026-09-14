@@ -6,7 +6,7 @@
  * they answer 410 in production (`ZAAD_LEGACY_PLANNERS=0`).
  */
 import { apiFetch } from "@/lib/api";
-import type { DirectoryResponse, WorkspacePlanResponse, WorkspaceRequestResponse } from "./types";
+import type { DirectoryResponse, WorkspacePlanResponse, WorkspaceRequestResponse, ZaadReport, ZaadRequest } from "./types";
 
 /** Every released phase the workspace can declare. Absent declarations simply return nothing. */
 export interface PlanOptions {
@@ -77,4 +77,51 @@ export function submitReview(decisionId: string, body: { status: "APPROVED" | "R
   return apiFetch<{ status: string }>(`/api/zaad/network/shadow/${encodeURIComponent(decisionId)}/review`, {
     method: "POST", body: JSON.stringify(body),
   });
+}
+
+// ── Asynchronous planning ────────────────────────────────────────────────────
+//
+// A real solve takes minutes, not milliseconds: a bounded eight-product network run measured
+// ~108 s on a developer machine. Holding an HTTP request open for that is not a product, so the
+// released jobs path carries every plan — it reports QUEUED / RUNNING honestly, survives a page
+// reload, and keeps the last completed plan for the workspace.
+
+export interface JobSummary {
+  id: string;
+  status: "QUEUED" | "RUNNING" | "DONE" | "FAILED" | "TIMEOUT" | "CANCELLED";
+  created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  engine_version: string;
+}
+
+export interface JobDetail extends JobSummary {
+  report: ZaadReport | null;
+  error: string | null;
+  timeout_s: number;
+}
+
+export function listPlanJobs(): Promise<{ jobs: JobSummary[] }> {
+  return apiFetch<{ jobs: JobSummary[] }>("/api/zaad/network/jobs");
+}
+
+export function readPlanJob(id: string): Promise<JobDetail> {
+  return apiFetch<JobDetail>(`/api/zaad/network/jobs/${encodeURIComponent(id)}`);
+}
+
+export function submitPlanJob(request: ZaadRequest): Promise<{ job_id: string; status: string; timeout_s: number }> {
+  return apiFetch<{ job_id: string; status: string; timeout_s: number }>("/api/zaad/network/jobs", {
+    method: "POST", body: JSON.stringify(request),
+  });
+}
+
+export function cancelPlanJob(id: string): Promise<unknown> {
+  return apiFetch(`/api/zaad/network/jobs/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+/** Read the workspace for a named subset of products. */
+export function fetchWorkspaceStateFor(skus: string[], options: PlanOptions = ALL_PHASES): Promise<WorkspaceRequestResponse> {
+  return apiFetch<WorkspaceRequestResponse>(
+    `/api/zaad/network/request/from-workspace?${query(options, { skus: skus.join(",") })}`,
+  );
 }

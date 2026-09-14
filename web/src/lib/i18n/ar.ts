@@ -6,7 +6,7 @@ import type { en } from "./en";
 export const ar: typeof en = {
   nav: { product: "المنتج", how: "كيف يعمل", sectors: "لمن هو", security: "الأمان", about: "من نحن", resources: "مصادر", enterKey: "أدخل المفتاح", getStarted: "اطلب تشخيصاً", open: "اطلب تشخيصاً", quote: "اطلب عرض سعر لشركتك", signIn: "افتح مساحة عملك", menuOpen: "افتح القائمة", menuClose: "أغلق القائمة", lang: "EN" },
   footer: {
-    blurb: "ZAAD برنامج لتحسين المخزون ومرونة التوريد للموزعين والمستوردين. صُنع في عمّان.",
+    blurb: "ZAAD هو طبقة القرار للتوريد المستورد: يخبر الموزعين المعتمدين على الاستيراد بما ينبغي تغييره، ولماذا. صُنع في عمّان.",
     product: "المنتج", productPage: "المنتج", howItWorks: "كيف يعمل", sectors: "القطاعات", security: "الأمان", resources: "مصادر",
     company: "الشركة", about: "من نحن", contact: "تواصل معنا",
     workspace: "مساحة العمل", getStarted: "ابدأ الآن", enterKey: "أدخل مفتاحك",

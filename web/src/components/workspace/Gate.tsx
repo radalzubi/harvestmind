@@ -15,7 +15,7 @@ import { Button, ButtonLink, ErrorState, Loading, EmptyState } from "./ui";
 export function Gate({ children, loadingLabel = "Reading your workspace…", needsPlan = true }: {
   children: ReactNode;
   loadingLabel?: string;
-  /** Data pages need the workspace read but not the solve. */
+  /** Only changes how much skeleton is shown while the workspace is read. */
   needsPlan?: boolean;
 }) {
   const session = useSession();
@@ -70,10 +70,7 @@ export function Gate({ children, loadingLabel = "Reading your workspace…", nee
     );
   }
 
-  if (needsPlan && data.phase !== "ready") {
-    return <Loading label={data.phase === "planning" ? "Comparing every option against your current plan…" : loadingLabel} />;
-  }
-  if (!needsPlan && data.phase === "idle") return <Loading label={loadingLabel} cards={2} />;
+  if (data.phase !== "ready") return <Loading label={loadingLabel} cards={needsPlan ? 3 : 2} />;
 
   return <>{children}</>;
 }

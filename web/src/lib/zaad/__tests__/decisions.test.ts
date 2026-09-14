@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { buildDecisions, planSummary, money, units, weeks } from "../decisions";
+import { productsWithAmendmentRights, rankProducts } from "../workspace-data";
 import { build, report, request } from "./fixture";
 
 const decisions = buildDecisions(report, request, build);
@@ -130,4 +131,32 @@ test("period wording is the operator's, not an index", () => {
   assert.equal(weeks(0), "this week");
   assert.equal(weeks(1), "next week");
   assert.equal(weeks(6), "in 6 weeks");
+});
+
+// ── run scope ───────────────────────────────────────────────────────────────
+// A run may cover a selection of products. The selection must never orphan a declared
+// amendment right: the server refuses a request carrying options for an order it no longer
+// holds, and silently dropping the commitment analysis instead would hide the decisions that
+// matter most.
+
+test("every product with a declared amendment right is found", () => {
+  const withRights = productsWithAmendmentRights(request);
+  assert.deepEqual([...withRights], ["SKU-2"]);
+});
+
+test("a product whose only option is keep carries no declared right", () => {
+  const keepOnly = {
+    ...request,
+    pipeline: [{ ...request.pipeline[0], options: [request.pipeline[0].options![0]] }],
+  };
+  assert.equal(productsWithAmendmentRights(keepOnly).size, 0);
+});
+
+test("ranking puts the products with the most on order first", () => {
+  assert.deepEqual(rankProducts(request), ["SKU-2", "SKU-1"]);
+});
+
+test("ranking is stable for products with nothing on order and no stock value", () => {
+  const bare = { ...request, pipeline: [], stock: [] };
+  assert.deepEqual(rankProducts(bare), ["SKU-1", "SKU-2"], "ties fall back to the product id");
 });

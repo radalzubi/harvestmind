@@ -87,3 +87,13 @@ def test_directory_reads_only_the_callers_vault(monkeypatch):
     assert [s["name"] for s in got_mine["suppliers"]] == ["Mine"]
     assert [s["name"] for s in got_theirs["suppliers"]] == ["Theirs"]
     assert got_mine["suppliers"][0]["origin_iso3"] == "CHN" and got_mine["suppliers"][0]["route"] == "red_sea"
+
+
+def test_directory_is_not_rate_limited(monkeypatch, vault):
+    """The product reads this on every workspace load. Sharing the planner's per-minute budget
+    would let a page load spend it and answer 429 for two indexed reads of the caller's own vault —
+    the same reasoning that leaves job status reads unlimited."""
+    monkeypatch.setenv("HARVESTMIND_ENV", "pilot")
+    client = TestClient(_app(vault))
+    for _ in range(40):
+        assert client.get("/api/zaad/network/directory").status_code == 200

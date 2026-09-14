@@ -185,7 +185,10 @@ def _directory_rows(conn, sql: str) -> list[dict]:
         return []
 
 
-@router.get("/directory", dependencies=[Depends(bounded_rate)])
+# Not rate limited, for the same reason job status reads are not: this is two indexed reads of
+# the caller's own vault, and the product fetches it on every workspace load. Sharing the planner's
+# per-minute budget would let a page load spend it and answer 429 for a lookup that costs nothing.
+@router.get("/directory")
 def directory(operator: str = Depends(authenticated), conn=Depends(get_conn)):
     """Declared supplier and location master data, read straight from the operator's own vault.
 

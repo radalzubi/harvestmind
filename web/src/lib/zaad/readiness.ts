@@ -115,7 +115,9 @@ export function derive(
     nextStep,
     score: quality?.score ?? null,
     scoreLabel: quality?.score_label ?? null,
-    totalRows: quality?.total_rows ?? sources.reduce((a, s) => a + s.rows, 0),
+    // Always the sum of the sources shown. The quality endpoint reports its own global total,
+    // which can belong to a different upload family and would contradict the rows listed here.
+    totalRows: sources.reduce((a, s) => a + s.rows, 0),
   };
 }
 

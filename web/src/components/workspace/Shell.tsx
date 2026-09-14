@@ -110,7 +110,8 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
     <div className="ws">
       <a className="skip-link" href="#ws-content">Skip to content</a>
       <aside className="ws-rail">
-        <div className="ws-rail-brand"><Link href="/home" aria-label="ZAAD home"><Logo size={21} /></Link></div>
+        {/* Logo renders its own link; wrapping it in another produces nested anchors. */}
+        <div className="ws-rail-brand"><Logo size={21} href="/home" /></div>
         <nav className="ws-nav" aria-label="Workspace">
           {NAV.map(({ href, label, Icon }) => (
             <Link key={href} href={href} aria-current={current(pathname, href) ? "page" : undefined}>

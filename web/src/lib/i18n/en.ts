@@ -1,7 +1,7 @@
 export const en = {
   nav: { product: "Product", how: "How it works", sectors: "Who it's for", security: "Security", about: "About", resources: "Resources", enterKey: "Enter key", getStarted: "Get a diagnostic", open: "Get a diagnostic", quote: "Get a company quote", signIn: "Open your workspace", menuOpen: "Open menu", menuClose: "Close menu", lang: "عربي" },
   footer: {
-    blurb: "ZAAD is inventory optimization and supply resilience software for distributors and importers. Built in Amman.",
+    blurb: "ZAAD is the decision layer for imported supply: it tells import-dependent distributors what to change, and why. Built in Amman.",
     product: "Product", productPage: "Product", howItWorks: "How it works", sectors: "Sectors", security: "Security", resources: "Resources",
     company: "Company", about: "About", contact: "Contact",
     workspace: "Workspace", getStarted: "Get started", enterKey: "Enter a key",

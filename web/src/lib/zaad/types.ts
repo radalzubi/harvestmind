@@ -252,6 +252,11 @@ export const PLAN_STATUS_LABEL: Record<string, string> = {
   PENDING_REVIEW: "Changes to review",
   RETAIN_INCUMBENT: "No change recommended",
   NO_ACTION: "No change recommended",
+  // The selector found no candidate materially better than the current plan.
+  ABSTAIN: "No change recommended",
+  CAPITAL_OPTIMIZATION: "Changes to review",
+  NETWORK_ALLOCATION: "Changes to review",
+  NORMAL_REPLENISHMENT: "Changes to review",
   TIME_LIMIT_NO_USABLE_PLAN: "Could not be computed in time",
   DATA_INSUFFICIENCY: "Not enough data",
 };

@@ -12,6 +12,7 @@
  *    optimizer prices the plan against the incumbent as a whole.
  *  - Optimizer vocabulary lives in `technical`; `headline`, `why` and `effect` are operator language.
  */
+import { plainReasons } from "./reasons";
 import type {
   ZaadAction, ZaadBuild, ZaadCommitmentOrder, ZaadReport, ZaadRequest, ZaadSource,
 } from "./types";
@@ -144,7 +145,8 @@ function reliabilityEvidence(build: ZaadBuild | null, supplier: string): Evidenc
   if (fit.lead_days != null) {
     out.push({
       label: "Lead time",
-      detail: `${NUMBER(fit.lead_days, 0)} days${fit.lead_sd_days != null ? ` (give or take ${NUMBER(fit.lead_sd_days, 0)})` : ""}`,
+      detail: `${NUMBER(fit.lead_days, 0)} days${fit.lead_sd_days != null ? ` (give or take ${NUMBER(fit.lead_sd_days, 0)})` : ""}`
+        + (fit.fill == null && fit.sample_size != null ? `, from ${NUMBER(fit.sample_size, 0)} deliveries` : ""),
       provenance: fit.lead_provenance ?? fit.provenance,
     });
   }
@@ -174,7 +176,7 @@ function commitmentDecision(order: ZaadCommitmentOrder, report: ZaadReport, requ
   if (order.recommended_action === "CANCEL") why.push("The stock this order would add is not needed over the planning horizon, and the order is still cancellable.");
   if (order.recommended_action === "REDUCE") why.push("Part of this order is not needed over the planning horizon; the rest still is.");
   if (order.recommended_action === "SPLIT") why.push("Part of this order is worth changing and part is worth keeping.");
-  if (report.reasons?.length) why.push(...report.reasons.slice(0, 2));
+  why.push(...plainReasons(report.reasons, 2));
 
   const effect: Fact[] = [];
   if (timing && timing.periods_shift != null && timing.periods_shift !== 0) {
@@ -228,7 +230,7 @@ function commitmentDecision(order: ZaadCommitmentOrder, report: ZaadReport, requ
     effect,
     doNothing,
     evidence,
-    technical: { order, commitments_version: report.commitments?.version, verdict: report.commitments?.commitment_verdict },
+    technical: { order, commitments_version: report.commitments?.version, verdict: report.commitments?.commitment_verdict, engine_reasons: report.reasons },
     urgency: order.recommended_action === "KEEP" ? 0 : Math.max(1, 12 - deadlineWeeks),
     materiality: order.recommended_action === "KEEP" ? 0 : (drivers.invoice_avoided || null),
     needsReview: order.recommended_action !== "KEEP",
@@ -278,7 +280,7 @@ function purchaseDecisions(report: ZaadReport, request: ZaadRequest | null, buil
       verb: row.selected === 0 ? "HOLD" : more ? "BUY MORE" : "BUY LESS",
       target: { type: "supplier", id: supplier, networkId: `sup:${supplier}`, label: `${supplier} · ${sku}` },
       summary: `${headline}. Approval is required; ZAAD does not place the order.`,
-      why: (report.reasons ?? []).slice(0, 3),
+      why: plainReasons(report.reasons),
       effect: [
         { label: "Order this week", value: units(row.selected) },
         { label: "Current plan orders", value: units(row.incumbent) },
@@ -291,7 +293,7 @@ function purchaseDecisions(report: ZaadReport, request: ZaadRequest | null, buil
         ...reliabilityEvidence(build, supplier),
         ...(src?.minimum ? [{ label: "Minimum order", detail: units(src.minimum) ?? "" }] : []),
       ],
-      technical: { source: src ?? sourceId, selected: row.selected, incumbent: row.incumbent },
+      technical: { source: src ?? sourceId, selected: row.selected, incumbent: row.incumbent, engine_reasons: report.reasons },
       urgency: 6,
       materiality: value,
       needsReview: true,
@@ -318,7 +320,7 @@ function transferDecisions(report: ZaadReport, request: ZaadRequest | null, curr
       verb: "MOVE",
       target: { type: "lane", id, networkId: `lane:${id}`, label: t ? `${t.origin} → ${t.destination}` : id },
       summary: `${headline}. Approval is required; ZAAD does not raise the transfer.`,
-      why: (report.reasons ?? []).slice(0, 3),
+      why: plainReasons(report.reasons),
       effect: [
         { label: "Quantity", value: units(row.selected) },
         { label: "Arrives", value: t ? weeks(t.lead_periods) : null },
@@ -328,7 +330,7 @@ function transferDecisions(report: ZaadReport, request: ZaadRequest | null, curr
         ? `Stock stays at ${t.origin}; ${t.destination} covers demand from what it already holds and what is inbound.`
         : "Stock stays where it is.",
       evidence: t ? [{ label: "Lane", detail: `${t.origin} → ${t.destination}, ${t.lead_periods} week${t.lead_periods === 1 ? "" : "s"}, ${money(t.cost_per_unit, currency)} per unit${t.approved ? "" : " (not approved)"}` }] : [],
-      technical: { transfer: t ?? id, selected: row.selected, incumbent: row.incumbent },
+      technical: { transfer: t ?? id, selected: row.selected, incumbent: row.incumbent, engine_reasons: report.reasons },
       urgency: 5,
       materiality: t ? row.selected * t.cost_per_unit : null,
       needsReview: true,
@@ -374,10 +376,23 @@ export function planSummary(report: ZaadReport, request: ZaadRequest | null): Pl
       econ.selected_working_capital != null && econ.incumbent_working_capital != null
         ? econ.selected_working_capital - econ.incumbent_working_capital
         : null,
-    service: (report.network_service ?? []).map((s) => ({
-      id: s.service, location: s.location, target: s.requested,
-      current: s.incumbent_achieved, recommended: s.selected_achieved ?? s.expected_achieved,
-    })),
+    // One row per location: the contract has a service line per product-location pair, and listing
+    // them all repeats the same place name down the page. The worst line is what matters.
+    service: Object.values(
+      (report.network_service ?? []).reduce<Record<string, PlanSummary["service"][number] & { lines: number }>>((acc, s) => {
+        const achieved = s.selected_achieved ?? s.expected_achieved;
+        const hit = acc[s.location];
+        if (!hit) {
+          acc[s.location] = { id: s.location, location: s.location, target: s.requested, current: s.incumbent_achieved, recommended: achieved, lines: 1 };
+          return acc;
+        }
+        hit.lines += 1;
+        hit.target = Math.max(hit.target, s.requested);
+        if (achieved != null) hit.recommended = hit.recommended == null ? achieved : Math.min(hit.recommended, achieved);
+        if (s.incumbent_achieved != null) hit.current = hit.current == null ? s.incumbent_achieved : Math.min(hit.current, s.incumbent_achieved);
+        return acc;
+      }, {}),
+    ).map(({ lines: _lines, ...row }) => row),
     reasons: report.reasons ?? [],
     limitations: report.limitations ?? [],
     activeCapabilities: capabilities,

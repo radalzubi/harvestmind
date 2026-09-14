@@ -14,7 +14,10 @@
 
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 
-.twin { display: grid; grid-template-rows: auto auto 1fr; height: calc(100vh - 58px); min-height: 0; }
+/* Flex, not a fixed row count: the attention strip is conditional, and a three-row grid put the
+   canvas in an `auto` row whenever it was absent, collapsing it to nothing. */
+.twin { display: flex; flex-direction: column; height: calc(100vh - 58px); min-height: 0; }
+.twin-bar, .twin-areas { flex: none; }
 .twin-bar {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   padding: 10px 20px; border-bottom: 1px solid var(--line); background: var(--bg);
@@ -57,7 +60,7 @@
 .twin-area:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .twin-area-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-.twin-stage { display: grid; grid-template-columns: 1fr var(--panel-w); min-height: 0; }
+.twin-stage { flex: 1 1 auto; display: grid; grid-template-columns: 1fr var(--panel-w); min-height: 0; }
 .twin-canvas { position: relative; min-width: 0; min-height: 0; background: var(--bg); }
 .twin-fill { position: absolute; inset: 0; }
 .twin-canvas .react-flow { width: 100%; height: 100%; }
@@ -101,7 +104,7 @@
 /* Phone and small tablet: the canvas is the page and the panel is a sheet over it, so a
    decision's context arrives without losing the map underneath it. */
 @media (max-width: 860px) {
-  .twin { height: calc(100vh - 58px - 56px); grid-template-rows: auto auto 1fr; }
+  .twin { height: calc(100dvh - 58px - 56px); }
   .twin-bar { padding: 8px 16px; }
   .twin-areas { padding: 8px 16px; }
   .twin-search input { width: 100%; min-width: 120px; }

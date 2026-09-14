@@ -216,9 +216,10 @@ export default function DataPage() {
               <div className="evid-row" key={supplier}>
                 <dt>{supplier}</dt>
                 <dd>
-                  {fit.fill != null ? `${(fit.fill * 100).toFixed(1)}% of ordered quantity arrives` : <span className="na">Reliability not measured</span>}
-                  {fit.lead_days != null && `, about ${Math.round(fit.lead_days)} days lead`}
-                  {fit.sample_size != null && ` — from ${fit.sample_size} deliver${fit.sample_size === 1 ? "y" : "ies"}`}
+                  {fit.fill != null
+                    ? <>{(fit.fill * 100).toFixed(1)}% of ordered quantity arrives{fit.sample_size != null && `, on ${fit.sample_size.toLocaleString("en-US")} deliveries`}</>
+                    : <span className="na">How much of an order arrives has not been measured — it needs goods received matched to purchase orders</span>}
+                  {fit.lead_days != null && <>{fit.fill != null ? "; " : ". "}Lead time about {Math.round(fit.lead_days)} days{fit.fill == null && fit.sample_size != null ? `, from ${fit.sample_size.toLocaleString("en-US")} deliveries` : ""}</>}
                   {fit.provenance && <span className="evid-prov">{fit.provenance.replaceAll("_", " ").toLowerCase()}</span>}
                 </dd>
               </div>

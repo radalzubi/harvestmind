@@ -9,9 +9,9 @@ export const SITE_NAME = "ZAAD";
 export const ALTERNATE_NAMES = ["ZAAD Supply", "zaadsupply.com"];
 export const BRAND_DESCRIPTION =
   "ZAAD is inventory optimization and supply resilience software for distributors and importers.";
-export const HOME_TITLE = "ZAAD | Inventory Optimization & Supply Resilience";
+export const HOME_TITLE = "ZAAD | The Decision Layer for Imported Supply";
 export const HOME_DESCRIPTION =
-  "ZAAD helps distributors and importers optimize inventory, purchasing, sourcing and supply resilience while protecting customer service. Backtested on your own history.";
+  "ZAAD connects purchasing, stock, suppliers, routes, open orders and customer commitments for import-dependent distributors, then recommends what to change this week and why. Proven on your own history first.";
 export const LOGO_URL = `${SITE_URL}/brand/zaad-logo-512.png`;
 export const SHARE_IMAGE = { url: `${SITE_URL}/og/zaad-supply-network.png`, width: 1200, height: 630,
   alt: "ZAAD supply network intelligence: inventory positions and supply lanes for distributors and importers" };
