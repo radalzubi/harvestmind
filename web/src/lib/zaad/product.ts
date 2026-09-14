@@ -406,9 +406,23 @@ export const startEvaluation = (id: string) =>
 export const readEvaluation = (id: string) =>
   call<EvaluationState>(`/api/zaad/orders/${encodeURIComponent(id)}/evaluation`);
 
+/**
+ * One declared amendment right, exactly as the engine reports it.
+ *
+ * Per-unit terms only: ZAAD prices a change against these inside a plan, and never totals them up
+ * outside one.
+ */
+export interface AmendmentWindow {
+  option: string; action: string; label?: string; provenance?: string;
+  fee_per_unit?: number | null; credit_per_unit?: number | null;
+  capacity_units?: number | null; deadline?: string | null; eligible?: boolean;
+  [key: string]: unknown;
+}
+
 export const readAmendment = (id: string) =>
   call<{ draft_id: string; po_id: string; priced: boolean; reason: string | null; order?: Record<string, unknown>;
-    recommended_action?: string; declared_options: string[]; reading?: string; executable?: boolean }>(
+    recommended_action?: string; declared_options: string[]; declared_windows?: AmendmentWindow[];
+    proposed_window?: AmendmentWindow | null; reading?: string; executable?: boolean }>(
     `/api/zaad/orders/${encodeURIComponent(id)}/amendment`);
 
 // ── export formats ────────────────────────────────────────────────────────────

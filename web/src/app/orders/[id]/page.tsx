@@ -19,7 +19,7 @@ import { useParams, useRouter } from "next/navigation";
 import { CheckCircle2, Download, FileSearch, Trash2, Undo2 } from "lucide-react";
 import { Gate } from "@/components/workspace/Gate";
 import { Button, ButtonLink, Disclosure, ErrorState, Loading, Notice, PageHead, Section } from "@/components/workspace/ui";
-import { Column, DataTable } from "@/components/workspace/Table";
+import { Column, DataTable, NotAvailable } from "@/components/workspace/Table";
 import { HeaderFields, LineEditor, Warnings, type OrderHeader } from "@/components/workspace/OrderForm";
 import { useToast } from "@/components/Toast";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
@@ -221,7 +221,37 @@ function AmendmentView({ draft }: { draft: Draft }) {
     <Section title="What this change is worth">
       {error && <Notice tone="warn">{error}</Notice>}
       {!view && !error && <Loading label="Reading the plan for this order…" cards={1} />}
-      {view && !view.priced && <Notice tone="warn">{view.reason}</Notice>}
+      {view?.reason && <Notice tone={view.declared_windows?.length ? "info" : "warn"}>{view.reason}</Notice>}
+      {/* The rights the contract declares, whether or not the plan chose to use one. Every value
+          is the engine's own; nothing is multiplied out into a total ZAAD did not compute. */}
+      {view?.declared_windows && view.declared_windows.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <DataTable caption={`Declared amendment terms on ${view.po_id}`} dense
+            rows={view.declared_windows} rowKey={(w) => String(w.option)}
+            columns={[
+              { key: "action", label: "Right", render: (w) => (
+                <>
+                  {String(w.label ?? w.action)}
+                  {draft.amendment_action && String(w.option) === String(view.proposed_window?.option)
+                    ? <span className="chip" data-tone="good" style={{ marginInlineStart: 6 }}>you are proposing this</span>
+                    : null}
+                </>
+              ) },
+              { key: "fee_per_unit", label: "Fee/unit", numeric: true,
+                render: (w) => w.fee_per_unit != null ? MONEY(Number(w.fee_per_unit), draft.currency ?? "USD") : <NotAvailable /> },
+              { key: "credit_per_unit", label: "Credit/unit", numeric: true,
+                render: (w) => w.credit_per_unit != null ? MONEY(Number(w.credit_per_unit), draft.currency ?? "USD") : <NotAvailable /> },
+              { key: "capacity_units", label: "Up to", numeric: true,
+                render: (w) => w.capacity_units != null ? NUMBER(Number(w.capacity_units)) : <NotAvailable /> },
+              { key: "deadline", label: "By", render: (w) => w.deadline ? DATE(String(w.deadline)) : <NotAvailable /> },
+              { key: "provenance", label: "Where from", render: (w) => String(w.provenance ?? "—").replaceAll("_", " ").toLowerCase() },
+            ]} />
+          <p className="zhelp" style={{ marginTop: 8 }}>
+            These are the per-unit terms your own contract declares, read back from the plan. ZAAD
+            prices a change against them inside a plan — it does not total them up here.
+          </p>
+        </div>
+      )}
       {view?.priced && view.order && (
         <>
           <Notice>

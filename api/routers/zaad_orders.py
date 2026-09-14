@@ -481,4 +481,5 @@ def amendment(draft_id: str, operator: Operator, conn=Depends(get_conn)):
         detail = runner().store.get(job["id"], operator)
         report = detail.get("report")
         break
-    return {"draft_id": draft_id, "po_id": po_id, **evaluation.amendment_view(report, str(po_id))}
+    return {"draft_id": draft_id, "po_id": po_id,
+            **evaluation.amendment_view(report, str(po_id), draft.get("amendment_action"))}

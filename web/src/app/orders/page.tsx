@@ -170,7 +170,16 @@ function ImportedPanel({ poId, onClose }: { poId: string; onClose: () => void })
                 <DataTable caption={`Declared amendment rights on ${poId}`} dense
                   rows={detail.declared_options} rowKey={(r) => String(r.option_id)}
                   columns={[
-                    { key: "action", label: "Right", render: (r) => String(r.action).replaceAll("_", " ") },
+                    // The contract vocabulary is not the buyer's: `de_expedite` is what ZAAD calls
+                    // a DEFER. The adapter names it; the contract's own word stays underneath, so
+                    // two defer-shaped options are still told apart against the paperwork.
+                    { key: "action", label: "Right", render: (r) => {
+                      const named = r.action_label ? String(r.action_label) : String(r.action).replaceAll("_", " ");
+                      const raw = String(r.action ?? "");
+                      return named.toLowerCase() === raw.replaceAll("_", " ").toLowerCase() ? named : (
+                        <>{named}<br /><small style={{ color: "var(--ink-500)" }}>in your contract: {raw}</small></>
+                      );
+                    } },
                     { key: "fee_per_unit", label: "Fee/unit", numeric: true, render: (r) => r.fee_per_unit != null ? MONEY(Number(r.fee_per_unit)) : "—" },
                     { key: "deadline", label: "By", render: (r) => r.deadline ? DATE(String(r.deadline)) : "—" },
                     { key: "contract_reference", label: "Contract", render: (r) => String(r.contract_reference ?? "—") },

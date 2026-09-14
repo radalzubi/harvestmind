@@ -346,12 +346,28 @@ def _service_rows(baseline: dict[str, Any] | None, proposal: dict[str, Any] | No
     return rows
 
 
-def amendment_view(report: dict[str, Any] | None, po_id: str) -> dict[str, Any]:
+#: The product's verb for a change, against the engine's own option actions. `de_expedite` and
+#: `reschedule` are both a DEFER in P4B's vocabulary. REDUCE and SPLIT have no declared option type
+#: in P4B V1, which is why a proposal of that kind reports no window rather than an empty one.
+WINDOW_ACTIONS: dict[str, tuple[str, ...]] = {
+    "KEEP": ("keep",), "DEFER": ("de_expedite", "reschedule"),
+    "EXPEDITE": ("expedite",), "CANCEL": ("cancel",),
+}
+
+
+def amendment_view(report: dict[str, Any] | None, po_id: str,
+                   action: str | None = None) -> dict[str, Any]:
     """What the engine says about one open order, for a proposed amendment to it.
 
     An amendment is worth what the contract says it is worth. P4B prices exactly the options the
     operator declared and nothing else, so this reads the engine's commitment block rather than
-    modelling the change. With no declared right, the honest answer is that it cannot be priced.
+    modelling the change.
+
+    The distinction that matters, and that this got wrong: `contractual_basis` is what the engine
+    **chose**, and it is empty on every KEEP. Reading it as "no right is declared" told a buyer
+    their contract gave them nothing while the same screen listed three declared rights. The rights
+    are in `amendment_windows`; the basis is the subset the plan acted on. Both are reported, and
+    every number here is the engine's own — nothing is multiplied out.
     """
     commitments = (report or {}).get("commitments") or {}
     orders = commitments.get("orders") or []
@@ -361,20 +377,59 @@ def amendment_view(report: dict[str, Any] | None, po_id: str) -> dict[str, Any]:
             "priced": False,
             "reason": "This order is not in the last plan, so ZAAD has not evaluated a change to it. "
                       "Run a plan that covers its product to see what the engine says.",
-            "declared_options": [],
+            "declared_options": [], "declared_windows": [], "proposed_window": None,
         }
     declared = [row.get("option") for row in order.get("contractual_basis") or []]
+    # The built-in KEEP window is constructed from the order itself, not declared by anyone, so it
+    # is not evidence that the operator has a right to change anything.
+    windows = [w for w in (order.get("amendment_windows") or [])
+               if str(w.get("action")) != "keep" and w.get("eligible")]
+    verb = str(action or "").upper()
+    wanted = WINDOW_ACTIONS.get(verb, ())
+    proposed = next((w for w in windows if str(w.get("action")) in wanted), None)
+
+    if not windows:
+        reason = ("No contractual right to change this order is declared, so ZAAD cannot price a "
+                  "change to it. Declare the amendment terms your contract gives you and it will.")
+    elif verb and verb != "KEEP" and not wanted:
+        reason = (f"Your contract declares {_window_words(windows)} on this order, but not a change "
+                  "of this kind, so ZAAD cannot price this one.")
+    elif verb and verb != "KEEP" and proposed is None:
+        reason = (f"Your contract declares {_window_words(windows)} on this order — not this "
+                  "change — so ZAAD cannot price this one.")
+    elif declared:
+        reason = None
+    else:
+        reason = (f"Your contract declares {_window_words(windows)} on this order. ZAAD's last plan "
+                  "still recommends keeping it as it is, so it has not priced a change: the terms "
+                  "below are what your contract gives you, not what the engine chose.")
     return {
         "priced": bool(declared),
         "order": order,
         "recommended_action": order.get("recommended_action"),
         "declared_options": declared,
+        "declared_windows": windows,
+        "proposed_window": proposed,
         "reading": commitments.get("reading"),
-        "reason": None if declared else
-        "No contractual right to change this order is declared, so ZAAD cannot price a change to it. "
-        "Declare the amendment terms your contract gives you and it will.",
+        "reason": reason,
         "executable": False,
     }
+
+
+def _window_words(windows: list[dict[str, Any]]) -> str:
+    """"a right to defer, expedite or cancel" — the engine's labels, in a sentence."""
+    from zaad.commitments.contracts import ACTION_LABEL
+
+    seen: list[str] = []
+    for window in windows:
+        name = ACTION_LABEL.get(str(window.get("action")), str(window.get("action"))).lower()
+        if name not in seen:
+            seen.append(name)
+    if not seen:
+        return "no right"
+    if len(seen) == 1:
+        return f"a right to {seen[0]}"
+    return f"a right to {', '.join(seen[:-1])} or {seen[-1]}"
 
 
 def store_evaluation(conn: Any, operator: str, *, draft_id: str, revision: int | None,

@@ -446,6 +446,23 @@ def purchase_order_page(
             "sort": sort, "direction": direction_sql.lower(), "served": True}
 
 
+def _action_label(action: Any) -> str | None:
+    """The engine's own name for a declared contract option.
+
+    `stg_po_options.action` holds the contract vocabulary — `de_expedite`, `reschedule` — which no
+    buyer has ever seen. P4B already decides what each one is called (`de_expedite` is a DEFER), so
+    the product reads that mapping rather than inventing a second one; the alternative was the raw
+    token on screen, which is how "de expedite" reached a drawer. Read-only: nothing in `zaad/` is
+    changed by importing it, and an action the engine does not name falls back to the raw value so
+    a new option type appears rather than disappearing.
+    """
+    if action is None:
+        return None
+    from zaad.commitments.contracts import ACTION_LABEL
+    named = ACTION_LABEL.get(str(action).lower())
+    return named.title() if named else str(action).replace("_", " ")
+
+
 def purchase_order_detail(conn: Any, po_id: str) -> dict[str, Any]:
     """One imported order: its lines, its receipts and any amendment right declared against it."""
     if not has_table(conn, "stg_fmcg_purchase_orders"):
@@ -457,6 +474,8 @@ def purchase_order_detail(conn: Any, po_id: str) -> dict[str, Any]:
                      [po_id]) if has_table(conn, "stg_fmcg_receipts") else []
     options = _rows(conn, "SELECT * FROM stg_po_options WHERE po_id = ? ORDER BY option_id",
                     [po_id]) if has_table(conn, "stg_po_options") else []
+    for option in options:
+        option["action_label"] = _action_label(option.get("action"))
     terms = _rows(conn, "SELECT * FROM stg_po_commitments WHERE po_id = ? LIMIT 1",
                   [po_id]) if has_table(conn, "stg_po_commitments") else []
     supplier = None

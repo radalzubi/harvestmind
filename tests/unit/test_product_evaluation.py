@@ -212,3 +212,65 @@ def test_a_proposal_whose_scope_is_only_its_own_products_keeps_the_short_sentenc
 def test_one_carried_product_is_singular():
     out = compare(BASELINE, PROPOSAL, draft=_draft(["SKU-0001"]), scope=["SKU-0001", "SKU-0002"])
     assert "1 more that carries a declared order-change right" in out["limitations"][0]
+
+
+# ── declared rights are not the same thing as a chosen amendment ──────────────
+
+def _window(action, **over):
+    base = {"option": f"opt_{action}", "action": action, "label": action.upper(), "eligible": True,
+            "provenance": "OPERATOR_DECLARED", "fee_per_unit": 0.2, "credit_per_unit": 0.0,
+            "capacity_units": 1776.0, "deadline": "2026-10-05T00:00:00+00:00"}
+    base.update(over)
+    return base
+
+
+def _keep_order(windows):
+    """What P4B reports for an order it decided to KEEP: no basis, but the windows are still there."""
+    return {"commitments": {"reading": "KEEP every declared order.", "orders": [
+        {"po": "PO-1", "recommended_action": "KEEP", "contractual_basis": [],
+         "amendment_windows": [_window("keep", provenance="CONTRACT", label="KEEP"), *windows]}]}}
+
+
+def test_a_keep_does_not_mean_the_contract_declares_nothing():
+    """`contractual_basis` is what the engine CHOSE. It is empty on every KEEP.
+
+    Reading it as "no right is declared" told a buyer their contract gave them nothing while the
+    order drawer beside it listed three declared rights.
+    """
+    view = amendment_view(_keep_order([_window("de_expedite"), _window("expedite"), _window("cancel")]),
+                          "PO-1", "DEFER")
+    assert view["priced"] is False                      # the engine priced no change, and says so
+    assert len(view["declared_windows"]) == 3           # but the rights are reported
+    assert "a right to defer, expedite or cancel" in view["reason"]
+    assert "keeping it as it is" in view["reason"]
+    assert view["proposed_window"]["action"] == "de_expedite"
+
+
+def test_the_built_in_keep_window_is_not_evidence_of_a_declared_right():
+    view = amendment_view(_keep_order([]), "PO-1", "DEFER")
+    assert view["declared_windows"] == []
+    assert "No contractual right" in view["reason"]
+
+
+def test_an_ineligible_window_is_not_offered_as_a_right():
+    view = amendment_view(_keep_order([_window("cancel", eligible=False)]), "PO-1", "CANCEL")
+    assert view["declared_windows"] == []
+    assert view["proposed_window"] is None
+
+
+def test_a_change_the_contract_does_not_cover_says_which_ones_it_does():
+    view = amendment_view(_keep_order([_window("cancel")]), "PO-1", "EXPEDITE")
+    assert view["proposed_window"] is None
+    assert "a right to cancel" in view["reason"]
+    assert "not this change" in view["reason"]
+
+
+def test_a_change_p4b_has_no_option_type_for_is_named_as_such():
+    view = amendment_view(_keep_order([_window("cancel")]), "PO-1", "SPLIT")
+    assert "not a change of this kind" in view["reason"]
+
+
+def test_reschedule_is_a_defer_too():
+    view = amendment_view(_keep_order([_window("reschedule")]), "PO-1", "DEFER")
+    assert view["proposed_window"]["action"] == "reschedule"
+    assert "a right to defer" in view["reason"]
