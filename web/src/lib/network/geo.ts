@@ -22,6 +22,7 @@ export const PORTS: Record<string, { name: string; at: LonLat; country: string }
   mundra: { name: "Mundra", at: [69.7, 22.74], country: "IN" },
   rotterdam: { name: "Rotterdam", at: [4.13, 51.95], country: "NL" },
   haifa: { name: "Haifa", at: [35.0, 32.82], country: "IL" },
+  umm_qasr: { name: "Umm Qasr", at: [47.93, 30.03], country: "IQ" },
 };
 
 export const CHOKEPOINTS: Record<string, { name: string; at: LonLat }> = {
@@ -42,6 +43,10 @@ const SEA: Record<string, LonLat[]> = {
   // East Asia to the Arabian Sea
   asia_to_arabian: [[114.27, 22.57], [112.0, 16.0], [108.5, 8.0], [104.5, 2.0], [103.75, 1.26], [100.6, 3.2], [95.0, 6.0], [80.0, 5.5], [65.0, 10.0], [58.0, 13.0]],
   arabian_to_hormuz: [[58.0, 13.0], [59.0, 22.0], [57.2, 24.6], [56.3, 26.55], [55.06, 25.01]],
+  // Up the Gulf from Hormuz to the head of the Shatt al-Arab
+  hormuz_to_umm_qasr: [[55.06, 25.01], [51.5, 27.2], [49.5, 28.6], [48.6, 29.4], [47.93, 30.03]],
+  // Indian Ocean approach to Jeddah, which sits on the Red Sea's eastern shore
+  red_sea_to_jeddah: [[40.0, 18.0], [39.6, 19.8], [39.15, 21.47]],
 };
 
 /** Lane tag -> how ZAAD describes it, which chokepoints it crosses and which port it lands at. */
@@ -59,6 +64,17 @@ export const LANE_CATALOG: Record<string, { name: string; kind: "ocean" | "road"
   gulf: { name: "Gulf route", kind: "ocean", chokepoints: ["hormuz"], port: "jebel_ali", path: SEA.arabian_to_hormuz },
   road_saudi: { name: "Road lane through Saudi Arabia", kind: "road", chokepoints: [], port: null,
                 path: [[55.06, 25.01], [51.5, 25.3], [46.7, 24.7], [43.0, 27.0], [39.9, 30.0], [37.5, 31.2], [35.93, 31.95]] },
+  // The western Red Sea corridor: sea to Jeddah, then north by road. A Jordanian importer uses it
+  // for Gulf and Asian origins when Aqaba is congested.
+  jeddah: { name: "Jeddah (sea), then road north", kind: "ocean", chokepoints: ["bab_el_mandeb"], port: "jeddah",
+            path: [...SEA.aden_to_red_sea, ...SEA.red_sea_to_jeddah.slice(1)] },
+  dammam: { name: "Dammam (sea), then road west", kind: "ocean", chokepoints: ["hormuz"], port: "dammam",
+            path: [...SEA.arabian_to_hormuz.slice(0, 4), [52.0, 26.6], [50.2, 26.45]] },
+  // The eastern corridor: Iraq's deep-water port, then overland to Amman.
+  umm_qasr: { name: "Umm Qasr (sea), then overland", kind: "ocean", chokepoints: ["hormuz"], port: "umm_qasr",
+              path: [...SEA.arabian_to_hormuz.slice(0, 4), ...SEA.hormuz_to_umm_qasr.slice(1)] },
+  iraq_overland: { name: "Overland through Iraq", kind: "road", chokepoints: [], port: null,
+                   path: [[44.4, 33.3], [42.0, 33.0], [39.3, 32.4], [37.0, 32.1], [35.93, 31.95]] },
 };
 
 /** Country centroids for facilities placed by region only. */

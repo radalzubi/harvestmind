@@ -20,6 +20,7 @@ import {
   ALL_PHASES, fetchDirectory, fetchWorkspaceState, fetchWorkspaceStateFor,
   listPlanJobs, readPlanJob, submitPlanJob, type JobSummary,
 } from "./client";
+import { fetchEvaluationJobIds } from "./product";
 import { buildDecisions, planSummary, type Decision, type PlanSummary } from "./decisions";
 import type { DirectoryResponse, ZaadBuild, ZaadReport, ZaadRequest } from "./types";
 import { buildCanonicalModel } from "@/lib/network/adapters/canonical";
@@ -187,11 +188,19 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
       // A workspace without the optional supplier upload still plans, so this never blocks a page.
       fetchDirectory().then((d) => live && setDirectory(d)).catch(() => live && setDirectory(null));
 
-      // The last plan this workspace computed, whenever it was.
+      // The last plan this workspace computed, whenever it was — and never an evaluation run. An
+      // evaluation uses the same jobs path, and one of its two runs carries a proposed order
+      // overlaid on the pipeline; showing that as "your plan" would present an order nobody has
+      // placed as the operator's position.
       try {
-        const { jobs } = await listPlanJobs();
-        const last = jobs.find((j) => j.status === "DONE");
-        const active = jobs.find((j) => j.status === "RUNNING" || j.status === "QUEUED");
+        const [{ jobs }, evaluations] = await Promise.all([
+          listPlanJobs(),
+          fetchEvaluationJobIds().catch(() => ({ evaluation_job_ids: [] as string[] })),
+        ]);
+        const ours = new Set(evaluations.evaluation_job_ids);
+        const plans = jobs.filter((j) => !ours.has(j.id));
+        const last = plans.find((j) => j.status === "DONE");
+        const active = plans.find((j) => j.status === "RUNNING" || j.status === "QUEUED");
         if (active) { watch(active.id); return; }
         if (!last || !live) return;
         const detail = await readPlanJob(last.id);

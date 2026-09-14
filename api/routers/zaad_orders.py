@@ -179,6 +179,22 @@ async def read_proposal(
             "truncated": table["truncated"]}
 
 
+@router.get("/evaluation-jobs")
+def evaluation_jobs(operator: Operator, conn=Depends(get_conn)):
+    """Job ids that belong to a proposal evaluation rather than to the workspace's own plan.
+
+    An evaluation runs the released jobs path twice, and one of those runs carries a proposed order
+    overlaid on the pipeline. Nothing in the job record distinguishes it from a plan, so a surface
+    that shows "the last completed plan" would otherwise show a plan of a workspace *plus an order
+    nobody has placed* and present it as the operator's position. This is the list to exclude.
+    """
+    drafts.ensure_tables(conn)
+    rows = _rows(conn, "SELECT baseline_job_id, proposal_job_id FROM zaad_evaluations WHERE operator_id = ?",
+                 [operator])
+    identities = sorted({str(value) for row in rows for value in row.values() if value})
+    return {"evaluation_job_ids": identities}
+
+
 @router.get("/{draft_id}")
 def read_order(draft_id: str, operator: Operator, conn=Depends(get_conn)):
     try:

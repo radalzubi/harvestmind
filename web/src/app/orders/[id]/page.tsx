@@ -48,8 +48,17 @@ function headerOf(draft: Draft): OrderHeader {
 
 function delta(row: LedgerRow, currency: string) {
   if (row.proposal_vs_current == null) return <span className="na">—</span>;
-  const sign = row.proposal_vs_current > 0 ? "up" : row.proposal_vs_current < 0 ? "down" : undefined;
+  // Below half a cent the two plans are the same on this line. "−USD 0.00" reads as a saving.
+  if (Math.abs(row.proposal_vs_current) < 0.005) return <span className="na">no change</span>;
+  const sign = row.proposal_vs_current > 0 ? "up" : "down";
   return <span data-sign={sign}>{row.proposal_vs_current > 0 ? "+" : "−"}{MONEY(Math.abs(row.proposal_vs_current), currency)}</span>;
+}
+
+/** `svc_QA-0001@QA-DC-AMMAN` is an engine id. A person reads "QA-0001 at QA-DC-AMMAN". */
+function serviceName(id: string, location: string | null): string {
+  const stripped = id.replace(/^svc_/, "");
+  const [sku, at] = stripped.split("@");
+  return `${sku}${at || location ? ` at ${at || location}` : ""}`;
 }
 
 function ComparisonTable({ comparison }: { comparison: Comparison }) {
@@ -63,6 +72,14 @@ function ComparisonTable({ comparison }: { comparison: Comparison }) {
   ];
   return (
     <>
+      {comparison.zaad_abstained && (
+        <div style={{ marginBottom: 12 }}>
+          <Notice>
+            ZAAD kept your current plan for these products, so the middle column is the same as the left one.
+            It found no alternative worth recommending — which does not mean your proposal is not worth making.
+          </Notice>
+        </div>
+      )}
       <DataTable caption="The plan's modelled cost, three ways" columns={columns} rows={comparison.ledger}
         rowKey={(r) => r.component} dense />
       <dl className="kv" style={{ marginTop: 14 }}>
@@ -76,7 +93,7 @@ function ComparisonTable({ comparison }: { comparison: Comparison }) {
         <Section title="What customers would get">
           <DataTable caption="Projected service by service line" dense rows={comparison.service} rowKey={(r) => r.service}
             columns={[
-              { key: "service", label: "Service", render: (r) => <>{r.service}{r.location ? <span style={{ color: "var(--ink-400)" }}> · {r.location}</span> : null}</> },
+              { key: "service", label: "Service", render: (r) => serviceName(r.service, r.location) },
               { key: "requested", label: "Target", numeric: true, render: (r) => PERCENT(r.requested) },
               { key: "current", label: "Current plan", numeric: true, render: (r) => PERCENT(r.current) },
               { key: "zaad", label: "ZAAD", numeric: true, render: (r) => PERCENT(r.zaad) },

@@ -135,10 +135,10 @@ function reliabilityEvidence(build: ZaadBuild | null, supplier: string): Evidenc
   const fit = build?.fits?.[supplier];
   if (!fit) return [];
   const out: EvidenceItem[] = [];
-  if (fit.fill != null) {
+  if (fit.fill_mean != null) {
     out.push({
       label: "Delivery reliability",
-      detail: `${(fit.fill * 100).toFixed(1)}% of ordered quantity arrives, on ${fit.sample_size ?? 0} past deliver${(fit.sample_size ?? 0) === 1 ? "y" : "ies"}`,
+      detail: `${(fit.fill_mean * 100).toFixed(1)}% of ordered quantity arrives, on ${fit.sample_size ?? 0} past deliver${(fit.sample_size ?? 0) === 1 ? "y" : "ies"}`,
       provenance: fit.provenance,
     });
   }
@@ -146,7 +146,7 @@ function reliabilityEvidence(build: ZaadBuild | null, supplier: string): Evidenc
     out.push({
       label: "Lead time",
       detail: `${NUMBER(fit.lead_days, 0)} days${fit.lead_sd_days != null ? ` (give or take ${NUMBER(fit.lead_sd_days, 0)})` : ""}`
-        + (fit.fill == null && fit.sample_size != null ? `, from ${NUMBER(fit.sample_size, 0)} deliveries` : ""),
+        + (fit.fill_mean == null && fit.sample_size != null ? `, from ${NUMBER(fit.sample_size, 0)} deliveries` : ""),
       provenance: fit.lead_provenance ?? fit.provenance,
     });
   }

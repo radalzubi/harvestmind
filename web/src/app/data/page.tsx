@@ -240,8 +240,8 @@ function DataBody() {
             columns={[
               { key: "supplier", label: "Supplier",
                 render: (r) => <Link href={`/diagnostics/supplier/${encodeURIComponent(r.supplier)}`}>{r.supplier}</Link> },
-              { key: "fill", label: "Quantity arriving", numeric: true,
-                render: (r) => r.fill != null ? `${(r.fill * 100).toFixed(1)}%` : <span className="na">not measured</span> },
+              { key: "fill_mean", label: "Quantity arriving", numeric: true,
+                render: (r) => r.fill_mean != null ? `${(r.fill_mean * 100).toFixed(1)}%` : <span className="na">not measured</span> },
               { key: "lead_days", label: "Lead (days)", numeric: true,
                 render: (r) => r.lead_days != null ? NUMBER(Math.round(r.lead_days)) : <span className="na">—</span> },
               { key: "sample_size", label: "Deliveries", numeric: true,

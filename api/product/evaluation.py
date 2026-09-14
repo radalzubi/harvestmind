@@ -248,6 +248,13 @@ def compare(
 
     service = _service_rows(baseline, proposal)
 
+    # When the optimizer kept the operator's own plan, the middle column is the left column. Saying
+    # so is the difference between an honest comparison and one that implies a recommendation the
+    # engine never made.
+    comparable = [row for row in rows if row["current"] is not None and row["zaad"] is not None]
+    zaad_abstained = bool(comparable) and all(
+        abs(row["zaad"] - row["current"]) < 0.005 for row in comparable)
+
     limitations: list[str] = [
         f"The comparison covers the {len(scope)} product{'' if len(scope) == 1 else 's'} on this proposal. "
         "Effects that reach other products — a supplier's weekly capacity shared with other orders, for "
@@ -255,9 +262,14 @@ def compare(
         "Your current plan and your proposal are both the projection of your declared ordering policy: "
         "one without this order, one with it. The difference between them is this order.",
     ]
-    for report, label in ((baseline, "the baseline run"), (proposal, "the run with your proposal")):
+    # Both runs are the same engine over the same information, so they report the same limitations
+    # almost always. Saying each one twice is noise that teaches a reader to skip the list.
+    shared: list[str] = []
+    for report in (baseline, proposal):
         for limitation in (report or {}).get("limitations") or []:
-            limitations.append(f"From {label}: {limitation}")
+            if limitation not in shared:
+                shared.append(limitation)
+    limitations.extend(f"From the engine: {limitation}" for limitation in shared)
     limitations.extend(notes or [])
 
     unavailable: list[str] = []
@@ -290,6 +302,7 @@ def compare(
         "limitations": limitations,
         "unavailable": unavailable,
         "amendment": draft.get("origin") == "IMPORTED_AMENDMENT",
+        "zaad_abstained": zaad_abstained,
         "executable": False,
     }
 

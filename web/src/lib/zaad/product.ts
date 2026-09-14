@@ -332,6 +332,17 @@ export const listDrafts = (options: {
 
 export const readDraft = (id: string) => call<Draft>(`/api/zaad/orders/${encodeURIComponent(id)}`);
 
+/**
+ * Job ids that belong to a proposal evaluation.
+ *
+ * The workspace's own plan and an evaluation's two runs go down the same released jobs path, and
+ * the job record does not say which is which. Without this, "the last completed plan" on Home could
+ * be the run that had a proposed order overlaid on the pipeline — a plan of a workspace plus an
+ * order nobody has placed, shown as the operator's position.
+ */
+export const fetchEvaluationJobIds = () =>
+  call<{ evaluation_job_ids: string[] }>("/api/zaad/orders/evaluation-jobs");
+
 export const createDraft = (body: Record<string, unknown>) =>
   call<Draft>("/api/zaad/orders", { method: "POST", body: JSON.stringify(body) });
 
@@ -371,6 +382,8 @@ export interface Comparison {
   limitations: string[];
   unavailable: string[];
   amendment: boolean;
+  /** True when the optimizer retained the operator's own plan, so the middle column repeats the left. */
+  zaad_abstained?: boolean;
   executable: boolean;
 }
 

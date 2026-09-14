@@ -8,6 +8,7 @@
  */
 import Link from "next/link";
 import { ArrowUpRight, X } from "lucide-react";
+import { ButtonLink } from "@/components/workspace/ui";
 import { describe, edgeTitle, affectedBy } from "@/lib/network/attention";
 import { EDGE_LABEL, KIND_LABEL, RISK_LABEL, STATE_LABEL, STATE_SENTENCE } from "@/lib/network/model";
 import type { NetworkEdge, NetworkNode } from "@/lib/network/model";
@@ -33,6 +34,61 @@ function Recommendations({ targetId }: { targetId: string }) {
           </div>
           <h4 className="dec-h" style={{ fontSize: 14 }}>{d.headline}</h4>
         </Link>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Where a selected object leads.
+ *
+ * The twin used to be a diagram: it told you a supplier was late and left you to find it again
+ * somewhere else. Every action here opens a surface that already exists — the supplier's
+ * diagnostics, its products, its orders, a proposed order against it. Nothing here executes
+ * anything, and there is no control that implies ZAAD would contact a supplier.
+ */
+function Actions({ node, edge, index }: {
+  node: NetworkNode | null; edge: NetworkEdge | null; index: ReturnType<typeof useTwin>["index"];
+}) {
+  const links: Array<{ href: string; label: string; primary?: boolean }> = [];
+  if (node) {
+    const bare = node.id.split(":").slice(1).join(":");
+    if (node.kind === "supplier") {
+      links.push({ href: `/diagnostics/supplier/${encodeURIComponent(bare)}`, label: "Supplier diagnostics", primary: true });
+      links.push({ href: `/inventory?supplier=${encodeURIComponent(bare)}`, label: "Its products" });
+      links.push({ href: `/orders?tab=imported&poq=${encodeURIComponent(bare)}`, label: "Its orders" });
+      links.push({ href: `/orders/new?supplier=${encodeURIComponent(bare)}`, label: "Propose an order" });
+    } else if (node.kind === "dc" || node.kind === "branch") {
+      links.push({ href: "/inventory", label: "Stock held here", primary: true });
+      links.push({ href: "/orders?tab=imported&postate=open", label: "Arriving here" });
+    } else if (node.kind === "customer") {
+      links.push({ href: `/data?dataset=customer_orders&q=${encodeURIComponent(bare)}`, label: "Their orders", primary: true });
+    }
+    if (node.skus.length === 1) {
+      links.push({ href: `/inventory?sku=${encodeURIComponent(node.skus[0])}`, label: node.skus[0] });
+    }
+  } else if (edge) {
+    const from = index.nodeById.get(edge.from);
+    const to = index.nodeById.get(edge.to);
+    if (from?.kind === "supplier") {
+      const bare = from.id.split(":").slice(1).join(":");
+      links.push({ href: `/diagnostics/supplier/${encodeURIComponent(bare)}`, label: `${from.name} diagnostics`, primary: true });
+      links.push({ href: `/orders?tab=imported&poq=${encodeURIComponent(bare)}`, label: "Orders on this route" });
+    }
+    if (to?.kind === "dc" || to?.kind === "branch") {
+      links.push({ href: "/inventory", label: "What arrives here" });
+    }
+    if (edge.skus.length) {
+      links.push({ href: `/inventory?q=${encodeURIComponent(edge.skus[0])}`, label: "Products carried" });
+    }
+  }
+  if (!links.length) return null;
+  return (
+    <div style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
+      {links.slice(0, 4).map((l) => (
+        <ButtonLink key={l.href + l.label} size="sm" role={l.primary ? "secondary" : "tertiary"} href={l.href}>
+          {l.label}
+        </ButtonLink>
       ))}
     </div>
   );
@@ -79,6 +135,7 @@ function NodeBody({ node }: { node: NetworkNode }) {
       <div style={{ marginTop: 18 }}>
         <h3 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "var(--ink-950)" }}>What ZAAD recommends here</h3>
         <Recommendations targetId={node.id} />
+        <Actions node={node} edge={null} index={index} />
       </div>
 
       <div style={{ marginTop: 16 }}>
@@ -87,7 +144,7 @@ function NodeBody({ node }: { node: NetworkNode }) {
             <dl className="evid">
               {m.openPOs!.map((po) => (
                 <div className="evid-row" key={po.id}>
-                  <dt>{po.id}</dt>
+                  <dt><Link href={`/orders?po=${encodeURIComponent(po.id)}`}>{po.id}</Link></dt>
                   <dd>
                     {po.units.toLocaleString("en-US")} units{po.sku ? ` of ${po.sku}` : ""}
                     {po.due ? `, due ${po.due}` : ""}
@@ -144,6 +201,7 @@ function EdgeBody({ edge }: { edge: NetworkEdge }) {
       <div style={{ marginTop: 18 }}>
         <h3 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "var(--ink-950)" }}>What ZAAD recommends here</h3>
         <Recommendations targetId={edge.id} />
+        <Actions node={null} edge={edge} index={index} />
       </div>
 
       <div style={{ marginTop: 16 }}>

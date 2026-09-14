@@ -45,9 +45,9 @@ if str(ROOT) not in sys.path:
 CORRIDORS = [
     ("aqaba", "DEU", "Aqaba", 26, 1),
     ("aqaba", "CHN", "Aqaba", 34, 1),
-    ("road_saudi", "SAU", "Jeddah", 9, 4),
+    ("jeddah", "SAU", "Jeddah", 9, 4),
     ("road_saudi", "ARE", "Jeddah", 12, 4),
-    ("iraq_overland", "IRQ", "Umm Qasr", 18, 6),
+    ("umm_qasr", "IRQ", "Umm Qasr", 18, 6),
     ("iraq_overland", "TUR", "Umm Qasr", 14, 6),
 ]
 
@@ -72,10 +72,12 @@ def _weeks(start: date, count: int):
     return [start + timedelta(days=7 * i) for i in range(count)]
 
 
-def build_corridor(conn, seed: int = 11) -> dict:
+def build_corridor(conn, seed: int = 11, as_of: date | None = None) -> dict:
     """A multi-corridor importer. Small enough to plan, rich enough to exercise every surface."""
     rng = random.Random(seed)
-    today = date(2026, 1, 5)
+    # The fixture ends today by default, so a QA workspace behaves like a live one: a proposal
+    # dated now sits inside the planning horizon rather than months after the data ends.
+    today = as_of or date.today()
     history_start = today - timedelta(days=364)
 
     suppliers = []
@@ -233,7 +235,7 @@ def build_corridor(conn, seed: int = 11) -> dict:
             "amendment_rights_on": len(open_ids), "classification": "SYNTHETIC QA FIXTURE"}
 
 
-def build_scale(conn, skus: int = 10_000, seed: int = 23) -> dict:
+def build_scale(conn, skus: int = 10_000, seed: int = 23, as_of: date | None = None) -> dict:
     """A catalogue of `skus` products, for measuring what the product's tables do at that size.
 
     Deliberately shallow per product — the point is row counts, not richness — and written with
@@ -241,7 +243,7 @@ def build_scale(conn, skus: int = 10_000, seed: int = 23) -> dict:
     time measures Python, not DuckDB.
     """
     rng = random.Random(seed)
-    today = date(2026, 1, 5)
+    today = as_of or date.today()
     suppliers = 120
     for index in range(1, suppliers + 1):
         route, origin, _port, ocean, inland = CORRIDORS[index % len(CORRIDORS)]
@@ -324,14 +326,17 @@ def main() -> int:
     parser.add_argument("--db", required=True, help="path to write the DuckDB file to")
     parser.add_argument("--skus", type=int, default=10_000, help="scale only: how many products")
     parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--as-of", default=None, help="the date the history ends (default: today)")
     args = parser.parse_args()
 
     path = Path(args.db)
     conn = _connect(path)
     if args.shape == "corridor":
-        report = build_corridor(conn, seed=args.seed if args.seed is not None else 11)
+        report = build_corridor(conn, seed=args.seed if args.seed is not None else 11,
+                                as_of=date.fromisoformat(args.as_of) if args.as_of else None)
     else:
-        report = build_scale(conn, skus=args.skus, seed=args.seed if args.seed is not None else 23)
+        report = build_scale(conn, skus=args.skus, seed=args.seed if args.seed is not None else 23,
+                             as_of=date.fromisoformat(args.as_of) if args.as_of else None)
     conn.close()
     print(f"{path}  {report}")
     return 0

@@ -349,12 +349,15 @@ function InventoryBody() {
       {scope && planPhase === "ready" && (
         <div style={{ marginBottom: 12 }}>
           <Notice>
-            ZAAD&rsquo;s last run covered {scope.skus.length} of your {scope.total} products.{" "}
-            <button className="zb zb--tertiary zb--sm" style={{ padding: 0, height: "auto" }}
-              onClick={() => set({ planned: planned ? null : "1" })}>
-              {planned ? "Show every product" : "Show only those products"}
-            </button>{" "}
-            Recommendations for them are in <Link href="/decisions">Decisions</Link>.
+            <p style={{ margin: 0 }}>
+              ZAAD&rsquo;s last run covered {scope.skus.length} of your {scope.total} products.
+              Recommendations for them are in <Link href="/decisions">Decisions</Link>.
+            </p>
+            <div style={{ marginTop: 10 }}>
+              <Button size="sm" onClick={() => set({ planned: planned ? null : "1" })}>
+                {planned ? "Show every product" : "Show only those products"}
+              </Button>
+            </div>
           </Notice>
         </div>
       )}

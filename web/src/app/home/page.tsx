@@ -136,7 +136,8 @@ function StandingLine({ state }: { state: Standing }) {
             <> Approving them changes the modelled cost of the plan by {value} against keeping things as they are.</>
           )}
         </p>
-        {state.next && (
+        {/* With no plan yet the section below carries the run control, where it can name the scope. */}
+        {state.next && !(state.level === "normal" && planPhase === "none") && (
           <p style={{ margin: "8px 0 0" }}>
             <Link href={state.next.href} className="zb zb--secondary zb--sm">
               {state.next.label} <ArrowRight size={13} aria-hidden />

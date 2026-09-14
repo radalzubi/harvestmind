@@ -203,12 +203,12 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
     // operator would act on; the score and the sentence share that threshold so a supplier never
     // carries colour without a reason next to it.
     let score = 0;
-    if (fit?.fill != null) {
-      const shortfall = Math.max(0, 1 - fit.fill);
+    if (fit?.fill_mean != null) {
+      const shortfall = Math.max(0, 1 - fit.fill_mean);
       const thin = (fit.sample_size ?? 0) < 6;
       if (shortfall > NOTABLE_SHORTFALL) {
         score = Math.min(1, (shortfall - NOTABLE_SHORTFALL) * 4);
-        reasons.push(`${(fit.fill * 100).toFixed(1)}% of ordered quantity has been arriving${thin ? ` (only ${fit.sample_size ?? 0} deliveries measured)` : ""}`);
+        reasons.push(`${(fit.fill_mean * 100).toFixed(1)}% of ordered quantity has been arriving${thin ? ` (only ${fit.sample_size ?? 0} deliveries measured)` : ""}`);
         // A handful of deliveries cannot justify calling a supplier critical.
         if (thin) score = Math.min(score, 0.45);
       }
@@ -218,7 +218,7 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
 
     const missing: string[] = [];
     if (!origin) { missing.push("No origin country is declared for this supplier, so it is placed by its route if one is known."); if (!lane) unplacedSuppliers += 1; }
-    if (!fit?.fill) missing.push("Delivery reliability needs more delivery history before it can be measured.");
+    if (fit?.fill_mean == null) missing.push("Delivery reliability needs more delivery history before it can be measured.");
     if (!routeTag) missing.push("No shipping route is declared for this supplier.");
 
     const geo = origin ? approx(origin) : lane ? approx(lane.path[0]) : null;
@@ -237,7 +237,7 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
         ...(fit?.provenance ? [fit.provenance.replaceAll("_", " ").toLowerCase()] : []),
       ]),
       metrics: {
-        fill: fit?.fill != null ? { mean: fit.fill, p10: null, p90: null, n: fit.sample_size ?? null } : undefined,
+        fill: fit?.fill_mean != null ? { mean: fit.fill_mean, p10: null, p90: null, n: fit.sample_size ?? null } : undefined,
         leadDays: fit?.lead_days != null ? { mean: fit.lead_days, p10: null, p90: null, n: fit.sample_size ?? null } : undefined,
         openPOs: pos,
         capacityPerWeek: master?.capacity_per_week ?? null,

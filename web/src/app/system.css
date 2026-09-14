@@ -119,6 +119,13 @@
 .ws-search:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .ws-search kbd { margin-left: auto; font-family: var(--mono); font-size: 10.5px; border: 1px solid var(--line); border-radius: 3px; padding: 1px 4px; background: var(--surface-2); }
 @media (max-width: 900px) { .ws-search { min-width: 0; } .ws-search span { display: none; } }
+/* On a phone there is no keyboard shortcut to hint at, and the workspace name is already on the
+   account button; a squeezed second copy of it truncates to nothing. */
+@media (max-width: 640px) {
+  .ws-search { width: 36px; padding: 0; justify-content: center; }
+  .ws-search kbd { display: none; }
+  .ws-top-id { display: none; }
+}
 
 .ws-page { padding: 24px 24px 96px; max-width: 1240px; width: 100%; margin: 0 auto; }
 .ws-page.wide { max-width: none; padding: 0; }
@@ -430,9 +437,12 @@ textarea.fld { height: auto; padding: 8px 10px; line-height: 1.5; resize: vertic
 
 /* ── Snapshot strip ──────────────────────────────────────────────────────── */
 
-.snap { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 1px; background: var(--line);
+/* Separators are drawn by each cell's outline, which sits in the 1px gap and takes no layout
+   space. A background-coloured container would show the last row's unused columns as a block of
+   border colour — a hole where a cell is simply absent. */
+.snap { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 1px; background: var(--surface);
         border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
-.snap > div { background: var(--surface); padding: 12px 14px; }
+.snap > div { background: var(--surface); padding: 12px 14px; outline: 1px solid var(--line); }
 .snap dt { font-size: 11.5px; color: var(--ink-500); margin: 0 0 3px; }
 .snap dd { margin: 0; font-size: 17px; font-weight: 600; color: var(--ink-950); font-variant-numeric: tabular-nums; letter-spacing: -.015em; }
 .snap dd small { display: block; font-size: 11.5px; font-weight: 400; color: var(--ink-500); letter-spacing: 0; margin-top: 2px; }

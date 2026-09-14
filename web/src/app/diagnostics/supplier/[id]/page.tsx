@@ -231,9 +231,11 @@ function SupplierBody({ id }: { id: string }) {
               { key: "po_date", label: "Ordered", render: (r) => DATE(r.po_date) },
               { key: "promised", label: "Promised", render: (r) => r.promised ? DATE(r.promised) : <span className="na">—</span> },
               { key: "first_receipt", label: "Arrived", render: (r) => DATE(r.first_receipt) },
-              { key: "late_days", label: "Days late", numeric: true,
-                render: (r) => r.late_days == null ? <span className="na">—</span>
-                  : r.late_days > 0 ? <span className="chip" data-tone="warn">{NUMBER(r.late_days)}</span> : "0" },
+              { key: "late_days", label: "Against promise", numeric: true,
+                render: (r) => r.late_days == null ? <span className="na">no promised date</span>
+                  : r.late_days > 0 ? <span className="chip" data-tone="warn">{NUMBER(r.late_days)} d late</span>
+                  : r.late_days < 0 ? <span className="na">{NUMBER(-r.late_days)} d early</span>
+                  : "on the day" },
               { key: "fill", label: "Quantity arrived", numeric: true, render: (r) => r.fill != null ? PERCENT(r.fill) : <NotAvailable /> },
             ]} />
         ) : <Notice>No order has been matched to a receipt for this supplier yet.</Notice>}

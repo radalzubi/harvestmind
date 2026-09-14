@@ -379,3 +379,25 @@ def test_every_surface_needs_a_workspace(vault):
     for url in ("/api/zaad/workspace/inventory", "/api/zaad/workspace/summary",
                 "/api/zaad/workspace/datasets", "/api/zaad/orders"):
         assert anonymous.get(url).status_code == 401, url
+
+
+def test_evaluation_runs_are_distinguishable_from_the_workspace_plan(client, vault, skus):
+    """An evaluation uses the released jobs path twice, and one of its runs carries a proposed
+    order overlaid on the pipeline. Nothing in the job record says so, so a surface showing "the
+    last completed plan" would present a plan of the workspace *plus an order nobody has placed*
+    as the operator's own position. This is the list that prevents it."""
+    empty = client.get("/api/zaad/orders/evaluation-jobs")
+    assert empty.status_code == 200
+    assert empty.json()["evaluation_job_ids"] == []
+
+    draft = _create(client, skus)
+    from api.product import evaluation
+    evaluation.store_evaluation(
+        vault, OPERATOR, draft_id=draft["draft_id"], revision=1,
+        baseline_job_id="job_base", proposal_job_id="job_proposal",
+        as_of="2026-01-05T00:00:00Z", scope=[skus[0]], status="QUEUED")
+
+    listed = client.get("/api/zaad/orders/evaluation-jobs").json()["evaluation_job_ids"]
+    assert listed == ["job_base", "job_proposal"]
+    assert _client(vault, "someone_else").get("/api/zaad/orders/evaluation-jobs").json()["evaluation_job_ids"] == [], \
+        "and another workspace's evaluation runs are not listed here"

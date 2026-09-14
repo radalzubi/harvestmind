@@ -38,8 +38,33 @@ test("a supplier's risk comes from its measured fill and nothing else", () => {
   assert.ok(b.risk.evidence.includes("23 past deliveries"));
 });
 
+test("the build report's own field names are read, not ones we wished for", () => {
+  // Captured verbatim from GET /api/zaad/network/request/from-workspace on a live workspace. The
+  // field is `fill_mean`. An earlier version of the contract types declared `fill`, so every read
+  // was undefined and supplier reliability silently never reached the twin's risk scoring at all —
+  // the kind of defect a green build and a matching-but-wrong fixture will never catch.
+  const captured = {
+    "SUP-B": {
+      fill_mean: 0.9801432066227092,
+      fill_sd: 0.024574341608084818,
+      lead_days: 34,
+      lead_sd_days: 2.1065374432940898,
+      sample_size: 24,
+      provenance: "INFERRED_FROM_HISTORY",
+    },
+  };
+  const m = buildCanonicalModel({
+    request, build: { ...build, fits: captured }, report, directory, homeRegion: "JO", workspaceName: "Acme",
+  });
+  const b = m.nodes.find((n) => n.id === "sup:SUP-B")!;
+  assert.equal(b.metrics.fill?.mean, 0.9801432066227092, "the fitted fill reaches the model");
+  assert.equal(b.metrics.fill?.n, 24);
+  assert.ok(!(b.missing ?? []).some((x) => /Delivery reliability needs more delivery history/.test(x)),
+    "and a supplier with 24 measured deliveries is not described as unmeasured");
+});
+
 test("a thin sample caps how alarming a supplier is allowed to look", () => {
-  const thin = { ...build, fits: { ...build.fits, "SUP-B": { fill: 0.3, sample_size: 2, provenance: "INFERRED_FROM_HISTORY" } } };
+  const thin = { ...build, fits: { ...build.fits, "SUP-B": { fill_mean: 0.3, sample_size: 2, provenance: "INFERRED_FROM_HISTORY" } } };
   const m = buildCanonicalModel({ request, build: thin, report, directory, homeRegion: "JO", workspaceName: "Acme" });
   const b = m.nodes.find((n) => n.id === "sup:SUP-B")!;
   assert.ok(b.risk.score <= 0.45, `a 2-delivery sample must not reach critical, got ${b.risk.score}`);
