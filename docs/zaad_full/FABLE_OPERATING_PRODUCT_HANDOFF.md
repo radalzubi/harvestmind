@@ -320,7 +320,14 @@ process, never `zaad-api`.
   The cost breakdown printed `+USD 0.00` on all seven components under a heading reading "7
   components" — the same defect as the day-one `−USD 0.00` "saving", in the one place that had been
   missed, and only visible on a workspace whose plan is both kept *and* priced. It reads "7 priced,
-  none moved" now, each row "no change".
+  none moved" now, each row "no change". A later probe of the same workspace found the **third**
+  copy of the same arithmetic, on `/diagnostics?tab=value`: the summary said "Modelled cost
+  difference: no difference" and the table two lines below it, "Where the modelled difference
+  sits", printed `−USD 0.00` on all seven components — a *negative* zero, which reads as a saving,
+  contradicting the sentence above it. Three surfaces formatted the same number three times; all
+  three now suppress a difference that rounds to nothing. The same screen said "Products covered:
+  5 of 150" on a workspace holding ten thousand products, which invites the reading that the
+  catalogue is 150; the denominator is what ZAAD read for the plan, and it now says so.
 * **The pages this pass links to but did not write**, since an operator does not know the
   difference. `/upload/confirm` opened directly said "Something went wrong — No session id, start
   from the Upload page": nothing had gone wrong, the page had simply been opened without the upload

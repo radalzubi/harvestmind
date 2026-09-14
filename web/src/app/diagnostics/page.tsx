@@ -228,7 +228,11 @@ function Value() {
             : Math.abs(summary.workingCapitalDelta) < 0.005 ? "no difference"
             : `${summary.workingCapitalDelta >= 0 ? "+" : "−"}${money(Math.abs(summary.workingCapitalDelta), summary.currency)}`}</dd>
           <dt>Products covered</dt>
-          <dd>{scope ? `${scope.skus.length} of ${scope.total}` : "every product in the workspace"}</dd>
+          {/* "5 of 150" on a ten-thousand-product workspace invites the reading that the catalogue
+              is 150. The denominator is what ZAAD read, and it says so. */}
+          <dd>{scope
+            ? `${NUMBER(scope.skus.length)} of the ${NUMBER(scope.total)} ZAAD read for this plan`
+            : "every product in the workspace"}</dd>
           <dt>As at</dt><dd>{DATE(summary.asOf)}</dd>
         </dl>
         {priced.length > 0 && (
@@ -238,8 +242,13 @@ function Value() {
                 { key: "component", label: "", render: (r) => r.component },
                 { key: "current", label: "Your current plan", numeric: true, render: (r) => r.current != null ? MONEY(r.current, summary.currency) : <span className="na">—</span> },
                 { key: "recommended", label: "ZAAD's plan", numeric: true, render: (r) => r.recommended != null ? MONEY(r.recommended, summary.currency) : <span className="na">—</span> },
+                // A difference that rounds to nothing is not a saving, and `r.delta > 0 ? "+" : "−"`
+                // printed every exact zero as "−USD 0.00" — seven of them, under a heading that
+                // said "no difference" two lines above.
                 { key: "delta", label: "Difference", numeric: true,
-                  render: (r) => r.delta != null ? <span data-sign={r.delta > 0 ? "up" : "down"}>{r.delta > 0 ? "+" : "−"}{MONEY(Math.abs(r.delta), summary.currency)}</span> : <span className="na">—</span> },
+                  render: (r) => r.delta == null ? <span className="na">—</span>
+                    : Math.abs(r.delta) < 0.005 ? <span className="na">no change</span>
+                    : <span data-sign={r.delta > 0 ? "up" : "down"}>{r.delta > 0 ? "+" : "−"}{MONEY(Math.abs(r.delta), summary.currency)}</span> },
               ]} />
           </div>
         )}
