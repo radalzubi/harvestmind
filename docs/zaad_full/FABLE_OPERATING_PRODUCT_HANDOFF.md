@@ -216,6 +216,13 @@ path) and a **production build** of this branch, on synthetic workspaces created
   recorded reason, and **exported** — a real CSV with `X-ZAAD-Transmitted: false`, a UTF-8 BOM, and
   the filename the profile's template produces. Then a **proposed amendment** to an imported order
   carrying three declared rights, from the drawer through the editor to the rights table.
+* **The record surfaces reconciled against the raw vault, arithmetic by arithmetic.** Home's
+  snapshot — 150 products, 8 suppliers, 127,465 units, USD 691,835.71, 205 open orders — computed
+  independently in DuckDB against `stg_fmcg_inventory`, `stg_fmcg_skus`, `stg_fmcg_purchase_orders`
+  and `stg_fmcg_receipts`: **identical to the last cent**. One product's row the same way: on hand
+  5,669 (the three sites at the latest snapshot), in transit 1,536, value 5,725.69 (5,669 × 1.01),
+  inbound 3,312 under the planner's own open-order rule, cover 3.26 weeks (5,669 ÷ 1,737). What the
+  screen says is what the vault holds.
 * **The spreadsheet path** end to end through the API: headings read, a mapping proposed, a wrong
   field name refused by name, and a file with one broken row read into two lines with
   `Row 4 (not-a-sku): 'abc' is not a quantity.`
