@@ -773,7 +773,10 @@ build and to every test in this repository:
   `zaad_draft_lines`, `zaad_draft_events`, `zaad_export_profiles`, `zaad_export_log`,
   `zaad_evaluations`) and two nullable columns on `stg_fmcg_skus` (`brand`, `sub_category`). No
   existing column is altered and no historical migration is rewritten. Verified against both an
-  empty database and an upgraded one (`scripts/setup_db.py` runs it in every test fixture).
+  empty database and an upgraded one (`scripts/setup_db.py` runs it in every test fixture), and
+  **re-verified on the handoff head**: `setup_db` run twice over one fresh DuckDB file leaves the
+  same 57 tables both times, all six product tables present, and `brand` and `sub_category` on
+  `stg_fmcg_skus` — no error on the second run, which is what idempotent has to mean.
 * `api/product/drafts.py::ensure_tables` creates the product's own tables on first use for a vault
   created before this release. It never creates or alters a staging table, it verifies the six
   tables exist afterwards, and it refuses in words rather than letting a catalogue error reach a
