@@ -60,7 +60,19 @@
 .twin-area:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .twin-area-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
+/* The panel only takes its column when something is selected. Keeping it open on an empty
+   selection left the canvas barely half the screen, which shrank the fit-to-view zoom until the
+   node labels were unreadable. */
 .twin-stage { flex: 1 1 auto; display: grid; grid-template-columns: 1fr var(--panel-w); min-height: 0; }
+.twin-stage.no-panel { grid-template-columns: 1fr; }
+.twin-stage.no-panel .twin-panel { display: none; }
+.twin-hint {
+  position: absolute; inset-inline-end: 16px; bottom: 16px; z-index: 2; max-width: 300px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 14px 16px; box-shadow: var(--shadow-md);
+  backdrop-filter: blur(8px); font-size: 13px; color: var(--ink-600); line-height: 1.55;
+}
+.twin-hint strong { display: block; color: var(--ink-950); font-weight: 600; margin-bottom: 4px; font-size: 13.5px; }
 .twin-canvas { position: relative; min-width: 0; min-height: 0; background: var(--bg); }
 .twin-fill { position: absolute; inset: 0; }
 .twin-canvas .react-flow { width: 100%; height: 100%; }
@@ -72,14 +84,14 @@
 .state-pill { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .03em; background: var(--st-bg); color: var(--st-fg); white-space: nowrap; }
 .state-pill i { width: 6px; height: 6px; border-radius: 50%; background: var(--st); }
 
-.tn { width: 208px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 10px; padding: 9px 11px 9px 10px; display: grid; grid-template-columns: 26px 1fr; column-gap: 8px; row-gap: 2px; align-items: center; box-shadow: var(--shadow); transition: opacity .18s, box-shadow .18s, border-color .18s; cursor: pointer; font-size: 12.5px; color: var(--ink-900); }
+.tn { width: 176px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 10px; padding: 9px 11px 9px 10px; display: grid; grid-template-columns: 22px 1fr; column-gap: 7px; row-gap: 2px; align-items: center; box-shadow: var(--shadow); transition: opacity .18s, box-shadow .18s, border-color .18s; cursor: pointer; font-size: 12.5px; color: var(--ink-900); }
 .tn:hover { border-color: var(--ink-400); box-shadow: var(--shadow-md); }
 .tn.selected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-12), var(--shadow-md); }
 .tn.dim { opacity: .28; }
 .tn.exception:not(.selected) { border-color: color-mix(in srgb, var(--st) 55%, var(--line-strong)); box-shadow: inset 3px 0 0 var(--st), var(--shadow); }
 .tn.group { border-style: dashed; }
 .tn.group .tn-ico { background: var(--ink-400); }
-.tn-ico { width: 26px; height: 26px; border-radius: 7px; background: var(--ink-900); color: #fff; display: grid; place-items: center; grid-row: span 2; }
+.tn-ico { width: 22px; height: 22px; border-radius: 6px; background: var(--ink-900); color: #fff; display: grid; place-items: center; grid-row: span 2; }
 .tn.kind-customer .tn-ico { background: var(--ink-500); }
 .tn.kind-port .tn-ico { background: var(--ink-700); }
 .tn-name { font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

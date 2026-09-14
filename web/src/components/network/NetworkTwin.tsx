@@ -131,9 +131,16 @@ export function NetworkTwin() {
         </div>
       )}
 
-      <div className="twin-stage">
+      <div className={`twin-stage${state.panelOpen ? "" : " no-panel"}`}>
         <div className="twin-canvas">
           {state.view === "network" ? <NetworkGraph /> : <NetworkMap />}
+          {!state.panelOpen && (
+            <div className="twin-hint">
+              <strong>Nothing selected</strong>
+              Pick a supplier, lane, site or customer to see its state, what depends on it and what
+              ZAAD recommends about it. Tab moves through them from the keyboard.
+            </div>
+          )}
         </div>
         {state.panelOpen && (
           <button className="twin-panel-scrim" aria-label="Close the details panel" onClick={() => dispatch({ type: "panel", open: false })} />

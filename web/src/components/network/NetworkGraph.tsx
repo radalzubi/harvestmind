@@ -24,7 +24,7 @@ type TNode = Node<TNodeData, "twin">;
 type TEdge = Edge<TEdgeData, "twin">;
 
 const ICON: Record<NodeKind, typeof Factory> = { supplier: Factory, port: Anchor, dc: Warehouse, branch: Store, customer: Users };
-const NODE_W = 208, NODE_H = 58;
+const NODE_W = 176, NODE_H = 54;
 
 /** One number a node is willing to state. Anything unmeasured simply says nothing. */
 function metricFor(n: NetworkNode): string | null {
@@ -122,7 +122,7 @@ function Graph() {
   useEffect(() => {
     const el = document.querySelector(".twin-fill");
     if (!el || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(() => { rf.fitView({ padding: 0.18, duration: 0 }); });
+    const ro = new ResizeObserver(() => { rf.fitView({ padding: 0.12, duration: 0 }); });
     ro.observe(el);
     return () => ro.disconnect();
   }, [rf]);
@@ -131,7 +131,7 @@ function Graph() {
   useEffect(() => {
     if (fitSeen.current === state.fitSignal) return;
     fitSeen.current = state.fitSignal;
-    rf.fitView({ padding: 0.18, duration: 300 });
+    rf.fitView({ padding: 0.12, duration: 300 });
   }, [state.fitSignal, rf]);
 
   const focusSeen = useRef(state.focusSignal);
@@ -154,7 +154,7 @@ function Graph() {
       onPaneClick={() => { select(null); dispatch({ type: "panel", open: false }); }}
       onNodeMouseEnter={(_, n) => hover({ type: "node", id: n.id })} onNodeMouseLeave={() => hover(null)}
       onEdgeMouseEnter={(_, e) => hover({ type: "edge", id: e.id })} onEdgeMouseLeave={() => hover(null)}
-      fitView fitViewOptions={{ padding: 0.18 }} minZoom={0.08} maxZoom={2}
+      fitView fitViewOptions={{ padding: 0.12 }} minZoom={0.08} maxZoom={2}
       nodesDraggable={false} nodesConnectable={false} elementsSelectable panOnScroll zoomOnPinch selectionOnDrag={false}
       deleteKeyCode={null} multiSelectionKeyCode={null}
       onlyRenderVisibleElements

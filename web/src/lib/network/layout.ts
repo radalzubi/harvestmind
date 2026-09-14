@@ -9,8 +9,10 @@ import type { NetworkModel, NodeKind } from "./model";
 export interface Placed { x: number; y: number; tier: number }
 
 const RANK: Record<NodeKind, number> = { supplier: 0, port: 1, dc: 2, branch: 3, customer: 4 };
-export const COLUMN_GAP = 300;
-export const ROW_GAP = 104;
+// Tuned so a five-tier network fits a 1440px canvas at a zoom that keeps node labels legible;
+// a bigger network still fits, it just pans.
+export const COLUMN_GAP = 236;
+export const ROW_GAP = 88;
 
 export function layoutNodes(model: NetworkModel): Map<string, Placed> {
   const ids = model.nodes.map((n) => n.id);
