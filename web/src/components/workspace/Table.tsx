@@ -161,12 +161,24 @@ export function Drawer({ open, title, sub, onClose, children, actions, wide }: {
   children: ReactNode; actions?: ReactNode; wide?: boolean;
 }) {
   const panel = useRef<HTMLDivElement>(null);
+  const opener = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (!open) return;
+    // Where the keyboard was before the drawer took focus. Without putting it back, closing a
+    // product in a fifty-row table dropped the caret on <body> and the reader had to tab from the
+    // top of the page to get back to where they were.
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const escape = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", escape);
     panel.current?.focus();
-    return () => document.removeEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("keydown", escape);
+      const back = opener.current;
+      // The row may have been re-rendered away while the drawer was open; only a node still in the
+      // document can take focus, and forcing it on a detached one silently does nothing anyway.
+      if (back?.isConnected) back.focus();
+      opener.current = null;
+    };
   }, [open, onClose]);
 
   if (!open) return null;
