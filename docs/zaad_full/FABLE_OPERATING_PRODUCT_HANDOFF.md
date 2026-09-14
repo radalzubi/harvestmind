@@ -857,6 +857,24 @@ worth repeating:
    solve time from the job store, every figure on screen against the raw vault.
 6. Probe the refusals by hand — hostile SQL, undeclared names, absurd numbers, a wrong token, a
    stopped API, another workspace's ids.
+7. **Restart the server after every build, not just after some of them.** `npm run build` under a
+   running `next start` leaves the two disagreeing: the server keeps serving a page that references
+   a chunk hash it will then answer `404` for, and the browser shows a bare "This page couldn't
+   load" with no server-side error to find. It cost twenty minutes on the last day, on a page that
+   was not broken, and — worse — it means any check made between a rebuild and a restart was made
+   against the previous build. The two such checks in this session were redone on a fresh server
+   and hold. If you see a whole route fail while its siblings work and `curl` returns 200 HTML,
+   this is what it is.
+
+**A note on the final day.** A third pass was made after the second, by one question: *where does
+ZAAD state a fact in one register and contradict it in another?* Fourteen more defect commits came
+out of it — a route reporting no late arrivals over 16,546 orders it had no promised date for, four
+columns printing the dash that means "not available" over a counted zero, a lane panel whose
+"Products carried" button opened one of the 150 it had just counted, a customer panel whose only
+action matched nothing, a twin quoting money in a currency nobody had read, two totals 53 apart
+under one heading, and "1 SKU depend on this supplier". They are individually small; what they had
+in common is that each was a place where two parts of the product knew different things, and the
+reader was left to notice.
 
 **Twenty-three defect commits came out of the second day** (twenty-two `fix`, one `feat`
 for the print stylesheet that did not exist), each named for the defect rather than the
