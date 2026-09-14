@@ -517,6 +517,40 @@ export const NUMBER = (value: number | null | undefined, digits = 0): string =>
  * workspace where every purchase order has been received it turned whole columns into a claim of
  * ignorance. Zero is a word here; only absence is the dash.
  */
+/**
+ * Where a paged list actually is, decided once so five tables cannot disagree.
+ *
+ * Two facts break the obvious arithmetic over `total`, and both are live in this product:
+ *
+ *   * a page **past the end** (a stale link, the back button) makes `offset + 1` exceed `total`,
+ *     which printed "101–1 of 1 product";
+ *   * a **floored** total — the data explorer stops counting at `COUNT_CEILING` and says "more
+ *     than" — is smaller than the rows that still come back, which printed "150,001–100,000" and
+ *     disabled Next over 271,140 records that were still there.
+ *
+ * `shown` (how many rows the page rendered) is the only quantity true in both worlds, so it
+ * decides the range and the end. An exact total ends the list as well: without that a last page
+ * that is exactly full leaves Next enabled and it walks off the end.
+ */
+export type PagerState =
+  | { kind: "count"; total: number }
+  | { kind: "past"; page: number }
+  | { kind: "range"; from: number; to: number; atStart: boolean; atEnd: boolean };
+
+export function pagerState(
+  { total, limit, offset, shown, isFloor }:
+  { total: number; limit: number; offset: number; shown: number; isFloor?: boolean },
+): PagerState {
+  if (!isFloor && total <= limit && offset === 0) return { kind: "count", total };
+  if (offset > 0 && shown === 0) return { kind: "past", page: Math.floor(offset / limit) + 1 };
+  const to = offset + shown;
+  return {
+    kind: "range", from: offset + 1, to,
+    atStart: offset === 0,
+    atEnd: shown < limit || (!isFloor && to >= total),
+  };
+}
+
 export const TALLY = (value: number | null | undefined, none = "none"): { text: string; muted: boolean } =>
   value == null || !Number.isFinite(value) ? { text: "—", muted: true }
     : value === 0 ? { text: none, muted: true }

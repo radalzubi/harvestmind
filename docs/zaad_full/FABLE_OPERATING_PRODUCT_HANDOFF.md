@@ -169,7 +169,7 @@ Stated plainly rather than left to be discovered.
 | `tests/unit/test_product_drafts_schema.py` | 14 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
 | Whole local suite (`tests/unit` + `tests/integration`) | **2,105 passed, 2 skipped** (6 m 37 s) |
-| Frontend (`npm test`) | **114 passed**, 53 new |
+| Frontend (`npm test`) | **121 passed**, 60 new |
 | Frontend typecheck / production build | green |
 | Frontend lint | green **in CI** — see §10.15 |
 | `ruff` (CI's own scope), `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
@@ -179,7 +179,7 @@ New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `aban
 `format.test.ts` (11), `warnings.test.ts` (7), plus tests added to `canonical.test.ts`.
 
 The last run of each, on the handoff head: `python3 -m pytest tests/ -q -p no:randomly` →
-`2105 passed, 2 skipped` in 397 s; `npm test` → `# pass 114 / # fail 0`;
+`2105 passed, 2 skipped` in 397 s; `npm test` → `# pass 121 / # fail 0`;
 `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` → `CANONICAL REGRESSION PASS`;
 `ruff check . --extend-exclude "docs,dashboard,scripts/p1_*.py"` → `All checks passed!`;
 `mypy … api zaad/full` → `Success: no issues found in 67 source files`; bandit over CI's package
@@ -572,7 +572,9 @@ process, never `zaad-api`.
   lets Next walk off the end — a regression I introduced with the first version of this fix and
   caught before it was committed). Verified on four pages: the last page of an exact total (Next
   off), a middle page (Next on), the ceiling (Next **on**, range 150,001–150,050), and genuinely
-  past the end.
+  past the end. The rule is now `pagerState` in `lib/zaad/product.ts` — one function, the way
+  `TALLY` is — with **seven tests** covering all four worlds, including the regression above, so
+  the next person to touch it finds out from a test rather than from a screen.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →

@@ -22,7 +22,7 @@
  */
 import { useEffect, useRef, type ReactNode } from "react";
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, X } from "lucide-react";
-import { NUMBER, TALLY } from "@/lib/zaad/product";
+import { NUMBER, TALLY, pagerState } from "@/lib/zaad/product";
 import { Button } from "./ui";
 
 export interface Column<T> {
@@ -144,14 +144,15 @@ export function Pager({ total, limit, offset, onOffset, unit = "rows", one, isFl
   // so dropping the "s" is right; `one` is there for the day one of them is not.
   const noun = total === 1 ? (one ?? unit.replace(/s$/, "")) : unit;
   const rows = shown ?? Math.max(0, Math.min(limit, total - offset));
-  if (!isFloor && total <= limit && offset === 0) {
+  const at = pagerState({ total, limit, offset, shown: rows, isFloor });
+  if (at.kind === "count") {
     return <p className="tbl-count">{total.toLocaleString("en-US")} {noun}</p>;
   }
-  if (offset > 0 && rows === 0) {
+  if (at.kind === "past") {
     return (
       <div className="tbl-pager">
         <p className="tbl-count">
-          Page {(Math.floor(offset / limit) + 1).toLocaleString("en-US")} is past the end of{" "}
+          Page {at.page.toLocaleString("en-US")} is past the end of{" "}
           {isFloor ? `these ${noun}` : `${total.toLocaleString("en-US")} ${noun}`}. Nothing is
           missing; this link points beyond them.
         </p>
@@ -159,23 +160,17 @@ export function Pager({ total, limit, offset, onOffset, unit = "rows", one, isFl
       </div>
     );
   }
-  const from = offset + 1;
-  const to = offset + rows;
   return (
     <div className="tbl-pager">
       <p className="tbl-count">
-        {from.toLocaleString("en-US")}–{to.toLocaleString("en-US")} of {isFloor ? "more than " : ""}
+        {at.from.toLocaleString("en-US")}–{at.to.toLocaleString("en-US")} of {isFloor ? "more than " : ""}
         {total.toLocaleString("en-US")} {noun}
       </p>
       <div style={{ display: "flex", gap: 6 }}>
         <Button size="sm" role="tertiary" icon={<ChevronLeft size={15} aria-hidden />} label="Previous page"
-          disabled={offset === 0} onClick={() => onOffset(Math.max(0, offset - limit))} />
-        {/* A short page is always the last one. An exact total ends the list too — but a *floored*
-            total does not, which is why it is not enough on its own: at the explorer's ceiling a
-            full page is still a full page and there are more behind it. A last page that happens
-            to be exactly full needs the second clause, or Next walks off the end. */}
+          disabled={at.atStart} onClick={() => onOffset(Math.max(0, offset - limit))} />
         <Button size="sm" role="tertiary" icon={<ChevronRight size={15} aria-hidden />} label="Next page"
-          disabled={rows < limit || (!isFloor && to >= total)} onClick={() => onOffset(offset + limit)} />
+          disabled={at.atEnd} onClick={() => onOffset(offset + limit)} />
       </div>
     </div>
   );
