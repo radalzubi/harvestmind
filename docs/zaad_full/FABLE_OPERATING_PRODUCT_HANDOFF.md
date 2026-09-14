@@ -197,7 +197,12 @@ path) and a **production build** of this branch, on synthetic workspaces created
   field, with `role="alert"`, and it stays. With the API stopped, every surface said "Your
   workspace could not be reached … your access may have been rotated" — true of a refused token,
   wrong for a dropped connection, and it sent the reader to re-enter a credential that was fine.
-  The two are told apart by the message the browser already produced. One leak: `de_expedite` in the declared-rights table. The route id
+  The two are told apart by the message the browser already produced.
+* **Every confirmation the product gives was silent to a screen reader.** "Proposal created",
+  "Approved. Nothing has been sent to a supplier", "Format saved" — the toast stack had no live
+  region, so an action a person could not see appeared to do nothing at all. It is a polite live
+  region now, announcing only the new message, and it sits in the trailing corner in Arabic rather
+  than always on the right. One leak: `de_expedite` in the declared-rights table. The route id
   `road_saudi` also appears — that one is the operator's own declared value and is left verbatim,
   because inventing a display name for it would be fabrication.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats
@@ -221,7 +226,7 @@ path) and a **production build** of this branch, on synthetic workspaces created
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Thirty-three defects were found this way and fixed**; they are listed in the PR description. The
+**Thirty-four defects were found this way and fixed**; they are listed in the PR description. The
 six most serious were invisible to the build and to the existing tests:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from
