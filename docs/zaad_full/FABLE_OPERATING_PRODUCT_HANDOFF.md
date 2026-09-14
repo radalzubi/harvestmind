@@ -107,7 +107,7 @@ Stated plainly rather than left to be discovered.
 | `tests/integration/test_operating_product_api.py` | 44 passed |
 | `tests/unit/test_product_exporting.py` | 25 passed |
 | `tests/unit/test_product_evaluation.py` | 26 passed |
-| `tests/unit/test_product_drafts_schema.py` | 9 passed |
+| `tests/unit/test_product_drafts_schema.py` | 14 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
 | Whole integration shard (`tests/integration`) | **324 passed** |
 | Whole local suite (`tests/unit` + `tests/integration`) | **2,089 passed, 2 skipped** |
@@ -183,6 +183,13 @@ path) and a **production build** of this branch, on synthetic workspaces created
   because inventing a display name for it would be fabrication.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats
   answered `500`. See below.
+* **Every refusal path on the proposal endpoint probed by hand** — a negative quantity, zero, a
+  quantity that is not a number, an unknown origin, no lines, an unknown product, and a quantity of
+  10¹⁸. All but the last two were already answered in words. A quantity of a quintillion was stored
+  and would have reached the optimizer as a number it had to solve with; it is refused now. An
+  unknown product is deliberately a **warning**, not a refusal — a buyer may order something the
+  master has not caught up with — and the module docstring, which claimed it was refused, was
+  corrected to match the behaviour rather than the behaviour changed to match the docstring.
 * **A proposal edited after it was evaluated.** The page kept the old comparison on screen with no
   sign that the lines above it had changed — a draft stays editable and an edit does not start a
   new revision, so nothing in the record said the answer was out of date. The read now reports it
@@ -195,7 +202,7 @@ path) and a **production build** of this branch, on synthetic workspaces created
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Twenty-seven defects were found this way and fixed**; they are listed in the PR description. The
+**Twenty-eight defects were found this way and fixed**; they are listed in the PR description. The
 six most serious were invisible to the build and to the existing tests:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from

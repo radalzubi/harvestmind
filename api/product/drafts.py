@@ -17,9 +17,11 @@ Three rules the lifecycle enforces:
     supplier and no ERP is contacted anywhere in this file.
 
 Validation warns; it does not forbid. A quantity below a declared minimum, a quantity that is not a
-whole number of cases, an order above a supplier's declared weekly capacity — each is something a
-buyer may have a reason for. Only things that make the document meaningless (an unknown product, a
-receipt date before the order date, a non-positive quantity) are refused.
+whole number of cases, an order above a supplier's declared weekly capacity, **a product that is not
+in the master yet** — each is something a buyer may have a reason for, and each is a warning shown
+before they approve. Only what makes the document meaningless is refused: a line with no product, a
+non-positive quantity, a receipt date before the order date, a number that is not a number, and a
+number so large it is a typo rather than an order (`MAX_LINE_VALUE`).
 """
 from __future__ import annotations
 
@@ -43,6 +45,11 @@ IMMUTABLE = ("APPROVED", "EXPORTED", "REJECTED", "SUPERSEDED")
 
 MAX_LINES = 500
 MAX_NOTE = 2000
+#: A quantity or a price larger than this is a typo or a paste accident, not an order. A trillion
+#: units of anything is not a number an importer means, and it reaches the optimizer as one — where
+#: it is either nonsense or a solver failure, neither of which says what went wrong. Refused here,
+#: in words, where the person who typed it is looking.
+MAX_LINE_VALUE = 1_000_000_000.0
 
 
 class DraftRefused(ValueError):
@@ -340,9 +347,14 @@ def _write_lines(conn: Any, operator: str, draft_id: str, lines: list[dict[str, 
         assert quantity is not None
         if quantity <= 0:
             raise DraftRefused(f"Line {index}: a quantity must be more than zero. To remove a line, delete it.")
-        checked.append([draft_id, operator, index, sku, quantity,
-                        _number(raw.get("unit_price"), f"Line {index} unit price"),
-                        _number(raw.get("units_per_case"), f"Line {index} units per case"),
+        price = _number(raw.get("unit_price"), f"Line {index} unit price")
+        pack = _number(raw.get("units_per_case"), f"Line {index} units per case")
+        for name, value in (("quantity", quantity), ("unit price", price), ("units per case", pack)):
+            if value is not None and abs(value) > MAX_LINE_VALUE:
+                raise DraftRefused(
+                    f"Line {index}: {value:,.0f} is not a {name} ZAAD will store. "
+                    f"The most it takes is {MAX_LINE_VALUE:,.0f}. Check for a typo or an extra zero.")
+        checked.append([draft_id, operator, index, sku, quantity, price, pack,
                         _as_date(raw.get("requested_receipt_date"), f"Line {index} requested receipt date"),
                         (str(raw.get("notes"))[:MAX_NOTE] if raw.get("notes") else None)])
     conn.execute("DELETE FROM zaad_draft_lines WHERE draft_id = ? AND operator_id = ?", [draft_id, operator])

@@ -80,3 +80,55 @@ def test_a_vault_that_cannot_be_prepared_is_refused_in_words(tmp_path):
     assert "zaad_draft_orders" in str(caught.value)
     assert "setup_db" in str(caught.value)
     conn.close()
+
+
+# ── bounded numbers ───────────────────────────────────────────────────────────
+
+def _vault():
+    conn = duckdb.connect(":memory:")
+    ensure_tables(conn)
+    return conn
+
+
+@pytest.mark.parametrize("field", ["quantity", "unit_price", "units_per_case"])
+def test_a_number_too_large_to_be_an_order_is_refused_in_words(field):
+    """A quintillion units reached the optimizer as a number it had to solve with.
+
+    Whatever came back — nonsense or a solver failure — would not have said which line was wrong or
+    why. The refusal happens where the person who typed it is looking.
+    """
+    from api.product.drafts import MAX_LINE_VALUE, create_draft
+
+    conn = _vault()
+    line = {"sku": "SKU-1", "quantity": 10.0}
+    line[field] = MAX_LINE_VALUE * 10
+    with pytest.raises(DraftRefused) as caught:
+        create_draft(conn, "op_1", {"origin": "MANUAL", "lines": [line]}, actor="op_1")
+    assert "Line 1" in str(caught.value)
+    assert "typo" in str(caught.value)
+    conn.close()
+
+
+def test_a_number_at_the_bound_is_still_an_order():
+    from api.product.drafts import MAX_LINE_VALUE, create_draft, read_draft
+
+    conn = _vault()
+    draft_id = create_draft(conn, "op_1", {"origin": "MANUAL",
+                                           "lines": [{"sku": "SKU-1", "quantity": MAX_LINE_VALUE}]}, actor="op_1")
+    assert read_draft(conn, "op_1", draft_id)["lines"][0]["quantity"] == MAX_LINE_VALUE
+    conn.close()
+
+
+def test_a_refused_line_leaves_the_proposal_exactly_as_it_was():
+    """The refusal must change nothing — the same property the validate-then-write order protects."""
+    from api.product.drafts import MAX_LINE_VALUE, create_draft, read_draft, update_draft
+
+    conn = _vault()
+    draft_id = create_draft(conn, "op_1", {"origin": "MANUAL",
+                                           "lines": [{"sku": "SKU-1", "quantity": 100.0}]}, actor="op_1")
+    with pytest.raises(DraftRefused):
+        update_draft(conn, "op_1", draft_id,
+                     {"lines": [{"sku": "SKU-1", "quantity": MAX_LINE_VALUE * 2}]}, actor="op_1")
+    after = read_draft(conn, "op_1", draft_id)
+    assert [(row["sku"], row["quantity"]) for row in after["lines"]] == [("SKU-1", 100.0)]
+    conn.close()
