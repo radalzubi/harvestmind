@@ -23,13 +23,14 @@
 import type { AttentionArea } from "@/lib/network/attention";
 import type { Decision } from "./decisions";
 
-export type Level = "blocked" | "decide" | "watch" | "normal";
+export type Level = "blocked" | "decide" | "watch" | "normal" | "working";
 
 export const LEVEL_LABEL: Record<Level, string> = {
   blocked: "Needs data",
   decide: "Needs a decision",
   watch: "Worth watching",
   normal: "Running normally",
+  working: "Working on it",
 };
 
 export interface Standing {
@@ -95,6 +96,20 @@ export function standing(input: StandingInput): Standing {
       watches, blockers,
       next: input.notReady ? { label: "Add the missing data", href: "/upload" }
         : { label: "Try the run again", href: "/decisions" },
+    };
+  }
+
+  // A run in flight is its own state. Without it the ladder said "Run a plan" while a plan was
+  // running three inches below — the same class of contradiction this file exists to end.
+  if (input.planPhase === "queued" || input.planPhase === "running") {
+    return {
+      level: "working",
+      headline: input.planPhase === "queued" ? "Your plan is queued." : "ZAAD is comparing your options.",
+      detail: "A full comparison takes a few minutes. You can leave this page — the run continues and the "
+        + "result will be here when you come back. Your stock, orders, suppliers and network are ready now."
+        + (watches.length ? ` ${named(watches)} ${watches.length === 1 ? "needs" : "need"} watching meanwhile.` : ""),
+      watches, blockers: [],
+      next: null,
     };
   }
 

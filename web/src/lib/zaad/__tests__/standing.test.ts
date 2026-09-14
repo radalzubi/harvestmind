@@ -30,6 +30,18 @@ function decision(id: string): Decision {
   return { id, needsReview: true } as unknown as Decision;
 }
 
+test("a run in flight is its own rung, and never invites you to start another", () => {
+  for (const phase of ["queued", "running"] as const) {
+    const out = standing({ ...BASE, planPhase: phase, areas: [area("attention", "Aqaba lane")] });
+    assert.equal(out.level, "working");
+    assert.equal(out.next, null, "the plan card carries the control; the standing must not duplicate it");
+    assert.match(out.detail, /You can leave this page/);
+    assert.match(out.detail, /Aqaba lane needs watching meanwhile/);
+    assert.ok(!/Run a plan/.test(out.headline + out.detail),
+      "saying 'run a plan' while one is running is the contradiction this file exists to end");
+  }
+});
+
 test("a missing upload outranks everything", () => {
   const out = standing({
     ...BASE, notReady: "Upload your customer orders before planning.",
@@ -106,7 +118,7 @@ test("with no plan yet, the workspace is still usable and says so", () => {
 });
 
 test("every level has a label a person can read", () => {
-  assert.deepEqual(Object.keys(LEVEL_LABEL).sort(), ["blocked", "decide", "normal", "watch"]);
+  assert.deepEqual(Object.keys(LEVEL_LABEL).sort(), ["blocked", "decide", "normal", "watch", "working"]);
   for (const label of Object.values(LEVEL_LABEL)) {
     assert.ok(!/optimi[sz]er|incumbent|MILP|stance|protection row/i.test(label), label);
   }

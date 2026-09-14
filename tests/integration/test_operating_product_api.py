@@ -52,6 +52,23 @@ def _client(conn, operator: str | None = OPERATOR) -> TestClient:
     return TestClient(app)
 
 
+@pytest.fixture(autouse=True)
+def _fresh_recommendation_budget():
+    """Give each test the recommendation limiter's full budget.
+
+    `POST /orders/{id}/evaluate` starts two solves, so it is correctly on the process-wide
+    recommendation limiter — 60 calls a minute across every client. In a full shard, earlier test
+    files spend that budget and this file's single call to it comes back 429 instead of the 422 it
+    is asserting. The limiter is not weakened here; its counters are simply reset between tests, the
+    way a clock would be.
+    """
+    from api.routers import zaad as zaad_router
+    with zaad_router._lock:
+        zaad_router._recent.clear()
+        zaad_router._global_recent.clear()
+    yield
+
+
 @pytest.fixture(scope="module")
 def client(vault):
     return _client(vault)

@@ -125,7 +125,8 @@ function StandingLine({ state }: { state: Standing }) {
   return (
     <div className="status-line">
       <span className="status-dot"
-        data-tone={state.level === "blocked" || state.level === "decide" ? "attention" : state.level === "watch" ? "watch" : "ok"}
+        data-tone={state.level === "blocked" || state.level === "decide" ? "attention"
+          : state.level === "watch" ? "watch" : "ok"}
         aria-hidden />
       <div>
         <span className="lvl" data-level={state.level}><span className="lvl-dot" aria-hidden />{LEVEL_LABEL[state.level]}</span>

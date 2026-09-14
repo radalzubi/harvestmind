@@ -440,6 +440,7 @@ textarea.fld { height: auto; padding: 8px 10px; line-height: 1.5; resize: vertic
 .lvl[data-level="blocked"] { color: var(--bad); }
 .lvl[data-level="decide"] { color: var(--high); }
 .lvl[data-level="watch"] { color: var(--warn); }
+.lvl[data-level="working"] { color: var(--ink-500); }
 
 /* ── Snapshot strip ──────────────────────────────────────────────────────── */
 

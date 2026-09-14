@@ -228,6 +228,23 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
         if (!alive.current) return;
         if (detail.status === "RUNNING") setPlanPhase("running");
         if (detail.status === "QUEUED") setPlanPhase("queued");
+        // A job whose process died stays RUNNING in the store for ever: nothing reaps it, and the
+        // page would spin silently until somebody reloaded and found it still spinning. Once a run
+        // has outlived the time it was given, say so and stop polling. The record is left exactly
+        // as the engine wrote it — this is the reader being told, not the job being changed.
+        if (detail.status === "RUNNING" && detail.started_at && detail.timeout_s) {
+          const over = Date.now() - Date.parse(detail.started_at) - detail.timeout_s * 1000;
+          if (over > 60_000) {
+            if (poll.current) window.clearInterval(poll.current);
+            poll.current = null;
+            setPlanPhase("failed");
+            setPlanError(
+              "This run has been going for longer than the time it is given, which usually means it was "
+              + "interrupted. Nothing was changed. Run it again, over fewer products if it keeps happening.",
+            );
+            return;
+          }
+        }
         if (["DONE", "FAILED", "TIMEOUT", "CANCELLED"].includes(detail.status)) {
           if (poll.current) window.clearInterval(poll.current);
           poll.current = null;
