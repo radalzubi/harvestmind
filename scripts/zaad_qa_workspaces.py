@@ -132,6 +132,21 @@ def build_corridor(conn, seed: int = 11, as_of: date | None = None) -> dict:
              pack * rng.choice([10, 20, 40]), rng.choice([180, 365, 540, 730]),
              "A" if index % 4 == 0 else "B" if index % 3 else "C"])
 
+    # Sector physics on part of the catalogue (migration 017), so the produce and meat/seafood
+    # diagnostics have declared data rather than an empty state. Declared, never inferred.
+    for index, product in enumerate(products):
+        if index % 4 == 0:
+            sector = "PRODUCE" if index % 8 == 0 else "MEAT_SEAFOOD"
+            conn.execute(
+                "UPDATE stg_fmcg_skus SET sector = ?, storage_state = ?, age_at_receipt_days = ?, "
+                "min_remaining_life_receipt_days = ?, min_remaining_life_sale_days = ?, "
+                "physics_provenance = 'OPERATOR_DECLARED' WHERE sku = ?",
+                [sector, "CHILLED" if sector == "PRODUCE" else "FROZEN",
+                 rng.randint(2, 9), rng.randint(10, 30), rng.randint(3, 12), product["sku"]])
+        elif index % 4 == 1:
+            conn.execute("UPDATE stg_fmcg_skus SET sector = 'COMMERCIAL', storage_state = 'AMBIENT' WHERE sku = ?",
+                         [product["sku"]])
+
     # A second approved source for a third of the catalogue, on a different corridor, so the
     # alternative-supplier workflow has real declared data rather than an empty state.
     for product in products[::3]:
@@ -218,15 +233,18 @@ def build_corridor(conn, seed: int = 11, as_of: date | None = None) -> dict:
                      "'[\"ordered\"]', ?, 'CONTRACT')",
                      ["QA_OPERATOR", po_id, f"{po_id}-cancel", today + timedelta(days=14), f"Contract {po_id}"])
 
-    # Stock, split across the three sites.
+    # Stock, split across the three sites. A lot on a perishable product carries its own expiry.
+    perishable = {row[0]: True for row in conn.execute(
+        "SELECT sku FROM stg_fmcg_skus WHERE sector IN ('PRODUCE', 'MEAT_SEAFOOD')").fetchall()}
     stock_rows = 0
     for product in products:
         total = int(product["weekly"] * rng.uniform(1.2, 9.0))
         for share, (location_id, _kind) in zip((0.6, 0.25, 0.15), LOCATIONS):
+            expiry = (today + timedelta(days=rng.randint(4, 120))) if perishable.get(product["sku"]) else None
             conn.execute(
-                "INSERT INTO stg_fmcg_inventory (snapshot_date, sku, location_id, on_hand, in_transit) "
-                "VALUES (?, ?, ?, ?, 0)",
-                [today - timedelta(days=1), product["sku"], location_id, int(total * share)])
+                "INSERT INTO stg_fmcg_inventory (snapshot_date, sku, location_id, on_hand, in_transit, expiry_date) "
+                "VALUES (?, ?, ?, ?, 0, ?)",
+                [today - timedelta(days=1), product["sku"], location_id, int(total * share), expiry])
             stock_rows += 1
 
     return {"shape": "corridor", "seed": seed, "products": len(products), "suppliers": len(suppliers),

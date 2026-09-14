@@ -329,8 +329,14 @@
 .notice[data-tone="info"] { background: var(--info-bg); border-color: rgba(29,78,216,.16); color: var(--info); }
 .notice strong { color: inherit; }
 
-.skip-link { position: absolute; left: -9999px; }
-.skip-link:focus { left: 12px; top: 12px; z-index: 100; background: var(--ink-950); color: #fff; padding: 10px 14px; border-radius: var(--radius-sm); }
+/* Hidden by clipping, not by a huge negative offset. `left: -9999px` is invisible in LTR and, in
+   RTL, ten thousand pixels of page the reader can scroll into — the whole workspace slid sideways
+   in Arabic because of this one rule. */
+.skip-link { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip-link:focus {
+  position: fixed; inset-inline-start: 12px; top: 12px; width: auto; height: auto; clip-path: none;
+  z-index: 100; background: var(--ink-950); color: #fff; padding: 10px 14px; border-radius: var(--radius-sm);
+}
 
 /* Legacy aliases: existing pages keep working and inherit the one set of states. */
 .tbtn:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
