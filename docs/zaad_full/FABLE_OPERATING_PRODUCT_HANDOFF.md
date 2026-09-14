@@ -168,8 +168,8 @@ Stated plainly rather than left to be discovered.
 | `tests/unit/test_product_evaluation.py` | 26 passed |
 | `tests/unit/test_product_drafts_schema.py` | 14 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
-| Whole local suite (`tests/unit` + `tests/integration`) | **2,103 passed, 2 skipped** (6 m 54 s) |
-| Frontend (`npm test`) | **112 passed**, 51 new |
+| Whole local suite (`tests/unit` + `tests/integration`) | **2,105 passed, 2 skipped** (6 m 37 s) |
+| Frontend (`npm test`) | **114 passed**, 53 new |
 | Frontend typecheck / production build | green |
 | Frontend lint | green **in CI** — see §10.15 |
 | `ruff` (CI's own scope), `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
@@ -546,6 +546,11 @@ process, never `zaad-api`.
   the six are the open orders belonging to the ten products the plan covered. The denominator was
   already on the page, in the snapshot below; the sentence uses it: **"ZAAD reviewed 6 of your 205
   open commitments and the week's purchases"**.
+* **Four greyed buttons and one explanation between them.** A proposal with no lines disables
+  *Ask ZAAD to evaluate this*, *Approve*, *Reject* and *Export*. Approve and Reject say why — that
+  fix was made on the first day — and the other two said nothing, leaving a reader to connect them
+  to a warning in a different section of the page. Each now carries its own sentence. The
+  adjacent-branch pattern again, and the third instance of it found on the last day.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →

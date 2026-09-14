@@ -216,6 +216,14 @@ function Evaluation({ draft, onChanged }: { draft: Draft; onChanged: () => void 
           icon={<FileSearch size={15} aria-hidden />} onClick={run}>
           {state?.stale ? "Evaluate what you have now" : state?.comparison ? "Evaluate again" : "Ask ZAAD to evaluate this"}
         </Button>
+        {/* The Approve/Reject pair already explains why it is greyed. These two did not: a
+            proposal with no lines left four disabled buttons and one warning in another section
+            that a reader had to connect for themselves. */}
+        {!draft.lines.length && (
+          <p className="zhelp" style={{ marginTop: 8 }}>
+            There is nothing to evaluate until this proposal has a line. Add a product above.
+          </p>
+        )}
       </div>
     </Section>
   );
@@ -475,6 +483,11 @@ function DraftBody({ id }: { id: string }) {
           </Button>
           <ButtonLink size="sm" role="tertiary" href="/orders/formats">Define a format</ButtonLink>
         </div>
+        {!draft.lines.length && (
+          <p className="zhelp" style={{ marginTop: 8 }}>
+            There is nothing to export until this proposal has a line. Add a product above.
+          </p>
+        )}
         {draft.exports.length > 0 && (
           <div style={{ marginTop: 14 }}>
             <DataTable caption="Files exported from this proposal" dense rows={draft.exports} rowKey={(r) => r.export_id}
