@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./system.css";
 
 :root {
   --ink-950: #0A0A0F;

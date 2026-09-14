@@ -1,0 +1,136 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Network Twin.
+
+   The Twin uses the product's tokens and nothing of its own: the same paper,
+   the same hairlines, the same emerald accent, the same focus ring. The four
+   operating states are the only colour that carries meaning, and they only
+   appear on exceptions — a calm network is a grey network.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.st-LEAN { --st: var(--accent); --st-bg: var(--accent-soft); --st-fg: var(--accent-strong); }
+.st-PROTECT { --st: #D97706; --st-bg: var(--warn-bg); --st-fg: var(--warn); }
+.st-ALLOCATE { --st: var(--high); --st-bg: var(--high-bg); --st-fg: var(--high); }
+.st-RECOVER { --st: var(--info); --st-bg: var(--info-bg); --st-fg: var(--info); }
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+/* Flex, not a fixed row count: the attention strip is conditional, and a three-row grid put the
+   canvas in an `auto` row whenever it was absent, collapsing it to nothing. */
+.twin { display: flex; flex-direction: column; height: calc(100vh - 58px); min-height: 0; }
+.twin-bar, .twin-areas { flex: none; }
+.twin-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 20px; border-bottom: 1px solid var(--line); background: var(--bg);
+}
+.twin-bar-spacer { flex: 1; }
+.twin-standing { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--ink-700); }
+.twin-standing strong { color: var(--ink-950); font-weight: 600; }
+.twin-standing .status-dot { margin-top: 0; }
+.twin-standing-sub { color: var(--ink-500); }
+
+.twin-views { display: inline-flex; gap: 2px; background: var(--ink-100); padding: 3px; border-radius: var(--radius-sm); }
+.twin-view-tab {
+  display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px;
+  border: 0; background: transparent; border-radius: 5px; cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 500; color: var(--ink-600);
+}
+.twin-view-tab:hover { color: var(--ink-950); }
+.twin-view-tab[aria-selected="true"] { background: var(--surface); color: var(--ink-950); box-shadow: var(--shadow-sm); }
+.twin-view-tab:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+.twin-search { position: relative; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink-400); }
+.twin-search input { border: 0; background: transparent; outline: none; font: inherit; font-size: 12.5px; color: var(--ink-900); width: 240px; }
+.twin-search input::placeholder { color: var(--ink-400); }
+.twin-search:focus-within { border-color: var(--ink-900); box-shadow: var(--focus-ring); }
+.twin-search-hits { position: absolute; top: calc(100% + 5px); inset-inline-start: 0; z-index: 30; min-width: 260px; list-style: none; margin: 0; padding: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-lg); }
+.twin-search-hits button { display: block; width: 100%; text-align: start; border: 0; background: transparent; font: inherit; font-size: 13px; color: var(--ink-800); padding: 7px 9px; border-radius: var(--radius-sm); cursor: pointer; }
+.twin-search-hits button:hover { background: var(--ink-100); color: var(--ink-950); }
+.twin-search-hits button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+.twin-filter select { height: 32px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); padding: 0 8px; font: inherit; font-size: 12.5px; color: var(--ink-800); }
+.twin-filter select:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+.twin-areas { display: flex; gap: 8px; overflow-x: auto; padding: 9px 20px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.twin-area {
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  border: 1px solid var(--high-line); background: var(--high-bg); color: var(--high);
+  border-radius: 999px; padding: 5px 12px; font: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer;
+}
+.twin-area:hover { background: var(--surface); }
+.twin-area:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.twin-area-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* The panel only takes its column when something is selected. Keeping it open on an empty
+   selection left the canvas barely half the screen, which shrank the fit-to-view zoom until the
+   node labels were unreadable. */
+.twin-stage { flex: 1 1 auto; display: grid; grid-template-columns: 1fr var(--panel-w); min-height: 0; }
+.twin-stage.no-panel { grid-template-columns: 1fr; }
+.twin-stage.no-panel .twin-panel { display: none; }
+.twin-hint {
+  position: absolute; inset-inline-end: 16px; bottom: 16px; z-index: 2; max-width: 300px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 14px 16px; box-shadow: var(--shadow-md);
+  backdrop-filter: blur(8px); font-size: 13px; color: var(--ink-600); line-height: 1.55;
+}
+.twin-hint strong { display: block; color: var(--ink-950); font-weight: 600; margin-bottom: 4px; font-size: 13.5px; }
+.twin-canvas { position: relative; min-width: 0; min-height: 0; background: var(--bg); }
+.twin-fill { position: absolute; inset: 0; }
+.twin-canvas .react-flow { width: 100%; height: 100%; }
+.twin-panel { border-inline-start: 1px solid var(--line); background: var(--surface); overflow: auto; min-height: 0; }
+.twin-panel-scrim { display: none; }
+
+/* ── Graph nodes and edges ───────────────────────────────────────────────── */
+
+.state-pill { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .03em; background: var(--st-bg); color: var(--st-fg); white-space: nowrap; }
+.state-pill i { width: 6px; height: 6px; border-radius: 50%; background: var(--st); }
+
+.tn { width: 176px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 10px; padding: 9px 11px 9px 10px; display: grid; grid-template-columns: 22px 1fr; column-gap: 7px; row-gap: 2px; align-items: center; box-shadow: var(--shadow); transition: opacity .18s, box-shadow .18s, border-color .18s; cursor: pointer; font-size: 12.5px; color: var(--ink-900); }
+.tn:hover { border-color: var(--ink-400); box-shadow: var(--shadow-md); }
+.tn.selected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-12), var(--shadow-md); }
+.tn.dim { opacity: .28; }
+.tn.exception:not(.selected) { border-color: color-mix(in srgb, var(--st) 55%, var(--line-strong)); box-shadow: inset 3px 0 0 var(--st), var(--shadow); }
+.tn.group { border-style: dashed; }
+.tn.group .tn-ico { background: var(--ink-400); }
+.tn-ico { width: 22px; height: 22px; border-radius: 6px; background: var(--ink-900); color: #fff; display: grid; place-items: center; grid-row: span 2; }
+.tn.kind-customer .tn-ico { background: var(--ink-500); }
+.tn.kind-port .tn-ico { background: var(--ink-700); }
+.tn-name { font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tn-sub { font-size: 11px; color: var(--ink-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tn-foot { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; margin-top: 4px; gap: 6px; }
+.tn-metric { font-size: 11px; color: var(--ink-500); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.react-flow__node:focus-visible .tn, .react-flow__node.selectable:focus .tn { outline: 2px solid var(--ink-950); outline-offset: 2px; }
+.react-flow__handle { opacity: 0; width: 6px; height: 6px; }
+.react-flow__edge:focus-visible .twin-edge-path { stroke: var(--ink-950) !important; }
+.react-flow__edge.selected .twin-edge-path, .twin-edge-path.selected { stroke: var(--accent) !important; stroke-width: 2.5 !important; }
+.twin-edge-label { position: absolute; transform: translate(-50%, -50%); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; font-size: 11px; color: var(--ink-700); pointer-events: none; white-space: nowrap; box-shadow: var(--shadow-sm); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .twin-stage { grid-template-columns: 1fr 380px; }
+  .twin-search input { width: 170px; }
+}
+
+/* Phone and small tablet: the canvas is the page and the panel is a sheet over it, so a
+   decision's context arrives without losing the map underneath it. */
+@media (max-width: 860px) {
+  .twin { height: calc(100dvh - 58px - 56px); }
+  .twin-bar { padding: 8px 16px; }
+  .twin-areas { padding: 8px 16px; }
+  .twin-search input { width: 100%; min-width: 120px; }
+  .twin-stage { grid-template-columns: 1fr; position: relative; }
+  .twin-panel {
+    position: absolute; inset: auto 0 0 0; z-index: 30; max-height: 74%;
+    border-inline-start: 0; border-top: 1px solid var(--line);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: var(--shadow-lg);
+    transform: translateY(100%); transition: transform .28s cubic-bezier(.22,1,.36,1);
+  }
+  .twin-panel.open { transform: none; }
+  .twin-panel-scrim { display: block; position: absolute; inset: 0; z-index: 29; border: 0; background: rgba(24,24,27,.22); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .twin-panel { transition: none; }
+  .tn { transition: none; }
+}

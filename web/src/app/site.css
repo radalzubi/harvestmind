@@ -613,3 +613,80 @@
   .hiw-progress, .hiw-packet { display: none; }
   .hiw-mode-card, .hiw-action, .hiw-switch i::after, .hiw-edge, .hiw-node circle { transition: none; }
 }
+
+/* ── Commercial CTA sizing ───────────────────────────────────────────────────
+   Important conversion actions are deliberately larger than a nav pill. WCAG's
+   target-size minimum is a floor; these are the moments the whole page exists
+   for, so they get a comfortable 52px and go full width on a phone. */
+.btn-xl { height: 52px; padding: 0 30px; font-size: 15.5px; }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+@media (max-width: 640px) { .btn-lg, .btn-xl { width: 100%; justify-content: center; } }
+
+/* ── What ZAAD decides ───────────────────────────────────────────────────── */
+.verbs .lede { margin-bottom: 34px; }
+/* Nine verbs in three columns divide exactly; auto-fit left a hole at wide widths. */
+.verb-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-xl); overflow: hidden; }
+@media (max-width: 860px) { .verb-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .verb-grid { grid-template-columns: 1fr; } }
+.verb { background: var(--surface); padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; }
+.verb b { font-family: var(--display); font-size: 19px; font-weight: 500; letter-spacing: -.02em; color: var(--ink-950); }
+.verb span { font-size: 13.5px; color: var(--ink-500); line-height: 1.5; }
+
+/* ── Network twin preview ────────────────────────────────────────────────── */
+.twin-section { position: relative; }
+.twin-section::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(58% 60% at 60% 45%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 72%); }
+.twin-section .wrap { position: relative; z-index: 1; }
+.twin-section .lede { margin-bottom: 30px; }
+.twinp { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
+.twinp-canvas { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow-lg); padding: 18px 16px; display: flex; align-items: center; }
+.twinp-svg { width: 100%; height: auto; overflow: visible; }
+.twinp-hit { cursor: pointer; }
+.twinp-hit:focus-visible { outline: 2px solid var(--ink-950); outline-offset: 3px; border-radius: 6px; }
+.twinp-label { font-size: 11px; fill: var(--ink-600); font-family: var(--sans); font-weight: 500; }
+.twinp-lane-text { font-size: 10.5px; fill: var(--ink-600); font-family: var(--sans); font-weight: 500; }
+.twinp-tag { position: absolute; inset-inline-end: 14px; top: 14px; font-size: 11px; font-weight: 500; color: var(--ink-500); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+.twinp-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow-lg); padding: 20px 22px; display: flex; flex-direction: column; }
+.twinp-kind { margin: 0; font-size: 11.5px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-500); }
+.twinp-title { margin: 6px 0 0; font-family: var(--display); font-size: 20px; font-weight: 500; letter-spacing: -.02em; color: var(--ink-950); }
+.twinp-reading { margin: 10px 0 0; font-size: 14px; line-height: 1.6; color: var(--ink-600); }
+.twinp-decision { margin-top: auto; padding-top: 16px; }
+.twinp-decision p { margin: 8px 0 0; font-size: 14px; line-height: 1.6; color: var(--ink-900); }
+.twinp-verb { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--accent-strong); background: var(--accent-soft); border-radius: 5px; padding: 3px 8px; }
+.twinp-none { margin-top: auto; padding-top: 16px; font-size: 13.5px; color: var(--ink-400); }
+@media (max-width: 900px) { .twinp { grid-template-columns: 1fr; } .twinp-panel { min-height: 200px; } }
+
+/* ── Trust ───────────────────────────────────────────────────────────────── */
+.trust-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 30px; }
+.trust-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl); padding: 22px 22px 24px; }
+.trust-card h3 { margin: 0 0 8px; font-family: var(--display); font-size: 18px; font-weight: 500; letter-spacing: -.018em; color: var(--ink-950); }
+.trust-card p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--ink-600); }
+
+/* ── Cost ────────────────────────────────────────────────────────────────── */
+.cost-band { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: clamp(28px, 4vw, 44px); }
+.cost-band .lede { max-width: 64ch; }
+
+/* ── Quote and diagnostic forms ──────────────────────────────────────────── */
+.formpage { width: min(560px, 100% - 48px); margin-inline: auto; padding: clamp(40px, 7vw, 76px) 0 96px; }
+.formpage .h1 { margin-bottom: 10px; }
+.formpage .lede { margin-bottom: 28px; }
+.zform { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: clamp(20px, 3vw, 30px); box-shadow: var(--shadow-lg); }
+.zform .zfield + .zfield { margin-top: 18px; }
+.zform-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .zform-row { grid-template-columns: 1fr; gap: 18px; } }
+.zform-foot { margin-top: 24px; }
+.zform-note { margin-top: 16px; font-size: 12.5px; color: var(--ink-500); line-height: 1.55; }
+.zform-err { margin-top: 14px; border: 1px solid var(--bad-line); background: var(--bad-bg); color: var(--bad); border-radius: var(--radius); padding: 11px 13px; font-size: 13px; }
+.zform-done { text-align: center; padding: 12px 4px; }
+.zform-done h2 { font-family: var(--display); font-size: 26px; font-weight: 500; letter-spacing: -.02em; color: var(--ink-950); margin: 0 0 10px; }
+.zform-done p { font-size: 15px; line-height: 1.6; color: var(--ink-600); margin: 0 auto; max-width: 44ch; }
+.zform-steps { list-style: none; margin: 22px 0 0; padding: 0; text-align: start; display: grid; gap: 10px; }
+.zform-steps li { display: flex; gap: 10px; font-size: 14px; color: var(--ink-700); line-height: 1.55; }
+.zform-steps b { flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--ink-100); color: var(--ink-700); font-size: 11.5px; display: grid; place-items: center; margin-top: 1px; }
+.site-signin { color: var(--ink-600); text-decoration: none; font-size: 14px; padding: 8px 10px; border-radius: 999px; white-space: nowrap; }
+.site-signin:hover { color: var(--ink-950); background: var(--ink-100); }
+.site-signin:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+@media (max-width: 1080px) { .site-signin { display: none; } }
+/* The magnetic wrapper is inline-block, so a full-width button inside it stayed at its text
+   width while its plain sibling stretched. On a phone both CTAs are the same width. */
+@media (max-width: 640px) { .magnetic { display: block; width: 100%; } }

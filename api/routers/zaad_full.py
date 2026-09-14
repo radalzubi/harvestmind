@@ -175,6 +175,69 @@ def schema():
     return Request.model_json_schema()
 
 
+def _directory_rows(conn, sql: str) -> list[dict]:
+    """One staging read, tolerant of a table that has not been created for this operator yet."""
+    try:
+        cursor = conn.execute(sql)
+        columns = [c[0] for c in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    except Exception:  # noqa: BLE001 - a workspace without this upload is an empty directory, not an error
+        return []
+
+
+# Not rate limited, for the same reason job status reads are not: this is two indexed reads of
+# the caller's own vault, and the product fetches it on every workspace load. Sharing the planner's
+# per-minute budget would let a page load spend it and answer 429 for a lookup that costs nothing.
+@router.get("/directory")
+def directory(operator: str = Depends(authenticated), conn=Depends(get_conn)):
+    """Declared supplier and location master data, read straight from the operator's own vault.
+
+    A projection for display only: the compact planning contract identifies a supplier by id and
+    carries no name, declared origin country or route tag, so a product surface that wants to name
+    or place a supplier has nowhere else to read it from. This endpoint runs no planner, prices
+    nothing, infers nothing and writes nothing; every field is a column the operator uploaded.
+    """
+    suppliers = _directory_rows(conn, "SELECT * FROM stg_fmcg_suppliers")
+    locations = _directory_rows(conn, "SELECT * FROM stg_fmcg_locations")
+    latest: dict[str, dict] = {}
+    for row in suppliers:  # last upload of an id wins, matching the planning adapter's drop_duplicates
+        sid = row.get("supplier_id")
+        if sid is not None:
+            latest[str(sid)] = row
+    latest_locations: dict[str, dict] = {}
+    for row in locations:
+        lid = row.get("location_id")
+        if lid is not None:
+            latest_locations[str(lid)] = row
+
+    def _text(row: dict, key: str) -> str | None:
+        value = row.get(key)
+        return None if value is None else str(value)
+
+    def _number(row: dict, key: str) -> float | None:
+        value = row.get(key)
+        try:
+            return None if value is None else float(value)
+        except (TypeError, ValueError):
+            return None
+
+    return {
+        "suppliers": [
+            {"id": sid, "name": _text(row, "supplier_name"), "origin_iso3": _text(row, "origin_iso3"),
+             "route": _text(row, "route"), "capacity_per_week": _number(row, "capacity_per_week"),
+             "lead_time_promised_weeks": _number(row, "lead_time_promised_weeks"),
+             "risk_group": _text(row, "risk_group"), "risk_group_kind": _text(row, "risk_group_kind")}
+            for sid, row in sorted(latest.items())
+        ],
+        "locations": [
+            {"id": lid, "kind": _text(row, "kind"), "capacity_units": _number(row, "capacity_units")}
+            for lid, row in sorted(latest_locations.items())
+        ],
+        "rows_read": {"stg_fmcg_suppliers": len(suppliers), "stg_fmcg_locations": len(locations)},
+        "provenance": "OPERATOR_DECLARED",
+    }
+
+
 @router.get("/fixture", dependencies=[Depends(bounded_rate)])
 def fixture(case: Literal["normal", "transfer", "substitution", "recovery", "cash", "understock"] = "normal"):
     from zaad.full.demo import example
