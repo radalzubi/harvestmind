@@ -434,6 +434,16 @@ process, never `zaad-api`.
   workspace was left with the standard format only, as it was found. Exporting a **another
   workspace's** draft with this workspace's token answered `404 That proposal is not in this
   workspace` — §82's fail-closed rule, on the export path.
+* **The spreadsheet path, with a row ZAAD cannot recognise in it.** `POST /read-proposal` on a
+  three-line CSV proposed a mapping for all three headings, showed the rows back, and **stored
+  nothing** — reading is not importing. Creating the proposal from it with an origin the contract
+  does not declare was refused by name and listed the five that are. Created properly, all three
+  lines were stored with two warnings: *"SKU-0004 is normally bought from SUP-004, not SUP-003"*
+  and *"SKU-9999 is not in your product master"* — the unknown product is a **warning, not a
+  refusal**, because a buyer may order something the master has not caught up with, and that is the
+  behaviour the module docstring was corrected to describe rather than the other way round.
+  `DELETE` answered 204 and the next read 404; the workspace holds the three proposals it held
+  before.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →
