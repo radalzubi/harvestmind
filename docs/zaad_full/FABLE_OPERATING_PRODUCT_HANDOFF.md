@@ -193,6 +193,23 @@ path) and a **production build** of this branch, on synthetic workspaces created
   workspace.
 * **A real proposal evaluation ran end to end**: two jobs on the released path, QUEUED → RUNNING →
   DONE, and the three-column comparison rendered from the two reports.
+* **The two runs' stored requests were then diffed field by field**, which is the check that
+  decides whether the comparison means anything. `as_of`, `seed` (41001 on both), `horizon`, the
+  product set, the sources, the locations, the services, the scenarios and the stresses are
+  **identical**. The pipeline differs by exactly one entry:
+
+  ```
+  id            proposal_draft_7a91c0d8…_1
+  stage         placed
+  options       [ keep · fee_per_unit 0.0 · remaining_invoice_per_unit 1.05
+                  · max_quantity 360.0 · provenance OPERATOR_DECLARED
+                  · contract_reference draft_7a91c0d8… ]
+  ```
+
+  That is the proposal, at the buyer's own quantity and price, treated as an order that has been
+  placed and may be kept. Nothing else about the two runs differs, so the difference between their
+  reports is the order and nothing else. **This is the claim to re-check first if you doubt the
+  evaluation**, and it is checkable from the job store without reading any application code.
 * **The whole lifecycle again, on a second workspace, start to finish:** a proposal created from a
   product on Inventory (supplier, pack size and unit cost prefilled from the master), evaluated
   (two engine runs, eight minutes, three columns of the engine's own ledger), approved with a

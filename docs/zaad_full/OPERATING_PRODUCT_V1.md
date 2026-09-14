@@ -138,6 +138,13 @@ Both go through the released `POST /api/zaad/network/jobs` path, share `as_of`, 
 configuration and product set, and each evaluation therefore uses **two** of the workspace's daily
 job allowance (`ZAAD_JOB_QUOTA_DAILY`, default 24; active quota 2).
 
+**Verified from the job store, not from this file.** The two stored requests of one evaluation were
+diffed field by field: `as_of`, `seed`, `horizon`, the product set, sources, locations, services,
+scenarios and stresses identical; the pipeline differing by exactly one entry,
+`proposal_draft_…_1`, `stage: "placed"`, carrying a single `keep` option at the buyer's own price
+and quantity with `provenance: OPERATOR_DECLARED` and the draft id as its contract reference. The
+difference between the two reports is therefore the order and nothing else.
+
 **The overlay** (`api/product/evaluation.py`) attaches every line to an approved `Source` the
 workspace already declares. A line with no approved source from that supplier is **refused**, with
 the reason and what to do about it — never given invented terms. The overlay lives for the length of
