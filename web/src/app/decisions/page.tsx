@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Gate } from "@/components/workspace/Gate";
 import { DecisionCard } from "@/components/workspace/DecisionCard";
 import { DecisionDetail } from "@/components/workspace/DecisionDetail";
-import { Disclosure, EmptyState, Facts, PageHead, TechnicalDetails } from "@/components/workspace/ui";
+import { Disclosure, EmptyState, Facts, Notice, PageHead, TechnicalDetails } from "@/components/workspace/ui";
 import { PlanGate, RunPlan, ScopeNotice } from "@/components/workspace/PlanState";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money, type Decision, type DecisionCategory } from "@/lib/zaad/decisions";
@@ -117,6 +117,10 @@ function DecisionsBody() {
   }, [decisions, open, active, linked]);
 
   const selected: Decision | null = linked ?? shown[0] ?? null;
+  // A link to a decision this plan does not contain used to open a *different* decision, under a
+  // heading that said "Selected decision" — the address bar naming one order and the panel showing
+  // another. A colleague following that link would read the wrong order's reasoning.
+  const askedForMissing = Boolean(selectedId && !linked);
 
   const select = (id: string) => {
     const q = new URLSearchParams(params.toString());
@@ -157,6 +161,15 @@ function DecisionsBody() {
                 <strong style={{ fontSize: 12, color: "var(--ink-500)", fontWeight: 500 }}>Selected decision</strong>
               </div>
               <div className="side-b">
+                {askedForMissing && (
+                  <div style={{ marginBottom: 12 }}>
+                    <Notice tone="warn">
+                      The decision this link points at is not in the plan on screen. It may have been
+                      part of an earlier run, or cover a product this run did not. What is shown
+                      below is the first decision in the list, not the one that was asked for.
+                    </Notice>
+                  </div>
+                )}
                 <DecisionDetail decision={selected} summary={summary} openCount={open.length} />
               </div>
             </div>

@@ -228,6 +228,11 @@ path) and a **production build** of this branch, on synthetic workspaces created
 * **Every table's heading row read back out of the live DOM** rather than out of the source, and
   every column set in `web/src/` checked for a label used twice in one table. One table was showing
   two columns called "Ordered" — the date and the quantity. Both are now unambiguous.
+* **Deep links followed, including ones that point at something gone.** Every internal `href` on
+  four surfaces resolves (36 distinct paths, no 404). A link to a decision the current plan does not
+  contain used to open a *different* decision under a heading reading "Selected decision" — the
+  address bar naming one order and the panel showing another, which is how a colleague reads the
+  wrong order's reasoning. It says so now.
 * **Every page's controls listed from the DOM and checked for duplicates**, which is how the run
   control appearing twice on Decisions and "Cancel" twice on the order editor were found.
 * **Screenshots taken and looked at**, not just text read back. That is also how the Value tab's
@@ -293,7 +298,7 @@ path) and a **production build** of this branch, on synthetic workspaces created
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Thirty-five defects were found this way and fixed**; they are listed in the PR description. The
+**Thirty-six defects were found this way and fixed**; they are listed in the PR description. The
 six most serious were invisible to the build and to the existing tests:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from
