@@ -4,15 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack",
+    "build": "node scripts/vendor-maplibre-worker.mjs && next build --webpack",
     "start": "next start",
     "seo:check": "node scripts/seo-check.mjs",
     "lint": "eslint src",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "node scripts/vendor-maplibre-worker.mjs",
+    "vendor:maplibre": "node scripts/vendor-maplibre-worker.mjs",
+    "test": "tsx --test src/lib/zaad/__tests__/*.test.ts src/lib/network/__tests__/*.test.ts"
   },
   "dependencies": {
+    "@xyflow/react": "^12.11.6",
     "clsx": "^2.1.1",
     "lucide-react": "^1.14.0",
+    "maplibre-gl": "^6.8.0",
     "motion": "^13.2.0",
     "next": "16.3.4",
     "react": "19.2.4",
@@ -28,6 +33,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.4",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }
