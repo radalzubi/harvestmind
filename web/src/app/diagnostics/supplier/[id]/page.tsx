@@ -254,7 +254,7 @@ export default function SupplierPage() {
   const params = useParams<{ id: string }>();
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
   return (
-    <Gate loadingLabel="Opening your workspace…" needsPlan={false}>
+    <Gate loadingLabel="Opening your workspace…" needsPlan={false} needsWorkspace={false}>
       {id ? <SupplierBody id={decodeURIComponent(id)} /> : <Loading label="Opening this supplier…" cards={2} />}
     </Gate>
   );

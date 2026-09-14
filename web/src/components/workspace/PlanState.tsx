@@ -17,13 +17,28 @@ import { DEFAULT_SCOPE, SCOPE_CHOICES, useWorkspaceData } from "@/lib/zaad/works
 import { Button, ButtonLink, EmptyState, ErrorState, Notice } from "./ui";
 
 export function ScopeNotice() {
-  const { scope } = useWorkspaceData();
-  if (!scope) return null;
+  const { scope, readScope } = useWorkspaceData();
+  if (!scope && !readScope) return null;
   return (
-    <Notice tone="info">
-      <strong>This plan covers {scope.skus.length} of your {scope.total} products</strong> — {scope.rule}.
-      Anything outside that selection was not looked at. Run again over more products to widen it.
-    </Notice>
+    <>
+      {readScope && (
+        <Notice tone="info">
+          <strong>ZAAD is looking at {readScope.skus.length.toLocaleString("en-US")} of your{" "}
+          {readScope.total.toLocaleString("en-US")} products here</strong> —
+          {" "}{readScope.rule}. A catalogue this size is larger than one planning request can carry, so Home,
+          Decisions and the network are built over that selection. <a href="/inventory">Inventory</a>,{" "}
+          <a href="/orders">Purchase orders</a>, <a href="/diagnostics">Diagnostics</a> and{" "}
+          <a href="/data">Data</a> cover every product.
+        </Notice>
+      )}
+      {scope && (
+        <Notice tone="info">
+          <strong>This plan covers {scope.skus.length.toLocaleString("en-US")} of your{" "}
+          {scope.total.toLocaleString("en-US")} products</strong> — {scope.rule}.
+          Anything outside that selection was not looked at. Run again over more products to widen it.
+        </Notice>
+      )}
+    </>
   );
 }
 

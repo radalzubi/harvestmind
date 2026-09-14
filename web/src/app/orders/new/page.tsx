@@ -178,7 +178,7 @@ function NewOrderBody() {
 
 export default function NewOrderPage() {
   return (
-    <Gate loadingLabel="Opening your workspace…" needsPlan={false}>
+    <Gate loadingLabel="Opening your workspace…" needsPlan={false} needsWorkspace={false}>
       <Suspense fallback={<Loading label="Opening the editor…" cards={2} />}>
         <NewOrderBody />
       </Suspense>

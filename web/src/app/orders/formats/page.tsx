@@ -253,7 +253,7 @@ function FormatsBody() {
 
 export default function FormatsPage() {
   return (
-    <Gate loadingLabel="Opening your workspace…" needsPlan={false}>
+    <Gate loadingLabel="Opening your workspace…" needsPlan={false} needsWorkspace={false}>
       <FormatsBody />
     </Gate>
   );

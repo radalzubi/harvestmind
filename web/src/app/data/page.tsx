@@ -290,7 +290,7 @@ function DataBody() {
 
 export default function DataPage() {
   return (
-    <Gate loadingLabel="Opening your workspace…" needsPlan={false}>
+    <Gate loadingLabel="Opening your workspace…" needsPlan={false} needsWorkspace={false}>
       <Suspense fallback={<Loading label="Reading what your workspace holds…" cards={2} />}>
         <DataBody />
       </Suspense>

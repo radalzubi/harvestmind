@@ -20,7 +20,7 @@ import {
   ALL_PHASES, fetchDirectory, fetchWorkspaceState, fetchWorkspaceStateFor,
   listPlanJobs, readPlanJob, submitPlanJob, type JobSummary,
 } from "./client";
-import { fetchEvaluationJobIds } from "./product";
+import { fetchEvaluationJobIds, fetchInventory, fetchSummary } from "./product";
 import { buildDecisions, planSummary, type Decision, type PlanSummary } from "./decisions";
 import type { DirectoryResponse, ZaadBuild, ZaadReport, ZaadRequest } from "./types";
 import { buildCanonicalModel } from "@/lib/network/adapters/canonical";
@@ -40,6 +40,21 @@ export type PlanPhase = "none" | "queued" | "running" | "ready" | "failed";
  */
 export const DEFAULT_SCOPE = 10;
 export const SCOPE_CHOICES = [10, 25, 50] as const;
+
+/**
+ * How many products the workspace *read* carries.
+ *
+ * Measured against a 10,000-product vault: reading the whole catalogue into the planning contract
+ * took **9 minutes 43 seconds** and then failed, because the contract is capped at 5,000 products.
+ * Reading 100 took 2.9 seconds. So the read is bounded, and the bound is stated wherever the things
+ * it feeds — Home, Decisions and the Network Twin — are shown.
+ *
+ * Inventory, Purchase orders, Diagnostics and Data do not use this read at all: they query the
+ * operator's records directly and are unaffected by the size of the catalogue.
+ */
+export const READ_LIMIT = 150;
+
+const READ_RULE = "the products holding the most stock value";
 
 export interface PlanScope {
   /** The products this run covers. */
@@ -67,6 +82,8 @@ export interface WorkspaceData {
   index: NetworkIndex | null;
   /** What the plan in hand covered, null when it covered everything. */
   scope: PlanScope | null;
+  /** What the *read* covered, null when it covered the whole catalogue. */
+  readScope: PlanScope | null;
   /** When the plan in hand finished, from the job record. */
   computedAt: Date | null;
   /** Runs a new plan over `size` products, or every product when `size` is "all". */
@@ -182,6 +199,7 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
   const [report, setReport] = useState<ZaadReport | null>(null);
   const [directory, setDirectory] = useState<DirectoryResponse | null>(null);
   const [scope, setScope] = useState<PlanScope | null>(null);
+  const [readScope, setReadScope] = useState<PlanScope | null>(null);
   const [computedAt, setComputedAt] = useState<Date | null>(null);
   const [tick, setTick] = useState(0);
   const poll = useRef<number | null>(null);
@@ -200,7 +218,20 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
     (async () => {
       let state;
       try {
-        state = await fetchWorkspaceState(ALL_PHASES);
+        // How big is this catalogue? One indexed count, tens of milliseconds. A workspace larger
+        // than the read bound is read over a named selection rather than in full — the alternative
+        // is a ten-minute request that ends in a 422.
+        const held = await fetchSummary().then((x) => x.products ?? 0).catch(() => 0);
+        if (held > READ_LIMIT) {
+          const page = await fetchInventory({ sort: "inventory_value", direction: "desc", limit: READ_LIMIT });
+          const chosen = page.rows.map((row) => row.sku);
+          if (!live) return;
+          setReadScope({ skus: chosen, total: held, rule: READ_RULE });
+          state = await fetchWorkspaceStateFor(chosen, ALL_PHASES);
+        } else {
+          setReadScope(null);
+          state = await fetchWorkspaceState(ALL_PHASES);
+        }
       } catch (e) {
         if (!live) return;
         const missing = notReadyMessage(e);
@@ -327,10 +358,10 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
       phase, planPhase, notReady, error, planError,
       request, build, report, directory, decisions, summary, network,
       index: network ? buildIndex(network) : null,
-      scope, computedAt, run,
+      scope, readScope, computedAt, run,
       refresh: () => setTick((t) => t + 1),
     };
-  }, [phase, planPhase, notReady, error, planError, request, build, report, directory, scope, computedAt, run, session.workspace]);
+  }, [phase, planPhase, notReady, error, planError, request, build, report, directory, scope, readScope, computedAt, run, session.workspace]);
 
   return <WorkspaceDataContext.Provider value={value}>{children}</WorkspaceDataContext.Provider>;
 }

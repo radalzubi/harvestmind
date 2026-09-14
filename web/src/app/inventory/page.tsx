@@ -384,7 +384,7 @@ function InventoryBody() {
 
 export default function InventoryPage() {
   return (
-    <Gate loadingLabel="Opening your workspace…" needsPlan={false}>
+    <Gate loadingLabel="Opening your workspace…" needsPlan={false} needsWorkspace={false}>
       <Suspense fallback={<Loading label="Reading your product list…" cards={2} />}>
         <InventoryBody />
       </Suspense>

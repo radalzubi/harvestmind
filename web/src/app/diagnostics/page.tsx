@@ -313,7 +313,7 @@ function DiagnosticsBody() {
 
 export default function DiagnosticsPage() {
   return (
-    <Gate loadingLabel="Opening your workspace…" needsPlan={false}>
+    <Gate loadingLabel="Opening your workspace…" needsPlan={false} needsWorkspace={false}>
       <Suspense fallback={<Loading label="Opening diagnostics…" cards={2} />}>
         <DiagnosticsBody />
       </Suspense>

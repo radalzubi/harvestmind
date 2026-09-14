@@ -12,11 +12,20 @@ import { useSession } from "@/lib/session";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { Button, ButtonLink, ErrorState, Loading, EmptyState } from "./ui";
 
-export function Gate({ children, loadingLabel = "Reading your workspace…", needsPlan = true }: {
+export function Gate({ children, loadingLabel = "Reading your workspace…", needsPlan = true, needsWorkspace = true }: {
   children: ReactNode;
   loadingLabel?: string;
   /** Only changes how much skeleton is shown while the workspace is read. */
   needsPlan?: boolean;
+  /**
+   * Whether this surface needs the *planning* read before it can show anything.
+   *
+   * Home, Decisions and the Network do. Inventory, Purchase orders, Diagnostics and Data do not:
+   * they query the operator's records directly. Making them wait cost nothing on a small workspace
+   * and everything on a real one — a 10,000-product catalogue took nine minutes to read and then
+   * failed, and Inventory sat behind it saying "Opening your workspace…" the whole time.
+   */
+  needsWorkspace?: boolean;
 }) {
   const session = useSession();
   const data = useWorkspaceData();
@@ -46,6 +55,10 @@ export function Gate({ children, loadingLabel = "Reading your workspace…", nee
       />
     );
   }
+
+  // A surface that reads the operator's records is usable the moment there is a session. Whatever
+  // the planning read is doing — still running, refused, or not needed at all — is not its problem.
+  if (!needsWorkspace) return <>{children}</>;
 
   if (data.phase === "not-ready") {
     return (

@@ -316,7 +316,7 @@ function OrdersBody() {
 
 export default function OrdersPage() {
   return (
-    <Gate loadingLabel="Opening your workspace…" needsPlan={false}>
+    <Gate loadingLabel="Opening your workspace…" needsPlan={false} needsWorkspace={false}>
       <Suspense fallback={<Loading label="Reading your orders…" cards={2} />}>
         <OrdersBody />
       </Suspense>

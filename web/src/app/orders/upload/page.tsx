@@ -205,7 +205,7 @@ function UploadBody() {
 
 export default function UploadProposalPage() {
   return (
-    <Gate loadingLabel="Opening your workspace…" needsPlan={false}>
+    <Gate loadingLabel="Opening your workspace…" needsPlan={false} needsWorkspace={false}>
       <UploadBody />
     </Gate>
   );

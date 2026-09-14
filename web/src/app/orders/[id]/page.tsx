@@ -469,7 +469,7 @@ export default function DraftPage() {
   const params = useParams<{ id: string }>();
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
   return (
-    <Gate loadingLabel="Opening your workspace…" needsPlan={false}>
+    <Gate loadingLabel="Opening your workspace…" needsPlan={false} needsWorkspace={false}>
       {id ? <DraftBody id={id} /> : <Loading label="Opening this proposal…" cards={2} />}
     </Gate>
   );
