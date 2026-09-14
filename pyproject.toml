@@ -27,6 +27,7 @@ dependencies = [
     "python-multipart>=0.0.32",
     "jinja2>=3.1",
     "pdfplumber>=0.11",     # PDF invoice/table extraction
+    "openpyxl>=3.1",        # XLSX order export, and reading an operator's own XLSX import template
     "requests>=2.33",  # 2.33+ resolves CVE-2026-25645
     "urllib3>=2.7.0",
     "idna>=3.15",

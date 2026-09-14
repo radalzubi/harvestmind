@@ -1,0 +1,603 @@
+"""Proposed purchase orders: one object, one lifecycle, four ways in.
+
+A proposal can start from a ZAAD recommendation, from the operator's own current ordering policy,
+from a buyer typing it, from a spreadsheet they upload, or as an amendment to an order that already
+exists in their system. All five produce **the same row** in `zaad_draft_orders` and the same
+editor — the only difference is the `origin` field and, for an amendment, the order it points at.
+There is deliberately no second code path: a product that stores "ZAAD orders" differently from
+"my orders" drifts within a month.
+
+Three rules the lifecycle enforces:
+
+  * **Imported data is never edited.** Changing an order that came from the operator's system
+    creates a proposal *against* it. `stg_fmcg_purchase_orders` is read-only to this module.
+  * **An approved or exported revision is immutable.** Changing one produces a new revision that
+    records what it supersedes; the old row stays exactly as it was approved.
+  * **Nothing is transmitted.** Approve and export are the end of the loop in this release. No
+    supplier and no ERP is contacted anywhere in this file.
+
+Validation warns; it does not forbid. A quantity below a declared minimum, a quantity that is not a
+whole number of cases, an order above a supplier's declared weekly capacity — each is something a
+buyer may have a reason for. Only things that make the document meaningless (an unknown product, a
+receipt date before the order date, a non-positive quantity) are refused.
+"""
+from __future__ import annotations
+
+import json
+import uuid
+from dataclasses import dataclass
+from datetime import date, datetime, timezone
+from typing import Any, Literal
+
+from api.product.catalog import _one, _rows, has_table
+
+ORIGINS = ("ZAAD_RECOMMENDATION", "CURRENT_POLICY", "MANUAL", "UPLOADED_PROPOSAL", "IMPORTED_AMENDMENT")
+STATES = ("DRAFT", "READY_FOR_REVIEW", "APPROVED", "REJECTED", "EXPORTED", "SUPERSEDED")
+#: The P4B V1 vocabulary, exactly. The product never invents a seventh thing to do to an order.
+AMENDMENT_ACTIONS = ("KEEP", "DEFER", "EXPEDITE", "REDUCE", "CANCEL", "SPLIT")
+
+EDITABLE = ("DRAFT",)
+DELETABLE = ("DRAFT",)
+#: An approved or exported revision is history. Editing one makes a new revision instead.
+IMMUTABLE = ("APPROVED", "EXPORTED", "REJECTED", "SUPERSEDED")
+
+MAX_LINES = 500
+MAX_NOTE = 2000
+
+
+class DraftRefused(ValueError):
+    """The document cannot be stored as asked. The message is written for the person reading it."""
+
+
+@dataclass(frozen=True)
+class Line:
+    sku: str
+    quantity: float
+    unit_price: float | None = None
+    units_per_case: float | None = None
+    requested_receipt_date: str | None = None
+    notes: str | None = None
+
+
+def _said(state: str) -> str:
+    """A state named the way a sentence needs it: "an approved proposal", not "a approved"."""
+    words = str(state).lower().replace("_", " ")
+    return f"{'an' if words[:1] in 'aeiou' else 'a'} {words}"
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def _identity() -> str:
+    return f"draft_{uuid.uuid4().hex[:16]}"
+
+
+def _as_date(value: Any, field: str) -> date | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, date) and not isinstance(value, datetime):
+        return value
+    try:
+        return datetime.fromisoformat(str(value)[:10]).date()
+    except ValueError as exc:
+        raise DraftRefused(f"{field} is not a date ZAAD can read: {value!r}. Use YYYY-MM-DD.") from exc
+
+
+def _number(value: Any, field: str, *, allow_none: bool = True) -> float | None:
+    if value is None or value == "":
+        if allow_none:
+            return None
+        raise DraftRefused(f"{field} is required.")
+    try:
+        out = float(value)
+    except (TypeError, ValueError) as exc:
+        raise DraftRefused(f"{field} is not a number: {value!r}.") from exc
+    if out != out or out in (float("inf"), float("-inf")):
+        raise DraftRefused(f"{field} is not a finite number.")
+    return out
+
+
+def ensure_tables(conn: Any) -> None:
+    """Create the product's own tables if this vault predates migration 023.
+
+    Vaults are created per operator and migrated by `scripts/setup_db.py`; a workspace opened before
+    this release would otherwise meet a missing table on its first visit to Purchase Orders. Only
+    the product's own tables are created here — never a staging table, and never a column on one.
+    """
+    if has_table(conn, "zaad_draft_orders") and has_table(conn, "zaad_export_profiles"):
+        return
+    from pathlib import Path
+    sql = (Path(__file__).resolve().parents[2] / "db" / "migrations" / "023_operating_product.sql").read_text()
+    for statement in sql.split(";"):
+        text = statement.strip()
+        if not text or text.startswith("--"):
+            continue
+        if text.upper().startswith("ALTER TABLE STG_"):
+            continue  # staging columns belong to the migration runner, not to a page load
+        try:
+            conn.execute(text)
+        except Exception:  # noqa: BLE001 - already present, or a COMMENT the engine declines
+            continue
+
+
+# ── reading ───────────────────────────────────────────────────────────────────
+
+DRAFT_SORTS = {"updated_at": "updated_at", "created_at": "created_at", "state": "state",
+               "supplier_id": "supplier_id", "units": "units", "value": "value", "reference": "reference"}
+
+
+def list_drafts(
+    conn: Any, operator: str, *, state: str | None = None, origin: str | None = None,
+    supplier_id: str | None = None, search: str | None = None, source_po_id: str | None = None,
+    sort: str = "updated_at", direction: str = "desc", limit: int = 50, offset: int = 0,
+) -> dict[str, Any]:
+    ensure_tables(conn)
+    if sort not in DRAFT_SORTS:
+        raise DraftRefused(f"Cannot sort proposals on {sort!r}")
+    if state and state not in STATES:
+        raise DraftRefused(f"Unknown state {state!r}")
+    if origin and origin not in ORIGINS:
+        raise DraftRefused(f"Unknown origin {origin!r}")
+    limit = max(1, min(int(limit), 200))
+    offset = max(0, int(offset))
+    direction_sql = "DESC" if str(direction).lower() == "desc" else "ASC"
+
+    where = ["d.operator_id = ?"]
+    params: list[Any] = [operator]
+    if state:
+        where.append("d.state = ?")
+        params.append(state)
+    if origin:
+        where.append("d.origin = ?")
+        params.append(origin)
+    if supplier_id:
+        where.append("d.supplier_id = ?")
+        params.append(supplier_id)
+    if source_po_id:
+        where.append("d.source_po_id = ?")
+        params.append(source_po_id)
+    if search and search.strip():
+        needle = f"%{search.strip()}%"
+        where.append("(CAST(d.draft_id AS VARCHAR) ILIKE ? OR CAST(d.reference AS VARCHAR) ILIKE ? "
+                     "OR CAST(d.supplier_id AS VARCHAR) ILIKE ? OR CAST(d.source_po_id AS VARCHAR) ILIKE ?)")
+        params.extend([needle] * 4)
+    clause = " WHERE " + " AND ".join(where)
+
+    body = f"""
+    SELECT d.*, coalesce(l.lines, 0) AS lines, l.units, l.value, l.value_incomplete
+    FROM zaad_draft_orders d
+    LEFT JOIN (SELECT draft_id, count(*) AS lines, sum(quantity) AS units,
+                      sum(quantity * coalesce(unit_price, 0)) AS value,
+                      bool_or(unit_price IS NULL) AS value_incomplete
+               FROM zaad_draft_lines WHERE operator_id = ? GROUP BY draft_id) l
+           ON l.draft_id = d.draft_id{clause}
+    """
+    rows = _rows(conn, f"SELECT * FROM ({body}) ORDER BY {DRAFT_SORTS[sort]} {direction_sql} NULLS LAST LIMIT ? OFFSET ?",
+                 [operator, *params, limit, offset])
+    total = int(_one(conn, f"SELECT count(*) FROM ({body})", [operator, *params]) or 0)
+    return {"rows": rows, "total": total, "limit": limit, "offset": offset,
+            "sort": sort, "direction": direction_sql.lower()}
+
+
+def read_draft(conn: Any, operator: str, draft_id: str) -> dict[str, Any]:
+    """One proposal with its lines and its history. A draft of another workspace is simply absent."""
+    ensure_tables(conn)
+    head = _rows(conn, "SELECT * FROM zaad_draft_orders WHERE draft_id = ? AND operator_id = ?",
+                 [draft_id, operator])
+    if not head:
+        raise KeyError(draft_id)
+    lines = _rows(conn, "SELECT * FROM zaad_draft_lines WHERE draft_id = ? AND operator_id = ? ORDER BY line_no",
+                  [draft_id, operator])
+    events = _rows(conn, "SELECT * FROM zaad_draft_events WHERE draft_id = ? AND operator_id = ? ORDER BY happened_at",
+                   [draft_id, operator])
+    exports = _rows(conn, "SELECT * FROM zaad_export_log WHERE draft_id = ? AND operator_id = ? ORDER BY happened_at DESC",
+                    [draft_id, operator])
+    evaluations = _rows(conn, "SELECT * FROM zaad_evaluations WHERE draft_id = ? AND operator_id = ? ORDER BY created_at DESC",
+                        [draft_id, operator])
+    row = head[0]
+    return {
+        **row,
+        "lines": lines,
+        "events": events,
+        "exports": exports,
+        "evaluations": evaluations,
+        "editable": row["state"] in EDITABLE,
+        "deletable": row["state"] in DELETABLE,
+        "executable": False,
+        "transmitted": False,
+        "warnings": validate(conn, row, lines),
+    }
+
+
+# ── validation ────────────────────────────────────────────────────────────────
+
+def validate(conn: Any, head: dict[str, Any], lines: list[dict[str, Any]]) -> list[dict[str, str]]:
+    """Things a buyer should see before approving. Warnings, never prohibitions."""
+    out: list[dict[str, str]] = []
+    if not lines:
+        out.append({"level": "warn", "message": "This proposal has no lines yet."})
+    seen: dict[str, int] = {}
+    for line in lines:
+        sku = str(line.get("sku"))
+        seen[sku] = seen.get(sku, 0) + 1
+    for sku, count in seen.items():
+        if count > 1:
+            out.append({"level": "warn", "message": f"{sku} appears on {count} lines. Most systems expect one line per product."})
+
+    if not has_table(conn, "stg_fmcg_skus"):
+        return out
+    master = {str(r["sku"]): r for r in _rows(
+        conn, f"""SELECT sku, any_value(units_per_case) AS units_per_case, any_value(moq_units) AS moq_units,
+                         any_value(supplier_id) AS supplier_id, any_value(unit_cost) AS unit_cost
+                  FROM stg_fmcg_skus WHERE sku IN ({', '.join('?' for _ in lines) or 'NULL'}) GROUP BY sku""",
+        [str(x.get("sku")) for x in lines]) } if lines else {}
+    for line in lines:
+        sku = str(line.get("sku"))
+        info = master.get(sku)
+        quantity = float(line.get("quantity") or 0)
+        if info is None:
+            out.append({"level": "warn", "message": f"{sku} is not in your product master."})
+            continue
+        pack = line.get("units_per_case") or info.get("units_per_case")
+        if pack and float(pack) > 0 and quantity % float(pack) != 0:
+            whole = int(quantity // float(pack))
+            out.append({"level": "warn", "message":
+                        f"{sku}: {quantity:,.0f} units is not a whole number of cases of {float(pack):,.0f}. "
+                        f"{whole * float(pack):,.0f} or {(whole + 1) * float(pack):,.0f} would be."})
+        moq = info.get("moq_units")
+        if moq and quantity < float(moq):
+            out.append({"level": "warn", "message":
+                        f"{sku}: {quantity:,.0f} units is below the minimum order quantity of {float(moq):,.0f} in your product master."})
+        if head.get("supplier_id") and info.get("supplier_id") and str(info["supplier_id"]) != str(head["supplier_id"]):
+            out.append({"level": "warn", "message":
+                        f"{sku} is normally bought from {info['supplier_id']}, not {head['supplier_id']}."})
+
+    supplier_id = head.get("supplier_id")
+    if supplier_id and has_table(conn, "stg_fmcg_suppliers"):
+        capacity = _one(conn, "SELECT any_value(capacity_per_week) FROM stg_fmcg_suppliers WHERE supplier_id = ?",
+                        [supplier_id])
+        units = sum(float(x.get("quantity") or 0) for x in lines)
+        if capacity and units > float(capacity):
+            out.append({"level": "warn", "message":
+                        f"{units:,.0f} units is more than {supplier_id}'s declared weekly capacity of {float(capacity):,.0f}."})
+    return out
+
+
+# ── writing ───────────────────────────────────────────────────────────────────
+
+def _write_lines(conn: Any, operator: str, draft_id: str, lines: list[dict[str, Any]]) -> None:
+    """Replace a proposal's lines.
+
+    Every line is read and checked **before** the first row is removed. An earlier version deleted
+    first and validated as it inserted, so one bad quantity in an edit left the proposal with no
+    lines at all — a refused edit must change nothing.
+    """
+    if len(lines) > MAX_LINES:
+        raise DraftRefused(f"A proposal carries at most {MAX_LINES} lines; this one has {len(lines)}.")
+    checked: list[list[Any]] = []
+    for index, raw in enumerate(lines, start=1):
+        sku = str(raw.get("sku") or "").strip()
+        if not sku:
+            raise DraftRefused(f"Line {index} has no product.")
+        quantity = _number(raw.get("quantity"), f"Line {index} quantity", allow_none=False)
+        assert quantity is not None
+        if quantity <= 0:
+            raise DraftRefused(f"Line {index}: a quantity must be more than zero. To remove a line, delete it.")
+        checked.append([draft_id, operator, index, sku, quantity,
+                        _number(raw.get("unit_price"), f"Line {index} unit price"),
+                        _number(raw.get("units_per_case"), f"Line {index} units per case"),
+                        _as_date(raw.get("requested_receipt_date"), f"Line {index} requested receipt date"),
+                        (str(raw.get("notes"))[:MAX_NOTE] if raw.get("notes") else None)])
+    conn.execute("DELETE FROM zaad_draft_lines WHERE draft_id = ? AND operator_id = ?", [draft_id, operator])
+    for row in checked:
+        conn.execute(
+            "INSERT INTO zaad_draft_lines (draft_id, operator_id, line_no, sku, quantity, unit_price, "
+            "units_per_case, requested_receipt_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", row)
+
+
+def _event(conn: Any, operator: str, draft_id: str, event: str, revision: int | None, actor: str | None,
+           detail: str | None = None) -> None:
+    conn.execute(
+        "INSERT INTO zaad_draft_events (draft_id, operator_id, happened_at, actor, event, revision, detail) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)", [draft_id, operator, _now(), actor, event, revision, detail])
+
+
+def create_draft(conn: Any, operator: str, body: dict[str, Any], *, actor: str | None = None) -> str:
+    """Store a new proposal. Every origin lands here."""
+    ensure_tables(conn)
+    origin = str(body.get("origin") or "MANUAL").upper()
+    if origin not in ORIGINS:
+        raise DraftRefused(f"Unknown origin {origin!r}. One of {', '.join(ORIGINS)}.")
+    action = body.get("amendment_action")
+    if action is not None:
+        action = str(action).upper()
+        if action not in AMENDMENT_ACTIONS:
+            raise DraftRefused(f"{action!r} is not something ZAAD can do to an order. "
+                               f"One of {', '.join(AMENDMENT_ACTIONS)}.")
+    if origin == "IMPORTED_AMENDMENT":
+        if not body.get("source_po_id"):
+            raise DraftRefused("An amendment must say which order it changes.")
+        if action is None:
+            raise DraftRefused("An amendment must say what it does to the order.")
+    ordered = _as_date(body.get("requested_order_date"), "Order date")
+    receipt = _as_date(body.get("requested_receipt_date"), "Requested receipt date")
+    if ordered and receipt and receipt < ordered:
+        raise DraftRefused("The requested receipt date is before the order date.")
+
+    draft_id = _identity()
+    conn.execute("""
+        INSERT INTO zaad_draft_orders
+        (draft_id, operator_id, origin, state, revision, reference, supplier_id, destination_id, currency,
+         requested_order_date, requested_receipt_date, notes, source_decision_id, source_po_id,
+         amendment_action, created_by, created_at, updated_at, supersedes)
+        VALUES (?, ?, ?, 'DRAFT', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", [
+        draft_id, operator, origin, int(body.get("revision") or 1),
+        (str(body.get("reference"))[:120] if body.get("reference") else None),
+        (str(body["supplier_id"]) if body.get("supplier_id") else None),
+        (str(body["destination_id"]) if body.get("destination_id") else None),
+        (str(body.get("currency") or "")[:3].upper() or None),
+        ordered, receipt,
+        (str(body.get("notes"))[:MAX_NOTE] if body.get("notes") else None),
+        (str(body["source_decision_id"]) if body.get("source_decision_id") else None),
+        (str(body["source_po_id"]) if body.get("source_po_id") else None),
+        action, actor, _now(), _now(),
+        (str(body["supersedes"]) if body.get("supersedes") else None)])
+    _write_lines(conn, operator, draft_id, list(body.get("lines") or []))
+    _event(conn, operator, draft_id, "created", 1, actor, f"origin {origin}")
+    return draft_id
+
+
+def update_draft(conn: Any, operator: str, draft_id: str, body: dict[str, Any], *,
+                 actor: str | None = None) -> dict[str, Any]:
+    """Edit a draft in place. Refused once a revision has been approved, rejected or exported."""
+    ensure_tables(conn)
+    current = _rows(conn, "SELECT * FROM zaad_draft_orders WHERE draft_id = ? AND operator_id = ?",
+                    [draft_id, operator])
+    if not current:
+        raise KeyError(draft_id)
+    row = current[0]
+    if row["state"] == "READY_FOR_REVIEW":
+        raise DraftRefused("This proposal is with a reviewer. Return it to draft before changing it.")
+    if row["state"] in IMMUTABLE:
+        raise DraftRefused(f"{_said(row['state']).capitalize()} proposal is a record of what was decided "
+                           "and does not change. Create the next revision instead.")
+
+    fields: list[str] = []
+    params: list[Any] = []
+    for column, caster in (("reference", str), ("supplier_id", str), ("destination_id", str),
+                           ("currency", str), ("notes", str)):
+        if column in body:
+            value = body[column]
+            fields.append(f"{column} = ?")
+            params.append(None if value in (None, "") else caster(value)[:MAX_NOTE])
+    if "requested_order_date" in body:
+        fields.append("requested_order_date = ?")
+        params.append(_as_date(body["requested_order_date"], "Order date"))
+    if "requested_receipt_date" in body:
+        fields.append("requested_receipt_date = ?")
+        params.append(_as_date(body["requested_receipt_date"], "Requested receipt date"))
+    if "amendment_action" in body and body["amendment_action"] is not None:
+        action = str(body["amendment_action"]).upper()
+        if action not in AMENDMENT_ACTIONS:
+            raise DraftRefused(f"{action!r} is not something ZAAD can do to an order.")
+        fields.append("amendment_action = ?")
+        params.append(action)
+    fields.append("updated_at = ?")
+    params.append(_now())
+    # nosec B608 - every column name above is a literal in this function
+    conn.execute(f"UPDATE zaad_draft_orders SET {', '.join(fields)} WHERE draft_id = ? AND operator_id = ?",  # noqa: S608
+                 [*params, draft_id, operator])
+    if "lines" in body:
+        _write_lines(conn, operator, draft_id, list(body["lines"] or []))
+    _event(conn, operator, draft_id, "edited", int(row["revision"] or 1), actor)
+    return read_draft(conn, operator, draft_id)
+
+
+def delete_draft(conn: Any, operator: str, draft_id: str, *, actor: str | None = None) -> None:
+    """Remove a draft. Only a draft: an approved or exported revision is history."""
+    ensure_tables(conn)
+    current = _rows(conn, "SELECT state FROM zaad_draft_orders WHERE draft_id = ? AND operator_id = ?",
+                    [draft_id, operator])
+    if not current:
+        raise KeyError(draft_id)
+    if current[0]["state"] not in DELETABLE:
+        raise DraftRefused(f"{_said(current[0]['state']).capitalize()} proposal is part of the record "
+                           "and cannot be deleted.")
+    conn.execute("DELETE FROM zaad_draft_lines WHERE draft_id = ? AND operator_id = ?", [draft_id, operator])
+    conn.execute("DELETE FROM zaad_draft_events WHERE draft_id = ? AND operator_id = ?", [draft_id, operator])
+    conn.execute("DELETE FROM zaad_draft_orders WHERE draft_id = ? AND operator_id = ?", [draft_id, operator])
+
+
+TRANSITIONS: dict[str, tuple[str, ...]] = {
+    "submit": ("DRAFT",),
+    "reopen": ("READY_FOR_REVIEW", "REJECTED"),
+    "approve": ("DRAFT", "READY_FOR_REVIEW"),
+    "reject": ("DRAFT", "READY_FOR_REVIEW"),
+}
+TO_STATE = {"submit": "READY_FOR_REVIEW", "reopen": "DRAFT", "approve": "APPROVED", "reject": "REJECTED"}
+
+
+def transition(conn: Any, operator: str, draft_id: str, action: str, *, actor: str | None = None,
+               reason: str | None = None) -> dict[str, Any]:
+    """Move a proposal through its lifecycle. Approval is recorded with who and why."""
+    ensure_tables(conn)
+    if action not in TRANSITIONS:
+        raise DraftRefused(f"Unknown action {action!r}")
+    current = _rows(conn, "SELECT * FROM zaad_draft_orders WHERE draft_id = ? AND operator_id = ?",
+                    [draft_id, operator])
+    if not current:
+        raise KeyError(draft_id)
+    row = current[0]
+    if row["state"] not in TRANSITIONS[action]:
+        raise DraftRefused(f"{_said(row['state']).capitalize()} proposal cannot be "
+                           f"{ {'submit': 'sent for review', 'reopen': 'returned to draft', 'approve': 'approved', 'reject': 'rejected'}[action] }.")
+    if action in ("approve", "reject") and not (reason or "").strip():
+        raise DraftRefused("Record why. An approval without a reason is not a decision anyone can review later.")
+    state = TO_STATE[action]
+    conn.execute(
+        "UPDATE zaad_draft_orders SET state = ?, updated_at = ?, approved_by = ?, approved_at = ?, "
+        "decision_reason = ? WHERE draft_id = ? AND operator_id = ?",
+        [state, _now(), actor if action in ("approve", "reject") else row.get("approved_by"),
+         _now() if action in ("approve", "reject") else row.get("approved_at"),
+         (reason or "").strip()[:MAX_NOTE] or row.get("decision_reason"), draft_id, operator])
+    _event(conn, operator, draft_id, {"submit": "submitted", "reopen": "reopened",
+                                      "approve": "approved", "reject": "rejected"}[action],
+           int(row["revision"] or 1), actor, (reason or "").strip()[:MAX_NOTE] or None)
+    return read_draft(conn, operator, draft_id)
+
+
+def revise(conn: Any, operator: str, draft_id: str, *, actor: str | None = None) -> str:
+    """The next revision of a proposal that is already part of the record.
+
+    The old row is left exactly as it was decided and marked superseded; the new one starts as a
+    draft, carries the same lines, and records what it replaces.
+    """
+    ensure_tables(conn)
+    current = _rows(conn, "SELECT * FROM zaad_draft_orders WHERE draft_id = ? AND operator_id = ?",
+                    [draft_id, operator])
+    if not current:
+        raise KeyError(draft_id)
+    row = current[0]
+    if row["state"] == "SUPERSEDED":
+        raise DraftRefused("This revision has already been replaced.")
+    lines = _rows(conn, "SELECT * FROM zaad_draft_lines WHERE draft_id = ? AND operator_id = ? ORDER BY line_no",
+                  [draft_id, operator])
+    new_id = create_draft(conn, operator, {
+        "origin": row["origin"], "revision": int(row["revision"] or 1) + 1, "reference": row.get("reference"),
+        "supplier_id": row.get("supplier_id"), "destination_id": row.get("destination_id"),
+        "currency": row.get("currency"), "requested_order_date": row.get("requested_order_date"),
+        "requested_receipt_date": row.get("requested_receipt_date"), "notes": row.get("notes"),
+        "source_decision_id": row.get("source_decision_id"), "source_po_id": row.get("source_po_id"),
+        "amendment_action": row.get("amendment_action"), "supersedes": draft_id,
+        "lines": [{k: line.get(k) for k in ("sku", "quantity", "unit_price", "units_per_case",
+                                            "requested_receipt_date", "notes")} for line in lines],
+    }, actor=actor)
+    conn.execute("UPDATE zaad_draft_orders SET state = 'SUPERSEDED', superseded_by = ?, updated_at = ? "
+                 "WHERE draft_id = ? AND operator_id = ?", [new_id, _now(), draft_id, operator])
+    _event(conn, operator, draft_id, "superseded", int(row["revision"] or 1), actor, f"replaced by {new_id}")
+    return new_id
+
+
+# ── the four ways in ──────────────────────────────────────────────────────────
+
+def from_recommendation(
+    conn: Any, operator: str, *, supplier_id: str | None, destination_id: str | None,
+    lines: list[dict[str, Any]], decision_id: str | None, currency: str | None,
+    requested_receipt_date: str | None = None, actor: str | None = None, notes: str | None = None,
+) -> str:
+    """A proposal from what ZAAD recommended. The quantities come from the report, unchanged."""
+    return create_draft(conn, operator, {
+        "origin": "ZAAD_RECOMMENDATION", "supplier_id": supplier_id, "destination_id": destination_id,
+        "currency": currency, "source_decision_id": decision_id, "lines": lines,
+        "requested_order_date": _now().date().isoformat(), "requested_receipt_date": requested_receipt_date,
+        "notes": notes or "Created from a ZAAD recommendation. Quantities are the report's; edit before approving.",
+    }, actor=actor)
+
+
+def from_amendment(
+    conn: Any, operator: str, *, source_po_id: str, action: str, lines: list[dict[str, Any]],
+    supplier_id: str | None, decision_id: str | None = None, requested_receipt_date: str | None = None,
+    actor: str | None = None, notes: str | None = None,
+) -> str:
+    """A proposed change to an order that already exists in the operator's system.
+
+    The imported rows are not touched. This proposal points at them and says what should change.
+    """
+    return create_draft(conn, operator, {
+        "origin": "IMPORTED_AMENDMENT", "source_po_id": source_po_id, "amendment_action": action.upper(),
+        "supplier_id": supplier_id, "lines": lines, "source_decision_id": decision_id,
+        "requested_order_date": _now().date().isoformat(), "requested_receipt_date": requested_receipt_date,
+        "notes": notes,
+    }, actor=actor)
+
+
+# ── export profiles ───────────────────────────────────────────────────────────
+
+def list_profiles(conn: Any, operator: str) -> list[dict[str, Any]]:
+    ensure_tables(conn)
+    rows = _rows(conn, "SELECT * FROM zaad_export_profiles WHERE operator_id = ? ORDER BY name", [operator])
+    for row in rows:
+        row["columns"] = json.loads(row["columns"]) if row.get("columns") else []
+    return rows
+
+
+def save_profile(conn: Any, operator: str, body: dict[str, Any], *, profile_id: str | None = None) -> str:
+    """Store a company's own import format. The field vocabulary is checked before it is saved."""
+    from api.product.exporting import EXPORT_FIELDS, FORMATS
+
+    ensure_tables(conn)
+    name = str(body.get("name") or "").strip()
+    if not name:
+        raise DraftRefused("Give the format a name, so a buyer can pick it later.")
+    fmt = str(body.get("format") or "csv").lower()
+    if fmt not in FORMATS:
+        raise DraftRefused(f"{fmt!r} is not a format ZAAD writes. One of {', '.join(FORMATS)}.")
+    columns = list(body.get("columns") or [])
+    if not columns:
+        raise DraftRefused("A format needs at least one column.")
+    if len(columns) > 80:
+        raise DraftRefused("A format carries at most 80 columns.")
+    cleaned: list[dict[str, Any]] = []
+    for index, column in enumerate(columns, start=1):
+        header = str(column.get("header") or "").strip()
+        if not header:
+            raise DraftRefused(f"Column {index} has no heading.")
+        field = column.get("field")
+        constant = column.get("constant")
+        if field:
+            if field not in EXPORT_FIELDS:
+                raise DraftRefused(f"Column {index} ({header}) maps to {field!r}, which ZAAD does not hold. "
+                                   f"Choose one of: {', '.join(sorted(EXPORT_FIELDS))}.")
+        elif constant is None:
+            raise DraftRefused(f"Column {index} ({header}) needs either a ZAAD field or a fixed value.")
+        cleaned.append({"header": header[:120], "field": field,
+                        "constant": (str(constant)[:200] if constant is not None else None)})
+    identity = profile_id or f"profile_{uuid.uuid4().hex[:12]}"
+    existing = _rows(conn, "SELECT profile_id FROM zaad_export_profiles WHERE profile_id = ? AND operator_id = ?",
+                     [identity, operator]) if profile_id else []
+    values = [name[:120], fmt, (str(body.get("sheet_name") or "Purchase Order")[:60]),
+              (str(body.get("delimiter") or ",")[:1]), str(body.get("date_format") or "iso"),
+              str(body.get("number_format") or "plain"),
+              (str(body.get("filename_template") or "{reference}_{supplier}_{date}")[:160]),
+              (str(body["supplier_id"]) if body.get("supplier_id") else None),
+              json.dumps(cleaned), _now()]
+    if existing:
+        conn.execute("UPDATE zaad_export_profiles SET name = ?, format = ?, sheet_name = ?, delimiter = ?, "
+                     "date_format = ?, number_format = ?, filename_template = ?, supplier_id = ?, columns = ?, "
+                     "updated_at = ? WHERE profile_id = ? AND operator_id = ?", [*values, identity, operator])
+    else:
+        conn.execute("INSERT INTO zaad_export_profiles (profile_id, operator_id, name, format, sheet_name, "
+                     "delimiter, date_format, number_format, filename_template, supplier_id, columns, "
+                     "created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                     [identity, operator, *values[:-1], _now(), values[-1]])
+    return identity
+
+
+def delete_profile(conn: Any, operator: str, profile_id: str) -> None:
+    ensure_tables(conn)
+    found = _rows(conn, "SELECT profile_id FROM zaad_export_profiles WHERE profile_id = ? AND operator_id = ?",
+                  [profile_id, operator])
+    if not found:
+        raise KeyError(profile_id)
+    conn.execute("DELETE FROM zaad_export_profiles WHERE profile_id = ? AND operator_id = ?",
+                 [profile_id, operator])
+
+
+def record_export(conn: Any, operator: str, draft_id: str, *, revision: int | None, profile_id: str | None,
+                  profile_name: str, fmt: str, filename: str, actor: str | None) -> None:
+    """Exporting is not transmitting. It is recorded so the workspace knows a file left the building."""
+    ensure_tables(conn)
+    conn.execute("INSERT INTO zaad_export_log (export_id, operator_id, draft_id, revision, profile_id, "
+                 "profile_name, format, filename, actor, happened_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 [f"export_{uuid.uuid4().hex[:12]}", operator, draft_id, revision, profile_id,
+                  profile_name, fmt, filename, actor, _now()])
+    state = _rows(conn, "SELECT state, revision FROM zaad_draft_orders WHERE draft_id = ? AND operator_id = ?",
+                  [draft_id, operator])
+    if state and state[0]["state"] == "APPROVED":
+        conn.execute("UPDATE zaad_draft_orders SET state = 'EXPORTED', updated_at = ? "
+                     "WHERE draft_id = ? AND operator_id = ?", [_now(), draft_id, operator])
+    _event(conn, operator, draft_id, "exported", revision, actor, f"{profile_name} ({fmt})")
+
+
+StateName = Literal["DRAFT", "READY_FOR_REVIEW", "APPROVED", "REJECTED", "EXPORTED", "SUPERSEDED"]
