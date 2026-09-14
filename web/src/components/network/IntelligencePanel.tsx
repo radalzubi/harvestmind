@@ -15,6 +15,7 @@ import type { NetworkEdge, NetworkNode } from "@/lib/network/model";
 import { Disclosure, Evidence, Facts, TechnicalDetails } from "@/components/workspace/ui";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money } from "@/lib/zaad/decisions";
+import { COUNT, NUMBER } from "@/lib/zaad/product";
 import { useTwin } from "./store";
 
 function Recommendations({ targetId }: { targetId: string }) {
@@ -78,8 +79,11 @@ function Actions({ node, edge, index }: {
     if (to?.kind === "dc" || to?.kind === "branch") {
       links.push({ href: "/inventory", label: "What arrives here" });
     }
-    if (edge.skus.length) {
-      links.push({ href: `/inventory?q=${encodeURIComponent(edge.skus[0])}`, label: "Products carried" });
+    // A button labelled "Products carried" opened Inventory filtered to ONE of them — the first —
+    // two lines below a fact reading "Products carried: 150". Inventory takes a search, not a list,
+    // so the link is only offered where it can keep its promise; the rest are named below instead.
+    if (edge.skus.length === 1) {
+      links.push({ href: `/inventory?q=${encodeURIComponent(edge.skus[0])}`, label: `Product ${edge.skus[0]}` });
     }
   }
   if (!links.length) return null;
@@ -192,7 +196,10 @@ function EdgeBody({ edge }: { edge: NetworkEdge }) {
       <div style={{ marginTop: 14 }}>
         <Facts items={[
           { label: "Usual transit", value: edge.leadDays.normal != null ? `${edge.leadDays.normal} ${edge.leadDays.normal === 1 ? "day" : "days"}` : null },
-          { label: "Capacity", value: edge.capacityPerWeek != null ? `${edge.capacityPerWeek.toLocaleString("en-US")} / week` : null },
+          // Every other unit figure in the product prints whole units; this one printed the
+          // engine's continuous number, so a lane read "34,344.808 / week" — a precision nobody
+          // declared and nobody can act on.
+          { label: "Capacity", value: edge.capacityPerWeek != null ? `${NUMBER(edge.capacityPerWeek)} units / week` : null },
           { label: "Cost per unit", value: edge.transportCostPerUnit != null ? money(edge.transportCostPerUnit, currency) : null },
           { label: "Products carried", value: edge.skus.length ? String(edge.skus.length) : null },
         ]} />
@@ -205,6 +212,11 @@ function EdgeBody({ edge }: { edge: NetworkEdge }) {
       </div>
 
       <div style={{ marginTop: 16 }}>
+        {edge.skus.length > 1 && (
+          <Disclosure summary="Products carried" hint={COUNT(edge.skus.length, "product")}>
+            <p style={{ margin: 0, lineHeight: 1.7 }}>{edge.skus.join(", ")}</p>
+          </Disclosure>
+        )}
         {edge.missing?.length ? (
           <Disclosure summary="What ZAAD does not know here" hint={`${edge.missing.length}`}>
             <ul style={{ margin: 0, paddingInlineStart: 18 }}>

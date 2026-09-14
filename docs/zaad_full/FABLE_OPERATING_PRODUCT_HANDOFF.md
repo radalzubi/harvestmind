@@ -471,6 +471,15 @@ process, never `zaad-api`.
   fault, with nowhere to go. An upload is short-lived and belongs to one workspace; nothing went
   wrong. It now says so and offers the one thing to do. Worth naming as a pattern for the audit:
   fixing the branch I arrived on left the adjacent branch of the same condition untouched.
+* **A lane panel that contradicted itself in three lines.** Selecting the DC → NORTH lane: a fact
+  reading **"Products carried: 150"**, and two lines below it a button labelled **"Products
+  carried"** that opened Inventory filtered to **SKU-0001** — one of the 150, chosen because it was
+  first. Inventory takes a search, not a list, so the link is now offered only where it can keep
+  its promise (a lane carrying exactly one product, labelled with that product's code) and the
+  others are listed in the open, under a disclosure that says how many. The same panel printed
+  **"Capacity 34,344.808 / week"** — the engine's continuous number, straight through, where every
+  other unit figure in the product prints whole units and no operator declared a milli-unit of
+  weekly capacity. It reads "34,345 units / week", with the unit named.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →
