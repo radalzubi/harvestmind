@@ -75,7 +75,7 @@ function PlanEconomics() {
                   <dt>{r.component}</dt>
                   <dd style={{ fontVariantNumeric: "tabular-nums" }}>
                     {r.delta! >= 0 ? "+" : "−"}{money(Math.abs(r.delta!), c)}
-                    <span style={{ color: "var(--ink-400)" }}> ({money(r.current, c)} → {money(r.recommended, c)})</span>
+                    <span style={{ color: "var(--ink-500)" }}> ({money(r.current, c)} → {money(r.recommended, c)})</span>
                   </dd>
                 </div>
               ))}

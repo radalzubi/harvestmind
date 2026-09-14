@@ -288,7 +288,7 @@ function InventoryBody() {
       render: (r) => (
         <span>
           <strong style={{ fontWeight: 500, color: "var(--ink-950)" }}>{r.sku_name || r.sku}</strong>
-          {r.sku_name && <span style={{ color: "var(--ink-400)", marginInlineStart: 6, fontSize: 12 }}>{r.sku}</span>}
+          {r.sku_name && <span style={{ color: "var(--ink-500)", marginInlineStart: 6, fontSize: 12 }}>{r.sku}</span>}
         </span>
       ) },
     { key: "brand", label: "Brand", sortable: true, hideBelow: 1100, render: (r) => r.brand ?? <span className="na">—</span> },

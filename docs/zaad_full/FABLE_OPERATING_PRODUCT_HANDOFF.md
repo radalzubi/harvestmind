@@ -20,14 +20,23 @@ The work is **not merged and not deployed**. PR #81 is a draft awaiting your aud
 | Merged or deployed | **no** |
 
 **`zaad/` and `evidence/` are untouched.** `git diff --name-only main...HEAD | grep -E '^(zaad|evidence)/'`
-returns nothing. No objective function, constraint, phase, economic assumption or frozen baseline
-changed, and the frozen regression passes in CI on this branch.
+returns nothing, and the only file the diff touches outside `web/ api/ tests/ docs/ scripts/ db/`
+is `pyproject.toml`. No objective function, constraint, phase, economic assumption or frozen
+baseline changed; the frozen regression passes in CI on every head of this branch, and was also run
+directly on the handoff head — `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` →
+**CANONICAL REGRESSION PASS**, every P1 arm identical over 12 reviews and the P0 router_cycle cell
+identical and still protection-owned.
+
+One import crosses the line and is worth naming so it is not mistaken for something it is not:
+`api/product/catalog.py` reads `ACTION_LABEL` from `zaad.commitments.contracts` to call a declared
+contract option what P4B calls it. It is a read of a constant, lazily, inside one function. The
+alternative was a second copy of the engine's vocabulary in the product, drifting from it.
 
 ## 2. What is in the diff
 
-60 files: 36 under `web/`, 11 under `api/`, 5 test files, 2 scripts, 1 migration, 3 documents,
-`pyproject.toml` (one dependency), `.claude/launch.json` (a local dev entry).
-`git diff --stat main...HEAD` — 11,925 insertions, 634 deletions.
+64 files: 40 under `web/`, 11 under `api/`, 5 test files, 2 scripts, 1 migration, 3 documents,
+`pyproject.toml` (one dependency — `openpyxl`, nothing else), `.claude/launch.json` (a local dev
+entry). `git diff --stat main...HEAD` — 12,566 insertions, 648 deletions.
 
 | Area | Files |
 |---|---|
@@ -35,8 +44,8 @@ changed, and the frozen regression passes in CI on this branch.
 | Routers | `api/routers/{zaad_workspace,zaad_orders}.py`, registered in `api/main.py` |
 | Persistence | `db/migrations/023_operating_product.sql` |
 | Surfaces | `web/src/app/{inventory,orders,orders/new,orders/[id],orders/formats,orders/upload,diagnostics,diagnostics/supplier/[id],upload,data,home}/page.tsx` |
-| Shared frontend | `web/src/components/workspace/{Table,OrderForm,Shell}.tsx`, `web/src/lib/zaad/{product,standing}.ts` |
-| Network | `web/src/lib/network/{groups,geo}.ts`, `adapters/canonical.ts`, `components/network/{IntelligencePanel,NetworkMap}.tsx` |
+| Shared frontend | `web/src/components/workspace/{Table,OrderForm,Shell,Gate,PlanState,CommandPalette}.tsx`, `web/src/components/Toast.tsx`, `web/src/lib/zaad/{product,standing,workspace-data}.ts(x)` |
+| Network | `web/src/lib/network/{groups,geo,attention}.ts`, `adapters/canonical.ts`, `components/network/{IntelligencePanel,NetworkMap,NetworkGraph}.tsx` |
 | QA tooling | `scripts/zaad_qa_workspaces.py`, `scripts/zaad_product_scale_bench.py` |
 | Tests | `tests/integration/test_operating_product_api.py`, `tests/unit/test_product_{exporting,evaluation,drafts_schema,catalog_labels}.py` |
 
@@ -70,11 +79,37 @@ Against the brief's own numbering.
 | 64–65 | User-created objects with actor, timestamp, version, audit; capability seam kept | done |
 | 67–68 | Tables and drawers; deep links preserved | done |
 | 71–73 | Honesty rules; no autonomous execution; export as the last mile | done |
-| 78–80 | Responsive, RTL, accessibility | done, see §7 |
+| 78–80 | Responsive, RTL, accessibility | done — with the caveat below |
 | 82–83 | Tenant safety and file-safety bounds | done |
 | 84 | Migration additive and idempotent | done |
 | 85 | Functional tests | done, see §5 |
 | 93–95 | Documentation, branch, PR, commits | done |
+
+**The accessibility caveat.** Read "done" on §78–80 as *measured*, not *certified*. What was
+checked, by driving the product rather than reading it:
+
+* **Reflow** — zero horizontal overflow on twelve surfaces at 375×812, in RTL, and in both.
+* **Structure** — one `h1` per page, no skipped heading levels, no unnamed button, no image
+  without `alt`.
+* **Names** — every `aria-label` in the workspace free of internal identifiers. The network graph
+  was announcing `Edge from sup:SUP-001 to port:aqaba`; it is not now.
+* **Keyboard** — a table row opened with Enter, focus confirmed inside the drawer, Escape, and
+  where focus lands afterwards; the same for the search palette; the skip link actually moving
+  focus rather than only the viewport.
+* **Announcement** — every confirmation now goes through a live region; none did before.
+* **Contrast** — computed from the rendered DOM, every text node against its own resolved
+  background, at the WCAG AA thresholds for its size and weight. **Zero failures** on Home,
+  Decisions, Inventory, Purchase orders, Diagnostics and the Network. Nine rules had to move to
+  reach that, including `.na` — "Not available", this product's honesty marker, which appears in
+  every table and measured **2.39:1**.
+* **Motion** — the three looping or entrance animations (skeleton, spinner, drawer) are already
+  behind `prefers-reduced-motion`.
+
+**Six of those classes were broken when this session started and are fixed here.** What was *not*
+done: a pass with an actual screen reader, a zoom-to-200 % pass, and any check of the marketing
+site (only the workspace was swept). Those are open, and the table above should not be read as
+claiming otherwise. One residual contrast failure is left deliberately: React Flow's own
+"React Flow" attribution link, at 2.85:1, which the library styles and the licence asks to keep.
 
 ## 4. Requirements **not** implemented
 
@@ -115,7 +150,7 @@ Stated plainly rather than left to be discovered.
 | Frontend typecheck / production build | green |
 | Frontend lint | green **in CI** — see §10.13 |
 | `ruff`, `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
-| **zaad frozen regression** | **green** |
+| **zaad frozen regression** | **green** — in CI, and run directly on the handoff head |
 
 New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `abandoned.test.ts` (6),
 `format.test.ts` (7), plus tests added to `canonical.test.ts`.
@@ -182,6 +217,11 @@ path) and a **production build** of this branch, on synthetic workspaces created
   channel nothing visible would have shown. Tabbing the network graph with a screen reader
   announced React Flow's default labels: "Edge from sup:SUP-001 to port:aqaba". Every node and edge
   already carried the sentence a person would say, and now says it.
+* **Contrast computed from the rendered DOM** — every text node against its own resolved
+  background, at the AA threshold for its size and weight. `.na`, the "Not available" marker this
+  product puts in every table to say it does not know something, measured **2.39:1**: the least
+  readable text on the page was the one carrying the honesty. Nine rules moved; the sweep is now
+  clean on six surfaces.
 * **The keyboard path walked with the mouse untouched**: a table row focused, Enter pressed, the
   drawer opened, focus confirmed inside it, Escape pressed. That is how closing a drawer turned out
   to drop focus on `<body>` — a reader who opened the fourth product in a fifty-row table was
@@ -226,7 +266,7 @@ path) and a **production build** of this branch, on synthetic workspaces created
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Thirty-four defects were found this way and fixed**; they are listed in the PR description. The
+**Thirty-five defects were found this way and fixed**; they are listed in the PR description. The
 six most serious were invisible to the build and to the existing tests:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from
@@ -319,7 +359,21 @@ six most serious were invisible to the build and to the existing tests:
 * Every cell written to a CSV or XLSX passes through one function so a value beginning `=`, `+`, `-`
   or `@` cannot leave as a formula.
 * No endpoint transmits anything. `executable: false` on every write response;
-  `X-ZAAD-Transmitted: false` on every export.
+  `X-ZAAD-Transmitted: false` on every export — and that header is now readable from the browser,
+  so the claim can be checked rather than taken on trust.
+* **CORS names every method and header the API actually uses, and nothing more.** The allowlist was
+  too narrow (three of this product's write paths could not be sent at all) and the exposed-header
+  list was empty (the export filename could not be read). Both are corrected and covered by tests
+  that preflight against the real app — including one method the API does not serve, so the tests
+  fail if the allowlist ever becomes an opening. There is still no wildcard origin and
+  `allow_credentials=False`.
+* **Authentication is a bearer token in a header, never a cookie**, so there is no ambient authority
+  for another origin to borrow. The JSON writes additionally demand `Content-Type: application/json`,
+  which a cross-site form cannot send; the two multipart endpoints rely on the header auth alone.
+* Hostile input probed by hand against the live API as well as in tests: `'; DROP TABLE …`,
+  `%' OR '1'='1`, `../../etc/passwd`, an undeclared dataset, an undeclared sort column, a limit of
+  100,000 and a negative offset. Each is refused by name or returns nothing, and the tables were
+  still there afterwards.
 
 ## 10. Known defects and limitations at handoff
 

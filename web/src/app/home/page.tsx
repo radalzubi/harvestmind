@@ -277,7 +277,7 @@ function HomeBody() {
                   <span style={{ color: "var(--ink-500)", fontSize: 12.5 }}>
                     {draft.supplier_id ?? "no supplier"} · {NUMBER(draft.lines)} line{draft.lines === 1 ? "" : "s"}
                   </span>
-                  <span style={{ marginInlineStart: "auto", color: "var(--ink-400)", fontSize: 12 }}>{DATE(draft.updated_at)}</span>
+                  <span style={{ marginInlineStart: "auto", color: "var(--ink-500)", fontSize: 12 }}>{DATE(draft.updated_at)}</span>
                 </Link>
               </li>
             ))}

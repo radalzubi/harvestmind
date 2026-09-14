@@ -197,7 +197,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           )}
         </div>
         <div className="ws-rail-foot">
-          <div style={{ fontSize: 11.5, color: "var(--ink-400)", lineHeight: 1.5 }}>
+          <div style={{ fontSize: 11.5, color: "var(--ink-500)", lineHeight: 1.5 }}>
             ZAAD recommends and records approvals. It never sends an order to a supplier.
           </div>
         </div>

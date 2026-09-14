@@ -363,7 +363,7 @@ supplier's name is not silently dropped in favour of a basemap city.
 | **P3** sourcing | declared alternative sources on the SKU panel and the supplier page, with the note that ZAAD weighs cost, capacity, reliability and shared risk together rather than unit price |
 | **P4** adaptive recourse | the engine's own limitations travel with every plan and every comparison ("future actions are replanning guidance") |
 | **P5** ATP / allocation | customer service lines in the comparison and the twin's customer nodes |
-| **P4B V1** open-PO intervention | the imported-order panel's declared amendment rights, the engine's recommended action for that order, and the amendment vocabulary the proposal editor uses |
+| **P4B V1** open-PO intervention | the imported-order panel's declared amendment rights (named as P4B names them, not as the contract spells them), the engine's recommended action for that order, the declared amendment windows and their per-unit terms on a proposed change, and the amendment vocabulary the proposal editor uses |
 
 ## 12. API surface added
 

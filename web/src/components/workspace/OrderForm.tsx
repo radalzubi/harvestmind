@@ -96,7 +96,7 @@ function ProductPicker({ onPick, disabled }: { onPick: (row: InventoryRow) => vo
   return (
     <div ref={box} style={{ position: "relative", flex: "1 1 280px", minWidth: 0 }}>
       <div style={{ position: "relative" }}>
-        <Search size={14} aria-hidden style={{ position: "absolute", insetInlineStart: 9, top: 10, color: "var(--ink-400)" }} />
+        <Search size={14} aria-hidden style={{ position: "absolute", insetInlineStart: 9, top: 10, color: "var(--ink-500)" }} />
         <input className="fld fld--block" style={{ paddingInlineStart: 28 }} value={term} disabled={disabled}
           placeholder="Add a product — search code or description"
           aria-label="Search products to add" onFocus={() => hits.length && setOpen(true)}
@@ -114,7 +114,7 @@ function ProductPicker({ onPick, disabled }: { onPick: (row: InventoryRow) => vo
                 onClick={() => { onPick(row); setTerm(""); setHits([]); setOpen(false); }}>
                 <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
                   <strong style={{ fontWeight: 500 }}>{row.sku_name || row.sku}</strong>
-                  <span style={{ color: "var(--ink-400)", marginInlineStart: 6, fontSize: 12 }}>{row.sku}</span>
+                  <span style={{ color: "var(--ink-500)", marginInlineStart: 6, fontSize: 12 }}>{row.sku}</span>
                 </span>
                 <span style={{ marginInlineStart: "auto", color: "var(--ink-500)", fontSize: 12 }}>
                   {row.on_hand != null ? `${NUMBER(row.on_hand)} on hand` : "no stock count"}

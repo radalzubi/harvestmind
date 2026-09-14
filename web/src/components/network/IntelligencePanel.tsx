@@ -30,7 +30,7 @@ function Recommendations({ targetId }: { targetId: string }) {
           <div className="dec-top">
             <span className="dec-verb" data-tone={d.verb === "KEEP" ? "keep" : "change"}>{d.verb}</span>
             <span className="dec-cat">{d.category}</span>
-            <ArrowUpRight size={14} style={{ marginInlineStart: "auto", color: "var(--ink-400)" }} aria-hidden />
+            <ArrowUpRight size={14} style={{ marginInlineStart: "auto", color: "var(--ink-500)" }} aria-hidden />
           </div>
           <h4 className="dec-h" style={{ fontSize: 14 }}>{d.headline}</h4>
         </Link>

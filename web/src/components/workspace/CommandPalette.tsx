@@ -174,7 +174,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
             ))}
           </ul>
         )}
-        <div style={{ borderTop: "1px solid var(--line-soft)", padding: "8px 14px", fontSize: 11.5, color: "var(--ink-400)", display: "flex", gap: 14 }}>
+        <div style={{ borderTop: "1px solid var(--line-soft)", padding: "8px 14px", fontSize: 11.5, color: "var(--ink-500)", display: "flex", gap: 14 }}>
           <span>↑↓ to move</span><span>↵ to open</span><span>esc to close</span>
         </div>
       </div>

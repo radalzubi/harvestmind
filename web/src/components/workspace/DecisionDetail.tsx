@@ -85,7 +85,7 @@ function ReviewPanel({ summary, openCount }: { summary: PlanSummary; openCount: 
         ))}
       </div>
       <div className="zfield">
-        <label className="zlabel" htmlFor="review-note">Anything to add <span style={{ color: "var(--ink-400)", fontWeight: 400 }}>(optional)</span></label>
+        <label className="zlabel" htmlFor="review-note">Anything to add <span style={{ color: "var(--ink-500)", fontWeight: 400 }}>(optional)</span></label>
         <input id="review-note" className="zinput" maxLength={1600} value={note} onChange={(e) => setNote(e.target.value)}
           placeholder="Context for whoever reads this later" />
       </div>

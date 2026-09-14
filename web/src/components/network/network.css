@@ -38,9 +38,9 @@
 .twin-view-tab[aria-selected="true"] { background: var(--surface); color: var(--ink-950); box-shadow: var(--shadow-sm); }
 .twin-view-tab:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
-.twin-search { position: relative; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink-400); }
+.twin-search { position: relative; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink-500); }
 .twin-search input { border: 0; background: transparent; outline: none; font: inherit; font-size: 12.5px; color: var(--ink-900); width: 240px; }
-.twin-search input::placeholder { color: var(--ink-400); }
+.twin-search input::placeholder { color: var(--ink-500); }
 .twin-search:focus-within { border-color: var(--ink-900); box-shadow: var(--focus-ring); }
 .twin-search-hits { position: absolute; top: calc(100% + 5px); inset-inline-start: 0; z-index: 30; min-width: 260px; list-style: none; margin: 0; padding: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-lg); }
 .twin-search-hits button { display: block; width: 100%; text-align: start; border: 0; background: transparent; font: inherit; font-size: 13px; color: var(--ink-800); padding: 7px 9px; border-radius: var(--radius-sm); cursor: pointer; }

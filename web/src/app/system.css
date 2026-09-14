@@ -17,7 +17,9 @@
   --focus-ring-brand: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
 
   /* The four attention levels, used by decisions, the twin and status copy. */
-  --attn-normal: var(--ink-400);
+  /* Contrast: --ink-400 is 2.39:1 on the page ground, below even the 3:1 a non-text graphic
+     needs. --ink-500 is 4.5:1 and still reads as the quiet state. */
+  --attn-normal: var(--ink-500);
   --attn-watch: var(--warn);
   --attn-action: var(--high);
   --attn-critical: var(--bad);
@@ -98,7 +100,7 @@
 }
 .ws-rail-foot { margin-top: auto; padding: 10px 12px 14px; border-top: 1px solid var(--line-soft); }
 .ws-secondary { padding: 4px 12px 12px; }
-.ws-secondary-label { font-size: 11px; font-weight: 500; color: var(--ink-400); padding: 8px 10px 4px; }
+.ws-secondary-label { font-size: 11px; font-weight: 500; color: var(--ink-500); padding: 8px 10px 4px; }
 
 .ws-main { min-width: 0; display: flex; flex-direction: column; }
 .ws-top {
@@ -113,7 +115,7 @@
 .ws-search {
   display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; min-width: 200px;
   border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface);
-  color: var(--ink-400); font-size: 12.5px; cursor: text;
+  color: var(--ink-500); font-size: 12.5px; cursor: text;
 }
 .ws-search:hover { border-color: var(--ink-300); }
 .ws-search:focus-visible { outline: none; box-shadow: var(--focus-ring); }
@@ -240,9 +242,9 @@
 .disc > summary::-webkit-details-marker { display: none; }
 .disc > summary:hover { color: var(--ink-950); }
 .disc > summary:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
-.disc > summary .chev { transition: transform .18s cubic-bezier(.22,1,.36,1); color: var(--ink-400); }
+.disc > summary .chev { transition: transform .18s cubic-bezier(.22,1,.36,1); color: var(--ink-500); }
 .disc[open] > summary .chev { transform: rotate(90deg); }
-.disc > summary .hint { margin-left: auto; font-size: 12px; color: var(--ink-400); font-weight: 400; }
+.disc > summary .hint { margin-left: auto; font-size: 12px; color: var(--ink-500); font-weight: 400; }
 .disc-body { padding: 2px 0 16px; font-size: 13px; color: var(--ink-700); line-height: 1.6; }
 .disc-body > * + * { margin-top: 10px; }
 .disc-tech { font-family: var(--mono); font-size: 11.5px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px; overflow: auto; max-height: 420px; white-space: pre-wrap; word-break: break-word; }
@@ -253,7 +255,7 @@
 .facts > div { background: var(--surface); padding: 11px 13px; }
 .facts dt { font-size: 12px; color: var(--ink-500); margin: 0; }
 .facts dd { margin: 4px 0 0; font-size: 14px; color: var(--ink-950); font-weight: 500; font-variant-numeric: tabular-nums; }
-.facts dd.na { color: var(--ink-400); font-weight: 400; font-style: normal; }
+.facts dd.na { color: var(--ink-500); font-weight: 400; font-style: normal; }
 /* `.note` is also a marketing-site class — a 22px-padded green panel — and both stylesheets load
    on a workspace page. Without the resets below, every caption under a metric in the network panel
    ("from 2,137 deliveries") was drawn as that green box. Overriding the colours alone was not
@@ -270,7 +272,7 @@
 .evid-row:last-child { border-bottom: 0; }
 .evid-row dt { color: var(--ink-500); }
 .evid-row dd { margin: 0; color: var(--ink-800); }
-.evid-prov { display: inline-block; margin-inline-start: 6px; font-size: 11px; color: var(--ink-400); border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; }
+.evid-prov { display: inline-block; margin-inline-start: 6px; font-size: 11px; color: var(--ink-500); border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; }
 @media (max-width: 560px) { .evid-row { grid-template-columns: 1fr; gap: 2px; } }
 
 /* ── Side panel (decisions, twin) ────────────────────────────────────────── */
@@ -299,7 +301,7 @@
   padding: 9px 11px; font-family: inherit; font-size: 13.5px; color: var(--ink-900); background: var(--surface);
 }
 .zinput:focus { outline: none; border-color: var(--ink-900); box-shadow: var(--focus-ring); }
-.zinput::placeholder { color: var(--ink-400); }
+.zinput::placeholder { color: var(--ink-500); }
 .zlabel { display: block; font-size: 12.5px; font-weight: 500; color: var(--ink-700); margin-bottom: 5px; }
 .zhelp { font-size: 12px; color: var(--ink-500); margin-top: 5px; }
 .zfield + .zfield { margin-top: 14px; }
@@ -331,7 +333,10 @@
 .tag[data-tone="illustrative"] { background: var(--warn-bg); color: var(--warn); border-color: var(--warn-line); }
 .tag[data-tone="live"] { background: var(--good-bg); color: var(--good); border-color: var(--good-line); }
 .tag[data-tone="approx"] { background: var(--surface-2); color: var(--ink-500); }
-.na { color: var(--ink-400); }
+/* "Not available" and "—" are this product's honesty marker and appear in every table, so they
+   must not be the least readable text on the page: --ink-400 measured 2.39:1 against the page
+   ground, below the 4.5:1 AA needs. --ink-500 is 4.5:1 and still reads as secondary. */
+.na { color: var(--ink-500); }
 
 .notice { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 12px 14px; font-size: 13px; color: var(--ink-700); line-height: 1.55; }
 .notice[data-tone="warn"] { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn); }
@@ -500,7 +505,9 @@ textarea.fld { height: auto; padding: 8px 10px; line-height: 1.5; resize: vertic
 .tabs button {
   appearance: none; background: none; border: 0; border-bottom: 2px solid transparent;
   padding: 8px 12px 9px; font-family: var(--sans); font-size: 13.5px; font-weight: 500;
-  color: var(--ink-500); cursor: pointer; white-space: nowrap;
+  /* The strip sits on a slightly darker ground than the page, which put --ink-500 at 4.40:1 —
+     just under AA. One step darker and an unselected tab is still plainly unselected. */
+  color: var(--ink-600); cursor: pointer; white-space: nowrap;
 }
 .tabs button:hover { color: var(--ink-950); }
 .tabs button[aria-selected="true"] { color: var(--ink-950); border-bottom-color: var(--ink-950); }
