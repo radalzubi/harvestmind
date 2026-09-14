@@ -326,6 +326,21 @@ Late arrivals grouped by the route each supplier declares — an association acr
 as one. **ZAAD does not choose routes**: P7 route/port/mode optimisation is not released, and the
 page says so.
 
+### The denominator rule
+
+A count of late arrivals is `count(*) FILTER (WHERE late_days > 0)`, and `late_days` is NULL
+wherever the order carries no promised date — so that count is zero both for a route that always
+arrived on time and for one nothing could be judged against. Every lateness aggregate therefore
+carries **`orders_with_promise`** beside it (`corridor_lateness`, `by_product`, and the supplier
+metrics' `orders_with_promise`), and no surface prints a lateness figure without reading it: zero
+promises renders *Not available* or *not measurable*, never `0`. This is not hypothetical — a QA
+vault whose 16,751 purchase-order lines carry no `expected_delivery_date` reported "0 arrived late"
+over 16,546 matched orders on two surfaces at once, under headers that correctly said the opposite.
+
+The same rule applies to counts generally: a measured zero is a word ("none", "none late"), a
+missing value is the dash. `TALLY` in `web/src/lib/zaad/product.ts` is the one place that decides
+which, and the `Tally` renderer is the one place that draws it.
+
 ### Product physics
 
 Per-product supply and lead-time dispersion, declared shelf life and age at receipt, remaining life

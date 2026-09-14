@@ -412,10 +412,10 @@ process, never `zaad-api`.
   how the last defect below was found. A file that is bytes on disk is not evidence that it is a
   document anyone can use.
 
-**Everything found this way was fixed** — twelve defects on the first day and, on the second, one
-per commit across twenty-three defect commits, several of which carry more than one. The subject line
-of each is the defect in the words of what a person would have seen, so `git log main..HEAD` is the
-list; the PR description groups the ones worth naming. The six most serious were invisible to the
+**Everything found this way was fixed** — **41 of this branch's 54 commits are defect fixes**, and
+several carry more than one. The subject line of each is the defect in the words of what a person
+would have seen, so `git log main..HEAD` is the list; the PR description groups the ones worth
+naming. The six most serious were invisible to the
 build and to every test in this repository:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from
@@ -610,7 +610,17 @@ Ordered by how much they should worry you.
 12. **The evaluation-run guard has two bases and neither is the job store itself.** The vault record
     is the normal answer; the overlaid run's own request is the fallback. A cleaner answer would be a
     purpose field on the job record — which is in `zaad/`, so not this pass.
-13. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
+13. **The Upload page does not know that a column is missing, only that a file is.** The
+    150-product QA vault's 16,751 purchase-order lines carry no `expected_delivery_date` at all,
+    which is why three diagnostics now say lateness cannot be measured — and Upload still reports
+    "ZAAD has what it needs to plan. Nothing needs your attention here", because the source *file*
+    is present. The operator's route back is the sentence under the routes table naming the missing
+    field; there is no path from Upload. A per-source column-completeness summary would close it and
+    is additive (`api/routers/intake.py` already knows each source's columns). **Deliberately not
+    built in this pass**: deciding which absent columns are worth flagging is a product judgement,
+    and inventing thresholds on the last day is how a product starts nagging about data it never
+    needed.
+14. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
     7–12 minutes earlier in the pass and passed; by the end the eslint process parked with the
     config's `globals.json` open, sleeping, and **0.94 s of CPU consumed in 3 m 24 s** — it was
     blocked, not slow. Two separate invocations behaved identically and were killed. The lint
