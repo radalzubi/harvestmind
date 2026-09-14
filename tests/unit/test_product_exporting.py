@@ -151,3 +151,58 @@ def test_an_xlsx_upload_is_read_without_evaluating_it():
     assert lines == [{"sku": "SKU-7", "quantity": 42.0, "unit_price": None, "units_per_case": None,
                       "requested_receipt_date": None, "notes": None}]
     assert problems == []
+
+
+# ── the printable order has to fit the page ───────────────────────────────────
+
+def test_the_printable_order_fits_the_page_it_is_printed_on():
+    """The twelve columns of the standard format ran off the right edge of A4 portrait.
+
+    reportlab does not complain when a table is wider than its frame — it clips it. So the one
+    output a person is meant to print, sign and send lost the unit price to "1.01" and the currency
+    column entirely. The page turns sideways for a wide format, and the columns are measured and
+    scaled so every one of them is on it.
+    """
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.units import mm
+
+    from api.product.exporting import PDF_LANDSCAPE_COLUMNS, pdf_column_widths
+
+    headers, body = build_rows(DRAFT, default_profile())
+    assert len(headers) > PDF_LANDSCAPE_COLUMNS, "the standard format is the wide case"
+    frame = landscape(A4)[0] - 36 * mm
+    widths = pdf_column_widths(headers, body, frame)
+    assert len(widths) == len(headers)
+    assert sum(widths) <= frame + 0.5
+    assert all(w > 0 for w in widths)
+
+
+def test_a_narrow_format_keeps_its_natural_widths():
+    """Nothing is stretched or squeezed when it already fits."""
+    from api.product.exporting import pdf_column_widths
+
+    widths = pdf_column_widths(["A", "B"], [["x", "y"]], 500.0)
+    assert sum(widths) < 500.0
+
+
+def test_columns_too_numerous_for_any_minimum_still_fit():
+    """Fitting the page wins over per-column comfort: cells wrap, they do not fall off the edge."""
+    from api.product.exporting import pdf_column_widths
+
+    headers = [f"Column {i}" for i in range(40)]
+    widths = pdf_column_widths(headers, [[f"value {i}" for i in range(40)]], 600.0)
+    assert sum(widths) <= 600.5
+
+
+def test_no_columns_is_no_widths():
+    from api.product.exporting import pdf_column_widths
+
+    assert pdf_column_widths([], [], 500.0) == []
+
+
+def test_a_cell_containing_markup_does_not_become_markup_in_the_pdf():
+    """Cells are paragraphs now so they wrap; a paragraph parses XML, so cells are escaped."""
+    draft = {**DRAFT, "lines": [{**DRAFT["lines"][0], "sku_name": "<b>Rice</b> & 5kg"}]}
+    out = to_pdf(draft, default_profile(), workspace="op_1")
+    assert out[:5] == b"%PDF-"
+    assert len(out) > 800

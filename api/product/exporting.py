@@ -250,18 +250,64 @@ def to_xlsx(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: d
     return out.getvalue()
 
 
+#: More columns than this and the page turns sideways. ZAAD's own standard format has twelve.
+PDF_LANDSCAPE_COLUMNS = 8
+PDF_FONT_SIZE = 8
+PDF_MIN_COLUMN_PT = 26.0
+#: Horizontal padding inside a cell, set explicitly in the table style below. A column has to be
+#: this much wider than its text or reportlab wraps a word that would otherwise have fitted.
+PDF_CELL_PADDING_PT = 4.0
+
+
+def pdf_column_widths(headers: list[str], body: list[list[str]], available: float,
+                      font_size: float = PDF_FONT_SIZE) -> list[float]:
+    """Column widths that fit the page, in points.
+
+    Without this the table was simply wider than the frame and reportlab clipped it: the twelve
+    columns of the standard format ran off the right edge of A4, losing the unit price to "1.01"
+    and the currency entirely — on the one output a person is meant to print, sign and send.
+
+    Columns are measured at their natural width and scaled down together when they do not fit. A
+    column is never narrower than `PDF_MIN_COLUMN_PT`, unless honouring that would push the table
+    back over the edge, in which case fitting the page wins — the cells wrap rather than vanish.
+    """
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+
+    if not headers:
+        return []
+    padding = 2 * PDF_CELL_PADDING_PT + 1.0  # the cell's own padding, plus a point of slack
+    natural = []
+    for index, header in enumerate(headers):
+        width = stringWidth(str(header), "Helvetica-Bold", font_size)
+        for row in body:
+            if index < len(row):
+                width = max(width, stringWidth(str(row[index]), "Helvetica", font_size))
+        natural.append(width + padding)
+    total = sum(natural)
+    if total <= available:
+        return natural
+    scaled = [max(PDF_MIN_COLUMN_PT, w * available / total) for w in natural]
+    if sum(scaled) > available:  # the minimums do not fit either; proportion wins over comfort
+        share = available / total
+        scaled = [w * share for w in natural]
+    return scaled
+
+
 def to_pdf(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: dict[str, str] | None = None,
            workspace: str = "") -> bytes:
     """A printable order a person can read, sign and send themselves."""
+    from xml.sax.saxutils import escape
+
     from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import mm
     from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
     headers, body = build_rows(draft, profile, supplier_names=supplier_names)
+    page = landscape(A4) if len(headers) > PDF_LANDSCAPE_COLUMNS else A4
     out = io.BytesIO()
-    doc = SimpleDocTemplate(out, pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm,
+    doc = SimpleDocTemplate(out, pagesize=page, leftMargin=18 * mm, rightMargin=18 * mm,
                             topMargin=18 * mm, bottomMargin=18 * mm, title="Purchase order")
     styles = getSampleStyleSheet()
     small = ParagraphStyle("small", parent=styles["Normal"], fontSize=8.5, leading=11,
@@ -276,15 +322,26 @@ def to_pdf(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: di
         ] if x), small),
         Spacer(1, 8),
     ]
-    table = Table([headers, *body], repeatRows=1, hAlign="LEFT")
+    # Cells are paragraphs so a long description wraps inside its column instead of being clipped
+    # at the frame edge; the text is XML-escaped because that is what a paragraph parses.
+    head_style = ParagraphStyle("pdf-head", fontName="Helvetica-Bold", fontSize=PDF_FONT_SIZE,
+                                leading=PDF_FONT_SIZE + 1.5, textColor=colors.HexColor("#1A1A18"))
+    cell_style = ParagraphStyle("pdf-cell", fontName="Helvetica", fontSize=PDF_FONT_SIZE,
+                                leading=PDF_FONT_SIZE + 1.5)
+    grid = [[Paragraph(escape(str(h)), head_style) for h in headers],
+            *[[Paragraph(escape(str(c)), cell_style) for c in row] for row in body]]
+    widths = pdf_column_widths(headers, body, doc.width)
+    table = Table(grid, colWidths=widths, repeatRows=1, hAlign="LEFT")
     table.setStyle(TableStyle([
-        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("FONTSIZE", (0, 0), (-1, -1), PDF_FONT_SIZE),
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F2F2EE")),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.HexColor("#1A1A18")),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
         ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#E2E2DC")),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ("LEFTPADDING", (0, 0), (-1, -1), PDF_CELL_PADDING_PT),
+        ("RIGHTPADDING", (0, 0), (-1, -1), PDF_CELL_PADDING_PT),
     ]))
     story.append(table)
     story.append(Spacer(1, 10))

@@ -192,6 +192,20 @@ An operator can upload the template their own system already imports; ZAAD reads
 only** and proposes a mapping for a person to confirm. Nothing in the file is evaluated and no
 spreadsheet is handed to a model to interpret.
 
+**The printable PDF fits the page it is printed on.** reportlab clips a table wider than its frame
+rather than complaining, and the standard format's twelve columns did not fit A4 portrait — the
+currency column was simply not on the page. A format wider than `PDF_LANDSCAPE_COLUMNS` (8) prints
+landscape; `pdf_column_widths` measures each column at its natural text width and scales them
+together when they do not fit; cells are paragraphs, so a long description wraps inside its column.
+When even the minimum column width will not fit, fitting the page wins — text wraps, it does not
+fall off the edge.
+
+**Numbers are written as text in XLSX, deliberately.** `cell.data_type = "s"` on every cell is what
+stops a value being re-typed as a formula or a date by the reader. The cost is Excel's
+"number stored as text" marker on quantity and price columns. The file imports correctly; a person
+opening it to total a column will see the marker. This is a safety decision, recorded rather than
+quietly traded away.
+
 **Safety.** Every cell goes through one function, `safe_cell`. A value beginning `=`, `+`, `-` or
 `@` is a formula to Excel, Sheets and LibreOffice whatever wrote the file; it is prefixed so it
 cannot be. Held by `test_a_formula_never_leaves_in_an_export` and the parametrised unit test.
@@ -240,7 +254,10 @@ the endpoints' own work against them (median of three, developer laptop, DuckDB,
 | global search | 13 ms | 38 ms |
 | operating snapshot | 21 ms | 68 ms |
 
-Slowest median 298 ms against an 800 ms budget; 0 queries over it.
+Slowest median 298 ms against an 800 ms budget; 0 queries over it. **Re-measured on the final head
+of this branch**, after every change in it, on a freshly built 50,000-product fixture: slowest
+median **305 ms**, 0 over. The two runs differ by machine load, not by anything in the code — no
+query in this pass changed.
 
 **Platform catalogue scale and one optimization problem size are separate.** The product holds
 50,000 products comfortably; a solve still covers a bounded selection, which is stated wherever a

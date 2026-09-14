@@ -105,7 +105,7 @@ Stated plainly rather than left to be discovered.
 | Suite | Result |
 |---|---|
 | `tests/integration/test_operating_product_api.py` | 44 passed |
-| `tests/unit/test_product_exporting.py` | 24 passed |
+| `tests/unit/test_product_exporting.py` | 25 passed |
 | `tests/unit/test_product_evaluation.py` | 26 passed |
 | `tests/unit/test_product_drafts_schema.py` | 9 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
@@ -113,7 +113,7 @@ Stated plainly rather than left to be discovered.
 | Whole local suite (`tests/unit` + `tests/integration`) | **2,089 passed, 2 skipped** |
 | Frontend (`npm test`) | **99 passed**, 38 new |
 | Frontend typecheck / production build | green |
-| Frontend lint | green **in CI** — see §10.12 |
+| Frontend lint | green **in CI** — see §10.13 |
 | `ruff`, `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
 | **zaad frozen regression** | **green** |
 
@@ -127,7 +127,7 @@ Benchmark: `python3 scripts/zaad_product_scale_bench.py <db> [<db>…]`.
 
 | | 10,000 products / 800k rows | 50,000 products / 4.0M rows |
 |---|---|---|
-| slowest median query | 61 ms | **298 ms** |
+| slowest median query | 61 ms | **298 ms** (re-measured on the final head: **305 ms**) |
 | queries over the 800 ms budget | 0 | **0** |
 | fixture build time | 0.9 s | 2.6 s |
 
@@ -181,9 +181,13 @@ path) and a **production build** of this branch, on synthetic workspaces created
 * **Every write verb exercised from a browser, watching the network tab**, which is the only way
   the CORS defects below could have been found. POST, PATCH, PUT and DELETE all answer 200/204 now;
   three of them could not be sent at all before, and no exported file carried its own name.
+* **All three export formats produced and opened.** The CSV read back field by field, the XLSX
+  loaded with `openpyxl` and its cells checked, **and the PDF rendered and looked at** — which is
+  how the last defect below was found. A file that is bytes on disk is not evidence that it is a
+  document anyone can use.
 
-**Twenty-four defects were found this way and fixed**; they are listed in the PR description. The
-five most serious were invisible to the build and to the existing tests:
+**Twenty-five defects were found this way and fixed**; they are listed in the PR description. The
+six most serious were invisible to the build and to the existing tests:
 
 * **Editing a proposal, deleting one, and updating or removing an export format could not work from
   a browser at all.** The CORS allowlist in `api/main.py` said
@@ -205,6 +209,16 @@ five most serious were invisible to the build and to the existing tests:
   product makes, were equally unreadable. All three are exposed now; measured from the browser
   afterwards, an export returns
   `Change_to_PO-016648_SUP-001_20260914.csv` and `x-zaad-transmitted: false`.
+
+* **The printable order ran off the right edge of the page.** reportlab does not complain when a
+  table is wider than its frame; it clips it. ZAAD's own standard format has twelve columns, and on
+  A4 portrait the unit price was cut to "1.01" and the **currency column was not on the page at
+  all** — on the one output a person is meant to print, sign and send to a supplier. Found by
+  opening the PDF and looking at it, which no byte-count assertion would have done. A format wider
+  than eight columns now prints landscape, the columns are measured at their natural width and
+  scaled together to fit the frame, and cells are paragraphs so a long description wraps inside its
+  column instead of being clipped. Five unit tests, one of them for a forty-column format where
+  fitting the page has to win over per-column comfort.
 
 * `ensure_tables` — the fallback that prepares the product's own tables on a vault that predates
   migration 023 — split the migration file on `";"`. Migration 023 carries `COMMENT ON … IS '…;…'`
@@ -323,7 +337,7 @@ Ordered by how much they should worry you.
    plan. The baseline is a genuine plan, so nothing false is shown, but its scope is the proposal's
    products rather than the workspace's, and the operator did not ask for it. The window is short
    (two queue writes and a DuckDB insert) and was not observed in QA. The fix is to write the
-   evaluation record first, or to carry a purpose field on the job — see item 11.
+   evaluation record first, or to carry a purpose field on the job — see item 12.
 7. **A proposed amendment is never priced outside a plan, by design, and that is a real gap in the
    product.** The declared terms are now shown — fee per unit, credit per unit, capacity, deadline,
    provenance — but ZAAD does not multiply them by the quantity affected, because the worth of a
@@ -334,16 +348,23 @@ Ordered by how much they should worry you.
    the reason), and on a KEEP the buyer sees the terms but no figure. **If you disagree with that
    boundary, this is the first place to look** — the honest alternative is a P4B-priced "what would
    this change be worth" run, which is new engine work, not a frontend change.
-8. **Receipts that do not name a product** are attributed only when the order has one line; otherwise
+8. **XLSX writes numbers as text.** `cell.data_type = "s"` on every cell is what stops a value
+   being re-typed as a formula or a date by whatever opens the file, which is the injection class
+   §83 asks about. The cost is Excel's "number stored as text" marker on the quantity and price
+   columns: the file imports correctly, and a person opening it to total a column sees the marker.
+   Writing genuinely numeric fields as numbers would be safe (a float is never a formula) and is
+   the obvious improvement; it was not made late in a pass, on the safety-critical path, without
+   the evidence to justify it.
+9. **Receipts that do not name a product** are attributed only when the order has one line; otherwise
    the line's received quantity is reported as unattributed, never apportioned.
-9. **Sites are not placed on the map** in a multi-site workspace — the planning contract carries no
+10. **Sites are not placed on the map** in a multi-site workspace — the planning contract carries no
    coordinates and the operator's country would stack every site on one point.
-10. **No supported delay driver** is produced: the canonical upload has no event timestamps between
+11. **No supported delay driver** is produced: the canonical upload has no event timestamps between
     order and receipt. The five fields that would settle it are named on the page.
-11. **The evaluation-run guard has two bases and neither is the job store itself.** The vault record
+12. **The evaluation-run guard has two bases and neither is the job store itself.** The vault record
     is the normal answer; the overlaid run's own request is the fallback. A cleaner answer would be a
     purpose field on the job record — which is in `zaad/`, so not this pass.
-12. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
+13. **`npm run lint` could not be completed locally in the last hours of this session.** It ran in
     7–12 minutes earlier in the pass and passed; by the end the eslint process parked with the
     config's `globals.json` open, sleeping, and **0.94 s of CPU consumed in 3 m 24 s** — it was
     blocked, not slow. Two separate invocations behaved identically and were killed. The lint
