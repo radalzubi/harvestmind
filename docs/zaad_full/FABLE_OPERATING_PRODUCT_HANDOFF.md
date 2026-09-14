@@ -875,11 +875,31 @@ Ordered by how much they should worry you.
 * Whether the Arabic copy for the new surfaces belongs in this release or the next.
 * The two accessibility passes this session could not do from here: a run with a real screen
   reader, and a browser-zoom pass. Everything else in that class was measured (§3's caveat).
-* **A view on how much of the second day's method should become a standing gate.** Six of the
-  defects it found were invisible to every test in this repository and would have reached an
-  operator. Some of it is automatable — a duplicate-column check, an `aria-label` scan for internal
-  ids, a contrast sweep, a preflight test per method — and some of it is not: opening the PDF and
-  looking at it is not a check a CI job can make.
+* **A view on how much of the second and third days' method should become a standing gate.** Six of
+  the defects the second day found were invisible to every test in this repository and would have
+  reached an operator. Some of it is automatable — a duplicate-column check, an `aria-label` scan
+  for internal ids, a contrast sweep, a preflight test per method — and some of it is not: opening
+  the PDF and looking at it is not a check a CI job can make.
+
+  **The third day's question is more automatable than it looks.** It was: *where does ZAAD state a
+  fact in one register and contradict it in another?* Several of the fourteen it found have a
+  mechanical signature a check could carry:
+
+  | The shape | What a check would look for |
+  |---|---|
+  | A count printed without the denominator it is measured against | an aggregate whose siblings include a `*_with_*` or `orders`/`total` column, rendered alone |
+  | A measured zero rendered as the dash reserved for "not available" | `value ? FORMAT(value) :` over a numeric field — a lint rule could find every one |
+  | The same number at two precisions on one screen | two renderers for one model field, one rounding and one not |
+  | A link whose label promises more than its destination filters | a route's query parameters against the parameters its page reads — the `?q=` links died of exactly this |
+  | Money without a currency read from the data | a literal `$` in a template string |
+
+  The fifth is a one-line grep. The fourth is a build-time check over the app router. The other
+  three need a convention more than a tool: one formatter per kind of value, and a field that
+  carries its own denominator. That, rather than more tests of the same shape, is what I would
+  spend the next pass's first hour on.
+* **The per-site inventory view** (`OPERATING_PRODUCT_V1.md` §16.13). The list sums stock across
+  every location, so the network's site panel can only link to "Stock (all sites)". A location
+  filter would close that, and it is a small change to `catalog.py` plus one facet.
 * Merge and deploy, which this pass deliberately did not do.
 
 ## 12. Session record
