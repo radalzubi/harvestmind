@@ -309,6 +309,11 @@ process, never `zaad-api`.
   than always on the right.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats
   answered `500`. See below.
+* **The pages this pass links to but did not write**, since an operator does not know the
+  difference. `/upload/confirm` opened directly said "Something went wrong — No session id, start
+  from the Upload page": nothing had gone wrong, the page had simply been opened without the upload
+  it exists to confirm, and the heading sent the reader looking for a fault. It now says what
+  happened and offers the one thing to do.
 * **Every refusal path on the proposal endpoint probed by hand** — a negative quantity, zero, a
   quantity that is not a number, an unknown origin, no lines, an unknown product, and a quantity of
   10¹⁸. All but the last two were already answered in words. A quantity of a quintillion was stored
