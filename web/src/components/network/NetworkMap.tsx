@@ -23,7 +23,15 @@ import { INK, STATE_COLOR, useTwin } from "./store";
 
 const STYLE_URL = process.env.NEXT_PUBLIC_MAP_STYLE_URL || "https://tiles.openfreemap.org/styles/positron";
 const WORKER_URL = "/vendor/maplibre-gl-worker.mjs";
-const LOAD_TIMEOUT_MS = 15000;
+/**
+ * How long the basemap may take before the view says so instead of staying blank.
+ *
+ * Measured: a cold load of the style, its sprite, its glyphs and the first tiles took a little over
+ * fifteen seconds, so the original fifteen-second limit reported a failure for a map that was about
+ * to appear. Thirty is long enough not to lie about a slow connection and short enough that nobody
+ * sits in front of an empty rectangle wondering.
+ */
+const LOAD_TIMEOUT_MS = 30000;
 
 /** Confirms the vendored worker is served as JavaScript before the map depends on it. */
 async function probeWorker(): Promise<string | null> {
@@ -97,6 +105,9 @@ export default function NetworkMap() {
       const maplibre = await import("maplibre-gl");
       await import("maplibre-gl/dist/maplibre-gl.css");
       if (!alive || !container.current) return;
+      // The bundler does not serve MapLibre's own worker from inside the package, so it is vendored
+      // to a plain URL at install and build time. MapLibre v6 constructs it with {type:"module"},
+      // which is what the vendored file is.
       maplibre.setWorkerUrl(WORKER_URL);
 
       const instance = new maplibre.Map({
@@ -195,6 +206,21 @@ export default function NetworkMap() {
     (instance.getSource("places") as GeoJSONSource | undefined)?.setData(data.places);
   }, [data, ready]);
 
+  /**
+   * MapLibre reads its container's size once and decides which tiles to fetch from it. It has to be
+   * told when that changes — when the details panel takes or gives back its column, and on the first
+   * layout pass, where a container that is briefly zero-height leaves the map requesting no tiles at
+   * all and painting nothing.
+   */
+  useEffect(() => {
+    const element = container.current;
+    const instance = map.current;
+    if (!element || !instance || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => instance.resize());
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ready]);
+
   const fit = useCallback(() => {
     const instance = map.current;
     if (!instance || !ready) return;
@@ -236,7 +262,9 @@ export default function NetworkMap() {
   }
 
   return (
-    <div className="twin-fill" style={{ position: "relative" }}>
+    // .twin-fill is absolutely positioned and inset to 0 by the stylesheet; setting position
+    // inline here overrides that, `inset` stops applying and the map collapses to no height.
+    <div className="twin-fill">
       <div ref={container} style={{ position: "absolute", inset: 0 }} aria-label="Map of suppliers, ports, routes and sites" role="application" />
       {(unplaced > 0 || placed.some((n) => n.geo!.precision === "approximate")) && (
         <div style={{
