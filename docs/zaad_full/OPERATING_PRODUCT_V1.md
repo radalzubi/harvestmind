@@ -570,3 +570,12 @@ of producing a catalogue error. `tests/unit/test_product_drafts_schema.py` pins 
     and the active quota counts QUEUED + RUNNING, so two orphans block a workspace from planning.
     This is in the released optimizer package and is **not fixed here**; the product detects it on
     the reader's side and reports the run as interrupted, but the row and the quota stay spent.
+13. **Inventory has no per-site view.** The list sums `on_hand` across every location per product
+    and carries a count of the sites it is spread over; per-site stock exists one product at a time,
+    in the drawer's *Where it is*. The network's site panel therefore links to "Stock (all sites)"
+    rather than to this site's stock, and says so. A location filter on the list is the obvious next
+    step and is not built here.
+14. **A number and its unit come apart under `dir="rtl"`.** Not a state this release offers — §79's
+    Arabic copy is not implemented — but `27 d` renders `d 27` once the direction is flipped,
+    wherever a value carries a Latin unit. The fix belongs in the formatters, done once, and checked
+    against real Arabic copy.
