@@ -18,10 +18,11 @@ import { DEFAULT_SCOPE, SCOPE_CHOICES, useWorkspaceData } from "@/lib/zaad/works
 import { Button, ButtonLink, EmptyState, ErrorState, Notice } from "./ui";
 
 export function ScopeNotice() {
-  const { scope, readScope, lastRunFailed } = useWorkspaceData();
-  if (!scope && !readScope && !lastRunFailed) return null;
+  const { scope, readScope, lastRunFailed, degraded } = useWorkspaceData();
+  if (!scope && !readScope && !lastRunFailed && !degraded) return null;
   return (
     <>
+      {degraded && <Notice tone="warn">{degraded}</Notice>}
       {lastRunFailed && (
         <Notice tone="warn">
           <strong>{lastRunFailed}</strong> Nothing was changed, and the plan below is the last one that

@@ -7,7 +7,10 @@ Two shapes the released fixtures do not produce, both needed to test the operati
                 Saudi/Jeddah with inland movement, Iraq/Umm Qasr with inland movement), several
                 supplier origins, two inventory destinations, promised delivery dates so lateness
                 is measurable, uneven supplier reliability, declared alternative sources, and
-                declared amendment rights on a few open orders.
+                declared amendment rights on a few open orders. Pass ``--operator`` so those
+                rights are keyed to the operator whose vault the file becomes: `stg_po_commitments`
+                and `stg_po_options` are filtered by `operator_id`, and a mismatch reads back empty
+                with nothing but a build warning to show for it.
 
   ``scale``     a catalogue of N products (10,000 and 50,000 are the sizes this release is tested
                 at) with stock, a year of customer orders and a purchase-order history, to measure
@@ -72,7 +75,7 @@ def _weeks(start: date, count: int):
     return [start + timedelta(days=7 * i) for i in range(count)]
 
 
-def build_corridor(conn, seed: int = 11, as_of: date | None = None) -> dict:
+def build_corridor(conn, seed: int = 11, as_of: date | None = None, operator: str = "QA_OPERATOR") -> dict:
     """A multi-corridor importer. Small enough to plan, rich enough to exercise every surface."""
     rng = random.Random(seed)
     # The fixture ends today by default, so a QA workspace behaves like a live one: a proposal
@@ -214,24 +217,29 @@ def build_corridor(conn, seed: int = 11, as_of: date | None = None) -> dict:
 
     # Declared amendment rights on a handful of open orders (P4B), so the change workflow has
     # something real to price. Rights are declared, never inferred — that is the whole point.
+    # Strictly *before* the plan date: the planning adapter drops an order placed on or after the
+    # origin, and a right declared on one it has dropped makes the whole workspace read refuse.
     open_ids = [row[0] for row in conn.execute(
         "SELECT DISTINCT po_id FROM stg_fmcg_purchase_orders WHERE po_id NOT IN "
-        "(SELECT DISTINCT po_id FROM stg_fmcg_receipts) ORDER BY po_id LIMIT 4").fetchall()]
+        "(SELECT DISTINCT po_id FROM stg_fmcg_receipts) AND po_date < ? ORDER BY po_id LIMIT 4",
+        [today]).fetchall()]
     for po_id in open_ids:
+        # A 0.40 deposit per remaining unit, half of it refundable, so the 0.20 cancel credit below
+        # is inside what P4B allows: a credit may never exceed prepaid x refundable fraction.
         conn.execute("INSERT INTO stg_po_commitments (operator_id, po_id, stage, allow_split_amendments, "
                      "minimum_remaining_quantity, prepaid_per_remaining_unit, deposit_refundable_fraction, "
-                     "cancellation_status) VALUES (?, ?, 'ordered', TRUE, 0, 0, 0.5, 'none')",
-                     ["QA_OPERATOR", po_id])
+                     "cancellation_status) VALUES (?, ?, 'ordered', TRUE, 0, 0.40, 0.5, 'none')",
+                     [operator, po_id])
         conn.execute("INSERT INTO stg_po_options (operator_id, po_id, option_id, action, due_offset_periods, "
                      "fee_per_unit, credit_per_unit, max_quantity, deadline, allowed_stages, "
                      "contract_reference, provenance) VALUES (?, ?, ?, 'reschedule', 6, 0.05, 0, 100000, ?, "
                      "'[\"ordered\"]', ?, 'CONTRACT')",
-                     ["QA_OPERATOR", po_id, f"{po_id}-defer", today + timedelta(days=30), f"Contract {po_id}"])
+                     [operator, po_id, f"{po_id}-defer", today + timedelta(days=30), f"Contract {po_id}"])
         conn.execute("INSERT INTO stg_po_options (operator_id, po_id, option_id, action, due_offset_periods, "
                      "fee_per_unit, credit_per_unit, max_quantity, deadline, allowed_stages, "
                      "contract_reference, provenance) VALUES (?, ?, ?, 'cancel', 0, 0.10, 0.20, 100000, ?, "
                      "'[\"ordered\"]', ?, 'CONTRACT')",
-                     ["QA_OPERATOR", po_id, f"{po_id}-cancel", today + timedelta(days=14), f"Contract {po_id}"])
+                     [operator, po_id, f"{po_id}-cancel", today + timedelta(days=14), f"Contract {po_id}"])
 
     # Stock, split across the three sites. A lot on a perishable product carries its own expiry.
     perishable = {row[0]: True for row in conn.execute(
@@ -345,13 +353,18 @@ def main() -> int:
     parser.add_argument("--skus", type=int, default=10_000, help="scale only: how many products")
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--as-of", default=None, help="the date the history ends (default: today)")
+    parser.add_argument("--operator", default="QA_OPERATOR",
+                        help="the operator id declared amendment rights are keyed to. It MUST match the "
+                             "operator whose vault this file becomes, or `stg_po_options` reads back empty "
+                             "and every open order silently stays KEEP-only.")
     args = parser.parse_args()
 
     path = Path(args.db)
     conn = _connect(path)
     if args.shape == "corridor":
         report = build_corridor(conn, seed=args.seed if args.seed is not None else 11,
-                                as_of=date.fromisoformat(args.as_of) if args.as_of else None)
+                                as_of=date.fromisoformat(args.as_of) if args.as_of else None,
+                                operator=args.operator)
     else:
         report = build_scale(conn, skus=args.skus, seed=args.seed if args.seed is not None else 23,
                              as_of=date.fromisoformat(args.as_of) if args.as_of else None)

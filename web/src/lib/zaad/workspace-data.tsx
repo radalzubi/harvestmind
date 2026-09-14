@@ -73,6 +73,12 @@ export interface PlanScope {
 
 export interface WorkspaceData {
   phase: ReadPhase;
+  /**
+   * Set when the workspace was read *without* a phase the operator has declared, because the
+   * engine refused that declaration. The rest of the workspace is real; this names what is absent
+   * and why, so nobody concludes from a missing open-PO decision that there was nothing to change.
+   */
+  degraded: string | null;
   planPhase: PlanPhase;
   /** Set when the workspace cannot be planned yet — missing uploads, in the server's own words. */
   notReady: string | null;
@@ -213,6 +219,7 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
   const [scope, setScope] = useState<PlanScope | null>(null);
   const [readScope, setReadScope] = useState<PlanScope | null>(null);
   const [lastRunFailed, setLastRunFailed] = useState<string | null>(null);
+  const [degraded, setDegraded] = useState<string | null>(null);
   const [computedAt, setComputedAt] = useState<Date | null>(null);
   const [tick, setTick] = useState(0);
   const poll = useRef<number | null>(null);
@@ -230,6 +237,37 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
 
     (async () => {
       let state;
+
+      /**
+       * Read the workspace, and if the engine refuses a declaration, read it again without that
+       * phase rather than showing nothing.
+       *
+       * Observed: a declared amendment right on an order placed on the plan date makes the *whole*
+       * read refuse — the planning adapter drops an order dated on or after the origin, and a right
+       * pointing at a dropped order is rejected. One bad row in `stg_po_options` took Home,
+       * Decisions and the Network with it. The refusal is correct; losing the workspace to it is not.
+       */
+      const read = async (skus: string[] | null) => {
+        const fetchWith = (options: typeof ALL_PHASES) =>
+          skus ? fetchWorkspaceStateFor(skus, options) : fetchWorkspaceState(options);
+        try {
+          setDegraded(null);
+          return await fetchWith(ALL_PHASES);
+        } catch (e) {
+          const text = messageOf(e);
+          if (!/commitments_invalid|commitments:/i.test(text)) throw e;
+          const out = await fetchWith({ ...ALL_PHASES, commitments: false });
+          setDegraded(
+            "ZAAD read this workspace without your declared order-change rights, because the engine "
+            + "refused them: " + text.replace(/^\{?['"]?code['"]?:\s*['"]?commitments_invalid['"]?,?\s*/i, "")
+              .replace(/^['"]?message['"]?:\s*/i, "").replace(/[{}'"]/g, "").trim()
+            + " Everything else below is real; what is missing is any recommendation to change an "
+            + "open order.",
+          );
+          return out;
+        }
+      };
+
       try {
         // How big is this catalogue? One indexed count, tens of milliseconds. A workspace larger
         // than the read bound is read over a named selection rather than in full — the alternative
@@ -240,10 +278,10 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
           const chosen = page.rows.map((row) => row.sku);
           if (!live) return;
           setReadScope({ skus: chosen, total: held, rule: READ_RULE });
-          state = await fetchWorkspaceStateFor(chosen, ALL_PHASES);
+          state = await read(chosen);
         } else {
           setReadScope(null);
-          state = await fetchWorkspaceState(ALL_PHASES);
+          state = await read(null);
         }
       } catch (e) {
         if (!live) return;
@@ -384,13 +422,13 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
         })
       : null;
     return {
-      phase, planPhase, notReady, error, planError,
+      phase, planPhase, notReady, error, planError, degraded,
       request, build, report, directory, decisions, summary, network,
       index: network ? buildIndex(network) : null,
       scope, readScope, lastRunFailed, computedAt, run,
       refresh: () => setTick((t) => t + 1),
     };
-  }, [phase, planPhase, notReady, error, planError, request, build, report, directory, scope, readScope, lastRunFailed, computedAt, run, session.workspace]);
+  }, [phase, planPhase, notReady, error, planError, degraded, request, build, report, directory, scope, readScope, lastRunFailed, computedAt, run, session.workspace]);
 
   return <WorkspaceDataContext.Provider value={value}>{children}</WorkspaceDataContext.Provider>;
 }
