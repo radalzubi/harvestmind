@@ -577,9 +577,12 @@ process, never `zaad-api`.
   the next person to touch it finds out from a test rather than from a screen.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
-  made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →
-  Diagnostics (Routes) → a supplier page → Data → Upload. **No console output of any level**, and
-  every request in the network log 200. That is the state of the build being handed over.
+  made in a fresh tab against the **final** build, on **both** workspaces. Seventeen surfaces on
+  the 150-product one — Home, Decisions, Inventory, both Purchase orders tabs, Network, all four
+  Diagnostics tabs, a supplier page, Data, Upload, Export formats, Create an order, and an
+  amendment proposal — then eight on the ten-thousand-product one. **No console output of any
+  level on either**, and every request in the network log 200. That is the state of the build being
+  handed over.
 * **What was left alone, deliberately.** The supplier table's **Route** column prints `aqaba`,
   `iraq_overland`, `road_saudi` — slugs, and tempting to prettify. They are values from the
   operator's own `stg_fmcg_suppliers` upload, not engine constants, so formatting them would be
