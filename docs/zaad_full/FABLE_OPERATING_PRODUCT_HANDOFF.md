@@ -499,6 +499,21 @@ process, never `zaad-api`.
   the sources above** — and the list of all twelve datasets, summing to 474,848, sits between them.
   The smaller figure is the sum of the six sources the quality report covers, which the stat beside
   it already says ("Sources with issues: 0 **of 6**"). It names its own set now.
+* **The site panel, where the engine's continuous units met the product's whole ones.** Selecting
+  the NORTH branch: a sentence reading "NORTH holds **31,866** units" and, three lines below it, a
+  fact reading "Stock on hand **31,866.25 units**" — the same number at two precisions on one
+  screen, because `describe()` rounds and the facts row called `toLocaleString` directly. Same in
+  two more places (a supplier's weekly capacity, a lane's). They all print whole units now.
+  The panel's two actions, **"Stock held here"** and **"Arriving here"**, opened the inventory list
+  and the open-order list **unfiltered** — and the inventory list has no site dimension at all: it
+  sums `on_hand` across every location per product. So they were wrong twice over. They are
+  labelled for what they open, "Stock (all sites)" and "Open orders (all sites)"; per-site stock
+  does exist, one product at a time, in the product drawer's "Where it is", and a site filter on
+  the list is a real gap left for you rather than half-built here.
+* **"Lead time: 15 days" in the twin, "Typical lead: 14 d" on the supplier page.** The same
+  1,865 deliveries: the twin was showing the **mean** and the diagnostics page the **median**,
+  neither saying which. The twin's label now says "Average lead time" and carries the p90 where the
+  distribution has one, the way its Delivery reliability already carries its sample size.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →

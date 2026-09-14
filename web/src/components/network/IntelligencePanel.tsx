@@ -60,8 +60,12 @@ function Actions({ node, edge, index }: {
       links.push({ href: `/orders?tab=imported&poq=${encodeURIComponent(bare)}`, label: "Its orders" });
       links.push({ href: `/orders/new?supplier=${encodeURIComponent(bare)}`, label: "Propose an order" });
     } else if (node.kind === "dc" || node.kind === "branch") {
-      links.push({ href: "/inventory", label: "Stock held here", primary: true });
-      links.push({ href: "/orders?tab=imported&postate=open", label: "Arriving here" });
+      // Inventory sums stock across every site per product and offers no site filter, and the
+      // open-orders list is not per destination either — so "Stock held here" and "Arriving here"
+      // both opened a list about the whole business. The labels say what opens. Per-site stock
+      // does exist, one product at a time, in the product drawer's "Where it is".
+      links.push({ href: "/inventory", label: "Stock (all sites)", primary: true });
+      links.push({ href: "/orders?tab=imported&postate=open", label: "Open orders (all sites)" });
     } else if (node.kind === "customer") {
       // A customer node's id is the *planning request's* grouping key, not a customer id in the
       // upload — on both QA workspaces it is the single aggregate "customers" — so searching the
@@ -116,13 +120,20 @@ function NodeBody({ node }: { node: NetworkNode }) {
   const facts = node.kind === "supplier"
     ? [
         { label: "Delivery reliability", value: m.fill?.mean != null ? `${(m.fill.mean * 100).toFixed(1)}%` : null, note: m.fill?.n != null ? `from ${m.fill.n.toLocaleString("en-US")} ${m.fill.n === 1 ? "delivery" : "deliveries"}` : "not enough history yet" },
-        { label: "Lead time", value: m.leadDays?.mean != null ? `${Math.round(m.leadDays.mean)} ${Math.round(m.leadDays.mean) === 1 ? "day" : "days"}` : null },
+        // This is the *mean*, and it read "Lead time 15 days" beside a diagnostics page reading
+        // "Typical lead 14 d" — the median of the same deliveries. Two numbers for what a reader
+        // calls one thing. The label now says which, and carries the spread the distribution has.
+        { label: "Average lead time", value: m.leadDays?.mean != null ? `${Math.round(m.leadDays.mean)} ${Math.round(m.leadDays.mean) === 1 ? "day" : "days"}` : null,
+          note: m.leadDays?.p90 != null ? `one in ten takes ${Math.round(m.leadDays.p90)} days or more` : undefined },
         { label: "Open orders", value: m.openPOs?.length ? String(m.openPOs.length) : "0" },
-        { label: "Weekly capacity", value: m.capacityPerWeek != null ? m.capacityPerWeek.toLocaleString("en-US") : null },
+        { label: "Weekly capacity", value: m.capacityPerWeek != null ? `${NUMBER(m.capacityPerWeek)} units` : null },
       ]
     : node.kind === "dc" || node.kind === "branch"
       ? [
-          { label: "Stock on hand", value: m.onHandUnits != null ? `${m.onHandUnits.toLocaleString("en-US")} units` : null },
+          // "31,866.25 units" three lines under a sentence reading "NORTH holds 31,866 units" —
+          // the same number at two precisions, on one screen. The engine works in continuous
+          // units; the product prints whole ones, and `describe()` already did.
+          { label: "Stock on hand", value: m.onHandUnits != null ? `${NUMBER(m.onHandUnits)} units` : null },
           { label: "Stock value", value: m.onHandValue != null ? money(m.onHandValue, currency) : null },
           { label: "Service target", value: m.serviceTarget != null ? `${(m.serviceTarget * 100).toFixed(1)}%` : null },
           { label: "Projected service", value: m.serviceProjected != null ? `${(m.serviceProjected * 100).toFixed(1)}%` : null },
