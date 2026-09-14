@@ -194,6 +194,18 @@ Stated plainly rather than left to be discovered.
 New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `abandoned.test.ts` (6),
 `format.test.ts` (11), `warnings.test.ts` (7), plus tests added to `canonical.test.ts`.
 
+**The frontend lint job is green, not silent.** It reports **52 warnings** alongside zero errors,
+and CI gates on errors only. The breakdown, read off the run: 29 `react-hooks/set-state-in-effect`,
+11 `@typescript-eslint/no-unused-vars`, 2 `react-hooks/exhaustive-deps`, 2 "cannot access variable
+before it is declared", 2 `no-unused-expressions`, 2 `@next/next/no-location-assign-relative-destination`,
+and 2 unused `eslint-disable` directives. The first group is the bulk of it and is a **house
+pattern** rather than a defect: every server-paged surface in this product loads with
+`useEffect(() => { fetch().then(setState) })`, because a filter change is a new server query, and
+the rule dislikes that shape wherever it appears — in pages this pass wrote and in `start`,
+`welcome`, `Assistant` and `charts`, which it never touched. Turning 29 of those inside out is a
+refactor with its own risk and it is not one this pass took. **The two new test files add none of
+them.** If you want the job to gate on warnings, that decision comes with that refactor attached.
+
 The last run of each, on the handoff head: `python3 -m pytest tests/ -q -p no:randomly` →
 `2105 passed, 2 skipped` in 397 s; `npm test` → `# pass 129 / # fail 0`;
 `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` → `CANONICAL REGRESSION PASS`;
