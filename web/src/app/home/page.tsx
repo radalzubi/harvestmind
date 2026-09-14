@@ -14,7 +14,7 @@ import { PlanGate, RunPlan, ScopeNotice } from "@/components/workspace/PlanState
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money } from "@/lib/zaad/decisions";
 import { attentionAreas, statusLine } from "@/lib/network/attention";
-import { RISK_LABEL } from "@/lib/network/model";
+import { KIND_LABEL } from "@/lib/network/model";
 import { useSession } from "@/lib/session";
 import { Onboarding } from "@/components/workspace/Onboarding";
 
@@ -90,7 +90,6 @@ function AttentionStrip() {
         {areas.map((a) => {
           const node = a.lead.type === "node" ? index.nodeById.get(a.lead.id) : null;
           const edge = a.lead.type === "edge" ? index.edgeById.get(a.lead.id) : null;
-          const level = (node ?? edge)!.risk.level;
           return (
             <Link
               key={a.id}
@@ -101,7 +100,8 @@ function AttentionStrip() {
                 <span className="dec-verb" data-tone={a.level === "attention" ? "change" : undefined}>
                   {a.level === "attention" ? "Needs attention" : "Watch"}
                 </span>
-                <span className="dec-cat">{RISK_LABEL[level]}</span>
+                {/* The badge already says how exposed it is; this says what kind of thing it is. */}
+                <span className="dec-cat">{node ? KIND_LABEL[node.kind] : "Lane"}</span>
               </div>
               <h3 className="dec-h" style={{ fontSize: 14 }}>{a.title}</h3>
               <p className="dec-sub" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.summary}</p>
