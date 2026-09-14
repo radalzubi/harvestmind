@@ -14,7 +14,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "./ui";
-import { NotAvailable } from "./Table";
+import { NotAvailable, Tally } from "./Table";
 import { MONEY, NUMBER, fetchInventory, type DraftLine, type InventoryRow } from "@/lib/zaad/product";
 
 export interface OrderHeader {
@@ -171,7 +171,9 @@ export function LineEditor({ lines, onChange, currency, disabled }: {
                       value={Number.isFinite(line.quantity) ? line.quantity : ""}
                       onChange={(e) => set(index, { quantity: Number(e.target.value) })} />
                   </td>
-                  <td data-align="end" data-num data-hide="700">{line.units_per_case ? NUMBER(line.units_per_case) : <span className="na">—</span>}</td>
+                  {/* A pack of zero is not a pack size, but it is what the master declares, and a
+                      dash would hide it. It shows, muted, so a buyer sees the record to fix. */}
+                  <td data-align="end" data-num data-hide="700"><Tally value={line.units_per_case} none="0" /></td>
                   <td data-align="end">
                     <input className="fld" type="number" min={0} step="any" style={{ width: 110, textAlign: "end" }}
                       aria-label={`Unit price for ${line.sku}`} disabled={disabled} placeholder="—"

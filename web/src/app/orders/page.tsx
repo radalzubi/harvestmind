@@ -248,6 +248,7 @@ function Imported({ params, set }: { params: URLSearchParams; set: (c: Record<st
     { key: "lines", label: "Lines", numeric: true, sortable: true, hideBelow: 1100, render: (r) => NUMBER(r.lines) },
     { key: "ordered_units", label: "Units ordered", numeric: true, render: (r) => NUMBER(r.ordered_units) },
     { key: "open_units", label: "Still owed", numeric: true, sortable: true,
+      // zero-is-a-state: no units still owed is not "none measured", it is a received order.
       render: (r) => r.open_units ? NUMBER(r.open_units) : <span className="chip" data-tone="good">Received</span> },
     { key: "expected_delivery_date", label: "Expected", sortable: true, hideBelow: 900,
       render: (r) => r.eta ? DATE(r.eta) : <span className="na">Not given</span> },

@@ -169,7 +169,7 @@ Stated plainly rather than left to be discovered.
 | `tests/unit/test_product_drafts_schema.py` | 14 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
 | Whole local suite (`tests/unit` + `tests/integration`) | **2,105 passed, 2 skipped** (6 m 37 s) |
-| Frontend (`npm test`) | **124 passed**, 63 new |
+| Frontend (`npm test`) | **127 passed**, 66 new |
 | Frontend typecheck / production build | green |
 | Frontend lint | green **in CI** — see §10.15 |
 | `ruff` (CI's own scope), `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
@@ -179,7 +179,7 @@ New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `aban
 `format.test.ts` (11), `warnings.test.ts` (7), plus tests added to `canonical.test.ts`.
 
 The last run of each, on the handoff head: `python3 -m pytest tests/ -q -p no:randomly` →
-`2105 passed, 2 skipped` in 397 s; `npm test` → `# pass 124 / # fail 0`;
+`2105 passed, 2 skipped` in 397 s; `npm test` → `# pass 127 / # fail 0`;
 `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` → `CANONICAL REGRESSION PASS`;
 `ruff check . --extend-exclude "docs,dashboard,scripts/p1_*.py"` → `All checks passed!`;
 `mypy … api zaad/full` → `Success: no issues found in 67 source files`; bandit over CI's package
@@ -908,6 +908,18 @@ Ordered by how much they should worry you.
   home, read by neither — which is on the **marketing site this pass did not touch**, so it is
   allowlisted by name with the reason rather than fixed here or hidden. An allowlist entry is a
   record; an exclusion is a silence.
+
+  **So are the first and fifth**, in `conventions.test.ts`, over the operating product's own
+  directories. One asserts that no number is tested for truth before it is formatted —
+  `x ? NUMBER(x)` with the same expression on both sides, which is the exact shape of the
+  measured-zero defect and has no legitimate use, since a zero passed to `NUMBER` prints "0". The
+  other asserts that no template string carries a hard `$`. Running them found two more sites: a
+  proposal line's **pack size**, where a declared zero was hidden behind a dash rather than shown
+  as the bad master record it is, and the imported-orders list's **Still owed**, where zero means
+  "received" — a different fact, deliberately, and now marked `// zero-is-a-state:` with the
+  sentence that says why. That marker is the only escape, it must be written at the site, and the
+  third test asserts the scan is still reaching the files it claims to, so none of this can pass on
+  an empty list the day a directory is renamed.
 * **The per-site inventory view** (`OPERATING_PRODUCT_V1.md` §16.13). The list sums stock across
   every location, so the network's site panel can only link to "Stock (all sites)". A location
   filter would close that, and it is a small change to `catalog.py` plus one facet.
