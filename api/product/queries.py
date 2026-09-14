@@ -21,6 +21,22 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
+# LIKE treats `%` and `_` as wildcards, so `f"%{text}%"` hands the operator's own punctuation to
+# the pattern: a category called `cat_1` also matched `catX1`, and a search of `%` matched every
+# row. DuckDB honours no escape character unless one is named, so every ILIKE in this product is
+# written `ILIKE ? ESCAPE '!'` and every pattern is built by `like_contains`. `!` rather than the
+# conventional backslash because it needs no escaping in a Python string or an f-string, and a
+# pattern nobody can read is a pattern nobody can check.
+LIKE_ESCAPE = "!"
+
+
+def like_contains(text: str) -> str:
+    """A `%…%` pattern matching the operator's text exactly as they typed it."""
+    for char in (LIKE_ESCAPE, "%", "_"):
+        text = text.replace(char, LIKE_ESCAPE + char)
+    return f"%{text}%"
+
+
 MAX_PAGE = 200
 DEFAULT_PAGE = 50
 # A page count over this is reported as "more than", not counted exactly: counting every row of a
@@ -372,8 +388,8 @@ def read_page(
     if search and search.strip():
         searchable = [c for c in ds.search if c in present]
         if searchable:
-            needle = f"%{search.strip()}%"
-            where.append("(" + " OR ".join(f'CAST("{c}" AS VARCHAR) ILIKE ?' for c in searchable) + ")")
+            needle = like_contains(search.strip())
+            where.append("(" + " OR ".join(f"""CAST("{c}" AS VARCHAR) ILIKE ? ESCAPE '{LIKE_ESCAPE}'""" for c in searchable) + ")")
             params.extend([needle] * len(searchable))
     clause = f" WHERE {' AND '.join(where)}" if where else ""
 

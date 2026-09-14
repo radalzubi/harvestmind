@@ -341,6 +341,15 @@ The same rule applies to counts generally: a measured zero is a word ("none", "n
 missing value is the dash. `TALLY` in `web/src/lib/zaad/product.ts` is the one place that decides
 which, and the `Tally` renderer is the one place that draws it.
 
+### Search matches what was typed
+
+`%` and `_` are LIKE wildcards. A search box is a place where they are characters, so every
+`ILIKE` in this product is written `ILIKE ? ESCAPE '!'` and every pattern is built by
+`queries.like_contains`, which escapes `!`, `%` and `_`. DuckDB honours no escape character unless
+one is named — an unescaped pattern is not an injection (values bind) but it does reinterpret the
+operator: before this, searching `%` returned the whole catalogue and searching a category called
+`cat_1` also matched `catX1`.
+
 ### Product physics
 
 Per-product supply and lead-time dispersion, declared shelf life and age at receipt, remaining life

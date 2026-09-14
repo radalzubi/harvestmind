@@ -163,6 +163,46 @@ def test_a_supplier_from_another_workspace_is_not_found(client):
     assert client.get("/api/zaad/workspace/suppliers/SUP-NOT-HERE").status_code == 404
 
 
+def test_search_treats_the_operator_s_own_punctuation_as_text(client, vault):
+    """`%` and `_` are LIKE wildcards; in a search box they are characters the operator typed.
+
+    `f"%{text}%"` handed them straight to the pattern, so a category called `cat_1` also matched
+    `catX1` and a search of `%` matched the whole catalogue. Every ILIKE in the product is now
+    `ESCAPE '!'` over a pattern from `queries.like_contains`.
+    """
+    sku = vault.execute("SELECT sku FROM stg_fmcg_skus ORDER BY sku LIMIT 1").fetchone()[0]
+    exact = client.get(f"/api/zaad/workspace/inventory?q={sku}").json()
+    assert exact["total"] == 1, "the code the operator typed still finds its product"
+
+    # The decisive one: replace a character of a real code with `_`. As a wildcard it matches the
+    # original and its neighbours; as the character the operator typed it matches nothing.
+    disguised = sku[:-1] + "_"
+    assert vault.execute("SELECT count(*) FROM stg_fmcg_skus WHERE sku = ?", [disguised]).fetchone()[0] == 0
+    assert client.get("/api/zaad/workspace/inventory", params={"q": disguised}).json()["total"] == 0, \
+        "`_` was taken as a single-character wildcard"
+
+    for punctuation in ("%", "!", "!%", "%%", "%!_%"):
+        page = client.get("/api/zaad/workspace/inventory", params={"q": punctuation}).json()
+        assert page["total"] == 0, f"{punctuation!r} matched {page['total']} products as a pattern"
+
+    # `_` alone is not a wildcard either — it finds exactly the rows that contain one, which on this
+    # fixture is every product, because its categories are `cat_0` … `cat_5`.
+    literal = vault.execute(
+        "SELECT count(*) FROM stg_fmcg_skus WHERE sku LIKE '%!_%' ESCAPE '!' "
+        "OR coalesce(category, '') LIKE '%!_%' ESCAPE '!' OR coalesce(brand, '') LIKE '%!_%' ESCAPE '!' "
+        "OR coalesce(sku_name, '') LIKE '%!_%' ESCAPE '!'").fetchone()[0]
+    assert client.get("/api/zaad/workspace/inventory", params={"q": "_"}).json()["total"] == literal
+
+
+def test_search_escaping_reaches_every_surface_that_searches(client):
+    for path in ("/api/zaad/workspace/inventory", "/api/zaad/workspace/suppliers",
+                 "/api/zaad/workspace/purchase-orders", "/api/zaad/orders",
+                 "/api/zaad/workspace/datasets/products"):
+        body = client.get(path, params={"q": "%"}).json()
+        found = body.get("total", len(body.get("rows", [])))
+        assert found == 0, f"{path} treated '%' as a wildcard and returned {found}"
+
+
 def test_route_lateness_carries_the_denominator_it_is_measured_against(client):
     body = client.get("/api/zaad/workspace/corridors").json()
     assert body["served"], "this fixture declares routes and receipts"

@@ -408,6 +408,20 @@ process, never `zaad-api`.
   the noun changed with the number. One helper now decides the verb, and it does not over-correct:
   a compound subject stays plural ("1 open order and 1 SKU depend"). Two tests, one of which asserts
   the fixture reaches **both** sides of the rule so the other cannot pass vacuously.
+* **Every search box, with the operator's own punctuation in it.** `%` and `_` are LIKE wildcards
+  and every search in the product built its pattern as `f"%{text}%"`, handing them straight
+  through. Searching `%` returned the whole catalogue; searching this fixture's own category
+  `cat_1` also matched any `catX1`; `SKU-000_` matched nine products. It is not an injection — the
+  values bind, the tables are intact, and the hostile strings below still match nothing — it is the
+  product silently reinterpreting what a person typed. DuckDB honours no escape character unless
+  one is named, so all ten `ILIKE` sites across four modules are now `ESCAPE '!'` over a pattern
+  from **`queries.like_contains`**, which lives in the module that owns this product's safety
+  model. `!` rather than the conventional backslash because it needs no escaping in a Python
+  string or an f-string, and a pattern nobody can read is a pattern nobody can check. Live, after
+  the change: `SKU-000` → 9, `SKU-000%` → 0, `SKU-000_` → 0, `%` → 0, `cat_1` → **25**, which is
+  exactly `SELECT count(*) … WHERE category = 'cat_1'` in the vault. `_` alone → 150, also right:
+  every product's category contains one. Two tests, one of which asserts it on all five searching
+  endpoints at once.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →

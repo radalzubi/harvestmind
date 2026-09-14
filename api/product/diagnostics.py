@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from api.product import queries
 from api.product.catalog import _one, _rows, has_table
 
 #: Below this share of the ordered quantity arriving, a delivery counts as short. A percent or two
@@ -173,8 +174,9 @@ def supplier_page(
     where: list[str] = []
     params: list[Any] = []
     if search and search.strip():
-        needle = f"%{search.strip()}%"
-        where.append("(CAST(m.supplier_id AS VARCHAR) ILIKE ? OR CAST(m.name AS VARCHAR) ILIKE ?)")
+        needle = queries.like_contains(search.strip())
+        where.append(f"(CAST(m.supplier_id AS VARCHAR) ILIKE ? ESCAPE '{queries.LIKE_ESCAPE}' "
+                     f"OR CAST(m.name AS VARCHAR) ILIKE ? ESCAPE '{queries.LIKE_ESCAPE}')")
         params.extend([needle, needle])
     clause = f" WHERE {' AND '.join(where)}" if where else ""
 

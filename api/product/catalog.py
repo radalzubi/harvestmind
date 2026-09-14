@@ -23,6 +23,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from api.product import queries
+
 MAX_ROWS = 200
 DEFAULT_ROWS = 50
 #: A selection of products the caller names (for example "only what the last plan covered").
@@ -222,7 +224,7 @@ def inventory_page(
     where: list[str] = []
     params: list[Any] = []
     if search and search.strip():
-        needle = f"%{search.strip()}%"
+        needle = queries.like_contains(search.strip())
         targets = ['CAST(m."sku" AS VARCHAR)']
         if "sku_name" in sku_cols:
             targets.append('CAST(m."sku_name" AS VARCHAR)')
@@ -230,7 +232,7 @@ def inventory_page(
             targets.append('CAST(m."brand" AS VARCHAR)')
         if "category" in sku_cols:
             targets.append('CAST(m."category" AS VARCHAR)')
-        where.append("(" + " OR ".join(f"{t} ILIKE ?" for t in targets) + ")")
+        where.append("(" + " OR ".join(f"{t} ILIKE ? ESCAPE '{queries.LIKE_ESCAPE}'" for t in targets) + ")")
         params.extend([needle] * len(targets))
     for column, value in (("category", category), ("brand", brand), ("supplier_id", supplier_id),
                           ("abc_class", abc_class)):
@@ -404,8 +406,10 @@ def purchase_order_page(
     where: list[str] = []
     params: list[Any] = []
     if search and search.strip():
-        needle = f"%{search.strip()}%"
-        where.append('(CAST(po_id AS VARCHAR) ILIKE ? OR CAST(supplier_id AS VARCHAR) ILIKE ? OR CAST(sku AS VARCHAR) ILIKE ?)')
+        needle = queries.like_contains(search.strip())
+        where.append(f"(CAST(po_id AS VARCHAR) ILIKE ? ESCAPE '{queries.LIKE_ESCAPE}' "
+                     f"OR CAST(supplier_id AS VARCHAR) ILIKE ? ESCAPE '{queries.LIKE_ESCAPE}' "
+                     f"OR CAST(sku AS VARCHAR) ILIKE ? ESCAPE '{queries.LIKE_ESCAPE}')")
         params.extend([needle, needle, needle])
     if supplier_id:
         where.append("CAST(supplier_id AS VARCHAR) = ?")
@@ -553,36 +557,39 @@ def search_everything(conn: Any, q: str, limit: int = 8) -> list[dict[str, Any]]
     needle = q.strip()
     if not needle:
         return []
-    like = f"%{needle}%"
+    like = queries.like_contains(needle)
+    esc = queries.LIKE_ESCAPE
     out: list[dict[str, Any]] = []
     if has_table(conn, "stg_fmcg_skus"):
         name = _optional(conn, "stg_fmcg_skus", "sku_name", "CAST(NULL AS VARCHAR)")
         brand = _optional(conn, "stg_fmcg_skus", "brand", "CAST(NULL AS VARCHAR)")
         for row in _rows(conn, f"""
                 SELECT DISTINCT "sku" AS id, {name} AS label, {brand} AS detail FROM stg_fmcg_skus
-                WHERE CAST("sku" AS VARCHAR) ILIKE ? OR CAST({name} AS VARCHAR) ILIKE ?
+                WHERE CAST("sku" AS VARCHAR) ILIKE ? ESCAPE '{esc}' OR CAST({name} AS VARCHAR) ILIKE ? ESCAPE '{esc}'
                 ORDER BY id LIMIT ?""", [like, like, limit]):  # nosec B608 - code literals plus allowlisted names (INVENTORY_SORTS / PO_SORTS); values bind
             out.append({"kind": "product", "id": row["id"], "label": row["label"] or row["id"],
                         "detail": row["detail"], "href": f"/inventory?sku={row['id']}"})
     if has_table(conn, "stg_fmcg_suppliers"):
-        for row in _rows(conn, """
+        for row in _rows(conn, f"""
                 SELECT DISTINCT supplier_id AS id, supplier_name AS label, origin_iso3 AS detail
                 FROM stg_fmcg_suppliers
-                WHERE CAST(supplier_id AS VARCHAR) ILIKE ? OR CAST(supplier_name AS VARCHAR) ILIKE ?
-                ORDER BY id LIMIT ?""", [like, like, limit]):
+                WHERE CAST(supplier_id AS VARCHAR) ILIKE ? ESCAPE '{esc}'
+                   OR CAST(supplier_name AS VARCHAR) ILIKE ? ESCAPE '{esc}'
+                ORDER BY id LIMIT ?""", [like, like, limit]):  # nosec B608 - code literals only; values bind
             out.append({"kind": "supplier", "id": row["id"], "label": row["label"] or row["id"],
                         "detail": row["detail"], "href": f"/diagnostics/supplier/{row['id']}"})
     if has_table(conn, "stg_fmcg_purchase_orders"):
-        for row in _rows(conn, """
+        for row in _rows(conn, f"""
                 SELECT DISTINCT po_id AS id, any_value(supplier_id) AS detail
-                FROM stg_fmcg_purchase_orders WHERE CAST(po_id AS VARCHAR) ILIKE ?
-                GROUP BY po_id ORDER BY id LIMIT ?""", [like, limit]):
+                FROM stg_fmcg_purchase_orders WHERE CAST(po_id AS VARCHAR) ILIKE ? ESCAPE '{esc}'
+                GROUP BY po_id ORDER BY id LIMIT ?""", [like, limit]):  # nosec B608 - code literals only; values bind
             out.append({"kind": "order", "id": row["id"], "label": row["id"],
                         "detail": row["detail"], "href": f"/orders?po={row['id']}"})
     if has_table(conn, "stg_fmcg_orders"):
-        for row in _rows(conn, """
+        for row in _rows(conn, f"""
                 SELECT DISTINCT customer_id AS id FROM stg_fmcg_orders
-                WHERE CAST(customer_id AS VARCHAR) ILIKE ? ORDER BY id LIMIT ?""", [like, limit]):
+                WHERE CAST(customer_id AS VARCHAR) ILIKE ? ESCAPE '{esc}'
+                ORDER BY id LIMIT ?""", [like, limit]):  # nosec B608 - code literals only; values bind
             out.append({"kind": "customer", "id": row["id"], "label": row["id"],
                         "detail": None, "href": f"/data?dataset=customer_orders&q={row['id']}"})
     return out

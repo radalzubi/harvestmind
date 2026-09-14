@@ -31,6 +31,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Any, Literal
 
+from api.product import queries
 from api.product.catalog import _one, _rows, has_table
 
 ORIGINS = ("ZAAD_RECOMMENDATION", "CURRENT_POLICY", "MANUAL", "UPLOADED_PROPOSAL", "IMPORTED_AMENDMENT")
@@ -221,9 +222,12 @@ def list_drafts(
         where.append("d.source_po_id = ?")
         params.append(source_po_id)
     if search and search.strip():
-        needle = f"%{search.strip()}%"
-        where.append("(CAST(d.draft_id AS VARCHAR) ILIKE ? OR CAST(d.reference AS VARCHAR) ILIKE ? "
-                     "OR CAST(d.supplier_id AS VARCHAR) ILIKE ? OR CAST(d.source_po_id AS VARCHAR) ILIKE ?)")
+        needle = queries.like_contains(search.strip())
+        esc = queries.LIKE_ESCAPE
+        where.append(f"(CAST(d.draft_id AS VARCHAR) ILIKE ? ESCAPE '{esc}' "
+                     f"OR CAST(d.reference AS VARCHAR) ILIKE ? ESCAPE '{esc}' "
+                     f"OR CAST(d.supplier_id AS VARCHAR) ILIKE ? ESCAPE '{esc}' "
+                     f"OR CAST(d.source_po_id AS VARCHAR) ILIKE ? ESCAPE '{esc}')")
         params.extend([needle] * 4)
     clause = " WHERE " + " AND ".join(where)
 
