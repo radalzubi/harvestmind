@@ -780,7 +780,16 @@ build and to every test in this repository:
 * Hostile input probed by hand against the live API as well as in tests: `'; DROP TABLE …`,
   `%' OR '1'='1`, `../../etc/passwd`, an undeclared dataset, an undeclared sort column, a limit of
   100,000 and a negative offset. Each is refused by name or returns nothing, and the tables were
-  still there afterwards.
+  still there afterwards. Re-run on the final head, with every declared sort exercised in both
+  directions across three endpoints (**68 requests, all 200**) and every refusal path re-checked:
+  an undeclared sort is 400, a bad direction or bound is 422, and the injection strings match **0**
+  rows while `SKU-0001` matches 1.
+* **`ILIKE` now carries `ESCAPE` everywhere.** This is not a vulnerability — the values bind, and
+  they always did — but it is the same surface, so it belongs here: `%` and `_` from a search box
+  were reaching LIKE as wildcards, which is the product reinterpreting its operator rather than an
+  attacker reaching the database. Ten sites across four modules, one helper
+  (`queries.like_contains`), two tests, and a measured cost of about 15 ms on the two search queries
+  at 50,000 products.
 
 ## 10. Known defects and limitations at handoff
 
