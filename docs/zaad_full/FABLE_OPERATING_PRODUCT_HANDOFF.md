@@ -696,6 +696,10 @@ build and to every test in this repository:
 
 * **31 new endpoints** — 13 under `/api/zaad/workspace/*` (read-only) and 18 under
   `/api/zaad/orders/*` (writes, export, evaluation). Full list in `OPERATING_PRODUCT_V1.md` §12.
+  Counted by enumerating `app.routes` on the final head rather than by reading the source: 26
+  distinct paths carrying 31 path-and-method operations, the difference being the five paths that
+  answer more than one verb (`/orders/{id}` on GET, PATCH and DELETE; `/orders/profiles/{id}` on PUT
+  and DELETE). Those five are exactly the ones a browser could not reach before the CORS fix.
 * **Migration 023** — additive, nullable, idempotent. Six new tables (`zaad_draft_orders`,
   `zaad_draft_lines`, `zaad_draft_events`, `zaad_export_profiles`, `zaad_export_log`,
   `zaad_evaluations`) and two nullable columns on `stg_fmcg_skus` (`brand`, `sub_category`). No
