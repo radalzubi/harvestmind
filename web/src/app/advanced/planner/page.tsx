@@ -59,9 +59,13 @@ export default function NetworkPlanner() {
     finally { setBusy(false); }
   }
   return <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 text-slate-900">
-    <header><Link href="/overview" className="text-sm text-emerald-800">← Overview</Link>
-      <h1 className="mt-3 text-3xl font-semibold">Network planning & resilience</h1>
-      <p className="mt-2 max-w-3xl text-slate-600">Continuous purchasing, network inventory, contractual shipment changes, and dated liquidity. Review-only engineering build; no autonomous orders.</p></header>
+    <header><Link href="/home" className="text-sm text-emerald-800">← Back to the workspace</Link>
+      <h1 className="mt-3 text-3xl font-semibold">Advanced planner</h1>
+      <p className="mt-2 max-w-3xl text-slate-600">
+        An engineering surface: plan a canonical v2 state directly, from a fixture or a snapshot you paste in.
+        This is not the operator&rsquo;s path — Decisions plans your own workspace and explains itself in plain
+        language. Use this to inspect the engine. Review-only; no autonomous orders.
+      </p></header>
     <section className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm">Synthetic fixtures are not customer validation. A retained incumbent is not certified safe. Inspect every service and stress failure below.</section>
     <section className="space-y-3"><h2 className="text-lg font-medium">1. Load the planning state</h2>
       <div className="flex flex-wrap gap-2">{["normal", "transfer", "substitution", "recovery", "cash", "understock"].map(c => <button disabled={busy} key={c} onClick={() => fixture(c)} className="rounded border bg-white px-3 py-2 text-sm capitalize disabled:opacity-50">{c} fixture</button>)}</div>
