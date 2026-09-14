@@ -225,10 +225,19 @@ commercial CTAs are 46–52px with full-width behaviour on a phone.
 
 ### Performance
 
-MapLibre (1,033 KB) loads only when the MAP view is first shown; React Flow (~149 KB across two
-chunks) only on NETWORK. Neither is in the landing page's critical path — the landing Twin is
-hand-drawn SVG for exactly that reason. The root bundle is 437 KB. Production build compiles in
-~7 s.
+Measured on the merged tree.
+
+| chunk | size | when it loads |
+|---|---|---|
+| root bundle (4 files, framework included) | 437 KB | every page |
+| MapLibre + its stylesheet | 1,033 KB + 81 KB | only when MAP is first opened |
+| React Flow (the NETWORK graph) | 183 KB | only when NETWORK is first opened |
+| the hero's network canvas | 5 KB | after first paint, client-only |
+| recharts | 347 KB | only on the legacy diagnostic pages that use it |
+
+Nothing heavy sits in the landing page's critical path, which is why the landing Twin is a
+hand-drawn SVG rather than the real component. Production build compiles in ~3 s; the workspace
+read is ~4 s against a 150-product vault, and the Twin and Data are usable the moment it lands.
 
 ### Accessibility
 
@@ -263,6 +272,11 @@ the run-failed state, and the mobile Network.
     slip ("6 open commitment"); an attention card showing "Critical" and "Stable" together.
 11. The hero's two CTAs had different widths on a phone (the magnetic wrapper was inline-block).
 12. The verb grid left a hole at desktop widths (nine items in four columns).
+13. An inline `position: relative` on the map wrapper overrode the stylesheet's `absolute; inset: 0`,
+    collapsing it to no height; MapLibre then requested no tiles at all and painted nothing.
+14. The map was never told its container had resized, so opening the details panel left it at the
+    old size.
+15. The map's fifteen-second load limit reported a failure for a map that was about to appear.
 
 ### Known limitations
 
@@ -276,6 +290,14 @@ the run-failed state, and the mobile Network.
 * The produce diagnostic pages keep their original design; only their place in the navigation changed.
 * `web/` was not audited page by page beyond the routes listed here.
 * The landing Twin is a hand-drawn illustration, not the real component.
+* The MAP view renders in a production build (`next build --webpack` + `next start`) but stays blank
+  under `next dev`, which uses Turbopack: the dev server does not serve MapLibre's worker in a form
+  the library can use, which is why the worker is vendored into `public/vendor` at install and build
+  time. Verify map work against a production build, not the dev server.
+* MapLibre's cold start — style, sprite, glyphs, first tiles — measured a little over fifteen seconds
+  in this environment; tiles then arrive in single-digit milliseconds. The view waits thirty seconds
+  before reporting a failure, and says plainly that NETWORK carries the same suppliers, lanes and
+  sites when it does.
 
 ### Frontend debt
 
@@ -315,3 +337,37 @@ that were real are listed; each was fixed in this branch unless marked otherwise
 Two findings were not frontend problems and are recorded as limitations rather than fixed here: a
 full-catalogue run is unlikely to finish inside the job timeout, and one planner slot per API
 process means a long run makes a concurrent interactive plan answer 429.
+
+## 4. Release
+
+| item | value |
+|---|---|
+| branch | `feat/zaad-frontend-network-twin`, one authoritative PR (#80), 13 commits |
+| tested head | `a54f3fa`, CI run 34806641793, **13/13 green** including the frozen regression |
+| merge | `e0fecdc`; the merged tree is byte-identical to the tested head |
+| frontend | Vercel production from `main`, verified live |
+| backend | Fly `zaad-api` v25, image `canonical-e0fecdc`, from a clean detached checkout of the merge SHA |
+| runtime tag | `frontend-rebuild-runtime` |
+
+### Production smoke — 16/16
+
+Every rebuilt route answers; `/upload` and `/data-quality` land on `/data`, `/fmcg` on `/decisions`,
+`/state` and `/zaad/network` on `/network` and `/decisions`; `/reports`, `/start` and
+`/advanced/planner` keep their own pages; the API is healthy; and the additive directory projection
+answers **401** to an anonymous caller where it answered **404** before the deploy — the endpoint is
+live and gated. All four rebuilt workspace routes carry `x-robots-tag: noindex, nofollow`; `/quote`
+does not.
+
+Browser checks against the live site: the landing page serves the repositioned product, the
+workspace shell renders its four destinations, and the console is clean — in particular the nested
+anchor that broke hydration on every workspace page before this branch is gone.
+
+Two checks a request cannot make were run against a production build of this exact tree with a live
+150-product workspace rather than against production itself: the authenticated Twin (graph and map,
+real tiles, dependency highlighting, the intelligence panel) and the decision worklist with its
+approval flow. The authenticated surface was not exercised on production because doing so would mean
+creating a real workspace in the production registry; `scripts/frontend_release_smoke.py --token`
+runs those two extra checks whenever an existing operator key is to hand.
+
+API logs after the deploy are clean: one health-check failure during the rolling swap, passing 22
+seconds later, then only 200s and the smoke's own 401.

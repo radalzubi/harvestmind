@@ -1,15 +1,15 @@
 # ZAAD release ledger
 
-## Current state (2026-09-13, post-P4B cleanup) — the only section that describes NOW
+## Current state (2026-09-14, frontend rebuild) — the only section that describes NOW
 
 | item | value |
 |---|---|
-| production runtime | `4b8621e` = tag `zaad-post-p4b-cleanup-runtime` (Fly `zaad-api` v24, image `canonical-4b8621e`): the P4B V1 release runtime `1851f40` (`p4b-v1-release-runtime`) plus the post-P4B cleanup, whose only runtime-bearing change is six unused dependencies removed from `pyproject.toml`; optimizer, API and web bytes identical |
-| current `main` | = production plus this closeout's docs (`docs/zaad_full/REPOSITORY_CLEANUP_AUDIT.md` records the cleanup, its validation and its deployment) |
+| production runtime | `e0fecdc` = tag `frontend-rebuild-runtime` (Fly `zaad-api` v25, image `canonical-e0fecdc`): the post-P4B cleanup runtime `4b8621e` plus the frontend rebuild and one additive read-only API projection (`GET /api/zaad/network/directory`). Optimizer bytes identical; the frozen regression and P1 invariants pass on this tree |
+| current `main` | = production plus this closeout's docs (`docs/zaad_full/FRONTEND_UX_REBUILD.md` records the rebuild, its research, its QA and its limitations) |
 | RELEASED | P0 protection / recovery; P1 purchasing economics; P2 multi-echelon network; sector physics; P3 sourcing portfolio; P4 adaptive recourse; P5 ATP / scarce-supply allocation; P4B V1 open PO / commitment intervention |
-| DEFERRED | Network Twin V1 (PR #39) |
+| DEFERRED | nothing. PR #39's Network Twin is superseded: the Twin shipped on the canonical engine, and PR #39's `/fmcg` adapter is not reusable because those planning modes answer 410 in production |
 | NOT STARTED | P4B V2 (node-indexed amendments), P6, P7, P8, P9 — each needs its own authorization; new optimizer phases are paused until stronger operator evidence exists |
-| tags that never move | `p0-frozen`, `p1-frozen-product`, `p1-frozen`, `pre-canonical-integration`, `sector-physics-release-runtime`, `p3-performance-closure-runtime`, `p4-release-runtime`, `p4-performance-closure-runtime`, `p5-frozen-product`, `p5-frozen`, `p5-release-runtime`, `p4b-v1-frozen-product`, `p4b-v1-frozen`, `p4b-v1-release-runtime` |
+| tags that never move | `p0-frozen`, `p1-frozen-product`, `p1-frozen`, `pre-canonical-integration`, `sector-physics-release-runtime`, `p3-performance-closure-runtime`, `p4-release-runtime`, `p4-performance-closure-runtime`, `p5-frozen-product`, `p5-frozen`, `p5-release-runtime`, `p4b-v1-frozen-product`, `p4b-v1-frozen`, `p4b-v1-release-runtime`, `zaad-post-p4b-cleanup-runtime`, `frontend-rebuild-runtime` |
 | current entry point | `docs/zaad_full/CURRENT_SYSTEM.md` |
 | CI | one workflow (`.github/workflows/ci.yml`): 13 jobs, critical path ~6.5 min; Markdown-only changes do not run it; CodeQL removed (unavailable on this plan); branch protection unavailable on this plan (manual action recorded in the cleanup audit) |
 
@@ -19,6 +19,51 @@ updated retroactively. "Next action" sentences inside historical sections are su
 Source of truth for what is frozen, where it lives, and what may move next. First written 2026-09-10
 after the P1 freeze; updated the same day at the end of the canonical integration pass. Update this
 file whenever a freeze, a push, a merge or a Vercel change happens.
+
+## Frontend rebuild, Network Twin and landing uplift (2026-09-14)
+
+| item | value |
+|---|---|
+| branch | `feat/zaad-frontend-network-twin` |
+| PR | #80 (one authoritative implementation PR) |
+| tested head | `6371d75` |
+| merge | ``e0fecdc` (merge commit; tree byte-identical to the tested head `a54f3fa`)` |
+| CI | run `34804750031`, 13/13 green on the tested head |
+| frontend deployment | Vercel from `main` (production branch), verified live |
+| backend deployment | Fly `zaad-api` v25, image `canonical-e0fecdc`, deployed from a clean detached checkout of the merge SHA — required because `api/routers/zaad_full.py` changed |
+| runtime tag | ``frontend-rebuild-runtime`` |
+| scope | product UX, frontend, and one additive read-only API projection. No optimizer mathematics, economics, decisions, tenant behaviour or API semantics changed. |
+
+**What shipped.** Four workspace surfaces (Home, Decisions, Network, Data) replace seven
+destinations, with a bottom tab bar on a phone. One Decision shape answers the same seven questions
+whatever phase produced it, in three disclosure layers. The Digital Network Twin ships on the
+canonical engine — PR #39's `/fmcg` adapter was discarded because those legacy planning modes answer
+410 in production. The public site is repositioned as the decision layer for imported supply, with a
+company-quote flow.
+
+**One backend addition**, `GET /api/zaad/network/directory`: declared supplier and location master
+data the compact planning contract drops, read from the caller's own vault. No planner, no pricing,
+no inference. Not rate limited, for the reason job status reads never have been.
+
+**What the work established about the released engine**, recorded because it shaped the product and
+is not a frontend limitation:
+
+* a bounded eight-product network solve measures ~108 s, so planning is a job rather than a page
+  load, and the product uses the released asynchronous jobs path for every plan;
+* `/plan/from-workspace` has no size gate and will run for many minutes on a large catalogue, while
+  `/jobs` refuses more than 200 products, 400 sources or 200 services — so a large workspace is
+  planned over a stated selection, never silently;
+* one planner slot per API process: a long run makes a concurrent interactive plan answer 429;
+* the canonical contract carries no site coordinates, so a multi-site workspace is not placed on the
+  map and the map says so.
+
+**Gates.** Frontend typecheck, lint, 58 unit tests, production build; backend pytest, ruff, mypy,
+bandit, pip-audit, gitleaks, Docker; frozen canonical regression and P1 invariants pass. CI now runs
+the frontend tests. Twelve defects were found by browser QA against a live 150-product workspace and
+fixed before merge; they are listed with a heuristic self-review in
+`docs/zaad_full/FRONTEND_UX_REBUILD.md`.
+
+**Not started, unchanged:** P4B V2, P6, P7, P8, P9 — each needs its own authorization.
 
 ## Frozen milestones (immutable)
 

@@ -17,11 +17,26 @@ from __future__ import annotations
 
 import argparse
 import json
+import ssl
 import sys
 import urllib.error
 import urllib.request
 
 TIMEOUT = 30
+
+
+def _ssl_context() -> ssl.SSLContext:
+    """Verify certificates, falling back to certifi's bundle.
+
+    A Python installed from python.org carries no system CA store, so every HTTPS check fails with
+    CERTIFICATE_VERIFY_FAILED on a machine where curl works fine. Verification is never disabled —
+    a smoke test that trusts any certificate is not a smoke test.
+    """
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        return ssl.create_default_context()
 
 
 def fetch(url: str, *, token: str | None = None, method: str = "GET", follow: bool = True) -> tuple[int, str, str]:
@@ -34,7 +49,8 @@ def fetch(url: str, *, token: str | None = None, method: str = "GET", follow: bo
         def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: D102
             return None
 
-    opener = urllib.request.build_opener() if follow else urllib.request.build_opener(NoRedirect)
+    https = urllib.request.HTTPSHandler(context=_ssl_context())
+    opener = urllib.request.build_opener(https) if follow else urllib.request.build_opener(https, NoRedirect)
     try:
         with opener.open(request, timeout=TIMEOUT) as response:
             return response.status, response.url, response.read(200_000).decode("utf-8", "replace")
@@ -58,10 +74,13 @@ def main() -> int:
 
     # 1-4: the public pages exist and carry the repositioned product, not the old one.
     status, _, body = fetch(f"{site}/")
-    check("landing answers", status == 200, f"HTTP {status}")
-    check("landing is repositioned", "decision layer" in body.lower(), "hero copy")
+    served = status == 200
+    check("landing answers", served, f"HTTP {status}")
+    check("landing is repositioned", served and "decision layer" in body.lower(), "hero copy")
+    # Guarded on `served`: without it a failed request returns an error string, which trivially
+    # does not contain the old title, and the check passes for the wrong reason.
     check("landing does not sell the old positioning",
-          "inventory optimization & supply resilience" not in body.lower(), "page title")
+          served and "inventory optimization & supply resilience" not in body.lower(), "page title")
     status, _, body = fetch(f"{site}/quote")
     check("company quote page answers", status == 200 and "quote" in body.lower(), f"HTTP {status}")
 
