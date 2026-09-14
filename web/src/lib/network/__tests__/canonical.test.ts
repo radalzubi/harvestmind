@@ -291,3 +291,28 @@ test("a site's stock value is quoted in the workspace's own currency", () => {
   const usd = describeItem({ type: "node", id: site.id }, model, index);
   assert.ok(usd.includes("USD"), usd);
 });
+
+/**
+ * An origin the twin cannot place is still an origin the operator declared. `ISO3_TO_2` is a
+ * lookup of 25 codes, deliberately not a truncation — truncating AUT would read AU and put an
+ * Austrian supplier in Australia — but an unmapped code must not also erase the declared value.
+ */
+test("an origin that cannot be placed is still shown", () => {
+  const supplier = directory!.suppliers![0];
+  const austrian = {
+    ...directory!,
+    suppliers: [{ ...supplier, origin_iso3: "AUT" }, ...directory!.suppliers!.slice(1)],
+  };
+  const built = buildCanonicalModel({ request, build, report, directory: austrian, homeRegion: "JO", workspaceName: "Acme" });
+  const node = built.nodes.find((n) => n.kind === "supplier" && n.id.endsWith(supplier.id));
+  assert.ok(node, "the supplier is still in the network");
+  assert.equal(node.subtitle, "Origin AUT", "the declared code survives");
+  assert.equal(node.region, undefined, "and nothing is placed on a country it was not mapped to");
+  // It may still be placed by its declared route — that is the operator's own data, and the node
+  // says so. What it must never do is claim a country it was never mapped to.
+  assert.notEqual(node.geo?.precision, "exact");
+  assert.ok(node.missing?.some((m) => m.includes("AUT")),
+            `the note should name the declared code, not claim none was declared: ${node.missing}`);
+  assert.ok(!node.missing?.some((m) => m.startsWith("No origin country is declared")),
+            "an origin that is declared must not be reported as undeclared");
+});

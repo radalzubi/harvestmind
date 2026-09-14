@@ -521,6 +521,18 @@ process, never `zaad-api`.
   carried no currency at all, so `describe()` could not have known. It carries one now, from the
   planning request, and a test builds the same fixture as `JOD` and asserts the sentence says JOD
   and contains no `$`.
+* **One number formatter, not three.** Two places in the twin still called `toLocaleString()`
+  with no locale — a graph node's "31,866.25 on hand" and a commitment recommendation's unit count
+  — which renders in the *viewer's* locale while every other number in the product is grouped
+  en-US, and passes the engine's fractional units straight through. Both go through `NUMBER` now.
+* **An origin ZAAD cannot place is still an origin the operator declared.** `ISO3_TO_2` is a
+  deliberate lookup of 25 codes rather than a truncation — truncating `AUT` would read `AU` and
+  put an Austrian supplier in Australia, which is the kind of thing §71 exists to prevent — but an
+  unmapped code also **erased the declared value**: no origin on the node, and a note reading "No
+  origin country is declared for this supplier" about a master that reads `AUT`, sending someone to
+  fix data that is already there. The code is shown, the placement still correctly does not happen,
+  and the note now distinguishes *undeclared* from *declared but not one ZAAD can place*. Latent on
+  both QA workspaces, whose origins (DEU, SAU, ARE, CHN, IRQ, TUR) are all mapped; a test covers it.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →

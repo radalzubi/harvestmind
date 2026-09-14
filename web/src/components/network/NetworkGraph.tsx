@@ -16,6 +16,7 @@ import { Anchor, Factory, Store, Users, Warehouse } from "lucide-react";
 import { isGroupId } from "@/lib/network/groups";
 import type { NetworkEdge, NetworkNode, NodeKind, ZaadState } from "@/lib/network/model";
 import { STATE_LABEL } from "@/lib/network/model";
+import { NUMBER } from "@/lib/zaad/product";
 import { useTwin } from "./store";
 
 type TNodeData = { node: NetworkNode; dim: boolean; exposed: boolean; active: boolean; metric: string | null; group: boolean; open: boolean };
@@ -32,7 +33,10 @@ function metricFor(n: NetworkNode): string | null {
   switch (n.kind) {
     case "supplier": return m.fill?.mean != null ? `${Math.round(m.fill.mean * 100)}% delivered` : m.leadDays?.mean != null ? `${Math.round(m.leadDays.mean)} d lead` : null;
     case "port": return null;
-    case "dc": case "branch": return m.onHandUnits != null ? `${m.onHandUnits.toLocaleString()} on hand` : null;
+    // `toLocaleString()` with no locale renders in the *viewer's* locale while every other number
+    // in the product is grouped en-US, and it printed the engine's fractional units on a node
+    // label ("31,866.25 on hand"). NUMBER does both jobs, the way the panel beside it does.
+    case "dc": case "branch": return m.onHandUnits != null ? `${NUMBER(m.onHandUnits)} on hand` : null;
     case "customer": return m.serviceTarget != null ? `${(m.serviceTarget * 100).toFixed(0)}% target` : null;
   }
 }
