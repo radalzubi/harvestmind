@@ -309,6 +309,11 @@ process, never `zaad-api`.
   than always on the right.
 * **Every workspace surface opened against a vault created before migration 023.** Export formats
   answered `500`. See below.
+* **A plan run on the second workspace, where the engine keeps everything and prices it anyway.**
+  The cost breakdown printed `+USD 0.00` on all seven components under a heading reading "7
+  components" — the same defect as the day-one `−USD 0.00` "saving", in the one place that had been
+  missed, and only visible on a workspace whose plan is both kept *and* priced. It reads "7 priced,
+  none moved" now, each row "no change".
 * **The pages this pass links to but did not write**, since an operator does not know the
   difference. `/upload/confirm` opened directly said "Something went wrong — No session id, start
   from the Upload page": nothing had gone wrong, the page had simply been opened without the upload

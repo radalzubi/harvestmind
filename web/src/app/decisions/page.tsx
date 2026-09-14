@@ -23,6 +23,10 @@ function PlanEconomics() {
   if (!summary) return null;
   const c = summary.currency;
   const priced = summary.costBreakdown.filter((r) => r.delta != null);
+  // A component whose difference rounds to nothing has not moved. Printing "+USD 0.00" beside seven
+  // of them, under a heading reading "7 components", dressed a plan the engine had kept as a plan
+  // that had changed in seven places.
+  const moved = priced.filter((r) => Math.abs(r.delta!) >= 0.005);
   const unpriced = summary.valueVsCurrent == null && summary.workingCapitalDelta == null && priced.length === 0;
   return (
     <div className="side" style={{ position: "static" }}>
@@ -68,13 +72,18 @@ function PlanEconomics() {
           </div>
         )}
         <div style={{ marginTop: 12 }}>
-          {priced.length > 0 && <Disclosure summary="Cost, line by line" hint={`${priced.length} components`}>
+          {priced.length > 0 && <Disclosure summary="Cost, line by line"
+            hint={moved.length
+              ? `${moved.length} of ${priced.length} moved`
+              : `${priced.length} priced, none moved`}>
             <dl className="evid">
               {priced.map((r) => (
                 <div className="evid-row" key={r.component}>
                   <dt>{r.component}</dt>
                   <dd style={{ fontVariantNumeric: "tabular-nums" }}>
-                    {r.delta! >= 0 ? "+" : "−"}{money(Math.abs(r.delta!), c)}
+                    {Math.abs(r.delta!) < 0.005
+                      ? <span className="na">no change</span>
+                      : <>{r.delta! >= 0 ? "+" : "−"}{money(Math.abs(r.delta!), c)}</>}
                     <span style={{ color: "var(--ink-500)" }}> ({money(r.current, c)} → {money(r.recommended, c)})</span>
                   </dd>
                 </div>
