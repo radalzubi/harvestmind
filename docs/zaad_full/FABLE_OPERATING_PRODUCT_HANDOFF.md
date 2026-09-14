@@ -178,7 +178,7 @@ Stated plainly rather than left to be discovered.
 | `tests/unit/test_product_drafts_schema.py` | 14 passed |
 | `tests/unit/test_product_catalog_labels.py` | 6 passed |
 | Whole local suite (`tests/unit` + `tests/integration`) | **2,105 passed, 2 skipped** (6 m 37 s) |
-| Frontend (`npm test`) | **127 passed**, 66 new |
+| Frontend (`npm test`) | **129 passed**, 68 new |
 | Frontend typecheck / production build | green |
 | Frontend lint | green **in CI** — see §10.15 |
 | `ruff` (CI's own scope), `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
@@ -188,7 +188,7 @@ New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `aban
 `format.test.ts` (11), `warnings.test.ts` (7), plus tests added to `canonical.test.ts`.
 
 The last run of each, on the handoff head: `python3 -m pytest tests/ -q -p no:randomly` →
-`2105 passed, 2 skipped` in 397 s; `npm test` → `# pass 127 / # fail 0`;
+`2105 passed, 2 skipped` in 397 s; `npm test` → `# pass 129 / # fail 0`;
 `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` → `CANONICAL REGRESSION PASS`;
 `ruff check . --extend-exclude "docs,dashboard,scripts/p1_*.py"` → `All checks passed!`;
 `mypy … api zaad/full` → `Success: no issues found in 67 source files`; bandit over CI's package
@@ -618,7 +618,11 @@ different things and the reader was left to notice.
   Both now go through `DATE()`, which reads it in UTC the way the engine states it; the three
   surfaces agree. `computedAt` stays local, because *when this ran* is a wall-clock moment and that
   is what it means. This is the "two renderers for one field" shape §11 names, found by reading
-  the same value on three screens rather than by any tool.
+  the same value on three screens rather than by any tool — **and now by a tool**: two more checks
+  in `conventions.test.ts` assert that nothing formats a number or a date in the reader's own
+  locale (`toLocaleString()` with no argument, which was still in one place) and that `DATE()` is
+  the only function in the product allowed to turn a date into words. The second one's teeth were
+  checked by putting the header's defect back and watching it fail.
 * **WCAG 1.4.12's text spacing applied live, and 200 %-zoom-equivalent reflow**, both described in
   §3's caveat. The spacing pass found the last defect of the day: Home's watch cards clamped their
   summary to three lines, and the clamped part is the sentence naming which products have no route

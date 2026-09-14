@@ -88,6 +88,43 @@ test("money is never quoted in a currency nobody read", () => {
   assert.deepEqual(found, [], `a hard currency symbol:\n  ${found.join("\n  ")}`);
 });
 
+test("numbers and dates are not formatted in whoever's locale is reading", () => {
+  // `toLocaleString()` with no locale renders in the *viewer's* locale while everything else in
+  // this product is grouped en-US, and it passes the engine's fractional units straight through.
+  // Three sites did it — a graph node's "31,866.25 on hand" among them.
+  const bare = /\.toLocale(?:Date|Time)?String\(\s*\)/g;
+  const found: string[] = [];
+  for (const file of inScope()) {
+    const text = readFileSync(file, "utf8");
+    const lines = text.split("\n");
+    for (const match of text.matchAll(bare)) {
+      const at = text.slice(0, match.index).split("\n").length;
+      if (isComment(lines[at - 1] ?? "")) continue;
+      found.push(`${file.replace(SRC, "src")}:${at}`);
+    }
+  }
+  assert.deepEqual(found, [], `a number or date formatted in the reader's locale:\n  ${found.join("\n  ")}`);
+});
+
+test("a date is read in the zone it was stated in", () => {
+  // `as_of` is midnight UTC. Two surfaces rendered it with no `timeZone` and it slid to the
+  // previous day west of Greenwich, so one product showed one date as two days. `DATE()` in
+  // `product.ts` is the only place allowed to turn a date into words.
+  const found: string[] = [];
+  for (const file of inScope()) {
+    if (file.endsWith(join("lib", "zaad", "product.ts"))) continue;
+    const text = readFileSync(file, "utf8");
+    const lines = text.split("\n");
+    for (const match of text.matchAll(/\.toLocaleDateString\(/g)) {
+      const at = text.slice(0, match.index).split("\n").length;
+      if (isComment(lines[at - 1] ?? "")) continue;
+      found.push(`${file.replace(SRC, "src")}:${at}`);
+    }
+  }
+  assert.deepEqual(found, [],
+    `a date formatted outside DATE(), which is the only place that reads it in UTC:\n  ${found.join("\n  ")}`);
+});
+
 test("the scan actually reaches the files it claims to", () => {
   // Without this the two tests above pass on an empty list the day a path is renamed.
   const files = inScope();

@@ -405,7 +405,7 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
       recommendations.push({
         id: `buy:${supplier}`, targetType: "node", targetId: `sup:${supplier}`,
         state: (report.mode as ZaadState) ?? "LEAN", source: "optimizer",
-        action: `Order ${quantity.toLocaleString()} units this week`,
+        action: `Order ${NUMBER(quantity)} units this week`,
         rationale: (report.reasons ?? [])[0] ?? "The plan's reasoning is on the decision.",
         noAction: "The current ordering rule places its own quantity for this week.",
       });
