@@ -8,9 +8,7 @@
  * Errors arrive as `{code, message}`. The message is written for the person reading it, so it is
  * shown as-is; the code is what the interface branches on.
  */
-import { authHeaders } from "@/lib/api";
-
-const BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
+import { BASE_URL as BASE, authHeaders } from "@/lib/api";
 
 export class ProductError extends Error {
   code: string | null;

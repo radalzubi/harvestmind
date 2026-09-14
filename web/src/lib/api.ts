@@ -4,7 +4,13 @@
  * Base URL is read from NEXT_PUBLIC_API_URL (default: http://localhost:8000).
  */
 
-const BASE_URL =
+/**
+ * Where the API is. Exported because the operating product's own client (`lib/zaad/product.ts`)
+ * had a second copy of this line: two private constants with one definition, which agree until
+ * the day someone changes one of them and the product's data calls and the legacy ones point at
+ * different hosts.
+ */
+export const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
 
 const TOKEN_KEY = "harvestmind.operator-token";

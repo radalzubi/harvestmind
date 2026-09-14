@@ -646,14 +646,20 @@ different things and the reader was left to notice.
   §3's caveat. The spacing pass found the last defect of the day: Home's watch cards clamped their
   summary to three lines, and the clamped part is the sentence naming which products have no route
   to be replenished. The clamp is gone; the cards stretch.
+* **Two copies of one line saying where the API is.** `lib/api.ts` and the product's own
+  `lib/zaad/product.ts` each declared a private `BASE` from `NEXT_PUBLIC_API_URL` with the same
+  default. They agree today and would keep agreeing until someone changed one of them, at which
+  point the product's data calls and the legacy calls would point at different hosts. `api.ts`
+  exports it now and `product.ts` imports it; the coupling already existed (`authHeaders` comes
+  from the same module).
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab against the **final** build, on **both** workspaces. Seventeen surfaces on
   the 150-product one — Home, Decisions, Inventory, both Purchase orders tabs, Network, all four
   Diagnostics tabs, a supplier page, Data, Upload, Export formats, Create an order, and an
-  amendment proposal — then eight on the ten-thousand-product one. **No console output of any
-  level on either**, and every request in the network log 200. That is the state of the build being
-  handed over.
+  amendment proposal — then eight on the ten-thousand-product one, and twelve once more in a tab
+  opened after the last build of all. **No console output of any level on any of them**, and every
+  request in the network log 200. That is the state of the build being handed over.
 * **What was left alone, deliberately.** The supplier table's **Route** column prints `aqaba`,
   `iraq_overland`, `road_saudi` — slugs, and tempting to prettify. They are values from the
   operator's own `stg_fmcg_suppliers` upload, not engine constants, so formatting them would be
