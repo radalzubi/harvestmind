@@ -505,3 +505,17 @@ of producing a catalogue error. `tests/unit/test_product_drafts_schema.py` pins 
    submits both runs and only then writes the `zaad_evaluations` row that marks them. A workspace
    read landing in that window would adopt the baseline run as the current plan — a real plan, but
    over the proposal's products rather than the workspace's, and not one the operator asked for.
+9. **A proposed amendment is never priced outside a plan.** The declared terms are shown as the
+   engine states them — fee, credit, capacity, deadline, provenance, all per unit — and are not
+   multiplied out, because a fee is one term of what a change is worth and the rest is a plan-level
+   question. A buyer who wants the number needs a plan covering that order.
+10. **A run's size is the real ceiling, not the row counts.** Measured on a three-site, twelve-week
+    workspace: 6 products 62 s and 92 s, 8 products 108 s, 10 products 232 s. The record surfaces
+    are unaffected (50,000 products, slowest median query 298 ms); this is one optimization problem,
+    and the interface says which products a plan covered wherever it shows one.
+11. **XLSX writes every cell as text**, which is what stops a value being re-typed as a formula or
+    a date by the reader. The cost is Excel's "number stored as text" marker on quantity and price.
+12. **A job orphaned by an API restart stays RUNNING for ever** — `zaad/full/jobs.py` has no reaper,
+    and the active quota counts QUEUED + RUNNING, so two orphans block a workspace from planning.
+    This is in the released optimizer package and is **not fixed here**; the product detects it on
+    the reader's side and reports the run as interrupted, but the row and the quota stay spent.
