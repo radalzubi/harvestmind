@@ -191,8 +191,11 @@ Stated plainly rather than left to be discovered.
 | `ruff` (CI's own scope), `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
 | **zaad frozen regression** | **green** — in CI, and run directly on the handoff head |
 
-New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `abandoned.test.ts` (6),
-`format.test.ts` (11), `warnings.test.ts` (7), plus tests added to `canonical.test.ts`.
+The 129 frontend tests, by file, on the handoff head: `canonical.test.ts` 29, `format.test.ts` 18,
+`decisions.test.ts` 17, `crowding.test.ts` 13, `standing.test.ts` 12, `readiness.test.ts` 8,
+`warnings.test.ts` 7, `abandoned.test.ts` 6, `twin-state.test.ts` 6, `conventions.test.ts` 5,
+`reasons.test.ts` 5, `links.test.ts` 3. New in this pass: `standing`, `crowding`, `abandoned`,
+`format`, `warnings`, `links`, `conventions`, plus tests added to `canonical` and `decisions`.
 
 **The frontend lint job is green, not silent.** It reports **52 warnings** alongside zero errors,
 and CI gates on errors only. The breakdown, read off the run: 29 `react-hooks/set-state-in-effect`,
