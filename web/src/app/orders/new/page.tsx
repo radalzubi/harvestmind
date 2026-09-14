@@ -121,7 +121,9 @@ function NewOrderBody() {
         sub={amendPo
           ? "The order in your system is not touched. This is a proposal against it, which someone approves and you export."
           : "A proposed order ZAAD can evaluate, someone approves, and you export in your own format. It is never sent to a supplier."}
-        actions={<ButtonLink size="sm" href="/orders">Cancel</ButtonLink>}
+        // "Cancel" also sits at the foot of the form, next to the button it cancels. Up here it is
+        // navigation, so it is named as navigation — the same label the other order pages use.
+        actions={<ButtonLink size="sm" href="/orders">Purchase orders</ButtonLink>}
       />
 
       {decision && (

@@ -98,6 +98,58 @@ def _number(value: Any, field: str, *, allow_none: bool = True) -> float | None:
     return out
 
 
+#: Tables `ensure_tables` is responsible for. If one of these is missing afterwards, the vault is
+#: not usable for proposed orders and the caller must be told, not handed a catalogue error.
+PRODUCT_TABLES = ("zaad_draft_orders", "zaad_draft_lines", "zaad_draft_events",
+                  "zaad_export_profiles", "zaad_export_log", "zaad_evaluations")
+
+
+def statements(sql: str) -> list[str]:
+    """Split a migration file into statements.
+
+    `sql.split(";")` is wrong here and was: migration 023 carries `COMMENT ON ... IS '...;...'`
+    strings and `--` comments that contain semicolons, so a naive split cuts statements in half and
+    every half fails to parse. That failure used to be swallowed, which left a vault with one of the
+    six tables and a 500 on the first visit to Purchase orders. This walks the text instead, so a
+    semicolon inside a quoted string or a line comment does not end a statement.
+    """
+    out: list[str] = []
+    buf: list[str] = []
+    quote = False
+    i = 0
+    while i < len(sql):
+        ch = sql[i]
+        if quote:
+            buf.append(ch)
+            if ch == "'":
+                if i + 1 < len(sql) and sql[i + 1] == "'":  # '' is an escaped quote, not the end
+                    buf.append(sql[i + 1])
+                    i += 2
+                    continue
+                quote = False
+            i += 1
+            continue
+        if ch == "'":
+            quote = True
+            buf.append(ch)
+        elif sql.startswith("--", i):
+            end = sql.find("\n", i)
+            i = len(sql) if end == -1 else end
+            continue
+        elif ch == ";":
+            text = "".join(buf).strip()
+            if text:
+                out.append(text)
+            buf = []
+        else:
+            buf.append(ch)
+        i += 1
+    tail = "".join(buf).strip()
+    if tail:
+        out.append(tail)
+    return out
+
+
 def ensure_tables(conn: Any) -> None:
     """Create the product's own tables if this vault predates migration 023.
 
@@ -109,16 +161,20 @@ def ensure_tables(conn: Any) -> None:
         return
     from pathlib import Path
     sql = (Path(__file__).resolve().parents[2] / "db" / "migrations" / "023_operating_product.sql").read_text()
-    for statement in sql.split(";"):
-        text = statement.strip()
-        if not text or text.startswith("--"):
-            continue
+    for text in statements(sql):
         if text.upper().startswith("ALTER TABLE STG_"):
             continue  # staging columns belong to the migration runner, not to a page load
         try:
             conn.execute(text)
         except Exception:  # noqa: BLE001 - already present, or a COMMENT the engine declines
             continue
+    missing = [name for name in PRODUCT_TABLES if not has_table(conn, name)]
+    if missing:
+        raise DraftRefused(
+            "This workspace is not set up for proposed orders yet — "
+            + ", ".join(missing)
+            + " could not be created. Run the database migrations for this operator "
+              "(scripts/setup_db.py) and open the page again.")
 
 
 # ── reading ───────────────────────────────────────────────────────────────────

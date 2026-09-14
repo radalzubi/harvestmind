@@ -405,6 +405,15 @@ which are shown only when present. An existing vault keeps every row it has and 
 before. `api/product/drafts.py::ensure_tables` creates the product's own tables on first use for a
 vault created before this release; it never creates or alters a staging table.
 
+That fallback is the one part of this release that a test suite alone would not have caught, so it
+is worth stating how it works. The migration file is a real SQL file with `COMMENT ON … IS '…;…'`
+strings and `--` comments in it, so it cannot be split on `";"` — `drafts.statements()` walks the
+text and does not end a statement inside a quoted string or a line comment. Afterwards
+`ensure_tables` **checks that all six tables exist** and raises `DraftRefused` naming the missing
+ones if they do not; `api/main.py` answers that with a 422 carrying the message, so a vault that
+cannot be prepared (a read-only file, a permissions problem) tells the buyer what is wrong instead
+of producing a catalogue error. `tests/unit/test_product_drafts_schema.py` pins both halves.
+
 ## 16. Known limits
 
 1. **Evaluation costs two jobs.** With the default daily quota of 24, a workspace can evaluate

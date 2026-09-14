@@ -105,15 +105,16 @@ Stated plainly rather than left to be discovered.
 | `tests/integration/test_operating_product_api.py` | 36 passed |
 | `tests/unit/test_product_exporting.py` | 24 passed |
 | `tests/unit/test_product_evaluation.py` | 13 passed |
+| `tests/unit/test_product_drafts_schema.py` | 9 passed |
 | Whole integration shard (`tests/integration`) | **316 passed** |
 | Whole local suite (`tests/unit` + `tests/integration`) | 2,058 passed, 2 skipped |
-| Frontend (`npm test`) | **86 passed**, 28 new |
+| Frontend (`npm test`) | **92 passed**, 31 new |
 | Frontend typecheck / lint / production build | green |
 | `ruff`, `mypy`, `bandit`, `pip-audit`, `gitleaks` | green |
 | **zaad frozen regression** | **green** |
 
-New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), plus three tests added to
-`canonical.test.ts`.
+New frontend test files: `standing.test.ts` (12), `crowding.test.ts` (13), `abandoned.test.ts` (6),
+plus tests added to `canonical.test.ts`.
 
 ## 6. Scale
 
@@ -149,9 +150,23 @@ path) and a **production build** of this branch, on synthetic workspaces created
 * **Every table's heading row read back out of the live DOM** rather than out of the source, and
   every column set in `web/src/` checked for a label used twice in one table. One table was showing
   two columns called "Ordered" — the date and the quantity. Both are now unambiguous.
+* **Every workspace surface opened against a vault created before migration 023.** Export formats
+  answered `500`. See below.
 
-Thirteen defects were found this way and fixed; they are listed in the PR description. The two most
+Fifteen defects were found this way and fixed; they are listed in the PR description. The three most
 serious were invisible to the build and to the existing tests:
+
+* `ensure_tables` — the fallback that prepares the product's own tables on a vault that predates
+  migration 023 — split the migration file on `";"`. Migration 023 carries `COMMENT ON … IS '…;…'`
+  strings and `--` comments containing semicolons, so most statements were cut in half, every half
+  failed to parse, and **every failure was swallowed**. The vault was left with one of the six
+  tables and a raw DuckDB catalogue error on the first visit to Purchase orders. Three of the seven
+  vaults on this machine were in that state; all three carried `zaad_export_log` and nothing else,
+  which is the signature. The splitter now walks the text (quoted strings and line comments do not
+  end a statement), the function **verifies the six tables exist afterwards and refuses in words if
+  they do not**, and `api/main.py` maps that refusal to a 422 so no order endpoint can turn it back
+  into a 500. Nine unit tests in `tests/unit/test_product_drafts_schema.py` pin it. Repaired live:
+  the signed-in vault was complete on the next request.
 
 * `ZaadBuild.fits` declared `fill`; every API response has always carried `fill_mean`. Supplier
   reliability therefore never reached the Network Twin's risk scoring, the Decisions evidence line

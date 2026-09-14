@@ -14,6 +14,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.product.drafts import DraftRefused
 from api.routers import assistant, fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin, access, jobs, zaad, zaad_full, zaad_atp, zaad_workspace, zaad_orders
 
 app = FastAPI(
@@ -103,6 +104,19 @@ async def _refuse_permissive_public_bind() -> None:
         logging.getLogger("harvestmind.api").exception("workspace seeding failed")
     from api.dependencies import assert_safe_to_serve
     assert_safe_to_serve()
+
+
+@app.exception_handler(DraftRefused)
+async def _draft_refused(request: _Request, exc: DraftRefused) -> _JSONResponse:
+    """A refused proposal is a message to the buyer, never a 500.
+
+    Most order endpoints catch this themselves; a few read-only ones (the export formats, one
+    proposal, an evaluation) reach it only through `ensure_tables`, which refuses when a vault has
+    not been migrated for proposed orders. Handling it here means an endpoint added later cannot
+    turn the same refusal back into an internal error.
+    """
+    return _JSONResponse(status_code=422,
+                         content={"detail": {"code": "proposal_refused", "message": str(exc)}})
 
 
 app.include_router(planning.router)
