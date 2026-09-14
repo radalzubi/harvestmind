@@ -463,6 +463,14 @@ process, never `zaad-api`.
   cover of zero"* — and only when the filter actually matches something: on the ten-thousand-product
   workspace, where every product has measurable cover, the filter returns nothing and the sentence
   is absent. Same reasoning as the routes table above; a tooltip is not a place a reason can live.
+* **The same defect a second way, on the page I had already fixed.** `/upload/confirm` opened with
+  no session says "There is no upload to confirm here" — that was the day-one fix. Opened with a
+  session id that **no longer exists** — a link a day old, or one a colleague sent from their own
+  workspace, both of which happen — it still said **"Something went wrong · No session
+  'does-not-exist'"**: the engine's own string, under a heading that sends the reader looking for a
+  fault, with nowhere to go. An upload is short-lived and belongs to one workspace; nothing went
+  wrong. It now says so and offers the one thing to do. Worth naming as a pattern for the audit:
+  fixing the branch I arrived on left the adjacent branch of the same condition untouched.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →
