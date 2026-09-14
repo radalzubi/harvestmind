@@ -20,8 +20,12 @@ export function LangToggle({ className }: { className?: string }) {
 }
 
 /**
- * Three places to go, one thing to do. "Open workspace" covers both entering
- * a key and starting a new workspace; the get-started flow asks which.
+ * Four places to look, one thing to do.
+ *
+ * Public navigation is deliberately short: a visitor's decision here is "do I understand this
+ * and does it apply to me", not "which of eleven pages". The primary action is the diagnostic;
+ * the commercial route sits beside it; returning operators get a quiet text link rather than a
+ * third button competing with the two that convert.
  */
 export function Nav() {
   const pathname = usePathname() || "/";
@@ -40,7 +44,7 @@ export function Nav() {
     { href: "/product", label: t.nav.product },
     { href: "/how-it-works", label: t.nav.how },
     { href: "/sectors", label: t.nav.sectors },
-    { href: "/about", label: t.nav.about },
+    { href: "/security", label: t.nav.security },
   ];
 
   return (
@@ -54,7 +58,9 @@ export function Nav() {
         </nav>
         <div className="site-cta">
           <LangToggle />
-          <Link href="/get-started" className="btn btn-primary">{t.nav.open} <ArrowRight size={14} className="dir-icon" /></Link>
+          <Link href="/home" className="site-signin">{t.nav.signIn}</Link>
+          <Link href="/quote" className="btn btn-ghost">{t.nav.quote}</Link>
+          <Link href="/get-started" className="btn btn-primary">{t.nav.getStarted} <ArrowRight size={14} className="dir-icon" /></Link>
         </div>
         <LangToggle className="lang-pill-mobile" />
         <button className="site-burger" aria-label={open ? t.nav.menuClose : t.nav.menuOpen} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
@@ -63,9 +69,11 @@ export function Nav() {
       </div>
       <div className="site-drawer">
         {links.map((l) => <Link key={l.href} href={l.href}>{l.label}</Link>)}
+        <Link href="/about">{t.nav.about}</Link>
         <Link href="/resources">{t.nav.resources}</Link>
-        <Link href="/security">{t.nav.security}</Link>
-        <Link href="/get-started" className="btn btn-primary" style={{ marginTop: 8 }}>{t.nav.open} <ArrowRight size={14} className="dir-icon" /></Link>
+        <Link href="/home">{t.nav.signIn}</Link>
+        <Link href="/get-started" className="btn btn-primary btn-lg" style={{ marginTop: 10 }}>{t.nav.getStarted} <ArrowRight size={14} className="dir-icon" /></Link>
+        <Link href="/quote" className="btn btn-ghost btn-lg" style={{ marginTop: 8 }}>{t.nav.quote}</Link>
       </div>
     </header>
   );
