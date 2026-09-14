@@ -50,6 +50,7 @@ test("a missing upload outranks everything", () => {
   assert.equal(out.level, "blocked");
   assert.match(out.detail, /Upload your customer orders/);
   assert.equal(out.next?.href, "/upload");
+  assert.equal(out.label, "Needs data");
   assert.deepEqual(out.watches.map((w) => w.title), ["Supplier A"],
     "a blocked workspace still carries its watches; it just does not lead with them");
 });
@@ -59,6 +60,8 @@ test("a failed run is blocked, and says what failed", () => {
   assert.equal(out.level, "blocked");
   assert.match(out.headline, /could not finish/);
   assert.equal(out.detail, "The run did not finish inside its time.");
+  assert.equal(out.label, "Run interrupted",
+    "a chip reading 'Needs data' above 'could not finish its last run' is simply untrue");
 });
 
 test("a decision outranks a watch, and the watch is carried underneath it", () => {

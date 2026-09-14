@@ -22,7 +22,7 @@ import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money } from "@/lib/zaad/decisions";
 import { attentionAreas } from "@/lib/network/attention";
 import { KIND_LABEL } from "@/lib/network/model";
-import { standing, LEVEL_LABEL, type Standing } from "@/lib/zaad/standing";
+import { standing, type Standing } from "@/lib/zaad/standing";
 import { useSession } from "@/lib/session";
 import { Onboarding } from "@/components/workspace/Onboarding";
 import { DATE, MONEY, NUMBER, fetchSummary, listDrafts, type DraftSummary, type OperatingSummary } from "@/lib/zaad/product";
@@ -129,7 +129,7 @@ function StandingLine({ state }: { state: Standing }) {
           : state.level === "watch" ? "watch" : "ok"}
         aria-hidden />
       <div>
-        <span className="lvl" data-level={state.level}><span className="lvl-dot" aria-hidden />{LEVEL_LABEL[state.level]}</span>
+        <span className="lvl" data-level={state.level}><span className="lvl-dot" aria-hidden />{state.label}</span>
         <h1 className="status-head" style={{ marginTop: 4 }}>{state.headline}</h1>
         <p className="status-sub">
           {state.detail}

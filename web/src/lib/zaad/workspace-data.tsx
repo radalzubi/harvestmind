@@ -132,6 +132,33 @@ export function rankProducts(request: ZaadRequest): string[] {
 
 const SCOPE_RULE = "every product with a declared order change, then the products with the most units still on order";
 
+/** A minute past the time the engine gave the run. Long enough that a slow clock is not the cause. */
+export const ABANDONED_GRACE_MS = 60_000;
+
+export const ABANDONED_MESSAGE =
+  "This run has been going for longer than the time it is given, which usually means it was "
+  + "interrupted. Nothing was changed. Run it again, over fewer products if it keeps happening.";
+
+/**
+ * Has this run been abandoned?
+ *
+ * A job whose process died stays RUNNING in the store for ever — nothing reaps it — and the page
+ * would poll it silently until somebody reloaded and found it still polling. The engine tells us
+ * how long it gave the run; once that is comfortably past, the honest thing is to say so.
+ *
+ * This reads the record and changes nothing about it. Cancelling the job (which does free the
+ * workspace's job slot) stays the operator's decision.
+ */
+export function abandoned(
+  job: { status: string; started_at: string | null; timeout_s?: number | null },
+  now: number = Date.now(),
+): boolean {
+  if (job.status !== "RUNNING" || !job.started_at || !job.timeout_s) return false;
+  const started = Date.parse(job.started_at);
+  if (!Number.isFinite(started)) return false;
+  return now - started - job.timeout_s * 1000 > ABANDONED_GRACE_MS;
+}
+
 /** A plan covering fewer products than the workspace holds must say so. */
 function scopeOf(planned: ZaadReport, full: ZaadRequest): PlanScope | null {
   const planned_skus = new Set<string>();
@@ -228,22 +255,12 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
         if (!alive.current) return;
         if (detail.status === "RUNNING") setPlanPhase("running");
         if (detail.status === "QUEUED") setPlanPhase("queued");
-        // A job whose process died stays RUNNING in the store for ever: nothing reaps it, and the
-        // page would spin silently until somebody reloaded and found it still spinning. Once a run
-        // has outlived the time it was given, say so and stop polling. The record is left exactly
-        // as the engine wrote it — this is the reader being told, not the job being changed.
-        if (detail.status === "RUNNING" && detail.started_at && detail.timeout_s) {
-          const over = Date.now() - Date.parse(detail.started_at) - detail.timeout_s * 1000;
-          if (over > 60_000) {
-            if (poll.current) window.clearInterval(poll.current);
-            poll.current = null;
-            setPlanPhase("failed");
-            setPlanError(
-              "This run has been going for longer than the time it is given, which usually means it was "
-              + "interrupted. Nothing was changed. Run it again, over fewer products if it keeps happening.",
-            );
-            return;
-          }
+        if (abandoned(detail)) {
+          if (poll.current) window.clearInterval(poll.current);
+          poll.current = null;
+          setPlanPhase("failed");
+          setPlanError(ABANDONED_MESSAGE);
+          return;
         }
         if (["DONE", "FAILED", "TIMEOUT", "CANCELLED"].includes(detail.status)) {
           if (poll.current) window.clearInterval(poll.current);

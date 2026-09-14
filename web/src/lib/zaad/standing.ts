@@ -35,6 +35,10 @@ export const LEVEL_LABEL: Record<Level, string> = {
 
 export interface Standing {
   level: Level;
+  /** The chip beside the headline. Usually `LEVEL_LABEL[level]`, but a blocked workspace is
+   *  blocked for one of two different reasons and a chip that names the wrong one is worse than
+   *  none: "Needs data" above "ZAAD could not finish its last run" is simply untrue. */
+  label: string;
   /** The one sentence at the top of Home. */
   headline: string;
   /** What follows it. Never contradicts the headline; never repeats it. */
@@ -89,6 +93,7 @@ export function standing(input: StandingInput): Standing {
   if (blockers.length) {
     return {
       level: "blocked",
+      label: input.notReady ? LEVEL_LABEL.blocked : "Run interrupted",
       headline: input.notReady
         ? "ZAAD needs more before it can tell you what to change."
         : "ZAAD could not finish its last run.",
@@ -104,6 +109,7 @@ export function standing(input: StandingInput): Standing {
   if (input.planPhase === "queued" || input.planPhase === "running") {
     return {
       level: "working",
+      label: LEVEL_LABEL.working,
       headline: input.planPhase === "queued" ? "Your plan is queued." : "ZAAD is comparing your options.",
       detail: "A full comparison takes a few minutes. You can leave this page — the run continues and the "
         + "result will be here when you come back. Your stock, orders, suppliers and network are ready now."
@@ -122,6 +128,7 @@ export function standing(input: StandingInput): Standing {
     if (proposals) parts.push(`${count(proposals, "proposed order", "proposed orders")} waiting for approval`);
     return {
       level: "decide",
+      label: LEVEL_LABEL.decide,
       headline: decisions
         ? decisions === 1 ? "One thing needs your decision." : `${decisions} things need your decision.`
         : proposals === 1 ? "One proposed order is waiting for you." : `${proposals} proposed orders are waiting for you.`,
@@ -136,6 +143,7 @@ export function standing(input: StandingInput): Standing {
   if (watches.length) {
     return {
       level: "watch",
+      label: LEVEL_LABEL.watch,
       headline: "No changes recommended.",
       detail: `${named(watches)} ${watches.length === 1 ? "needs" : "need"} monitoring. ZAAD compared your current plan against every alternative it can build and found none worth acting on, including here.`,
       watches, blockers: [],
@@ -147,6 +155,7 @@ export function standing(input: StandingInput): Standing {
   const planned = input.planPhase === "ready";
   return {
     level: "normal",
+    label: LEVEL_LABEL.normal,
     headline: planned ? "No changes recommended." : "ZAAD has read your workspace.",
     detail: planned
       ? `ZAAD compared your current plan against every alternative it can build and found nothing worth changing.${quiet.length ? ` ${count(quiet.length, "thing is", "things are")} showing early signs but nothing that needs you.` : ""}${input.dataProblems.length ? " Your data has something worth a look, below." : ""}`
