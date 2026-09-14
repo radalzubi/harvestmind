@@ -238,7 +238,7 @@ jobs:
         run: docker compose -f compose.pilot.yml config -q
 
   frontend:
-    name: frontend (typecheck, lint, build)
+    name: frontend (typecheck, lint, test, build)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -257,6 +257,9 @@ jobs:
       - name: Lint
         working-directory: web
         run: npm run lint
+      - name: Unit tests
+        working-directory: web
+        run: npm test
       - name: Production build
         working-directory: web
         run: npm run build
