@@ -63,7 +63,15 @@ function Actions({ node, edge, index }: {
       links.push({ href: "/inventory", label: "Stock held here", primary: true });
       links.push({ href: "/orders?tab=imported&postate=open", label: "Arriving here" });
     } else if (node.kind === "customer") {
-      links.push({ href: `/data?dataset=customer_orders&q=${encodeURIComponent(bare)}`, label: "Their orders", primary: true });
+      // A customer node's id is the *planning request's* grouping key, not a customer id in the
+      // upload — on both QA workspaces it is the single aggregate "customers" — so searching the
+      // customer-orders dataset for it returned "No record matches that" from the panel's one
+      // primary action. Its channel is no better a bridge: one vault's request declares
+      // "wholesale" over 371,140 order lines whose channel column is NULL throughout, so filtering
+      // by it is a second dead link. Nothing the panel holds is guaranteed to exist in the
+      // dataset, so the link opens the orders themselves and says that is what it does; the
+      // explorer's own filters are on the page it lands on.
+      links.push({ href: "/data?dataset=customer_orders", label: "Customer orders", primary: true });
     }
     if (node.skus.length === 1) {
       links.push({ href: `/inventory?sku=${encodeURIComponent(node.skus[0])}`, label: node.skus[0] });

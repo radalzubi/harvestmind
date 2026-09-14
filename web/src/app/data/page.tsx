@@ -258,7 +258,11 @@ function DataBody() {
         {readiness.score != null ? (
           <dl className="snap">
             <div><dt>Overall</dt><dd>{Math.round(readiness.score)}<small>out of 100{readiness.scoreLabel ? ` · ${readiness.scoreLabel}` : ""}</small></dd></div>
-            <div><dt>Rows read</dt><dd>{readiness.totalRows.toLocaleString("en-US")}<small>across the sources above</small></dd></div>
+            {/* "across the sources above" pointed at a page listing twelve datasets, while this
+                number is the sum of the six the quality report covers — 474,795 against the
+                474,848 in the heading, 53 apart, with the full list in between. It names its own
+                set now, and the stat beside it already says "of 6". */}
+            <div><dt>Rows read</dt><dd>{readiness.totalRows.toLocaleString("en-US")}<small>across the {readiness.sources.length} sources this report covers</small></dd></div>
             <div><dt>Sources with issues</dt><dd>{readiness.sources.filter((s) => s.issues.length).length}<small>of {readiness.sources.length}</small></dd></div>
           </dl>
         ) : <Notice>A quality report appears once a required source is loaded.</Notice>}

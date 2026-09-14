@@ -480,6 +480,25 @@ process, never `zaad-api`.
   **"Capacity 34,344.808 / week"** — the engine's continuous number, straight through, where every
   other unit figure in the product prints whole units and no operator declared a milli-unit of
   weekly capacity. It reads "34,345 units / week", with the unit named.
+* **The customer panel's one primary action always returned nothing.** "Their orders" opened the
+  customer-orders dataset searched for the node's id — but a customer node's id is the *planning
+  request's* grouping key, and on both QA workspaces that is the single aggregate `customers`,
+  which appears in no order row. **Filtering by channel is no better**: one vault's request
+  declares the channel `wholesale` while all 371,140 of its order lines carry `channel = NULL`, so
+  that link is dead too — I built it, tested it, and found it returned "No record matches that"
+  before it was committed. Nothing the panel holds is guaranteed to exist in the dataset, so the
+  link opens the customer orders themselves and is labelled for what it opens; the explorer's own
+  filters are on the page it lands on. It now reads "1–50 of more than 100,000 records".
+
+  **An observation for the audit, not a change**: that a workspace's planning request can declare a
+  customer channel its upload does not carry is an engine/adapter fact, in code §86 puts out of
+  bounds for this pass. It is not a product defect and nothing here compensates for it; it is
+  recorded because it is the reason the obvious fix did not work.
+* **Two totals 53 apart on the Data page, both describing "the sources above".** The heading said
+  **474,848 records across 10 sources**; the quality panel below it said **Rows read 474,795 across
+  the sources above** — and the list of all twelve datasets, summing to 474,848, sits between them.
+  The smaller figure is the sum of the six sources the quality report covers, which the stat beside
+  it already says ("Sources with issues: 0 **of 6**"). It names its own set now.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →
