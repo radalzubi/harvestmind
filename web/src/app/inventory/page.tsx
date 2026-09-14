@@ -387,9 +387,13 @@ function InventoryBody() {
           selected={selected} onSelect={(r) => set({ sku: r.sku, offset: String(offset) })}
           sort={page.sort} direction={page.direction}
           onSort={(key) => set({ sort: key, dir: page.sort === key && page.direction === "asc" ? "desc" : "asc" })}
-          empty={<EmptyState title="No product matches that">
-            {filtered ? "Change or clear the filters above." : "Your product list is empty."}
-          </EmptyState>}
+          // Past the end of the results, the pager below states the real reason and offers the
+          // way back; an empty state saying nothing matched would contradict it.
+          empty={page.offset >= page.total && page.total > 0 ? undefined : (
+            <EmptyState title="No product matches that">
+              {filtered ? "Change or clear the filters above." : "Your product list is empty."}
+            </EmptyState>
+          )}
         />
       </div>
       <Pager total={page.total} limit={page.limit} offset={page.offset} unit="products"

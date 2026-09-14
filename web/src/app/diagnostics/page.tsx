@@ -109,7 +109,8 @@ function Suppliers({ params, set }: { params: URLSearchParams; set: (c: Record<s
         rowKey={(r) => r.supplier_id} sort={sort} direction={direction}
         onSort={(key) => set({ sort: key, dir: sort === key && direction === "desc" ? "asc" : "desc" })}
         onSelect={(r) => { window.location.href = `/diagnostics/supplier/${encodeURIComponent(r.supplier_id)}`; }}
-        empty={<EmptyState title="No supplier matches that">Clear the search to see every supplier.</EmptyState>} />
+        empty={offset >= page.total && page.total > 0 ? undefined
+          : <EmptyState title="No supplier matches that">Clear the search to see every supplier.</EmptyState>} />
       <Pager total={page.total} limit={PAGE} offset={offset} unit="suppliers"
         onOffset={(next) => set({ offset: String(next) })} />
       <p className="zhelp" style={{ marginTop: 10 }}>

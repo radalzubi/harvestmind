@@ -551,6 +551,15 @@ process, never `zaad-api`.
   fix was made on the first day — and the other two said nothing, leaving a reader to connect them
   to a warning in a different section of the page. Each now carries its own sentence. The
   adjacent-branch pattern again, and the third instance of it found on the last day.
+* **"101–1 of 1 product."** A page past the end of the results — a stale bookmark, a link a
+  colleague sent before the data changed, the back button into one — printed a range whose start is
+  past its end, under an empty table reading "No product matches that · Change or clear the filters
+  above". The search matched; the *page number* did not. `Pager` is one component used by all five
+  paged tables, so it is fixed once: it says which page was asked for, how many there are, that
+  **nothing is missing**, and offers a button back to the first page. The four paged surfaces stop
+  rendering the contradicting empty state in that case — only in that case, so a search that
+  genuinely matches nothing still says so. Verified all three ways: past the end, a real match, and
+  a search matching nothing.
 * **A clean-console walk, in a browser tab with no history.** Every earlier console reading in
   this session was polluted by my own probes and by the dozen API restarts, so the last check was
   made in a fresh tab: connect, then Home → Decisions → Inventory → Purchase orders → Network →

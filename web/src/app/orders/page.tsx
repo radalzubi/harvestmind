@@ -283,7 +283,8 @@ function Imported({ params, set }: { params: URLSearchParams; set: (c: Record<st
           rowKey={(r) => r.po_id} selected={selected} onSelect={(r) => set({ po: r.po_id })}
           sort={page.sort} direction={page.direction}
           onSort={(key) => set({ posort: key })}
-          empty={<EmptyState title="No order matches that">Change the search or the status filter.</EmptyState>} />
+          empty={page.offset >= page.total && page.total > 0 ? undefined
+            : <EmptyState title="No order matches that">Change the search or the status filter.</EmptyState>} />
       </div>
       <Pager total={page.total} limit={page.limit} offset={page.offset} unit="orders"
         onOffset={(next) => set({ pooffset: String(next) })} />

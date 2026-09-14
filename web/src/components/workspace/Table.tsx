@@ -132,6 +132,20 @@ export function Pager({ total, limit, offset, onOffset, unit = "rows", one, isFl
   if (total <= limit && offset === 0) {
     return <p className="tbl-count">{total.toLocaleString("en-US")} {noun}</p>;
   }
+  // A page past the end — a stale link, a bookmark, the back button into one. `offset + 1` then
+  // reads past `total`: one table printed "101–1 of 1 product" under an empty list saying nothing
+  // matched, when the thing that did not match was the page number, not the search.
+  if (total > 0 && offset >= total) {
+    return (
+      <div className="tbl-pager">
+        <p className="tbl-count">
+          Page {(Math.floor(offset / limit) + 1).toLocaleString("en-US")} is past the end of{" "}
+          {total.toLocaleString("en-US")} {noun}. Nothing is missing; this link points beyond them.
+        </p>
+        <Button size="sm" role="secondary" onClick={() => onOffset(0)}>Back to the first page</Button>
+      </div>
+    );
+  }
   const from = offset + 1;
   const to = Math.min(offset + limit, total);
   return (

@@ -180,7 +180,8 @@ function Explorer({ datasets }: { datasets: DatasetInfo[] }) {
             selected={openRow} onSelect={(row) => set({ row: String(page.rows.indexOf(row)), offset: String(offset) })}
             sort={page.sort} direction={page.direction}
             onSort={(key) => set({ sort: key, dir: page.sort === key && page.direction === "asc" ? "desc" : "asc" })}
-            empty={<EmptyState title="No record matches that">Clear the search or the filter.</EmptyState>} />
+            empty={page.offset >= page.total && page.total > 0 ? undefined
+              : <EmptyState title="No record matches that">Clear the search or the filter.</EmptyState>} />
           <Pager total={page.total} limit={page.limit} offset={page.offset} unit="records"
             isFloor={page.total_is_floor} onOffset={(next) => set({ offset: String(next) })} />
         </>
