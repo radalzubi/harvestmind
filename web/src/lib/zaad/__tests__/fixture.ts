@@ -55,8 +55,8 @@ export const build: WorkspaceRequestResponse["build"] = {
   rows_read: { stg_fmcg_skus: 2, stg_fmcg_orders: 900, stg_fmcg_purchase_orders: 40 },
   compact: { skus: 2, sources: 2, services: 2 },
   fits: {
-    "SUP-A": { fill: 0.98, sample_size: 41, lead_days: 28, provenance: "INFERRED_FROM_HISTORY" },
-    "SUP-B": { fill: 0.84, sample_size: 23, lead_days: 34, lead_sd_days: 6, provenance: "INFERRED_FROM_HISTORY" },
+    "SUP-A": { fill_mean: 0.98, fill_sd: 0.02, sample_size: 41, lead_days: 28, lead_sd_days: 3, provenance: "INFERRED_FROM_HISTORY" },
+    "SUP-B": { fill_mean: 0.84, fill_sd: 0.09, sample_size: 23, lead_days: 34, lead_sd_days: 6, provenance: "INFERRED_FROM_HISTORY" },
   },
   incumbent_rule: { rule: "periodic:2", provenance: "INFERRED_FROM_HISTORY" },
   warnings: ["Transfer lane MAIN->RIYADH has no declared cost; it is priced at zero."],

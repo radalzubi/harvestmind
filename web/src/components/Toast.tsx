@@ -29,11 +29,22 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastCtx.Provider value={{ push }}>
       {children}
+      {/*
+        Every confirmation this product gives lands here — "Proposal created", "Approved. Nothing
+        has been sent to a supplier", "Format saved" — and without a live region a screen reader
+        announced none of them: the action appeared to do nothing. `aria-atomic="false"` so only
+        the new message is read, not the whole stack again.
+
+        The inset is logical, so the stack sits in the trailing corner in Arabic as well.
+      */}
       <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="false"
         style={{
           position: "fixed",
           bottom: 20,
-          right: 20,
+          insetInlineEnd: 20,
           display: "flex",
           flexDirection: "column",
           gap: 8,

@@ -38,8 +38,33 @@ test("a supplier's risk comes from its measured fill and nothing else", () => {
   assert.ok(b.risk.evidence.includes("23 past deliveries"));
 });
 
+test("the build report's own field names are read, not ones we wished for", () => {
+  // Captured verbatim from GET /api/zaad/network/request/from-workspace on a live workspace. The
+  // field is `fill_mean`. An earlier version of the contract types declared `fill`, so every read
+  // was undefined and supplier reliability silently never reached the twin's risk scoring at all —
+  // the kind of defect a green build and a matching-but-wrong fixture will never catch.
+  const captured = {
+    "SUP-B": {
+      fill_mean: 0.9801432066227092,
+      fill_sd: 0.024574341608084818,
+      lead_days: 34,
+      lead_sd_days: 2.1065374432940898,
+      sample_size: 24,
+      provenance: "INFERRED_FROM_HISTORY",
+    },
+  };
+  const m = buildCanonicalModel({
+    request, build: { ...build, fits: captured }, report, directory, homeRegion: "JO", workspaceName: "Acme",
+  });
+  const b = m.nodes.find((n) => n.id === "sup:SUP-B")!;
+  assert.equal(b.metrics.fill?.mean, 0.9801432066227092, "the fitted fill reaches the model");
+  assert.equal(b.metrics.fill?.n, 24);
+  assert.ok(!(b.missing ?? []).some((x) => /Delivery reliability needs more delivery history/.test(x)),
+    "and a supplier with 24 measured deliveries is not described as unmeasured");
+});
+
 test("a thin sample caps how alarming a supplier is allowed to look", () => {
-  const thin = { ...build, fits: { ...build.fits, "SUP-B": { fill: 0.3, sample_size: 2, provenance: "INFERRED_FROM_HISTORY" } } };
+  const thin = { ...build, fits: { ...build.fits, "SUP-B": { fill_mean: 0.3, sample_size: 2, provenance: "INFERRED_FROM_HISTORY" } } };
   const m = buildCanonicalModel({ request, build: thin, report, directory, homeRegion: "JO", workspaceName: "Acme" });
   const b = m.nodes.find((n) => n.id === "sup:SUP-B")!;
   assert.ok(b.risk.score <= 0.45, `a 2-delivery sample must not reach critical, got ${b.risk.score}`);
@@ -93,6 +118,45 @@ test("a site's service reading is the report's, and a shortfall raises its risk"
   assert.equal(riyadh.metrics.serviceProjected, 0.94);
   assert.match(riyadh.risk.reasons[0], /3\.0 points below target/);
   assert.equal(node("loc:MAIN").risk.reasons.length, 0);
+});
+
+test("holding planned cover is not a warning, however much of it there is", () => {
+  // The production defect this closes: a site marked Critical while its service was projected at
+  // 100% against a 95% target and the panel said no change was recommended. The score was being
+  // driven by `protect` rows — which are P0 holding cover where cover is justified, i.e. the
+  // system working. Twenty of them must still leave the site calm.
+  const many = {
+    ...report,
+    protection: Array.from({ length: 20 }, (_, i) => ({
+      sku: `SKU-${i}`, location: "MAIN", stance: "protect", protection_units: 100,
+    })),
+    network_service: [
+      { service: "svc_main", location: "MAIN", requested: 0.95, jointly_feasible: 1,
+        expected_achieved: 1, incumbent_achieved: 1, selected_achieved: 1 },
+    ],
+  };
+  const m = buildCanonicalModel({ request, build, report: many, directory, homeRegion: "JO", workspaceName: "Acme" });
+  const main = m.nodes.find((n) => n.id === "loc:MAIN")!;
+  assert.equal(main.risk.score, 0, "planned protection contributes nothing to risk");
+  assert.equal(main.risk.level, "low");
+  assert.deepEqual(main.risk.reasons, [], "and it is not offered as a reason to worry");
+  assert.ok(main.risk.evidence.some((e) => /being held with extra cover, as planned/.test(e)),
+    "it is still visible — as evidence, in the language of a plan working");
+  assert.equal(main.state, "PROTECT", "the optimizer's stance is unchanged; only the alarm is");
+  const led = attentionAreas(m, buildIndex(m)).map((x) => x.lead.id);
+  assert.ok(!led.includes("loc:MAIN"),
+    `nothing reaches Home claiming the warehouse needs attention, got ${led.join(", ")}`);
+});
+
+test("a site that genuinely cannot be resupplied still raises its hand", () => {
+  const stuck = {
+    ...report,
+    protection: [{ sku: "SKU-1", location: "MAIN", stance: "no_replenishment" }],
+  };
+  const m = buildCanonicalModel({ request, build, report: stuck, directory, homeRegion: "JO", workspaceName: "Acme" });
+  const main = m.nodes.find((n) => n.id === "loc:MAIN")!;
+  assert.ok(main.risk.score >= 0.5);
+  assert.match(main.risk.reasons[0], /no replenishment route/);
 });
 
 test("stock is summed from the snapshot and valued at the declared unit value", () => {
@@ -174,4 +238,81 @@ test("the layout is deterministic and lays supply out left to right", () => {
   assert.ok(a.get("sup:SUP-A")!.x < a.get("port:aqaba")!.x);
   assert.ok(a.get("port:aqaba")!.x < a.get("loc:MAIN")!.x);
   assert.ok(a.get("loc:MAIN")!.x < a.get("cust:RETAIL")!.x);
+});
+
+/**
+ * Subject-verb agreement in the twin's sentences. These strings are assembled from lists whose
+ * length is usually more than one, so the plural was written once: a supplier carrying a single
+ * product read "1 SKU depend on this supplier" in the panel a person is asked to act on.
+ */
+test("a single dependency takes a singular verb", () => {
+  const sentences = model.nodes.map((n) => describeItem({ type: "node", id: n.id }, model, index))
+    .concat(model.edges.map((e) => describeItem({ type: "edge", id: e.id }, model, index)));
+  // The subject opens its own sentence, so the check anchors there: "1 open order and 1 SKU depend"
+  // is a compound subject and correctly plural, while a sentence *starting* "1 SKU depend" is not.
+  for (const clause of sentences.flatMap((said) => said.split(/(?<=\.)\s+/))) {
+    assert.ok(!/^1 SKU depend\b/.test(clause), `"1 SKU depend" in: ${clause}`);
+    assert.ok(!/^1 open order depend\b/.test(clause), `"1 open order depend" in: ${clause}`);
+    assert.ok(!/^Stock depend\b/.test(clause), `"Stock depend" in: ${clause}`);
+    assert.ok(!/\b1 customer groups\b/.test(clause), `"1 customer groups" in: ${clause}`);
+    assert.ok(!/\b\d+ customers? (?!group)/.test(clause) || !/depend/.test(clause),
+              `a customer count without its noun in: ${clause}`);
+  }
+});
+
+test("the fixture actually reaches both sides of the rule", () => {
+  // Without this the test above passes on a fixture that never produces a singular subject.
+  const clauses = model.nodes.map((n) => describeItem({ type: "node", id: n.id }, model, index))
+    .concat(model.edges.map((e) => describeItem({ type: "edge", id: e.id }, model, index)))
+    .flatMap((said) => said.split(/(?<=\.)\s+/))
+    .filter((c) => /\bdepends?\b/.test(c));
+  assert.ok(clauses.some((c) => /^1 SKU depends on/.test(c)), "no singular subject in the fixture");
+  // And the rule must not over-correct: subjects joined by "and" stay plural whatever their counts.
+  assert.ok(clauses.some((c) => /^1 open order and 1 SKU depend on/.test(c)), "no compound subject");
+});
+
+/**
+ * A sentence that quotes money must quote the workspace's money. `describe()` had a hard `$` in
+ * it, three lines from a facts row that formats the same number through the workspace currency.
+ */
+test("a site's stock value is quoted in the workspace's own currency", () => {
+  const jod = buildCanonicalModel({
+    request: { ...request, currency: "JOD" }, build, report, directory,
+    homeRegion: "JO", workspaceName: "Acme",
+  });
+  const jodIndex = buildIndex(jod);
+  const site = jod.nodes.find((n) => (n.kind === "dc" || n.kind === "branch") && n.metrics.onHandValue != null);
+  assert.ok(site, "the fixture has a site with a stock value");
+  const said = describeItem({ type: "node", id: site.id }, jod, jodIndex);
+  assert.ok(said.includes("JOD"), `no workspace currency in: ${said}`);
+  assert.ok(!said.includes("$"), `a dollar sign survived in: ${said}`);
+
+  // And the default fixture, which does trade in dollars, says so by name rather than by symbol.
+  const usd = describeItem({ type: "node", id: site.id }, model, index);
+  assert.ok(usd.includes("USD"), usd);
+});
+
+/**
+ * An origin the twin cannot place is still an origin the operator declared. `ISO3_TO_2` is a
+ * lookup of 25 codes, deliberately not a truncation — truncating AUT would read AU and put an
+ * Austrian supplier in Australia — but an unmapped code must not also erase the declared value.
+ */
+test("an origin that cannot be placed is still shown", () => {
+  const supplier = directory!.suppliers![0];
+  const austrian = {
+    ...directory!,
+    suppliers: [{ ...supplier, origin_iso3: "AUT" }, ...directory!.suppliers!.slice(1)],
+  };
+  const built = buildCanonicalModel({ request, build, report, directory: austrian, homeRegion: "JO", workspaceName: "Acme" });
+  const node = built.nodes.find((n) => n.kind === "supplier" && n.id.endsWith(supplier.id));
+  assert.ok(node, "the supplier is still in the network");
+  assert.equal(node.subtitle, "Origin AUT", "the declared code survives");
+  assert.equal(node.region, undefined, "and nothing is placed on a country it was not mapped to");
+  // It may still be placed by its declared route — that is the operator's own data, and the node
+  // says so. What it must never do is claim a country it was never mapped to.
+  assert.notEqual(node.geo?.precision, "exact");
+  assert.ok(node.missing?.some((m) => m.includes("AUT")),
+            `the note should name the declared code, not claim none was declared: ${node.missing}`);
+  assert.ok(!node.missing?.some((m) => m.startsWith("No origin country is declared")),
+            "an origin that is declared must not be reported as undeclared");
 });

@@ -24,6 +24,7 @@ import { LANE_CATALOG, PORTS, REGION_AT, type LonLat } from "../geo";
 import type {
   NetworkEdge, NetworkModel, NetworkNode, NetworkRecommendation, OpenPO, RiskState, ZaadState,
 } from "../model";
+import { NUMBER } from "@/lib/zaad/product";
 import { riskLevel } from "../model";
 import type {
   DirectoryResponse, ZaadBuild, ZaadNetworkService, ZaadReport, ZaadRequest,
@@ -110,10 +111,14 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
     const short = rows.filter((r) => r.stance === "no_replenishment");
     if (short.length) reasons.push(`${short.length} product${short.length === 1 ? " has" : "s have"} no replenishment route to this site`);
     const protectRows = rows.filter((r) => r.stance === "protect");
-    if (protectRows.length && !reasons.length) reasons.push(`${protectRows.length} product${protectRows.length === 1 ? "" : "s"} need extra cover here`);
 
-    // score from measured gaps only; with no service reading there is no basis for a score
-    const score = Math.min(1, worstGap * 8 + (short.length ? 0.5 : 0) + protectRows.length * 0.05);
+    // Score from measured conditions only: a service shortfall the optimizer projects, and a
+    // product it cannot resupply to this site. Protection is deliberately NOT scored — the
+    // `protect` stance is P0 holding cover where cover is justified, which is the system working,
+    // not a warning. Counting it once made a site read "Critical" while its service was projected
+    // at 100% against a 95% target, with the panel saying no change was recommended. Three true
+    // statements that could not all be true of the same warehouse.
+    const score = Math.min(1, worstGap * 8 + (short.length ? 0.5 : 0));
     const missing: string[] = [];
     if (!home) missing.push("This site has no declared country, so it is not placed on the map.");
     if (!stock) missing.push("No stock snapshot has been uploaded for this site.");
@@ -132,6 +137,7 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
       state: stateFromStance(rows, report?.mode as ZaadState ?? "LEAN"),
       risk: risk(score, reasons, [
         ...(service.length ? [`${service.length} service target${service.length === 1 ? "" : "s"} measured`] : []),
+        ...(protectRows.length ? [`${protectRows.length} product${protectRows.length === 1 ? " is" : "s are"} being held with extra cover, as planned`] : []),
         ...(rows.length ? [`${rows.length} product protection row${rows.length === 1 ? "" : "s"}`] : []),
       ]),
       metrics: {
@@ -141,7 +147,8 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
         serviceProjected: service.length
           ? Math.min(...service.map((s) => s.selected_achieved ?? s.expected_achieved ?? 1))
           : null,
-        shortages: rows.filter((r) => r.stance === "no_replenishment").map((r) => ({ sku: r.sku, units: 0, when: "no replenishment route" })),
+        shortages: rows.filter((r) => r.stance === "no_replenishment")
+          .map((r) => ({ sku: r.sku, units: 0, said: "has no route to be replenished here" })),
         protection: {
           localUnits: rows.length ? rows.reduce((a, r) => a + (r.protection_units ?? 0), 0) : null,
           pooledUnits: null,
@@ -198,12 +205,12 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
     // operator would act on; the score and the sentence share that threshold so a supplier never
     // carries colour without a reason next to it.
     let score = 0;
-    if (fit?.fill != null) {
-      const shortfall = Math.max(0, 1 - fit.fill);
+    if (fit?.fill_mean != null) {
+      const shortfall = Math.max(0, 1 - fit.fill_mean);
       const thin = (fit.sample_size ?? 0) < 6;
       if (shortfall > NOTABLE_SHORTFALL) {
         score = Math.min(1, (shortfall - NOTABLE_SHORTFALL) * 4);
-        reasons.push(`${(fit.fill * 100).toFixed(1)}% of ordered quantity has been arriving${thin ? ` (only ${fit.sample_size ?? 0} deliveries measured)` : ""}`);
+        reasons.push(`${(fit.fill_mean * 100).toFixed(1)}% of ordered quantity has been arriving${thin ? ` (only ${fit.sample_size ?? 0} deliveries measured)` : ""}`);
         // A handful of deliveries cannot justify calling a supplier critical.
         if (thin) score = Math.min(score, 0.45);
       }
@@ -212,8 +219,16 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
     if (late.length) { reasons.push(`${late.length} open order${late.length === 1 ? " is" : "s are"} past their expected arrival`); score = Math.max(score, 0.5); }
 
     const missing: string[] = [];
-    if (!origin) { missing.push("No origin country is declared for this supplier, so it is placed by its route if one is known."); if (!lane) unplacedSuppliers += 1; }
-    if (!fit?.fill) missing.push("Delivery reliability needs more delivery history before it can be measured.");
+    if (!origin) {
+      // Two different facts, and the note used to say the first for both: the operator declared no
+      // origin, or they declared one this build has no coordinate for. Saying "none is declared"
+      // about a supplier whose master reads `AUT` sends someone to fix data that is already there.
+      missing.push(master?.origin_iso3
+        ? `This supplier's declared origin (${master.origin_iso3}) is not one ZAAD can place on a map, so it is placed by its route if one is known.`
+        : "No origin country is declared for this supplier, so it is placed by its route if one is known.");
+      if (!lane) unplacedSuppliers += 1;
+    }
+    if (fit?.fill_mean == null) missing.push("Delivery reliability needs more delivery history before it can be measured.");
     if (!routeTag) missing.push("No shipping route is declared for this supplier.");
 
     const geo = origin ? approx(origin) : lane ? approx(lane.path[0]) : null;
@@ -222,7 +237,10 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
       id: supplierId,
       kind: "supplier",
       name: master?.name || supplier,
-      subtitle: iso2 ? `Origin ${iso2}` : lane?.name,
+      // ISO3_TO_2 is a lookup, not a truncation, so an origin it does not carry (AUT, PRT, SVK…)
+      // correctly places nothing on the map. It should not also *hide* the origin: that code is
+      // the operator's own declared value, and showing it is not a claim about where it is.
+      subtitle: iso2 ? `Origin ${iso2}` : master?.origin_iso3 ? `Origin ${master.origin_iso3}` : lane?.name,
       region: iso2 ?? undefined,
       geo,
       importance: Math.min(1, 0.45 + agg.skus.size * 0.08),
@@ -232,7 +250,7 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
         ...(fit?.provenance ? [fit.provenance.replaceAll("_", " ").toLowerCase()] : []),
       ]),
       metrics: {
-        fill: fit?.fill != null ? { mean: fit.fill, p10: null, p90: null, n: fit.sample_size ?? null } : undefined,
+        fill: fit?.fill_mean != null ? { mean: fit.fill_mean, p10: null, p90: null, n: fit.sample_size ?? null } : undefined,
         leadDays: fit?.lead_days != null ? { mean: fit.lead_days, p10: null, p90: null, n: fit.sample_size ?? null } : undefined,
         openPOs: pos,
         capacityPerWeek: master?.capacity_per_week ?? null,
@@ -369,9 +387,11 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
       recommendations.push({
         id: `po:${order.po}`, targetType: "node", targetId: `sup:${supplier}`,
         state: "PROTECT", source: "optimizer",
-        action: `${order.recommended_action} ${order.po} — ${order.quantity_affected.toLocaleString()} units`,
+        // Same rule as everywhere else: whole units, grouped the way the rest of the product
+        // groups them, and not in whatever locale the reader's browser happens to be set to.
+        action: `${order.recommended_action} ${order.po} — ${NUMBER(order.quantity_affected)} units`,
         rationale: report.commitments?.reading ?? "",
-        noAction: `${order.current_commitment.open_units.toLocaleString()} units arrive as agreed and the remaining invoice falls due on the current date.`,
+        noAction: `${NUMBER(order.current_commitment.open_units)} units arrive as agreed and the remaining invoice falls due on the current date.`,
       });
     }
     const firstReviewPurchases = (report.actions ?? []).filter((a) => a.action === "purchase" && a.period === 0 && a.quantity > 0);
@@ -385,7 +405,7 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
       recommendations.push({
         id: `buy:${supplier}`, targetType: "node", targetId: `sup:${supplier}`,
         state: (report.mode as ZaadState) ?? "LEAN", source: "optimizer",
-        action: `Order ${quantity.toLocaleString()} units this week`,
+        action: `Order ${NUMBER(quantity)} units this week`,
         rationale: (report.reasons ?? [])[0] ?? "The plan's reasoning is on the decision.",
         noAction: "The current ordering rule places its own quantity for this week.",
       });
@@ -406,5 +426,6 @@ export function buildCanonicalModel(input: CanonicalInputs): NetworkModel {
     shipments: [],
     recommendations,
     notes,
+    currency: request.currency,
   };
 }

@@ -1,4 +1,11 @@
 export const en = {
+  workspace: {
+    groups: { operate: "Operate", analyse: "Analyse", data: "Data" },
+    nav: { home: "Home", decisions: "Decisions", inventory: "Inventory", orders: "Purchase orders", ordersShort: "Orders", network: "Network", diagnostics: "Diagnostics", history: "History", upload: "Upload", data: "Data", more: "More" },
+    search: "Search", searchLabel: "Search products, suppliers, orders, proposals and decisions", help: "Help",
+    skip: "Skip to content", asAt: "as at", foot: "ZAAD recommends and records approvals. It never sends an order to a supplier.",
+    lang: "عربي", langLabel: "Switch to Arabic",
+  },
   nav: { product: "Product", how: "How it works", sectors: "Who it's for", security: "Security", about: "About", resources: "Resources", enterKey: "Enter key", getStarted: "Get a diagnostic", open: "Get a diagnostic", quote: "Get a company quote", signIn: "Open your workspace", menuOpen: "Open menu", menuClose: "Close menu", lang: "عربي" },
   footer: {
     blurb: "ZAAD is the decision layer for imported supply: it tells import-dependent distributors what to change, and why. Built in Amman.",

@@ -4,7 +4,13 @@
  * Base URL is read from NEXT_PUBLIC_API_URL (default: http://localhost:8000).
  */
 
-const BASE_URL =
+/**
+ * Where the API is. Exported because the operating product's own client (`lib/zaad/product.ts`)
+ * had a second copy of this line: two private constants with one definition, which agree until
+ * the day someone changes one of them and the product's data calls and the legacy ones point at
+ * different hosts.
+ */
+export const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
 
 const TOKEN_KEY = "harvestmind.operator-token";
@@ -574,7 +580,14 @@ export function setSector(s: Sector): void {
   if (typeof window !== "undefined") window.sessionStorage.setItem("harvestmind.sector", s);
 }
 
-export interface Me { operator_id: string; name: string; display_name?: string; logo_url?: string | null; sector: Sector; region: string; created_at: string; upload_count: number }
+export interface Me {
+  operator_id: string; name: string; display_name?: string; logo_url?: string | null; sector: Sector; region: string;
+  created_at: string; upload_count: number;
+  /** V2: the acting person, their role and what it grants; the workspace's policy. */
+  actor?: { id: string; name: string; role: string } | null;
+  capabilities?: string[];
+  policy?: { self_approval?: string | null; default_export_profile?: string | null } | null;
+}
 export function getMe(): Promise<Me> { return apiFetch<Me>("/me"); }
 
 export interface Job {

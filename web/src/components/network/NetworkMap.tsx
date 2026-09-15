@@ -165,11 +165,19 @@ export default function NetworkMap() {
           layout: {
             "text-field": ["get", "name"],
             "text-size": 11.5,
-            "text-offset": [0, 1.2], "text-anchor": "top",
             "text-font": ["Noto Sans Regular"],
             // MapLibre decides what fits; importance breaks ties so the big places win.
             "symbol-sort-key": ["-", 1, ["get", "importance"]],
-            "text-allow-overlap": false, "text-optional": true,
+            // Four positions are tried around the dot before a label is given up. With a single
+            // fixed anchor, two facilities a few hundred kilometres apart lose one label outright —
+            // an operator reading the map cannot tell a supplier that is absent from one whose name
+            // did not fit. `text-optional` is off so the label is placed or dropped on its own
+            // merits rather than because a paired icon won its slot.
+            "text-variable-anchor": ["top", "bottom", "left", "right"],
+            "text-radial-offset": 0.9,
+            "text-justify": "auto",
+            "text-allow-overlap": false, "text-optional": false,
+            "text-padding": 3,
           },
           paint: { "text-color": INK[900], "text-halo-color": "#F7F7F4", "text-halo-width": 1.6 },
         });

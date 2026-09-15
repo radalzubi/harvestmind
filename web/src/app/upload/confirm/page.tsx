@@ -112,8 +112,31 @@ function ConfirmInner() {
     [flagged]
   );
 
-  if (!sessionId) return <PageError error="No session id, start from the Upload page." />;
+  // Not an error: the page was opened without the upload it exists to confirm. "Something went
+  // wrong" sends someone looking for a fault that is not there.
+  if (!sessionId) return (
+    <div className="page">
+      <EmptyState
+        title="There is no upload to confirm here"
+        body="This page shows the columns ZAAD read from a file you added, so it needs that upload. Start from Upload and add the file again."
+        action={<Link className="zb zb--primary" href="/upload">Go to Upload</Link>}
+      />
+    </div>
+  );
   if (loading) return <PageLoading message="Loading extraction session…" />;
+  // The same thing a second way. An upload session is short-lived and belongs to one workspace, so
+  // a link that is a day old, or one a colleague sent, answers "No session '…'" — and that read as
+  // "Something went wrong", under a heading that sends the reader looking for a fault, with the
+  // engine's own string for a message and nowhere to go. Nothing went wrong; the upload is gone.
+  if (error && /no session/i.test(error)) return (
+    <div className="page">
+      <EmptyState
+        title="That upload is no longer here"
+        body="An upload waits for you to confirm it and is then cleared, and it belongs to the workspace it was added in. Add the file again from Upload and ZAAD will read its columns afresh."
+        action={<Link className="zb zb--primary" href="/upload">Go to Upload</Link>}
+      />
+    </div>
+  );
   if (error) return <PageError error={error} />;
   if (!session) return null;
 

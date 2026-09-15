@@ -14,7 +14,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import assistant, fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin, access, jobs, zaad, zaad_full, zaad_atp
+from api.product.drafts import DraftRefused
+from api.routers import assistant, fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin, access, jobs, zaad, zaad_full, zaad_atp, zaad_workspace, zaad_orders, zaad_history
 
 app = FastAPI(
     title="Zaad Supply API",
@@ -43,13 +44,6 @@ if not _cors_origins:
     # fall back to the localhost allowlist only for dev.
     _cors_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=_cors_origins,
-    allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-Admin-Key", "Accept"],
-)
 
 
 @app.middleware("http")
@@ -105,11 +99,65 @@ async def _refuse_permissive_public_bind() -> None:
     assert_safe_to_serve()
 
 
+@app.on_event("shutdown")
+async def _checkpoint_vaults() -> None:
+    """A clean stop folds every idle vault's write-ahead log into its file."""
+    try:
+        from infrastructure.db_manager import checkpoint_all
+        checkpoint_all()
+    except Exception:  # noqa: BLE001  shutdown must never fail on this
+        logging.getLogger("harvestmind.api").exception("vault checkpoint on shutdown failed")
+
+
+@app.exception_handler(DraftRefused)
+async def _draft_refused(request: _Request, exc: DraftRefused) -> _JSONResponse:
+    """A refused proposal is a message to the buyer, never a 500.
+
+    Most order endpoints catch this themselves; a few read-only ones (the export formats, one
+    proposal, an evaluation) reach it only through `ensure_tables`, which refuses when a vault has
+    not been migrated for proposed orders. Handling it here means an endpoint added later cannot
+    turn the same refusal back into an internal error.
+    """
+    return _JSONResponse(status_code=422,
+                         content={"detail": {"code": "proposal_refused", "message": str(exc)}})
+
+
+# The methods this API actually serves. It was GET/POST/OPTIONS, which was true until the operating
+# product declared PATCH (edit a proposal), PUT (update an export format) and DELETE (remove
+# either) — and a browser's preflight for an unlisted method is answered 400, so those three write
+# paths could not work from the interface at all. Server-side tests never see it: a test client
+# does not preflight. Still an allowlist, still no wildcard, still no credentials.
+#
+# CORS is added LAST so that it is the OUTERMOST middleware. Starlette wraps middleware in the
+# reverse order of registration, and the error boundary below must sit *inside* CORS: a 500 it
+# produces then passes back out through CORS and carries `Access-Control-Allow-Origin`. When CORS
+# was innermost, an unhandled error reached the browser with no CORS headers at all, so the page
+# saw only "Failed to fetch" and could not read the request id the error copy tells people to
+# quote. `tests/integration/test_api_error_boundary.py` holds this.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Admin-Key", "Accept"],
+    # Cross-origin JavaScript can read only the six "simple" response headers unless the server
+    # says otherwise — and the web app is on a different origin from this API in every deployment.
+    # `Content-Disposition` carries the filename the operator's own export profile produced, so
+    # without it every exported file downloaded as "purchase-order" with no extension; the request
+    # id is what the error copy tells a person to quote to support; and `X-ZAAD-Transmitted` is an
+    # assertion this product makes, which a reviewer should be able to check from the browser.
+    expose_headers=["Content-Disposition", "X-Request-ID", "X-ZAAD-Transmitted"],
+)
+
+
 app.include_router(planning.router)
 app.include_router(fmcg.router)
 app.include_router(zaad.router)
 app.include_router(zaad_full.router)
 app.include_router(zaad_atp.router)   # P5 ATP (default off: ZAAD_ATP_ENABLED=1)
+app.include_router(zaad_workspace.router)  # operating product: read-only projections of the vault
+app.include_router(zaad_orders.router)     # operating product: proposed orders, evaluation, export
+app.include_router(zaad_history.router)    # operating product V2: audit, responses, outcomes, settings, telemetry
 app.include_router(backtest.router)
 app.include_router(data.router)
 app.include_router(fsma.router)
@@ -136,13 +184,15 @@ def health():
 @app.get("/ready")
 def ready():
     """Readiness: the root database opens and the solver is importable."""
-    import duckdb
     from api.dependencies import get_db_path
+    from infrastructure.db_manager import vault_cursor
     checks = {}
     try:
-        conn = duckdb.connect(get_db_path(), read_only=True)
-        conn.execute("SELECT 1").fetchone()
-        conn.close()
+        conn = vault_cursor(get_db_path())
+        try:
+            conn.execute("SELECT 1").fetchone()
+        finally:
+            conn.close()
         checks["database"] = "ok"
     except Exception as exc:  # noqa: BLE001
         checks["database"] = f"unavailable: {type(exc).__name__}"

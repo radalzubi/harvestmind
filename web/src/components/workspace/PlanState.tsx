@@ -12,18 +12,49 @@
  * covered the whole catalogue.
  */
 import { useState } from "react";
+import Link from "next/link";
 import { Play, RotateCw } from "lucide-react";
 import { DEFAULT_SCOPE, SCOPE_CHOICES, useWorkspaceData } from "@/lib/zaad/workspace-data";
+import { scopeSentence, solveScope } from "@/lib/zaad/scope";
 import { Button, ButtonLink, EmptyState, ErrorState, Notice } from "./ui";
 
 export function ScopeNotice() {
-  const { scope } = useWorkspaceData();
-  if (!scope) return null;
+  const { scope, readScope, lastRunFailed, degraded, planPhase, request } = useWorkspaceData();
+  // While the solve is still going there is no plan yet, so the scope is the run's, not a plan's.
+  const inFlight = planPhase === "queued" || planPhase === "running";
+  if (!scope && !readScope && !lastRunFailed && !degraded) return null;
   return (
-    <Notice tone="info">
-      <strong>This plan covers {scope.skus.length} of your {scope.total} products</strong> — {scope.rule}.
-      Anything outside that selection was not looked at. Run again over more products to widen it.
-    </Notice>
+    <>
+      {degraded && <Notice tone="warn">{degraded}</Notice>}
+      {lastRunFailed && (
+        <Notice tone="warn">
+          <strong>{lastRunFailed}</strong> Nothing was changed, and the plan below is the last one that
+          finished — its own date is on it.
+        </Notice>
+      )}
+      {readScope && (
+        <Notice tone="info">
+          <strong>ZAAD is looking at {readScope.skus.length.toLocaleString("en-US")} of your{" "}
+          {readScope.total.toLocaleString("en-US")} products here</strong> —
+          {" "}{readScope.rule}. A catalogue this size is larger than one planning request can carry, so Home,
+          Decisions and the network are built over that selection. <Link href="/inventory">Inventory</Link>,{" "}
+          <Link href="/orders">Purchase orders</Link>, <Link href="/diagnostics">Diagnostics</Link> and{" "}
+          <Link href="/data">Data</Link> cover every product.
+        </Notice>
+      )}
+      {scope && (
+        <Notice tone="info">
+          <strong>This {inFlight ? "run" : "plan"} covers {scope.skus.length.toLocaleString("en-US")} of your{" "}
+          {scope.total.toLocaleString("en-US")} products</strong> — {scope.rule}.
+          {inFlight
+            ? " Anything outside that selection is not being looked at."
+            : " Anything outside that selection was not looked at. Run again over more products to widen it."}
+          {/* Whether the selection is one joint problem is a property of the request, read from
+              it: products sharing a supplier's capacity or order terms cannot be planned apart. */}
+          {request && <span className="fig" style={{ display: "block", marginTop: 4, color: "var(--ink-600)" }}>{scopeSentence(solveScope(request as never, scope.total, scope.skus))}</span>}
+        </Notice>
+      )}
+    </>
   );
 }
 

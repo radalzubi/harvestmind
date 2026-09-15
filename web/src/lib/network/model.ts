@@ -66,7 +66,13 @@ export interface NodeMetrics {
   inboundUnits?: number | null;
   serviceTarget?: number | null;
   serviceProjected?: number | null;
-  shortages?: Array<{ sku: string; units: number; when: string }>;
+  /**
+   * Products the plan flags at this place, each with the clause that says what is true of it.
+   * `said` is a finished clause because the only producer today is the `no_replenishment` stance,
+   * which is "there is no route to resupply this" — not "this runs short", which is a different
+   * claim and one the stance does not make.
+   */
+  shortages?: Array<{ sku: string; units: number; said: string }>;
   excess?: Array<{ sku: string; units: number; weeksOfCover: number }>;
   transferOpportunities?: Array<{ to: string; sku: string; units: number }>;
   protection?: { localUnits: number | null; pooledUnits: number | null };
@@ -155,18 +161,31 @@ export interface NetworkModel {
   recommendations: NetworkRecommendation[];
   /** Data-quality notes for the whole model (row counts, missing tables). */
   notes: string[];
+  /**
+   * The workspace's own currency, so a sentence that quotes money does not assume one.
+   *
+   * `describe()` printed a site's stock value as `about $5,726` — a hard `$` — three lines from a
+   * facts row printing the same number through the workspace's currency. On a workspace that does
+   * not trade in dollars the two disagreed, and one of them was simply wrong.
+   */
+  currency: string;
 }
 
 export type SelectionRef = { type: "node" | "edge"; id: string };
 
 /** Plain words for each state; the optimizer's own names stay under Advanced. */
+/**
+ * PROTECT is P0 holding cover where a measured driver justifies it — the plan working, not a
+ * warning. It was labelled "Risk rising" here while Home said the workspace was running normally,
+ * which read as a contradiction. The label names the stance; risk is stated by the risk level.
+ */
 export const STATE_LABEL: Record<ZaadState, string> = {
-  LEAN: "Stable", PROTECT: "Risk rising", ALLOCATE: "Supply constrained", RECOVER: "Recovering",
+  LEAN: "Stable", PROTECT: "Protecting stock", ALLOCATE: "Supply constrained", RECOVER: "Recovering",
 };
 export const STATE_TECHNICAL: Record<ZaadState, string> = { LEAN: "LEAN", PROTECT: "PROTECT", ALLOCATE: "ALLOCATE", RECOVER: "RECOVER" };
 export const STATE_SENTENCE: Record<ZaadState, string> = {
   LEAN: "Supply is stable.",
-  PROTECT: "Risk is rising. ZAAD recommends targeted protection.",
+  PROTECT: "A measured driver justifies holding extra cover here, and the plan is holding it.",
   ALLOCATE: "Supply is constrained. ZAAD is prioritising customers.",
   RECOVER: "Supply is returning to normal.",
 };

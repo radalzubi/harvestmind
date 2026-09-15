@@ -19,6 +19,13 @@ release ledger's current-state table records when that is not the case.
 | P4B V1 | open PO / commitment intervention (KEEP / DEFER / EXPEDITE / REDUCE / CANCEL / SPLIT) | `1851f40` (Fly v23, `p4b-v1-release-runtime`) | `evidence/p4b/release_audit/P4B_RELEASE_AUDIT.md` |
 
 Not started (each needs its own authorization): P4B V2 (node-indexed amendments), P6, P7, P8, P9.
+
+**In flight, not released:** the operating product (inventory, purchase orders, proposal evaluation,
+export, diagnostics, data explorer) is on `feat/zaad-operating-product-v1`, PR #81, **draft**. It
+adds no optimizer behaviour — `zaad/` is untouched and the frozen regression passes on the branch.
+Nothing in the table above changes until it is merged and deployed.
+[`OPERATING_PRODUCT_V1.md`](OPERATING_PRODUCT_V1.md) is its architecture record and
+[`FABLE_OPERATING_PRODUCT_HANDOFF.md`](FABLE_OPERATING_PRODUCT_HANDOFF.md) its audit handoff.
 The Network Twin shipped with the frontend rebuild, built on the canonical engine rather than PR #39's
 superseded `/fmcg` path. Engineering is pausing new optimizer phases until stronger operator evidence exists.
 

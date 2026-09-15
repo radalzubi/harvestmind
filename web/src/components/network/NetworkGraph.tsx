@@ -16,6 +16,7 @@ import { Anchor, Factory, Store, Users, Warehouse } from "lucide-react";
 import { isGroupId } from "@/lib/network/groups";
 import type { NetworkEdge, NetworkNode, NodeKind, ZaadState } from "@/lib/network/model";
 import { STATE_LABEL } from "@/lib/network/model";
+import { NUMBER } from "@/lib/zaad/product";
 import { useTwin } from "./store";
 
 type TNodeData = { node: NetworkNode; dim: boolean; exposed: boolean; active: boolean; metric: string | null; group: boolean; open: boolean };
@@ -32,7 +33,10 @@ function metricFor(n: NetworkNode): string | null {
   switch (n.kind) {
     case "supplier": return m.fill?.mean != null ? `${Math.round(m.fill.mean * 100)}% delivered` : m.leadDays?.mean != null ? `${Math.round(m.leadDays.mean)} d lead` : null;
     case "port": return null;
-    case "dc": case "branch": return m.onHandUnits != null ? `${m.onHandUnits.toLocaleString()} on hand` : null;
+    // `toLocaleString()` with no locale renders in the *viewer's* locale while every other number
+    // in the product is grouped en-US, and it printed the engine's fractional units on a node
+    // label ("31,866.25 on hand"). NUMBER does both jobs, the way the panel beside it does.
+    case "dc": case "branch": return m.onHandUnits != null ? `${NUMBER(m.onHandUnits)} on hand` : null;
     case "customer": return m.serviceTarget != null ? `${(m.serviceTarget * 100).toFixed(0)}% target` : null;
   }
 }
@@ -96,6 +100,9 @@ function Graph() {
     const hovered = hov?.type === "node" && hov.id === n.id;
     return {
       id: n.id, type: "twin", position: { x: p.x, y: p.y }, width: NODE_W, height: NODE_H, draggable: false, selectable: true, focusable: true, selected,
+      // React Flow labels a focusable node from its id, and an id here is `sup:SUP-001`. Someone
+      // tabbing the graph with a screen reader would hear the internal key rather than the name.
+      ariaLabel: n.subtitle ? `${n.name}, ${n.subtitle}` : n.name,
       data: { node: n, dim: related != null && !related.nodes.has(n.id), exposed: false, active: selected || hovered,
         metric: metricFor(n), group: isGroupId(n.id), open: state.expandedGroups.has(n.id) },
     };
@@ -104,6 +111,9 @@ function Graph() {
   const edges = useMemo<TEdge[]>(() => display.edges.map((e) => ({
     id: e.id, type: "twin", source: e.from, target: e.to, selectable: true, focusable: true,
     selected: sel?.type === "edge" && sel.id === e.id,
+    // Otherwise "Edge from sup:SUP-001 to port:aqaba". Every edge already carries the sentence a
+    // person would say: "Rheinland Handels GmbH → Port of Aqaba".
+    ariaLabel: e.name,
     data: { edge: e, dim: related != null && !related.edges.has(e.id), exposed: false,
       showLabel: (sel?.type === "edge" && sel.id === e.id) || (hov?.type === "edge" && hov.id === e.id) },
   })), [display, sel, hov, related]);

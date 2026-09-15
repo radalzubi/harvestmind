@@ -1,0 +1,749 @@
+"""The operating product's API: inventory, orders, suppliers, the data explorer and the proposal
+lifecycle, against a real vault.
+
+These tests exist to hold three properties that matter more than any single feature:
+
+  * **Tenancy.** Another workspace's proposal is *absent*, not forbidden-with-detail.
+  * **The allowlist.** No name from a request reaches SQL. A sort, a filter or a dataset the
+    product does not declare is a 400 before anything runs.
+  * **Nothing executes.** Every write path answers `executable: false`, and export produces a file
+    rather than contacting anything.
+"""
+from __future__ import annotations
+
+import io
+import json
+
+import duckdb
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
+from api.dependencies import get_conn, require_actor, require_operator
+from api.product.governance import actor_from
+from api.routers import zaad_history, zaad_orders, zaad_workspace
+from scripts.setup_db import setup_db
+
+OPERATOR = "tenant_product"
+
+
+@pytest.fixture(scope="module")
+def vault():
+    from scripts.zaad_network_workspace_smoke import make_network_vault
+    conn = duckdb.connect(":memory:")
+    setup_db(conn)
+    make_network_vault(conn, seed=7)
+    # a promised delivery date on part of the history, so lateness is measurable on this fixture
+    conn.execute("""UPDATE stg_fmcg_purchase_orders
+                    SET expected_delivery_date = po_date + INTERVAL 14 DAY
+                    WHERE abs(hash(po_id)) % 2 = 0""")
+    return conn
+
+
+def _client(conn, operator: str | None = OPERATOR, role: str = "ADMIN", actor_id: str | None = None) -> TestClient:
+    """A client acting as one person in `operator`'s workspace, with a role (V2 governance)."""
+    app = FastAPI()
+    app.include_router(zaad_workspace.router)
+    app.include_router(zaad_orders.router)
+    app.include_router(zaad_history.router)
+
+    def conn_override():
+        yield conn
+
+    app.dependency_overrides[get_conn] = conn_override
+    app.dependency_overrides[require_operator] = lambda: operator
+    app.dependency_overrides[require_actor] = (lambda: None) if operator is None else (
+        lambda: actor_from({"operator_id": operator, "actor_id": actor_id or operator, "name": actor_id or operator, "role": role}))
+    return TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def _fresh_recommendation_budget():
+    """Give each test the recommendation limiter's full budget.
+
+    `POST /orders/{id}/evaluate` starts two solves, so it is correctly on the process-wide
+    recommendation limiter — 60 calls a minute across every client. In a full shard, earlier test
+    files spend that budget and this file's single call to it comes back 429 instead of the 422 it
+    is asserting. The limiter is not weakened here; its counters are simply reset between tests, the
+    way a clock would be.
+    """
+    from api.routers import zaad as zaad_router
+    with zaad_router._lock:
+        zaad_router._recent.clear()
+        zaad_router._global_recent.clear()
+    yield
+
+
+@pytest.fixture(scope="module")
+def client(vault):
+    return _client(vault)
+
+
+@pytest.fixture(scope="module")
+def skus(vault):
+    return [r[0] for r in vault.execute("SELECT sku FROM stg_fmcg_skus ORDER BY sku LIMIT 3").fetchall()]
+
+
+# ── reading the business ──────────────────────────────────────────────────────
+
+def test_inventory_is_paged_sorted_and_searchable(client):
+    r = client.get("/api/zaad/workspace/inventory?limit=5&sort=inventory_value&direction=desc")
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["served"] and body["total"] == 150 and len(body["rows"]) == 5
+    values = [row["inventory_value"] for row in body["rows"] if row["inventory_value"] is not None]
+    assert values == sorted(values, reverse=True), "the server sorted, not the browser"
+    assert body["snapshot_date"], "the stock date is stated, never implied"
+    first = body["rows"][0]
+    assert {"sku", "on_hand", "inbound_units", "weekly_demand", "cover_weeks"} <= set(first)
+
+
+def test_inventory_never_returns_more_than_the_cap(client):
+    r = client.get("/api/zaad/workspace/inventory?limit=100000")
+    assert r.status_code == 422, "a page size outside the contract is refused, not clamped silently"
+
+
+def test_inventory_refuses_a_sort_it_does_not_declare(client):
+    r = client.get("/api/zaad/workspace/inventory?sort=unit_cost%3B%20DROP%20TABLE%20stg_fmcg_skus")
+    assert r.status_code == 400
+    assert "sort" in r.json()["detail"].lower()
+
+
+def test_cover_is_arithmetic_and_filterable(client):
+    everything = client.get("/api/zaad/workspace/inventory?limit=1").json()["total"]
+    thin = client.get("/api/zaad/workspace/inventory?cover=under2&limit=1").json()["total"]
+    assert 0 <= thin <= everything
+
+
+def test_sku_detail_carries_the_record_and_says_what_is_missing(client, skus):
+    r = client.get(f"/api/zaad/workspace/inventory/{skus[0]}")
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["sku"] == skus[0]
+    assert body["provenance"] == "OPERATOR_UPLOADED"
+    assert isinstance(body["purchase_orders"], list) and isinstance(body["demand_by_week"], list)
+    assert isinstance(body["missing"], list)
+
+
+def test_an_unknown_product_is_not_found(client):
+    assert client.get("/api/zaad/workspace/inventory/NOT-A-SKU").status_code == 404
+
+
+def test_open_orders_follow_the_planner_rule(client, vault):
+    """An order is open until its first receipt lands — the planning adapter's own rule.
+
+    Counting "ordered minus received" instead would leave a permanent sliver open on every order a
+    supplier ever under-shipped, and the number would never match the plan's inbound units.
+    """
+    open_orders = client.get("/api/zaad/workspace/purchase-orders?state=open&limit=1").json()["total"]
+    without_receipt = vault.execute(
+        "SELECT count(*) FROM (SELECT DISTINCT po_id FROM stg_fmcg_purchase_orders "
+        "WHERE po_id NOT IN (SELECT DISTINCT po_id FROM stg_fmcg_receipts))").fetchone()[0]
+    assert open_orders == without_receipt
+
+
+def test_purchase_order_detail_shows_declared_rights_only(client, vault):
+    po = vault.execute("SELECT po_id FROM stg_fmcg_purchase_orders LIMIT 1").fetchone()[0]
+    body = client.get(f"/api/zaad/workspace/purchase-orders/{po}").json()
+    assert body["po_id"] == po
+    assert body["amendment_rights_declared"] is False, "no right is invented from history"
+    assert body["declared_options"] == []
+
+
+def test_supplier_diagnostics_separate_fact_from_association_from_unknown(client, vault):
+    listing = client.get("/api/zaad/workspace/suppliers?limit=10").json()
+    assert listing["served"] and listing["total"] >= 1
+    supplier = listing["rows"][0]["supplier_id"]
+    body = client.get(f"/api/zaad/workspace/suppliers/{supplier}").json()
+    lateness = body["lateness"]
+    assert lateness["drivers"] == [], "no stage of the journey is claimed without an event timestamp"
+    assert lateness["unknown"]["missing_fields"], "the fields that would settle it are named"
+    for statement in lateness["observed"]:
+        assert statement["sample"] is not None, "every observed fact carries its sample size"
+    assert body["alternatives"]["declared"] is False
+    assert body["exposure"]["skus"] is not None
+
+
+def test_a_supplier_from_another_workspace_is_not_found(client):
+    assert client.get("/api/zaad/workspace/suppliers/SUP-NOT-HERE").status_code == 404
+
+
+def test_search_treats_the_operator_s_own_punctuation_as_text(client, vault):
+    """`%` and `_` are LIKE wildcards; in a search box they are characters the operator typed.
+
+    `f"%{text}%"` handed them straight to the pattern, so a category called `cat_1` also matched
+    `catX1` and a search of `%` matched the whole catalogue. Every ILIKE in the product is now
+    `ESCAPE '!'` over a pattern from `queries.like_contains`.
+    """
+    sku = vault.execute("SELECT sku FROM stg_fmcg_skus ORDER BY sku LIMIT 1").fetchone()[0]
+    exact = client.get(f"/api/zaad/workspace/inventory?q={sku}").json()
+    assert exact["total"] == 1, "the code the operator typed still finds its product"
+
+    # The decisive one: replace a character of a real code with `_`. As a wildcard it matches the
+    # original and its neighbours; as the character the operator typed it matches nothing.
+    disguised = sku[:-1] + "_"
+    assert vault.execute("SELECT count(*) FROM stg_fmcg_skus WHERE sku = ?", [disguised]).fetchone()[0] == 0
+    assert client.get("/api/zaad/workspace/inventory", params={"q": disguised}).json()["total"] == 0, \
+        "`_` was taken as a single-character wildcard"
+
+    for punctuation in ("%", "!", "!%", "%%", "%!_%"):
+        page = client.get("/api/zaad/workspace/inventory", params={"q": punctuation}).json()
+        assert page["total"] == 0, f"{punctuation!r} matched {page['total']} products as a pattern"
+
+    # `_` alone is not a wildcard either — it finds exactly the rows that contain one, which on this
+    # fixture is every product, because its categories are `cat_0` … `cat_5`.
+    literal = vault.execute(
+        "SELECT count(*) FROM stg_fmcg_skus WHERE sku LIKE '%!_%' ESCAPE '!' "
+        "OR coalesce(category, '') LIKE '%!_%' ESCAPE '!' OR coalesce(brand, '') LIKE '%!_%' ESCAPE '!' "
+        "OR coalesce(sku_name, '') LIKE '%!_%' ESCAPE '!'").fetchone()[0]
+    assert client.get("/api/zaad/workspace/inventory", params={"q": "_"}).json()["total"] == literal
+
+
+def test_search_escaping_reaches_every_surface_that_searches(client):
+    for path in ("/api/zaad/workspace/inventory", "/api/zaad/workspace/suppliers",
+                 "/api/zaad/workspace/purchase-orders", "/api/zaad/orders",
+                 "/api/zaad/workspace/datasets/products"):
+        body = client.get(path, params={"q": "%"}).json()
+        found = body.get("total", len(body.get("rows", [])))
+        assert found == 0, f"{path} treated '%' as a wildcard and returned {found}"
+
+
+def test_route_lateness_carries_the_denominator_it_is_measured_against(client):
+    body = client.get("/api/zaad/workspace/corridors").json()
+    assert body["served"], "this fixture declares routes and receipts"
+    for row in body["rows"]:
+        assert "orders_with_promise" in row, "a count of late orders is meaningless without it"
+        assert row["orders_with_promise"] > 0, "half this fixture's orders carry a promised date"
+        assert row["late_orders"] <= row["orders_with_promise"]
+
+
+def test_supplier_by_product_carries_the_same_denominator(client):
+    """The supplier page's own summary says when lateness cannot be measured; its table must agree.
+
+    On a live workspace the header read "Arrived late — no promised dates uploaded" while the
+    By product table two sections below printed 0 for all nineteen products.
+    """
+    listing = client.get("/api/zaad/workspace/suppliers?limit=1").json()
+    supplier = listing["rows"][0]["supplier_id"]
+    body = client.get(f"/api/zaad/workspace/suppliers/{supplier}").json()
+    for row in body["by_product"]:
+        assert "orders_with_promise" in row
+        assert row["late_orders"] <= row["orders_with_promise"]
+
+
+def test_route_lateness_reports_no_promise_rather_than_no_lateness(vault):
+    """A workspace whose orders carry no expected delivery date is not a punctual workspace.
+
+    ``late_days`` is NULL without a promise, so ``count(*) FILTER (WHERE late_days > 0)`` is zero
+    for a route nothing could be judged against — indistinguishable, in the payload alone, from a
+    route where every order arrived on time. One live workspace reported "0 arrived late" over
+    16,546 matched orders, none of which carried a promised date at all.
+    """
+    conn = duckdb.connect(":memory:")
+    setup_db(conn)
+    from scripts.zaad_network_workspace_smoke import make_network_vault
+    make_network_vault(conn, seed=7)
+    conn.execute("UPDATE stg_fmcg_purchase_orders SET expected_delivery_date = NULL")
+
+    body = _client(conn).get("/api/zaad/workspace/corridors").json()
+    assert body["served"], "routes are still declared; only the promise is missing"
+    assert body["rows"], "the arrivals themselves are still measurable"
+    for row in body["rows"]:
+        assert row["orders"] > 0, "orders matched receipts"
+        assert row["orders_with_promise"] == 0, "and none of them carried a promised date"
+        assert row["late_orders"] == 0
+        assert row["mean_late_days"] is None
+        assert row["mean_lead_days"] is not None, "lead time needs no promise and is still measured"
+
+
+def test_sector_diagnostics_say_so_when_nothing_is_declared(client):
+    body = client.get("/api/zaad/workspace/sector").json()
+    assert body["served"] is False
+    assert "declare" in body["note"].lower()
+
+
+# ── the data explorer ─────────────────────────────────────────────────────────
+
+def test_the_explorer_lists_only_datasets_it_declares(client):
+    body = client.get("/api/zaad/workspace/datasets").json()
+    keys = {d["key"] for d in body["datasets"]}
+    assert {"products", "purchase_orders", "receipts", "customer_orders", "suppliers"} <= keys
+    counts = {d["key"]: d["rows"] for d in body["datasets"]}
+    assert counts["products"] == 150 and counts["customer_orders"] > 100_000
+
+
+def test_the_explorer_serves_real_records(client):
+    body = client.get("/api/zaad/workspace/datasets/customer_orders?limit=3").json()
+    assert body["served"] and len(body["rows"]) == 3
+    assert any(c["name"] == "qty_ordered" for c in body["columns"])
+
+
+@pytest.mark.parametrize("url", [
+    "/api/zaad/workspace/datasets/secrets",
+    "/api/zaad/workspace/datasets/products?sort=1%3B%20DROP%20TABLE%20stg_fmcg_skus",
+    "/api/zaad/workspace/datasets/products?where=unit_cost:1",
+    "/api/zaad/workspace/datasets/products/values/unit_cost",
+])
+def test_the_explorer_refuses_any_name_it_did_not_declare(client, url):
+    assert client.get(url).status_code == 400
+
+
+def test_the_explorer_binds_values_rather_than_interpolating_them(client, vault):
+    hostile = "'; DROP TABLE stg_fmcg_skus; --"
+    r = client.get("/api/zaad/workspace/datasets/products", params={"q": hostile})
+    assert r.status_code == 200 and r.json()["rows"] == []
+    assert vault.execute("SELECT count(*) FROM stg_fmcg_skus").fetchone()[0] == 150
+
+
+def test_search_is_server_side_and_lands_in_context(client, skus):
+    body = client.get(f"/api/zaad/workspace/search?q={skus[0]}").json()
+    assert body["results"], "a product a person types is found"
+    assert all(result["href"].startswith("/") for result in body["results"])
+
+
+def test_summary_counts_only_what_exists(client):
+    body = client.get("/api/zaad/workspace/summary").json()
+    assert body["products"] == 150
+    assert body["provenance"] == "OPERATOR_UPLOADED"
+    assert body["inventory_value"] is not None
+
+
+# ── proposed orders ───────────────────────────────────────────────────────────
+
+def _create(client, skus, **over):
+    body = {"origin": "MANUAL", "supplier_id": "SUP-001", "destination_id": "DC", "currency": "USD",
+            "reference": "PO-LIFECYCLE", "requested_order_date": "2026-01-05",
+            "requested_receipt_date": "2026-02-02",
+            "lines": [{"sku": skus[0], "quantity": 1200, "unit_price": 4.5}]}
+    body.update(over)
+    r = client.post("/api/zaad/orders", json=body)
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+def test_a_proposal_is_created_read_edited_and_deleted(client, skus):
+    draft = _create(client, skus)
+    identity = draft["draft_id"]
+    assert draft["state"] == "DRAFT" and draft["executable"] is False and draft["transmitted"] is False
+
+    edited = client.patch(f"/api/zaad/orders/{identity}", json={"notes": "buyer note",
+                                                               "lines": [{"sku": skus[0], "quantity": 2400}]})
+    assert edited.status_code == 200 and edited.json()["lines"][0]["quantity"] == 2400
+
+    assert client.delete(f"/api/zaad/orders/{identity}").status_code == 204
+    assert client.get(f"/api/zaad/orders/{identity}").status_code == 404
+
+
+def test_a_refused_edit_changes_nothing(client, skus):
+    """A validation failure part-way through an edit must not leave the proposal without lines."""
+    draft = _create(client, skus)
+    identity = draft["draft_id"]
+    bad = client.patch(f"/api/zaad/orders/{identity}",
+                       json={"lines": [{"sku": skus[0], "quantity": 10}, {"sku": skus[1], "quantity": -5}]})
+    assert bad.status_code == 422
+    after = client.get(f"/api/zaad/orders/{identity}").json()
+    assert len(after["lines"]) == 1 and after["lines"][0]["quantity"] == 1200
+
+
+def test_validation_warns_and_does_not_forbid(client, skus, vault):
+    pack = vault.execute("SELECT any_value(units_per_case) FROM stg_fmcg_skus WHERE sku = ?", [skus[0]]).fetchone()[0]
+    draft = _create(client, skus, lines=[{"sku": skus[0], "quantity": float(pack) + 1}])
+    messages = " ".join(w["message"] for w in draft["warnings"])
+    assert "whole number of cases" in messages
+    assert draft["state"] == "DRAFT", "a warning never blocks the document"
+
+
+def test_the_lifecycle_is_enforced(client, skus):
+    draft = _create(client, skus)
+    identity = draft["draft_id"]
+    assert client.post(f"/api/zaad/orders/{identity}/actions/submit", json={}).status_code == 200
+    assert client.patch(f"/api/zaad/orders/{identity}", json={"notes": "x"}).status_code == 422
+    assert client.post(f"/api/zaad/orders/{identity}/actions/approve", json={}).status_code == 422, \
+        "an approval needs a reason"
+    approved = client.post(f"/api/zaad/orders/{identity}/actions/approve", json={"reason": "cover is thin"})
+    assert approved.status_code == 200 and approved.json()["state"] == "APPROVED"
+    assert client.delete(f"/api/zaad/orders/{identity}").status_code == 422
+    assert client.patch(f"/api/zaad/orders/{identity}", json={"notes": "x"}).status_code == 422
+
+    revised = client.post(f"/api/zaad/orders/{identity}/revise")
+    assert revised.status_code == 201 and revised.json()["revision"] == 2
+    assert revised.json()["supersedes"] == identity
+    assert client.get(f"/api/zaad/orders/{identity}").json()["state"] == "SUPERSEDED"
+
+
+def test_an_amendment_points_at_the_imported_order_and_never_edits_it(client, skus, vault):
+    po = vault.execute("SELECT po_id FROM stg_fmcg_purchase_orders LIMIT 1").fetchone()[0]
+    before = vault.execute("SELECT * FROM stg_fmcg_purchase_orders WHERE po_id = ?", [po]).fetchall()
+    draft = _create(client, skus, origin="IMPORTED_AMENDMENT", source_po_id=po, amendment_action="DEFER")
+    assert draft["source_po_id"] == po and draft["amendment_action"] == "DEFER"
+    after = vault.execute("SELECT * FROM stg_fmcg_purchase_orders WHERE po_id = ?", [po]).fetchall()
+    assert before == after, "imported evidence is never rewritten by a proposal against it"
+
+
+def test_an_amendment_is_not_priced_without_a_declared_right(client, skus, vault):
+    po = vault.execute("SELECT po_id FROM stg_fmcg_purchase_orders LIMIT 1").fetchone()[0]
+    draft = _create(client, skus, origin="IMPORTED_AMENDMENT", source_po_id=po, amendment_action="CANCEL")
+    r = client.post(f"/api/zaad/orders/{draft['draft_id']}/evaluate")
+    assert r.status_code == 422
+    assert r.json()["detail"]["code"] == "amendment_not_evaluated"
+
+
+def test_an_amendment_needs_an_action_and_an_order(client, skus):
+    assert client.post("/api/zaad/orders", json={"origin": "IMPORTED_AMENDMENT",
+                                                 "lines": [{"sku": skus[0], "quantity": 1}]}).status_code == 422
+
+
+# ── export ────────────────────────────────────────────────────────────────────
+
+def test_export_produces_a_file_and_records_that_it_did(client, skus):
+    draft = _create(client, skus)
+    identity = draft["draft_id"]
+    client.post(f"/api/zaad/orders/{identity}/actions/approve", json={"reason": "agreed"})
+    for fmt, media in (("csv", "text/csv"), ("xlsx", "spreadsheetml"), ("print", "application/pdf")):
+        r = client.post(f"/api/zaad/orders/{identity}/export?format={fmt}")
+        assert r.status_code == 200, r.text
+        assert media in r.headers["content-type"]
+        assert r.headers["x-zaad-transmitted"] == "false"
+        assert "attachment" in r.headers["content-disposition"]
+    after = client.get(f"/api/zaad/orders/{identity}").json()
+    assert after["state"] == "EXPORTED"
+    assert len(after["exports"]) == 3, "every file that left is in the record"
+
+
+def test_a_profile_can_only_name_fields_zaad_holds(client):
+    bad = client.post("/api/zaad/orders/profiles", json={
+        "name": "Bad", "format": "csv", "columns": [{"header": "X", "field": "secret_margin"}]})
+    assert bad.status_code == 422 and "does not hold" in bad.json()["detail"]["message"]
+
+
+def test_a_company_format_maps_columns_and_constants(client, skus):
+    made = client.post("/api/zaad/orders/profiles", json={
+        "name": "Oracle PO Import", "format": "csv", "date_format": "dmy",
+        "columns": [{"header": "PO_NUM", "field": "po_number"}, {"header": "ITEM", "field": "sku"},
+                    {"header": "QTY", "field": "quantity"}, {"header": "NEED_BY", "field": "need_by_date"},
+                    {"header": "ORG", "constant": "JOR01"}]})
+    assert made.status_code == 201
+    profile_id = made.json()["profile_id"]
+    draft = _create(client, skus)
+    client.post(f"/api/zaad/orders/{draft['draft_id']}/actions/approve", json={"reason": "agreed"})
+    r = client.post(f"/api/zaad/orders/{draft['draft_id']}/export?profile_id={profile_id}")
+    assert r.status_code == 200
+    text = r.content.decode("utf-8-sig")
+    assert text.splitlines()[0] == "PO_NUM,ITEM,QTY,NEED_BY,ORG"
+    assert "02/02/2026" in text and "JOR01" in text
+
+
+def test_a_formula_never_leaves_in_an_export(client, skus):
+    draft = _create(client, skus, reference="=cmd|'/c calc'!A1")
+    client.post(f"/api/zaad/orders/{draft['draft_id']}/actions/approve", json={"reason": "agreed"})
+    r = client.post(f"/api/zaad/orders/{draft['draft_id']}/export")
+    body = r.content.decode("utf-8-sig")
+    assert "\n'=cmd" in body or body.splitlines()[1].startswith("'="), body.splitlines()[:2]
+
+
+# ── uploading a proposed order ────────────────────────────────────────────────
+
+def test_an_uploaded_order_is_mapped_then_confirmed(client, skus):
+    content = (f"Item Code,Order Qty,Unit Price,Required Date\n"
+               f"{skus[0]},600,4.10,2026-02-10\n{skus[1]},not-a-number,,\n").encode()
+    first = client.post("/api/zaad/orders/read-proposal",
+                        files={"file": ("proposal.csv", io.BytesIO(content), "text/csv")})
+    assert first.status_code == 200
+    suggested = first.json()["suggested_mapping"]
+    assert suggested["sku"] == "Item Code" and suggested["quantity"] == "Order Qty"
+
+    second = client.post("/api/zaad/orders/read-proposal",
+                         files={"file": ("proposal.csv", io.BytesIO(content), "text/csv")},
+                         data={"mapping": json.dumps(suggested)})
+    body = second.json()
+    assert len(body["lines"]) == 1, "a row ZAAD cannot read is reported, not guessed"
+    assert any("not-a-number" in problem for problem in body["problems"])
+    assert "Row 3" in body["problems"][0], "the problem names the row in the file"
+
+
+def test_an_export_template_is_read_for_its_headings_only(client):
+    template = b"PO Number,Vendor,Item,Quantity,Need By Date,Plant\n=DANGEROUS(),1,2,3,4,5\n"
+    r = client.post("/api/zaad/orders/profiles/read-template",
+                    files={"file": ("template.csv", io.BytesIO(template), "text/csv")})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["headers"] == ["PO Number", "Vendor", "Item", "Quantity", "Need By Date", "Plant"]
+    suggested = {c["header"]: c["field"] for c in body["suggested_columns"]}
+    assert suggested["Vendor"] == "supplier_id" and suggested["Plant"] is None
+
+
+# ── tenancy ───────────────────────────────────────────────────────────────────
+
+def test_another_workspace_sees_nothing_of_this_one(vault, skus):
+    mine = _client(vault, OPERATOR)
+    draft = _create(mine, skus)
+    theirs = _client(vault, "someone_else")
+    assert theirs.get(f"/api/zaad/orders/{draft['draft_id']}").status_code == 404, \
+        "absent, not forbidden-with-detail"
+    assert theirs.get("/api/zaad/orders").json()["rows"] == []
+    assert theirs.patch(f"/api/zaad/orders/{draft['draft_id']}", json={"notes": "x"}).status_code == 404
+    assert theirs.delete(f"/api/zaad/orders/{draft['draft_id']}").status_code == 404
+    assert mine.get(f"/api/zaad/orders/{draft['draft_id']}").status_code == 200, "and mine is untouched"
+
+
+def test_every_surface_needs_a_workspace(vault):
+    anonymous = _client(vault, None)
+    for url in ("/api/zaad/workspace/inventory", "/api/zaad/workspace/summary",
+                "/api/zaad/workspace/datasets", "/api/zaad/orders"):
+        assert anonymous.get(url).status_code == 401, url
+
+
+def test_evaluation_runs_are_distinguishable_from_the_workspace_plan(client, vault, skus):
+    """An evaluation uses the released jobs path twice, and one of its runs carries a proposed
+    order overlaid on the pipeline. Nothing in the job record says so, so a surface showing "the
+    last completed plan" would present a plan of the workspace *plus an order nobody has placed*
+    as the operator's own position. This is the list that prevents it."""
+    empty = client.get("/api/zaad/orders/evaluation-jobs")
+    assert empty.status_code == 200
+    assert empty.json()["evaluation_job_ids"] == []
+
+    draft = _create(client, skus)
+    from api.product import evaluation
+    evaluation.store_evaluation(
+        vault, OPERATOR, draft_id=draft["draft_id"], revision=1,
+        baseline_job_id="job_base", proposal_job_id="job_proposal",
+        as_of="2026-01-05T00:00:00Z", scope=[skus[0]], status="QUEUED")
+
+    listed = client.get("/api/zaad/orders/evaluation-jobs").json()["evaluation_job_ids"]
+    assert listed == ["job_base", "job_proposal"]
+
+    # The vault record is the normal answer. It is not the only one: a vault that is replaced loses
+    # it while the job store keeps the runs, so the overlaid run is also recognised from its own
+    # request. Both guards are exercised here by clearing the record and asking again.
+    vault.execute("DELETE FROM zaad_evaluations WHERE operator_id = ?", [OPERATOR])
+    assert client.get("/api/zaad/orders/evaluation-jobs").json()["evaluation_job_ids"] == [], \
+        "with no job store configured in this test app, the record is the whole answer"
+    assert _client(vault, "someone_else").get("/api/zaad/orders/evaluation-jobs").json()["evaluation_job_ids"] == [], \
+        "and another workspace's evaluation runs are not listed here"
+
+
+def test_an_evaluation_is_marked_out_of_date_once_the_proposal_is_edited(
+        client, vault, skus, tmp_path, monkeypatch):
+    """A draft stays editable and an edit does not start a new revision.
+
+    So a comparison can outlive the lines it was computed for, and the page would keep showing an
+    engine answer for an order that no longer exists above it. The read says when that has happened.
+    """
+    from api.product import evaluation
+
+    # Reading an evaluation asks the job store for the two runs, so this test needs one. It is a
+    # throwaway file and holds no jobs: the runs come back MISSING, which is the point — the
+    # staleness answer must not depend on them.
+    monkeypatch.setenv("ZAAD_JOB_STORE", str(tmp_path / "jobs.sqlite"))
+
+    draft = _create(client, skus)
+    draft_id = draft["draft_id"]
+    evaluation.store_evaluation(
+        vault, OPERATOR, draft_id=draft_id, revision=1,
+        baseline_job_id="job_a", proposal_job_id="job_b",
+        as_of="2026-01-05T00:00:00Z", scope=[skus[0]], status="QUEUED")
+
+    fresh = client.get(f"/api/zaad/orders/{draft_id}/evaluation").json()
+    assert fresh["stale"] is False
+    assert fresh["stale_reason"] is None
+    assert fresh["evaluated_at"]
+
+    edited = client.patch(f"/api/zaad/orders/{draft_id}",
+                          json={"lines": [{"sku": skus[0], "quantity": 2400, "unit_price": 4.5}]})
+    assert edited.status_code == 200, edited.text
+
+    after = client.get(f"/api/zaad/orders/{draft_id}/evaluation").json()
+    assert after["stale"] is True
+    assert "changed after it was evaluated" in after["stale_reason"]
+    # The evaluation is still returned rather than hidden: it is a true answer about a past state.
+    assert after["evaluation_id"] == fresh["evaluation_id"]
+
+    client.delete(f"/api/zaad/orders/{draft_id}")
+
+
+@pytest.mark.parametrize("method", ["GET", "POST", "PATCH", "PUT", "DELETE"])
+def test_a_browser_may_preflight_every_method_the_product_writes_with(method):
+    """CORS is an allowlist, and the allowlist has to include what the endpoints are.
+
+    It listed GET/POST/OPTIONS, which was true until this product declared PATCH (edit a proposal),
+    PUT (update an export format) and DELETE (remove either). A browser answers its own preflight
+    for an unlisted method with a 400 and never sends the request, so three write paths could not
+    work from the interface — invisible to every test here, because a test client does not
+    preflight. This one does.
+    """
+    from api.main import app as real_app
+
+    with TestClient(real_app) as probe:
+        response = probe.options("/api/zaad/orders", headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": method,
+            "Access-Control-Request-Headers": "content-type,authorization",
+        })
+    assert response.status_code == 200, response.text
+    allowed = response.headers.get("access-control-allow-methods", "")
+    assert method in allowed, f"{method} is not in {allowed!r}"
+
+
+def test_a_method_the_api_does_not_serve_is_still_refused():
+    """The allowlist is still an allowlist."""
+    from api.main import app as real_app
+
+    with TestClient(real_app) as probe:
+        response = probe.options("/api/zaad/orders", headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "TRACE",
+        })
+    assert response.status_code == 400
+
+
+def test_a_browser_can_read_the_filename_the_export_profile_produced():
+    """Cross-origin JavaScript reads only the six "simple" response headers by default.
+
+    The web app is on a different origin from this API in every deployment, so without
+    `Access-Control-Expose-Headers` the download helper cannot see `Content-Disposition` and every
+    exported file lands as "purchase-order" with no extension — the operator's own filename
+    template, and the extension their spreadsheet program opens on, both silently lost.
+    """
+    from api.main import app as real_app
+
+    with TestClient(real_app) as probe:
+        response = probe.get("/health", headers={"Origin": "http://localhost:3000"})
+    exposed = {h.strip().lower() for h in
+               response.headers.get("access-control-expose-headers", "").split(",")}
+    assert "content-disposition" in exposed, "the export filename is unreadable without this"
+    assert "x-request-id" in exposed, "the error copy tells people to quote it"
+    assert "x-zaad-transmitted" in exposed, "the 'nothing was sent' assertion should be checkable"
+
+
+
+# ── Fable V1 audit corrections ────────────────────────────────────────────────
+
+def test_an_unapproved_draft_is_not_exported(client, skus):
+    """A file that reads as a purchase order leaves only for a decided proposal (audit M1)."""
+    draft = _create(client, skus)
+    r = client.post(f"/api/zaad/orders/{draft['draft_id']}/export")
+    assert r.status_code == 422 and r.json()["detail"]["code"] == "not_approved", r.text
+    assert draft["exportable"] is False
+    client.post(f"/api/zaad/orders/{draft['draft_id']}/actions/reject", json={"reason": "no"})
+    assert client.post(f"/api/zaad/orders/{draft['draft_id']}/export").status_code == 422
+    assert client.get(f"/api/zaad/orders/{draft['draft_id']}").json()["exports"] == []
+
+
+def test_a_refused_create_writes_nothing(client, skus, vault):
+    """The head row used to be inserted before the lines were checked (audit H6)."""
+    before = vault.execute(f"SELECT count(*) FROM zaad_draft_orders WHERE operator_id = '{OPERATOR}'").fetchone()[0]
+    r = client.post("/api/zaad/orders", json={"origin": "MANUAL", "supplier_id": "SUP-001",
+                                            "lines": [{"sku": skus[0], "quantity": 1e18}]})
+    assert r.status_code == 422
+    r = client.post("/api/zaad/orders", json={"origin": "MANUAL", "supplier_id": "SUP-001",
+                                            "lines": [{"sku": skus[0], "quantity": 1}] * 501})
+    assert r.status_code == 422
+    after = vault.execute(f"SELECT count(*) FROM zaad_draft_orders WHERE operator_id = '{OPERATOR}'").fetchone()[0]
+    assert after == before, "a refused proposal must leave no row behind"
+    empties = vault.execute(f"""SELECT count(*) FROM zaad_draft_orders d WHERE operator_id = '{OPERATOR}'
+                                AND NOT EXISTS (SELECT 1 FROM zaad_draft_lines l WHERE l.draft_id = d.draft_id)""").fetchone()[0]
+    assert empties == 0
+
+
+def test_identifiers_are_bounded(client, skus):
+    """A 300,000-character supplier id was stored and rendered on Home (audit M2)."""
+    r = client.post("/api/zaad/orders", json={"origin": "MANUAL", "supplier_id": "S" * 300_000,
+                                            "lines": [{"sku": skus[0], "quantity": 1}]})
+    assert r.status_code == 422 and "characters long" in r.json()["detail"]["message"]
+    r = client.post("/api/zaad/orders", json={"origin": "MANUAL", "supplier_id": "SUP-001",
+                                            "lines": [{"sku": "X" * 201, "quantity": 1}]})
+    assert r.status_code == 422
+    draft = _create(client, skus)
+    r = client.patch(f"/api/zaad/orders/{draft['draft_id']}", json={"destination_id": "D" * 201})
+    assert r.status_code == 422
+    assert client.get(f"/api/zaad/orders/{draft['draft_id']}").json()["destination_id"] == "DC"
+
+
+def test_approving_or_exporting_does_not_make_an_evaluation_stale(client, skus, vault):
+    """Staleness is a content hash, not a timestamp (audit H1).
+
+    The evaluation record is written directly — the jobs path needs a job store — with the hash of
+    the draft as it stands, the way `POST /evaluate` writes it.
+    """
+    from api.product.evaluation import content_hash, store_evaluation, workspace_version
+
+    draft = _create(client, skus, reference="FRESH")
+    identity = draft["draft_id"]
+    store_evaluation(vault, OPERATOR, draft_id=identity, revision=1, baseline_job_id="job_x", proposal_job_id="job_y",
+                     as_of="2026-01-05", scope=[skus[0]], status="DONE",
+                     draft_hash=content_hash(draft), workspace_version=workspace_version(vault))
+    assert client.get(f"/api/zaad/orders/{identity}").json()["evaluation_stale"] is False
+    approved = client.post(f"/api/zaad/orders/{identity}/actions/approve", json={"reason": "fine"}).json()
+    assert approved["evaluation_stale"] is False, "an approval is not a change to what was evaluated"
+    assert approved["approval_evaluation_state"] == "current"
+    assert approved["approved_evaluation_id"]
+    assert any("against evaluation" in (e["detail"] or "") for e in approved["events"] if e["event"] == "approved")
+
+
+def test_an_edit_makes_the_evaluation_stale_and_approval_needs_an_acknowledgement(client, skus, vault):
+    """§93: on a stale evaluation, do not approve silently (audit H2)."""
+    from api.product.evaluation import content_hash, store_evaluation, workspace_version
+
+    draft = _create(client, skus, reference="EDITED")
+    identity = draft["draft_id"]
+    store_evaluation(vault, OPERATOR, draft_id=identity, revision=1, baseline_job_id="job_x", proposal_job_id="job_y",
+                     as_of="2026-01-05", scope=[skus[0]], status="DONE",
+                     draft_hash=content_hash(draft), workspace_version=workspace_version(vault))
+    edited = client.patch(f"/api/zaad/orders/{identity}", json={"lines": [{"sku": skus[0], "quantity": 2400, "unit_price": 4.5}]}).json()
+    assert edited["evaluation_stale"] is True and "changed after it was evaluated" in edited["evaluation_stale_reason"]
+    refused = client.post(f"/api/zaad/orders/{identity}/actions/approve", json={"reason": "fine"})
+    assert refused.status_code == 422 and refused.json()["detail"]["code"] == "evaluation_stale"
+    assert client.get(f"/api/zaad/orders/{identity}").json()["state"] == "DRAFT"
+    acknowledged = client.post(f"/api/zaad/orders/{identity}/actions/approve",
+                               json={"reason": "fine", "acknowledge_stale": True}).json()
+    assert acknowledged["state"] == "APPROVED"
+    assert acknowledged["approval_evaluation_state"] == "stale_acknowledged"
+    assert any("acknowledged" in (e["detail"] or "") for e in acknowledged["events"] if e["event"] == "approved")
+
+
+def test_approving_without_an_evaluation_is_allowed_and_recorded_as_such(client, skus):
+    draft = _create(client, skus, reference="UNEVALUATED")
+    approved = client.post(f"/api/zaad/orders/{draft['draft_id']}/actions/approve", json={"reason": "manual order"}).json()
+    assert approved["state"] == "APPROVED" and approved["approval_evaluation_state"] == "none"
+    assert approved["approved_evaluation_id"] is None
+
+
+def test_a_workspace_data_change_makes_the_evaluation_stale(client, skus, vault):
+    from api.product.evaluation import content_hash, store_evaluation
+
+    draft = _create(client, skus, reference="DATA-CHANGED")
+    store_evaluation(vault, OPERATOR, draft_id=draft["draft_id"], revision=1, baseline_job_id="job_x",
+                     proposal_job_id="job_y", as_of="2026-01-05", scope=[skus[0]], status="DONE",
+                     draft_hash=content_hash(draft), workspace_version="a-version-the-workspace-no-longer-has")
+    body = client.get(f"/api/zaad/orders/{draft['draft_id']}").json()
+    assert body["evaluation_stale"] is True and "workspace data" in body["evaluation_stale_reason"]
+
+
+def test_an_old_evaluation_without_a_hash_is_stale_only_after_an_edit(client, skus, vault):
+    """Records written before the hash existed fall back to the one thing a timestamp can say."""
+    from api.product.evaluation import store_evaluation
+
+    draft = _create(client, skus, reference="LEGACY")
+    identity = draft["draft_id"]
+    store_evaluation(vault, OPERATOR, draft_id=identity, revision=1, baseline_job_id="job_x", proposal_job_id="job_y",
+                     as_of="2026-01-05", scope=[skus[0]], status="DONE")
+    assert client.get(f"/api/zaad/orders/{identity}").json()["evaluation_stale"] is False
+    approved = client.post(f"/api/zaad/orders/{identity}/actions/approve", json={"reason": "fine"}).json()
+    assert approved["evaluation_stale"] is False, "approving bumps updated_at; that is not an edit"
+
+
+def test_updating_an_unknown_export_format_is_not_an_upsert(client):
+    r = client.put("/api/zaad/orders/profiles/profile_does_not_exist",
+                   json={"name": "x", "columns": [{"header": "a", "field": "sku"}]})
+    assert r.status_code == 404
+    assert all(p["profile_id"] != "profile_does_not_exist" for p in client.get("/api/zaad/orders/profiles").json()["profiles"])
+
+
+def test_supplier_open_orders_carry_the_promise_denominator(client):
+    """"none past their date" is only true when some open order carries a date to be past (audit H7)."""
+    body = client.get("/api/zaad/workspace/suppliers").json()
+    assert body["rows"], "this fixture has suppliers"
+    for row in body["rows"]:
+        assert "open_orders_with_promise" in row
+        if row["late_open_orders"]:
+            assert row["open_orders_with_promise"] >= row["late_open_orders"]

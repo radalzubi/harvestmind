@@ -20,6 +20,7 @@ import {
   ALL_PHASES, fetchDirectory, fetchWorkspaceState, fetchWorkspaceStateFor,
   listPlanJobs, readPlanJob, submitPlanJob, type JobSummary,
 } from "./client";
+import { fetchEvaluationJobIds, fetchInventory, fetchSummary } from "./product";
 import { buildDecisions, planSummary, type Decision, type PlanSummary } from "./decisions";
 import type { DirectoryResponse, ZaadBuild, ZaadReport, ZaadRequest } from "./types";
 import { buildCanonicalModel } from "@/lib/network/adapters/canonical";
@@ -38,7 +39,28 @@ export type PlanPhase = "none" | "queued" | "running" | "ready" | "failed";
  * never presented as if it covered the whole catalogue.
  */
 export const DEFAULT_SCOPE = 10;
-export const SCOPE_CHOICES = [10, 25, 50] as const;
+/**
+ * A network workspace multiplies the work: three sites and thirty-six service lines make a
+ * ten-product run far heavier than a ten-product run on one site. Measured here: ten products over
+ * three sites did not finish inside the time the engine gave it, while two finished in twelve
+ * seconds. Five is offered so a multi-site operator has a size that returns.
+ */
+export const SCOPE_CHOICES = [5, 10, 25, 50] as const;
+
+/**
+ * How many products the workspace *read* carries.
+ *
+ * Measured against a 10,000-product vault: reading the whole catalogue into the planning contract
+ * took **9 minutes 43 seconds** and then failed, because the contract is capped at 5,000 products.
+ * Reading 100 took 2.9 seconds. So the read is bounded, and the bound is stated wherever the things
+ * it feeds — Home, Decisions and the Network Twin — are shown.
+ *
+ * Inventory, Purchase orders, Diagnostics and Data do not use this read at all: they query the
+ * operator's records directly and are unaffected by the size of the catalogue.
+ */
+export const READ_LIMIT = 150;
+
+const READ_RULE = "the products holding the most stock value";
 
 export interface PlanScope {
   /** The products this run covers. */
@@ -51,6 +73,12 @@ export interface PlanScope {
 
 export interface WorkspaceData {
   phase: ReadPhase;
+  /**
+   * Set when the workspace was read *without* a phase the operator has declared, because the
+   * engine refused that declaration. The rest of the workspace is real; this names what is absent
+   * and why, so nobody concludes from a missing open-PO decision that there was nothing to change.
+   */
+  degraded: string | null;
   planPhase: PlanPhase;
   /** Set when the workspace cannot be planned yet — missing uploads, in the server's own words. */
   notReady: string | null;
@@ -66,8 +94,18 @@ export interface WorkspaceData {
   index: NetworkIndex | null;
   /** What the plan in hand covered, null when it covered everything. */
   scope: PlanScope | null;
+  /** What the *read* covered, null when it covered the whole catalogue. */
+  readScope: PlanScope | null;
+  /**
+   * Set when the most recent run ended without a plan and an older plan is what is on screen.
+   * Told as a notice rather than by hiding the older plan: the operator asked for something and it
+   * did not work, and they should hear that without losing what they already had.
+   */
+  lastRunFailed: string | null;
   /** When the plan in hand finished, from the job record. */
   computedAt: Date | null;
+  /** The job the plan in hand came from; a decision response is recorded against it. */
+  planJobId: string | null;
   /** Runs a new plan over `size` products, or every product when `size` is "all". */
   run: (size?: number | "all") => void;
   refresh: () => void;
@@ -131,6 +169,33 @@ export function rankProducts(request: ZaadRequest): string[] {
 
 const SCOPE_RULE = "every product with a declared order change, then the products with the most units still on order";
 
+/** A minute past the time the engine gave the run. Long enough that a slow clock is not the cause. */
+export const ABANDONED_GRACE_MS = 60_000;
+
+export const ABANDONED_MESSAGE =
+  "This run has been going for longer than the time it is given, which usually means it was "
+  + "interrupted. Nothing was changed. Run it again, over fewer products if it keeps happening.";
+
+/**
+ * Has this run been abandoned?
+ *
+ * A job whose process died stays RUNNING in the store for ever — nothing reaps it — and the page
+ * would poll it silently until somebody reloaded and found it still polling. The engine tells us
+ * how long it gave the run; once that is comfortably past, the honest thing is to say so.
+ *
+ * This reads the record and changes nothing about it. Cancelling the job (which does free the
+ * workspace's job slot) stays the operator's decision.
+ */
+export function abandoned(
+  job: { status: string; started_at: string | null; timeout_s?: number | null },
+  now: number = Date.now(),
+): boolean {
+  if (job.status !== "RUNNING" || !job.started_at || !job.timeout_s) return false;
+  const started = Date.parse(job.started_at);
+  if (!Number.isFinite(started)) return false;
+  return now - started - job.timeout_s * 1000 > ABANDONED_GRACE_MS;
+}
+
 /** A plan covering fewer products than the workspace holds must say so. */
 function scopeOf(planned: ZaadReport, full: ZaadRequest): PlanScope | null {
   const planned_skus = new Set<string>();
@@ -154,7 +219,11 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
   const [report, setReport] = useState<ZaadReport | null>(null);
   const [directory, setDirectory] = useState<DirectoryResponse | null>(null);
   const [scope, setScope] = useState<PlanScope | null>(null);
+  const [readScope, setReadScope] = useState<PlanScope | null>(null);
+  const [lastRunFailed, setLastRunFailed] = useState<string | null>(null);
+  const [degraded, setDegraded] = useState<string | null>(null);
   const [computedAt, setComputedAt] = useState<Date | null>(null);
+  const [planJobId, setPlanJobId] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
   const poll = useRef<number | null>(null);
   const alive = useRef(true);
@@ -171,8 +240,52 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
 
     (async () => {
       let state;
+
+      /**
+       * Read the workspace, and if the engine refuses a declaration, read it again without that
+       * phase rather than showing nothing.
+       *
+       * Observed: a declared amendment right on an order placed on the plan date makes the *whole*
+       * read refuse — the planning adapter drops an order dated on or after the origin, and a right
+       * pointing at a dropped order is rejected. One bad row in `stg_po_options` took Home,
+       * Decisions and the Network with it. The refusal is correct; losing the workspace to it is not.
+       */
+      const read = async (skus: string[] | null) => {
+        const fetchWith = (options: typeof ALL_PHASES) =>
+          skus ? fetchWorkspaceStateFor(skus, options) : fetchWorkspaceState(options);
+        try {
+          setDegraded(null);
+          return await fetchWith(ALL_PHASES);
+        } catch (e) {
+          const text = messageOf(e);
+          if (!/commitments_invalid|commitments:/i.test(text)) throw e;
+          const out = await fetchWith({ ...ALL_PHASES, commitments: false });
+          setDegraded(
+            "ZAAD read this workspace without your declared order-change rights, because the engine "
+            + "refused them: " + text.replace(/^\{?['"]?code['"]?:\s*['"]?commitments_invalid['"]?,?\s*/i, "")
+              .replace(/^['"]?message['"]?:\s*/i, "").replace(/[{}'"]/g, "").trim()
+            + " Everything else below is real; what is missing is any recommendation to change an "
+            + "open order.",
+          );
+          return out;
+        }
+      };
+
       try {
-        state = await fetchWorkspaceState(ALL_PHASES);
+        // How big is this catalogue? One indexed count, tens of milliseconds. A workspace larger
+        // than the read bound is read over a named selection rather than in full — the alternative
+        // is a ten-minute request that ends in a 422.
+        const held = await fetchSummary().then((x) => x.products ?? 0).catch(() => 0);
+        if (held > READ_LIMIT) {
+          const page = await fetchInventory({ sort: "inventory_value", direction: "desc", limit: READ_LIMIT });
+          const chosen = page.rows.map((row) => row.sku);
+          if (!live) return;
+          setReadScope({ skus: chosen, total: held, rule: READ_RULE });
+          state = await read(chosen);
+        } else {
+          setReadScope(null);
+          state = await read(null);
+        }
       } catch (e) {
         if (!live) return;
         const missing = notReadyMessage(e);
@@ -187,16 +300,40 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
       // A workspace without the optional supplier upload still plans, so this never blocks a page.
       fetchDirectory().then((d) => live && setDirectory(d)).catch(() => live && setDirectory(null));
 
-      // The last plan this workspace computed, whenever it was.
+      // The last plan this workspace computed, whenever it was — and never an evaluation run. An
+      // evaluation uses the same jobs path, and one of its two runs carries a proposed order
+      // overlaid on the pipeline; showing that as "your plan" would present an order nobody has
+      // placed as the operator's position.
       try {
-        const { jobs } = await listPlanJobs();
-        const last = jobs.find((j) => j.status === "DONE");
-        const active = jobs.find((j) => j.status === "RUNNING" || j.status === "QUEUED");
+        const [{ jobs }, evaluations] = await Promise.all([
+          listPlanJobs(),
+          fetchEvaluationJobIds().catch(() => ({ evaluation_job_ids: [] as string[] })),
+        ]);
+        const ours = new Set(evaluations.evaluation_job_ids);
+        const plans = jobs.filter((j) => !ours.has(j.id));
+        const last = plans.find((j) => j.status === "DONE");
+        const active = plans.find((j) => j.status === "RUNNING" || j.status === "QUEUED");
         if (active) { watch(active.id); return; }
+        // A run that failed after the last good plan is not silently forgotten on reload.
+        const newest = plans[0];
+        if (newest && newest !== last && ["FAILED", "TIMEOUT", "CANCELLED", "ABANDONED"].includes(newest.status)) {
+          setLastRunFailed(
+            newest.status === "TIMEOUT"
+              ? "Your most recent run did not finish inside the time it is given. Try a smaller selection of products."
+              : newest.status === "CANCELLED"
+                ? "Your most recent run was cancelled."
+                : newest.status === "ABANDONED"
+                  ? "Your most recent run was interrupted when the service restarted. Nothing was changed; run it again."
+                  : "Your most recent run stopped without producing a plan.",
+          );
+        } else {
+          setLastRunFailed(null);
+        }
         if (!last || !live) return;
         const detail = await readPlanJob(last.id);
         if (!live || !detail.report) return;
         setReport(detail.report);
+        setPlanJobId(last.id);
         setComputedAt(detail.finished_at ? new Date(detail.finished_at) : null);
         setScope(scopeOf(detail.report, state.request));
         setPlanPhase("ready");
@@ -219,19 +356,32 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
         if (!alive.current) return;
         if (detail.status === "RUNNING") setPlanPhase("running");
         if (detail.status === "QUEUED") setPlanPhase("queued");
-        if (["DONE", "FAILED", "TIMEOUT", "CANCELLED"].includes(detail.status)) {
+        if (abandoned(detail)) {
+          if (poll.current) window.clearInterval(poll.current);
+          poll.current = null;
+          setPlanPhase("failed");
+          setPlanError(ABANDONED_MESSAGE);
+          return;
+        }
+        if (["DONE", "FAILED", "TIMEOUT", "CANCELLED", "ABANDONED"].includes(detail.status)) {
           if (poll.current) window.clearInterval(poll.current);
           poll.current = null;
           if (detail.status === "DONE" && detail.report) {
             setReport(detail.report);
+            setPlanJobId(jobId);
             setComputedAt(detail.finished_at ? new Date(detail.finished_at) : new Date());
             setPlanPhase("ready");
+            // An earlier failure is history once a later run has finished; leaving the notice up
+            // would tell an operator their most recent run failed while showing its result.
+            setLastRunFailed(null);
           } else {
             setPlanPhase("failed");
             setPlanError(
               detail.status === "TIMEOUT"
                 ? "The run did not finish inside the time it is given. Try a smaller selection of products."
-                : detail.error || "The run stopped without producing a plan.",
+                : detail.status === "ABANDONED"
+                  ? "The run was interrupted when the service restarted. Nothing was changed; run it again."
+                  : detail.error || "The run stopped without producing a plan.",
             );
           }
         }
@@ -281,13 +431,13 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
         })
       : null;
     return {
-      phase, planPhase, notReady, error, planError,
+      phase, planPhase, notReady, error, planError, degraded,
       request, build, report, directory, decisions, summary, network,
       index: network ? buildIndex(network) : null,
-      scope, computedAt, run,
+      scope, readScope, lastRunFailed, computedAt, planJobId, run,
       refresh: () => setTick((t) => t + 1),
     };
-  }, [phase, planPhase, notReady, error, planError, request, build, report, directory, scope, computedAt, run, session.workspace]);
+  }, [phase, planPhase, notReady, error, planError, degraded, request, build, report, directory, scope, readScope, lastRunFailed, computedAt, planJobId, run, session.workspace]);
 
   return <WorkspaceDataContext.Provider value={value}>{children}</WorkspaceDataContext.Provider>;
 }

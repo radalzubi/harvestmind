@@ -1,165 +1,452 @@
 "use client";
 
-import { useEffect, useState } from "react";
+/**
+ * INVENTORY — what do I have, what is coming, where is it, and what is at risk?
+ *
+ * A distributor with ten thousand products does not browse. They search, they filter, they sort by
+ * the column that matters this morning, and they open one product. So this page is a dense
+ * server-side table and a detail panel, and the browser never holds more than one page of it.
+ *
+ * Everything in the table is either a column the operator uploaded or arithmetic over two of them:
+ * stock × unit cost is value, stock ÷ average weekly demand is weeks of cover. Nothing here is an
+ * optimizer output, and nothing pretends to be — what ZAAD *recommends* lives in Decisions, over
+ * the products the last run covered, and this page links to it rather than implying the whole
+ * catalogue was evaluated.
+ */
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Card, CardBody, CardHead, EmptyState, KPI, KPIRow, PageError, PageHeader, PageLoading, RiskBadge, Tbtn } from "@/components/ui";
-import { getDiagnosticSummary, fmtUSD, fmt, type DiagnosticSummary } from "@/lib/api";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FileText, RefreshCw, Share2 } from "lucide-react";
+import { Gate } from "@/components/workspace/Gate";
+import { Button, ButtonLink, Disclosure, EmptyState, ErrorState, Loading, Notice, PageHead, Section } from "@/components/workspace/ui";
+import { Column, DataTable, Drawer, NotAvailable, Pager, SearchField, SelectField, Tally, Toolbar } from "@/components/workspace/Table";
+import { useWorkspaceData } from "@/lib/zaad/workspace-data";
+import {
+  COUNT, DATE, MONEY, NUMBER, fetchDatasetValues, fetchInventory, fetchLocations, fetchSku, track,
+  type InventoryPage, type InventoryRow, type Location, type SkuDetail,
+} from "@/lib/zaad/product";
 
-export default function InventoryPage() {
-  const [data, setData] = useState<DiagnosticSummary | null>(null);
-  const [loading, setLoading] = useState(true);
+const KIND_LABEL: Record<string, string> = { central_dc: "central DC", branch: "branch", warehouse: "warehouse", store: "store" };
+const siteLabel = (l: Location) => l.kind ? `${l.id} (${KIND_LABEL[l.kind] ?? l.kind})` : l.id;
+
+const PAGE = 50;
+
+const COVER_CHOICES = [
+  { value: "out", label: "Out of stock" },
+  { value: "under2", label: "Under 2 weeks' cover" },
+  { value: "under4", label: "Under 4 weeks' cover" },
+  { value: "over12", label: "Over 12 weeks' cover" },
+  { value: "unknown", label: "Cover not measurable" },
+];
+
+function coverChip(weeks: number | null | undefined, onHand: number | null | undefined) {
+  if (onHand != null && onHand <= 0) return <span className="chip" data-tone="bad">Out of stock</span>;
+  if (weeks == null) return <NotAvailable why="Weeks of cover needs both a stock count and customer order history." />;
+  const tone = weeks < 2 ? "bad" : weeks < 4 ? "warn" : weeks > 12 ? "high" : "good";
+  return <span className="chip" data-tone={tone}>{weeks < 10 ? weeks.toFixed(1) : Math.round(weeks)} wks</span>;
+}
+
+/**
+ * Filter values a workspace actually has, read once from the product master.
+ *
+ * A filter is offered only when the column exists and has values: a workspace that declares no
+ * brand never sees a brand filter with nothing in it.
+ */
+function useFacets() {
+  const [facets, setFacets] = useState<{ category: string[]; brand: string[]; supplier: string[]; sites: Location[] }>({
+    category: [], brand: [], supplier: [], sites: [],
+  });
+  useEffect(() => {
+    let alive = true;
+    const load = (column: string) => fetchDatasetValues("products", column)
+      .then((r) => r.values).catch(() => [] as string[]);
+    Promise.all([load("category"), load("brand"), load("supplier_id"), fetchLocations().then((r) => r.locations).catch(() => [] as Location[])])
+      .then(([category, brand, supplier, sites]) => { if (alive) setFacets({ category, brand, supplier, sites }); });
+    return () => { alive = false; };
+  }, []);
+  return facets;
+}
+
+function SkuPanel({ sku, onClose }: { sku: string; onClose: () => void }) {
+  const [detail, setDetail] = useState<SkuDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { decisions } = useWorkspaceData();
 
   useEffect(() => {
-    getDiagnosticSummary()
-      .then(setData)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+    let alive = true;
+    setDetail(null);
+    setError(null);
+    fetchSku(sku).then((d) => { if (alive) { setDetail(d); track("sku_opened", { sku }); } }).catch((e) => alive && setError(e.message));
+    return () => { alive = false; };
+  }, [sku]);
 
-  if (loading) return <PageLoading message="Loading inventory risk data…" />;
-  if (error) return <PageError error={error} />;
-  if (!data) return null;
+  const related = useMemo(
+    () => decisions.filter((d) => JSON.stringify(d.target).includes(sku) || d.headline.includes(sku)),
+    [decisions, sku]);
 
-  const { waste, atp } = data;
-  const totalNearExpiry = atp.products.reduce((s, p) => s + p.near_expiry_kg, 0);
-  const totalExpired = atp.products.reduce((s, p) => s + p.expired_kg, 0);
-  const totalOnHand = atp.products.reduce((s, p) => s + p.total_on_hand_kg, 0);
-  const hasInventory = atp.products.length > 0;
-  const hasWaste = waste.by_product.length > 0;
+  const overview = detail?.overview ?? {};
+  return (
+    <Drawer
+      open
+      title={detail?.overview?.sku_name || sku}
+      sub={detail ? <>{sku}{overview.category ? ` · ${overview.category}` : ""}{overview.supplier_id ? ` · ${overview.supplier_id}` : ""}</> : sku}
+      onClose={onClose}
+      actions={detail ? (
+        <>
+          <ButtonLink role="primary" size="sm" href={`/orders/new?sku=${encodeURIComponent(sku)}${overview.supplier_id ? `&supplier=${encodeURIComponent(String(overview.supplier_id))}` : ""}`} icon={<FileText size={14} aria-hidden />}>
+            Create a proposed order
+          </ButtonLink>
+          {overview.supplier_id && (
+            <ButtonLink size="sm" href={`/diagnostics/supplier/${encodeURIComponent(String(overview.supplier_id))}`}>
+              Supplier
+            </ButtonLink>
+          )}
+          {/* `?q=` was read by nothing: the twin takes `node`, `edge`, `sku` and `view`, so this
+              button opened the network with no product filter at all. */}
+          <ButtonLink size="sm" href={`/network?sku=${encodeURIComponent(sku)}`} icon={<Share2 size={14} aria-hidden />}>
+            In the network
+          </ButtonLink>
+        </>
+      ) : undefined}
+    >
+      {error && <Notice tone="warn">{error}</Notice>}
+      {!detail && !error && <Loading label="Reading this product…" cards={1} />}
+      {detail && (
+        <>
+          <dl className="kv">
+            <dt>On hand</dt><dd>{overview.on_hand != null ? `${NUMBER(overview.on_hand)} units` : <NotAvailable />}</dd>
+            <dt>On order</dt><dd>{overview.inbound_units != null ? `${NUMBER(overview.inbound_units)} units on ${NUMBER(overview.open_pos)} open order${overview.open_pos === 1 ? "" : "s"}` : <NotAvailable />}</dd>
+            <dt>Weekly demand</dt><dd>{overview.weekly_demand != null ? `${NUMBER(overview.weekly_demand)} units` : <NotAvailable why="Needs customer order history." />}</dd>
+            <dt>Weeks of cover</dt><dd>{coverChip(overview.cover_weeks, overview.on_hand)}</dd>
+            <dt>Stock value</dt><dd>{overview.inventory_value != null ? MONEY(overview.inventory_value) : <NotAvailable why="Needs a unit cost on the product master." />}</dd>
+            <dt>Pack</dt><dd>{overview.units_per_case ? `${NUMBER(overview.units_per_case)} per case` : <NotAvailable />}</dd>
+            {overview.moq_units ? <><dt>Minimum order</dt><dd>{NUMBER(overview.moq_units)} units</dd></> : null}
+            {overview.shelf_life_days ? <><dt>Shelf life</dt><dd>{NUMBER(overview.shelf_life_days)} days</dd></> : null}
+          </dl>
+
+          {related.length > 0 && (
+            <Section title="What ZAAD recommends">
+              <div className="dec-list">
+                {related.slice(0, 3).map((d) => (
+                  <Link key={d.id} href={`/decisions?decision=${encodeURIComponent(d.id)}`} style={{ textDecoration: "none", color: "inherit" }}>
+                    <div className="dec">
+                      <div className="dec-top"><span className="dec-verb" data-tone="change">{d.verb}</span></div>
+                      <h3 className="dec-h" style={{ fontSize: 13.5 }}>{d.headline}</h3>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          <Section title="Where it is">
+            {detail.stock_by_site.length ? (
+              <>
+                <DataTable
+                  caption={`Stock of ${sku} by site`} dense
+                  rows={detail.stock_by_site} rowKey={(r) => r.location_id}
+                  columns={[
+                    { key: "location_id", label: "Site", render: (r) => <Link href={`/inventory?location=${encodeURIComponent(r.location_id)}&sku=${encodeURIComponent(sku)}`}>{r.location_id}</Link> },
+                    { key: "on_hand", label: "On hand", numeric: true, render: (r) => NUMBER(r.on_hand) },
+                    { key: "in_transit", label: "In transit", numeric: true, render: (r) => NUMBER(r.in_transit) },
+                    { key: "snapshot_date", label: "As at", render: (r) => DATE(r.snapshot_date) },
+                  ]}
+                />
+                {/* The all-sites figure above and the site rows here come from the same snapshot
+                    rule, so they agree unless a site's latest count is older than the others'.
+                    When they differ, the difference is stated — never a total that silently drops
+                    a site, never a site row that silently joins one. */}
+                {detail.reconciliation && (
+                  detail.reconciliation.agree
+                    ? <p className="tbl-count">The sites add up to the {NUMBER(detail.reconciliation.sum_of_sites)} units on hand above, all counted on {DATE(detail.reconciliation.snapshot_date ?? "")}.</p>
+                    : <div style={{ marginTop: 8 }}><Notice tone="warn">The sites shown add up to {NUMBER(detail.reconciliation.sum_of_sites)} units; the on-hand figure above is {detail.reconciliation.all_sites_total != null ? NUMBER(detail.reconciliation.all_sites_total) : "not available"}. {detail.reconciliation.note}</Notice></div>
+                )}
+              </>
+            ) : <Notice>No stock snapshot has been uploaded for this product.</Notice>}
+          </Section>
+
+          <Section title="Recent purchase orders">
+            {detail.purchase_orders.length ? (
+              <DataTable
+                caption={`Purchase orders for ${sku}`} dense
+                rows={detail.purchase_orders.slice(0, 12)} rowKey={(r) => r.po_id}
+                columns={[
+                  { key: "po_id", label: "PO", render: (r) => <Link href={`/orders?po=${encodeURIComponent(r.po_id)}`}>{r.po_id}</Link> },
+                  { key: "po_date", label: "Ordered on", render: (r) => DATE(r.po_date) },
+                  { key: "qty_ordered", label: "Quantity", numeric: true, render: (r) => NUMBER(r.qty_ordered) },
+                  { key: "qty_received", label: "Received", numeric: true, render: (r) => r.qty_received != null ? NUMBER(r.qty_received) : "—" },
+                  { key: "first_receipt", label: "Arrived", render: (r) => r.first_receipt ? DATE(r.first_receipt) : <span className="chip" data-tone="warn">Open</span> },
+                ]}
+              />
+            ) : <Notice>No purchase orders have been uploaded for this product.</Notice>}
+          </Section>
+
+          <Section title="What customers ordered">
+            {detail.demand_by_week.length ? (
+              <>
+                <Sparkline rows={detail.demand_by_week} />
+                <p className="tbl-count">
+                  {detail.short_shipped_lines == null
+                    ? "Shipped quantities are not recorded on your customer orders, so short shipments cannot be counted."
+                    : detail.short_shipped_lines ? `${NUMBER(detail.short_shipped_lines)} order lines shipped short of what was ordered.` : "No order line was shipped short."}
+                </p>
+              </>
+            ) : <Notice>No customer order history has been uploaded for this product.</Notice>}
+          </Section>
+
+          {detail.declared_sources.length > 0 && (
+            <Section title="Declared sources">
+              <DataTable
+                caption={`Declared sources for ${sku}`} dense
+                rows={detail.declared_sources} rowKey={(r) => String(r.supplier_id)}
+                columns={[
+                  { key: "supplier_id", label: "Supplier", render: (r) => <Link href={`/diagnostics/supplier/${encodeURIComponent(String(r.supplier_id))}`}>{String(r.supplier_id)}</Link> },
+                  { key: "unit_cost", label: "Unit cost", numeric: true, render: (r) => r.unit_cost != null ? MONEY(Number(r.unit_cost)) : "—" },
+                  { key: "lead_time_promised_weeks", label: "Lead (wks)", numeric: true, render: (r) => r.lead_time_promised_weeks != null ? NUMBER(Number(r.lead_time_promised_weeks), 1) : "—" },
+                  { key: "approved", label: "Approved", render: (r) => String(r.approved) === "true" ? "Yes" : "No" },
+                ]}
+              />
+            </Section>
+          )}
+
+          {detail.missing.length > 0 && (
+            <Section title="What ZAAD does not have">
+              <ul style={{ margin: 0, paddingInlineStart: 18, fontSize: 13, color: "var(--ink-600)", lineHeight: 1.6 }}>
+                {detail.missing.map((m) => <li key={m}>{m}</li>)}
+              </ul>
+            </Section>
+          )}
+
+          <div style={{ marginTop: 18 }}>
+            <Disclosure summary="Technical details" hint="the record as uploaded">
+              <pre className="disc-tech">{JSON.stringify(detail.master, null, 2)}</pre>
+            </Disclosure>
+          </div>
+        </>
+      )}
+    </Drawer>
+  );
+}
+
+/** Six months of weekly demand, as a shape rather than a table of numbers. */
+function Sparkline({ rows }: { rows: Array<{ week: string; ordered: number; shipped: number }> }) {
+  const max = Math.max(1, ...rows.map((r) => r.ordered));
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 64, padding: "0 2px" }}
+      role="img" aria-label={`Weekly customer demand over ${rows.length} weeks, highest ${Math.round(max).toLocaleString("en-US")} units`}>
+      {rows.map((r) => (
+        <div key={r.week} title={`${DATE(r.week)}: ${NUMBER(r.ordered)} ordered, ${NUMBER(r.shipped)} shipped`}
+          style={{
+            flex: 1, minWidth: 3, height: `${Math.max(2, (r.ordered / max) * 100)}%`,
+            background: r.shipped < r.ordered * 0.995 ? "var(--warn)" : "var(--accent)",
+            opacity: 0.85, borderRadius: 2,
+          }} />
+      ))}
+    </div>
+  );
+}
+
+function InventoryBody() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const facets = useFacets();
+  const { scope, planPhase } = useWorkspaceData();
+
+  const q = params.get("q") ?? "";
+  const category = params.get("category") ?? "";
+  const brand = params.get("brand") ?? "";
+  const supplier = params.get("supplier") ?? "";
+  const cover = params.get("cover") ?? "";
+  const location = params.get("location") ?? "";
+  const planned = params.get("planned") === "1";
+  const sort = params.get("sort") ?? "sku";
+  const direction = params.get("dir") ?? "asc";
+  const offset = Number(params.get("offset") ?? 0);
+  const selected = params.get("sku");
+
+  const [page, setPage] = useState<InventoryPage | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [typed, setTyped] = useState(q);
+
+  const set = useCallback((changes: Record<string, string | null>) => {
+    const next = new URLSearchParams(params.toString());
+    for (const [key, value] of Object.entries(changes)) {
+      if (value === null || value === "") next.delete(key);
+      else next.set(key, value);
+    }
+    if (!("offset" in changes)) next.delete("offset");
+    router.replace(`/inventory?${next.toString()}`, { scroll: false });
+  }, [params, router]);
+
+  useEffect(() => { setTyped(q); }, [q]);
+  useEffect(() => {
+    const handle = window.setTimeout(() => { if (typed !== q) set({ q: typed || null }); }, 250);
+    return () => window.clearTimeout(handle);
+  }, [typed, q, set]);
+
+  useEffect(() => {
+    let alive = true;
+    setBusy(true);
+    setError(null);
+    fetchInventory({
+      q: q || undefined, category: category || undefined, brand: brand || undefined,
+      supplier_id: supplier || undefined, cover: cover || undefined, location: location || undefined,
+      skus: planned && scope?.skus.length ? scope.skus.join(",") : undefined,
+      sort, direction, limit: PAGE, offset,
+    })
+      .then((p) => { if (alive) setPage(p); })
+      .catch((e) => { if (alive) setError(e.message); })
+      .finally(() => { if (alive) setBusy(false); });
+    return () => { alive = false; };
+  }, [q, category, brand, supplier, cover, location, planned, sort, direction, offset, scope]);
+  useEffect(() => { track("inventory_opened", location ? { location } : {}); }, [location]);
+
+  const columns: Column<InventoryRow>[] = useMemo(() => [
+    { key: "sku", label: "Product", sortable: true, width: 240,
+      title: (r) => `${r.sku}${r.sku_name ? ` — ${r.sku_name}` : ""}`,
+      render: (r) => (
+        <span>
+          <strong style={{ fontWeight: 500, color: "var(--ink-950)" }}>{r.sku_name || r.sku}</strong>
+          {r.sku_name && <span style={{ color: "var(--ink-500)", marginInlineStart: 6, fontSize: 12 }}>{r.sku}</span>}
+        </span>
+      ) },
+    { key: "brand", label: "Brand", sortable: true, hideBelow: 1100, render: (r) => r.brand ?? <span className="na">—</span> },
+    { key: "category", label: "Category", sortable: true, hideBelow: 900, render: (r) => r.category ?? <span className="na">—</span> },
+    { key: "supplier_id", label: "Supplier", sortable: true, hideBelow: 900,
+      render: (r) => r.supplier_id
+        ? <Link href={`/diagnostics/supplier/${encodeURIComponent(r.supplier_id)}`} onClick={(e) => e.stopPropagation()}>{r.supplier_name || r.supplier_id}</Link>
+        : <span className="na">—</span> },
+    // In a site view every figure is that site's own. A column the workspace's data cannot fill
+    // for one site (orders with no destination, customer orders with no site) is a dash with the
+    // reason on it, never the all-sites number under a site heading.
+    { key: "on_hand", label: location ? `On hand at ${location}` : "On hand", numeric: true, sortable: true,
+      render: (r) => r.on_hand != null ? NUMBER(r.on_hand) : <span className="na" title={location ? `No stock row for ${location} on the latest count` : undefined}>—</span> },
+    // Nothing on order is an answer. A dash here said ZAAD could not see the inbound at all.
+    { key: "inbound_units", label: location ? `Due at ${location}` : "On order", numeric: true, sortable: true, hideBelow: 700,
+      render: (r) => <Tally value={r.inbound_units} why={location ? `No purchase order is due at ${location} for this product, or orders carry no destination` : "No purchase order carries this product"} /> },
+    ...(location ? [{ key: "transfer_units", label: `Coming from other sites`, numeric: true, sortable: true, hideBelow: 900,
+      render: (r: InventoryRow) => <Tally value={r.transfer_units} why={`No open transfer into ${location} carries this product`} /> } as Column<InventoryRow>] : []),
+    { key: "weekly_demand", label: location ? `${location} per week` : "Per week", numeric: true, sortable: true, hideBelow: 1100,
+      render: (r) => r.weekly_demand != null ? NUMBER(r.weekly_demand) : <span className="na" title={location ? `No customer order names ${location} for this product` : undefined}>—</span> },
+    { key: "cover_weeks", label: "Cover", numeric: true, sortable: true, render: (r) => coverChip(r.cover_weeks, r.on_hand) },
+    { key: "inventory_value", label: location ? `Value at ${location}` : "Stock value", numeric: true, sortable: true, hideBelow: 700,
+      render: (r) => r.inventory_value != null ? MONEY(r.inventory_value) : <span className="na">—</span> },
+  ], [location]);
+
+  if (error) {
+    return <ErrorState title="Your inventory could not be read"
+      affects="Nothing was changed; this page only reads."
+      whatToDo="Try again. If it keeps failing, your access may have been rotated."
+      detail={error} actions={<Button role="primary" onClick={() => set({})}>Try again</Button>} />;
+  }
+  if (!page) return <Loading label="Reading your product list…" cards={2} />;
+  if (!page.served) {
+    return <EmptyState title="No product list yet"
+      actions={<ButtonLink href="/upload" role="primary">Add your product list</ButtonLink>}>
+      {page.note ?? "ZAAD needs your product master before it can show your inventory."}
+    </EmptyState>;
+  }
+
+  const filtered = Boolean(q || category || brand || supplier || cover || planned || location);
+  const site = facets.sites.find((l) => l.id === location);
 
   return (
-    <div className="page">
-      <PageHeader
-        title="Inventory Risk"
-        sub="Near-expiry inventory, expired stock, waste events, and lot-level risk flags."
+    <>
+      <PageHead
+        title="Inventory"
+        sub={page.snapshot_date
+          ? `${location ? `Stock at ${site ? siteLabel(site) : location} only, ` : "Stock "}as counted on ${DATE(page.snapshot_date)}. Weeks of cover is ${location ? "that site's" : "your"} stock divided by ${location ? "its" : ""} average weekly demand over the last ${page.demand_weeks} weeks.`
+          : "Your product list. Stock appears once a stock count is uploaded."}
+        actions={<Button role="tertiary" size="sm" icon={<RefreshCw size={14} aria-hidden />} onClick={() => set({})}>Refresh</Button>}
       />
 
-      <KPIRow>
-        <KPI label="Total On Hand" value={fmt(totalOnHand, 0) + " kg"} />
-        <KPI
-          label="Near Expiry (≤3 days)"
-          value={fmt(totalNearExpiry, 0) + " kg"}
-          deltaDir={totalNearExpiry > 0 ? "down" : "flat"}
-          delta={totalOnHand > 0 ? `${((totalNearExpiry / totalOnHand) * 100).toFixed(1)}% of stock` : undefined}
-        />
-        <KPI
-          label="Expired Stock"
-          value={fmt(totalExpired, 0) + " kg"}
-          deltaDir={totalExpired > 0 ? "down" : "flat"}
-        />
-        <KPI
-          label="Waste Loss"
-          value={fmtUSD(waste.total_usd)}
-          deltaDir={waste.total_usd > 0 ? "down" : "flat"}
-        />
-      </KPIRow>
+      <Toolbar>
+        <SearchField value={typed} onChange={setTyped} label="Search products"
+          placeholder="Search code, description, brand or category" />
+        {facets.category.length > 0 && <SelectField value={category} onChange={(v) => set({ category: v })}
+          label="Category" all="Every category" options={facets.category.map((c) => ({ value: c, label: c }))} />}
+        {facets.brand.length > 0 && <SelectField value={brand} onChange={(v) => set({ brand: v })}
+          label="Brand" all="Every brand" options={facets.brand.map((c) => ({ value: c, label: c }))} />}
+        {facets.supplier.length > 0 && <SelectField value={supplier} onChange={(v) => set({ supplier: v })}
+          label="Supplier" all="Every supplier" options={facets.supplier.map((c) => ({ value: c, label: c }))} />}
+        <SelectField value={cover} onChange={(v) => set({ cover: v })} label="Weeks of cover"
+          all="Any cover" options={COVER_CHOICES} />
+        {facets.sites.length > 1 && <SelectField value={location} onChange={(v) => set({ location: v })}
+          label="Site" all="Every site, summed" options={facets.sites.map((l) => ({ value: l.id, label: siteLabel(l) }))} />}
+        <div className="tbar-spacer" />
+        {filtered && <Button size="sm" role="tertiary" onClick={() => router.replace("/inventory")}>Clear filters</Button>}
+      </Toolbar>
 
-      {/* Inventory lots by product */}
-      <Card style={{ marginTop: 20 }}>
-        <CardHead title="Inventory by Product" />
-        <CardBody tight>
-          {!hasInventory ? (
-            <EmptyState
-              title="No inventory lot data loaded"
-              body="Upload your current inventory lots to see on-hand quantities, committed stock, and near-expiry risk by product."
-              action={<Link href="/upload"><Tbtn variant="primary">Upload stg_inventory_lots.csv</Tbtn></Link>}
-            />
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th className="r">On Hand (kg)</th>
-                  <th className="r">Committed (kg)</th>
-                  <th className="r">Near Expiry (kg)</th>
-                  <th className="r">Expired (kg)</th>
-                  <th className="r">ATP (kg)</th>
-                  <th>Risk</th>
-                </tr>
-              </thead>
-              <tbody>
-                {atp.products.map((p) => (
-                  <tr key={p.product_name}>
-                    <td>{p.product_name}</td>
-                    <td className="r">{fmt(p.total_on_hand_kg, 1)}</td>
-                    <td className="r">{fmt(p.committed_kg, 1)}</td>
-                    <td className="r" style={{ color: p.near_expiry_kg > 0 ? "var(--warn)" : undefined }}>
-                      {fmt(p.near_expiry_kg, 1)}
-                    </td>
-                    <td className="r" style={{ color: p.expired_kg > 0 ? "var(--danger)" : undefined }}>
-                      {fmt(p.expired_kg, 1)}
-                    </td>
-                    <td className="r"><strong>{fmt(p.atp_kg, 1)}</strong></td>
-                    <td><RiskBadge level={p.risk_level} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardBody>
-      </Card>
-
-      {/* Waste by product */}
-      {!hasWaste && hasInventory && (
-        <div style={{ marginTop: 16, padding: "12px 16px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--muted)" }}>
-          No waste adjustment data loaded. Upload stg_waste_adjustments.csv to see waste loss by product and reason.
+      {/* Filtering to "Cover not measurable" gives a page where every Cover cell says the same
+          thing for the same reason, and that reason only exists in a `title` — unreachable by
+          touch, unreliable to a screen reader. When it is the whole page, it is said in the open. */}
+      {location && (page.location_notes?.length ?? 0) > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <Notice>
+            <strong>Some columns cannot be shown for one site.</strong>{" "}
+            {page.location_notes!.join(" ")}
+          </Notice>
         </div>
       )}
 
-      {hasWaste && (
-        <Card style={{ marginTop: 16 }}>
-          <CardHead title="Waste Loss by Product" />
-          <CardBody tight>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th className="r">Qty Lost (kg)</th>
-                  <th className="r">Loss ($)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {waste.by_product.map((w, i) => (
-                  <tr key={i}>
-                    <td>{w.product_name || "n/a"}</td>
-                    <td className="r">{fmt(w.quantity_lost_kg, 1)}</td>
-                    <td className="r">{fmtUSD(w.loss_usd)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardBody>
-        </Card>
+      {cover === "unknown" && page.total > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <Notice>
+            Weeks of cover needs both a stock count and twelve weeks of customer orders for the
+            product. {COUNT(page.total, "product")} here {page.total === 1 ? "has" : "have"} stock
+            counted but no demand history ZAAD can divide it by, so cover is not a number it can
+            give — not a cover of zero.
+          </Notice>
+        </div>
       )}
 
-      {waste.by_reason.length > 0 && (
-        <Card style={{ marginTop: 16 }}>
-          <CardHead title="Waste Loss by Reason" />
-          <CardBody tight>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Reason</th>
-                  <th className="r">Qty Lost (kg)</th>
-                  <th className="r">Loss ($)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {waste.by_reason.map((w, i) => (
-                  <tr key={i}>
-                    <td>{w.reason || "n/a"}</td>
-                    <td className="r">{fmt(w.quantity_lost_kg, 1)}</td>
-                    <td className="r">{fmtUSD(w.loss_usd)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardBody>
-        </Card>
+      {scope && planPhase === "ready" && (
+        <div style={{ marginBottom: 12 }}>
+          <Notice>
+            <p style={{ margin: 0 }}>
+              ZAAD&rsquo;s last run covered {scope.skus.length} of your {scope.total} products.
+              Recommendations for them are in <Link href="/decisions">Decisions</Link>.
+            </p>
+            <div style={{ marginTop: 10 }}>
+              <Button size="sm" onClick={() => set({ planned: planned ? null : "1" })}>
+                {planned ? "Show every product" : "Show only those products"}
+              </Button>
+            </div>
+          </Notice>
+        </div>
       )}
 
-      <style>{`.r { text-align: right; } .data-table { width: 100%; border-collapse: collapse; } .data-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 8px 12px; text-align: left; } .data-table td { padding: 8px 12px; border-top: 1px solid var(--border); font-size: 12px; } .data-table tr:hover td { background: rgba(255,255,255,.02); }`}</style>
-    </div>
+      <div style={{ opacity: busy ? 0.6 : 1, transition: "opacity .12s" }}>
+        <DataTable
+          caption={location ? `Products with their stock position at ${location}` : "Products with their stock position"}
+          columns={columns} rows={page.rows} rowKey={(r) => r.sku}
+          selected={selected} onSelect={(r) => set({ sku: r.sku, offset: String(offset) })}
+          sort={page.sort} direction={page.direction}
+          onSort={(key) => set({ sort: key, dir: page.sort === key && page.direction === "asc" ? "desc" : "asc" })}
+          // Past the end of the results, the pager below states the real reason and offers the
+          // way back; an empty state saying nothing matched would contradict it.
+          empty={page.offset >= page.total && page.total > 0 ? undefined : (
+            <EmptyState title="No product matches that">
+              {filtered ? "Change or clear the filters above." : "Your product list is empty."}
+            </EmptyState>
+          )}
+        />
+      </div>
+      <Pager total={page.total} limit={page.limit} offset={page.offset} shown={page.rows.length} unit="products"
+        onOffset={(next) => set({ offset: String(next) })} />
+
+      {selected && <SkuPanel sku={selected} onClose={() => set({ sku: null, offset: String(offset) })} />}
+    </>
+  );
+}
+
+export default function InventoryPage() {
+  return (
+    <Gate loadingLabel="Opening your workspace…" needsPlan={false} needsWorkspace={false}>
+      <Suspense fallback={<Loading label="Reading your product list…" cards={2} />}>
+        <InventoryBody />
+      </Suspense>
+    </Gate>
   );
 }

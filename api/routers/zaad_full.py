@@ -267,8 +267,15 @@ def _workspace_request(conn, operator: str, horizon: int, service_target: float,
     except ValueError as exc:
         # sector physics or sourcing declared inconsistently in the vault (unknown state, threshold above
         # shelf life, share limits the incumbent mix does not meet, unknown supplier in a risk group, ...)
-        code = ("commitments_invalid" if "commitments:" in str(exc) else "atp_invalid" if "atp:" in str(exc) else "recourse_invalid" if "recourse:" in str(exc)
-                else ("sourcing_invalid" if "sourcing:" in str(exc) else "sector_physics_invalid"))
+        # A size violation is a validation error like any other, and used to fall through to
+        # `sector_physics_invalid` — which sends a reader looking in entirely the wrong place for a
+        # workspace that is simply larger than one planning request can carry.
+        text = str(exc)
+        code = ("commitments_invalid" if "commitments:" in text else "atp_invalid" if "atp:" in text
+                else "recourse_invalid" if "recourse:" in text
+                else "sourcing_invalid" if "sourcing:" in text
+                else "workspace_too_large" if "too_long" in text or "Tuple should have at most" in text
+                else "sector_physics_invalid")
         raise HTTPException(422, {"code": code, "message": str(exc)}) from exc
 
 
@@ -404,9 +411,17 @@ async def submit_job(request: HTTPRequest, operator: str = Depends(authenticated
 
 
 @router.get("/jobs")
-def list_jobs(operator: str = Depends(authenticated)):
-    """Status reads are cheap SQLite lookups scoped to the caller; they are not rate limited so polling works."""
-    return {"jobs": runner().store.list(operator)}
+def list_jobs(operator: str = Depends(authenticated),
+              purpose: str | None = Query(None, description="WORKSPACE_PLAN | PROPOSAL_BASELINE | PROPOSAL_OVERLAY | …")):
+    """Status reads are cheap SQLite lookups scoped to the caller; they are not rate limited so polling works.
+
+    Every job carries a purpose. A surface that wants the workspace's last plan asks for
+    `purpose=WORKSPACE_PLAN` and never sees an evaluation's overlay run.
+    """
+    from zaad.full.jobs import PURPOSES
+    if purpose is not None and purpose not in PURPOSES:
+        raise HTTPException(400, f"Unknown job purpose {purpose!r}. One of {', '.join(PURPOSES)}.")
+    return {"jobs": runner().store.list(operator, purpose=purpose)}
 
 
 @router.get("/jobs/{job_id}")

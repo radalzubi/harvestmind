@@ -4,6 +4,13 @@ import type { en } from "./en";
  *  أوامر الشراء، سندات الاستلام، الجرد، الموردون، مدة التوريد، الليد تايم، نقطة إعادة الطلب،
  *  مخزون الأمان، الطبالي والكراتين، الهالك، النولون، خطوط الشحن. Not a literal translation. */
 export const ar: typeof en = {
+  workspace: {
+    groups: { operate: "التشغيل", analyse: "التحليل", data: "البيانات" },
+    nav: { home: "الرئيسية", decisions: "القرارات", inventory: "المخزون", orders: "أوامر الشراء", ordersShort: "الأوامر", network: "الشبكة", diagnostics: "التشخيص", history: "السجل", upload: "الرفع", data: "البيانات", more: "المزيد" },
+    search: "بحث", searchLabel: "ابحث في المنتجات والموردين والأوامر والمقترحات والقرارات", help: "مساعدة",
+    skip: "انتقل إلى المحتوى", asAt: "كما في", foot: "زاد يوصي ويسجّل الموافقات. لا يرسل أي أمر إلى مورد أبداً.",
+    lang: "EN", langLabel: "Switch to English",
+  },
   nav: { product: "المنتج", how: "كيف يعمل", sectors: "لمن هو", security: "الأمان", about: "من نحن", resources: "مصادر", enterKey: "أدخل المفتاح", getStarted: "اطلب تشخيصاً", open: "اطلب تشخيصاً", quote: "اطلب عرض سعر لشركتك", signIn: "افتح مساحة عملك", menuOpen: "افتح القائمة", menuClose: "أغلق القائمة", lang: "EN" },
   footer: {
     blurb: "ZAAD هو طبقة القرار للتوريد المستورد: يخبر الموزعين المعتمدين على الاستيراد بما ينبغي تغييره، ولماذا. صُنع في عمّان.",

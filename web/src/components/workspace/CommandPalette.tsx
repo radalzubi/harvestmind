@@ -1,14 +1,19 @@
 "use client";
 
 /**
- * Search across what the workspace actually holds: decisions, suppliers, open orders,
- * products, sites, customers and lanes. Everything it offers is already loaded, so a
- * result always resolves to a real object — there is no index to go stale.
+ * Search across what the workspace actually holds.
+ *
+ * Two sources, deliberately. What the *plan* holds — decisions, the products it covered, the open
+ * orders it evaluated — is already in the browser and matched instantly. Everything else is asked
+ * of the server, because a catalogue of fifty thousand products cannot live in a React state and a
+ * buyer searching for one of them should not be limited to the bounded set the last run happened
+ * to cover.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Building2, FileText, MapPin, Share2, Users } from "lucide-react";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
+import { STATE_LABEL, listDrafts, searchWorkspace, type SearchHit } from "@/lib/zaad/product";
 
 type Hit = { id: string; label: string; meta: string; href: string; Icon: typeof Box; rank: number };
 
@@ -30,11 +35,49 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const { request, decisions, network } = useWorkspaceData();
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
+  const [remote, setRemote] = useState<SearchHit[]>([]);
   const input = useRef<HTMLInputElement>(null);
+  const opener = useRef<HTMLElement | null>(null);
+  const navigated = useRef(false);
 
-  useEffect(() => { input.current?.focus(); }, []);
+  useEffect(() => {
+    // Search is reached from the keyboard and left from the keyboard. Closing it used to leave the
+    // caret on <body>, so escaping out of a search meant tabbing back from the top of the page to
+    // wherever the reader had been. The search button lives in the shell and survives navigation,
+    // so restoring focus to it is only right when the palette was dismissed — when it opened
+    // something, that page owns the focus.
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    input.current?.focus();
+    return () => {
+      const back = opener.current;
+      if (!navigated.current && back?.isConnected) back.focus();
+      opener.current = null;
+    };
+  }, []);
 
-  const hits = useMemo<Hit[]>(() => {
+  // The whole catalogue, from the server, debounced. A failure here narrows the results to what
+  // the plan holds rather than emptying the palette.
+  useEffect(() => {
+    const needle = q.trim();
+    if (needle.length < 2) { setRemote([]); return; }
+    let alive = true;
+    const handle = window.setTimeout(() => {
+      // Products, suppliers, orders and customers from the vault; proposals from the product's
+      // own ledger, matched on reference, supplier and product, so a proposal is as findable as
+      // the imported order it may amend.
+      Promise.all([
+        searchWorkspace(needle, 8).then((r) => r.results).catch(() => []),
+        listDrafts({ q: needle, limit: 5, sort: "updated_at", direction: "desc" }).then((r) => r.rows.map((d) => ({
+          kind: "proposal", id: d.draft_id, label: d.reference || d.draft_id.replace(/^draft_/, ""),
+          detail: `${STATE_LABEL[d.state]}${d.supplier_id ? ` · ${d.supplier_id}` : ""}`,
+          href: `/orders/${encodeURIComponent(d.draft_id)}`,
+        }))).catch(() => []),
+      ]).then(([vault, proposals]) => { if (alive) setRemote([...vault, ...proposals]); });
+    }, 180);
+    return () => { alive = false; window.clearTimeout(handle); };
+  }, [q]);
+
+  const local = useMemo<Hit[]>(() => {
     const needle = q.trim();
     if (!needle) return [];
     const out: Hit[] = [];
@@ -43,29 +86,71 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       if (s) out.push({ id: d.id, label: d.headline, meta: d.category, href: `/decisions?decision=${encodeURIComponent(d.id)}`, Icon: FileText, rank: s + 1 });
     }
     for (const n of network?.nodes ?? []) {
-      const s = score(needle, n.name, n.id.split(":")[1] ?? "", ...(n.skus ?? []));
-      if (!s) continue;
+      // A node matches on its own name, or because it handles the product being searched for. Both
+      // are worth showing — but typing a product code and getting back "DC · Site" with no reason
+      // reads as noise, so a match on the product says so, and ranks below the product itself.
+      const byName = score(needle, n.name, n.id.split(":")[1] ?? "");
+      const carried = byName ? null : (n.skus ?? []).find((sku) => score(needle, sku) >= 3) ?? null;
+      if (!byName && !carried) continue;
       const Icon = n.kind === "supplier" ? Building2 : n.kind === "customer" ? Users : n.kind === "port" ? MapPin : Share2;
-      const meta = n.kind === "supplier" ? "Supplier" : n.kind === "customer" ? "Customer" : n.kind === "port" ? "Port" : n.kind === "branch" ? "Branch" : "Site";
-      out.push({ id: n.id, label: n.name, meta, href: `/network?node=${encodeURIComponent(n.id)}`, Icon, rank: s });
+      const kind = n.kind === "supplier" ? "Supplier" : n.kind === "customer" ? "Customer" : n.kind === "port" ? "Port" : n.kind === "branch" ? "Branch" : "Site";
+      out.push({
+        id: n.id, label: n.name, meta: carried ? `${kind} · handles ${carried}` : kind,
+        href: `/network?node=${encodeURIComponent(n.id)}`, Icon, rank: byName || 0.5,
+      });
     }
     for (const po of request?.pipeline ?? []) {
       const s = score(needle, po.id, po.id.replace(/^PO-?/i, ""));
-      if (s) out.push({ id: po.id, label: po.id, meta: `Open order · ${po.stage.replaceAll("_", " ").toLowerCase()}`, href: `/decisions?decision=${encodeURIComponent(`po:${po.id}`)}`, Icon: FileText, rank: s + 1 });
+      if (!s) continue;
+      // The request's pipeline is every open commitment; the report's decisions are the ones the
+      // plan reached. Sending the second kind to Decisions opened a *different* order under a
+      // notice apologising for it. The order itself is on Purchase orders, where it can be shown.
+      const decided = decisions.some((d) => d.id === `po:${po.id}`);
+      const stage = po.stage.replaceAll("_", " ").toLowerCase();
+      out.push({
+        id: po.id, label: po.id,
+        meta: decided ? `Open order · ${stage}` : `Open order · ${stage} · not in this plan`,
+        href: decided ? `/decisions?decision=${encodeURIComponent(`po:${po.id}`)}` : `/orders?po=${encodeURIComponent(po.id)}`,
+        Icon: FileText, rank: s + 1,
+      });
     }
     for (const sku of request?.skus ?? []) {
       const s = score(needle, sku.id);
       if (s) out.push({ id: sku.id, label: sku.id, meta: "Product", href: `/network?sku=${encodeURIComponent(sku.id)}`, Icon: Box, rank: s });
     }
+    return out;
+  }, [q, decisions, network, request]);
+
+  const REMOTE_ICON: Record<string, typeof Box> = {
+    product: Box, supplier: Building2, order: FileText, customer: Users, proposal: FileText,
+  };
+  const REMOTE_META: Record<string, string> = {
+    product: "Product", supplier: "Supplier", order: "Purchase order", customer: "Customer", proposal: "Proposal",
+  };
+
+  const hits = useMemo<Hit[]>(() => {
+    const out: Hit[] = [...local];
+    for (const hit of remote) {
+      out.push({
+        id: `${hit.kind}:${hit.id}`, label: hit.label || hit.id,
+        meta: hit.detail ? `${REMOTE_META[hit.kind] ?? hit.kind} · ${hit.detail}` : (REMOTE_META[hit.kind] ?? hit.kind),
+        href: hit.href, Icon: REMOTE_ICON[hit.kind] ?? Box, rank: 1.5,
+      });
+    }
     const seen = new Set<string>();
     return out
       .sort((a, b) => b.rank - a.rank || a.label.localeCompare(b.label))
-      .filter((h) => (seen.has(h.id) ? false : (seen.add(h.id), true)))
-      .slice(0, 9);
-  }, [q, decisions, network, request]);
+      .filter((h) => {
+        const key = h.label.toLowerCase();
+        return seen.has(key) ? false : (seen.add(key), true);
+      })
+      .slice(0, 10);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [local, remote]);
 
   const go = (hit: Hit | undefined) => {
     if (!hit) return;
+    navigated.current = true;
     router.push(hit.href);
     onClose();
   };
@@ -79,8 +164,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       <div style={{ width: "min(620px, 100%)", background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-lg)", overflow: "hidden" }}>
         <input
           ref={input} value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }}
-          placeholder="Search suppliers, orders, products, sites and decisions"
-          aria-label="Search suppliers, orders, products, sites and decisions"
+          placeholder="Search products, suppliers, orders, customers and decisions"
+          aria-label="Search products, suppliers, orders, customers and decisions"
           aria-activedescendant={hits[active] ? `hit-${active}` : undefined}
           onKeyDown={(e) => {
             if (e.key === "Escape") { e.preventDefault(); onClose(); }
@@ -108,7 +193,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
             ))}
           </ul>
         )}
-        <div style={{ borderTop: "1px solid var(--line-soft)", padding: "8px 14px", fontSize: 11.5, color: "var(--ink-400)", display: "flex", gap: 14 }}>
+        <div style={{ borderTop: "1px solid var(--line-soft)", padding: "8px 14px", fontSize: 11.5, color: "var(--ink-500)", display: "flex", gap: 14 }}>
           <span>↑↓ to move</span><span>↵ to open</span><span>esc to close</span>
         </div>
       </div>

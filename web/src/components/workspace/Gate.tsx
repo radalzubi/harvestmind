@@ -12,11 +12,20 @@ import { useSession } from "@/lib/session";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { Button, ButtonLink, ErrorState, Loading, EmptyState } from "./ui";
 
-export function Gate({ children, loadingLabel = "Reading your workspace…", needsPlan = true }: {
+export function Gate({ children, loadingLabel = "Reading your workspace…", needsPlan = true, needsWorkspace = true }: {
   children: ReactNode;
   loadingLabel?: string;
   /** Only changes how much skeleton is shown while the workspace is read. */
   needsPlan?: boolean;
+  /**
+   * Whether this surface needs the *planning* read before it can show anything.
+   *
+   * Home, Decisions and the Network do. Inventory, Purchase orders, Diagnostics and Data do not:
+   * they query the operator's records directly. Making them wait cost nothing on a small workspace
+   * and everything on a real one — a 10,000-product catalogue took nine minutes to read and then
+   * failed, and Inventory sat behind it saying "Opening your workspace…" the whole time.
+   */
+  needsWorkspace?: boolean;
 }) {
   const session = useSession();
   const data = useWorkspaceData();
@@ -26,32 +35,50 @@ export function Gate({ children, loadingLabel = "Reading your workspace…", nee
   if (session.status === "anonymous") {
     return (
       <EmptyState
-        title="This workspace is not open on this device"
+        // Not "on this device": access lives in the browser session, so a second tab of the same
+        // browser lands here too, and saying "device" is simply wrong there.
+        title="This workspace is not open here"
         actions={<ButtonLink href="/get-started" role="primary">Open your workspace</ButtonLink>}
       >
-        ZAAD keeps your access to the browser session you opened it in. Open your workspace again to
-        carry on where you left off.
+        ZAAD keeps your access to the browser tab you opened it in, and does not carry it to another
+        tab, another browser or another machine. Open your workspace again to carry on where you
+        left off.
       </EmptyState>
     );
   }
 
   if (session.status === "error") {
+    // A browser that never reached the server and a server that refused the token are different
+    // problems with different answers, and the message already says which one happened. Telling
+    // someone whose wifi dropped that their access "may have been rotated" sends them to re-enter
+    // a credential that is fine.
+    const said = session.error ?? "";
+    const unreachable = /failed to fetch|networkerror|load failed|network request failed/i.test(said);
+    const refused = /\b401\b|unauthor|forbidden|\b403\b|token/i.test(said);
     return (
       <ErrorState
-        title="Your workspace could not be reached"
+        title={unreachable ? "ZAAD could not be reached" : "Your workspace could not be opened"}
         affects="Nothing was changed, and none of your data was affected."
-        whatToDo="Try again in a moment; if it keeps happening, your access may have been rotated."
+        whatToDo={unreachable
+          ? "The request never got to the server. Check your connection and try again."
+          : refused
+            ? "The access you entered was not accepted. Enter it again, or ask for a new one."
+            : "Try again in a moment; if it keeps happening, your access may have been rotated."}
         detail={session.error ?? undefined}
         actions={<><Button role="primary" onClick={session.refresh}>Try again</Button><ButtonLink href="/access">Enter access again</ButtonLink></>}
       />
     );
   }
 
+  // A surface that reads the operator's records is usable the moment there is a session. Whatever
+  // the planning read is doing — still running, refused, or not needed at all — is not its problem.
+  if (!needsWorkspace) return <>{children}</>;
+
   if (data.phase === "not-ready") {
     return (
       <EmptyState
         title="ZAAD needs a little more before it can plan"
-        actions={<ButtonLink href="/data" role="primary">Go to Data</ButtonLink>}
+        actions={<ButtonLink href="/upload" role="primary">Go to Upload</ButtonLink>}
       >
         {data.notReady}
       </EmptyState>

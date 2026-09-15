@@ -14,6 +14,9 @@ function AccessInner() {
   const [token, setToken] = useState("");
   const [connected, setConnected] = useState(false);
   const [checking, setChecking] = useState(false);
+  // A toast is gone in three seconds. A credential that was refused is a blocking failure at the
+  // front door of the product, and the person who looked away needs it still on the screen.
+  const [refused, setRefused] = useState<string | null>(null);
 
   useEffect(() => setConnected(Boolean(getApiToken())), []);
   // An access link from the approval email carries the token once; consume it,
@@ -26,13 +29,19 @@ function AccessInner() {
       setConnected(true);
       toast.push("Workspace connected");
       router.replace("/start");
-    }).catch(() => { clearApiToken(); toast.push("That access link is not valid"); router.replace("/access"); });
+    }).catch(() => {
+      clearApiToken();
+      setRefused("That access link is not valid. It may already have been used, or replaced since it was sent.");
+      toast.push("That access link is not valid.");
+      router.replace("/access");
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
   const connect = async () => {
     if (!token.trim()) return;
     setChecking(true);
+    setRefused(null);
     setApiToken(token);
     try {
       await apiFetch("/intake/status");
@@ -42,7 +51,13 @@ function AccessInner() {
     } catch (error) {
       clearApiToken();
       setConnected(false);
-      toast.push(`Connection failed: ${String(error)}`);
+      // `String(error)` is "Error: Invalid API token" — the word "Error:" is the language's, not
+      // ours, and it read as part of the sentence.
+      const said = error instanceof Error ? error.message : String(error);
+      setRefused(/invalid|unauthor|401/i.test(said)
+        ? "That token was not accepted. Check it was copied whole, and that it has not been replaced since it was sent to you."
+        : `ZAAD could not check that token: ${said}`);
+      toast.push("That token was not accepted.");
     } finally {
       setChecking(false);
     }
@@ -51,6 +66,7 @@ function AccessInner() {
   const disconnect = () => {
     clearApiToken();
     setConnected(false);
+    setRefused(null);
     toast.push("Operator vault disconnected", "info");
   };
 
@@ -89,6 +105,11 @@ function AccessInner() {
                 {checking ? "Checking…" : "Connect"}
               </Tbtn>
             </div>
+          )}
+          {refused && !connected && (
+            <p role="alert" style={{ margin: "10px 0 0", maxWidth: 620, fontSize: 13.5, lineHeight: 1.55, color: "var(--bad)" }}>
+              {refused}
+            </p>
           )}
         </CardBody>
       </Card>

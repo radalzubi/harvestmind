@@ -8,13 +8,48 @@
  */
 import Link from "next/link";
 import { ArrowUpRight, X } from "lucide-react";
+import { ButtonLink } from "@/components/workspace/ui";
 import { describe, edgeTitle, affectedBy } from "@/lib/network/attention";
 import { EDGE_LABEL, KIND_LABEL, RISK_LABEL, STATE_LABEL, STATE_SENTENCE } from "@/lib/network/model";
 import type { NetworkEdge, NetworkNode } from "@/lib/network/model";
 import { Disclosure, Evidence, Facts, TechnicalDetails } from "@/components/workspace/ui";
+import { useEffect, useState } from "react";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money } from "@/lib/zaad/decisions";
+import { COUNT, EXTERNAL_LABEL, NUMBER, STATE_LABEL as DRAFT_STATE_LABEL, listDrafts, track, type DraftSummary } from "@/lib/zaad/product";
 import { useTwin } from "./store";
+
+/**
+ * V2: what has actually been done about this object — proposals against the supplier, their
+ * state in ZAAD and what a person recorded happened outside it. The recommendation above says
+ * what ZAAD thinks; this says what happened, and the two are never merged.
+ */
+function ExecutedActions({ supplierId }: { supplierId: string }) {
+  const [rows, setRows] = useState<DraftSummary[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    listDrafts({ supplier_id: supplierId, limit: 5, sort: "updated_at", direction: "desc" })
+      .then((r) => { if (alive) setRows(r.rows); }).catch(() => { if (alive) setRows([]); });
+    return () => { alive = false; };
+  }, [supplierId]);
+  if (!rows) return null;
+  if (!rows.length) return <p style={{ margin: 0, fontSize: 13, color: "var(--ink-500)" }}>No proposal has been raised against this supplier.</p>;
+  return (
+    <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6 }}>
+      {rows.map((d) => (
+        <li key={d.draft_id}>
+          <Link href={`/orders/${encodeURIComponent(d.draft_id)}`} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", textDecoration: "none", color: "inherit", fontSize: 13 }}>
+            <span className="chip">{DRAFT_STATE_LABEL[d.state]}</span>
+            <span style={{ fontWeight: 500, color: "var(--ink-950)" }}>{d.reference || d.draft_id.replace(/^draft_/, "")}</span>
+            <span style={{ color: "var(--ink-500)" }}>
+              {d.external_status ? `${EXTERNAL_LABEL[d.external_status]}${d.external_reference ? ` · ${d.external_reference}` : ""}` : "nothing recorded outside ZAAD"}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function Recommendations({ targetId }: { targetId: string }) {
   const { decisions } = useWorkspaceData();
@@ -29,10 +64,80 @@ function Recommendations({ targetId }: { targetId: string }) {
           <div className="dec-top">
             <span className="dec-verb" data-tone={d.verb === "KEEP" ? "keep" : "change"}>{d.verb}</span>
             <span className="dec-cat">{d.category}</span>
-            <ArrowUpRight size={14} style={{ marginInlineStart: "auto", color: "var(--ink-400)" }} aria-hidden />
+            <ArrowUpRight size={14} style={{ marginInlineStart: "auto", color: "var(--ink-500)" }} aria-hidden />
           </div>
           <h4 className="dec-h" style={{ fontSize: 14 }}>{d.headline}</h4>
         </Link>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Where a selected object leads.
+ *
+ * The twin used to be a diagram: it told you a supplier was late and left you to find it again
+ * somewhere else. Every action here opens a surface that already exists — the supplier's
+ * diagnostics, its products, its orders, a proposed order against it. Nothing here executes
+ * anything, and there is no control that implies ZAAD would contact a supplier.
+ */
+function Actions({ node, edge, index }: {
+  node: NetworkNode | null; edge: NetworkEdge | null; index: ReturnType<typeof useTwin>["index"];
+}) {
+  const links: Array<{ href: string; label: string; primary?: boolean }> = [];
+  if (node) {
+    const bare = node.id.split(":").slice(1).join(":");
+    if (node.kind === "supplier") {
+      links.push({ href: `/diagnostics/supplier/${encodeURIComponent(bare)}`, label: "Supplier diagnostics", primary: true });
+      links.push({ href: `/inventory?supplier=${encodeURIComponent(bare)}`, label: "Its products" });
+      links.push({ href: `/orders?tab=imported&poq=${encodeURIComponent(bare)}`, label: "Its orders" });
+      links.push({ href: `/orders/new?supplier=${encodeURIComponent(bare)}`, label: "Propose an order" });
+    } else if (node.kind === "dc" || node.kind === "branch") {
+      // Inventory sums stock across every site per product and offers no site filter, and the
+      // open-orders list is not per destination either — so "Stock held here" and "Arriving here"
+      // both opened a list about the whole business. The labels say what opens. Per-site stock
+      // does exist, one product at a time, in the product drawer's "Where it is".
+      links.push({ href: "/inventory", label: "Stock (all sites)", primary: true });
+      links.push({ href: "/orders?tab=imported&postate=open", label: "Open orders (all sites)" });
+    } else if (node.kind === "customer") {
+      // A customer node's id is the *planning request's* grouping key, not a customer id in the
+      // upload — on both QA workspaces it is the single aggregate "customers" — so searching the
+      // customer-orders dataset for it returned "No record matches that" from the panel's one
+      // primary action. Its channel is no better a bridge: one vault's request declares
+      // "wholesale" over 371,140 order lines whose channel column is NULL throughout, so filtering
+      // by it is a second dead link. Nothing the panel holds is guaranteed to exist in the
+      // dataset, so the link opens the orders themselves and says that is what it does; the
+      // explorer's own filters are on the page it lands on.
+      links.push({ href: "/data?dataset=customer_orders", label: "Customer orders", primary: true });
+    }
+    if (node.skus.length === 1) {
+      links.push({ href: `/inventory?sku=${encodeURIComponent(node.skus[0])}`, label: node.skus[0] });
+    }
+  } else if (edge) {
+    const from = index.nodeById.get(edge.from);
+    const to = index.nodeById.get(edge.to);
+    if (from?.kind === "supplier") {
+      const bare = from.id.split(":").slice(1).join(":");
+      links.push({ href: `/diagnostics/supplier/${encodeURIComponent(bare)}`, label: `${from.name} diagnostics`, primary: true });
+      links.push({ href: `/orders?tab=imported&poq=${encodeURIComponent(bare)}`, label: "Orders on this route" });
+    }
+    if (to?.kind === "dc" || to?.kind === "branch") {
+      links.push({ href: "/inventory", label: "What arrives here" });
+    }
+    // A button labelled "Products carried" opened Inventory filtered to ONE of them — the first —
+    // two lines below a fact reading "Products carried: 150". Inventory takes a search, not a list,
+    // so the link is only offered where it can keep its promise; the rest are named below instead.
+    if (edge.skus.length === 1) {
+      links.push({ href: `/inventory?q=${encodeURIComponent(edge.skus[0])}`, label: `Product ${edge.skus[0]}` });
+    }
+  }
+  if (!links.length) return null;
+  return (
+    <div style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
+      {links.slice(0, 4).map((l) => (
+        <ButtonLink key={l.href + l.label} size="sm" role={l.primary ? "secondary" : "tertiary"} href={l.href}>
+          {l.label}
+        </ButtonLink>
       ))}
     </div>
   );
@@ -47,14 +152,21 @@ function NodeBody({ node }: { node: NetworkNode }) {
 
   const facts = node.kind === "supplier"
     ? [
-        { label: "Delivery reliability", value: m.fill?.mean != null ? `${(m.fill.mean * 100).toFixed(1)}%` : null, note: m.fill?.n != null ? `from ${m.fill.n} deliveries` : "not enough history yet" },
-        { label: "Lead time", value: m.leadDays?.mean != null ? `${Math.round(m.leadDays.mean)} days` : null },
+        { label: "Delivery reliability", value: m.fill?.mean != null ? `${(m.fill.mean * 100).toFixed(1)}%` : null, note: m.fill?.n != null ? `from ${m.fill.n.toLocaleString("en-US")} ${m.fill.n === 1 ? "delivery" : "deliveries"}` : "not enough history yet" },
+        // This is the *mean*, and it read "Lead time 15 days" beside a diagnostics page reading
+        // "Typical lead 14 d" — the median of the same deliveries. Two numbers for what a reader
+        // calls one thing. The label now says which, and carries the spread the distribution has.
+        { label: "Average lead time", value: m.leadDays?.mean != null ? `${Math.round(m.leadDays.mean)} ${Math.round(m.leadDays.mean) === 1 ? "day" : "days"}` : null,
+          note: m.leadDays?.p90 != null ? `one in ten takes ${Math.round(m.leadDays.p90)} days or more` : undefined },
         { label: "Open orders", value: m.openPOs?.length ? String(m.openPOs.length) : "0" },
-        { label: "Weekly capacity", value: m.capacityPerWeek != null ? m.capacityPerWeek.toLocaleString("en-US") : null },
+        { label: "Weekly capacity", value: m.capacityPerWeek != null ? `${NUMBER(m.capacityPerWeek)} units` : null },
       ]
     : node.kind === "dc" || node.kind === "branch"
       ? [
-          { label: "Stock on hand", value: m.onHandUnits != null ? `${m.onHandUnits.toLocaleString("en-US")} units` : null },
+          // "31,866.25 units" three lines under a sentence reading "NORTH holds 31,866 units" —
+          // the same number at two precisions, on one screen. The engine works in continuous
+          // units; the product prints whole ones, and `describe()` already did.
+          { label: "Stock on hand", value: m.onHandUnits != null ? `${NUMBER(m.onHandUnits)} units` : null },
           { label: "Stock value", value: m.onHandValue != null ? money(m.onHandValue, currency) : null },
           { label: "Service target", value: m.serviceTarget != null ? `${(m.serviceTarget * 100).toFixed(1)}%` : null },
           { label: "Projected service", value: m.serviceProjected != null ? `${(m.serviceProjected * 100).toFixed(1)}%` : null },
@@ -79,6 +191,13 @@ function NodeBody({ node }: { node: NetworkNode }) {
       <div style={{ marginTop: 18 }}>
         <h3 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "var(--ink-950)" }}>What ZAAD recommends here</h3>
         <Recommendations targetId={node.id} />
+        {node.kind === "supplier" && (
+          <div style={{ marginTop: 14 }}>
+            <h3 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "var(--ink-950)" }}>What has been done</h3>
+            <ExecutedActions supplierId={node.id.split(":").slice(1).join(":")} />
+          </div>
+        )}
+        <Actions node={node} edge={null} index={index} />
       </div>
 
       <div style={{ marginTop: 16 }}>
@@ -87,7 +206,7 @@ function NodeBody({ node }: { node: NetworkNode }) {
             <dl className="evid">
               {m.openPOs!.map((po) => (
                 <div className="evid-row" key={po.id}>
-                  <dt>{po.id}</dt>
+                  <dt><Link href={`/orders?po=${encodeURIComponent(po.id)}`}>{po.id}</Link></dt>
                   <dd>
                     {po.units.toLocaleString("en-US")} units{po.sku ? ` of ${po.sku}` : ""}
                     {po.due ? `, due ${po.due}` : ""}
@@ -134,8 +253,11 @@ function EdgeBody({ edge }: { edge: NetworkEdge }) {
       </p>
       <div style={{ marginTop: 14 }}>
         <Facts items={[
-          { label: "Usual transit", value: edge.leadDays.normal != null ? `${edge.leadDays.normal} days` : null },
-          { label: "Capacity", value: edge.capacityPerWeek != null ? `${edge.capacityPerWeek.toLocaleString("en-US")} / week` : null },
+          { label: "Usual transit", value: edge.leadDays.normal != null ? `${edge.leadDays.normal} ${edge.leadDays.normal === 1 ? "day" : "days"}` : null },
+          // Every other unit figure in the product prints whole units; this one printed the
+          // engine's continuous number, so a lane read "34,344.808 / week" — a precision nobody
+          // declared and nobody can act on.
+          { label: "Capacity", value: edge.capacityPerWeek != null ? `${NUMBER(edge.capacityPerWeek)} units / week` : null },
           { label: "Cost per unit", value: edge.transportCostPerUnit != null ? money(edge.transportCostPerUnit, currency) : null },
           { label: "Products carried", value: edge.skus.length ? String(edge.skus.length) : null },
         ]} />
@@ -144,9 +266,15 @@ function EdgeBody({ edge }: { edge: NetworkEdge }) {
       <div style={{ marginTop: 18 }}>
         <h3 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "var(--ink-950)" }}>What ZAAD recommends here</h3>
         <Recommendations targetId={edge.id} />
+        <Actions node={null} edge={edge} index={index} />
       </div>
 
       <div style={{ marginTop: 16 }}>
+        {edge.skus.length > 1 && (
+          <Disclosure summary="Products carried" hint={COUNT(edge.skus.length, "product")}>
+            <p style={{ margin: 0, lineHeight: 1.7 }}>{edge.skus.join(", ")}</p>
+          </Disclosure>
+        )}
         {edge.missing?.length ? (
           <Disclosure summary="What ZAAD does not know here" hint={`${edge.missing.length}`}>
             <ul style={{ margin: 0, paddingInlineStart: 18 }}>
@@ -163,6 +291,10 @@ function EdgeBody({ edge }: { edge: NetworkEdge }) {
 export function IntelligencePanel() {
   const { state, index, select, model } = useTwin();
   const selection = state.selection;
+  // Before any early return, so the hook order is the same on every render.
+  useEffect(() => {
+    if (selection) track("network_object_opened", { node: selection.id, kind: selection.type });
+  }, [selection]);
 
   if (!selection) {
     return (

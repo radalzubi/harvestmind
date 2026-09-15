@@ -92,9 +92,16 @@ export interface ZaadBuild {
   origin_monday?: string;
   rows_read?: Record<string, number>;
   compact?: Record<string, number>;
-  /** Fitted supplier reliability, keyed by supplier id. */
+  /**
+   * Fitted supplier reliability, keyed by supplier id.
+   *
+   * The field is `fill_mean`, not `fill`. An earlier version of this file declared `fill`, which
+   * no response has ever carried: every read of it was `undefined`, so supplier reliability
+   * silently never reached the Network Twin's risk scoring or the Data page. The names below are
+   * copied from a live `/request/from-workspace` response and pinned by a contract test.
+   */
   fits?: Record<string, {
-    fill?: number; fill_sd?: number; lead_days?: number; lead_sd_days?: number;
+    fill_mean?: number; fill_sd?: number; lead_days?: number; lead_sd_days?: number;
     sample_size?: number; provenance?: string; lead_provenance?: string;
   }>;
   incumbent_rule?: { rule?: string | null; provenance?: string };

@@ -21,7 +21,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from api.dependencies import rate_limiter, require_operator
+from api.dependencies import rate_limiter, require_actor, require_operator
 from api.routers.admin import require_admin
 from infrastructure.mailer import configured as mail_configured, send_email
 from infrastructure.operator_registry import OperatorNotFoundError, OperatorRegistry
@@ -92,7 +92,7 @@ def request_access(req: AccessRequest):
 
 
 @router.get("/me")
-def me(authed: str | None = Depends(require_operator)):
+def me(authed: str | None = Depends(require_operator), actor=Depends(require_actor)):
     if not authed:
         raise HTTPException(401, "operator token required")
     registry = OperatorRegistry()
@@ -100,9 +100,28 @@ def me(authed: str | None = Depends(require_operator)):
         rec = registry.get_operator(authed)
     except OperatorNotFoundError:
         raise HTTPException(404, "unknown operator")
+    from api.product.governance import settings as workspace_settings
+    policy = None
+    try:
+        from infrastructure.db_manager import DBManager
+        dbm = DBManager(registry)
+        conn = dbm.get_operator_connection(authed)
+        try:
+            from api.product.drafts import ensure_tables
+            ensure_tables(conn)
+            policy = workspace_settings(conn, authed)
+        finally:
+            dbm.close_all()
+    except Exception:  # noqa: BLE001 - a vault that cannot be prepared still answers who you are
+        policy = None
     return {"operator_id": rec.operator_id, "name": rec.name, "sector": getattr(rec, "sector", "produce"),
             "display_name": getattr(rec, "display_name", None) or rec.name, "logo_url": getattr(rec, "logo_url", None),
-            "region": rec.region, "created_at": rec.created_at, "upload_count": rec.upload_count}
+            "region": rec.region, "created_at": rec.created_at, "upload_count": rec.upload_count,
+            # Operating Product V2: the acting person, their role and what it grants. The interface
+            # reads its capability seam from here instead of a constant.
+            "actor": {"id": actor.actor_id, "name": actor.name, "role": actor.role} if actor else None,
+            "capabilities": sorted(actor.capabilities) if actor else [],
+            "policy": policy}
 
 
 @router.get("/admin/access-requests", dependencies=[Depends(require_admin)])

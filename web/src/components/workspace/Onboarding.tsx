@@ -21,7 +21,7 @@ export function Onboarding() {
     <>
       <EmptyState
         title={step ? step.title : "Almost ready"}
-        actions={<ButtonLink href="/data" role="primary" size="lg">Add this data</ButtonLink>}
+        actions={<ButtonLink href="/upload" role="primary" size="lg">Add this data</ButtonLink>}
       >
         {step ? step.detail : notReady ?? "ZAAD has what it needs and will plan on your next visit."}
       </EmptyState>

@@ -102,6 +102,17 @@ export function statusLine(areas: AttentionArea[]): { headline: string; detail: 
   return { headline: "Everything looks normal", detail: null, tone: "ok" };
 }
 
+/**
+ * "1 SKU depend on this supplier" — the count agrees and the verb does not.
+ *
+ * Every one of these sentences is assembled from a list whose length is usually more than one, so
+ * the plural was written once and never revisited. The subject is singular only when the list has
+ * a single entry and that entry is itself singular.
+ */
+function dependVerb(counts: number[]): string {
+  return counts.length === 1 && counts[0] <= 1 ? "depends" : "depend";
+}
+
 /** One paragraph a person could read aloud, from the fields that exist. */
 export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkIndex): string {
   const a = affectedBy(ref, model, index);
@@ -113,12 +124,21 @@ export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkI
     const standing = e.risk.level === "critical" ? "is severely disrupted" : e.risk.level === "high" ? "is disrupted" : e.risk.level === "medium" ? "is showing early signs of strain" : "is running normally";
     parts.push(`The lane from ${from} to ${to} ${standing}${e.risk.reasons[0] && e.risk.level !== "low" ? `: ${lower(e.risk.reasons[0])}` : ""}.`);
     if (e.leadDays.current != null && e.leadDays.normal != null && e.leadDays.current !== e.leadDays.normal)
-      parts.push(`Transit is taking ${e.leadDays.current} days against a usual ${e.leadDays.normal}.`);
+      parts.push(`Transit is taking ${e.leadDays.current} ${e.leadDays.current === 1 ? "day" : "days"} against a usual ${e.leadDays.normal}.`);
     const ships = model.shipments.filter((s) => s.edgeId === e.id);
     const delayed = ships.filter((s) => s.status === "delayed");
     if (delayed.length) parts.push(`${delayed.length === 1 ? "One shipment is" : `${delayed.length} shipments are`} delayed (${list(delayed.map((s) => `${s.ref}, ${n(s.units)} units`), 2)}).`);
     else if (ships.length) parts.push(`${ships.length === 1 ? "One shipment is" : `${ships.length} shipments are`} on the way.`);
-    if (a.skus.length || a.customers.length) parts.push(`${a.skus.length ? `${a.skus.length} SKU${a.skus.length === 1 ? "" : "s"}` : "Stock"}${a.customers.length ? ` and ${a.customers.length} customer${a.customers.length === 1 ? "" : " groups"}` : ""} depend on this lane.`);
+    if (a.skus.length || a.customers.length) {
+      // "Stock" stands in when no product is named, and it is singular; so is one SKU.
+      const subjects = [a.skus.length ? `${a.skus.length} SKU${a.skus.length === 1 ? "" : "s"}` : "Stock"];
+      const counts = [a.skus.length || 1];
+      if (a.customers.length) {
+        subjects.push(`${a.customers.length} customer group${a.customers.length === 1 ? "" : "s"}`);
+        counts.push(a.customers.length);
+      }
+      parts.push(`${subjects.join(" and ")} ${dependVerb(counts)} on this lane.`);
+    }
     const alt = e.alternatives.map((id) => index.edgeById.get(id)).find(Boolean);
     if (alt) parts.push(`${alt.name.replace(/ \(alternative\)$/i, "")} is approved as an alternative${alt.leadDays.normal != null && e.leadDays.normal != null ? ` (${alt.leadDays.normal - e.leadDays.normal >= 0 ? "+" : ""}${alt.leadDays.normal - e.leadDays.normal} days)` : ""}.`);
     return parts.join(" ");
@@ -131,9 +151,10 @@ export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkI
     const standing = x.risk.level === "critical" ? "is at risk of failing to deliver" : x.risk.level === "high" ? "is delivering less reliably than usual" : x.risk.level === "medium" ? "is showing early signs of strain" : "is delivering reliably";
     parts.push(`${x.name} ${standing}${reason}.`);
     const deps: string[] = [];
-    if (m.openPOs?.length) deps.push(`${m.openPOs.length} open order${m.openPOs.length === 1 ? "" : "s"}`);
-    if (x.skus.length) deps.push(`${x.skus.length} SKU${x.skus.length === 1 ? "" : "s"}`);
-    if (deps.length) parts.push(`${deps.join(" and ")} depend on this supplier.`);
+    const depCounts: number[] = [];
+    if (m.openPOs?.length) { deps.push(`${m.openPOs.length} open order${m.openPOs.length === 1 ? "" : "s"}`); depCounts.push(m.openPOs.length); }
+    if (x.skus.length) { deps.push(`${x.skus.length} SKU${x.skus.length === 1 ? "" : "s"}`); depCounts.push(x.skus.length); }
+    if (deps.length) parts.push(`${deps.join(" and ")} ${dependVerb(depCounts)} on this supplier.`);
     const late = m.openPOs?.filter((po) => po.status === "late") ?? [];
     if (late.length) parts.push(`${late.length === 1 ? `${late[0].id} is` : `${late.length} orders are`} already late.`);
     const alts = (x.alternatives ?? []).map((id) => index.nodeById.get(id)).filter((y): y is NetworkNode => !!y);
@@ -154,10 +175,14 @@ export function describe(ref: SelectionRef, model: NetworkModel, index: NetworkI
     return parts.join(" ");
   }
   if (x.kind === "dc" || x.kind === "branch") {
-    parts.push(`${x.name}${m.onHandUnits != null ? ` holds ${n(m.onHandUnits)} units${m.onHandValue != null ? ` (about $${n(Math.round(m.onHandValue))})` : ""}` : ""}${m.inboundUnits != null ? `, with ${n(m.inboundUnits)} on the way` : ""}.`);
-    if (m.shortages?.length) parts.push(`${list(m.shortages.map((s) => `${shortName(s.sku)} runs short ${s.when}`), 2)}.`);
+    // The `$` here was hard-coded, three lines from a facts row printing the same number through
+    // the workspace's own currency. The model carries the currency now; nothing assumes one.
+    parts.push(`${x.name}${m.onHandUnits != null ? ` holds ${n(m.onHandUnits)} units${m.onHandValue != null ? ` (about ${model.currency} ${n(Math.round(m.onHandValue))})` : ""}` : ""}${m.inboundUnits != null ? `, with ${n(m.inboundUnits)} on the way` : ""}.`);
+    // "QA-001209 runs short no replenishment route" — the clause is written by whoever knows what
+    // the flag means, not assembled from a verb this file guesses at.
+    if (m.shortages?.length) parts.push(`${list(m.shortages.map((s) => `${shortName(s.sku)} ${s.said}`), 2)}.`);
     if (m.serviceProjected != null && m.serviceTarget != null) parts.push(`Service is projected at ${pct(m.serviceProjected, 1)} against a ${pct(m.serviceTarget, 1)} target${m.serviceProjected < m.serviceTarget ? ", below where it should be" : ""}.`);
-    if (m.excess?.length) parts.push(`${list(m.excess.map((s) => `${shortName(s.sku)} has ${s.weeksOfCover} weeks of cover`), 2)}.`);
+    if (m.excess?.length) parts.push(`${list(m.excess.map((s) => `${shortName(s.sku)} has ${s.weeksOfCover} ${s.weeksOfCover === 1 ? "week" : "weeks"} of cover`), 2)}.`);
     // The service sentence above may already be the risk reason; do not say it twice.
     const reasonSaid = x.risk.reasons[0] && parts.some((p) => p.toLowerCase().includes("service is projected"));
     if (x.risk.level !== "low" && x.risk.reasons[0] && !reasonSaid) parts.push(`${x.risk.reasons[0]}.`.replace(/\.\.$/, "."));
