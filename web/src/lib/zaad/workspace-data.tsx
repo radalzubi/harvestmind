@@ -20,6 +20,7 @@ import {
   ALL_PHASES, fetchDirectory, fetchWorkspaceState, fetchWorkspaceStateFor,
   listPlanJobs, readPlanJob, submitPlanJob, type JobSummary,
 } from "./client";
+import { queueAheadOf } from "./queue";
 import { fetchEvaluationJobIds, fetchInventory, fetchSummary } from "./product";
 import { buildDecisions, planSummary, type Decision, type PlanSummary } from "./decisions";
 import type { DirectoryResponse, ZaadBuild, ZaadReport, ZaadRequest } from "./types";
@@ -80,6 +81,8 @@ export interface WorkspaceData {
    */
   degraded: string | null;
   planPhase: PlanPhase;
+  /** While queued: how many runs are ahead of this one (0 = next to start), or null when unknown. */
+  queueAhead: number | null;
   /** Set when the workspace cannot be planned yet — missing uploads, in the server's own words. */
   notReady: string | null;
   error: string | null;
@@ -172,6 +175,7 @@ const SCOPE_RULE = "every product with a declared order change, then the product
 /** A minute past the time the engine gave the run. Long enough that a slow clock is not the cause. */
 export const ABANDONED_GRACE_MS = 60_000;
 
+
 export const ABANDONED_MESSAGE =
   "This run has been going for longer than the time it is given, which usually means it was "
   + "interrupted. Nothing was changed. Run it again, over fewer products if it keeps happening.";
@@ -211,6 +215,7 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
   const session = useSession();
   const [phase, setPhase] = useState<ReadPhase>("idle");
   const [planPhase, setPlanPhase] = useState<PlanPhase>("none");
+  const [queueAhead, setQueueAhead] = useState<number | null>(null);
   const [notReady, setNotReady] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [planError, setPlanError] = useState<string | null>(null);
@@ -354,8 +359,8 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
       try {
         const detail = await readPlanJob(jobId);
         if (!alive.current) return;
-        if (detail.status === "RUNNING") setPlanPhase("running");
-        if (detail.status === "QUEUED") setPlanPhase("queued");
+        if (detail.status === "RUNNING") { setPlanPhase("running"); setQueueAhead(null); }
+        if (detail.status === "QUEUED") { setPlanPhase("queued"); setQueueAhead(queueAheadOf(detail)); }
         if (abandoned(detail)) {
           if (poll.current) window.clearInterval(poll.current);
           poll.current = null;
@@ -431,13 +436,13 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
         })
       : null;
     return {
-      phase, planPhase, notReady, error, planError, degraded,
+      phase, planPhase, queueAhead, notReady, error, planError, degraded,
       request, build, report, directory, decisions, summary, network,
       index: network ? buildIndex(network) : null,
       scope, readScope, lastRunFailed, computedAt, planJobId, run,
       refresh: () => setTick((t) => t + 1),
     };
-  }, [phase, planPhase, notReady, error, planError, degraded, request, build, report, directory, scope, readScope, lastRunFailed, computedAt, planJobId, run, session.workspace]);
+  }, [phase, planPhase, queueAhead, notReady, error, planError, degraded, request, build, report, directory, scope, readScope, lastRunFailed, computedAt, planJobId, run, session.workspace]);
 
   return <WorkspaceDataContext.Provider value={value}>{children}</WorkspaceDataContext.Provider>;
 }

@@ -103,6 +103,10 @@ export interface JobDetail extends JobSummary {
   report: ZaadReport | null;
   error: string | null;
   timeout_s: number;
+  /** QUEUED only: 1 means the next to start. The planner runs one solve at a time, in submission order. */
+  queue_position?: number | null;
+  /** QUEUED only: how many solves currently hold the planner ahead of the queue. */
+  running_now?: number;
 }
 
 /** The workspace's own plans. An evaluation's runs carry another purpose and are never listed here. */

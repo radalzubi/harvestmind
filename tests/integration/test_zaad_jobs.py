@@ -95,3 +95,62 @@ def test_timeout_terminates_the_worker(tmp_path):
         store.get(identity, "other")
     with pytest.raises(QuotaExceeded):
         JobRunner(store, workers=1, active_quota=5, daily_quota=1, max_timeout_s=5).submit("tenant", req)
+
+
+def test_a_synchronous_plan_is_refused_while_a_job_holds_the_solver_lease(clients, monkeypatch):
+    """The synchronous planner and the job runner share one lease: while a job's solver process
+    is alive, /plan answers 429 planner_busy instead of starting a second solve beside it."""
+    import threading
+
+    import api.routers.zaad_full as zf
+
+    class Proc:
+        def __init__(self, done):
+            self.done = done
+
+        def is_alive(self):
+            return not self.done.is_set()
+
+        def terminate(self):
+            self.done.set()
+
+        def join(self, timeout=None):
+            return None
+
+    class Pipe:
+        def __init__(self, done):
+            self.done = done
+
+        def poll(self, timeout=0.):
+            return self.done.wait(timeout)
+
+        def recv(self):
+            return ("DONE", "{}", None)
+
+    done = threading.Event()
+    monkeypatch.setattr(JobRunner, "_launch", lambda self, request_json: (Proc(done), Pipe(done)))
+    cl, ha, _, op_a, _ = clients
+    req = example("normal", seed=33004).model_dump(mode="json")
+    req["operator_id"] = op_a
+    headers = {**ha, "Content-Type": "application/json"}
+    job = cl.post("/api/zaad/network/jobs", headers=headers, json=req)
+    assert job.status_code == 202, job.text
+    job_id = job.json()["job_id"]
+    deadline = time.time() + 5
+    while time.time() < deadline and cl.get(f"/api/zaad/network/jobs/{job_id}", headers=ha).json()["status"] != "RUNNING":
+        time.sleep(0.05)
+    assert cl.get(f"/api/zaad/network/jobs/{job_id}", headers=ha).json()["status"] == "RUNNING"
+    busy = cl.post("/api/zaad/network/plan", headers=headers, json=req)
+    assert busy.status_code == 429, busy.text
+    assert busy.json()["detail"]["code"] == "planner_busy"
+    # a second job queues behind it and says so
+    second = cl.post("/api/zaad/network/jobs", headers=headers, json=req)
+    assert second.status_code == 202
+    waiting = cl.get(f"/api/zaad/network/jobs/{second.json()['job_id']}", headers=ha).json()
+    assert waiting["status"] == "QUEUED" and waiting["queue_position"] == 1 and waiting["running_now"] == 1
+    done.set()
+    _wait(cl, ha, job_id)
+    _wait(cl, ha, second.json()["job_id"])
+    finished = cl.get(f"/api/zaad/network/jobs/{second.json()['job_id']}", headers=ha).json()
+    assert finished["status"] == "DONE" and "queue_position" not in finished
+    zf.runner().shutdown()

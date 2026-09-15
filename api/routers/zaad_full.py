@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 import threading
-from typing import Literal
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request as HTTPRequest
 from pydantic import Field, ValidationError, model_validator
@@ -154,9 +154,22 @@ async def payload(request: HTTPRequest) -> Request:
     return result
 
 
+def _take_lease() -> Any:
+    """The solver lease for a synchronous plan: the job runner's when a job store is configured,
+    so a synchronous solve never runs beside a job or overtakes a queued one; otherwise this
+    process's own single slot. Returns the release callable, or None when busy."""
+    if os.getenv("ZAAD_JOB_STORE"):
+        run = runner()
+        return run.release_lease if run.try_lease() else None
+    return _slots.release if _slots.acquire(blocking=False) else None
+
+
 async def compute(req):
-    if not _slots.acquire(blocking=False):
-        raise HTTPException(429, "Network planner busy; retry shortly.")
+    release = _take_lease()
+    if release is None:
+        raise HTTPException(429, {"code": "planner_busy", "message":
+                                  "A planning run is in progress on this service; the planner runs one at a time. "
+                                  "Retry shortly, or submit the request to /api/zaad/network/jobs to queue it."})
     try:
         if req.transfers or len(req.locations) > 1:
             # a network request: the frozen decision plus the P2 network block (accounting, explanations)
@@ -167,7 +180,7 @@ async def compute(req):
                 raise HTTPException(422, {"code": "network_refused", "message": str(exc)}) from exc
         return await run_in_threadpool(plan, req)
     finally:
-        _slots.release()
+        release()
 
 
 @router.get("/schema")
@@ -426,10 +439,19 @@ def list_jobs(operator: str = Depends(authenticated),
 
 @router.get("/jobs/{job_id}")
 def read_job(job_id: str, operator: str = Depends(authenticated)):
+    """One job. A QUEUED job also says where it stands: `queue_position` 1 is the next to start
+    (the planner runs one solve at a time, in submission order), and `running_now` is how many
+    solves hold a lease ahead of the queue."""
+    run = runner()
     try:
-        return runner().store.get(job_id, operator)
+        job = run.store.get(job_id, operator)
     except KeyError as exc:
         raise HTTPException(404, "Job not found") from exc
+    if job["status"] == "QUEUED":
+        leases = run.leases()
+        job["queue_position"] = run.queue_position(job_id)
+        job["running_now"] = leases["held"]
+    return job
 
 
 @router.delete("/jobs/{job_id}", dependencies=[Depends(bounded_rate)])
