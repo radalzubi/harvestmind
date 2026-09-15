@@ -386,3 +386,25 @@ frozen regression on the checkpoint are recorded in the next section.
 history) and M7 (data readiness) are V2 work by design and are addressed there; L1–L5 are recorded.
 
 **V1 AUDITED CHECKPOINT:** *recorded in the commit that follows this one* — see §6.
+
+## 6. Gates on the checkpoint tree
+
+The corrective commits, plus `39d4a57` (the two follow-ups the whole suite found: a request's
+connection counts its own close; a job created without a runner keeps a lease) and `7811090`
+(this document and the corrected V1 record).
+
+| gate | result |
+|---|---|
+| whole backend suite, `python3 -m pytest tests/ -q -p no:randomly` | **2,134 passed, 2 skipped** in 387 s — 2,105 before this audit, 29 new tests, none removed |
+| frozen canonical regression, `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` | **CANONICAL REGRESSION PASS** — every P1 arm identical over 12 reviews; P0 cell 15 (router_cycle) identical, every review protection-owned |
+| `ruff check` over the changed trees | clean |
+| `mypy` at CI's scope | *Success: no issues found in 146 source files* |
+| frontend `tsc --noEmit` | clean |
+| frontend `npm test` | 129 passed |
+| frontend `eslint` | no errors |
+| frontend `npm run build` | green |
+| `zaad/` files in the diff since the Opus head | `zaad/full/jobs.py` only — job infrastructure, no planner call changed |
+
+**V1 AUDITED CHECKPOINT: the SHA is written in the commit after this one and in PR #81's
+description.** Not merged. V2 continues on the same branch so that one exact-head merge carries
+the whole product.
