@@ -53,14 +53,15 @@ def coupling(request) -> dict:
         by_supplier[src.supplier].append(src.sku)
     for group in by_resource.values():
         for a in group[1:]:
-            union(group[0], a); edges["shared supplier capacity resource"] += 1
+            union(group[0], a)
+            edges["shared supplier capacity resource"] += 1
     terms = {t.supplier for t in getattr(request, "supplier_terms", ()) or ()}
     for sup, group in by_supplier.items():
         if sup in terms:
             for a in group[1:]:
-                union(group[0], a); edges["order-level supplier terms (minimum order value / fixed order cost)"] += 1
-    for t in getattr(request, "transfers", ()) or ():
-        pass  # a lane is per product in the released contract; it couples sites, not products
+                union(group[0], a)
+                edges["order-level supplier terms (minimum order value / fixed order cost)"] += 1
+    # a lane is per product in the released contract: it couples sites, not products, so it adds no edge here
     comps: dict[str, list[str]] = defaultdict(list)
     for s in skus:
         comps[find(s)].append(s)
