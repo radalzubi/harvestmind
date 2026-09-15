@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-import duckdb
 from fastapi import Depends, Header, HTTPException, Request
 
 
@@ -176,11 +175,13 @@ def get_conn(
     """
     op = _resolve_operator(operator_id, authed)
     if op is None:
-        conn = duckdb.connect(get_db_path())
+        from infrastructure.db_manager import release_cursor, vault_cursor
+        conn, key = vault_cursor(get_db_path())
         try:
             yield conn
         finally:
             conn.close()
+            release_cursor(key)
         return
     from infrastructure.db_manager import DBManager
     from infrastructure.operator_registry import (
@@ -205,11 +206,15 @@ def get_readonly_conn(
     operator is resolved, else the root DB)."""
     op = _resolve_operator(operator_id, authed)
     if op is None:
-        conn = duckdb.connect(get_db_path(), read_only=True)
+        # One instance per file for the whole process (see infrastructure/db_manager.py): a
+        # read-only open beside a read-write one is refused by DuckDB, so this shares the anchor.
+        from infrastructure.db_manager import release_cursor, vault_cursor
+        conn, key = vault_cursor(get_db_path())
         try:
             yield conn
         finally:
             conn.close()
+            release_cursor(key)
         return
     from infrastructure.db_manager import DBManager
     from infrastructure.operator_registry import (

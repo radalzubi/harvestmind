@@ -9,36 +9,159 @@ get_cross_operator_connection — read-only, requires a stated purpose
 (logged to data/registry/cross_access_log.jsonl), and is used solely by
 the pool contribution pipeline. The diagnostic and the optimizer never
 touch it.
+
+One database instance per file, for the life of the process
+------------------------------------------------------------
+Every request used to open its own ``duckdb.connect(path)`` and close it
+afterwards. DuckDB keeps one instance per file in a process-wide cache
+and destroys it when the last connection closes — so when request A's
+connection was the last one open and closed while request B was connecting
+to the same vault, B missed the cache, tried to attach the file a second
+time and failed with ``Binder Error: Unique file handle conflict``. That
+is a 500 on an ordinary page load whenever two requests to one workspace
+overlap, and it was observed three times in one browsing session and
+reproduced at 712 failures in ten seconds under a small thread storm.
+
+So the process now holds one long-lived *anchor* connection per vault
+path and serves every request a ``cursor()`` on it: a cursor is its own
+connection (its own transaction), but it shares the anchor's instance, so
+the file is attached exactly once and never re-attached. Anchors are
+never closed while a cursor is open on them (a cursor does not survive its
+parent), and their number is bounded so a process that has seen many
+vaults does not hold every file for ever.
 """
 
 from __future__ import annotations
 
 import json
+import os
+import threading
+import time
 from datetime import datetime, timezone
+from pathlib import Path
 
 import duckdb
 
 from infrastructure.operator_registry import OperatorRegistry
 
+#: An anchor that has gone idle is checkpointed no more often than this. DuckDB checkpoints on
+#: its own once the WAL is large, and on a clean close; neither happens to a connection held open
+#: for the life of the process, so the write-ahead log would otherwise carry every write until a
+#: threshold — and a crash would have to replay all of it. A checkpoint of an unchanged file costs
+#: about a millisecond, so idle moments are the right time.
+CHECKPOINT_INTERVAL_S = float(os.getenv("HARVESTMIND_VAULT_CHECKPOINT_SECONDS", "2"))
+
+#: How many vault files this process keeps attached at once. Beyond it, the least recently used
+#: anchor with no open cursor is closed. A deployment serves a handful of operators; 64 is a bound,
+#: not a target.
+MAX_ANCHORS = int(os.getenv("HARVESTMIND_VAULT_ANCHORS", "64"))
+
+_ANCHOR_LOCK = threading.Lock()
+_ANCHORS: dict[str, duckdb.DuckDBPyConnection] = {}
+_LIVE: dict[str, int] = {}          # open cursors per anchor
+_LAST_USED: dict[str, float] = {}   # monotonic, for eviction order
+_LAST_CHECKPOINT: dict[str, float] = {}
+
+
+def _key(path: str | Path) -> str:
+    return str(Path(path).resolve())
+
+
+def _evict_idle_locked() -> None:
+    """Close the least recently used anchors that have no cursor open, down to the bound."""
+    while len(_ANCHORS) >= MAX_ANCHORS:
+        idle = sorted((k for k in _ANCHORS if _LIVE.get(k, 0) <= 0), key=lambda k: _LAST_USED.get(k, 0.0))
+        if not idle:
+            return  # every anchor is in use; exceeding the bound beats closing a live file
+        victim = idle[0]
+        try:
+            _ANCHORS.pop(victim).close()
+        except Exception:  # noqa: BLE001  a file that would not close is still not in the map
+            pass
+        _LIVE.pop(victim, None)
+        _LAST_USED.pop(victim, None)
+
+
+def vault_cursor(path: str | Path) -> tuple[duckdb.DuckDBPyConnection, str]:
+    """A connection to ``path`` that shares the process's single instance of that file.
+
+    Returns the cursor and the anchor key; pass the key to :func:`release_cursor` after closing
+    the cursor so the anchor knows it is idle again. Used by :class:`DBManager` and by the two
+    places that open the legacy root database, so no code path opens a file a second way.
+    """
+    key = _key(path)
+    with _ANCHOR_LOCK:
+        anchor = _ANCHORS.get(key)
+        if anchor is None:
+            _evict_idle_locked()
+            anchor = duckdb.connect(key)
+            _ANCHORS[key] = anchor
+        _LIVE[key] = _LIVE.get(key, 0) + 1
+        _LAST_USED[key] = time.monotonic()
+        cursor = anchor.cursor()
+    return cursor, key
+
+
+def release_cursor(key: str) -> None:
+    """A request has closed its cursor. When the anchor is idle, fold the WAL into the file."""
+    anchor = None
+    with _ANCHOR_LOCK:
+        if key in _LIVE:
+            _LIVE[key] = max(0, _LIVE[key] - 1)
+        now = time.monotonic()
+        if _LIVE.get(key, 0) == 0 and now - _LAST_CHECKPOINT.get(key, 0.0) >= CHECKPOINT_INTERVAL_S:
+            anchor = _ANCHORS.get(key)
+            _LAST_CHECKPOINT[key] = now
+    if anchor is not None:
+        try:
+            anchor.execute("CHECKPOINT")
+        except Exception:  # noqa: BLE001 - a transaction opened meanwhile; the next idle moment checkpoints
+            pass
+
+
+def checkpoint_all() -> int:
+    """Checkpoint every idle anchor now — for a clean shutdown. Returns how many were written."""
+    written = 0
+    with _ANCHOR_LOCK:
+        idle = [(k, a) for k, a in _ANCHORS.items() if _LIVE.get(k, 0) == 0]
+    for key, anchor in idle:
+        try:
+            anchor.execute("CHECKPOINT")
+            written += 1
+        except Exception:  # noqa: BLE001
+            pass
+    return written
+
+
+def anchored_files() -> list[str]:
+    """The files this process currently holds open — for tests and diagnostics."""
+    with _ANCHOR_LOCK:
+        return sorted(_ANCHORS)
+
 
 class DBManager:
     def __init__(self, registry: OperatorRegistry | None = None) -> None:
         self.registry = registry or OperatorRegistry()
-        self._open: list[duckdb.DuckDBPyConnection] = []
+        self._open: list[tuple[duckdb.DuckDBPyConnection, str | None]] = []
 
     # ── single-operator access ───────────────────────────────────────────
 
     def get_operator_connection(self, operator_id: str) -> duckdb.DuckDBPyConnection:
+        """A cursor on the process's anchor for this operator's vault (see the module docstring)."""
         path = self.registry.get_db_path(operator_id)
-        conn = duckdb.connect(str(path))
-        self._open.append(conn)
+        conn, key = vault_cursor(path)
+        self._open.append((conn, key))
         return conn
 
     def get_read_only_connection(self, operator_id: str) -> duckdb.DuckDBPyConnection:
-        path = self.registry.get_db_path(operator_id)
-        conn = duckdb.connect(str(path), read_only=True)
-        self._open.append(conn)
-        return conn
+        """The same cursor as above.
+
+        DuckDB refuses to open one file read-only while the process holds it read-write, so a
+        separate read-only instance is not possible without giving the race back. Read-only intent
+        is a convention of the caller; the isolation this method provides — one operator's vault
+        and no other — is unchanged.
+        """
+        return self.get_operator_connection(operator_id)
 
     # ── the ONLY multi-operator path ─────────────────────────────────────
 
@@ -68,7 +191,7 @@ class DBManager:
         for oid, path in paths.items():
             conn.execute(
                 f"ATTACH '{path}' AS {oid} (READ_ONLY)")
-        self._open.append(conn)
+        self._open.append((conn, None))
 
         log_dir = self.registry.registry_dir
         log_dir.mkdir(parents=True, exist_ok=True)
@@ -81,9 +204,11 @@ class DBManager:
         return conn
 
     def close_all(self) -> None:
-        for c in self._open:
+        for c, key in self._open:
             try:
                 c.close()
             except Exception:  # noqa: BLE001
                 pass
+            if key is not None:
+                release_cursor(key)
         self._open = []

@@ -25,27 +25,29 @@ def training_corpus_stats():
 @router.get("/status")
 def training_status(conn=None):
     """Admin: model versions, last retrains, data-to-next-retrain, pool size."""
-    import duckdb
     from api.dependencies import get_db_path
+    from infrastructure.db_manager import release_cursor, vault_cursor
     from training.retraining_scheduler import RetrainingScheduler
 
-    conn = duckdb.connect(get_db_path(), read_only=True)
+    conn, key = vault_cursor(get_db_path())
     try:
         return RetrainingScheduler().get_training_status(conn).model_dump()
     finally:
         conn.close()
+        release_cursor(key)
 
 
 @router.post("/retrain")
 def run_retrains():
     """Admin: manual scheduled-retrain pass (each model keeps its own
     validation gate; nothing deploys without beating its incumbent)."""
-    import duckdb
     from api.dependencies import get_db_path
+    from infrastructure.db_manager import release_cursor, vault_cursor
     from training.retraining_scheduler import RetrainingScheduler
 
-    conn = duckdb.connect(get_db_path())
+    conn, key = vault_cursor(get_db_path())
     try:
         return RetrainingScheduler().run_all_scheduled_retrains(conn)
     finally:
         conn.close()
+        release_cursor(key)
