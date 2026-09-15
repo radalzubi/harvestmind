@@ -22,6 +22,7 @@ import {
   AMENDMENT_LABEL, createDraft, fetchImportedOrder, fetchSku,
   type AmendmentAction, type DraftLine,
 } from "@/lib/zaad/product";
+import { proposalFromDecision } from "@/lib/zaad/bulk";
 
 const AMENDMENTS: AmendmentAction[] = ["DEFER", "EXPEDITE", "REDUCE", "CANCEL", "SPLIT", "KEEP"];
 
@@ -49,6 +50,19 @@ function NewOrderBody() {
 
   const locations = useMemo(() => (request?.locations ?? []).map((l) => l.id), [request]);
   const decision = useMemo(() => decisions.find((d) => d.id === decisionId) ?? null, [decisions, decisionId]);
+  // The quantities ZAAD recommended, through the same rule bulk creation uses; a decision that
+  // cannot become lines without guessing says why instead of leaving the form silently empty.
+  const fromDecision = useMemo(() => decision ? proposalFromDecision(decision) : null, [decision]);
+  const [prefilled, setPrefilled] = useState(false);
+  useEffect(() => {
+    if (!fromDecision || prefilled || amendPo || prefillSku) return;
+    if ("group" in fromDecision) {
+      const g = fromDecision.group;
+      setLines(g.lines.map((l) => ({ sku: l.sku, quantity: l.quantity, unit_price: l.unit_price, units_per_case: l.units_per_case })));
+      setHeader((h) => ({ ...h, supplier_id: h.supplier_id || g.supplier_id, destination_id: h.destination_id || (g.destination_id ?? "") }));
+    }
+    setPrefilled(true);
+  }, [fromDecision, prefilled, amendPo, prefillSku]);
 
   // Prefill: an amendment carries the imported order's lines; a product carries one line.
   useEffect(() => {
@@ -127,10 +141,12 @@ function NewOrderBody() {
       />
 
       {decision && (
-        <Notice>
+        <Notice tone={fromDecision && "reason" in fromDecision ? "warn" : undefined}>
           Starting from ZAAD&rsquo;s recommendation: <strong>{decision.headline}</strong>.{" "}
           <Link href={`/decisions?decision=${encodeURIComponent(decision.id)}`}>See the reasoning</Link>.
-          Edit anything below before you create it.
+          {fromDecision && "reason" in fromDecision
+            ? <> The lines could not be filled in from it: {fromDecision.reason} Enter them below.</>
+            : " The quantities below are what ZAAD recommended; edit anything before you create it."}
         </Notice>
       )}
 

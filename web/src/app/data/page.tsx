@@ -24,6 +24,7 @@ import { Button, ButtonLink, Disclosure, EmptyState, ErrorState, Loading, Notice
 import { Column, DataTable, Drawer, Pager, SearchField, SelectField, Toolbar } from "@/components/workspace/Table";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { useReadiness } from "@/lib/zaad/readiness";
+import { CapabilityMatrix, QualityChecks, useCapabilityReadiness } from "@/components/workspace/Readiness";
 import {
   DATE, NUMBER, fetchDataset, fetchDatasetValues, fetchDatasets,
   type DatasetInfo, type DatasetPage,
@@ -197,6 +198,7 @@ function Explorer({ datasets }: { datasets: DatasetInfo[] }) {
 function DataBody() {
   const workspace = useWorkspaceData();
   const readiness = useReadiness();
+  const { readiness: fields } = useCapabilityReadiness();
   const [datasets, setDatasets] = useState<DatasetInfo[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -254,6 +256,37 @@ function DataBody() {
           <Notice>Supplier reliability appears once goods received are matched to purchase orders.</Notice>
         )}
       </Section>
+
+      {fields && (
+        <Section title="What ZAAD can do with this data">
+          <CapabilityMatrix rows={fields.capabilities} />
+        </Section>
+      )}
+
+      {fields && (
+        <Section title="Fields ZAAD reads, and how complete they are">
+          <div style={{ display: "grid", gap: 10 }}>
+            {fields.sources.filter((s) => s.present).map((s) => (
+              <Disclosure key={s.key} summary={s.label} hint={`${NUMBER(s.rows)} rows${s.date_range.from ? ` · ${DATE(s.date_range.from)} to ${DATE(s.date_range.to ?? s.date_range.from)}` : ""}${s.last_uploaded ? ` · uploaded ${DATE(s.last_uploaded)}` : ""}`}>
+                <DataTable caption={`Fields of ${s.label}`} dense rows={s.fields} rowKey={(f) => f.name}
+                  columns={[
+                    { key: "label", label: "Field", render: (f) => <>{f.label}{f.required && <span className="tag" style={{ marginInlineStart: 6 }}>Required</span>}</> },
+                    { key: "name", label: "Column", hideBelow: 700, render: (f) => <code style={{ fontFamily: "var(--mono)", fontSize: 12 }}>{f.name}</code> },
+                    { key: "coverage", label: "Filled", numeric: true, render: (f) => !f.present ? <span className="chip" data-tone={f.required ? "bad" : undefined}>absent</span> : f.coverage == null ? <span className="na">—</span> : `${Math.round(f.coverage * 100)}%` },
+                    { key: "valid", label: "Valid", numeric: true, hideBelow: 900, render: (f) => f.valid == null ? <span className="na">—</span> : `${Math.round(f.valid * 100)}%` },
+                    { key: "feeds", label: "Feeds", hideBelow: 1100, render: (f) => f.feeds.length ? f.feeds.map((c) => fields.capabilities.find((x) => x.capability === c)?.label ?? c).join(", ") : <span className="na">—</span> },
+                  ]} />
+              </Disclosure>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {fields && (
+        <Section title="Quality checks">
+          <QualityChecks rows={fields.quality} />
+        </Section>
+      )}
 
       <Section title="Data quality">
         {readiness.score != null ? (

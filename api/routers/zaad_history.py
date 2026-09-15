@@ -371,7 +371,7 @@ def history(who: Who, conn=Depends(get_conn), limit: int = Query(50, ge=1, le=20
 
 TELEMETRY_EVENTS = ("workspace_opened", "decision_opened", "sku_opened", "supplier_opened", "po_created", "po_edited",
                     "po_evaluated", "po_approved", "po_rejected", "po_exported", "external_status_recorded",
-                    "diagnostic_opened", "data_readiness_opened", "network_object_opened", "history_opened", "outcome_recorded")
+                    "diagnostic_opened", "data_readiness_opened", "network_object_opened", "history_opened", "outcome_recorded", "bulk_created", "inventory_opened")
 TELEMETRY_KEYS = ("draft_id", "decision_id", "job_id", "sku", "supplier_id", "location", "po_id", "surface", "tab",
                   "node", "kind", "count", "locale")
 MAX_TELEMETRY_BATCH = 50

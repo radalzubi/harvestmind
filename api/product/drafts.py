@@ -560,10 +560,14 @@ def _event(conn: Any, operator: str, draft_id: str, event: str, revision: int | 
         "VALUES (?, ?, ?, ?, ?, ?, ?)", [draft_id, operator, _now(), actor, event, revision, detail])
 
 
-def create_draft(conn: Any, operator: str, body: dict[str, Any], *, actor: str | None = None,
-                 who: Any = None, request_id: str | None = None) -> str:
-    """Store a new proposal. Every origin lands here."""
-    ensure_tables(conn)
+MAX_BULK_DRAFTS = 50
+
+
+Prepared = tuple[str, str, list[Any], list[list[Any]]]
+
+
+def _prepare_draft(operator: str, body: dict[str, Any], actor: str | None) -> Prepared:
+    """Every check a proposal must pass, with nothing written: (draft_id, origin, head row, lines)."""
     origin = str(body.get("origin") or "MANUAL").upper()
     if origin not in ORIGINS:
         raise DraftRefused(f"Unknown origin {origin!r}. One of {', '.join(ORIGINS)}.")
@@ -584,9 +588,6 @@ def create_draft(conn: Any, operator: str, body: dict[str, Any], *, actor: str |
         raise DraftRefused("The requested receipt date is before the order date.")
 
     draft_id = _identity()
-    # Everything is checked before anything is written, and the writes are one transaction. The
-    # head row used to be inserted first and the lines validated afterwards, so a refused line
-    # left an empty proposal behind — four of them appeared on Home in the V1 audit.
     head = [
         draft_id, operator, origin, int(body.get("revision") or 1),
         (str(body.get("reference"))[:120] if body.get("reference") else None),
@@ -600,20 +601,66 @@ def create_draft(conn: Any, operator: str, body: dict[str, Any], *, actor: str |
         action, actor, _now(), _now(),
         _identifier(body.get("supersedes"), "The revision this replaces")]
     checked = _check_lines(operator, draft_id, list(body.get("lines") or []))
-    with _transaction(conn):
-        conn.execute("""
-            INSERT INTO zaad_draft_orders
-            (draft_id, operator_id, origin, state, revision, reference, supplier_id, destination_id, currency,
-             requested_order_date, requested_receipt_date, notes, source_decision_id, source_po_id,
-             amendment_action, created_by, created_at, updated_at, supersedes)
-            VALUES (?, ?, ?, 'DRAFT', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", head)
-        _store_lines(conn, operator, draft_id, checked)
-        _event(conn, operator, draft_id, "created", 1, actor, f"origin {origin}")
-        _audit(conn, operator, who, actor, object_type="draft", object_id=draft_id, action="created",
-               after_revision=int(body.get("revision") or 1), after_state="DRAFT", request_id=request_id,
-               context={"origin": origin, "supplier_id": head[5], "lines": len(checked),
-                        "source_po_id": head[12], "source_decision_id": head[11]})
+    return draft_id, origin, head, checked
+
+
+def _write_draft(conn: Any, operator: str, prepared: Prepared, *,
+                 actor: str | None, who: Any, request_id: str | None, batch: str | None = None) -> str:
+    """The writes for one prepared proposal. Call inside a transaction."""
+    draft_id, origin, head, checked = prepared
+    conn.execute("""
+        INSERT INTO zaad_draft_orders
+        (draft_id, operator_id, origin, state, revision, reference, supplier_id, destination_id, currency,
+         requested_order_date, requested_receipt_date, notes, source_decision_id, source_po_id,
+         amendment_action, created_by, created_at, updated_at, supersedes)
+        VALUES (?, ?, ?, 'DRAFT', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", head)
+    _store_lines(conn, operator, draft_id, checked)
+    _event(conn, operator, draft_id, "created", 1, actor, f"origin {origin}" + (f" (bulk {batch})" if batch else ""))
+    _audit(conn, operator, who, actor, object_type="draft", object_id=draft_id, action="created",
+           after_revision=int(head[3]), after_state="DRAFT", request_id=request_id,
+           context={"origin": origin, "supplier_id": head[5], "lines": len(checked),
+                    "source_po_id": head[12], "source_decision_id": head[11], "batch": batch})
     return draft_id
+
+
+def create_draft(conn: Any, operator: str, body: dict[str, Any], *, actor: str | None = None,
+                 who: Any = None, request_id: str | None = None) -> str:
+    """Store a new proposal. Every origin lands here."""
+    ensure_tables(conn)
+    # Everything is checked before anything is written, and the writes are one transaction. The
+    # head row used to be inserted first and the lines validated afterwards, so a refused line
+    # left an empty proposal behind — four of them appeared on Home in the V1 audit.
+    prepared = _prepare_draft(operator, body, actor)
+    with _transaction(conn):
+        return _write_draft(conn, operator, prepared, actor=actor, who=who, request_id=request_id)
+
+
+def create_drafts(conn: Any, operator: str, bodies: list[dict[str, Any]], *, actor: str | None = None,
+                  who: Any = None, request_id: str | None = None) -> list[str]:
+    """Store several proposals as one unit: all of them, or none.
+
+    Bulk creation from selected recommendations groups lines deterministically on the client
+    (one proposal per supplier and destination); this end refuses the whole batch when any one
+    proposal is refused, naming which, so a buyer never finds three of five created.
+    """
+    ensure_tables(conn)
+    if not bodies:
+        raise DraftRefused("There is nothing to create.")
+    if len(bodies) > MAX_BULK_DRAFTS:
+        raise DraftRefused(f"ZAAD creates at most {MAX_BULK_DRAFTS} proposals in one batch; this asks for {len(bodies)}.")
+    prepared: list[Prepared] = []
+    for index, body in enumerate(bodies, start=1):
+        if not isinstance(body, dict):
+            raise DraftRefused(f"Proposal {index} is not an object.")
+        try:
+            prepared.append(_prepare_draft(operator, body, actor))
+        except DraftRefused as exc:
+            label = body.get("reference") or body.get("supplier_id") or f"proposal {index}"
+            raise DraftRefused(f"{label}: {exc} Nothing was created.") from exc
+    batch = _identity()[:14]
+    with _transaction(conn):
+        return [_write_draft(conn, operator, item, actor=actor, who=who, request_id=request_id, batch=batch)
+                for item in prepared]
 
 
 def update_draft(conn: Any, operator: str, draft_id: str, body: dict[str, Any], *,

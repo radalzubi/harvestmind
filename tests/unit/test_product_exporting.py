@@ -15,6 +15,7 @@ from api.product.exporting import (
     read_table, read_template_headers, rows_to_lines, safe_cell, suggest_import_mapping,
     suggest_mapping, to_csv, to_pdf, to_xlsx,
 )
+from api.product.exporting import NUMERIC_FIELDS, build_cells
 
 DRAFT = {
     "draft_id": "draft_abc", "reference": "PO-9001", "revision": 1, "supplier_id": "SUP-001",
@@ -206,3 +207,47 @@ def test_a_cell_containing_markup_does_not_become_markup_in_the_pdf():
     out = to_pdf(draft, default_profile(), workspace="op_1")
     assert out[:5] == b"%PDF-"
     assert len(out) > 800
+
+
+def _sheet(xlsx: bytes):
+    from openpyxl import load_workbook
+    return load_workbook(io.BytesIO(xlsx)).active
+
+
+def test_declared_numeric_fields_are_numeric_cells_and_everything_else_is_text():
+    sheet = _sheet(to_xlsx(DRAFT, default_profile()))
+    headers = [c.value for c in sheet[1]]
+    row = {h: sheet.cell(row=2, column=i + 1) for i, h in enumerate(headers)}
+    assert row["Quantity"].data_type == "n" and row["Quantity"].value == 2400
+    assert row["Unit Price"].data_type == "n" and row["Unit Price"].value == 4.5
+    assert row["Line"].data_type == "n" and row["Line"].value == 1
+    assert row["SKU"].data_type == "s" and row["SKU"].value == "SKU-0001"
+    assert row["PO Number"].data_type == "s"
+    # a line with no declared price leaves the cell empty text, not a zero
+    assert sheet.cell(row=3, column=headers.index("Unit Price") + 1).value in ("", None)
+
+
+def test_a_constant_column_stays_text_even_when_it_looks_like_a_number():
+    profile = {**default_profile(), "columns": [{"header": "Plant", "constant": "1000"}, {"header": "Qty", "field": "quantity"}]}
+    sheet = _sheet(to_xlsx(DRAFT, profile))
+    assert sheet.cell(row=2, column=1).data_type == "s" and sheet.cell(row=2, column=1).value == "1000"
+    assert sheet.cell(row=2, column=2).data_type == "n"
+
+
+def test_a_non_finite_or_unparseable_number_falls_back_to_text():
+    draft = {**DRAFT, "lines": [{**DRAFT["lines"][0], "quantity": float("inf")}, {**DRAFT["lines"][0], "quantity": "lots"}]}
+    _headers, cells = build_cells(draft, default_profile())
+    qty = DEFAULT_COLUMNS.index({"header": "Quantity", "field": "quantity"})
+    assert cells[0][qty][1] is None and cells[1][qty][1] is None
+
+
+def test_the_csv_is_unchanged_by_numeric_typing():
+    text = to_csv(DRAFT, default_profile()).decode("utf-8-sig")
+    assert "2400" in text and "4.50" in text
+    assert NUMERIC_FIELDS >= {"quantity", "unit_price", "line_value", "cases"}
+
+
+def test_grouped_numbers_carry_a_grouped_excel_format():
+    sheet = _sheet(to_xlsx(DRAFT, {**default_profile(), "number_format": "grouped"}))
+    headers = [c.value for c in sheet[1]]
+    assert sheet.cell(row=2, column=headers.index("Quantity") + 1).number_format == "#,##0.##"

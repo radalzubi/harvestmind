@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, Check, Upload as UploadIcon } from "lucide-react";
 import { Button, ButtonLink, Disclosure, EmptyState, ErrorState, Loading, Notice, PageHead, Section } from "@/components/workspace/ui";
 import { useReadiness, type DataSource } from "@/lib/zaad/readiness";
+import { CapabilityMatrix, useCapabilityReadiness } from "@/components/workspace/Readiness";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { useSession } from "@/lib/session";
 import { clearStagingTable, extractFiles, loadSampleData, uploadCSV } from "@/lib/api";
@@ -127,6 +128,7 @@ function MappedIntake() {
 export default function UploadPage() {
   const session = useSession();
   const readiness = useReadiness();
+  const capabilities = useCapabilityReadiness();
   const workspace = useWorkspaceData();
   const toast = useToast();
   const [seeding, setSeeding] = useState(false);
@@ -161,10 +163,17 @@ export default function UploadPage() {
           <h2 className="status-head" style={{ fontSize: 20 }}>
             {ready ? "ZAAD has what it needs to plan." : "ZAAD cannot plan yet."}
           </h2>
+          {/* "Nothing needs your attention" used to sit a screen above a table saying five
+              capabilities were blocked. The sentence now comes from the same counted answer. */}
           <p className="status-sub">
             {ready
               ? <>{readiness.totalRows.toLocaleString("en-US")} rows across {readiness.sources.filter((s) => s.state !== "missing").length} sources.
-                {" "}{readiness.nextStep ? readiness.nextStep.title : "Nothing needs your attention here."}{" "}
+                {" "}{readiness.nextStep ? readiness.nextStep.title
+                  : capabilities.readiness
+                    ? capabilities.readiness.summary.blocked || capabilities.readiness.summary.partial
+                      ? `${capabilities.readiness.summary.ready} of ${capabilities.readiness.summary.ready + capabilities.readiness.summary.partial + capabilities.readiness.summary.blocked} things ZAAD can do are fully available; ${capabilities.readiness.summary.blocked} ${capabilities.readiness.summary.blocked === 1 ? "is" : "are"} blocked by a missing field — see below.`
+                      : "Every capability the upload can carry is available."
+                    : ""}{" "}
                 <Link href="/data">Inspect what ZAAD holds</Link> or <Link href="/home">go to Home</Link>.</>
               : <>{readiness.nextStep?.title ?? "Something required is missing"}. {readiness.nextStep?.detail}</>}
           </p>
@@ -187,7 +196,7 @@ export default function UploadPage() {
       <Section title="Your data sources" more="Inspect the records" moreHref="/data">
         <div style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--radius-lg)", padding: "2px 16px 8px" }}>
           {readiness.sources.map((s) => (
-            <SourceRow key={s.table} source={s} onChanged={() => { readiness.refresh(); workspace.refresh(); }} />
+            <SourceRow key={s.table} source={s} onChanged={() => { readiness.refresh(); capabilities.refresh(); workspace.refresh(); }} />
           ))}
         </div>
         <p className="zhelp" style={{ marginTop: 10 }}>
@@ -195,6 +204,19 @@ export default function UploadPage() {
           <Link href="/security">How your data is handled</Link>.
         </p>
       </Section>
+
+      {/* A source can be loaded and still not carry the field a capability needs: 16,751
+          purchase orders with no promised date is "loaded" and cannot measure lateness. This
+          says, per capability, what the data unlocks and which column decides it. */}
+      {capabilities.readiness && (
+        <Section title="What ZAAD can do with this data" more="Inspect the fields" moreHref="/data">
+          <CapabilityMatrix rows={capabilities.readiness.capabilities} />
+          <p className="zhelp" style={{ marginTop: 10 }}>
+            Counted from your uploaded rows, not from whether a file exists. &ldquo;Blocked&rdquo; names a
+            column the upload could carry; &ldquo;Not in the upload&rdquo; needs data the canonical upload does not have.
+          </p>
+        </Section>
+      )}
 
       {session.can("manageData") && (
         <Section title="Advanced">

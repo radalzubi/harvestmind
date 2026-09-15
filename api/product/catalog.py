@@ -35,6 +35,7 @@ INVENTORY_SORTS = {
     "supplier_id": '"supplier_id"', "on_hand": "on_hand", "inbound_units": "inbound_units",
     "inventory_value": "inventory_value", "weekly_demand": "weekly_demand",
     "cover_weeks": "cover_weeks", "unit_cost": '"unit_cost"', "open_pos": "open_pos",
+    "transfer_units": "transfer_units",
     "shelf_life_days": '"shelf_life_days"',
 }
 
@@ -77,6 +78,20 @@ def _one(conn: Any, sql: str, params: list[Any] | None = None) -> Any:
     return got[0] if got else None
 
 
+def site_column_usable(conn: Any, table: str, column: str) -> bool:
+    """Whether `table.column` names sites the stock snapshot knows.
+
+    The staging schema defaults `stg_fmcg_orders.location_id` and
+    `stg_fmcg_purchase_orders.destination_id` to 'MAIN', so a column can exist and be a
+    placeholder. It counts as declared when at least one of its values is a site with stock rows.
+    """
+    if column not in _columns(conn, table) or not has_table(conn, "stg_fmcg_inventory"):
+        return False
+    return bool(_one(conn, f"""SELECT count(*) FROM "{table}" t
+                                WHERE CAST(t."{column}" AS VARCHAR) IN
+                                      (SELECT DISTINCT CAST(location_id AS VARCHAR) FROM stg_fmcg_inventory)"""))  # noqa: S608  # nosec B608 - names are code literals
+
+
 def _optional(conn: Any, table: str, column: str, fallback: str = "NULL") -> str:
     """`column` when the vault has it, else a literal, so a pre-migration vault still answers."""
     return f'"{column}"' if column in _columns(conn, table) else fallback
@@ -88,16 +103,20 @@ def _optional(conn: Any, table: str, column: str, fallback: str = "NULL") -> str
 # request values travel as bound parameters, and request *names* are looked up in the dictionaries
 # above before they are used.
 
-def _stock_cte(conn: Any) -> str:
+def _stock_cte(conn: Any, location: str | None = None) -> str:
     """Latest uploaded stock snapshot, matching what the planning adapter reads.
 
     The adapter takes the most recent snapshot date the vault holds and uses the rows on it. Using
     the same rule here means the stock a person sees in Inventory is the stock the optimizer
     planned with, rather than a second, slightly different number.
+
+    With `location`, the snapshot rows of that one site (the value binds as the first parameter of
+    the statement). A figure under a site's name is then that site's figure, never a total.
     """
     if not has_table(conn, "stg_fmcg_inventory"):
         return "stock AS (SELECT NULL AS sku, NULL AS on_hand, NULL AS in_transit, NULL AS sites WHERE FALSE)"
-    return """
+    site = " AND CAST(location_id AS VARCHAR) = ?" if location is not None else ""
+    return f"""
     snap_day AS (SELECT max(snapshot_date) AS d FROM stg_fmcg_inventory),
     stock AS (
       SELECT sku,
@@ -106,12 +125,12 @@ def _stock_cte(conn: Any) -> str:
              count(DISTINCT location_id) AS sites
       FROM (SELECT sku, location_id, on_hand, in_transit,
                    row_number() OVER (PARTITION BY sku, location_id ORDER BY imported_at DESC) AS rn
-            FROM stg_fmcg_inventory WHERE snapshot_date = (SELECT d FROM snap_day))
+            FROM stg_fmcg_inventory WHERE snapshot_date = (SELECT d FROM snap_day){site})
       WHERE rn = 1 GROUP BY sku)
-    """
+    """  # nosec B608 - the site clause is a code literal; the value binds
 
 
-def _open_po_cte(conn: Any) -> str:
+def _open_po_cte(conn: Any, location: str | None = None) -> str:
     """Units still owed on open purchase orders, per product.
 
     **An order is open until its first receipt is recorded.** That is the planning adapter's own
@@ -127,6 +146,9 @@ def _open_po_cte(conn: Any) -> str:
     """
     if not has_table(conn, "stg_fmcg_purchase_orders"):
         return "open_po AS (SELECT NULL AS sku, NULL AS inbound_units, NULL AS open_pos WHERE FALSE)"
+    if location is not None and not site_column_usable(conn, "stg_fmcg_purchase_orders", "destination_id"):
+        # Orders carry no destination, so "inbound to this site" is not a number the vault holds.
+        return "open_po AS (SELECT NULL AS sku, NULL AS inbound_units, NULL AS open_pos WHERE FALSE)"
     receipts = has_table(conn, "stg_fmcg_receipts")
     recv = """
     recv_line AS (SELECT po_id, sku, sum(qty_received) AS q, min(receipt_date) AS first_receipt
@@ -137,12 +159,13 @@ def _open_po_cte(conn: Any) -> str:
     recv_line AS (SELECT NULL AS po_id, NULL AS sku, NULL AS q, NULL AS first_receipt WHERE FALSE),
     recv_po   AS (SELECT NULL AS po_id, NULL AS q, NULL AS first_receipt WHERE FALSE),
     """
-    return recv + """
+    dest = " WHERE CAST(destination_id AS VARCHAR) = ?" if location is not None else ""
+    return recv + f"""
     po_line AS (
       SELECT po_id, sku, sum(qty_ordered) AS ordered, min(po_date) AS po_date,
              min(expected_delivery_date) AS eta, any_value(supplier_id) AS supplier_id,
              count(*) OVER (PARTITION BY po_id) AS lines_on_po
-      FROM stg_fmcg_purchase_orders GROUP BY po_id, sku),
+      FROM stg_fmcg_purchase_orders {dest} GROUP BY po_id, sku),
     po_state AS (
       SELECT l.po_id, l.sku, l.ordered, l.po_date, l.eta, l.supplier_id,
              coalesce(rl.q, CASE WHEN l.lines_on_po = 1 THEN rp.q END) AS received,
@@ -156,18 +179,40 @@ def _open_po_cte(conn: Any) -> str:
       SELECT sku, sum(open_units) AS inbound_units,
              count(*) FILTER (WHERE open_units > 0) AS open_pos
       FROM po_state GROUP BY sku)
-    """  # nosec B608 - code literals plus allowlisted names (INVENTORY_SORTS / PO_SORTS); values bind
+    """  # nosec B608 - code literals; the site binds  # nosec B608 - code literals plus allowlisted names (INVENTORY_SORTS / PO_SORTS); values bind
 
 
-def _demand_cte(conn: Any, weeks: int = 12) -> str:
-    """Average weekly customer demand over the most recent `weeks` weeks of order history."""
+def _transfer_cte(conn: Any, location: str | None = None) -> str:
+    """Units on open transfers into one site (dispatched or planned, not yet received).
+
+    Only a site view has this column: across all sites a transfer is a move, not an arrival.
+    """
+    if location is None or not has_table(conn, "stg_fmcg_transfers"):
+        return "xfer AS (SELECT NULL AS sku, NULL AS transfer_units WHERE FALSE)"
+    received = "received_date" in _columns(conn, "stg_fmcg_transfers")
+    open_clause = " AND received_date IS NULL" if received else ""
+    return f"""
+    xfer AS (SELECT sku, sum(qty) AS transfer_units FROM stg_fmcg_transfers
+             WHERE CAST(destination_id AS VARCHAR) = ?{open_clause} GROUP BY sku)
+    """  # nosec B608 - code literals; the site binds
+
+
+def _demand_cte(conn: Any, weeks: int = 12, location: str | None = None) -> str:
+    """Average weekly customer demand over the most recent `weeks` weeks of order history.
+
+    With `location`, the order lines that name that site; a workspace whose orders carry no site
+    gets no per-site demand — and no per-site cover — rather than the whole business's.
+    """
     if not has_table(conn, "stg_fmcg_orders"):
         return "demand AS (SELECT NULL AS sku, NULL AS weekly_demand WHERE FALSE)"
+    if location is not None and not site_column_usable(conn, "stg_fmcg_orders", "location_id"):
+        return "demand AS (SELECT NULL AS sku, NULL AS weekly_demand WHERE FALSE)"
+    site = " AND CAST(location_id AS VARCHAR) = ?" if location is not None else ""
     return f"""
     demand AS (
       SELECT sku, sum(qty_ordered) / {weeks}.0 AS weekly_demand
       FROM stg_fmcg_orders
-      WHERE order_date > (SELECT max(order_date) FROM stg_fmcg_orders) - INTERVAL {weeks * 7} DAY
+      WHERE order_date > (SELECT max(order_date) FROM stg_fmcg_orders) - INTERVAL {weeks * 7} DAY{site}
       GROUP BY sku)
     """  # nosec B608 - code literals plus allowlisted names (INVENTORY_SORTS / PO_SORTS); values bind
 
@@ -184,6 +229,39 @@ class InventoryPage:
     demand_weeks: int
     served: bool
     note: str | None = None
+    #: the site every figure on the page is for, or None for every site summed
+    location: str | None = None
+    #: what a per-site page cannot show, and why, in words
+    location_notes: tuple[str, ...] = ()
+
+
+def location_notes(conn: Any, location: str | None) -> list[str]:
+    """Which of a site's columns the vault cannot fill, and why. Empty for the all-sites view."""
+    if location is None:
+        return []
+    notes: list[str] = []
+    if has_table(conn, "stg_fmcg_purchase_orders") and not site_column_usable(conn, "stg_fmcg_purchase_orders", "destination_id"):
+        notes.append("Your purchase orders carry no destination site, so units on order cannot be shown for one site.")
+    if not has_table(conn, "stg_fmcg_transfers"):
+        notes.append("No transfers are uploaded, so stock on its way from another site is not shown.")
+    if has_table(conn, "stg_fmcg_orders") and not site_column_usable(conn, "stg_fmcg_orders", "location_id"):
+        notes.append("Your customer orders carry no site, so weekly demand and cover cannot be shown for one site.")
+    return notes
+
+
+def locations(conn: Any) -> list[dict[str, Any]]:
+    """The sites the vault holds stock for, with the declared kind where a site master exists."""
+    if not has_table(conn, "stg_fmcg_inventory"):
+        return []
+    kinds: dict[str, str | None] = {}
+    if has_table(conn, "stg_fmcg_locations"):
+        for row in _rows(conn, "SELECT location_id, any_value(kind) AS kind FROM stg_fmcg_locations GROUP BY location_id"):
+            kinds[str(row["location_id"])] = row.get("kind")
+    rows = _rows(conn, """SELECT CAST(location_id AS VARCHAR) AS id, count(DISTINCT sku) AS products
+                          FROM stg_fmcg_inventory WHERE location_id IS NOT NULL
+                            AND snapshot_date = (SELECT max(snapshot_date) FROM stg_fmcg_inventory)
+                          GROUP BY 1 ORDER BY 1""")
+    return [{"id": r["id"], "kind": kinds.get(r["id"]), "products": int(r["products"])} for r in rows]
 
 
 def inventory_page(
@@ -200,8 +278,14 @@ def inventory_page(
     direction: str = "asc",
     limit: int = DEFAULT_ROWS,
     offset: int = 0,
+    location: str | None = None,
 ) -> InventoryPage:
-    """One page of the product catalogue with its stock position. Server-side, always bounded."""
+    """One page of the product catalogue with its stock position. Server-side, always bounded.
+
+    With `location`, every figure is that site's: stock from its snapshot rows, units on order
+    from orders whose destination is that site, demand from order lines that name it. What the
+    vault cannot fill for one site is null, and `location_notes` says why.
+    """
     if not has_table(conn, "stg_fmcg_skus"):
         return InventoryPage([], 0, limit, offset, sort, direction, None, 12, served=False,
                              note="No product master has been uploaded yet.")
@@ -251,8 +335,21 @@ def inventory_page(
     clause = f" WHERE {' AND '.join(where)}" if where else ""
     having = f" WHERE {COVER_BUCKETS[cover]}" if cover else ""
 
+    site_params: list[Any] = []
+    if location is not None:
+        site = str(location)
+        if len(site) > 200:
+            raise CatalogRefused("That site name is longer than any site name can be.")
+        if has_table(conn, "stg_fmcg_inventory"):
+            site_params.append(site)
+        if site_column_usable(conn, "stg_fmcg_purchase_orders", "destination_id"):
+            site_params.append(site)
+        if has_table(conn, "stg_fmcg_transfers"):
+            site_params.append(site)
+        if site_column_usable(conn, "stg_fmcg_orders", "location_id"):
+            site_params.append(site)
     body = f"""
-    WITH {_stock_cte(conn)}, {_open_po_cte(conn)}, {_demand_cte(conn)},
+    WITH {_stock_cte(conn, location)}, {_open_po_cte(conn, location)}, {_transfer_cte(conn, location)}, {_demand_cte(conn, location=location)},
     base AS (
       SELECT m."sku" AS sku,
              {_optional(conn, 'stg_fmcg_skus', 'sku_name', 'CAST(NULL AS VARCHAR)')} AS sku_name,
@@ -269,10 +366,12 @@ def inventory_page(
              {_optional(conn, 'stg_fmcg_skus', 'abc_class', 'CAST(NULL AS VARCHAR)')} AS abc_class,
              st.on_hand AS on_hand, st.in_transit AS in_transit, st.sites AS sites,
              po.inbound_units AS inbound_units, po.open_pos AS open_pos,
+             x.transfer_units AS transfer_units,
              d.weekly_demand AS weekly_demand
       FROM (SELECT * FROM (SELECT *, row_number() OVER (PARTITION BY "sku" ORDER BY imported_at DESC) AS _rn
                            FROM stg_fmcg_skus) WHERE _rn = 1) m
       LEFT JOIN stock st ON st.sku = m."sku"
+      LEFT JOIN xfer x ON x.sku = m."sku"
       LEFT JOIN open_po po ON po.sku = m."sku"
       LEFT JOIN demand d ON d.sku = m."sku"
       {clause}),
@@ -285,13 +384,15 @@ def inventory_page(
     SELECT * FROM shaped{having}
     """  # nosec B608 - code literals plus allowlisted names (INVENTORY_SORTS / PO_SORTS); values bind
     sql = f'{body} ORDER BY {INVENTORY_SORTS[sort]} {direction_sql} NULLS LAST LIMIT ? OFFSET ?'
-    rows = _rows(conn, sql, [*params, limit, offset])
-    total = int(_one(conn, f"WITH counted AS ({body}) SELECT count(*) FROM counted", params) or 0)  # nosec B608 - code literals plus allowlisted names (INVENTORY_SORTS / PO_SORTS); values bind
+    rows = _rows(conn, sql, [*site_params, *params, limit, offset])
+    total = int(_one(conn, f"WITH counted AS ({body}) SELECT count(*) FROM counted", [*site_params, *params]) or 0)  # nosec B608 - code literals plus allowlisted names (INVENTORY_SORTS / PO_SORTS); values bind
     day = _one(conn, "SELECT max(snapshot_date) FROM stg_fmcg_inventory") if has_table(conn, "stg_fmcg_inventory") else None
     for row in rows:
         row.pop("_rn", None)
     return InventoryPage(rows, total, limit, offset, sort, direction_sql.lower(),
-                         str(day) if day else None, 12, served=True)
+                         str(day) if day else None, 12, served=True,
+                         location=str(location) if location is not None else None,
+                         location_notes=tuple(location_notes(conn, location)))
 
 
 def sku_detail(conn: Any, sku: str) -> dict[str, Any]:
@@ -334,13 +435,37 @@ def sku_detail(conn: Any, sku: str) -> dict[str, Any]:
             FROM stg_fmcg_orders WHERE sku = ?
               AND order_date > (SELECT max(order_date) FROM stg_fmcg_orders) - INTERVAL 182 DAY
             GROUP BY 1 ORDER BY 1""", [sku])
+        # A count of short shipments exists only where shipped quantities were recorded at all:
+        # zero shortfalls over lines that never carried a shipped quantity is not "none short".
+        recorded = _one(conn, "SELECT count(qty_shipped) FROM stg_fmcg_orders WHERE sku = ?", [sku]) if "qty_shipped" in _columns(conn, "stg_fmcg_orders") else 0
         shortfalls = _one(conn, """
             SELECT count(*) FROM stg_fmcg_orders
-            WHERE sku = ? AND qty_shipped IS NOT NULL AND qty_shipped < qty_ordered""", [sku])
+            WHERE sku = ? AND qty_shipped IS NOT NULL AND qty_shipped < qty_ordered""", [sku]) if recorded else None
 
     sources: list[dict[str, Any]] = []
     if has_table(conn, "stg_fmcg_sources"):
         sources = _rows(conn, "SELECT * FROM stg_fmcg_sources WHERE sku = ? ORDER BY supplier_id", [sku])
+
+    # The all-sites figure and the sum of the site positions come from the same snapshot rule, so
+    # they agree whenever the vault is consistent; a stale site row left out of the latest snapshot
+    # is the one way they can differ, and then the difference is stated rather than hidden.
+    reconciliation: dict[str, Any] | None = None
+    if stock_by_site:
+        latest_day = _one(conn, "SELECT max(snapshot_date) FROM stg_fmcg_inventory")
+        on_latest = [r for r in stock_by_site if str(r.get("snapshot_date")) == str(latest_day)]
+        total_all = overview.get("on_hand")
+        # the sum of every site position shown, older rows included: that is what a reader adds up
+        summed = sum(float(r.get("on_hand") or 0) for r in stock_by_site)
+        older = [str(r["location_id"]) for r in stock_by_site if str(r.get("snapshot_date")) != str(latest_day)]
+        agree = total_all is not None and abs(float(total_all) - summed) < 1e-6
+        reconciliation = {
+            "all_sites_total": total_all, "sum_of_sites": summed, "sites_on_latest_snapshot": len(on_latest),
+            "sites_with_older_rows": older, "agree": agree, "snapshot_date": str(latest_day) if latest_day else None,
+            "note": (None if agree else
+                     "The all-sites total counts only rows on the latest snapshot date; "
+                     + (f"{', '.join(older)} carry older rows that are shown here but not in the total." if older
+                        else "the site rows and the total disagree — check the inventory upload for this product.")),
+        }
 
     missing: list[str] = []
     if not stock_by_site:
@@ -357,6 +482,7 @@ def sku_detail(conn: Any, sku: str) -> dict[str, Any]:
         "master": master[0],
         "overview": overview,
         "stock_by_site": stock_by_site,
+        "reconciliation": reconciliation,
         "purchase_orders": orders,
         "demand_by_week": demand,
         "short_shipped_lines": shortfalls,

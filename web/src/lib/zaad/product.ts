@@ -106,6 +106,8 @@ export interface InventoryRow {
   sites: number | null;
   inbound_units: number | null;
   open_pos: number | null;
+  /** Units on open transfers into the site being viewed; null in the all-sites view. */
+  transfer_units?: number | null;
   weekly_demand: number | null;
   inventory_value: number | null;
   cover_weeks: number | null;
@@ -123,12 +125,20 @@ export interface InventoryPage {
   served: boolean;
   note: string | null;
   sortable: string[];
+  /** The one site every figure on the page is for, or null when every site is summed. */
+  location?: string | null;
+  /** What a site view cannot show from this workspace's data, and why. */
+  location_notes?: string[];
 }
 
 export interface InventoryQuery {
   q?: string; category?: string; brand?: string; supplier_id?: string; abc_class?: string;
   cover?: string; skus?: string; sort?: string; direction?: string; limit?: number; offset?: number;
+  location?: string;
 }
+
+export interface Location { id: string; kind: string | null; products: number }
+export const fetchLocations = () => call<{ locations: Location[] }>("/api/zaad/workspace/locations");
 
 export const fetchInventory = (options: InventoryQuery = {}) =>
   call<InventoryPage>(`/api/zaad/workspace/inventory${query(options as Record<string, string>)}`);
@@ -138,6 +148,11 @@ export interface SkuDetail {
   master: Record<string, unknown>;
   overview: Partial<InventoryRow>;
   stock_by_site: Array<{ location_id: string; on_hand: number | null; in_transit: number | null; snapshot_date: string }>;
+  /** The all-sites total against the sum of the site positions shown, and why they differ when they do. */
+  reconciliation?: {
+    all_sites_total: number | null; sum_of_sites: number; sites_on_latest_snapshot: number;
+    sites_with_older_rows: string[]; agree: boolean; snapshot_date: string | null; note: string | null;
+  } | null;
   purchase_orders: Array<{ po_id: string; po_date: string; supplier_id: string | null; qty_ordered: number;
     unit_cost: number | null; expected_delivery_date: string | null; qty_received: number | null; first_receipt: string | null }>;
   demand_by_week: Array<{ week: string; ordered: number; shipped: number }>;
@@ -377,6 +392,13 @@ export const fetchEvaluationJobIds = () =>
 
 export const createDraft = (body: Record<string, unknown>) =>
   call<Draft>("/api/zaad/orders", { method: "POST", body: JSON.stringify(body) });
+
+/** Several proposals as one unit: the server creates all of them or none. */
+export const createDraftsBulk = (drafts: Array<Record<string, unknown>>) =>
+  call<{ drafts: Draft[]; created: number }>("/api/zaad/orders/bulk", {
+    method: "POST", body: JSON.stringify({ drafts }),
+    headers: { "Idempotency-Key": `bulk-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}` },
+  });
 
 export const updateDraft = (id: string, body: Record<string, unknown>) =>
   call<Draft>(`/api/zaad/orders/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(body) });
@@ -731,4 +753,51 @@ export const AMENDMENT_LABEL: Record<AmendmentAction, string> = {
   REDUCE: "Reduce the quantity",
   CANCEL: "Cancel",
   SPLIT: "Split the delivery",
+};
+
+
+// ── data readiness, per capability ───────────────────────────────────────────
+//
+// Not "is a file there" but "are the fields ZAAD needs present and usable", counted from the vault.
+
+export type CapabilityStatus = "READY" | "PARTIAL" | "BLOCKED" | "UNAVAILABLE";
+
+export interface CapabilityReadiness {
+  capability: string;
+  label: string;
+  status: CapabilityStatus;
+  reason: string;
+  source: string | null;
+  column: string | null;
+  coverage: number | null;
+}
+
+export interface FieldReadiness {
+  name: string; label: string; required: boolean; present: boolean;
+  coverage: number | null; valid: number | null; feeds: string[]; kind: "text" | "number" | "date";
+}
+
+export interface SourceReadiness {
+  key: string; table: string; label: string; required: boolean; present: boolean; rows: number;
+  date_range: { from: string | null; to: string | null }; last_uploaded: string | null; hint: string;
+  fields: FieldReadiness[];
+}
+
+export interface QualityCheck {
+  check: string; severity: "BLOCKING" | "MATERIAL" | "INFORMATIONAL"; count: number; message: string;
+  source: string; column: string | null;
+}
+
+export interface WorkspaceReadiness {
+  sources: SourceReadiness[];
+  capabilities: CapabilityReadiness[];
+  quality: QualityCheck[];
+  summary: { can_plan: boolean; ready: number; partial: number; blocked: number; unavailable: number; material_issues: number };
+  provenance: string;
+}
+
+export const fetchReadiness = () => call<WorkspaceReadiness>("/api/zaad/workspace/readiness");
+
+export const CAPABILITY_STATUS_LABEL: Record<CapabilityStatus, string> = {
+  READY: "Ready", PARTIAL: "Partial", BLOCKED: "Blocked", UNAVAILABLE: "Not in the upload",
 };

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import csv
 import io
+import math
 import re
 from datetime import date, datetime
 from typing import Any, Callable
@@ -195,24 +196,73 @@ def _resolvers(head: dict[str, Any], names: dict[str, str], profile: dict[str, A
     }
 
 
-def build_rows(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: dict[str, str] | None = None
-               ) -> tuple[list[str], list[list[str]]]:
-    """The header row and the body, one row per order line, in the profile's column order."""
+#: Fields whose value is a number by declaration. In an xlsx these are written as numeric cells, so
+#: a quantity sums and a price multiplies without the reader re-typing the column; everything else,
+#: including any `constant` column, stays text through `safe_cell`. A numeric cell cannot start a
+#: formula, so the formula guard is satisfied by type rather than by quoting.
+NUMERIC_FIELDS = frozenset({"quantity", "units_per_case", "cases", "unit_price", "line_value", "line_no", "revision"})
+
+
+def _raw_number(line: dict[str, Any], head: dict[str, Any], field: str) -> float | None:
+    """The unformatted number behind a numeric field, or None when it is not a finite number."""
+    try:
+        if field == "quantity":
+            value = line.get("quantity")
+        elif field == "units_per_case":
+            value = line.get("units_per_case")
+        elif field == "unit_price":
+            value = line.get("unit_price")
+        elif field == "line_no":
+            value = line.get("line_no")
+        elif field == "revision":
+            value = head.get("revision")
+        elif field == "cases":
+            pack = line.get("units_per_case")
+            value = (float(line.get("quantity") or 0) / float(pack)) if pack else None
+        elif field == "line_value":
+            price = line.get("unit_price")
+            value = (float(line.get("quantity") or 0) * float(price)) if price is not None else None
+        else:
+            return None
+        if value in (None, ""):
+            return None
+        number = float(value)
+    except (TypeError, ValueError, ZeroDivisionError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def build_cells(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: dict[str, str] | None = None
+                ) -> tuple[list[str], list[list[tuple[str, float | None]]]]:
+    """Like `build_rows`, with the number behind each declared-numeric cell beside its text.
+
+    The text is what a CSV or a PDF shows; the number is what an xlsx stores for the cell when the
+    field is in `NUMERIC_FIELDS` and the value is a finite number. A text-only cell carries None.
+    """
     columns = list(profile.get("columns") or DEFAULT_COLUMNS)
     resolvers = _resolvers(draft, supplier_names or {}, profile)
     headers = [str(c.get("header") or "") for c in columns]
-    body: list[list[str]] = []
+    body: list[list[tuple[str, float | None]]] = []
     for line in draft.get("lines") or []:
-        row: list[str] = []
+        row: list[tuple[str, float | None]] = []
         for column in columns:
             field = column.get("field")
             if field:
                 resolve = resolvers.get(field)
-                row.append(safe_cell(resolve(line) if resolve else ""))
+                text = safe_cell(resolve(line) if resolve else "")
+                number = _raw_number(line, draft, field) if field in NUMERIC_FIELDS else None
+                row.append((text, number))
             else:
-                row.append(safe_cell(column.get("constant")))
+                row.append((safe_cell(column.get("constant")), None))
         body.append(row)
     return headers, body
+
+
+def build_rows(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: dict[str, str] | None = None
+               ) -> tuple[list[str], list[list[str]]]:
+    """The header row and the body, one row per order line, in the profile's column order."""
+    headers, cells = build_cells(draft, profile, supplier_names=supplier_names)
+    return headers, [[text for text, _ in row] for row in cells]
 
 
 def to_csv(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: dict[str, str] | None = None) -> bytes:
@@ -225,12 +275,23 @@ def to_csv(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: di
     return buffer.getvalue().encode("utf-8-sig")
 
 
+#: Excel number formats for numeric cells, by the profile's `number_format`.
+_XLSX_NUMBER_FORMATS = {"plain": "0.##", "grouped": "#,##0.##"}
+
+
 def to_xlsx(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: dict[str, str] | None = None) -> bytes:
-    """One sheet, header row, one row per line. Every cell is written as text through `safe_cell`."""
+    """One sheet, header row, one row per line.
+
+    Declared-numeric fields (`NUMERIC_FIELDS`) are written as numeric cells, so a quantity column
+    sums in the reader's spreadsheet; every other cell is text through `safe_cell` and typed as a
+    string so nothing is re-read as a formula or a date.
+    """
     from openpyxl import Workbook
     from openpyxl.styles import Font
 
-    headers, body = build_rows(draft, profile, supplier_names=supplier_names)
+    headers, cells = build_cells(draft, profile, supplier_names=supplier_names)
+    body = [[text for text, _ in row] for row in cells]
+    number_format = _XLSX_NUMBER_FORMATS.get(str(profile.get("number_format") or "plain"), "0.##")
     book = Workbook()
     sheet = book.active
     sheet.title = re.sub(r"[\\/*?:\[\]]", " ", str(profile.get("sheet_name") or "Purchase Order"))[:31]
@@ -238,10 +299,14 @@ def to_xlsx(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: d
     for cell in sheet[1]:
         cell.font = Font(bold=True)
         cell.data_type = "s"
-    for row in body:
-        sheet.append(row)
-        for cell in sheet[sheet.max_row]:
-            cell.data_type = "s"  # never let a value be re-typed as a formula or a date
+    for row in cells:
+        sheet.append([number if number is not None else text for text, number in row])
+        for cell, (_text, number) in zip(sheet[sheet.max_row], row):
+            if number is not None:
+                cell.data_type = "n"
+                cell.number_format = number_format
+            else:
+                cell.data_type = "s"  # never let a value be re-typed as a formula or a date
     for index, header in enumerate(headers, start=1):
         width = max(len(str(header)), *(len(str(r[index - 1])) for r in body)) if body else len(str(header))
         sheet.column_dimensions[sheet.cell(row=1, column=index).column_letter].width = min(40, max(10, width + 2))

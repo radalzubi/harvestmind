@@ -138,6 +138,34 @@ async def create_order(request: HTTPRequest, who: Who, conn=Depends(get_conn)):
     return out
 
 
+@router.post("/bulk", status_code=201)
+async def create_orders_bulk(request: HTTPRequest, who: Who, conn=Depends(get_conn)):
+    """Create several proposals as one unit — all or none.
+
+    The body is `{"drafts": [<same shape as POST /api/zaad/orders>, ...]}`, at most 50. Used for
+    bulk creation from selected recommendations; the grouping (one proposal per supplier and
+    destination) is done deterministically by the caller and every group is created here in one
+    transaction, so a refused line in one group creates nothing anywhere.
+    """
+    allowed(who, "createProposal")
+    body = await body_of(request)
+    key, replay = _idempotent(conn, who, request)
+    if replay is not None:
+        return replay
+    bodies = body.get("drafts")
+    if not isinstance(bodies, list):
+        raise HTTPException(400, {"code": "proposal_refused", "message": "Send the proposals as a list under \"drafts\"."})
+    try:
+        identities = drafts.create_drafts(conn, who.operator_id, bodies, actor=who.actor_id, who=who,
+                                          request_id=request_id_of(request))
+    except drafts.DraftRefused as exc:
+        raise _refused(exc) from exc
+    out = {"drafts": [drafts.read_draft(conn, who.operator_id, i) for i in identities],
+           "created": len(identities), "executable": False, "transmitted": False}
+    _remember_json(conn, who, key, request, 201, out)
+    return out
+
+
 @router.get("/profiles")
 def profiles(who: Who, conn=Depends(get_conn)):
     """The workspace's own output formats, plus the built-in one it starts with."""

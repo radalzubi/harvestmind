@@ -22,7 +22,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from api.dependencies import get_conn, rate_limiter, require_operator
-from api.product import catalog, diagnostics, queries
+from api.product import catalog, diagnostics, queries, readiness
 
 router = APIRouter(prefix="/api/zaad/workspace", tags=["zaad-workspace"],
                    dependencies=[Depends(rate_limiter)])
@@ -55,13 +55,16 @@ def inventory(
     skus: str | None = Query(None, description="comma-separated selection, e.g. the products the last plan covered"),
     sort: str = "sku", direction: Literal["asc", "desc"] = "asc",
     limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0),
+    location: str | None = Query(None, max_length=200, description=(
+        "one site: every figure is that site's own — its stock, orders due there, transfers into it, "
+        "its customers' demand. Omit for every site summed.")),
 ):
     try:
         page = catalog.inventory_page(
             conn, search=q, category=category, brand=brand, supplier_id=supplier_id,
             abc_class=abc_class, cover=cover,
             skus=[s.strip() for s in skus.split(",") if s.strip()] if skus else None,
-            sort=sort, direction=direction, limit=limit, offset=offset)
+            sort=sort, direction=direction, limit=limit, offset=offset, location=location)
     except catalog.CatalogRefused as exc:
         raise HTTPException(400, str(exc)) from exc
     return {
@@ -69,7 +72,25 @@ def inventory(
         "sort": page.sort, "direction": page.direction, "snapshot_date": page.snapshot_date,
         "demand_weeks": page.demand_weeks, "served": page.served, "note": page.note,
         "sortable": sorted(catalog.INVENTORY_SORTS),
+        "location": page.location, "location_notes": list(page.location_notes),
     }
+
+
+@router.get("/locations")
+def locations(operator: Operator, conn=Depends(get_conn)):
+    """The sites this workspace holds stock for. Empty when stock is not counted by site."""
+    return {"locations": catalog.locations(conn)}
+
+
+@router.get("/readiness")
+def workspace_readiness(operator: Operator, conn=Depends(get_conn)):
+    """What ZAAD can and cannot do with this workspace's data, per capability, and why.
+
+    Counted from the vault: per source, which fields are present and how complete; per
+    capability, READY / PARTIAL / BLOCKED / UNAVAILABLE with the field that decides it; and the
+    quality checks that would change or block a plan. Nothing is inferred from a file's existence.
+    """
+    return readiness.readiness(conn)
 
 
 @router.get("/inventory/{sku}")

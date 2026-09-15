@@ -29,6 +29,7 @@ import { Onboarding } from "@/components/workspace/Onboarding";
 import { COUNT, DATE, MONEY, NUMBER, fetchSummary, listDrafts, type DraftSummary, type OperatingSummary } from "@/lib/zaad/product";
 import { STATE_LABEL } from "@/lib/zaad/product";
 import { operatorWarning } from "@/lib/zaad/warnings";
+import { ReadinessLine, useCapabilityReadiness } from "@/components/workspace/Readiness";
 
 function useStanding(): { state: Standing; snapshot: OperatingSummary | null; recent: DraftSummary[] } {
   const data = useWorkspaceData();
@@ -214,6 +215,7 @@ function Watches({ state }: { state: Standing }) {
 function HomeBody() {
   const { decisions, computedAt, planPhase, summary, build, request, directory } = useWorkspaceData();
   const { state, snapshot, recent } = useStanding();
+  const { readiness } = useCapabilityReadiness();
   const open = decisions.filter((d) => d.needsReview);
   const closed = decisions.filter((d) => !d.needsReview);
 
@@ -289,12 +291,15 @@ function HomeBody() {
 
       <ClosedLoop />
 
-      {problems.length > 0 && (
+      {(problems.length > 0 || (readiness && (readiness.summary.blocked > 0 || readiness.summary.partial > 0))) && (
         <Section title="Your data" more="Open Upload" moreHref="/upload">
-          <div className="notice" data-tone="warn">
-            <ul style={{ margin: 0, paddingInlineStart: 18 }}>
-              {problems.map((p, i) => <li key={i}>{p}</li>)}
-            </ul>
+          <div className="notice" data-tone="warn" style={{ display: "grid", gap: 8 }}>
+            {readiness && <ReadinessLine readiness={readiness} />}
+            {problems.length > 0 && (
+              <ul style={{ margin: 0, paddingInlineStart: 18 }}>
+                {problems.map((p, i) => <li key={i}>{p}</li>)}
+              </ul>
+            )}
           </div>
         </Section>
       )}

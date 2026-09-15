@@ -11,9 +11,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Gate } from "@/components/workspace/Gate";
 import { DecisionCard } from "@/components/workspace/DecisionCard";
 import { DecisionDetail } from "@/components/workspace/DecisionDetail";
-import { Disclosure, EmptyState, Facts, Notice, PageHead, TechnicalDetails } from "@/components/workspace/ui";
+import { Button, Disclosure, EmptyState, Facts, Notice, PageHead, TechnicalDetails } from "@/components/workspace/ui";
 import { PlanGate, RunPlan, ScopeNotice } from "@/components/workspace/PlanState";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
+import { useSession } from "@/lib/session";
+import { useToast } from "@/components/Toast";
+import { bulkBodies, planBulk } from "@/lib/zaad/bulk";
+import { createDraftsBulk, track } from "@/lib/zaad/product";
 import { money, type Decision, type DecisionCategory } from "@/lib/zaad/decisions";
 
 type Filter = "needs-review" | "all" | DecisionCategory;
@@ -102,10 +106,93 @@ function PlanEconomics() {
   );
 }
 
+/**
+ * Bulk creation: pick purchase recommendations, see exactly which proposals they become (one per
+ * supplier and destination, deterministic) and which cannot become one and why, then create them
+ * all at once — or nothing. Nothing is sent to a supplier; the proposals start as drafts.
+ */
+function BulkBar({ decisions, checked, onDone, onClear }: {
+  decisions: Decision[]; checked: Set<string>; onDone: (ids: string[]) => void; onClear: () => void;
+}) {
+  const router = useRouter();
+  const toast = useToast();
+  const { request } = useWorkspaceData();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const chosen = useMemo(() => decisions.filter((d) => checked.has(d.id)), [decisions, checked]);
+  const plan = useMemo(() => planBulk(chosen), [chosen]);
+  if (chosen.length === 0) return null;
+
+  async function create() {
+    setBusy(true); setError(null);
+    try {
+      const made = await createDraftsBulk(bulkBodies(plan, request?.currency ?? "USD"));
+      track("bulk_created", { count: made.created });
+      toast.push(`${made.created} proposal${made.created === 1 ? "" : "s"} created as drafts. Nothing has been sent to a supplier.`);
+      onDone(made.drafts.map((d) => d.draft_id));
+      setOpen(false);
+      router.push(made.created === 1 ? `/orders/${encodeURIComponent(made.drafts[0].draft_id)}` : "/orders?state=DRAFT");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="notice" style={{ marginBottom: 14, display: "grid", gap: 10 }}>
+      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <strong>{chosen.length} selected</strong>
+        <span style={{ color: "var(--ink-600)" }}>
+          {plan.groups.length ? `becomes ${plan.groups.length} purchase order${plan.groups.length === 1 ? "" : "s"}` : "none of these can become a purchase order"}
+          {plan.asked.length ? ` · ${plan.asked.length} need${plan.asked.length === 1 ? "s" : ""} your attention` : ""}
+        </span>
+        <div style={{ marginInlineStart: "auto", display: "flex", gap: 8 }}>
+          <Button size="sm" role="tertiary" onClick={onClear}>Clear</Button>
+          <Button size="sm" role="primary" disabled={!plan.groups.length} onClick={() => setOpen((o) => !o)}>
+            {open ? "Hide" : "Review and create"}
+          </Button>
+        </div>
+      </div>
+      {open && (
+        <div style={{ display: "grid", gap: 10 }}>
+          {plan.groups.map((g) => (
+            <div key={g.key} style={{ border: "1px solid var(--line)", borderRadius: "var(--radius-sm)", padding: "8px 10px", background: "var(--surface)" }}>
+              <strong style={{ color: "var(--ink-950)" }}>{g.supplier_id}</strong>
+              {g.destination_id && <span style={{ color: "var(--ink-500)" }}> · deliver to {g.destination_id}</span>}
+              <ul style={{ margin: "6px 0 0", paddingInlineStart: 18, fontSize: 13 }}>
+                {g.lines.map((l) => <li key={l.sku}>{l.sku} — {l.quantity.toLocaleString("en-US")} units{l.unit_price != null ? ` at ${l.unit_price}` : ""}</li>)}
+              </ul>
+            </div>
+          ))}
+          {plan.asked.length > 0 && (
+            <Notice tone="warn">
+              <strong>Not created, and why:</strong>
+              <ul style={{ margin: "6px 0 0", paddingInlineStart: 18 }}>
+                {plan.asked.map((a) => <li key={a.decision.id}>{a.decision.headline}: {a.reason}</li>)}
+              </ul>
+            </Notice>
+          )}
+          {error && <Notice tone="warn">{error}</Notice>}
+          <div>
+            <Button role="primary" pending={busy} disabled={!plan.groups.length} onClick={create}>
+              Create {plan.groups.length} draft{plan.groups.length === 1 ? "" : "s"} — all or none
+            </Button>
+            <p className="zhelp" style={{ marginTop: 6 }}>Created as drafts for evaluation and approval. ZAAD does not contact your supplier.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function DecisionsBody() {
   const router = useRouter();
   const params = useSearchParams();
+  const session = useSession();
   const { decisions, summary } = useWorkspaceData();
+  const [checked, setChecked] = useState<Set<string>>(() => new Set());
+  const canCreate = session.can("createProposal");
+  const selectable = useMemo(() => new Set(decisions.filter((d) => d.id.startsWith("buy:") && d.needsReview).map((d) => d.id)), [decisions]);
   const open = useMemo(() => decisions.filter((d) => d.needsReview), [decisions]);
   // Opening on an empty "Needs review" while six decisions sit behind "All" reads as a fault.
   const [filter, setFilter] = useState<Filter | null>(null);
@@ -149,6 +236,11 @@ function DecisionsBody() {
           ))}
       </div>
 
+      {canCreate && selectable.size > 1 && checked.size === 0 && (
+        <p className="zhelp" style={{ marginBottom: 10 }}>Tick purchase recommendations to create several proposed orders at once.</p>
+      )}
+      <BulkBar decisions={decisions} checked={checked} onClear={() => setChecked(new Set())} onDone={() => setChecked(new Set())} />
+
       <div className="split-list">
         <div className="dec-list">
           {shown.length === 0 && (
@@ -159,7 +251,11 @@ function DecisionsBody() {
             </EmptyState>
           )}
           {shown.map((d) => (
-            <DecisionCard key={d.id} decision={d} selected={selected?.id === d.id} onSelect={select} />
+            <DecisionCard key={d.id} decision={d} selected={selected?.id === d.id} onSelect={select}
+              checked={checked.has(d.id)}
+              onCheck={canCreate && selectable.has(d.id)
+                ? (id, next) => setChecked((c) => { const n = new Set(c); if (next) n.add(id); else n.delete(id); return n; })
+                : undefined} />
           ))}
         </div>
 

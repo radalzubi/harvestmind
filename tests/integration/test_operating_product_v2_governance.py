@@ -351,3 +351,39 @@ def test_the_outbound_seam_has_one_real_adapter_and_a_labelled_test_one():
     assert test.get_status("TEST-1")["known"] is True
     from api.product.inbound import UploadPath, INBOUND_SOURCES
     assert UploadPath().real is True and set(INBOUND_SOURCES) >= {"products", "inventory", "purchase_orders", "receipts", "customer_orders", "suppliers"}
+
+
+# ── bulk creation: all or none ───────────────────────────────────────────────
+
+def test_bulk_creation_creates_every_proposal_or_none(vault, skus):
+    from tests.integration.test_operating_product_api import _client
+    client = _client(vault, role="BUYER", actor_id="act_bulk")
+    good = {"origin": "ZAAD_RECOMMENDATION", "supplier_id": "SUP-001", "destination_id": "DC", "currency": "USD",
+            "source_decision_id": "buy:src_a", "lines": [{"sku": skus[0], "quantity": 24, "unit_price": 1.5}]}
+    also = {**good, "supplier_id": "SUP-002", "source_decision_id": "buy:src_b", "lines": [{"sku": skus[1], "quantity": 48}]}
+    before = client.get("/api/zaad/orders").json()["total"]
+    bad = {**good, "lines": [{"sku": skus[0], "quantity": -1}]}
+    refused = client.post("/api/zaad/orders/bulk", json={"drafts": [good, bad]})
+    assert refused.status_code == 422 and "Nothing was created" in refused.json()["detail"]["message"]
+    assert client.get("/api/zaad/orders").json()["total"] == before, "a refused batch leaves no proposal behind"
+    made = client.post("/api/zaad/orders/bulk", json={"drafts": [good, also]}, headers={"Idempotency-Key": "bulk-1"})
+    assert made.status_code == 201 and made.json()["created"] == 2
+    assert {d["supplier_id"] for d in made.json()["drafts"]} == {"SUP-001", "SUP-002"}
+    assert all(d["executable"] is False for d in made.json()["drafts"])
+    again = client.post("/api/zaad/orders/bulk", json={"drafts": [good, also]}, headers={"Idempotency-Key": "bulk-1"})
+    assert again.headers.get("Idempotent-Replay") == "true"
+    assert client.get("/api/zaad/orders").json()["total"] == before + 2
+    audit = client.get("/api/zaad/audit", params={"object_id": made.json()["drafts"][0]["draft_id"]}).json()["rows"]
+    assert audit and audit[-1]["action"] == "created"
+
+
+def test_bulk_creation_needs_the_capability_and_a_bounded_batch(vault, skus):
+    from tests.integration.test_operating_product_api import _client
+    viewer = _client(vault, role="VIEWER", actor_id="act_view")
+    body = {"drafts": [{"origin": "MANUAL", "supplier_id": "SUP-001", "lines": [{"sku": skus[0], "quantity": 1}]}]}
+    assert viewer.post("/api/zaad/orders/bulk", json=body).status_code == 403
+    buyer = _client(vault, role="BUYER", actor_id="act_bulk")
+    assert buyer.post("/api/zaad/orders/bulk", json={"drafts": []}).status_code == 422
+    assert buyer.post("/api/zaad/orders/bulk", json={"drafts": "x"}).status_code == 400
+    too_many = {"drafts": [body["drafts"][0]] * 51}
+    assert buyer.post("/api/zaad/orders/bulk", json=too_many).status_code == 422

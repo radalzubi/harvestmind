@@ -8,8 +8,10 @@ import type { Decision } from "@/lib/zaad/decisions";
 
 const CHANGE = new Set(["DEFER", "EXPEDITE", "CANCEL", "REDUCE", "SPLIT", "BUY MORE", "BUY LESS", "MOVE", "HOLD"]);
 
-export function DecisionCard({ decision, selected, onSelect }: {
+export function DecisionCard({ decision, selected, onSelect, checked, onCheck }: {
   decision: Decision; selected?: boolean; onSelect: (id: string) => void;
+  /** When given, the card carries a checkbox for bulk creation; `undefined` means no selection mode. */
+  checked?: boolean; onCheck?: (id: string, next: boolean) => void;
 }) {
   const facts = decision.effect.filter((f) => f.value != null).slice(0, 3);
   return (
@@ -19,6 +21,11 @@ export function DecisionCard({ decision, selected, onSelect }: {
       aria-label={`${decision.headline}. Open the full explanation.`}
     >
       <div className="dec-top">
+        {onCheck && (
+          <input type="checkbox" checked={Boolean(checked)} aria-label={`Select ${decision.headline} for a purchase order`}
+            onClick={(e) => e.stopPropagation()} onChange={(e) => onCheck(decision.id, e.target.checked)}
+            style={{ marginInlineEnd: 6 }} />
+        )}
         <span className="dec-verb" data-tone={decision.verb === "KEEP" ? "keep" : CHANGE.has(decision.verb) ? "change" : undefined}>
           {decision.verb}
         </span>

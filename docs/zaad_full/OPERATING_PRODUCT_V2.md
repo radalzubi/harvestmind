@@ -153,13 +153,32 @@ Five registers, never collapsed:
 
 The Outcomes surface says "observed after action", never "caused by ZAAD".
 
-## 9. Location-aware inventory *(designed)*
+## 9. Location-aware inventory
 
-`GET /inventory?location=<site>`: stock from that site's latest snapshot rows; inbound from open
-orders whose `destination_id` is that site (absent when orders carry no destination — stated);
-weekly demand from order lines with that `location_id` (absent when orders carry no site —
-stated, and cover with it). The table header names the site; the URL keeps it; the SKU detail
-reconciles the all-site total with the sum of site positions and says when they differ.
+`GET /api/zaad/workspace/inventory?location=<site>` (`api/product/catalog.py::inventory_page`):
+every figure on the page is that site's own. Stock comes from the site's rows on the latest
+snapshot date (the same rule the planning adapter reads); units on order from open orders whose
+`destination_id` is that site; units coming from other sites from `stg_fmcg_transfers` rows into
+the site with no `received_date` (`transfer_units`, a column only a site view has — across all
+sites a transfer is a move, not an arrival); weekly demand from order lines whose `location_id`
+is that site; cover from those two. A site column is only *usable* when at least one of its
+values names a site with stock rows (`catalog.site_column_usable`): the staging schema defaults
+`stg_fmcg_orders.location_id` and `stg_fmcg_purchase_orders.destination_id` to `'MAIN'`, so a
+column that exists can still be a placeholder. When a column is not usable for one site the
+figure is null and `location_notes` says why in words; the interface shows a dash carrying that
+reason, never the all-sites number under a site heading. An unknown site is an empty page, not
+the total. `GET /api/zaad/workspace/locations` lists the sites with their declared kind.
+
+The Inventory page keeps the site in the URL (`?location=`), names it in the heading, the caption
+and the column headers ("On hand at NORTH", "Due at NORTH", "Coming from other sites", "NORTH per
+week", "Value at NORTH"), and offers the site filter only when the workspace has more than one
+site. The SKU detail reconciles: `reconciliation` carries the all-sites total, the sum of the
+site positions shown (older rows included, since that is what a reader adds up), the sites on the
+latest snapshot, the sites whose latest row is older, and a note when they differ. Verified on
+the Acme Importers workspace: SKU-0001 all sites 5,669 = DC 2,835 + NORTH 1,417 + SOUTH 1,417;
+NORTH view shows 1,417 on hand, nothing due (every order is delivered to the DC), 931 per week
+against 1,737 across the business. Tests: `tests/integration/test_location_inventory_and_readiness.py`.
+
 Transfers and positioning: P2 reports transfers the *plan* would make; a Transfer draft object is
 built only if the report gives origin, destination, SKU and quantity — see §10.
 
@@ -168,17 +187,33 @@ built only if the report gives origin, destination, SKU and quantity — see §1
 Built only if P2's network report carries concrete `transfers` with origin, destination, SKU and
 quantity. Otherwise recorded here as not expressible.
 
-## 11. Data readiness and quality *(designed)*
+## 11. Data readiness and quality
 
-`GET /api/zaad/workspace/readiness`: per source — required and optional fields, present fields,
-coverage % per important field, validity %, date range, row count, last upload; and a
-capability matrix computed from them (PURCHASING, SUPPLIER_LATENESS, SUPPLIER_ROOT_CAUSE,
-PERISHABILITY, OPEN_PO_INTERVENTION, MULTI_SITE, ALTERNATIVE_SOURCING, CUSTOMER_ALLOCATION,
-REALIZED_VALUE) each `READY | PARTIAL | BLOCKED | UNAVAILABLE` with the field that decides it.
-Quality checks: duplicates, orphan keys, impossible dates, negative quantities, extremes, unknown
-products and suppliers, unmatched receipts; each `BLOCKING | MATERIAL | INFORMATIONAL`. Surfaced
-on Upload (with the path: which source, which column) and on Data; Home carries one line when
-something is BLOCKED.
+`GET /api/zaad/workspace/readiness` (`api/product/readiness.py`), counted from the vault and
+labelled `COUNTED_FROM_THE_VAULT`: per source — the fields ZAAD reads with required/optional,
+present, coverage (share of rows with a value), validity (share of values that pass the kind's
+check: non-negative number, plausible date, non-blank text), which capabilities each field feeds;
+plus row count, date range and last upload. A capability matrix over fourteen capabilities
+(PURCHASING, INVENTORY_VALUE, SUPPLIER_LATENESS, SUPPLIER_ROOT_CAUSE, PERISHABILITY,
+OPEN_PO_INTERVENTION, MULTI_SITE, ALTERNATIVE_SOURCING, CUSTOMER_ALLOCATION, SERVICE_HISTORY,
+SHORTAGE_ECONOMICS, NETWORK, REALIZED_VALUE, WASTE), each `READY | PARTIAL | BLOCKED |
+UNAVAILABLE` with the source and column that decides it and the coverage that decided it.
+`BLOCKED` names a column the canonical upload could carry; `UNAVAILABLE` means nothing the upload
+carries could answer it (where a delay happened needs dispatch, vessel, port and customs
+timestamps; waste needs write-off adjustments) and the reason says which fields are missing from
+the upload itself. Quality checks — duplicate products and order lines, orders and stock for
+unknown products, unknown suppliers, negative quantities and costs, extreme quantities, promised
+before ordered, received before ordered, unmatched receipts, shipped above ordered, mixed
+currencies — each `BLOCKING | MATERIAL | INFORMATIONAL` by whether ZAAD cannot plan, plans
+differently, or merely notices, with the source and column.
+
+Surfaced on Upload ("What ZAAD can do with this data", and the status line now derives its
+sentence from the same counted answer instead of saying "nothing needs your attention" above a
+table of blocked capabilities), on Data (the matrix, per-source field completeness, quality
+checks) and on Home (one line under "Your data" when anything is blocked or partial, naming the
+first gap). On the Acme workspace this reads: 6 ready, 1 partial, 5 blocked, 2 not in the upload
+— supplier lateness blocked by `expected_delivery_date` missing on every purchase order, which is
+the fact V1's diagnostics reported three ways and V1's readiness never did.
 
 ## 12. Bulk purchase creation *(designed)*
 

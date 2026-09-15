@@ -22,9 +22,12 @@ import { Button, ButtonLink, Disclosure, EmptyState, ErrorState, Loading, Notice
 import { Column, DataTable, Drawer, NotAvailable, Pager, SearchField, SelectField, Tally, Toolbar } from "@/components/workspace/Table";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import {
-  COUNT, DATE, MONEY, NUMBER, fetchDatasetValues, fetchInventory, fetchSku,
-  type InventoryPage, type InventoryRow, type SkuDetail,
+  COUNT, DATE, MONEY, NUMBER, fetchDatasetValues, fetchInventory, fetchLocations, fetchSku,
+  type InventoryPage, type InventoryRow, type Location, type SkuDetail,
 } from "@/lib/zaad/product";
+
+const KIND_LABEL: Record<string, string> = { central_dc: "central DC", branch: "branch", warehouse: "warehouse", store: "store" };
+const siteLabel = (l: Location) => l.kind ? `${l.id} (${KIND_LABEL[l.kind] ?? l.kind})` : l.id;
 
 const PAGE = 50;
 
@@ -50,15 +53,15 @@ function coverChip(weeks: number | null | undefined, onHand: number | null | und
  * brand never sees a brand filter with nothing in it.
  */
 function useFacets() {
-  const [facets, setFacets] = useState<{ category: string[]; brand: string[]; supplier: string[] }>({
-    category: [], brand: [], supplier: [],
+  const [facets, setFacets] = useState<{ category: string[]; brand: string[]; supplier: string[]; sites: Location[] }>({
+    category: [], brand: [], supplier: [], sites: [],
   });
   useEffect(() => {
     let alive = true;
     const load = (column: string) => fetchDatasetValues("products", column)
       .then((r) => r.values).catch(() => [] as string[]);
-    Promise.all([load("category"), load("brand"), load("supplier_id")])
-      .then(([category, brand, supplier]) => { if (alive) setFacets({ category, brand, supplier }); });
+    Promise.all([load("category"), load("brand"), load("supplier_id"), fetchLocations().then((r) => r.locations).catch(() => [] as Location[])])
+      .then(([category, brand, supplier, sites]) => { if (alive) setFacets({ category, brand, supplier, sites }); });
     return () => { alive = false; };
   }, []);
   return facets;
@@ -138,16 +141,27 @@ function SkuPanel({ sku, onClose }: { sku: string; onClose: () => void }) {
 
           <Section title="Where it is">
             {detail.stock_by_site.length ? (
-              <DataTable
-                caption={`Stock of ${sku} by site`} dense
-                rows={detail.stock_by_site} rowKey={(r) => r.location_id}
-                columns={[
-                  { key: "location_id", label: "Site", render: (r) => r.location_id },
-                  { key: "on_hand", label: "On hand", numeric: true, render: (r) => NUMBER(r.on_hand) },
-                  { key: "in_transit", label: "In transit", numeric: true, render: (r) => NUMBER(r.in_transit) },
-                  { key: "snapshot_date", label: "As at", render: (r) => DATE(r.snapshot_date) },
-                ]}
-              />
+              <>
+                <DataTable
+                  caption={`Stock of ${sku} by site`} dense
+                  rows={detail.stock_by_site} rowKey={(r) => r.location_id}
+                  columns={[
+                    { key: "location_id", label: "Site", render: (r) => <Link href={`/inventory?location=${encodeURIComponent(r.location_id)}&sku=${encodeURIComponent(sku)}`}>{r.location_id}</Link> },
+                    { key: "on_hand", label: "On hand", numeric: true, render: (r) => NUMBER(r.on_hand) },
+                    { key: "in_transit", label: "In transit", numeric: true, render: (r) => NUMBER(r.in_transit) },
+                    { key: "snapshot_date", label: "As at", render: (r) => DATE(r.snapshot_date) },
+                  ]}
+                />
+                {/* The all-sites figure above and the site rows here come from the same snapshot
+                    rule, so they agree unless a site's latest count is older than the others'.
+                    When they differ, the difference is stated — never a total that silently drops
+                    a site, never a site row that silently joins one. */}
+                {detail.reconciliation && (
+                  detail.reconciliation.agree
+                    ? <p className="tbl-count">The sites add up to the {NUMBER(detail.reconciliation.sum_of_sites)} units on hand above, all counted on {DATE(detail.reconciliation.snapshot_date ?? "")}.</p>
+                    : <div style={{ marginTop: 8 }}><Notice tone="warn">The sites shown add up to {NUMBER(detail.reconciliation.sum_of_sites)} units; the on-hand figure above is {detail.reconciliation.all_sites_total != null ? NUMBER(detail.reconciliation.all_sites_total) : "not available"}. {detail.reconciliation.note}</Notice></div>
+                )}
+              </>
             ) : <Notice>No stock snapshot has been uploaded for this product.</Notice>}
           </Section>
 
@@ -172,7 +186,9 @@ function SkuPanel({ sku, onClose }: { sku: string; onClose: () => void }) {
               <>
                 <Sparkline rows={detail.demand_by_week} />
                 <p className="tbl-count">
-                  {detail.short_shipped_lines ? `${NUMBER(detail.short_shipped_lines)} order lines shipped short of what was ordered.` : "No order line was shipped short."}
+                  {detail.short_shipped_lines == null
+                    ? "Shipped quantities are not recorded on your customer orders, so short shipments cannot be counted."
+                    : detail.short_shipped_lines ? `${NUMBER(detail.short_shipped_lines)} order lines shipped short of what was ordered.` : "No order line was shipped short."}
                 </p>
               </>
             ) : <Notice>No customer order history has been uploaded for this product.</Notice>}
@@ -241,6 +257,7 @@ function InventoryBody() {
   const brand = params.get("brand") ?? "";
   const supplier = params.get("supplier") ?? "";
   const cover = params.get("cover") ?? "";
+  const location = params.get("location") ?? "";
   const planned = params.get("planned") === "1";
   const sort = params.get("sort") ?? "sku";
   const direction = params.get("dir") ?? "asc";
@@ -274,7 +291,7 @@ function InventoryBody() {
     setError(null);
     fetchInventory({
       q: q || undefined, category: category || undefined, brand: brand || undefined,
-      supplier_id: supplier || undefined, cover: cover || undefined,
+      supplier_id: supplier || undefined, cover: cover || undefined, location: location || undefined,
       skus: planned && scope?.skus.length ? scope.skus.join(",") : undefined,
       sort, direction, limit: PAGE, offset,
     })
@@ -282,7 +299,7 @@ function InventoryBody() {
       .catch((e) => { if (alive) setError(e.message); })
       .finally(() => { if (alive) setBusy(false); });
     return () => { alive = false; };
-  }, [q, category, brand, supplier, cover, planned, sort, direction, offset, scope]);
+  }, [q, category, brand, supplier, cover, location, planned, sort, direction, offset, scope]);
 
   const columns: Column<InventoryRow>[] = useMemo(() => [
     { key: "sku", label: "Product", sortable: true, width: 240,
@@ -299,15 +316,22 @@ function InventoryBody() {
       render: (r) => r.supplier_id
         ? <Link href={`/diagnostics/supplier/${encodeURIComponent(r.supplier_id)}`} onClick={(e) => e.stopPropagation()}>{r.supplier_name || r.supplier_id}</Link>
         : <span className="na">—</span> },
-    { key: "on_hand", label: "On hand", numeric: true, sortable: true, render: (r) => r.on_hand != null ? NUMBER(r.on_hand) : <span className="na">—</span> },
+    // In a site view every figure is that site's own. A column the workspace's data cannot fill
+    // for one site (orders with no destination, customer orders with no site) is a dash with the
+    // reason on it, never the all-sites number under a site heading.
+    { key: "on_hand", label: location ? `On hand at ${location}` : "On hand", numeric: true, sortable: true,
+      render: (r) => r.on_hand != null ? NUMBER(r.on_hand) : <span className="na" title={location ? `No stock row for ${location} on the latest count` : undefined}>—</span> },
     // Nothing on order is an answer. A dash here said ZAAD could not see the inbound at all.
-    { key: "inbound_units", label: "On order", numeric: true, sortable: true, hideBelow: 700,
-      render: (r) => <Tally value={r.inbound_units} why="No purchase order carries this product" /> },
-    { key: "weekly_demand", label: "Per week", numeric: true, sortable: true, hideBelow: 1100, render: (r) => r.weekly_demand != null ? NUMBER(r.weekly_demand) : <span className="na">—</span> },
+    { key: "inbound_units", label: location ? `Due at ${location}` : "On order", numeric: true, sortable: true, hideBelow: 700,
+      render: (r) => <Tally value={r.inbound_units} why={location ? `No purchase order is due at ${location} for this product, or orders carry no destination` : "No purchase order carries this product"} /> },
+    ...(location ? [{ key: "transfer_units", label: `Coming from other sites`, numeric: true, sortable: true, hideBelow: 900,
+      render: (r: InventoryRow) => <Tally value={r.transfer_units} why={`No open transfer into ${location} carries this product`} /> } as Column<InventoryRow>] : []),
+    { key: "weekly_demand", label: location ? `${location} per week` : "Per week", numeric: true, sortable: true, hideBelow: 1100,
+      render: (r) => r.weekly_demand != null ? NUMBER(r.weekly_demand) : <span className="na" title={location ? `No customer order names ${location} for this product` : undefined}>—</span> },
     { key: "cover_weeks", label: "Cover", numeric: true, sortable: true, render: (r) => coverChip(r.cover_weeks, r.on_hand) },
-    { key: "inventory_value", label: "Stock value", numeric: true, sortable: true, hideBelow: 700,
+    { key: "inventory_value", label: location ? `Value at ${location}` : "Stock value", numeric: true, sortable: true, hideBelow: 700,
       render: (r) => r.inventory_value != null ? MONEY(r.inventory_value) : <span className="na">—</span> },
-  ], []);
+  ], [location]);
 
   if (error) {
     return <ErrorState title="Your inventory could not be read"
@@ -323,14 +347,15 @@ function InventoryBody() {
     </EmptyState>;
   }
 
-  const filtered = Boolean(q || category || brand || supplier || cover || planned);
+  const filtered = Boolean(q || category || brand || supplier || cover || planned || location);
+  const site = facets.sites.find((l) => l.id === location);
 
   return (
     <>
       <PageHead
         title="Inventory"
         sub={page.snapshot_date
-          ? `Stock as counted on ${DATE(page.snapshot_date)}. Weeks of cover is your stock divided by average weekly demand over the last ${page.demand_weeks} weeks.`
+          ? `${location ? `Stock at ${site ? siteLabel(site) : location} only, ` : "Stock "}as counted on ${DATE(page.snapshot_date)}. Weeks of cover is ${location ? "that site's" : "your"} stock divided by ${location ? "its" : ""} average weekly demand over the last ${page.demand_weeks} weeks.`
           : "Your product list. Stock appears once a stock count is uploaded."}
         actions={<Button role="tertiary" size="sm" icon={<RefreshCw size={14} aria-hidden />} onClick={() => set({})}>Refresh</Button>}
       />
@@ -346,6 +371,8 @@ function InventoryBody() {
           label="Supplier" all="Every supplier" options={facets.supplier.map((c) => ({ value: c, label: c }))} />}
         <SelectField value={cover} onChange={(v) => set({ cover: v })} label="Weeks of cover"
           all="Any cover" options={COVER_CHOICES} />
+        {facets.sites.length > 1 && <SelectField value={location} onChange={(v) => set({ location: v })}
+          label="Site" all="Every site, summed" options={facets.sites.map((l) => ({ value: l.id, label: siteLabel(l) }))} />}
         <div className="tbar-spacer" />
         {filtered && <Button size="sm" role="tertiary" onClick={() => router.replace("/inventory")}>Clear filters</Button>}
       </Toolbar>
@@ -353,6 +380,15 @@ function InventoryBody() {
       {/* Filtering to "Cover not measurable" gives a page where every Cover cell says the same
           thing for the same reason, and that reason only exists in a `title` — unreachable by
           touch, unreliable to a screen reader. When it is the whole page, it is said in the open. */}
+      {location && (page.location_notes?.length ?? 0) > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <Notice>
+            <strong>Some columns cannot be shown for one site.</strong>{" "}
+            {page.location_notes!.join(" ")}
+          </Notice>
+        </div>
+      )}
+
       {cover === "unknown" && page.total > 0 && (
         <div style={{ marginBottom: 12 }}>
           <Notice>
@@ -382,7 +418,7 @@ function InventoryBody() {
 
       <div style={{ opacity: busy ? 0.6 : 1, transition: "opacity .12s" }}>
         <DataTable
-          caption="Products with their stock position"
+          caption={location ? `Products with their stock position at ${location}` : "Products with their stock position"}
           columns={columns} rows={page.rows} rowKey={(r) => r.sku}
           selected={selected} onSelect={(r) => set({ sku: r.sku, offset: String(offset) })}
           sort={page.sort} direction={page.direction}
