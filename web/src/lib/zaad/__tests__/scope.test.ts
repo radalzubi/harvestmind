@@ -29,3 +29,8 @@ test("the plan's own products are the ones counted, not everything the request h
   const s = solveScope(req([{ sku: "A", supplier: "S1", resources: ["cap"] }, { sku: "B", supplier: "S1", resources: ["cap"] }, { sku: "C", supplier: "S2" }]), 150, ["A", "B"]);
   assert.deepEqual(s, { catalogue: 150, evaluated: 2, coupled: 2, components: 1 });
 });
+
+test("uncoupled products are said to be separable, not \"solved together\"", () => {
+  const s = solveScope(req([{ sku: "A", supplier: "S1" }, { sku: "B", supplier: "S2" }]), 150);
+  assert.equal(scopeSentence(s), "Catalogue 150 · evaluated 2 · none of them share supplier capacity or order terms; they were planned in one run and each could be planned on its own.");
+});

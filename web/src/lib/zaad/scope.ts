@@ -59,6 +59,7 @@ export function scopeSentence(s: SolveScope): string {
   const evaluated = s.evaluated.toLocaleString("en-US");
   const head = s.catalogue != null ? `Catalogue ${s.catalogue.toLocaleString("en-US")} · evaluated ${evaluated}` : `Evaluated ${evaluated}`;
   if (s.evaluated <= 1) return `${head} · solved on its own.`;
+  if (s.coupled === 0) return `${head} · none of them share supplier capacity or order terms; they were planned in one run and each could be planned on its own.`;
   if (s.components === 1) return `${head} · solved together as one problem: ${s.coupled === s.evaluated ? "every product shares" : `${s.coupled} of them share`} supplier capacity or order terms with another.`;
   return `${head} · solved together; ${s.coupled} of them share supplier capacity or order terms, forming ${s.components} independent groups.`;
 }
