@@ -36,7 +36,7 @@ attributed), and what all of it was worth, in five strictly separated registers 
 * Evaluation submission record-first; staleness by content hash and workspace data version;
   approval names the evaluation it was made against (`api/product/{drafts,evaluation}.py`).
 
-## 3. Governance *(designed)*
+## 3. Governance
 
 **Audit log.** One append-only table, `zaad_audit_log`, written by every user-created operational
 action through one helper: actor, workspace, object type and id, action, before and after
@@ -59,7 +59,13 @@ endpoint checks a capability; no capability exists that nothing checks.
 | approve, reject | | | ✓ | ✓ |
 | export | | ✓ | ✓ | ✓ |
 | recordExternal, recordOutcome | | ✓ | ✓ | ✓ |
-| manageProfiles, manageSettings | | | | ✓ |
+| manageProfiles, manageSettings, manageActors | | | | ✓ |
+
+Landed as `api/product/governance.py` (`Actor`, `ROLE_CAPABILITIES`, `need`, `record_audit`,
+`read_audit`, settings allowlist, idempotency `recall`/`remember`), per-actor tokens in
+`infrastructure/operator_registry.py` (`issue_actor_token`, `list_actors`, `revoke_actor`),
+`POST /admin/operators/{id}/actors`, and `api/routers/zaad_history.py` for the audit, settings and
+actor routes. Tests: `tests/integration/test_operating_product_v2_governance.py`.
 
 **Self-approval policy.** A workspace setting (`zaad_workspace_settings`, ADMIN-managed):
 `self_approval = allowed | different_approver`. Default `allowed` (a pilot must not lock itself
@@ -75,7 +81,7 @@ overwrite each other.
 `…/outcomes` accept an `Idempotency-Key` header; a replay with the same key on the same path
 returns the recorded response instead of acting twice (`zaad_idempotency`, 24 h).
 
-## 4. The closed-loop action model *(designed)*
+## 4. The closed-loop action model
 
 Draft lifecycle after EXPORTED, all human-recorded:
 
@@ -89,7 +95,7 @@ observed_at?}` with the actor and time; transitions are validated; every record 
 an audit row. ZAAD never sets one of these itself. The Purchase orders surface filters on them and
 shows provenance (from your system / proposal / amendment) beside state.
 
-## 5. Decision history and outcomes *(designed)*
+## 5. Decision history and outcomes
 
 A decision is a rendering of a plan report (job id + decision id); it is reproducible from the
 job store. What V2 persists is the operator's response to it: `zaad_decision_responses`
@@ -108,7 +114,7 @@ Override reason codes: `supplier_relationship`, `contract_not_represented`, `cas
 working capital, customer allocation), a value, when it was observed, its source (`recorded` by a
 person, or `matched` from receipts that name the exported order's reference), and a note.
 
-## 6. Provenance *(designed)*
+## 6. Provenance
 
 Every historical decision links to: engine version, information hash, workspace data version,
 as-of, seed, scenario configuration, scope, the report (job id), the approval record, the
@@ -154,7 +160,7 @@ The order page shows the declared terms (V1's view) and, underneath, the same ev
 new orders have: "Ask ZAAD to evaluate this change", the three-column ledger, and "Your contract's
 terms for this change" with the fee beside the engine's difference.
 
-## 8. Realized value *(designed)*
+## 8. Realized value
 
 Five registers, never collapsed:
 
@@ -166,7 +172,13 @@ Five registers, never collapsed:
 | REALIZED OUTCOME | what was observed after the action | `zaad_outcomes`, "observed after action" |
 | REALIZED SAVINGS | a defensible comparator against an observed cost | only when an outcome carries both the observed figure and a stated comparator basis; otherwise absent |
 
-The Outcomes surface says "observed after action", never "caused by ZAAD".
+The Outcomes surface says "observed after action", never "caused by ZAAD". Landed: the History
+surface (`web/src/app/history/page.tsx`) shows the five registers by name, decision responses,
+decided proposals with the evaluation state they were approved against, and outcomes with their
+comparator basis or "no comparator — an observation only"; `GET /api/zaad/history` and
+`realized_value()` classify each outcome. V2 adds a sixth stated number for amendments only —
+the contract's declared fee beside the modelled difference (§7) — which is neither a model nor a
+realized figure and is labelled as the operator's own term.
 
 ## 9. Location-aware inventory
 
@@ -324,4 +336,38 @@ commitments, `base_stock` optimal) — a property of the fixture's commitments, 
 
 ## 17. Known limits
 
-Recorded as they are established.
+Recorded as they are established, from the V2 build and its audit (`FABLE_V2_RELEASE_AUDIT.md`).
+
+1. **Amendments: only declared rights, only P4B V1's vocabulary.** DEFER, EXPEDITE, CANCEL and
+   REDUCE (as a partial cancel) are evaluable against a declared option; SPLIT is refused; a
+   requested date must be one of the declared windows. The contract fee is added to the engine's
+   difference as two stated numbers, never modelled.
+2. **Transfers are proposals, not re-planned moves.** A transfer proposal exports and is tracked
+   like a purchase, but cannot be evaluated on its own: the request carries lanes, not moves in
+   flight. The move's economics are those of the plan that recommended it.
+3. **Solve time is the solver's.** 96 % of a 10-product plan's wall clock is inside HiGHS; no
+   decomposition is shipped because the request carries global ties (site capacity, cash) that
+   make separate solves a different problem. The scope notice states the joint-problem structure
+   instead.
+4. **Readiness describes the commercial upload.** A fresh-produce workspace is told so and shown
+   no capability rows; produce readiness stays with the produce diagnostics.
+5. **Site columns that only carry the schema default.** `location_id` / `destination_id`
+   default to `'MAIN'`; a site view treats such a column as undeclared and says so. A workspace
+   whose real site is literally named MAIN with stock rows under it is read correctly (the rule
+   is "names a site with stock rows"), but a workspace mixing placeholder and real values will
+   see the placeholder rows counted as a site called MAIN.
+6. **Arabic covers the chrome, direction and figures, not page copy.** Workspace pages remain
+   English; the copy module carries the workspace navigation, search, help and footer in both
+   languages, and figures are bidi-isolated by CSS.
+7. **Realized outcomes are recorded or matched, never attributed.** Receipts matched to an
+   exported order's reference populate a REALIZED OUTCOME; "realized savings" appears only when
+   an observation carries its comparator and basis. No backtested opportunity exists in this
+   product.
+8. **Bulk creation is all-or-none within one workspace call, at most 50 proposals.** A larger
+   selection is refused with the count.
+9. **The live QA workspaces produced no purchase or move recommendation in their current plans**
+   (both retained the incumbent), so the bulk-creation checkboxes and review sheet were verified
+   by their unit tests and the endpoint's integration tests, and by their absence on a plan with
+   only KEEP decisions; they were not exercised end to end in a browser in this release.
+10. **Telemetry carries ids and surface names only.** No record contents; unknown event names and
+    keys are dropped and counted.
