@@ -150,11 +150,11 @@ export interface SeriesPoint { period: string; ordered: number | null; shipped: 
 export interface TopRow { id: string | null; ordered: number | null; shipped: number | null; unfulfilled: number | null; lines: number }
 export interface Demand {
   available: boolean; reason?: string; why?: string; label?: string; fulfilment?: "MEASURED" | "NOT_MEASURED"; fulfilment_note?: string;
-  series: SeriesPoint[]; truncated?: boolean;
+  series: SeriesPoint[]; truncated?: boolean; partial_last_period?: boolean;
   totals?: { ordered: number | null; shipped: number | null; lines: number; customers: number; products: number; first_order: string | null; last_order: string | null; lines_unmeasured: number };
   top?: Record<string, { rows: TopRow[]; reason?: string; why?: string }>;
   concentration?: { customers: number; top_1_share: number | null; top_5_share: number | null; hhi: number | null; basis: string };
-  period_over_period?: { period: string; previous: string; ordered: number | null; previous_ordered: number | null; change: number | null; change_share: number | null } | null;
+  period_over_period?: { period: string; previous: string; ordered: number | null; previous_ordered: number | null; change: number | null; change_share: number | null; basis?: string } | null;
   provenance: Provenance;
 }
 export interface DemandPeriod {

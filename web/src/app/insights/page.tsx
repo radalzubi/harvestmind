@@ -51,11 +51,17 @@ function Stat({ label, value, note, href }: { label: string; value: string; note
 function Stats({ children }: { children: ReactNode }) { return <dl className="ins-stat">{children}</dl>; }
 
 function PlanLine({ plan }: { plan: PlanSummary | null }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   if (!plan) return null;
+  const copy = t.workspace.insights;
+  const sentence = locale === "en"
+    ? planSentence(plan, DATE)
+    : !plan.available
+      ? copy.noPlan
+      : `${copy.latestPlan}: ${plan.finished_at ? DATE(plan.finished_at) : "—"}${plan.products != null ? ` · ${plan.products}` : ""}.${plan.stale ? ` ${copy.dataChanged}` : ""}`;
   return (
     <p className="ins-plan" data-stale={plan.stale ? "true" : "false"} aria-live="polite">
-      <strong>{planSentence(plan, DATE)}</strong>
+      <strong>{sentence}</strong>
       {plan.available && plan.job_id && <Link href="/decisions">Open Decisions</Link>}
       {!plan.available && <Link href="/home">{t.workspace.insights.runFromHome}</Link>}
     </p>
@@ -132,7 +138,7 @@ function OverviewTab({ filters, currency }: { filters: Filters; currency: string
             <Stats>
               <Stat label={copy.ordered} value={NUMBER(d.totals.ordered)} note={`${NUMBER(d.totals.lines)} lines · ${NUMBER(d.totals.customers)} customers`} />
               <Stat label={copy.unfulfilled} value={d.fulfilment === "MEASURED" && d.totals.shipped != null && d.totals.ordered != null ? NUMBER(d.totals.ordered - d.totals.shipped) : reasonLabel("NOT_MEASURED")} />
-              {d.period_over_period && <Stat label="Last period vs previous" value={shown(d.period_over_period.change_share, (v) => PERCENT(v, 1), "UNKNOWN")} note={`${NUMBER(d.period_over_period.ordered)} vs ${NUMBER(d.period_over_period.previous_ordered)}`} />}
+              {d.period_over_period && <Stat label={`${periodLabel(d.period_over_period.period, "week")} vs ${periodLabel(d.period_over_period.previous, "week")}`} value={shown(d.period_over_period.change_share, (v) => PERCENT(v, 1), "UNKNOWN")} note={`${NUMBER(d.period_over_period.ordered)} vs ${NUMBER(d.period_over_period.previous_ordered)} units`} />}
               {d.concentration && <Stat label="Largest customer" value={shown(d.concentration.top_1_share, (v) => PERCENT(v, 0), "NO_DATA")} note="share of units ordered" />}
             </Stats>
           )}
@@ -220,7 +226,7 @@ function DemandTab({ filters, set, plan }: { filters: Filters; set: Setter; plan
               <Stats>
                 <Stat label={copy.ordered} value={NUMBER(data.totals.ordered)} note={`${NUMBER(data.totals.lines)} lines · ${DATE(data.totals.first_order)} → ${DATE(data.totals.last_order)}`} />
                 <Stat label={copy.shipped} value={shown(data.totals.shipped, NUMBER, "NOT_MEASURED")} note={data.totals.lines_unmeasured ? `${NUMBER(data.totals.lines_unmeasured)} lines without a shipped quantity` : null} />
-                {data.period_over_period && <Stat label="Last period vs previous" value={shown(data.period_over_period.change_share, (v) => PERCENT(v, 1), "UNKNOWN")} note={`${NUMBER(data.period_over_period.ordered)} vs ${NUMBER(data.period_over_period.previous_ordered)} units`} />}
+                {data.period_over_period && <Stat label={`${periodLabel(data.period_over_period.period, filters.bucket)} vs ${periodLabel(data.period_over_period.previous, filters.bucket)}`} value={shown(data.period_over_period.change_share, (v) => PERCENT(v, 1), "UNKNOWN")} note={`${NUMBER(data.period_over_period.ordered)} vs ${NUMBER(data.period_over_period.previous_ordered)} units${data.partial_last_period ? " · the newest period is partial and left out" : ""}`} />}
                 {data.concentration && <Stat label="Concentration" value={shown(data.concentration.top_5_share, (v) => PERCENT(v, 0), "NO_DATA")} note={`top 5 of ${NUMBER(data.concentration.customers)} customers · HHI ${shown(data.concentration.hhi, (v) => NUMBER(v, 2))}`} />}
               </Stats>
             )}

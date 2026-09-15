@@ -328,19 +328,30 @@ def demand(conn: Any, scope: Scope, plan: dict[str, Any] | None = None) -> dict[
     concentration = {"customers": len(by_customer), "top_1_share": shares[0] if shares else None,
                      "top_5_share": sum(shares[:5]) if shares else None, "hhi": sum(s * s for s in shares) if shares else None,
                      "basis": "share of units ordered over the selected range; HHI is the sum of squared shares (1 = one customer)"}
-    # period over period: the last two complete buckets of the series
+    # period over period: the last two COMPLETE buckets. The newest bucket is partial when the data's
+    # last order falls before the bucket's end, and a partial period against a whole one is not a change.
     pop = None
-    if len(series) >= 2:
-        last, prev = series[-1], series[-2]
+    partial_last = False
+    if series:
+        last_order = totals.get("last_order")
+        last_period = series[-1]["period"]
+        if last_order is not None and last_period is not None:
+            bucket_end = _one(conn, f"SELECT {_trunc(scope.bucket, '?')} + INTERVAL 1 {scope.bucket} - INTERVAL 1 DAY", [last_period])
+            partial_last = bool(bucket_end is not None and last_order < (bucket_end.date() if hasattr(bucket_end, "date") else bucket_end))
+    complete = series[:-1] if (partial_last and len(series) >= 3) else series
+    if len(complete) >= 2:
+        last, prev = complete[-1], complete[-2]
         pop = {"period": _plain(last["period"]), "previous": _plain(prev["period"]), "ordered": last["ordered"], "previous_ordered": prev["ordered"],
                "change": (last["ordered"] - prev["ordered"]) if last["ordered"] is not None and prev["ordered"] is not None else None,
-               "change_share": ((last["ordered"] - prev["ordered"]) / prev["ordered"]) if prev.get("ordered") else None}
+               "change_share": ((last["ordered"] - prev["ordered"]) / prev["ordered"]) if prev.get("ordered") else None,
+               "basis": "the last two complete periods" + ("; the newest period is partial and is left out" if partial_last else "")}
     fulfilment = ("MEASURED" if shipped_col and (totals.get("lines_unmeasured") or 0) < (totals.get("lines") or 0) else
                   "NOT_MEASURED")
     return {"available": True, "label": "OBSERVED CUSTOMER ORDERS", "fulfilment": fulfilment,
             "fulfilment_note": ("Ordered, shipped and the recorded shortfall between them; a line without a shipped quantity is counted as unmeasured, never as fulfilled or lost."
                                 if fulfilment == "MEASURED" else "The upload carries no shipped quantity, so fulfilment and shortfall are not measured. Nothing is inferred about lost demand."),
-            "series": _clean(series), "truncated": truncated, "totals": _clean([totals])[0], "top": top, "concentration": concentration,
+            "series": _clean(series), "truncated": truncated, "partial_last_period": partial_last,
+            "totals": _clean([totals])[0], "top": top, "concentration": concentration,
             "period_over_period": pop,
             "provenance": provenance(conn, scope, source=["stg_fmcg_orders", "stg_fmcg_skus"], metric="units ordered by customers per period (observed orders, not demand)",
                                      numerator="sum(qty_ordered) of order lines in the period", denominator="every order line in the period after filters",
@@ -498,7 +509,8 @@ def supply(conn: Any, scope: Scope, plan: dict[str, Any] | None = None) -> dict[
                                                   WHEN date_diff('day', p.po_date, CAST(? AS DATE)) <= 56 THEN '4-8 weeks' ELSE 'over 8 weeks' END AS age,
                                               sum(p.open_units) AS units, count(DISTINCT p.po_id) AS orders""",
                                     extra="AND p.open_units > 0", group="GROUP BY 1 ORDER BY min(date_diff('day', p.po_date, CAST(? AS DATE)))"),
-                  [*site_params, *sp, today, today, today, today])
+                  # positional binds follow the SQL text: the site CTE, the three CASE dates, the SKU-side filters, the ORDER BY date
+                  [*site_params, today, today, today, *sp, today])
     late_open = _rows(conn, base.format(select="count(DISTINCT p.po_id) AS orders, sum(p.open_units) AS units, count(DISTINCT p.po_id) FILTER (WHERE p.eta IS NULL) AS orders_without_eta",
                                         extra="AND p.open_units > 0 AND (p.eta IS NULL OR p.eta < CAST(? AS DATE))", group=""), [*site_params, *sp, today])[0]
     by_supplier = _rows(conn, base.format(select="p.supplier_id AS id, sum(p.open_units) AS open_units, count(DISTINCT p.po_id) FILTER (WHERE p.open_units > 0) AS open_orders, sum(p.open_units * m.unit_cost) AS open_value",

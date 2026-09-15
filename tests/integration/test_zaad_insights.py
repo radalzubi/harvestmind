@@ -143,6 +143,15 @@ def test_supply_open_orders_agree_with_the_purchase_orders_page_rule(client, vau
     assert {r["id"] for r in body["by_destination"]} == {"DEMO-DC-AMMAN"}
 
 
+def test_supply_filtered_by_supplier_or_site_still_binds_in_order(client, vault):
+    body = client.get(f"/api/zaad/insights/supply?bucket=week&end={AS_OF.isoformat()}&supplier=DEMO-SUP-02").json()
+    assert body["available"] and {r["id"] for r in body["by_supplier"]} == {"DEMO-SUP-02"}
+    assert sum(r["units"] for r in body["aging"]) == body["totals"]["open_units"] > 0
+    site = client.get(f"/api/zaad/insights/supply?bucket=week&end={AS_OF.isoformat()}&location=DEMO-DC-AMMAN&category=Paper").json()
+    assert site["available"] and sum(r["units"] for r in site["aging"]) == site["totals"]["open_units"]
+    assert client.get(f"/api/zaad/insights/inventory?bucket=week&location=DEMO-BR-IRBID&category=Paper").json()["available"]
+
+
 def test_supplier_metrics_carry_their_denominators(client, vault):
     body = client.get("/api/zaad/insights/suppliers?bucket=month").json()
     rows = {r["supplier_id"]: r for r in body["suppliers"]}
