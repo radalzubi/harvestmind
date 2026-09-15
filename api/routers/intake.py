@@ -23,10 +23,27 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from loguru import logger
 
-from api.dependencies import get_conn, rate_limiter, require_operator
+from api.dependencies import get_conn, rate_limiter, require_actor, require_operator
+from api.product.governance import Forbidden, need
+
+
 from ingestion.csv_ingestor import COLUMN_MAPS, ingest_csv
 
 router = APIRouter(prefix="/intake", tags=["intake"])
+
+
+def can_manage_data(actor=Depends(require_actor)):
+    """Operating Product V2: adding, replacing or clearing data needs the manageData capability.
+
+    A viewer sees the workspace and changes nothing in it. In permissive dev with no token there is
+    no actor, and the upload path behaves as it always has.
+    """
+    if actor is not None:
+        try:
+            need(actor, "manageData")
+        except Forbidden as exc:
+            raise HTTPException(status_code=403, detail={"code": "forbidden", "message": str(exc)}) from exc
+    return actor
 
 # Upper bound on a single uploaded file. Operator CSV/PDF intake is well
 # under this; the cap prevents an unbounded body from being read fully into
@@ -145,7 +162,7 @@ def _check_required_columns(
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
-@router.post("/upload/{table}")
+@router.post("/upload/{table}", dependencies=[Depends(can_manage_data)])
 async def upload_csv(
     table: str,
     file: UploadFile = File(...),
@@ -399,7 +416,7 @@ async def upload_csv(
             vault_dbm.close_all()
 
 
-@router.post("/load-sample-data", status_code=status.HTTP_200_OK)
+@router.post("/load-sample-data", status_code=status.HTTP_200_OK, dependencies=[Depends(can_manage_data)])
 def load_sample_data(conn=Depends(get_conn)):
     """Load bundled sample CSVs into all staging tables.
 
@@ -460,7 +477,7 @@ def load_sample_data(conn=Depends(get_conn)):
     }
 
 
-@router.post("/clear/{table}", status_code=status.HTTP_200_OK)
+@router.post("/clear/{table}", status_code=status.HTTP_200_OK, dependencies=[Depends(can_manage_data)])
 def clear_staging_table(table: str, conn=Depends(get_conn)):
     """Truncate a staging table to allow clean re-upload."""
     _validate_staging_table(table)
@@ -507,7 +524,7 @@ def intake_status(conn=Depends(get_conn)):
 
 # ── LLM extraction endpoints (smart upload) ───────────────────────────────────
 
-@router.post("/extract", dependencies=[Depends(rate_limiter)])
+@router.post("/extract", dependencies=[Depends(rate_limiter), Depends(can_manage_data)])
 async def extract_files(
     files: list[UploadFile] = File(...),
     operator_id: str | None = None,
@@ -589,7 +606,7 @@ def get_extraction_session(session_id: str):
     return data
 
 
-@router.post("/confirm")
+@router.post("/confirm", dependencies=[Depends(can_manage_data)])
 def confirm_extraction(body: dict, conn=Depends(get_conn),
                        authed: str | None = Depends(require_operator)):
     """Operator-confirmed rows → Layer-1 validation → staging insert.
@@ -804,6 +821,6 @@ def load_fmcg_sample_into(conn, seed: int = 7, archetype: str = "E_mixed_portfol
             "note": "a made-up distributor with mixed lanes and a constrained supplier; replaces existing FMCG data"}
 
 
-@router.post("/load-sample-fmcg", status_code=status.HTTP_200_OK)
+@router.post("/load-sample-fmcg", status_code=status.HTTP_200_OK, dependencies=[Depends(can_manage_data)])
 def load_sample_fmcg(seed: int = 7, conn=Depends(get_conn)):
     return load_fmcg_sample_into(conn, seed=seed)

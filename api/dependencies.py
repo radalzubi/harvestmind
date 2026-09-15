@@ -125,6 +125,34 @@ def require_operator(
     return authenticate_operator(authorization, x_api_key)
 
 
+def authenticate_actor(authorization: str | None = None, x_api_key: str | None = None):
+    """Who is acting: the actor record for the token, or None in permissive dev with no token.
+
+    The workspace's own token is its pilot administrator; a named actor's token carries the
+    person's role. Same refusal rules as :func:`authenticate_operator`.
+    """
+    from api.product.governance import actor_from
+
+    token = _token_from_headers(authorization, x_api_key)
+    if token:
+        from infrastructure.operator_registry import OperatorRegistry
+        record = OperatorRegistry().actor_for_token(token)
+        if record is None:
+            raise HTTPException(status_code=401, detail="Invalid API token")
+        return actor_from(record)
+    if auth_required():
+        raise HTTPException(status_code=401, detail="Authentication required")
+    return None
+
+
+def require_actor(
+    authorization: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+):
+    """FastAPI dependency: the acting person, with role and capabilities (Operating Product V2)."""
+    return authenticate_actor(authorization, x_api_key)
+
+
 # ── Rate limiting (heavy/expensive endpoints) ────────────────────────────────
 # Minimal per-process fixed-window limiter, no external dependency. Disabled by
 # default (HARVESTMIND_RATE_LIMIT_PER_MIN=0) so dev/tests are unaffected; set a

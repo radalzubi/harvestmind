@@ -19,8 +19,9 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from api.dependencies import get_conn, require_operator
-from api.routers import zaad_orders, zaad_workspace
+from api.dependencies import get_conn, require_actor, require_operator
+from api.product.governance import actor_from
+from api.routers import zaad_history, zaad_orders, zaad_workspace
 from scripts.setup_db import setup_db
 
 OPERATOR = "tenant_product"
@@ -39,16 +40,20 @@ def vault():
     return conn
 
 
-def _client(conn, operator: str | None = OPERATOR) -> TestClient:
+def _client(conn, operator: str | None = OPERATOR, role: str = "ADMIN", actor_id: str | None = None) -> TestClient:
+    """A client acting as one person in `operator`'s workspace, with a role (V2 governance)."""
     app = FastAPI()
     app.include_router(zaad_workspace.router)
     app.include_router(zaad_orders.router)
+    app.include_router(zaad_history.router)
 
     def conn_override():
         yield conn
 
     app.dependency_overrides[get_conn] = conn_override
     app.dependency_overrides[require_operator] = lambda: operator
+    app.dependency_overrides[require_actor] = (lambda: None) if operator is None else (
+        lambda: actor_from({"operator_id": operator, "actor_id": actor_id or operator, "name": actor_id or operator, "role": role}))
     return TestClient(app)
 
 

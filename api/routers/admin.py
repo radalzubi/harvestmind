@@ -54,3 +54,26 @@ def issue_operator_token(operator_id: str):
         "note": "Store this token now — it cannot be recovered. "
                 "Send it as 'Authorization: Bearer <token>'.",
     }
+
+
+@router.post("/operators/{operator_id}/actors", dependencies=[Depends(require_admin)])
+def issue_actor_token(operator_id: str, body: dict):
+    """A token for one named person in a workspace, with a role (Operating Product V2).
+
+    Returns the raw token ONCE. The workspace's own token remains its pilot administrator.
+    """
+    from infrastructure.operator_registry import OperatorNotFoundError, OperatorRegistry
+    from api.product.governance import ROLES
+    name = str(body.get("name") or "").strip()
+    role = str(body.get("role") or "").upper()
+    if role not in ROLES:
+        raise HTTPException(status_code=422, detail=f"role is one of {', '.join(ROLES)}")
+    registry = OperatorRegistry()
+    try:
+        actor_id, token = registry.issue_actor_token(operator_id, name, role)
+    except OperatorNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Unknown operator {operator_id!r}")
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    return {"operator_id": operator_id, "actor_id": actor_id, "name": name, "role": role, "token": token,
+            "note": "Store this token now — it cannot be recovered. Send it as 'Authorization: Bearer <token>'."}

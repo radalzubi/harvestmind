@@ -55,6 +55,10 @@ class OperatorRecord(BaseModel):
     access_code_hash: Optional[str] = None # sha256 of a short human key (pilot invites); accepted like a token
     display_name: Optional[str] = None     # how the welcome screen greets them, if different from name
     logo_url: Optional[str] = None         # path or URL of the customer's logo for the welcome screen
+    # Operating Product V2: named people in the workspace, each with their own token and a role.
+    # Keyed by the sha256 of the actor's token; the value carries actor_id, name, role, created_at
+    # and, once revoked, revoked_at. The workspace token above stays the pilot administrator.
+    actors: dict[str, dict] = {}
 
 
 class OperatorRegistry:
@@ -197,6 +201,61 @@ class OperatorRegistry:
         self._update_record(rec)
         return raw
 
+    # ── actors (Operating Product V2) ────────────────────────────────────
+
+    def issue_actor_token(self, operator_id: str, name: str, role: str) -> tuple[str, str]:
+        """A token for one named person in the workspace, with a role. Returns (actor_id, raw token) once."""
+        rec = self.get_operator(operator_id)
+        name = str(name).strip()[:120]
+        if not name:
+            raise ValueError("an actor needs a name")
+        actor_id = f"act_{secrets.token_hex(4)}"
+        raw = secrets.token_urlsafe(32)
+        rec.actors[_hash_token(raw)] = {"actor_id": actor_id, "name": name, "role": str(role),
+                                        "created_at": datetime.now(timezone.utc).isoformat()}
+        self._update_record(rec)
+        return actor_id, raw
+
+    def list_actors(self, operator_id: str) -> list[dict]:
+        """Every actor without its token hash. The pilot administrator is not listed; it is the workspace."""
+        rec = self.get_operator(operator_id)
+        return [{k: v for k, v in a.items()} for a in rec.actors.values()]
+
+    def revoke_actor(self, operator_id: str, actor_id: str) -> bool:
+        rec = self.get_operator(operator_id)
+        for a in rec.actors.values():
+            if a.get("actor_id") == actor_id and not a.get("revoked_at"):
+                a["revoked_at"] = datetime.now(timezone.utc).isoformat()
+                self._update_record(rec)
+                return True
+        return False
+
+    def actor_for_token(self, raw_token: str) -> dict | None:
+        """Who a token is: {operator_id, actor_id, name, role}, or None.
+
+        The workspace's own token (and its pilot access code) is the pilot administrator:
+        actor_id is the operator id, the name is the workspace's, the role ADMIN — so every
+        deployment upgrades without a behaviour change. A revoked actor never authenticates.
+        """
+        if not raw_token:
+            return None
+        candidate = _hash_token(raw_token)
+        for rec in self._load().values():
+            if rec.get("status") != "active":
+                continue
+            for field_name in ("token_hash", "access_code_hash"):
+                th = rec.get(field_name)
+                if th and hmac.compare_digest(th, candidate):
+                    return {"operator_id": rec["operator_id"], "actor_id": rec["operator_id"],
+                            "name": rec.get("display_name") or rec.get("name") or rec["operator_id"], "role": "ADMIN"}
+            for th, actor in (rec.get("actors") or {}).items():
+                if hmac.compare_digest(th, candidate):
+                    if actor.get("revoked_at"):
+                        return None
+                    return {"operator_id": rec["operator_id"], "actor_id": actor["actor_id"],
+                            "name": actor.get("name") or actor["actor_id"], "role": actor.get("role") or "VIEWER"}
+        return None
+
     def operator_id_for_token(self, raw_token: str) -> str | None:
         """Resolve a raw API token to its (active) operator_id, or None.
 
@@ -213,10 +272,9 @@ class OperatorRegistry:
                 th = rec.get(field_name)
                 if th and hmac.compare_digest(th, candidate):
                     return rec["operator_id"]
-            th = None
-            if (th and rec.get("status") == "active"
-                    and hmac.compare_digest(th, candidate)):
-                return rec["operator_id"]
+            for th, actor in (rec.get("actors") or {}).items():
+                if hmac.compare_digest(th, candidate) and not actor.get("revoked_at"):
+                    return rec["operator_id"]
         return None
 
     def record_upload(self, operator_id: str) -> None:
