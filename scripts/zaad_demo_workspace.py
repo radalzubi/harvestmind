@@ -64,7 +64,11 @@ def call(url: str, *, token: str | None = None, method: str = "GET", body: dict 
     try:
         with urllib.request.urlopen(req, timeout=timeout, context=CTX) as resp:  # nosec B310 - operator-supplied https/http URL
             raw = resp.read()
-            return resp.status, (json.loads(raw) if raw else None)
+            if not raw:
+                return resp.status, None
+            if "json" not in (resp.headers.get("Content-Type") or ""):
+                return resp.status, {"bytes": len(raw), "content_type": resp.headers.get("Content-Type")}   # a file, e.g. the export
+            return resp.status, json.loads(raw)
     except urllib.error.HTTPError as exc:
         raw = exc.read()
         try:
@@ -167,8 +171,8 @@ def main() -> int:
 
     # responses on the open-order verdicts, in the order the engine gave them
     orders = (report.get("commitments") or {}).get("orders") or []
-    outcomes = [("ACCEPTED", None, None), ("REJECTED", "OTHER", "Supplier relationship: we keep this order as agreed."),
-                ("OVERRIDDEN", "OTHER", "Commercial: the customer asked us to hold the date.")]
+    outcomes = [("ACCEPTED", None, None), ("REJECTED", "supplier_relationship", "We keep this order as agreed with the supplier."),
+                ("OVERRIDDEN", "customer_commitment", "The customer asked us to hold the date.")]
     for order, (status_word, code, text) in zip(orders, outcomes):
         body = {"job_id": plan["id"], "decision_id": f"po:{order['po']}", "status": status_word, "recommended": order.get("recommended_action"),
                 "target_type": "po", "target_id": order["po"]}
@@ -224,8 +228,8 @@ def main() -> int:
             raise SystemExit(f"{step} failed: {st} {draft}")
         version = draft.get("version", version)
         say(f"  {step}", f"state {draft.get('state')} (v{version})")
-    st, _ = call(f"{api}/api/zaad/orders/{draft_id}/export?format=csv", token=token, method="POST", body={})
-    say("  export", f"csv ({st}) — a file; ZAAD sends nothing to a supplier")
+    st, exported = call(f"{api}/api/zaad/orders/{draft_id}/export?format=csv", token=token, method="POST", body={})
+    say("  export", f"csv ({st}, {(exported or {}).get('bytes', '?')} bytes) — a file; ZAAD sends nothing to a supplier")
     st, draft = call(f"{api}/api/zaad/orders/{draft_id}/external-status", token=token, method="POST",
                      body={"status": "PLACED_EXTERNALLY", "external_reference": f"ERP-DEMO-{draft_id[-6:].upper()}", "note": "DEMO: placed in the ERP by the buyer."})
     say("  external status", f"{(draft or {}).get('external_status')} ({st})")

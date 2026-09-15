@@ -80,3 +80,15 @@ test("a decision opens the demand, inventory and supplier views behind it, throu
   assert.equal(unknown.demand, null, "no product is claimed when the request does not name one");
   assert.equal(insightsLinksFor({ target: { type: "supplier", id: "DEMO-SUP-01" } }, null).supplier, "/insights?bucket=week&supplier=DEMO-SUP-01&tab=supply");
 });
+
+test("the Arabic copy for Insights mirrors the English keys, and never translates identifiers", async () => {
+  const { en } = await import("../../i18n/en");
+  const { ar } = await import("../../i18n/ar");
+  const keys = (o: object): string[] => Object.entries(o).flatMap(([k, v]) => (v && typeof v === "object" ? keys(v as object).map((s) => `${k}.${s}`) : [k]));
+  assert.deepEqual(keys(ar.workspace.insights), keys(en.workspace.insights));
+  assert.equal(ar.workspace.nav.insights.length > 0, true);
+  for (const tab of ["overview", "demand", "inventory", "supply", "service", "decisions", "perishability"] as const) {
+    assert.notEqual(ar.workspace.insights.tabs[tab], en.workspace.insights.tabs[tab]);
+  }
+  assert.equal(periodLabel("2026-08-03", "week"), "w/c 2026-08-03", "period labels stay ISO in both languages");
+});

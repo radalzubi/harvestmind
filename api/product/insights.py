@@ -188,13 +188,18 @@ def _range(scope: Scope, column: str) -> tuple[str, list[Any]]:
     return (" AND " + " AND ".join(clauses)) if clauses else "", params
 
 
-def _master_cte(conn: Any) -> str:
-    cols = _columns(conn, "stg_fmcg_skus") if has_table(conn, "stg_fmcg_skus") else set()
-    brand = "any_value(brand)" if "brand" in cols else "NULL"
-    return f"""master AS (SELECT sku, any_value(category) AS category, {brand} AS brand, any_value(supplier_id) AS supplier_id,
+_MASTER_CTE = """master AS (SELECT sku, any_value(category) AS category, __BRAND__ AS brand, any_value(supplier_id) AS supplier_id,
                             any_value(unit_cost) AS unit_cost, any_value(unit_price) AS unit_price, any_value(sku_name) AS sku_name
-                     FROM stg_fmcg_skus GROUP BY sku)""" if cols else \
-        "master AS (SELECT NULL AS sku, NULL AS category, NULL AS brand, NULL AS supplier_id, NULL AS unit_cost, NULL AS unit_price, NULL AS sku_name WHERE FALSE)"
+                     FROM stg_fmcg_skus GROUP BY sku)"""
+_EMPTY_MASTER = "master AS (SELECT NULL AS sku, NULL AS category, NULL AS brand, NULL AS supplier_id, NULL AS unit_cost, NULL AS unit_price, NULL AS sku_name WHERE FALSE)"
+
+
+def _master_cte(conn: Any) -> str:
+    """The SKU master as one row per product; `brand` only where the master carries the column."""
+    cols = _columns(conn, "stg_fmcg_skus") if has_table(conn, "stg_fmcg_skus") else set()
+    if not cols:
+        return _EMPTY_MASTER
+    return _MASTER_CTE.replace("__BRAND__", "any_value(brand)" if "brand" in cols else "NULL")
 
 
 # ── the latest completed plan ──────────────────────────────────────────────────
@@ -449,16 +454,16 @@ def inventory(conn: Any, scope: Scope, plan: dict[str, Any] | None = None) -> di
         SELECT l.period, l.snapshot_date, sum(s.on_hand) AS units, sum(s.on_hand * s.unit_cost) AS value,
                count(*) FILTER (WHERE s.unit_cost IS NULL) AS rows_without_cost, sum(s.in_transit) AS in_transit,
                count(DISTINCT s.sku) AS products, count(DISTINCT s.location_id) AS sites
-        FROM latest_in_bucket l JOIN snaps s ON s.snapshot_date = l.snapshot_date GROUP BY 1, 2 ORDER BY 1""", params)
+        FROM latest_in_bucket l JOIN snaps s ON s.snapshot_date = l.snapshot_date GROUP BY 1, 2 ORDER BY 1""", params)  # nosec B608 - code literals; values bind
     truncated = len(series) > MAX_POINTS
     series = series[-MAX_POINTS:]
     by_site_series = _rows(conn, snap + f"""
         SELECT l.period, CAST(s.location_id AS VARCHAR) AS location_id, sum(s.on_hand) AS units, sum(s.on_hand * s.unit_cost) AS value
         FROM latest_in_bucket l JOIN snaps s ON s.snapshot_date = l.snapshot_date GROUP BY 1, 2 ORDER BY 1, 2 LIMIT {MAX_POINTS * 12}""", params)  # nosec B608 - literal cap
-    latest_date = _one(conn, snap + " SELECT max(snapshot_date) FROM snaps", params)
+    latest_date = _one(conn, snap + " SELECT max(snapshot_date) FROM snaps", params)  # nosec B608 - code literals; values bind
     by_site = _rows(conn, snap + """
         SELECT CAST(s.location_id AS VARCHAR) AS id, sum(s.on_hand) AS units, sum(s.on_hand * s.unit_cost) AS value, count(DISTINCT s.sku) AS products
-        FROM snaps s WHERE s.snapshot_date = (SELECT max(snapshot_date) FROM snaps) GROUP BY 1 ORDER BY 2 DESC""", params)
+        FROM snaps s WHERE s.snapshot_date = (SELECT max(snapshot_date) FROM snaps) GROUP BY 1 ORDER BY 2 DESC""", params)  # nosec B608 - code literals; values bind
     by_category = _rows(conn, snap + f"""
         SELECT s.category AS id, sum(s.on_hand) AS units, sum(s.on_hand * s.unit_cost) AS value, count(DISTINCT s.sku) AS products
         FROM snaps s WHERE s.snapshot_date = (SELECT max(snapshot_date) FROM snaps) GROUP BY 1 ORDER BY 2 DESC LIMIT {TOP}""", params)  # nosec B608 - literal cap
@@ -834,6 +839,8 @@ def connectivity(conn: Any, operator: str, plan: dict[str, Any] | None = None) -
     declared_recourse = bool(has_table(conn, "stg_recourse_spec") and _one(conn, "SELECT count(*) FROM stg_recourse_spec"))
     sector = bool(has_table(conn, "stg_fmcg_skus") and "sector" in _columns(conn, "stg_fmcg_skus") and _one(conn, "SELECT count(*) FROM stg_fmcg_skus WHERE sector IS NOT NULL"))
 
+    network_in_plan = bool(report.get("network_service")) or any(a.get("action") == "transfer" for a in (report.get("actions") or []))
+
     def status(in_plan: bool, declared: bool, visual: bool) -> str:
         if not plan:
             return "NO_PLAN"
@@ -850,9 +857,9 @@ def connectivity(conn: Any, operator: str, plan: dict[str, Any] | None = None) -
         {"family": "P1", "name": "Purchasing economics", "backend_source": "report.economics (incumbent_costs, selected_costs, working capital)", "api": "/api/zaad/insights/value",
          "visualization": "Decisions & Value — MODELED_DIFFERENCE ledger", "drilldown": "Decision detail economics", "in_plan": bool(report.get("economics")), "declared": True,
          "status": status(bool(report.get("economics")), True, True)},
-        {"family": "P2", "name": "Multi-echelon network", "backend_source": "report.network, report.actions (transfer), request.locations / transfers", "api": "/api/zaad/insights/inventory?location=; /api/zaad/workspace/locations",
-         "visualization": "Inventory by site and the site series; Network page", "drilldown": "Inventory filtered by site; transfer decisions", "in_plan": bool(report.get("network")), "declared": declared_sites,
-         "status": status(bool(report.get("network")), declared_sites, True)},
+        {"family": "P2", "name": "Multi-echelon network", "backend_source": "report.network_service, report.actions (transfer), request.locations / transfers", "api": "/api/zaad/insights/inventory?location=; /api/zaad/workspace/locations",
+         "visualization": "Inventory by site and the site series; Network page", "drilldown": "Inventory filtered by site; transfer decisions", "in_plan": network_in_plan, "declared": declared_sites,
+         "status": status(network_in_plan, declared_sites, True)},
         {"family": "Sector physics", "name": "Produce / meat-seafood physics", "backend_source": "stg_fmcg_skus sector columns; report.limitations", "api": "/api/zaad/workspace/sector",
          "visualization": "Perishability tab (only when a sector is declared); Diagnostics", "drilldown": "Diagnostics sector table", "in_plan": sector, "declared": sector,
          "status": ("VISUALIZED" if sector else "NOT_DECLARED")},

@@ -149,7 +149,7 @@ def test_supply_filtered_by_supplier_or_site_still_binds_in_order(client, vault)
     assert sum(r["units"] for r in body["aging"]) == body["totals"]["open_units"] > 0
     site = client.get(f"/api/zaad/insights/supply?bucket=week&end={AS_OF.isoformat()}&location=DEMO-DC-AMMAN&category=Paper").json()
     assert site["available"] and sum(r["units"] for r in site["aging"]) == site["totals"]["open_units"]
-    assert client.get(f"/api/zaad/insights/inventory?bucket=week&location=DEMO-BR-IRBID&category=Paper").json()["available"]
+    assert client.get("/api/zaad/insights/inventory?bucket=week&location=DEMO-BR-IRBID&category=Paper").json()["available"]
 
 
 def test_supplier_metrics_carry_their_denominators(client, vault):
@@ -212,7 +212,7 @@ def _fake_plan(store: JobStore, operator: str, *, stale: bool = False) -> str:
         "commitments": {"orders": [{"po": "DEMO-PO-00364", "recommended_action": "DEFER", "quantity_affected": 500.0},
                                    {"po": "DEMO-PO-00676", "recommended_action": "EXPEDITE", "quantity_affected": 200.0},
                                    {"po": "DEMO-PO-01300", "recommended_action": "KEEP", "quantity_affected": 0.0}]},
-        "network": {"present": True},
+        "network_service": [{"service": "svc_A", "location": "DC", "requested": 0.95, "jointly_feasible": 0.95}],
     }
     store.update(identity, status="DONE", finished_at="2000-01-01T00:00:00+00:00" if stale else "2999-01-01T00:00:00+00:00", report_json=json.dumps(report))
     return identity
@@ -240,6 +240,7 @@ def test_decisions_and_value_read_the_latest_plan_verbatim(vault, tmp_path, monk
     conn_matrix = c.get("/api/zaad/insights/connectivity").json()
     by = {r["family"]: r["status"] for r in conn_matrix["families"]}
     assert by["P4B"] == "VISUALIZED" and by["P1"] == "VISUALIZED" and by["P5"] == "NOT_IN_PLAN" and by["P4"] == "NOT_DECLARED"
+    assert by["P2"] == "VISUALIZED", "a plan with transfer actions or a network service block is a network plan"
     # tenant scope: the other operator's plan is theirs alone
     assert _client(vault, "someone_else").get("/api/zaad/insights/plan").json()["job_id"] == other
     assert _client(vault, "third").get("/api/zaad/insights/plan").json()["available"] is False

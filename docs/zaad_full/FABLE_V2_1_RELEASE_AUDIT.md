@@ -59,7 +59,39 @@ evaluations' `compare`. Production check on the deployed runtime in §8.
 
 ## 6. Browser QA
 
-Recorded below after the live walk (local dev server on the demo workspace; production after deploy).
+Local (`next dev` on :3000 against the API on :8001 run from the version-matched 3.12 venv with a job
+store; demo workspaces created by `scripts/zaad_demo_workspace.py`):
+
+| check | result |
+|---|---|
+| Insights in the Analyse group, between Purchase orders and Network | yes (desktop rail and phone "More") |
+| Overview on the data-only demo workspace | plan line "No completed ZAAD plan yet … run one from Home"; observed orders 12 weeks (549,264 ordered, 35,214 unfulfilled, −1.9 % last week, largest customer 24 %); inventory position (434,522 on hand as counted 13 Sept 2026, 173,304 inbound, 9.2 weeks of cover, three sites summing); open supply (73 open orders, 43 past their date with 6 without a promised date *not counted*, JOD 857,660); decisions card reads *Not in plan* |
+| Demand, weekly, whole history | OBSERVED CUSTOMER ORDERS label; 4,137,864 ordered over 21,011 lines, 4,064,902 shipped; concentration 86 % top 5 / HHI 0.17; top customers / products / categories / sites; "Data & scope: the whole history, by week · no filters · 21,011 rows" |
+| period drill-down on the spike week (w/c 2026-08-03) | DEMO-CUST-GROW on top (14,436 units); largest increases DEMO-0013 (+2,532), DEMO-0033, DEMO-0001 (+768), DEMO-0007 (+528) — the three spike products among them; affected inventory, open purchase orders, related decisions ("no completed plan yet, so nothing is claimed"); links to Inventory, Data, Decisions |
+| Demand, monthly, category = Beverages | 795,276 ordered over 3,522 lines; the newest month is partial and the comparison says so (after the fix in `e2796f7`) |
+| Inventory, monthly | units and value over time (25 monthly points), by site stacked, latest position |
+| Supply & suppliers with `supplier=DEMO-SUP-02` | **500 on the first walk** — aging query bound parameters out of order; fixed in `e2796f7` with a test; re-verified below |
+| Service & customers, monthly | ordered / shipped / unfulfilled stacked, service level per period, by customer with denominators (RETAIL-A 97.5 %, GROW 99.1 %), class *not declared*, ATP *Not in plan* |
+| Decisions & value without a plan | every card says *Not in plan* / *Not measured* / *No data*; the six columns read 0 as counts; connectivity matrix renders |
+| Arabic | `dir=rtl`, nav الرؤى, tabs نظرة عامة · الطلب · المخزون · التوريد والموردون · الخدمة والعملاء · القرارات والقيمة, page title الرؤى; numbers and ids unchanged; plan line localized after `e2796f7` |
+| Mobile (375 × 812) | filters wrap, chart fills the width, stat tiles two-up, period chips wrap, Data & scope readable; no horizontal scroll |
+| console | no errors on the data tabs (the one 500 above, fixed) |
+
+Plan-backed workspace (`op_8f0e526c`, after `scripts/zaad_demo_workspace.py` ran the loop through the API on the local server — plan `job_7180f6…` over DEMO-0008, DEMO-0010, DEMO-0025, DEMO-0021, DEMO-0001; the engine returned RETAIN_INCUMBENT with KEEP on all three declared rights, 18 purchases and 112 moves; a proposal from the engine's purchase on the shortage product, evaluated at +5,300 JOD versus current, submitted, approved, exported, placed externally, two outcomes recorded, one response rejected):
+
+| check | result |
+|---|---|
+| plan line | "Latest ZAAD plan: 15 Sept 2026 · 5 products." (not stale: no upload after the plan) |
+| Decisions & value — recommendations by action | KEEP 3 · BUY 18 · MOVE 112, read from the plan; decision list links to `/decisions?decision=…` |
+| the six columns | Recommended 133 · Approved 1 · Rejected 1 · Overridden 0 · Externally executed 1 (placed externally) · Outcome available 1 (2 outcomes, 1 with a comparator) |
+| five registers | Modelled difference JOD 476,724 − 476,724 = 0.00 ("a modelled difference, not a saving" — the plan retained the incumbent); Backtested *Not measured*; Approved expected difference: the proposal at +5,300 JOD; Observed after action: purchase_cost 1, received_units 1; Realized value: 19,800 observed vs 20,105 comparator with its stated basis |
+| connectivity matrix | P0 VISUALIZED, P1 VISUALIZED, P2 VISUALIZED (after the `network_service` / transfer rule fix), sector NOT DECLARED, P3 VISUALIZED, P4 NOT DECLARED, P5 VISUALIZED, P4B VISUALIZED |
+| Supply & suppliers with `supplier=DEMO-SUP-02` | renders; "DEMO-SUP-02 — month by month" trend present; no 500 (fixed) |
+| decision detail → insights | "See demand behind this decision" → `/insights?bucket=week&sku=DEMO-0008&tab=demand` on the KEEP DEMO-PO-00416 decision; inventory, supplier and value links present |
+| Home | "At a glance" section with the three summaries, from the same `/summary` |
+| console | no errors after the API restart |
+
+
 
 ## 7. CI, merge, deploy
 
