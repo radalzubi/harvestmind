@@ -9,15 +9,101 @@
  * the plan is chosen as a whole against the current plan, so that is what is approved. The
  * panel says so rather than implying a per-line approval the ledger does not hold.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Check, X } from "lucide-react";
 import type { Decision, PlanSummary } from "@/lib/zaad/decisions";
 import { recordForReview, submitReview } from "@/lib/zaad/client";
+import { REASON_CODES, listResponses, respondDecision, track, type DecisionResponse } from "@/lib/zaad/product";
 import { useSession } from "@/lib/session";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { useToast } from "@/components/Toast";
 import { Button, Disclosure, Evidence, Facts, TechnicalDetails } from "./ui";
+
+/** Lifecycle words for a decision, from the operator's response and the proposal it became. */
+export const RESPONSE_LABEL: Record<DecisionResponse["status"], string> = {
+  REVIEWED: "Reviewed", ACCEPTED: "Accepted", OVERRIDDEN: "Overridden", REJECTED: "Rejected",
+};
+
+/**
+ * V2: the operator's response to *this* decision, recorded against the plan it came from.
+ * Reviewed / accepted / overridden / rejected, with a structured reason when there is one. The
+ * recommendation itself is never marked executed: what was actually done lives on the proposal.
+ */
+function ResponsePanel({ decision }: { decision: Decision }) {
+  const session = useSession();
+  const { planJobId } = useWorkspaceData();
+  const toast = useToast();
+  const [existing, setExisting] = useState<DecisionResponse | null>(null);
+  const [status, setStatus] = useState<DecisionResponse["status"] | "">("");
+  const [code, setCode] = useState("");
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const canRespond = session.can("respondDecision");
+
+  useEffect(() => {
+    if (!planJobId) return;
+    let alive = true;
+    listResponses(planJobId).then((r) => { if (alive) setExisting(r.rows.find((x) => x.decision_id === decision.id) ?? null); })
+      .catch(() => { if (alive) setExisting(null); });
+    return () => { alive = false; };
+  }, [planJobId, decision.id]);
+
+  if (!planJobId) return null;
+
+  async function save() {
+    if (!status || !planJobId) return;
+    setBusy(true);
+    try {
+      const saved = await respondDecision({
+        job_id: planJobId, decision_id: decision.id, status, recommended: decision.verb,
+        target_type: decision.target.type, target_id: decision.target.id,
+        reason_code: code || null, reason_text: text.trim() || null,
+      });
+      setExisting(saved);
+      track("decision_opened", { decision_id: decision.id, job_id: planJobId });
+      toast.push(`Recorded as ${RESPONSE_LABEL[status].toLowerCase()}. Nothing was sent to a supplier.`);
+      setStatus(""); setCode(""); setText("");
+    } catch (e) {
+      toast.push(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const needsReason = status === "OVERRIDDEN" || status === "REJECTED";
+  return (
+    <div className="approve" style={{ marginTop: 18 }}>
+      <strong style={{ fontSize: 13.5, color: "var(--ink-950)" }}>Your response to this recommendation</strong>
+      <p className="zhelp" style={{ marginTop: 4 }}>
+        {existing
+          ? <>Recorded as <strong>{RESPONSE_LABEL[existing.status]}</strong>{existing.reason_code ? ` — ${REASON_CODES[existing.reason_code] ?? existing.reason_code}` : ""}{existing.reason_text ? `: “${existing.reason_text}”` : ""}{existing.draft_id ? <> · <Link href={`/orders/${encodeURIComponent(existing.draft_id)}`}>the proposal it became</Link></> : ""}.</>
+          : "Not yet responded to. A response is your record of what you did about it; the proposal, if you create one, records what actually happened."}
+      </p>
+      {canRespond && (
+        <div style={{ display: "grid", gap: 8, marginTop: 10, maxWidth: 520 }}>
+          <div className="chips" role="group" aria-label="Response">
+            {(["ACCEPTED", "OVERRIDDEN", "REJECTED", "REVIEWED"] as const).map((s) => (
+              <button key={s} type="button" className="chip" aria-pressed={status === s} onClick={() => setStatus(s)}>{RESPONSE_LABEL[s]}</button>
+            ))}
+          </div>
+          {needsReason && (
+            <label>
+              <span className="fld-label">Why (optional, but useful later)</span>
+              <select className="fld fld--block" value={code} onChange={(e) => setCode(e.target.value)} aria-label="Reason">
+                <option value="">No particular reason to record</option>
+                {Object.entries(REASON_CODES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </label>
+          )}
+          <input className="fld fld--block" maxLength={2000} value={text} onChange={(e) => setText(e.target.value)} placeholder="Anything to add (optional)" aria-label="Note" />
+          <div><Button pending={busy} disabled={!status} onClick={save}>Record response</Button></div>
+        </div>
+      )}
+      {!canRespond && <p className="zhelp">Your role can read this decision but not record a response.</p>}
+    </div>
+  );
+}
 
 const REASONS = [
   "I agree with the recommendation",
@@ -149,7 +235,15 @@ export function DecisionDetail({ decision, summary, openCount }: { decision: Dec
         <TechnicalDetails value={decision.technical} hint="raw report fields" />
       </div>
 
-      {decision.needsReview && summary && <ReviewPanel summary={summary} openCount={openCount} />}
+      <ResponsePanel decision={decision} />
+
+      {decision.needsReview && summary && (
+        <div style={{ marginTop: 12 }}>
+          <Disclosure summary="Record a review of the whole plan" hint="one decision per information set">
+            <ReviewPanel summary={summary} openCount={openCount} />
+          </Disclosure>
+        </div>
+      )}
     </div>
   );
 }

@@ -580,7 +580,14 @@ export function setSector(s: Sector): void {
   if (typeof window !== "undefined") window.sessionStorage.setItem("harvestmind.sector", s);
 }
 
-export interface Me { operator_id: string; name: string; display_name?: string; logo_url?: string | null; sector: Sector; region: string; created_at: string; upload_count: number }
+export interface Me {
+  operator_id: string; name: string; display_name?: string; logo_url?: string | null; sector: Sector; region: string;
+  created_at: string; upload_count: number;
+  /** V2: the acting person, their role and what it grants; the workspace's policy. */
+  actor?: { id: string; name: string; role: string } | null;
+  capabilities?: string[];
+  policy?: { self_approval?: string | null; default_export_profile?: string | null } | null;
+}
 export function getMe(): Promise<Me> { return apiFetch<Me>("/me"); }
 
 export interface Job {

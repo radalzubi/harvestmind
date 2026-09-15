@@ -307,6 +307,10 @@ export interface DraftSummary {
   created_at: string; updated_at: string; approved_by: string | null; approved_at: string | null;
   decision_reason: string | null; supersedes: string | null; superseded_by: string | null;
   lines: number; units: number | null; value: number | null; value_incomplete: boolean | null;
+  /** V2: what a person recorded happened outside ZAAD, if anything. */
+  external_status?: ExternalStatus | null;
+  external_reference?: string | null;
+  version?: number;
 }
 
 export interface Draft extends Omit<DraftSummary, "lines"> {
@@ -330,10 +334,29 @@ export interface Draft extends Omit<DraftSummary, "lines"> {
   /** What the approval was made against: an evaluation id, and whether it was current. */
   approved_evaluation_id?: string | null;
   approval_evaluation_state?: "current" | "stale_acknowledged" | "none" | null;
+  /** Who created the draft (an actor id); the self-approval policy compares it with the approver. */
+  created_by?: string | null;
+  /** V2: when and by whom the external status was last recorded. Never set by ZAAD. */
+  external_updated_at?: string | null;
+  external_updated_by?: string | null;
 }
 
+export type ExternalStatus = "PLACED_EXTERNALLY" | "ACKNOWLEDGED" | "PARTIALLY_FULFILLED" | "FULFILLED" | "CANCELLED_EXTERNALLY";
+export const EXTERNAL_LABEL: Record<ExternalStatus, string> = {
+  PLACED_EXTERNALLY: "Placed in your system", ACKNOWLEDGED: "Acknowledged by the supplier",
+  PARTIALLY_FULFILLED: "Partly delivered", FULFILLED: "Delivered", CANCELLED_EXTERNALLY: "Cancelled outside ZAAD",
+};
+/** The ladder a person may record, from each state. Mirrors the server's EXTERNAL_TRANSITIONS. */
+export const EXTERNAL_NEXT: Record<string, ExternalStatus[]> = {
+  none: ["PLACED_EXTERNALLY", "CANCELLED_EXTERNALLY"],
+  PLACED_EXTERNALLY: ["ACKNOWLEDGED", "PARTIALLY_FULFILLED", "FULFILLED", "CANCELLED_EXTERNALLY"],
+  ACKNOWLEDGED: ["PARTIALLY_FULFILLED", "FULFILLED", "CANCELLED_EXTERNALLY"],
+  PARTIALLY_FULFILLED: ["PARTIALLY_FULFILLED", "FULFILLED", "CANCELLED_EXTERNALLY"],
+  FULFILLED: [], CANCELLED_EXTERNALLY: [],
+};
+
 export const listDrafts = (options: {
-  state?: string; origin?: string; supplier_id?: string; source_po_id?: string; q?: string;
+  state?: string; origin?: string; supplier_id?: string; source_po_id?: string; q?: string; external_status?: string;
   sort?: string; direction?: string; limit?: number; offset?: number;
 } = {}) =>
   call<{ rows: DraftSummary[]; total: number; limit: number; offset: number; sort: string; direction: string }>(
@@ -363,11 +386,103 @@ export const deleteDraft = (id: string) =>
 
 export const actOnDraft = (
   id: string, action: "submit" | "reopen" | "approve" | "reject", reason?: string,
-  options: { acknowledgeStale?: boolean } = {},
+  options: { acknowledgeStale?: boolean; expectedVersion?: number | null } = {},
 ) =>
   call<Draft>(`/api/zaad/orders/${encodeURIComponent(id)}/actions/${action}`, {
-    method: "POST", body: JSON.stringify({ reason: reason ?? "", acknowledge_stale: Boolean(options.acknowledgeStale) }),
+    method: "POST", body: JSON.stringify({ reason: reason ?? "", acknowledge_stale: Boolean(options.acknowledgeStale),
+      expected_version: options.expectedVersion ?? undefined }),
   });
+
+// ── V2: the closed loop, history, outcomes, responses, settings ───────────────
+
+export const recordExternalStatus = (id: string, body: {
+  status: ExternalStatus; external_reference?: string | null; note?: string | null; observed_at?: string | null; expected_version?: number | null;
+}) => call<Draft>(`/api/zaad/orders/${encodeURIComponent(id)}/external-status`, { method: "POST", body: JSON.stringify(body) });
+
+export interface AuditRow {
+  audit_id: string; actor: string | null; actor_role: string | null; object_type: string; object_id: string; action: string;
+  before_revision: number | null; after_revision: number | null; before_state: string | null; after_state: string | null;
+  request_id: string | null; context: Record<string, unknown> | null; happened_at: string;
+}
+export interface Outcome {
+  outcome_id: string; draft_id: string | null; metric: string; value: number | null; unit: string | null; observed_at: string | null;
+  source: "recorded" | "matched"; comparator_value: number | null; comparator_basis: string | null; note: string | null;
+  actor: string | null; recorded_at: string;
+}
+export interface RealizedValue {
+  realized_outcome: boolean;
+  realized_savings: Array<{ metric: string; observed: number | null; comparator: number | null; basis: string; difference: number | null; unit: string | null }>;
+  note: string;
+}
+export interface DraftHistory {
+  draft_id: string; revisions: string[];
+  events: Draft["events"]; audit: AuditRow[]; exports: Draft["exports"]; outcomes: Outcome[];
+  evaluations: Array<{ evaluation_id: string; draft_id: string; revision: number | null; status: string; as_of: string | null; created_at: string;
+    baseline_job_id: string | null; proposal_job_id: string | null; draft_hash: string | null; workspace_version: string | null }>;
+  decision_responses: DecisionResponse[];
+  external: { status: ExternalStatus | null; reference: string | null; updated_at: string | null; updated_by: string | null; recorded_by_person: true };
+  realized_value: RealizedValue;
+}
+export const readHistory = (id: string) => call<DraftHistory>(`/api/zaad/orders/${encodeURIComponent(id)}/history`);
+
+export const OUTCOME_METRICS: Record<string, { label: string; unit: string }> = {
+  received_units: { label: "Units received", unit: "units" }, receipt_date: { label: "Date received", unit: "date" },
+  purchase_cost: { label: "Purchase cost", unit: "money" }, fill_rate: { label: "Fill rate", unit: "fraction" },
+  lead_days: { label: "Lead time", unit: "days" }, stockout_days: { label: "Days out of stock", unit: "days" },
+  expedite_cost: { label: "Expedite cost", unit: "money" }, waste_units: { label: "Units wasted", unit: "units" },
+  working_capital: { label: "Working capital", unit: "money" }, customer_allocation_units: { label: "Units allocated to customers", unit: "units" },
+};
+export const recordOutcome = (id: string, body: {
+  metric: string; value?: number | null; observed_at?: string | null; comparator_value?: number | null; comparator_basis?: string | null; note?: string | null;
+}) => call<Outcome>(`/api/zaad/orders/${encodeURIComponent(id)}/outcomes`, { method: "POST", body: JSON.stringify(body) });
+
+export interface DecisionResponse {
+  response_id: string; job_id: string; decision_id: string; target_type: string | null; target_id: string | null; recommended: string | null;
+  status: "REVIEWED" | "ACCEPTED" | "OVERRIDDEN" | "REJECTED"; reason_code: string | null; reason_text: string | null; draft_id: string | null;
+  information_hash: string | null; as_of: string | null; actor: string | null; created_at: string; updated_at: string;
+}
+export const REASON_CODES: Record<string, string> = {
+  supplier_relationship: "Supplier relationship", contract_not_represented: "A contract term ZAAD does not hold",
+  cash_constraint: "Cash constraint", customer_commitment: "Customer commitment", promotion: "A promotion",
+  management_decision: "Management decision", data_wrong: "The data is wrong", capacity_unavailable: "Capacity is not available", other: "Other",
+};
+export const respondDecision = (body: {
+  job_id: string; decision_id: string; status: DecisionResponse["status"]; recommended?: string | null; target_type?: string | null;
+  target_id?: string | null; reason_code?: string | null; reason_text?: string | null; draft_id?: string | null;
+}) => call<DecisionResponse>("/api/zaad/decisions/responses", { method: "POST", body: JSON.stringify(body) });
+export const listResponses = (jobId?: string | null) =>
+  call<{ rows: DecisionResponse[]; total: number }>(`/api/zaad/decisions/responses${jobId ? `?job_id=${encodeURIComponent(jobId)}` : ""}`);
+
+export interface HistoryFeed {
+  responses: DecisionResponse[];
+  decided: Array<Pick<Draft, "draft_id" | "reference" | "origin" | "state" | "revision" | "supplier_id" | "approved_by" | "approved_at" | "decision_reason"
+    | "approved_evaluation_id" | "approval_evaluation_state" | "external_status" | "external_reference" | "external_updated_at" | "source_decision_id" | "source_po_id" | "updated_at">>;
+  outcomes: Outcome[];
+  counts: { awaiting_approval: number; approved_not_placed: number; placed_not_acknowledged: number; outcomes_recorded: number; responses: number };
+  registers: string[];
+  backtested: { available: boolean; note: string };
+}
+export const readHistoryFeed = () => call<HistoryFeed>("/api/zaad/history");
+
+export interface ExportPreview {
+  draft_id: string; profile: Omit<ExportProfile, "columns">; columns: ExportProfile["columns"];
+  reason: "chosen" | "supplier_default" | "workspace_default" | "standard"; detail: string; exportable: boolean;
+  adapter: { name: string; kind: string; real: boolean; transmits: boolean; note: string };
+  validation: { ok: boolean; problems: string[] };
+}
+export const exportPreview = (id: string, profileId?: string | null) =>
+  call<ExportPreview>(`/api/zaad/orders/${encodeURIComponent(id)}/export/preview${profileId ? `?profile_id=${encodeURIComponent(profileId)}` : ""}`);
+
+export const readSettings = () => call<{ settings: { self_approval: string; default_export_profile: string | null } }>("/api/zaad/workspace/settings");
+export const writeSettings = (body: Record<string, string | null>) =>
+  call<{ settings: { self_approval: string; default_export_profile: string | null } }>("/api/zaad/workspace/settings", { method: "PUT", body: JSON.stringify(body) });
+
+/** Semantic telemetry: an allowlisted name and identifier keys only. Fire-and-forget; never blocks a page. */
+export function track(name: string, properties: Record<string, string | number | boolean> = {}): void {
+  try {
+    void call("/api/zaad/telemetry", { method: "POST", body: JSON.stringify({ events: [{ name, properties }] }) }).catch(() => undefined);
+  } catch { /* telemetry never surfaces */ }
+}
 
 export const reviseDraft = (id: string) =>
   call<Draft>(`/api/zaad/orders/${encodeURIComponent(id)}/revise`, { method: "POST" });

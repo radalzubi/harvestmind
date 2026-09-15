@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Boxes, ChevronDown, Database, FileText, HelpCircle, Home, LayoutList, LogOut, MoreHorizontal,
+  Boxes, ChevronDown, Database, FileText, HelpCircle, History, Home, LayoutList, LogOut, MoreHorizontal,
   Search, Share2, Stethoscope, Upload, Wrench,
 } from "lucide-react";
 import { Logo } from "@/components/site/Logo";
@@ -40,6 +40,7 @@ const OPERATE: Destination[] = [
 const ANALYZE: Destination[] = [
   { href: "/network", label: "Network", Icon: Share2 },
   { href: "/diagnostics", label: "Diagnostics", Icon: Stethoscope },
+  { href: "/history", label: "History", Icon: History },
 ];
 const DATA: Destination[] = [
   { href: "/upload", label: "Upload", Icon: Upload },

@@ -405,5 +405,7 @@ connection counts its own close; a job created without a runner keeps a lease) a
 | frontend `npm run build` | green |
 | `zaad/` files in the diff since the Opus head | `zaad/full/jobs.py` only — job infrastructure, no planner call changed |
 
-**V1 AUDITED CHECKPOINT: `e0204da6529664d8905388b4b9926606e44d17e6`** (the commit carrying §6; this line was added by the commit after it). Not merged. V2 continues on the same branch so that one exact-head merge carries
+**V1 AUDITED CHECKPOINT: `77b7185b24417d9c3976f4b802320475660c2934`** — CI run `34920776278`,
+**13/13 jobs green** on that exact head. (The first candidate, `ba108b4`, failed CI's mypy job as
+§6 records; `77b7185` is it plus the type fix, and is the checkpoint.) Not merged. V2 continues on the same branch so that one exact-head merge carries
 the whole product.

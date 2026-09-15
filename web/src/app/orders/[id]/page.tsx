@@ -22,12 +22,14 @@ import { Button, ButtonLink, Disclosure, ErrorState, Loading, Notice, PageHead, 
 import { Column, DataTable, NotAvailable } from "@/components/workspace/Table";
 import { HeaderFields, LineEditor, Warnings, type OrderHeader } from "@/components/workspace/OrderForm";
 import { useToast } from "@/components/Toast";
+import { useSession } from "@/lib/session";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import {
-  AMENDMENT_LABEL, DATE, MONEY, NUMBER, ORIGIN_LABEL, PERCENT, STATE_LABEL,
-  actOnDraft, deleteDraft, exportDraft, fetchProfiles, readAmendment, readDraft, readEvaluation,
-  reviseDraft, startEvaluation, updateDraft,
-  type Comparison, type Draft, type DraftLine, type EvaluationState, type ExportProfile, type LedgerRow,
+  AMENDMENT_LABEL, DATE, EXTERNAL_LABEL, EXTERNAL_NEXT, MONEY, NUMBER, ORIGIN_LABEL, OUTCOME_METRICS, PERCENT, STATE_LABEL,
+  actOnDraft, deleteDraft, exportDraft, exportPreview, fetchProfiles, readAmendment, readDraft, readEvaluation, readHistory,
+  recordExternalStatus, recordOutcome, reviseDraft, startEvaluation, track, updateDraft,
+  type Comparison, type Draft, type DraftHistory, type DraftLine, type EvaluationState, type ExportPreview, type ExportProfile,
+  type ExternalStatus, type LedgerRow,
 } from "@/lib/zaad/product";
 
 const POLL_MS = 4000;
@@ -299,13 +301,203 @@ function AmendmentView({ draft }: { draft: Draft }) {
   );
 }
 
+// ── the closed loop: what a person recorded happened outside ZAAD ─────────────
+
+function ExternalStatusPanel({ draft, onChanged }: { draft: Draft; onChanged: () => void }) {
+  const session = useSession();
+  const toast = useToast();
+  const [status, setStatus] = useState<ExternalStatus | "">("");
+  const [reference, setReference] = useState("");
+  const [observed, setObserved] = useState("");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const decided = draft.state === "APPROVED" || draft.state === "EXPORTED";
+  const next = EXTERNAL_NEXT[draft.external_status ?? "none"] ?? [];
+  const canRecord = session.can("recordExternal");
+
+  if (!decided) return null;
+
+  async function save() {
+    if (!status) return;
+    setBusy(true);
+    try {
+      await recordExternalStatus(draft.draft_id, {
+        status, external_reference: reference.trim() || null, note: note.trim() || null,
+        observed_at: observed || null, expected_version: draft.version ?? null,
+      });
+      track("external_status_recorded", { draft_id: draft.draft_id });
+      toast.push(`Recorded: ${EXTERNAL_LABEL[status]}. ZAAD sent nothing; this is your record.`);
+      setStatus(""); setReference(""); setObserved(""); setNote("");
+      onChanged();
+    } catch (e) {
+      toast.push(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Section title="What happened outside ZAAD">
+      <p style={{ margin: "0 0 12px", fontSize: 13.5, color: "var(--ink-700)", lineHeight: 1.6, maxWidth: "62ch" }}>
+        ZAAD does not place, send or receive orders. Record here what you did with this one in your own system and what
+        the supplier said, so the record follows the order to the end.
+      </p>
+      <dl className="kv">
+        <dt>Recorded so far</dt>
+        <dd>
+          {draft.external_status
+            ? <>{EXTERNAL_LABEL[draft.external_status]}{draft.external_reference ? ` · reference ${draft.external_reference}` : ""}
+                {draft.external_updated_at ? ` · ${DATE(draft.external_updated_at)}` : ""}{draft.external_updated_by ? ` · by ${draft.external_updated_by}` : ""}</>
+            : <span className="na">Not yet recorded as placed</span>}
+        </dd>
+      </dl>
+      {next.length > 0 && canRecord && (
+        <div style={{ marginTop: 12, display: "grid", gap: 8, maxWidth: 560 }}>
+          <label>
+            <span className="fld-label">What happened</span>
+            <select className="fld fld--block" value={status} onChange={(e) => setStatus(e.target.value as ExternalStatus | "")} aria-label="What happened">
+              <option value="">Choose…</option>
+              {next.map((s) => <option key={s} value={s}>{EXTERNAL_LABEL[s]}</option>)}
+            </select>
+          </label>
+          <label>
+            <span className="fld-label">Reference your system or supplier gave (optional)</span>
+            <input className="fld fld--block" value={reference} onChange={(e) => setReference(e.target.value)} maxLength={200} placeholder="ERP order number, supplier confirmation" />
+          </label>
+          <label>
+            <span className="fld-label">When (optional, defaults to now)</span>
+            <input className="fld" type="datetime-local" value={observed} onChange={(e) => setObserved(e.target.value)} aria-label="When it happened" />
+          </label>
+          <label>
+            <span className="fld-label">Note (optional)</span>
+            <input className="fld fld--block" value={note} onChange={(e) => setNote(e.target.value)} maxLength={2000} />
+          </label>
+          <div>
+            <Button role="primary" pending={busy} disabled={!status} onClick={save}>Record it</Button>
+          </div>
+        </div>
+      )}
+      {next.length === 0 && draft.external_status && (
+        <p className="zhelp" style={{ marginTop: 8 }}>This order's record is complete: {EXTERNAL_LABEL[draft.external_status].toLowerCase()}.</p>
+      )}
+      {!canRecord && next.length > 0 && <p className="zhelp" style={{ marginTop: 8 }}>Your role can read this record but not add to it.</p>}
+    </Section>
+  );
+}
+
+function OutcomesPanel({ draft, history, onChanged }: { draft: Draft; history: DraftHistory | null; onChanged: () => void }) {
+  const session = useSession();
+  const toast = useToast();
+  const [metric, setMetric] = useState("received_units");
+  const [value, setValue] = useState("");
+  const [observed, setObserved] = useState("");
+  const [comparator, setComparator] = useState("");
+  const [basis, setBasis] = useState("");
+  const [busy, setBusy] = useState(false);
+  const decided = draft.state === "APPROVED" || draft.state === "EXPORTED";
+  if (!decided) return null;
+  const canRecord = session.can("recordOutcome");
+  const unit = OUTCOME_METRICS[metric]?.unit;
+  const currency = draft.currency ?? "USD";
+
+  async function save() {
+    setBusy(true);
+    try {
+      await recordOutcome(draft.draft_id, {
+        metric, value: unit === "date" ? null : (value === "" ? null : Number(value)),
+        observed_at: observed || null, comparator_value: comparator === "" ? null : Number(comparator), comparator_basis: basis.trim() || null,
+      });
+      track("outcome_recorded", { draft_id: draft.draft_id });
+      toast.push("Outcome recorded as observed after this action.");
+      setValue(""); setObserved(""); setComparator(""); setBasis("");
+      onChanged();
+    } catch (e) {
+      toast.push(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const fmt = (metricName: string, v: number | null) => {
+    if (v == null) return "—";
+    const kind = OUTCOME_METRICS[metricName]?.unit;
+    return kind === "money" ? MONEY(v, currency) : kind === "fraction" ? PERCENT(v) : NUMBER(v);
+  };
+
+  return (
+    <Section title="What happened afterwards">
+      <p style={{ margin: "0 0 12px", fontSize: 13.5, color: "var(--ink-700)", lineHeight: 1.6, maxWidth: "62ch" }}>
+        Observed after the action — never attributed to ZAAD. A saving is claimed only where you record what was observed
+        <em> and</em> a comparator with its basis stated.
+      </p>
+      {history && (
+        <dl className="kv" style={{ marginBottom: 12 }}>
+          <dt>Modelled difference</dt>
+          <dd>{history.evaluations.length ? `${history.evaluations.length} evaluation${history.evaluations.length === 1 ? "" : "s"} — see “What this order would do”` : <span className="na">Not evaluated</span>}</dd>
+          <dt>Approved against</dt>
+          <dd>{draft.approval_evaluation_state === "current" ? "a current evaluation"
+            : draft.approval_evaluation_state === "stale_acknowledged" ? "an evaluation the approver knew was out of date"
+            : draft.approval_evaluation_state === "none" ? "no evaluation" : <span className="na">Not recorded</span>}</dd>
+          <dt>Backtested opportunity</dt><dd><span className="na">Not available — no held-out replay is wired into this product</span></dd>
+          <dt>Realized outcome</dt>
+          <dd>{history.realized_value.realized_outcome ? `${history.outcomes.length} observation${history.outcomes.length === 1 ? "" : "s"} recorded` : <span className="na">None observed yet</span>}</dd>
+          <dt>Realized savings</dt>
+          <dd>{history.realized_value.realized_savings.length
+            ? history.realized_value.realized_savings.map((r) => (
+                <div key={r.metric}>{OUTCOME_METRICS[r.metric]?.label ?? r.metric}: observed {fmt(r.metric, r.observed)} against {fmt(r.metric, r.comparator)}
+                  {r.difference != null ? ` — ${r.difference >= 0 ? "" : "−"}${MONEY(Math.abs(r.difference), currency)} ${r.difference >= 0 ? "less" : "more"} than the comparator` : ""} <small style={{ color: "var(--ink-500)" }}>(basis: {r.basis})</small></div>))
+            : <span className="na">None — no observation carries a comparator with its basis</span>}</dd>
+        </dl>
+      )}
+      {history && history.outcomes.length > 0 && (
+        <DataTable caption="Observations recorded for this order" dense rows={history.outcomes} rowKey={(r) => r.outcome_id}
+          columns={[
+            { key: "metric", label: "What", render: (r) => OUTCOME_METRICS[r.metric]?.label ?? r.metric },
+            { key: "value", label: "Observed", numeric: true, render: (r) => fmt(r.metric, r.value) },
+            { key: "observed_at", label: "When", render: (r) => r.observed_at ? DATE(r.observed_at) : <span className="na">—</span> },
+            { key: "source", label: "How", render: (r) => r.source === "matched" ? "matched from receipts" : "recorded by a person" },
+            { key: "comparator", label: "Comparator", render: (r) => r.comparator_value != null ? `${fmt(r.metric, r.comparator_value)} · ${r.comparator_basis}` : <span className="na">none</span> },
+          ]} />
+      )}
+      {canRecord && (
+        <div style={{ marginTop: 12, display: "grid", gap: 8, maxWidth: 560 }}>
+          <label>
+            <span className="fld-label">Record an observation</span>
+            <select className="fld fld--block" value={metric} onChange={(e) => setMetric(e.target.value)} aria-label="What was observed">
+              {Object.entries(OUTCOME_METRICS).map(([k, m]) => <option key={k} value={k}>{m.label}</option>)}
+            </select>
+          </label>
+          {unit !== "date" && (
+            <label><span className="fld-label">Value ({unit === "money" ? currency : unit})</span>
+              <input className="fld" type="number" value={value} onChange={(e) => setValue(e.target.value)} aria-label="Observed value" /></label>
+          )}
+          <label><span className="fld-label">Observed on</span>
+            <input className="fld" type="date" value={observed} onChange={(e) => setObserved(e.target.value)} aria-label="Observed on" /></label>
+          {(unit === "money") && (
+            <>
+              <label><span className="fld-label">Comparator (optional): the figure it is measured against</span>
+                <input className="fld" type="number" value={comparator} onChange={(e) => setComparator(e.target.value)} aria-label="Comparator value" /></label>
+              <label><span className="fld-label">Where the comparator comes from (required with a comparator)</span>
+                <input className="fld fld--block" value={basis} onChange={(e) => setBasis(e.target.value)} maxLength={500} placeholder="e.g. the price on the superseded order in our ERP" /></label>
+            </>
+          )}
+          <div><Button pending={busy} disabled={unit !== "date" && value === ""} onClick={save}>Record observation</Button></div>
+        </div>
+      )}
+    </Section>
+  );
+}
+
 // ── the page ──────────────────────────────────────────────────────────────────
 
 function DraftBody({ id }: { id: string }) {
   const router = useRouter();
   const toast = useToast();
+  const session = useSession();
   const { request } = useWorkspaceData();
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [history, setHistory] = useState<DraftHistory | null>(null);
+  const [preview, setPreview] = useState<ExportPreview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [header, setHeader] = useState<OrderHeader | null>(null);
   const [lines, setLines] = useState<DraftLine[]>([]);
@@ -323,6 +515,7 @@ function DraftBody({ id }: { id: string }) {
       setHeader(headerOf(next));
       setLines(next.lines.map((l) => ({ ...l })));
       setDirty(false);
+      readHistory(id).then(setHistory).catch(() => setHistory(null));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -330,6 +523,11 @@ function DraftBody({ id }: { id: string }) {
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { fetchProfiles().then((p) => setProfiles(p.profiles)).catch(() => setProfiles([])); }, []);
+  // Which format an export would use, and why, before the button is pressed (V2 §53).
+  useEffect(() => {
+    if (!draft) return;
+    exportPreview(id, profileId || null).then(setPreview).catch(() => setPreview(null));
+  }, [id, profileId, draft]);
 
   const locations = useMemo(() => (request?.locations ?? []).map((l) => l.id), [request]);
 
@@ -340,8 +538,13 @@ function DraftBody({ id }: { id: string }) {
   }
   if (!draft || !header) return <Loading label="Reading this proposal…" cards={2} />;
 
-  const editable = draft.editable;
+  const editable = draft.editable && session.can("editDraft");
   const currency = header.currency || "USD";
+  const canApprove = session.can("approve");
+  const canReview = session.can("review");
+  const canExport = session.can("export");
+  const selfBlocked = session.workspace?.policy.selfApproval === "different_approver"
+    && draft.created_by != null && session.actor?.id === draft.created_by;
 
   async function act(fn: () => Promise<unknown>, label: string, message: string) {
     setBusy(label);
@@ -398,7 +601,8 @@ function DraftBody({ id }: { id: string }) {
                 ...header, currency: currency.toUpperCase(),
                 requested_receipt_date: header.requested_receipt_date || null,
                 lines: lines.filter((l) => l.sku.trim() && Number(l.quantity) > 0),
-              }), "save", "Saved.")}>Save changes</Button>
+                expected_version: draft.version ?? null,
+              } as Parameters<typeof updateDraft>[1]), "save", "Saved.")}>Save changes</Button>
             <Button role="tertiary" icon={<Undo2 size={14} aria-hidden />} onClick={load}>Discard changes</Button>
           </div>
         )}
@@ -455,26 +659,36 @@ function DraftBody({ id }: { id: string }) {
               </div>
             )}
             <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {draft.state === "DRAFT" && (
-                <Button pending={busy === "submit"} onClick={() => act(() => actOnDraft(id, "submit"), "submit", "Sent for review.")}>
+              {draft.state === "DRAFT" && canReview && (
+                <Button pending={busy === "submit"} onClick={() => act(() => actOnDraft(id, "submit", undefined, { expectedVersion: draft.version ?? null }), "submit", "Sent for review.")}>
                   Send for review
                 </Button>
               )}
-              {draft.state === "READY_FOR_REVIEW" && (
-                <Button role="tertiary" pending={busy === "reopen"} onClick={() => act(() => actOnDraft(id, "reopen"), "reopen", "Back to draft.")}>
+              {draft.state === "READY_FOR_REVIEW" && canReview && (
+                <Button role="tertiary" pending={busy === "reopen"} onClick={() => act(() => actOnDraft(id, "reopen", undefined, { expectedVersion: draft.version ?? null }), "reopen", "Back to draft.")}>
                   Return to draft
                 </Button>
               )}
               <Button role="primary" icon={<CheckCircle2 size={15} aria-hidden />} pending={busy === "approve"}
-                disabled={!reason.trim() || (Boolean(draft.evaluation_stale) && !acknowledgeStale)}
-                onClick={() => act(() => actOnDraft(id, "approve", reason, { acknowledgeStale }), "approve", "Approved. Nothing has been sent to a supplier.")}>
+                disabled={!canApprove || selfBlocked || !reason.trim() || (Boolean(draft.evaluation_stale) && !acknowledgeStale)}
+                onClick={() => act(() => actOnDraft(id, "approve", reason, { acknowledgeStale, expectedVersion: draft.version ?? null }), "approve", "Approved. Nothing has been sent to a supplier.")}>
                 Approve
               </Button>
-              <Button role="danger" pending={busy === "reject"} disabled={!reason.trim()}
-                onClick={() => act(() => actOnDraft(id, "reject", reason), "reject", "Rejected.")}>
+              <Button role="danger" pending={busy === "reject"} disabled={!canApprove || !reason.trim()}
+                onClick={() => act(() => actOnDraft(id, "reject", reason, { expectedVersion: draft.version ?? null }), "reject", "Rejected.")}>
                 Reject
               </Button>
             </div>
+            {!canApprove && (
+              <p className="zhelp" style={{ marginTop: 8 }}>
+                Your role ({session.actor?.role.toLowerCase()}) can prepare this proposal but not approve it. An approver decides.
+              </p>
+            )}
+            {canApprove && selfBlocked && (
+              <p className="zhelp" style={{ marginTop: 8 }}>
+                This workspace requires a different person to approve a proposal than the one who created it.
+              </p>
+            )}
           </>
         )}
       </Section>
@@ -488,19 +702,27 @@ function DraftBody({ id }: { id: string }) {
           <label className="fld-wrap">
             <span className="sr-only">Format</span>
             <select className="fld" value={profileId} onChange={(e) => setProfileId(e.target.value)} aria-label="Output format">
+              <option value="">Use the declared default</option>
               {profiles.map((p) => <option key={p.profile_id ?? "built-in"} value={p.profile_id ?? ""}>{p.name}</option>)}
             </select>
           </label>
           <Button icon={<Download size={15} aria-hidden />} pending={busy === "export"}
-            disabled={!draft.lines.length || !draft.exportable}
+            disabled={!draft.lines.length || !draft.exportable || !canExport}
             onClick={() => act(async () => {
               const name = await exportDraft(id, { profileId: profileId || null });
+              track("po_exported", { draft_id: id });
               toast.push(`${name} downloaded. It has not been sent to anyone.`);
             }, "export", "Exported.")}>
             Export
           </Button>
           <ButtonLink size="sm" role="tertiary" href="/orders/formats">Define a format</ButtonLink>
         </div>
+        {preview && (
+          <p className="zhelp" style={{ marginTop: 8 }}>
+            Will use {preview.detail} · {preview.adapter.real ? "produces a file" : "test adapter"}; {preview.adapter.transmits ? "" : "nothing is sent anywhere"}.
+          </p>
+        )}
+        {!canExport && <p className="zhelp" style={{ marginTop: 8 }}>Your role can read this proposal but not export it.</p>}
         {!draft.lines.length ? (
           <p className="zhelp" style={{ marginTop: 8 }}>
             There is nothing to export until this proposal has a line. Add a product above.
@@ -525,8 +747,11 @@ function DraftBody({ id }: { id: string }) {
         )}
       </Section>
 
+      <ExternalStatusPanel draft={draft} onChanged={load} />
+      <OutcomesPanel draft={draft} history={history} onChanged={load} />
+
       <Section title="History">
-        <DataTable caption="What has happened to this proposal" dense rows={draft.events}
+        <DataTable caption="What has happened to this proposal" dense rows={history?.events ?? draft.events}
           rowKey={(r, ) => `${r.happened_at}-${r.event}`}
           columns={[
             { key: "event", label: "Event", render: (r) => r.event },
@@ -534,6 +759,23 @@ function DraftBody({ id }: { id: string }) {
             { key: "actor", label: "By", render: (r) => r.actor ?? "—" },
             { key: "detail", label: "Detail", render: (r) => r.detail ?? "—" },
           ]} />
+        {history && history.revisions.length > 1 && (
+          <p className="zhelp" style={{ marginTop: 8 }}>Across {history.revisions.length} revisions of this order.</p>
+        )}
+        {history && history.audit.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <Disclosure summary="Audit trail" hint={`${history.audit.length} entries · append-only`}>
+              <DataTable caption="Every recorded action on this order and its revisions" dense rows={history.audit} rowKey={(r) => r.audit_id}
+                columns={[
+                  { key: "happened_at", label: "When", render: (r) => DATE(r.happened_at) },
+                  { key: "actor", label: "Who", render: (r) => `${r.actor ?? "—"}${r.actor_role ? ` (${r.actor_role.toLowerCase()})` : ""}` },
+                  { key: "action", label: "Action", render: (r) => r.action.replaceAll("_", " ") },
+                  { key: "state", label: "State", render: (r) => r.before_state || r.after_state ? `${r.before_state ?? "—"} → ${r.after_state ?? "—"}` : "—" },
+                  { key: "request_id", label: "Request", render: (r) => <span style={{ fontFamily: "var(--mono)", fontSize: 11.5 }}>{r.request_id ?? "—"}</span> },
+                ]} />
+            </Disclosure>
+          </div>
+        )}
       </Section>
 
       <div style={{ marginTop: 22, display: "flex", gap: 8, flexWrap: "wrap" }}>

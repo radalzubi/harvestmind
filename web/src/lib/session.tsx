@@ -18,13 +18,20 @@ import { apiFetch, clearApiToken, getApiToken, getMe, setApiToken, setSector, ty
 
 export type SessionStatus = "unknown" | "anonymous" | "authenticated" | "error";
 
-/** What the signed-in person may do. The pilot grants all four; later adapters will not. */
-export type Capability = "view" | "review" | "approve" | "manageData";
+/**
+ * What the signed-in person may do. V2: the server grants these per role (VIEWER, BUYER, APPROVER,
+ * ADMIN) and every write endpoint checks one, so a greyed button here is the same rule the API
+ * enforces — never a different one.
+ */
+export type Capability =
+  | "view" | "manageData" | "createProposal" | "editDraft" | "evaluate" | "review" | "approve" | "export"
+  | "recordExternal" | "recordOutcome" | "respondDecision" | "manageProfiles" | "manageSettings" | "manageActors";
 
 export interface Actor {
   id: string;
-  /** Display name for the person. The pilot has no per-person identity, so this is the workspace's. */
+  /** The person's name when they have their own token; the workspace's for the pilot administrator. */
   name: string;
+  role: string;
 }
 
 export interface Workspace {
@@ -38,6 +45,10 @@ export interface Workspace {
   family: "commercial" | "produce";
   createdAt: string;
   uploads: number;
+  /** V2: who is acting, what they may do, and the workspace's policy — all from the server. */
+  actor: Actor;
+  capabilities: Capability[];
+  policy: { selfApproval: "allowed" | "different_approver"; defaultExportProfile: string | null };
 }
 
 export interface Session {
@@ -54,7 +65,11 @@ export interface Session {
   refresh(): void;
 }
 
-const PILOT_CAPABILITIES: Capability[] = ["view", "review", "approve", "manageData"];
+/** What an API from before V2 grants: it answers /me without capabilities, and it enforces nothing per role. */
+const PILOT_CAPABILITIES: Capability[] = [
+  "view", "manageData", "createProposal", "editDraft", "evaluate", "review", "approve", "export",
+  "recordExternal", "recordOutcome", "respondDecision", "manageProfiles", "manageSettings", "manageActors",
+];
 
 function workspaceFrom(me: Me): Workspace {
   const name = me.display_name || me.name || me.operator_id;
@@ -67,6 +82,12 @@ function workspaceFrom(me: Me): Workspace {
     family: me.sector === "commercial" ? "commercial" : "produce",
     createdAt: me.created_at,
     uploads: me.upload_count,
+    actor: me.actor ? { id: me.actor.id, name: me.actor.name, role: me.actor.role } : { id: me.operator_id, name, role: "ADMIN" },
+    capabilities: Array.isArray(me.capabilities) ? (me.capabilities as Capability[]) : PILOT_CAPABILITIES,
+    policy: {
+      selfApproval: me.policy?.self_approval === "different_approver" ? "different_approver" : "allowed",
+      defaultExportProfile: me.policy?.default_export_profile ?? null,
+    },
   };
 }
 
@@ -136,10 +157,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<Session>(() => {
-    const capabilities = new Set<Capability>(status === "authenticated" ? PILOT_CAPABILITIES : []);
+    const capabilities = new Set<Capability>(status === "authenticated" && workspace ? workspace.capabilities : []);
     return {
       status, workspace, error, capabilities,
-      actor: workspace ? { id: workspace.id, name: workspace.name } : null,
+      actor: workspace ? workspace.actor : null,
       can: (c: Capability) => capabilities.has(c),
       signIn, signOut,
       refresh: () => setTick((t) => t + 1),

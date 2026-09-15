@@ -104,6 +104,8 @@ export interface WorkspaceData {
   lastRunFailed: string | null;
   /** When the plan in hand finished, from the job record. */
   computedAt: Date | null;
+  /** The job the plan in hand came from; a decision response is recorded against it. */
+  planJobId: string | null;
   /** Runs a new plan over `size` products, or every product when `size` is "all". */
   run: (size?: number | "all") => void;
   refresh: () => void;
@@ -221,6 +223,7 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
   const [lastRunFailed, setLastRunFailed] = useState<string | null>(null);
   const [degraded, setDegraded] = useState<string | null>(null);
   const [computedAt, setComputedAt] = useState<Date | null>(null);
+  const [planJobId, setPlanJobId] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
   const poll = useRef<number | null>(null);
   const alive = useRef(true);
@@ -330,6 +333,7 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
         const detail = await readPlanJob(last.id);
         if (!live || !detail.report) return;
         setReport(detail.report);
+        setPlanJobId(last.id);
         setComputedAt(detail.finished_at ? new Date(detail.finished_at) : null);
         setScope(scopeOf(detail.report, state.request));
         setPlanPhase("ready");
@@ -364,6 +368,7 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
           poll.current = null;
           if (detail.status === "DONE" && detail.report) {
             setReport(detail.report);
+            setPlanJobId(jobId);
             setComputedAt(detail.finished_at ? new Date(detail.finished_at) : new Date());
             setPlanPhase("ready");
             // An earlier failure is history once a later run has finished; leaving the notice up
@@ -429,10 +434,10 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
       phase, planPhase, notReady, error, planError, degraded,
       request, build, report, directory, decisions, summary, network,
       index: network ? buildIndex(network) : null,
-      scope, readScope, lastRunFailed, computedAt, run,
+      scope, readScope, lastRunFailed, computedAt, planJobId, run,
       refresh: () => setTick((t) => t + 1),
     };
-  }, [phase, planPhase, notReady, error, planError, degraded, request, build, report, directory, scope, readScope, lastRunFailed, computedAt, run, session.workspace]);
+  }, [phase, planPhase, notReady, error, planError, degraded, request, build, report, directory, scope, readScope, lastRunFailed, computedAt, planJobId, run, session.workspace]);
 
   return <WorkspaceDataContext.Provider value={value}>{children}</WorkspaceDataContext.Provider>;
 }

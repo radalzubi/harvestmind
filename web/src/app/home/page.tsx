@@ -17,6 +17,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Gate } from "@/components/workspace/Gate";
 import { ButtonLink, EmptyState, Notice, Section, Tag } from "@/components/workspace/ui";
+import { EXTERNAL_LABEL, OUTCOME_METRICS, readHistoryFeed, type HistoryFeed } from "@/lib/zaad/product";
 import { PlanGate, RunPlan, ScopeNotice } from "@/components/workspace/PlanState";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money } from "@/lib/zaad/decisions";
@@ -101,6 +102,42 @@ function Snapshot({ summary }: { summary: OperatingSummary }) {
             <dd>{item.value}{item.note && <small>{item.note}</small>}</dd>
           </div>
         ))}
+      </dl>
+    </Section>
+  );
+}
+
+/**
+ * V2: the closed loop on Home. What needs a person, what has left the building, and the latest
+ * thing observed afterwards — from the record, not from the plan. Not project management: five
+ * lines, each a link to the place where the work is done.
+ */
+function ClosedLoop() {
+  const [feed, setFeed] = useState<HistoryFeed | null>(null);
+  useEffect(() => {
+    let alive = true;
+    readHistoryFeed().then((f) => alive && setFeed(f)).catch(() => alive && setFeed(null));
+    return () => { alive = false; };
+  }, []);
+  if (!feed) return null;
+  const c = feed.counts;
+  const latest = feed.outcomes[0];
+  const items: Array<{ label: string; value: string; href: string; note?: string }> = [
+    { label: "Awaiting approval", value: NUMBER(c.awaiting_approval), href: "/orders?state=READY_FOR_REVIEW" },
+    { label: "Approved, not yet recorded as placed", value: NUMBER(c.approved_not_placed), href: "/orders?state=APPROVED&external_status=NONE" },
+    { label: "Placed, awaiting acknowledgement", value: NUMBER(c.placed_not_acknowledged), href: "/orders?external_status=PLACED_EXTERNALLY" },
+  ];
+  if (!items.some((i) => i.value !== "0") && !latest) return null;
+  return (
+    <Section title="What needs you, and what happened" more="Open History" moreHref="/history">
+      <dl className="snap">
+        {items.map((item) => (
+          <div key={item.label}><dt><Link href={item.href} style={{ color: "inherit" }}>{item.label}</Link></dt><dd>{item.value}{item.note && <small>{item.note}</small>}</dd></div>
+        ))}
+        {latest && (
+          <div><dt><Link href={latest.draft_id ? `/orders/${encodeURIComponent(latest.draft_id)}` : "/history"} style={{ color: "inherit" }}>Latest outcome</Link></dt>
+            <dd>{OUTCOME_METRICS[latest.metric]?.label ?? latest.metric}<small>observed after the action{latest.observed_at ? ` · ${DATE(latest.observed_at)}` : ""} · not attributed to ZAAD</small></dd></div>
+        )}
       </dl>
     </Section>
   );
@@ -249,6 +286,8 @@ function HomeBody() {
       {snapshot && <Snapshot summary={snapshot} />}
 
       <Watches state={state} />
+
+      <ClosedLoop />
 
       {problems.length > 0 && (
         <Section title="Your data" more="Open Upload" moreHref="/upload">

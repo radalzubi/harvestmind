@@ -24,7 +24,7 @@ import { Gate } from "@/components/workspace/Gate";
 import { Button, ButtonLink, EmptyState, ErrorState, Loading, Notice, PageHead, Section } from "@/components/workspace/ui";
 import { Column, DataTable, Drawer, Pager, SearchField, SelectField, Toolbar } from "@/components/workspace/Table";
 import {
-  AMENDMENT_LABEL, DATE, MONEY, NUMBER, ORIGIN_LABEL, STATE_LABEL,
+  EXTERNAL_LABEL, AMENDMENT_LABEL, DATE, MONEY, NUMBER, ORIGIN_LABEL, STATE_LABEL,
   fetchImportedOrder, fetchImportedOrders, listDrafts,
   type DraftState, type DraftSummary, type ImportedOrderDetail, type ImportedOrderRow,
 } from "@/lib/zaad/product";
@@ -45,6 +45,8 @@ function StateChip({ state }: { state: DraftState }) {
 function Proposals({ params, set }: { params: URLSearchParams; set: (c: Record<string, string | null>) => void }) {
   const state = params.get("state") ?? "";
   const origin = params.get("origin") ?? "";
+  // V2: what a person recorded happened outside ZAAD — placed, acknowledged, delivered — or NONE.
+  const external = params.get("external_status") ?? "";
   const q = params.get("q") ?? "";
   const offset = Number(params.get("offset") ?? 0);
   const [page, setPage] = useState<Awaited<ReturnType<typeof listDrafts>> | null>(null);
@@ -60,17 +62,22 @@ function Proposals({ params, set }: { params: URLSearchParams; set: (c: Record<s
   useEffect(() => {
     let alive = true;
     setError(null);
-    listDrafts({ state: state || undefined, origin: origin || undefined, q: q || undefined, limit: PAGE, offset })
+    listDrafts({ state: state || undefined, origin: origin || undefined, q: q || undefined, external_status: external || undefined, limit: PAGE, offset })
       .then((p) => alive && setPage(p))
       .catch((e) => alive && setError(e.message));
     return () => { alive = false; };
-  }, [state, origin, q, offset]);
+  }, [state, origin, external, q, offset]);
 
   const columns: Column<DraftSummary>[] = useMemo(() => [
     { key: "reference", label: "Reference", width: 200,
       render: (r) => <strong style={{ fontWeight: 500, color: "var(--ink-950)" }}>{r.reference || r.draft_id.replace(/^draft_/, "")}</strong> },
     { key: "state", label: "Status", render: (r) => <StateChip state={r.state} /> },
+    // Provenance stays visible beside state: from your system, a proposal, or a change to an order.
     { key: "origin", label: "Where from", hideBelow: 900, render: (r) => ORIGIN_LABEL[r.origin] },
+    { key: "external_status", label: "Outside ZAAD", hideBelow: 900,
+      title: (r) => r.external_reference ? `Reference ${r.external_reference}` : undefined,
+      render: (r) => r.external_status ? <span className="chip" data-tone={r.external_status === "CANCELLED_EXTERNALLY" ? "bad" : "good"}>{EXTERNAL_LABEL[r.external_status]}</span>
+        : (r.state === "APPROVED" || r.state === "EXPORTED") ? <span className="na">nothing recorded</span> : <span className="na">—</span> },
     { key: "supplier_id", label: "Supplier", hideBelow: 700, render: (r) => r.supplier_id ?? <span className="na">—</span> },
     { key: "lines", label: "Lines", numeric: true, sortable: true, render: (r) => NUMBER(r.lines) },
     { key: "units", label: "Units", numeric: true, sortable: true, render: (r) => r.units != null ? NUMBER(r.units) : <span className="na">—</span> },
@@ -95,6 +102,8 @@ function Proposals({ params, set }: { params: URLSearchParams; set: (c: Record<s
           options={(Object.keys(STATE_LABEL) as DraftState[]).map((s) => ({ value: s, label: STATE_LABEL[s] }))} />
         <SelectField value={origin} onChange={(v) => set({ origin: v })} label="Where from" all="Any origin"
           options={Object.entries(ORIGIN_LABEL).map(([value, label]) => ({ value, label }))} />
+        <SelectField value={external} onChange={(v) => set({ external_status: v })} label="Outside ZAAD" all="Any"
+          options={[{ value: "NONE", label: "Nothing recorded yet" }, ...Object.entries(EXTERNAL_LABEL).map(([value, label]) => ({ value, label }))]} />
       </Toolbar>
       <DataTable
         caption="Proposed purchase orders" columns={columns} rows={page.rows}
