@@ -15,6 +15,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.product.drafts import DraftRefused
+from api.routers import zaad_insights
 from api.routers import assistant, fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin, access, jobs, zaad, zaad_full, zaad_atp, zaad_workspace, zaad_orders, zaad_history
 
 app = FastAPI(
@@ -158,6 +159,7 @@ app.include_router(zaad_atp.router)   # P5 ATP (default off: ZAAD_ATP_ENABLED=1)
 app.include_router(zaad_workspace.router)  # operating product: read-only projections of the vault
 app.include_router(zaad_orders.router)     # operating product: proposed orders, evaluation, export
 app.include_router(zaad_history.router)    # operating product V2: audit, responses, outcomes, settings, telemetry
+app.include_router(zaad_insights.router)   # operating product V2.1A: server-side aggregations, latest plan read back
 app.include_router(backtest.router)
 app.include_router(data.router)
 app.include_router(fsma.router)

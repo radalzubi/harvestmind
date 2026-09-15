@@ -565,3 +565,30 @@ table.t td.product { color: var(--ink-900); font-weight: 500; }
 [dir="rtl"] code,
 [dir="rtl"] .disc-tech { unicode-bidi: isolate; direction: ltr; text-align: start; }
 [dir="rtl"] .tbl td[data-align="end"], [dir="rtl"] .tbl th[data-align="end"] { text-align: left; }
+
+/* ── Insights ─────────────────────────────────────────────────────────────── */
+.ins-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 4px; }
+.ins-filters .fld { min-width: 140px; }
+.ins-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; margin-top: 16px; }
+.ins-grid .ins-card[data-wide="true"] { grid-column: 1 / -1; }
+.ins-card { margin: 0; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-md, 10px); background: var(--paper, #fff); min-width: 0; }
+.ins-card-h { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
+.ins-card-h h3 { margin: 0; font-size: 14px; font-weight: 600; color: var(--ink-950); }
+.ins-card-h p { margin: 4px 0 0; font-size: 12.5px; color: var(--ink-500); line-height: 1.5; }
+.ins-chart { min-width: 0; }
+.ins-empty { margin: 8px 0; padding: 14px; background: var(--ink-050, #f7f7f5); border-radius: 8px; font-size: 13px; color: var(--ink-700); }
+.ins-leads { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 8px 0 0; }
+.ins-table td, .ins-table th { font-size: 12.5px; }
+.ins-scope dt { font-size: 11.5px; }
+.ins-plan { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; font-size: 13px; color: var(--ink-700); margin: 8px 0 0; }
+.ins-plan[data-stale="true"] strong { color: var(--warn-700, #92400e); }
+.ins-stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 8px 0; }
+.ins-stat div { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.ins-stat dt { font-size: 11.5px; color: var(--ink-500); margin: 0; }
+.ins-stat dd { margin: 2px 0 0; font-size: 18px; font-weight: 600; color: var(--ink-950); font-variant-numeric: tabular-nums; }
+.ins-stat dd small { display: block; font-size: 11px; font-weight: 400; color: var(--ink-500); }
+.ins-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.ins-drill dl { margin: 0; }
+[dir="rtl"] .ins-card-h { flex-direction: row-reverse; }
+.ins-num, .ins-table td[data-align="end"] { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .ins-card { padding: 12px; } .ins-filters .fld { min-width: 120px; flex: 1 1 45%; } }

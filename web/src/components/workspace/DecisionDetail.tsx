@@ -11,6 +11,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { insightsLinksFor } from "@/lib/zaad/insights";
 import { ArrowUpRight, Check, X } from "lucide-react";
 import type { Decision, PlanSummary } from "@/lib/zaad/decisions";
 import { recordForReview, submitReview } from "@/lib/zaad/client";
@@ -189,6 +190,23 @@ function ReviewPanel({ summary, openCount }: { summary: PlanSummary; openCount: 
   );
 }
 
+/** Action → Insights: the demand, stock, supplier history and value behind this decision, with its filters. */
+function InsightsLinks({ decision }: { decision: Decision }) {
+  const { request } = useWorkspaceData();
+  const links = insightsLinksFor(decision, request);
+  const items = [
+    links.demand && { href: links.demand, label: "See demand behind this decision" },
+    links.inventory && { href: links.inventory, label: "See inventory position" },
+    links.supplier && { href: links.supplier, label: "See supplier history" },
+    { href: links.value, label: "See value breakdown" },
+  ].filter((x): x is { href: string; label: string } => Boolean(x));
+  return (
+    <p style={{ display: "flex", flexWrap: "wrap", gap: "2px 8px", margin: "8px 0 0", marginInlineStart: -10 }}>
+      {items.map((item) => <Link key={item.href} href={item.href} className="zb zb--tertiary zb--sm">{item.label} <ArrowUpRight size={13} aria-hidden /></Link>)}
+    </p>
+  );
+}
+
 export function DecisionDetail({ decision, summary, openCount }: { decision: Decision; summary: PlanSummary | null; openCount: number }) {
   const twinHref = decision.target.networkId
     ? `/network?${decision.target.networkId.startsWith("lane:") ? "edge" : "node"}=${encodeURIComponent(decision.target.networkId)}&decision=${encodeURIComponent(decision.id)}`
@@ -207,6 +225,7 @@ export function DecisionDetail({ decision, summary, openCount }: { decision: Dec
           View in network <ArrowUpRight size={14} aria-hidden />
         </Link>
       )}
+      <InsightsLinks decision={decision} />
 
       {decision.effect.length > 0 && (
         <div style={{ marginTop: 16 }}>
