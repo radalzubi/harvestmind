@@ -35,7 +35,20 @@ def _ctx() -> ssl.SSLContext:
         return ssl.create_default_context()
 
 
-def fetch(url: str, *, token: str | None = None, method: str = "GET", body: dict | None = None):
+def fetch(url: str, *, token: str | None = None, method: str = "GET", body: dict | None = None, _retry: bool = True):
+    """One request. A transport timeout is retried once after a pause: on a loopback host a burst
+    of short connections can exhaust ephemeral ports (TIME_WAIT), which stalls the *client*
+    while the server has already answered — the API log is the arbiter, and this keeps a client
+    artefact from being reported as a server failure. A second timeout is reported as one."""
+    status, headers, raw = _fetch_once(url, token=token, method=method, body=body)
+    if status == -1 and _retry and b"timed out" in raw:
+        import time
+        time.sleep(3)
+        return _fetch_once(url, token=token, method=method, body=body)
+    return status, headers, raw
+
+
+def _fetch_once(url: str, *, token: str | None = None, method: str = "GET", body: dict | None = None):
     req = urllib.request.Request(url, method=method)
     if token:
         req.add_header("Authorization", f"Bearer {token}")
@@ -115,7 +128,7 @@ def main() -> int:
             page = json.loads(raw or b"{}") if status == 200 else {}
             rows = page.get("rows", [])
             check("a site page is that site's own", status == 200 and page.get("location") == site and all((r.get("sites") in (1, None)) for r in rows),
-                  f"{site}: {len(rows)} rows, notes {page.get('location_notes')}")
+                  f"status {status}, {site}: {len(rows)} rows, notes {page.get('location_notes')}")
             status, _, raw = fetch(f"{api}/api/zaad/workspace/inventory?location=NOT-A-SITE-ANYWHERE&limit=2", token=t)
             page = json.loads(raw or b"{}") if status == 200 else {}
             check("an unknown site is empty, not the total", status == 200 and all(r.get("on_hand") is None for r in page.get("rows", [])))
