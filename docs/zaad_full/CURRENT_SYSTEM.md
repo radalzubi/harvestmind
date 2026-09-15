@@ -17,15 +17,22 @@ release ledger's current-state table records when that is not the case.
 | P4 | adaptive recourse | `8c813ac`; perf closure `6b58764` (Fly v21) | `evidence/p4/` |
 | P5 | ATP / scarce-supply allocation | `2fc7b50` (Fly v22, `p5-release-runtime`) | `evidence/p5/release_audit/P5_RELEASE_AUDIT.md` |
 | P4B V1 | open PO / commitment intervention (KEEP / DEFER / EXPEDITE / REDUCE / CANCEL / SPLIT) | `1851f40` (Fly v23, `p4b-v1-release-runtime`) | `evidence/p4b/release_audit/P4B_RELEASE_AUDIT.md` |
+| Operating product V1 + V2 | inventory, purchase orders, proposal evaluation and export, governance, closed loop, readiness, amendment counterfactual, transfers, bulk | `458fcaf` merged; Fly v26 `canonical-458fcaf`; **production plan path BLOCKED on shared-cpu-2x** (no runtime tag) | `OPERATING_PRODUCT_V1.md`, `OPERATING_PRODUCT_V2.md`, `FABLE_V1_AUDIT.md`, `FABLE_V2_RELEASE_AUDIT.md` |
 
 Not started (each needs its own authorization): P4B V2 (node-indexed amendments), P6, P7, P8, P9.
 
-**In flight, not released:** the operating product (inventory, purchase orders, proposal evaluation,
-export, diagnostics, data explorer) is on `feat/zaad-operating-product-v1`, PR #81, **draft**. It
-adds no optimizer behaviour — `zaad/` is untouched and the frozen regression passes on the branch.
-Nothing in the table above changes until it is merged and deployed.
-[`OPERATING_PRODUCT_V1.md`](OPERATING_PRODUCT_V1.md) is its architecture record and
-[`FABLE_OPERATING_PRODUCT_HANDOFF.md`](FABLE_OPERATING_PRODUCT_HANDOFF.md) its audit handoff.
+**Merged and deployed 2026-09-15, plan path blocked in production: the operating product** (V1
+audited and corrected, V2 built on the same branch — PR #81, merge `458fcaf`, Fly v26
+`canonical-458fcaf`, Vercel production from the merge). It adds no optimizer behaviour: after the V1
+audited checkpoint no file under `zaad/` changed, and the only `zaad/` file in the whole release is
+`zaad/full/jobs.py` (job ownership, leases and purposes; the frozen regression passed on it and in
+CI). Every surface and the whole proposal loop were verified on production; the default 10-product
+plan and a 5-product plan both time out on the `shared-cpu-2x` machine (5 products need 306 s of
+solver time there against a 337 s cap), so **no runtime tag exists yet** — see the ledger for the
+two ways to unblock it. Architecture records: [`OPERATING_PRODUCT_V1.md`](OPERATING_PRODUCT_V1.md)
+and [`OPERATING_PRODUCT_V2.md`](OPERATING_PRODUCT_V2.md); audits: [`FABLE_V1_AUDIT.md`](FABLE_V1_AUDIT.md)
+and [`FABLE_V2_RELEASE_AUDIT.md`](FABLE_V2_RELEASE_AUDIT.md). ZAAD still sends nothing to a supplier;
+exports are files; external status is human-recorded.
 The Network Twin shipped with the frontend rebuild, built on the canonical engine rather than PR #39's
 superseded `/fmcg` path. Engineering is pausing new optimizer phases until stronger operator evidence exists.
 
@@ -47,7 +54,7 @@ savings claim is established by this repository.
   four surfaces — Home, Decisions, Network, Data — over one read of the operator's vault; planning
   runs on the asynchronous jobs path because a solve takes minutes. `FRONTEND_UX_REBUILD.md` is the
   record of how it is built and what it deliberately does not claim.
-* `db/migrations/` — 22 idempotent migrations applied by `scripts/setup_db.py`.
+* `db/migrations/` — 27 idempotent migrations applied by `scripts/setup_db.py` (023–027 are the operating product's own tables and columns, also applied lazily by `api/product/drafts.py::ensure_tables`).
 
 ## How it is validated (the frozen chain)
 
