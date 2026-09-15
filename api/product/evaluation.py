@@ -155,6 +155,194 @@ def overlay(request: Request, draft: dict[str, Any]) -> tuple[Request, list[str]
     return Request.model_validate(payload), notes
 
 
+#: The product's amendment verbs against the engine's declared option actions. REDUCE is a partial
+#: cancel: it exercises a declared cancel right for the units removed. SPLIT has no declared option
+#: type in P4B V1 and is refused rather than approximated.
+AMENDMENT_ENGINE_ACTIONS: dict[str, tuple[str, ...]] = {
+    "DEFER": ("de_expedite", "reschedule"), "EXPEDITE": ("expedite",), "CANCEL": ("cancel",), "REDUCE": ("cancel",),
+}
+_VERB = {"DEFER": "defer", "EXPEDITE": "expedite", "CANCEL": "cancel", "REDUCE": "reduce"}
+
+
+def amendment_overlay(request: Request, draft: dict[str, Any]) -> tuple[Request, dict[str, Any]]:
+    """The workspace request with one open order rewritten as if the proposed amendment had been exercised.
+
+    This is the counterfactual an operator is asking about: *what is my change to this order
+    worth?* The baseline is the request as read — the order as it stands, with every right the
+    contract declares still available to the engine. The overlay is the same request with the
+    order's pipeline entry rewritten under the terms of the **declared** option that matches the
+    proposed change: a deferral or an expedite moves its arrival to the option's own period; a
+    cancellation removes the open quantity; a reduction removes part of it through a declared
+    cancel right. The rewritten entry is KEEP-only, because the right has been used.
+
+    The engine's mathematics are untouched: it plans around the changed order exactly as it plans
+    around any order. What the engine does *not* see is the contract's own fee or credit for using
+    the right, because in the overlay nobody chooses an option — the change has already happened.
+    That fee is the declared per-unit term times the units changed, and it is returned beside the
+    request so the comparison can show it as its own line, never folded into the engine's ledger.
+
+    Nothing is inferred. An order with no matching declared right, a right the order's stage no
+    longer allows, a requested date the contract's windows do not offer, a cancellation the
+    declared cap does not cover, or a SPLIT, is refused with the reason.
+    """
+    po_id = draft.get("source_po_id")
+    action = str(draft.get("amendment_action") or "").upper()
+    if not po_id:
+        raise EvaluationRefused("This proposal does not say which order it changes.")
+    if action == "KEEP":
+        raise EvaluationRefused("Keeping the order as it is changes nothing, so there is nothing to compare.")
+    if action == "SPLIT":
+        raise EvaluationRefused(
+            "Splitting an order into separate deliveries is not a right the declared contract vocabulary "
+            "expresses, so ZAAD cannot evaluate it without inventing terms. Propose a deferral of the whole "
+            "order, or a reduction and a new order, and it can evaluate those.")
+    if action not in AMENDMENT_ENGINE_ACTIONS:
+        raise EvaluationRefused(f"{action!r} is not a change ZAAD can evaluate.")
+    verb = _VERB[action]
+
+    entry = next((po for po in request.pipeline if str(po.id) == str(po_id)), None)
+    if entry is None:
+        raise EvaluationRefused(
+            f"{po_id} is not among the open orders in the evaluated request: its product is outside the "
+            "evaluated scope, or the order has already been received in full.")
+    as_of = request.as_of
+    period_days = int(request.period_days)
+    remaining = float(entry.remaining)
+    if remaining <= 0:
+        raise EvaluationRefused(f"{po_id} has no open quantity left to change.")
+
+    declared = [o for o in entry.options if o.action in AMENDMENT_ENGINE_ACTIONS[action]]
+    if not declared:
+        raise EvaluationRefused(
+            f"No right to {verb} {po_id} is declared on this order, so ZAAD cannot evaluate the change "
+            "without inventing terms. Declare the right your contract gives you (Data → Order amendment "
+            "rights) and evaluate again.")
+    usable = [o for o in declared if o.deadline >= as_of and entry.stage in o.allowed_stages]
+    if not usable:
+        past = [o for o in declared if o.deadline < as_of]
+        raise EvaluationRefused(
+            (f"The declared right to {verb} {po_id} expired on {declared[0].deadline.date().isoformat()}." if past else
+             f"The declared right to {verb} {po_id} can be used while the order is {' or '.join(declared[0].allowed_stages)}; "
+             f"it is {entry.stage} now.") + " ZAAD does not evaluate a right that cannot be exercised.")
+
+    source_sku = next((s.sku for s in request.sources if s.id == entry.source), None)
+    payload = request.model_dump(mode="python")
+    pipeline = [row for row in payload["pipeline"]]
+    index = next(i for i, row in enumerate(pipeline) if str(row["id"]) == str(po_id))
+    row: dict[str, Any] | None = dict(pipeline[index])
+    assert row is not None
+    keep = next(dict(o) for o in row["options"] if o["action"] == "keep")
+    eta_before = entry.current_eta
+
+    def window_date(o: Any) -> datetime:
+        return as_of + timedelta(days=period_days * int(o.due_in))
+
+    terms: dict[str, Any] = {
+        "po_id": str(po_id), "action": action, "basis": "DECLARED_CONTRACT_TERMS",
+        "ordered_before": float(entry.ordered), "open_before": remaining,
+        "eta_before": eta_before.isoformat(), "stage": entry.stage,
+    }
+
+    if action in ("DEFER", "EXPEDITE"):
+        wanted = draft.get("requested_receipt_date")
+        if wanted:
+            target = _receipt_datetime(wanted, as_of)
+            target_period = max(0, int(((target or as_of) - as_of).days // period_days))
+            matching = [o for o in usable if int(o.due_in) == target_period]
+            if not matching:
+                offered = ", ".join(sorted({window_date(o).date().isoformat() for o in usable}))
+                raise EvaluationRefused(
+                    f"Your contract's declared right to {verb} {po_id} delivers on {offered}; the requested "
+                    f"date {str(wanted)[:10]} is not one of those windows. Set the requested receipt date to a "
+                    "declared window and evaluate again.")
+            option = matching[0]
+        elif len(usable) == 1:
+            option = usable[0]
+        else:
+            offered = ", ".join(sorted({window_date(o).date().isoformat() for o in usable}))
+            raise EvaluationRefused(
+                f"Your contract declares {len(usable)} windows to {verb} {po_id} ({offered}). Set the requested "
+                "receipt date on this proposal to say which one, and evaluate again.")
+        eta_after = window_date(option)
+        if action == "EXPEDITE" and eta_after >= eta_before:
+            raise EvaluationRefused(f"The declared expedite window for {po_id} ({eta_after.date().isoformat()}) is not earlier "
+                                    f"than its current arrival ({eta_before.date().isoformat()}), so it is not an expedite.")
+        if action == "DEFER" and eta_after <= eta_before:
+            raise EvaluationRefused(f"The declared deferral window for {po_id} ({eta_after.date().isoformat()}) is not later "
+                                    f"than its current arrival ({eta_before.date().isoformat()}), so it is not a deferral.")
+        row["current_eta"] = eta_after
+        keep.update({"due_in": int(option.due_in), "payment_due_in": int(option.payment_due_in),
+                     "remaining_invoice_per_unit": float(option.remaining_invoice_per_unit)})
+        row["options"] = [keep]
+        units = remaining
+        terms.update({"ordered_after": float(entry.ordered), "open_after": remaining, "eta_after": eta_after.isoformat()})
+    else:
+        if action == "CANCEL":
+            new_total = float(entry.received)
+        else:
+            if not source_sku:
+                raise EvaluationRefused(f"The product on {po_id} could not be matched to a source in the request.")
+            proposed = sum(float(line.get("quantity") or 0) for line in (draft.get("lines") or [])
+                           if str(line.get("sku")) == str(source_sku))
+            if proposed <= 0:
+                raise EvaluationRefused(f"This proposal carries no quantity for {source_sku}, the product on {po_id}. "
+                                        "A reduction says what the order becomes.")
+            new_total = proposed
+            if new_total >= float(entry.ordered) - 1e-9:
+                raise EvaluationRefused(f"{po_id} is for {entry.ordered:,.0f} units and this proposal keeps {new_total:,.0f}, "
+                                        "which is not a reduction.")
+            if new_total <= float(entry.received) + 1e-9:
+                raise EvaluationRefused(f"{po_id} has already received {entry.received:,.0f} units; reducing it to {new_total:,.0f} "
+                                        "cancels everything still open. Propose a cancellation instead.")
+        units = float(entry.ordered) - new_total
+        new_open = remaining - units
+        # the engine clips a cancel cap to the open quantity; a floor is honoured after that clipping
+        capable = [o for o in usable if min(float(o.max_quantity), remaining) >= units - 1e-9]
+        if not capable:
+            cap = max(min(float(o.max_quantity), remaining) for o in usable)
+            raise EvaluationRefused(
+                f"Your contract's declared right cancels at most {cap:,.0f} of the {remaining:,.0f} open units on {po_id}; "
+                f"this change removes {units:,.0f}. " + ("Propose a reduction inside that cap instead." if action == "CANCEL"
+                                                          else "Reduce by no more than that."))
+        if new_open + 1e-9 < float(entry.minimum_remaining_quantity):
+            raise EvaluationRefused(f"{po_id} may not fall below {entry.minimum_remaining_quantity:,.0f} open units under its "
+                                    f"contract; this change leaves {new_open:,.0f}.")
+        option = capable[0]
+        if new_total <= 0:
+            pipeline.pop(index)
+            row = None
+        else:
+            row["ordered"] = new_total
+            row["confirmed"] = min(float(row["confirmed"]), new_total)
+            row["shipped"] = min(float(row["shipped"]), float(row["confirmed"]))
+            row["received"] = min(float(row["received"]), float(row["shipped"]))
+            ratio = new_open / remaining if remaining else 0.
+            row["expected_accepted_remaining"] = min(float(entry.expected_accepted_remaining) * ratio, new_open)
+            row["minimum_remaining_quantity"] = min(float(entry.minimum_remaining_quantity), new_open)
+            keep["max_quantity"] = new_total
+            row["options"] = [keep]
+        terms.update({"ordered_after": new_total, "open_after": new_open, "eta_after": eta_before.isoformat()})
+    if row is not None:
+        pipeline[index] = row
+    payload["pipeline"] = pipeline
+    overlaid = Request.model_validate(payload)
+
+    fee_total = float(option.fee_per_unit) * units
+    credit_total = float(option.credit_per_unit) * units
+    terms.update({
+        "option_id": option.id, "engine_action": option.action, "units_changed": units,
+        "fee_per_unit": float(option.fee_per_unit), "fee_total": fee_total,
+        "credit_per_unit": float(option.credit_per_unit), "credit_total": credit_total,
+        "remaining_invoice_per_unit": float(option.remaining_invoice_per_unit),
+        "contract_reference": option.contract_reference, "provenance": option.provenance,
+        "note": (f"{po_id}: evaluated as if the declared right to {verb} ({option.contract_reference}) had been used on "
+                 f"{units:,.0f} units. The contract's fee of {option.fee_per_unit:,.2f} per unit"
+                 + (f" and credit of {option.credit_per_unit:,.2f} per unit" if credit_total else "")
+                 + " is shown as its own line; the engine's figures do not include it."),
+    })
+    return overlaid, terms
+
+
 def _receipt_datetime(value: Any, as_of: datetime) -> datetime | None:
     if value in (None, ""):
         return None
@@ -273,6 +461,7 @@ def compare(
     scope: list[str],
     currency: str = "USD",
     notes: list[str] | None = None,
+    amendment_terms: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Three columns of the engine's own ledger, and the difference between two of them.
 
@@ -356,15 +545,41 @@ def compare(
         unavailable.append("The two runs do not share an as-of date, so they are not comparable. Run the "
                            "evaluation again.")
 
+    is_amendment = draft.get("origin") == "IMPORTED_AMENDMENT"
+    # An amendment's contract fee is the declared per-unit term times the units changed — the
+    # operator's own contract, not a model — and it sits beside the engine's difference, never
+    # inside it. The sum is two stated numbers added, and says so.
+    contract: dict[str, Any] | None = None
+    if amendment_terms:
+        total_row = next((r for r in rows if r["component"] == "TOTAL"), None)
+        modelled = total_row["proposal_vs_current"] if total_row else None
+        fee = _number(amendment_terms.get("fee_total")) or 0.
+        credit = _number(amendment_terms.get("credit_total")) or 0.
+        contract = {
+            **{k: amendment_terms.get(k) for k in ("po_id", "action", "option_id", "engine_action", "units_changed",
+                                                    "fee_per_unit", "fee_total", "credit_per_unit", "credit_total",
+                                                    "contract_reference", "provenance", "eta_before", "eta_after",
+                                                    "ordered_before", "ordered_after", "open_before", "open_after")},
+            "basis": "DECLARED_CONTRACT_TERMS",
+            "modelled_difference": modelled,
+            "net_difference": (modelled + fee - credit) if modelled is not None else None,
+            "net_basis": "The engine's modelled difference, plus your contract's declared fee, less its declared "
+                         "credit — two stated numbers added, not a model.",
+        }
+        limitations.append(amendment_terms.get("note") or "")
+
     return {
         "columns": [
             {"key": "current", "label": "Your current plan",
-             "source": "The projection of your declared ordering policy, without this order."},
+             "source": ("The projection of your declared ordering policy, with this order as it stands."
+                        if is_amendment else "The projection of your declared ordering policy, without this order.")},
             {"key": "zaad", "label": "What ZAAD recommends",
              "source": "The plan the optimizer selected over the same products and the same information."},
             {"key": "proposal", "label": "Your proposal",
-             "source": "The projection of your declared ordering policy, with this order placed."},
+             "source": ("The projection of your declared ordering policy, with this change to the order already made."
+                        if is_amendment else "The projection of your declared ordering policy, with this order placed.")},
         ],
+        "contract_terms": contract,
         "currency": currency,
         "ledger": rows,
         "working_capital": capital,
@@ -376,7 +591,7 @@ def compare(
         "proposal_status": (proposal or {}).get("status"),
         "limitations": limitations,
         "unavailable": unavailable,
-        "amendment": draft.get("origin") == "IMPORTED_AMENDMENT",
+        "amendment": is_amendment,
         "zaad_abstained": zaad_abstained,
         "executable": False,
     }
@@ -497,7 +712,8 @@ def _window_words(windows: list[dict[str, Any]]) -> str:
 def store_evaluation(conn: Any, operator: str, *, draft_id: str, revision: int | None,
                      baseline_job_id: str | None, proposal_job_id: str | None, as_of: str | None,
                      scope: list[str], status: str, note: str | None = None,
-                     draft_hash: str | None = None, workspace_version: str | None = None) -> str:
+                     draft_hash: str | None = None, workspace_version: str | None = None,
+                     amendment_terms: dict[str, Any] | None = None) -> str:
     """Write the evaluation record.
 
     Called **before** the two runs are submitted, so that a job is never in the store without the
@@ -514,10 +730,11 @@ def store_evaluation(conn: Any, operator: str, *, draft_id: str, revision: int |
     stamp = datetime.now(timezone.utc).replace(tzinfo=None)
     conn.execute(
         "INSERT INTO zaad_evaluations (evaluation_id, operator_id, draft_id, revision, baseline_job_id, "
-        "proposal_job_id, as_of, scope_skus, status, note, created_at, draft_hash, workspace_version) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "proposal_job_id, as_of, scope_skus, status, note, created_at, draft_hash, workspace_version, amendment_json) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [identity, operator, draft_id, revision, baseline_job_id, proposal_job_id, as_of,
-         json.dumps(scope), status, note, stamp, draft_hash, workspace_version])
+         json.dumps(scope), status, note, stamp, draft_hash, workspace_version,
+         json.dumps(amendment_terms, default=str) if amendment_terms else None])
     conn.execute("UPDATE zaad_draft_orders SET evaluation_id = ?, updated_at = ? "
                  "WHERE draft_id = ? AND operator_id = ?",
                  [identity, stamp, draft_id, operator])

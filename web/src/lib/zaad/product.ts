@@ -531,6 +531,18 @@ export interface Comparison {
   limitations: string[];
   unavailable: string[];
   amendment: boolean;
+  /**
+   * For an amendment: the declared contract terms the counterfactual was run under. The fee is
+   * the operator's own per-unit term times the units changed — not a model — and sits beside the
+   * engine's difference, never inside it.
+   */
+  contract_terms?: {
+    po_id: string; action: string; option_id: string | null; engine_action: string | null; units_changed: number | null;
+    fee_per_unit: number | null; fee_total: number | null; credit_per_unit: number | null; credit_total: number | null;
+    contract_reference: string | null; provenance: string | null; eta_before: string | null; eta_after: string | null;
+    ordered_before: number | null; ordered_after: number | null; open_before: number | null; open_after: number | null;
+    basis: "DECLARED_CONTRACT_TERMS"; modelled_difference: number | null; net_difference: number | null; net_basis: string;
+  } | null;
   /** True when the optimizer retained the operator's own plan, so the middle column repeats the left. */
   zaad_abstained?: boolean;
   executable: boolean;

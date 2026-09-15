@@ -543,11 +543,15 @@ async def evaluate(draft_id: str, http: HTTPRequest, who: Who, conn=Depends(get_
     except KeyError as exc:
         raise HTTPException(404, "That proposal is not in this workspace.") from exc
 
-    if draft.get("origin") == "IMPORTED_AMENDMENT":
-        raise HTTPException(422, {"code": "amendment_not_evaluated", "message":
-                                  "A change to an existing order is worth what your contract says it is worth. "
-                                  "ZAAD prices the amendment rights you have declared for that order, in the "
-                                  "plan itself — open the order to see them."})
+    is_amendment = draft.get("origin") == "IMPORTED_AMENDMENT"
+    if is_amendment and str(draft.get("amendment_action") or "").upper() in ("KEEP", "SPLIT"):
+        # refused before any run is built, with the reason the overlay would give
+        raise HTTPException(422, {"code": "amendment_not_evaluated", "message": (
+            "Keeping the order as it is changes nothing, so there is nothing to compare."
+            if str(draft.get("amendment_action") or "").upper() == "KEEP" else
+            "Splitting an order into separate deliveries is not a right the declared contract vocabulary "
+            "expresses, so ZAAD cannot evaluate it without inventing terms. Propose a deferral of the whole "
+            "order, or a reduction and a new order, and it can evaluate those.")})
 
     amendment = _amendment_skus(conn)
     try:
@@ -566,10 +570,18 @@ async def evaluate(draft_id: str, http: HTTPRequest, who: Who, conn=Depends(get_
     except Exception as exc:  # noqa: BLE001 - a build failure is an operator-facing message
         raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
 
+    amendment_terms: dict[str, Any] | None = None
     try:
-        overlaid, notes = evaluation.overlay(request, draft)
+        if is_amendment:
+            # the order rewritten as if the declared right had been used; the contract's own fee travels
+            # beside the runs and is shown as its own line, never inside the engine's ledger
+            overlaid, amendment_terms = evaluation.amendment_overlay(request, draft)
+            notes = [str(amendment_terms.get("note") or "")]
+        else:
+            overlaid, notes = evaluation.overlay(request, draft)
     except evaluation.EvaluationRefused as exc:
-        raise HTTPException(422, {"code": "proposal_refused", "message": str(exc)}) from exc
+        raise HTTPException(422, {"code": "amendment_not_evaluated" if is_amendment else "proposal_refused",
+                                  "message": str(exc)}) from exc
 
     run = runner()
     # The quota is checked before anything is written, so a refused evaluation leaves no record.
@@ -587,7 +599,8 @@ async def evaluate(draft_id: str, http: HTTPRequest, who: Who, conn=Depends(get_
         baseline_job_id=None, proposal_job_id=None,
         as_of=request.as_of.isoformat(), scope=scope, status="QUEUED",
         note="; ".join(notes) if notes else None,
-        draft_hash=evaluation.content_hash(draft), workspace_version=evaluation.workspace_version(conn))
+        draft_hash=evaluation.content_hash(draft), workspace_version=evaluation.workspace_version(conn),
+        amendment_terms=amendment_terms)
     drafts.record_event(conn, operator, draft_id, "evaluation requested", draft.get("revision"), who.actor_id,
                         f"{identity} over {len(scope)} product{'' if len(scope) == 1 else 's'}")
     governance.record_audit(conn, who, object_type="evaluation", object_id=identity, action="evaluation_requested",
@@ -675,7 +688,8 @@ def read_evaluation(draft_id: str, who: Who, conn=Depends(get_conn),
     comparison = evaluation.compare(
         reports.get("baseline"), reports.get("proposal"), draft=draft, scope=scope,
         currency=str(draft.get("currency") or "USD"),
-        notes=[record["note"]] if record.get("note") else None) if reports else None
+        notes=[record["note"]] if record.get("note") else None,
+        amendment_terms=json.loads(record["amendment_json"]) if record.get("amendment_json") else None) if reports else None
 
     # An evaluation describes the lines as they were when it was submitted. A draft stays editable,
     # and an edit does not start a new revision — so without this the page would keep showing an

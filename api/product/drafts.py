@@ -278,6 +278,16 @@ def ensure_tables(conn: Any) -> None:
                 ran_ddl = True
             except Exception:  # noqa: BLE001 - already present
                 continue
+    # The amendment counterfactual's declared terms (migration 026), one column on the product's own table.
+    if "amendment_json" not in {row[1] for row in conn.execute("PRAGMA table_info('zaad_evaluations')").fetchall()}:
+        for text in statements((migrations / "026_amendment_counterfactual.sql").read_text()):
+            if not text.upper().startswith("ALTER TABLE ZAAD_"):
+                continue
+            try:
+                conn.execute(text)
+                ran_ddl = True
+            except Exception:  # noqa: BLE001 - already present
+                continue
     if ran_ddl:
         checkpoint(conn)
 

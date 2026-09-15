@@ -116,28 +116,43 @@ execution state and the outcome window. The proposal page's "Where each column c
 disclosure gains the data version and the job ids; the Decision History surface shows the same for
 each decision.
 
-## 7. Amendment counterfactual *(designed)*
+## 7. Amendment counterfactual
 
-The question: *what would my proposed change to this existing order be worth?* V1 showed the
-declared terms and priced only what P4B itself chose. V2 evaluates the operator's amendment as a
-**fixed counterfactual state**, through the same engine, without touching its mathematics:
+The question: *what would my proposed change to this existing order be worth?* V1 refused to
+evaluate an amendment and showed the declared terms only. V2 evaluates the operator's amendment
+as a **fixed counterfactual state** through the same engine, without touching its mathematics
+(`api/product/evaluation.py::amendment_overlay`, `POST /api/zaad/orders/{id}/evaluate`):
 
-* CURRENT OPEN-PO STATE — the workspace request as read (baseline run, incumbent projection).
-* FIXED OPERATOR-PROPOSED AMENDMENT OVERLAY — the same request with the amended order's pipeline
-  entry rewritten as if the amendment had already been exercised: DEFER moves `current_eta` to the
-  declared option's `due_in` period; EXPEDITE moves it earlier likewise; REDUCE lowers `ordered`
-  and `expected_accepted_remaining`; CANCEL removes the remaining quantity. The entry's options
-  become KEEP-only (the right has been used). The declared per-unit fee or credit for that option,
-  which the engine books as `<action>_fee` / `commitment_credit` when *it* chooses the option, is
-  reported as its own line — *"Contract fee: the declared USD x per unit × the units changed, your
-  contract's term, not a model"* — beside the engine's counterfactual ledger, and the two are
-  summed under a label that says both were added. Nothing is inferred: an amendment with no
-  declared eligible right is refused, as in V1.
+* BASELINE — the workspace request as read: the order as it stands, with every right the contract
+  declares still available to the engine (so the "What ZAAD recommends" column keeps its meaning).
+* OVERLAY — the same request with the order's pipeline entry rewritten under the terms of the
+  **declared** option that matches the proposed change, and KEEP-only afterwards (the right has
+  been used). DEFER / EXPEDITE move `current_eta` to the option's own `due_in` period and take the
+  option's invoice and payment terms; CANCEL removes the open quantity (the entry leaves the
+  pipeline when nothing was received); REDUCE is a partial cancel through a declared cancel right,
+  lowering `ordered`, `expected_accepted_remaining` and the keep cap proportionally.
+* The contract's fee and credit for using the right are the declared per-unit terms × the units
+  changed. The engine never sees them (in the overlay nobody chooses an option — the change has
+  already happened), so they are stored with the evaluation (`zaad_evaluations.amendment_json`,
+  migration 026) and shown as their own lines in `comparison.contract_terms`, with
+  `modelled_difference` (the engine's TOTAL, proposal vs current), `fee_total`, `credit_total` and
+  `net_difference` labelled *"two stated numbers added, not a model"*, basis
+  `DECLARED_CONTRACT_TERMS`.
 
-Only the options P4B V1 declares are expressible: KEEP, DEFER (`de_expedite` / `reschedule`),
-EXPEDITE, CANCEL. REDUCE and SPLIT have no declared option type in P4B V1; a REDUCE overlay is
-expressible as a quantity change with no fee term (and says so); SPLIT is not expressible and is
-refused with the reason.
+Nothing is inferred, and each refusal names its reason: no declared right of that kind; a right
+whose deadline has passed or whose allowed stages exclude the order's stage; a requested receipt
+date that is not one of the declared windows (the windows are listed); several windows and no date
+chosen; an expedite that is not earlier or a deferral that is not later; a cancellation or
+reduction beyond the declared cap (the cap is stated; a reduction inside it is suggested); a
+reduction below the contractual floor; a reduction that is not one; KEEP (nothing to compare);
+SPLIT (no declared option type in P4B V1 — refused with the reason, before any run is built).
+Tests: `tests/unit/test_amendment_counterfactual.py` (10) and the two route tests in
+`tests/integration/test_evaluation_atomicity.py`, which check that the baseline job carries the
+declared right and the overlay job carries the order already changed and KEEP-only.
+
+The order page shows the declared terms (V1's view) and, underneath, the same evaluation panel
+new orders have: "Ask ZAAD to evaluate this change", the three-column ledger, and "Your contract's
+terms for this change" with the fee beside the engine's difference.
 
 ## 8. Realized value *(designed)*
 

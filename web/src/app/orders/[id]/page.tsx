@@ -84,6 +84,39 @@ function ComparisonTable({ comparison }: { comparison: Comparison }) {
       )}
       <DataTable caption="The plan's modelled cost, three ways" columns={columns} rows={comparison.ledger}
         rowKey={(r) => r.component} dense />
+      {/* An amendment's contract fee is the operator's own declared term times the units changed. It
+          is never inside the engine's ledger above — the overlay is the order already changed, so
+          nobody in it chose an option — and the sum below says it is two stated numbers added. */}
+      {comparison.contract_terms && (
+        <div style={{ marginTop: 14 }}>
+          <Section title="Your contract's terms for this change">
+            <dl className="kv">
+              <dt>Evaluated as</dt>
+              <dd>
+                {comparison.contract_terms.po_id} with the declared right to {comparison.contract_terms.action.toLowerCase()} already used
+                {comparison.contract_terms.units_changed != null ? ` on ${NUMBER(comparison.contract_terms.units_changed)} units` : ""}
+                {comparison.contract_terms.contract_reference ? ` (${comparison.contract_terms.contract_reference})` : ""}.
+                {comparison.contract_terms.eta_before && comparison.contract_terms.eta_after && comparison.contract_terms.eta_before !== comparison.contract_terms.eta_after
+                  ? ` Arrival ${DATE(comparison.contract_terms.eta_before)} → ${DATE(comparison.contract_terms.eta_after)}.` : ""}
+                {comparison.contract_terms.open_before != null && comparison.contract_terms.open_after != null && comparison.contract_terms.open_before !== comparison.contract_terms.open_after
+                  ? ` Open quantity ${NUMBER(comparison.contract_terms.open_before)} → ${NUMBER(comparison.contract_terms.open_after)}.` : ""}
+              </dd>
+              <dt>Modelled difference</dt>
+              <dd>{comparison.contract_terms.modelled_difference != null ? MONEY(comparison.contract_terms.modelled_difference, currency) : <span className="na">—</span>} <small style={{ color: "var(--ink-500)" }}>the engine's total, proposal vs current, fee excluded</small></dd>
+              <dt>Declared fee</dt>
+              <dd>{comparison.contract_terms.fee_total != null ? MONEY(comparison.contract_terms.fee_total, currency) : <span className="na">—</span>}
+                {comparison.contract_terms.fee_per_unit != null && comparison.contract_terms.units_changed != null
+                  ? <small style={{ color: "var(--ink-500)" }}> {MONEY(comparison.contract_terms.fee_per_unit, currency)} per unit × {NUMBER(comparison.contract_terms.units_changed)}, from your contract, not a model</small> : null}
+              </dd>
+              {comparison.contract_terms.credit_total ? (
+                <><dt>Declared credit</dt><dd>{MONEY(comparison.contract_terms.credit_total, currency)}</dd></>
+              ) : null}
+              <dt>Together</dt>
+              <dd>{comparison.contract_terms.net_difference != null ? <strong>{MONEY(comparison.contract_terms.net_difference, currency)}</strong> : <span className="na">—</span>} <small style={{ color: "var(--ink-500)" }}>{comparison.contract_terms.net_basis}</small></dd>
+            </dl>
+          </Section>
+        </div>
+      )}
       <dl className="kv" style={{ marginTop: 14 }}>
         <dt>Cash tied up</dt>
         <dd>
@@ -167,16 +200,17 @@ function Evaluation({ draft, onChanged }: { draft: Draft; onChanged: () => void 
     }
   }
 
-  if (draft.origin === "IMPORTED_AMENDMENT") return <AmendmentView draft={draft} />;
-
   const running = state?.status === "QUEUED" || state?.status === "RUNNING";
+  const amendment = draft.origin === "IMPORTED_AMENDMENT";
   return (
-    <Section title="What this order would do">
+    <Section title={amendment ? "What this change would do" : "What this order would do"}>
+      {amendment && <AmendmentView draft={draft} />}
       {error && <Notice tone="warn">{error}</Notice>}
       {state?.status === "NONE" && (
         <Notice>
-          ZAAD has not evaluated this proposal yet. Evaluating runs the optimizer twice — once on your workspace
-          as it is, once with this order placed — so the two are comparable. It takes a few minutes.
+          {amendment
+            ? <>ZAAD has not evaluated this change yet. Evaluating runs the optimizer twice — once with the order as it stands, once with the order already changed under the right your contract declares — so the two are comparable. The contract&rsquo;s fee for using that right is shown as its own line. It takes a few minutes.</>
+            : <>ZAAD has not evaluated this proposal yet. Evaluating runs the optimizer twice — once on your workspace as it is, once with this order placed — so the two are comparable. It takes a few minutes.</>}
         </Notice>
       )}
       {running && (
@@ -216,7 +250,7 @@ function Evaluation({ draft, onChanged }: { draft: Draft; onChanged: () => void 
       <div style={{ marginTop: 14 }}>
         <Button role={state?.comparison && !state?.stale ? "secondary" : "primary"} pending={busy} disabled={running || !draft.lines.length}
           icon={<FileSearch size={15} aria-hidden />} onClick={run}>
-          {state?.stale ? "Evaluate what you have now" : state?.comparison ? "Evaluate again" : "Ask ZAAD to evaluate this"}
+          {state?.stale ? "Evaluate what you have now" : state?.comparison ? "Evaluate again" : amendment ? "Ask ZAAD to evaluate this change" : "Ask ZAAD to evaluate this"}
         </Button>
         {/* The Approve/Reject pair already explains why it is greyed. These two did not: a
             proposal with no lines left four disabled buttons and one warning in another section
@@ -241,7 +275,7 @@ function AmendmentView({ draft }: { draft: Draft }) {
   }, [draft.draft_id]);
 
   return (
-    <Section title="What this change is worth">
+    <div style={{ marginBottom: 14 }}>
       {error && <Notice tone="warn">{error}</Notice>}
       {!view && !error && <Loading label="Reading the plan for this order…" cards={1} />}
       {view?.reason && <Notice tone={view.declared_windows?.length ? "info" : "warn"}>{view.reason}</Notice>}
@@ -294,10 +328,10 @@ function AmendmentView({ draft }: { draft: Draft }) {
         </>
       )}
       <p className="zhelp" style={{ marginTop: 10 }}>
-        A change to an existing order is worth what your contract says it is worth. ZAAD prices only the
+        A change to an existing order is worth what your contract says it is worth. ZAAD evaluates only the
         amendment rights you have declared for it, and never infers one.
       </p>
-    </Section>
+    </div>
   );
 }
 
