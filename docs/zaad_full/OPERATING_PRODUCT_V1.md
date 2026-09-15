@@ -164,9 +164,26 @@ limitation are stated with every answer.
 revision, so the comparison can outlive the lines it was computed for. `GET /{id}/evaluation`
 therefore reports `evaluated_at` and `stale`, and the page says so above the table rather than
 presenting an engine answer about an order that is no longer on the screen. The comparison is still
-shown: it is a true answer about a past state. `store_evaluation` writes the evaluation row and the
-draft's `updated_at` from **one** timestamp, because two calls to `now()` would leave every
-evaluation microseconds older than its own draft and therefore born stale.
+shown: it is a true answer about a past state.
+
+*Corrected by the Fable V1 audit (H1).* Staleness was first decided by comparing the draft's
+`updated_at` with the evaluation's `created_at` — and approving, rejecting or exporting bumps
+`updated_at`, so every approved proposal reported its own comparison as out of date. The evaluation
+now stores a **content hash** of what it evaluated (the lines and the header fields the overlay
+reads: `evaluation.content_hash`) and a **workspace data version** (a hash over the staging
+tables' upload lineage: `evaluation.workspace_version`); `stale` is a hash comparison and the reason
+says which of the two changed. A record written before the hash existed falls back to the one thing
+a timestamp can say truthfully — whether an *edit* event happened after it.
+
+**Approval names what it was made against** (audit H2). `zaad_draft_orders.approved_evaluation_id`
+and `approval_evaluation_state` (`current`, `stale_acknowledged`, `none`) are written on approval;
+approving over a stale comparison is refused with `evaluation_stale` unless the request carries
+`acknowledge_stale: true`, and the acknowledgement is part of the approval event.
+
+**Submission is record-first** (audit H3). The `zaad_evaluations` row is written before either run
+is submitted, the runs carry the job purposes `PROPOSAL_BASELINE` and `PROPOSAL_OVERLAY` and the
+evaluation id as their reference, and a failure between the steps leaves a FAILED record and no
+plan-looking job. Readers select the workspace's plans by purpose (`GET /jobs?purpose=WORKSPACE_PLAN`).
 
 **Amendments are not evaluated this way.** A change to an existing order is worth what the contract
 says it is worth, so `POST /{id}/evaluate` refuses an `IMPORTED_AMENDMENT` (`amendment_not_evaluated`)
@@ -223,7 +240,9 @@ quietly traded away.
 cannot be. Held by `test_a_formula_never_leaves_in_an_export` and the parametrised unit test.
 
 Every export is recorded: profile, format, filename, actor, timestamp, revision. **Exporting is not
-transmitting**, and the interface says so wherever a file is produced.
+transmitting**, and the interface says so wherever a file is produced. **Only an approved (or
+already exported) proposal is exported** (audit M1): a draft, a proposal under review, a rejected or
+a superseded revision answers `not_approved`, and the interface says why the button is greyed.
 
 ## 7. Inventory and scale
 
@@ -441,7 +460,7 @@ Writes, `/api/zaad/orders/*` (`api/routers/zaad_orders.py`):
 ```
 GET|POST   /                              list, create
 GET|PATCH|DELETE /{id}                    read, edit, delete a draft
-POST       /{id}/actions/{action}         submit | reopen | approve | reject
+POST       /{id}/actions/{action}         submit | reopen | approve | reject  (approve: acknowledge_stale)
 POST       /{id}/revise                   the next revision
 POST       /{id}/evaluate                 two jobs on the released path
 GET        /{id}/evaluation               state, then the comparison
@@ -516,11 +535,16 @@ Stated here so nobody has to discover it:
 * **No Arabic copy for the new surfaces.** Direction and structure are right in RTL and verified;
   the new copy is English, and belongs in `lib/i18n` rather than in ad hoc runtime strings.
 
-## 15. Migration 023
+## 15. Migrations 023 and 024
 
-Additive, nullable, idempotent. Six new tables, none of them touched by the optimizer, plus two
+**023** — additive, nullable, idempotent. Six new tables, none of them touched by the optimizer, plus two
 nullable columns on the product master (`brand`, `sub_category`) that a workspace may declare and
-which are shown only when present. An existing vault keeps every row it has and plans exactly as
+which are shown only when present.
+
+**024** (Fable V1 audit) — four nullable columns: `zaad_evaluations.draft_hash` and
+`workspace_version`, `zaad_draft_orders.approved_evaluation_id` and `approval_evaluation_state`.
+`ensure_tables` applies them to a vault an earlier release migrated to 023, and checkpoints
+afterwards. An existing vault keeps every row it has and plans exactly as
 before. `api/product/drafts.py::ensure_tables` creates the product's own tables on first use for a
 vault created before this release; it never creates or alters a staging table.
 
@@ -552,10 +576,8 @@ of producing a catalogue error. `tests/unit/test_product_drafts_schema.py` pins 
    refuse. The product retries once without `commitments` and reports the engine's refusal verbatim,
    so the rest of the workspace survives — but in that state no open-order recommendation can be
    produced, and ZAAD cannot say whether there would have been one.
-8. **The evaluation-job exclusion is not atomic with submission.** `POST /orders/{id}/evaluate`
-   submits both runs and only then writes the `zaad_evaluations` row that marks them. A workspace
-   read landing in that window would adopt the baseline run as the current plan — a real plan, but
-   over the proposal's products rather than the workspace's, and not one the operator asked for.
+8. *(Closed by the Fable V1 audit, H3.)* The evaluation-job exclusion was not atomic with
+   submission; the record is now written first and every job carries its purpose. See §5.
 9. **A proposed amendment is never priced outside a plan.** The declared terms are shown as the
    engine states them — fee, credit, capacity, deadline, provenance, all per unit — and are not
    multiplied out, because a fee is one term of what a change is worth and the rest is a plan-level
@@ -566,10 +588,11 @@ of producing a catalogue error. `tests/unit/test_product_drafts_schema.py` pins 
     and the interface says which products a plan covered wherever it shows one.
 11. **XLSX writes every cell as text**, which is what stops a value being re-typed as a formula or
     a date by the reader. The cost is Excel's "number stored as text" marker on quantity and price.
-12. **A job orphaned by an API restart stays RUNNING for ever** — `zaad/full/jobs.py` has no reaper,
-    and the active quota counts QUEUED + RUNNING, so two orphans block a workspace from planning.
-    This is in the released optimizer package and is **not fixed here**; the product detects it on
-    the reader's side and reports the run as interrupted, but the row and the quota stay spent.
+12. *(Closed by the Fable V1 audit, B2.)* A job orphaned by a restart stayed RUNNING for ever.
+    `zaad/full/jobs.py` now carries an owner lease renewed on a heartbeat; a lapsed lease is
+    reconciled to the terminal status `ABANDONED` on every read, queued work nobody owns is resumed
+    when a runner starts, and every job carries its purpose. Infrastructure only; the frozen
+    regression passes on the tree.
 13. **Inventory has no per-site view.** The list sums `on_hand` across every location per product
     and carries a count of the sites it is spread over; per-site stock exists one product at a time,
     in the drawer's *Where it is*. The network's site panel therefore links to "Stock (all sites)"
