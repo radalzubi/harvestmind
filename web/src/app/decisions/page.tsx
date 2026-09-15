@@ -143,7 +143,7 @@ function BulkBar({ decisions, checked, onDone, onClear }: {
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
         <strong>{chosen.length} selected</strong>
         <span style={{ color: "var(--ink-600)" }}>
-          {plan.groups.length ? `becomes ${plan.groups.length} purchase order${plan.groups.length === 1 ? "" : "s"}` : "none of these can become a purchase order"}
+          {plan.groups.length ? `becomes ${plan.groups.length} proposal${plan.groups.length === 1 ? "" : "s"}${plan.groups.some((g) => g.transfer_origin_id) ? " (purchases and transfers)" : ""}` : "none of these can become a proposal"}
           {plan.asked.length ? ` · ${plan.asked.length} need${plan.asked.length === 1 ? "s" : ""} your attention` : ""}
         </span>
         <div style={{ marginInlineStart: "auto", display: "flex", gap: 8 }}>
@@ -157,8 +157,8 @@ function BulkBar({ decisions, checked, onDone, onClear }: {
         <div style={{ display: "grid", gap: 10 }}>
           {plan.groups.map((g) => (
             <div key={g.key} style={{ border: "1px solid var(--line)", borderRadius: "var(--radius-sm)", padding: "8px 10px", background: "var(--surface)" }}>
-              <strong style={{ color: "var(--ink-950)" }}>{g.supplier_id}</strong>
-              {g.destination_id && <span style={{ color: "var(--ink-500)" }}> · deliver to {g.destination_id}</span>}
+              <strong style={{ color: "var(--ink-950)" }}>{g.transfer_origin_id ? `Transfer from ${g.transfer_origin_id}` : g.supplier_id}</strong>
+              {g.destination_id && <span style={{ color: "var(--ink-500)" }}> · {g.transfer_origin_id ? "to" : "deliver to"} {g.destination_id}</span>}
               <ul style={{ margin: "6px 0 0", paddingInlineStart: 18, fontSize: 13 }}>
                 {g.lines.map((l) => <li key={l.sku}>{l.sku} — {l.quantity.toLocaleString("en-US")} units{l.unit_price != null ? ` at ${l.unit_price}` : ""}</li>)}
               </ul>
@@ -203,7 +203,7 @@ function DecisionsBody() {
       .catch(() => { if (alive) setResponses(new Map()); });
     return () => { alive = false; };
   }, [planJobId]);
-  const selectable = useMemo(() => new Set(decisions.filter((d) => d.id.startsWith("buy:") && d.needsReview).map((d) => d.id)), [decisions]);
+  const selectable = useMemo(() => new Set(decisions.filter((d) => (d.id.startsWith("buy:") || d.id.startsWith("move:")) && d.needsReview).map((d) => d.id)), [decisions]);
   const open = useMemo(() => decisions.filter((d) => d.needsReview), [decisions]);
   // Opening on an empty "Needs review" while six decisions sit behind "All" reads as a fault.
   const [filter, setFilter] = useState<Filter | null>(null);
@@ -248,7 +248,7 @@ function DecisionsBody() {
       </div>
 
       {canCreate && selectable.size > 1 && checked.size === 0 && (
-        <p className="zhelp" style={{ marginBottom: 10 }}>Tick purchase recommendations to create several proposed orders at once.</p>
+        <p className="zhelp" style={{ marginBottom: 10 }}>Tick purchase or transfer recommendations to create several proposals at once.</p>
       )}
       <BulkBar decisions={decisions} checked={checked} onClear={() => setChecked(new Set())} onDone={() => setChecked(new Set())} />
 

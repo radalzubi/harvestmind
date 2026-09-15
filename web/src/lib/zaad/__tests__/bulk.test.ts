@@ -20,15 +20,25 @@ describe("bulk purchase creation", () => {
     assert.deepEqual(plan.groups[0].lines.map((l) => l.sku), ["SKU-1", "SKU-2"]);
     assert.deepEqual(plan.groups[0].decision_ids, ["buy:s1", "buy:s2"]);
   });
-  it("never invents a line: holds, moves, amendments and unknown sources are asked, not created", () => {
+  it("never invents a line: holds, amendments, unknown sources and moves without a lane are asked, not created", () => {
     const hold = buy("h", "SUP-1", "SKU-1", 0);
-    const move: Decision = { ...buy("m", "SUP-1", "SKU-1", 5), id: "move:lane1" };
+    const move: Decision = { ...buy("m", "SUP-1", "SKU-1", 5), id: "move:lane1", technical: { transfer: "lane1", selected: 5 } };
     const amend: Decision = { ...buy("p", "SUP-1", "SKU-1", 5), id: "po:PO-1" };
     const unknown: Decision = { ...buy("u", "SUP-1", "SKU-1", 5), technical: { source: "src_missing", selected: 5 } };
     const plan = planBulk([hold, move, amend, unknown, buy("ok", "SUP-1", "SKU-1", 5)]);
     assert.equal(plan.groups.length, 1);
     assert.deepEqual(plan.asked.map((a) => a.decision.id).sort(), ["buy:h", "buy:u", "move:lane1", "po:PO-1"]);
     assert.equal("reason" in proposalFromDecision(hold), true);
+  });
+  it("a concrete move becomes a transfer proposal with two sites and no supplier", () => {
+    const move: Decision = { ...buy("m", "", "SKU-1", 40), id: "move:dc_north", technical: { transfer: { id: "dc_north", origin: "DC", destination: "NORTH", sku: "SKU-1" }, selected: 40 } };
+    const plan = planBulk([move, buy("b", "SUP-1", "SKU-2", 5)]);
+    assert.equal(plan.asked.length, 0);
+    const xfer = plan.groups.find((g) => g.transfer_origin_id)!;
+    assert.deepEqual({ from: xfer.transfer_origin_id, to: xfer.destination_id, supplier: xfer.supplier_id, lines: xfer.lines }, { from: "DC", to: "NORTH", supplier: "", lines: [{ sku: "SKU-1", quantity: 40, unit_price: null, units_per_case: null }] });
+    const body = bulkBodies(plan, "USD").find((b) => b.transfer_origin_id)!;
+    assert.equal(body.supplier_id, null);
+    assert.equal(body.transfer_origin_id, "DC");
   });
   it("sums the same product within one group and records where it came from", () => {
     const plan = planBulk([buy("a", "SUP-1", "SKU-1", 5), buy("b", "SUP-1", "SKU-1", 7)]);

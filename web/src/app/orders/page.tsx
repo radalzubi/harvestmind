@@ -78,7 +78,7 @@ function Proposals({ params, set }: { params: URLSearchParams; set: (c: Record<s
       title: (r) => r.external_reference ? `Reference ${r.external_reference}` : undefined,
       render: (r) => r.external_status ? <span className="chip" data-tone={r.external_status === "CANCELLED_EXTERNALLY" ? "bad" : "good"}>{EXTERNAL_LABEL[r.external_status]}</span>
         : (r.state === "APPROVED" || r.state === "EXPORTED") ? <span className="na">nothing recorded</span> : <span className="na">—</span> },
-    { key: "supplier_id", label: "Supplier", hideBelow: 700, render: (r) => r.supplier_id ?? <span className="na">—</span> },
+    { key: "supplier_id", label: "Supplier", hideBelow: 700, render: (r) => r.transfer_origin_id ? <span>Transfer {r.transfer_origin_id} → {r.destination_id ?? "?"}</span> : r.supplier_id ?? <span className="na">—</span> },
     { key: "lines", label: "Lines", numeric: true, sortable: true, render: (r) => NUMBER(r.lines) },
     { key: "units", label: "Units", numeric: true, sortable: true, render: (r) => r.units != null ? NUMBER(r.units) : <span className="na">—</span> },
     { key: "value", label: "Value", numeric: true, sortable: true, hideBelow: 700,

@@ -59,7 +59,7 @@ function NewOrderBody() {
     if ("group" in fromDecision) {
       const g = fromDecision.group;
       setLines(g.lines.map((l) => ({ sku: l.sku, quantity: l.quantity, unit_price: l.unit_price, units_per_case: l.units_per_case })));
-      setHeader((h) => ({ ...h, supplier_id: h.supplier_id || g.supplier_id, destination_id: h.destination_id || (g.destination_id ?? "") }));
+      setHeader((h) => ({ ...h, supplier_id: g.transfer_origin_id ? "" : (h.supplier_id || g.supplier_id), destination_id: h.destination_id || (g.destination_id ?? "") }));
     }
     setPrefilled(true);
   }, [fromDecision, prefilled, amendPo, prefillSku]);
@@ -103,6 +103,7 @@ function NewOrderBody() {
   }, [amendPo, prefillSku]);
 
   const origin = amendPo ? "IMPORTED_AMENDMENT" : decisionId ? "ZAAD_RECOMMENDATION" : "MANUAL";
+  const transferFrom = fromDecision && "group" in fromDecision ? (fromDecision.group.transfer_origin_id ?? null) : null;
 
   async function create() {
     setBusy(true);
@@ -115,6 +116,8 @@ function NewOrderBody() {
         requested_receipt_date: header.requested_receipt_date || null,
         source_po_id: amendPo ?? null,
         source_decision_id: decisionId ?? null,
+        transfer_origin_id: transferFrom,
+        supplier_id: transferFrom ? null : header.supplier_id,
         amendment_action: amendPo ? action : null,
         lines: lines.filter((l) => l.sku.trim() && Number(l.quantity) > 0),
       });
@@ -131,10 +134,12 @@ function NewOrderBody() {
   return (
     <>
       <PageHead
-        title={amendPo ? `Propose a change to ${amendPo}` : "Create a purchase order"}
+        title={amendPo ? `Propose a change to ${amendPo}` : transferFrom ? `Propose a transfer from ${transferFrom}` : "Create a purchase order"}
         sub={amendPo
           ? "The order in your system is not touched. This is a proposal against it, which someone approves and you export."
-          : "A proposed order ZAAD can evaluate, someone approves, and you export in your own format. It is never sent to a supplier."}
+          : transferFrom
+            ? "A proposed move of your own stock between two of your sites. Someone approves it and you export it; ZAAD does not raise the transfer."
+            : "A proposed order ZAAD can evaluate, someone approves, and you export in your own format. It is never sent to a supplier."}
         // "Cancel" also sits at the foot of the form, next to the button it cancels. Up here it is
         // navigation, so it is named as navigation — the same label the other order pages use.
         actions={<ButtonLink size="sm" href="/orders">Purchase orders</ButtonLink>}

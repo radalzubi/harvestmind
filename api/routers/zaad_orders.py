@@ -543,6 +543,16 @@ async def evaluate(draft_id: str, http: HTTPRequest, who: Who, conn=Depends(get_
     except KeyError as exc:
         raise HTTPException(404, "That proposal is not in this workspace.") from exc
 
+    if draft.get("transfer_origin_id"):
+        # The released request carries transfers as declared lanes the engine may use, not as
+        # moves already in flight; a manual transfer cannot be placed into it without inventing a
+        # pipeline object the contract does not have. The move ZAAD recommended was evaluated
+        # inside the plan it came from, and that plan's comparison is on Decisions.
+        raise HTTPException(422, {"code": "transfer_not_evaluated", "message": (
+            "A transfer between your sites is evaluated inside the plan that recommended it, not on its own: "
+            "the planning request carries lanes, not moves already in flight, so ZAAD cannot re-plan this "
+            "transfer separately without inventing an object the engine does not have. See the plan it came "
+            "from on Decisions.")})
     is_amendment = draft.get("origin") == "IMPORTED_AMENDMENT"
     if is_amendment and str(draft.get("amendment_action") or "").upper() in ("KEEP", "SPLIT"):
         # refused before any run is built, with the reason the overlay would give

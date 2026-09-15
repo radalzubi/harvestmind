@@ -99,6 +99,7 @@ EXPORT_FIELDS: dict[str, str] = {
     "supplier_id": "Supplier code",
     "supplier_name": "Supplier name",
     "destination_id": "Deliver to",
+    "origin_site": "Transfer from (the site the stock leaves; blank on a purchase)",
     "currency": "Currency",
     "order_date": "Order date",
     "need_by_date": "Requested receipt date",
@@ -173,6 +174,7 @@ def _resolvers(head: dict[str, Any], names: dict[str, str], profile: dict[str, A
         "supplier_id": lambda _l: order_value("supplier_id"),
         "supplier_name": lambda _l: names.get(str(head.get("supplier_id") or ""), ""),
         "destination_id": lambda _l: order_value("destination_id"),
+        "origin_site": lambda _l: order_value("transfer_origin_id"),
         "currency": lambda _l: order_value("currency"),
         "order_date": lambda _l: _fmt_date(head.get("requested_order_date"), date_style),
         "need_by_date": lambda line: _fmt_date(line.get("requested_receipt_date")

@@ -288,6 +288,16 @@ def ensure_tables(conn: Any) -> None:
                 ran_ddl = True
             except Exception:  # noqa: BLE001 - already present
                 continue
+    # Transfer proposals (migration 027): the site the stock leaves, on the product's own table.
+    if "transfer_origin_id" not in {row[1] for row in conn.execute("PRAGMA table_info('zaad_draft_orders')").fetchall()}:
+        for text in statements((migrations / "027_transfer_proposals.sql").read_text()):
+            if not text.upper().startswith("ALTER TABLE ZAAD_"):
+                continue
+            try:
+                conn.execute(text)
+                ran_ddl = True
+            except Exception:  # noqa: BLE001 - already present
+                continue
     if ran_ddl:
         checkpoint(conn)
 
@@ -380,6 +390,7 @@ def read_draft(conn: Any, operator: str, draft_id: str) -> dict[str, Any]:
     row = head[0]
     draft = {
         **row,
+        "kind": "TRANSFER" if row.get("transfer_origin_id") else "PURCHASE",
         "lines": lines,
         "events": events,
         "exports": exports,
@@ -596,6 +607,20 @@ def _prepare_draft(operator: str, body: dict[str, Any], actor: str | None) -> Pr
     receipt = _as_date(body.get("requested_receipt_date"), "Requested receipt date")
     if ordered and receipt and receipt < ordered:
         raise DraftRefused("The requested receipt date is before the order date.")
+    transfer_origin = _identifier(body.get("transfer_origin_id"), "Transfer from")
+    if transfer_origin is not None:
+        # A transfer moves the operator's own stock: it has two sites and no supplier, and it is
+        # never an amendment of a purchase order.
+        if origin not in ("ZAAD_RECOMMENDATION", "MANUAL"):
+            raise DraftRefused("A transfer between your sites is proposed from a recommendation or by hand, not imported or amended.")
+        if body.get("supplier_id"):
+            raise DraftRefused("A transfer moves your own stock between sites; it has no supplier.")
+        if not body.get("destination_id"):
+            raise DraftRefused("A transfer must say which site the stock goes to.")
+        if str(body.get("destination_id")) == str(transfer_origin):
+            raise DraftRefused("A transfer cannot move stock from a site to itself.")
+        if action is not None or body.get("source_po_id"):
+            raise DraftRefused("A transfer is not a change to a purchase order.")
 
     draft_id = _identity()
     head = [
@@ -609,7 +634,8 @@ def _prepare_draft(operator: str, body: dict[str, Any], actor: str | None) -> Pr
         _identifier(body.get("source_decision_id"), "Source decision"),
         _identifier(body.get("source_po_id"), "The order this amends"),
         action, actor, _now(), _now(),
-        _identifier(body.get("supersedes"), "The revision this replaces")]
+        _identifier(body.get("supersedes"), "The revision this replaces"),
+        transfer_origin]
     checked = _check_lines(operator, draft_id, list(body.get("lines") or []))
     return draft_id, origin, head, checked
 
@@ -622,14 +648,15 @@ def _write_draft(conn: Any, operator: str, prepared: Prepared, *,
         INSERT INTO zaad_draft_orders
         (draft_id, operator_id, origin, state, revision, reference, supplier_id, destination_id, currency,
          requested_order_date, requested_receipt_date, notes, source_decision_id, source_po_id,
-         amendment_action, created_by, created_at, updated_at, supersedes)
-        VALUES (?, ?, ?, 'DRAFT', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", head)
+         amendment_action, created_by, created_at, updated_at, supersedes, transfer_origin_id)
+        VALUES (?, ?, ?, 'DRAFT', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", head)
     _store_lines(conn, operator, draft_id, checked)
     _event(conn, operator, draft_id, "created", 1, actor, f"origin {origin}" + (f" (bulk {batch})" if batch else ""))
     _audit(conn, operator, who, actor, object_type="draft", object_id=draft_id, action="created",
            after_revision=int(head[3]), after_state="DRAFT", request_id=request_id,
            context={"origin": origin, "supplier_id": head[5], "lines": len(checked),
-                    "source_po_id": head[12], "source_decision_id": head[11], "batch": batch})
+                    "source_po_id": head[12], "source_decision_id": head[11], "batch": batch,
+                    "transfer_origin_id": head[18]})
     return draft_id
 
 

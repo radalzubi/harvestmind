@@ -15,8 +15,11 @@ export interface ProposalLine { sku: string; quantity: number; unit_price: numbe
 
 export interface ProposalGroup {
   key: string;
+  /** Empty on a transfer: stock moves between the operator's own sites. */
   supplier_id: string;
   destination_id: string | null;
+  /** The site the stock leaves; set only on a transfer. */
+  transfer_origin_id?: string | null;
   lines: ProposalLine[];
   decision_ids: string[];
 }
@@ -32,8 +35,26 @@ function sourceOf(decision: Decision): ZaadSource | null {
 
 /** One proposal's worth of a single decision, or the reason it cannot be one. */
 export function proposalFromDecision(decision: Decision): { group: ProposalGroup } | { reason: string } {
+  if (decision.id.startsWith("move:")) {
+    // P2 reports a concrete move: origin, destination, product, quantity. It becomes a transfer
+    // proposal — two sites, no supplier — and only when every one of those four is stated.
+    const t = decision.technical?.transfer;
+    const selected = Number(decision.technical?.selected ?? NaN);
+    if (!t || typeof t !== "object" || !("origin" in t) || !("destination" in t) || !("sku" in t)) {
+      return { reason: "The lane ZAAD moved stock on is not in the current request, so the sites cannot be filled in." };
+    }
+    if (!Number.isFinite(selected) || selected <= 0) return { reason: "ZAAD recommends moving nothing here; there is no quantity to create." };
+    const lane = t as { origin: string; destination: string; sku: string };
+    return {
+      group: {
+        key: `transfer|${lane.origin}|${lane.destination}`, supplier_id: "", destination_id: String(lane.destination),
+        transfer_origin_id: String(lane.origin),
+        lines: [{ sku: String(lane.sku), quantity: Math.round(selected), unit_price: null, units_per_case: null }],
+        decision_ids: [decision.id],
+      },
+    };
+  }
   if (!decision.id.startsWith("buy:")) {
-    if (decision.id.startsWith("move:")) return { reason: "A transfer between your own sites is not a purchase order." };
     if (decision.id.startsWith("po:")) return { reason: "A change to an existing order is proposed from that order, not created as a new one." };
     return { reason: "This recommendation is not a purchase." };
   }
@@ -73,7 +94,7 @@ export function planBulk(decisions: Decision[]): BulkPlan {
       groups.set(g.key, { ...g, lines: [...g.lines], decision_ids: [...g.decision_ids] });
     }
   }
-  const out = [...groups.values()].sort((a, b) => a.supplier_id.localeCompare(b.supplier_id) || (a.destination_id ?? "").localeCompare(b.destination_id ?? ""));
+  const out = [...groups.values()].sort((a, b) => a.supplier_id.localeCompare(b.supplier_id) || (a.transfer_origin_id ?? "").localeCompare(b.transfer_origin_id ?? "") || (a.destination_id ?? "").localeCompare(b.destination_id ?? ""));
   for (const g of out) g.lines.sort((a, b) => a.sku.localeCompare(b.sku));
   return { groups: out, asked };
 }
@@ -82,8 +103,9 @@ export function planBulk(decisions: Decision[]): BulkPlan {
 export function bulkBodies(plan: BulkPlan, currency: string): Array<Record<string, unknown>> {
   return plan.groups.map((g) => ({
     origin: "ZAAD_RECOMMENDATION",
-    supplier_id: g.supplier_id,
+    supplier_id: g.supplier_id || null,
     destination_id: g.destination_id,
+    transfer_origin_id: g.transfer_origin_id ?? null,
     currency,
     // the first decision is the provenance the ledger records; the rest are in the notes
     source_decision_id: g.decision_ids[0],

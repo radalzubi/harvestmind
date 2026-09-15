@@ -387,3 +387,43 @@ def test_bulk_creation_needs_the_capability_and_a_bounded_batch(vault, skus):
     assert buyer.post("/api/zaad/orders/bulk", json={"drafts": "x"}).status_code == 400
     too_many = {"drafts": [body["drafts"][0]] * 51}
     assert buyer.post("/api/zaad/orders/bulk", json=too_many).status_code == 422
+
+
+
+# ── transfer proposals: a move between the operator's own sites, never a purchase ────────────
+
+def test_a_transfer_proposal_has_two_sites_and_no_supplier(vault, skus):
+    from tests.integration.test_operating_product_api import _client
+    client = _client(vault, role="BUYER", actor_id="act_move")
+    made = client.post("/api/zaad/orders", json={"origin": "ZAAD_RECOMMENDATION", "source_decision_id": "move:dc_north",
+                                                 "transfer_origin_id": "DC", "destination_id": "NORTH", "currency": "USD",
+                                                 "lines": [{"sku": skus[0], "quantity": 120}]})
+    assert made.status_code == 201, made.text
+    draft = made.json()
+    assert draft["kind"] == "TRANSFER" and draft["transfer_origin_id"] == "DC" and draft["supplier_id"] is None
+    assert draft["executable"] is False
+    # it exports through the same profiles, with the origin site available as a field
+    from api.product.exporting import EXPORT_FIELDS, build_rows, default_profile
+    assert "origin_site" in EXPORT_FIELDS
+    profile = {**default_profile(), "columns": [{"header": "From", "field": "origin_site"}, {"header": "To", "field": "destination_id"}, {"header": "Qty", "field": "quantity"}]}
+    _headers, body = build_rows(draft, profile)
+    assert body == [["DC", "NORTH", "120"]]
+    # and it is refused an evaluation with the reason, not silently
+    refused = client.post(f"/api/zaad/orders/{draft['draft_id']}/evaluate")
+    assert refused.status_code == 422 and refused.json()["detail"]["code"] == "transfer_not_evaluated"
+    # a purchase is unchanged
+    po = client.post("/api/zaad/orders", json={"origin": "MANUAL", "supplier_id": "SUP-001", "lines": [{"sku": skus[0], "quantity": 1}]}).json()
+    assert po["kind"] == "PURCHASE" and po["transfer_origin_id"] is None
+
+
+@pytest.mark.parametrize("body, reason", [
+    ({"transfer_origin_id": "DC", "destination_id": "NORTH", "supplier_id": "SUP-001"}, "has no supplier"),
+    ({"transfer_origin_id": "DC"}, "which site the stock goes to"),
+    ({"transfer_origin_id": "DC", "destination_id": "DC"}, "to itself"),
+    ({"transfer_origin_id": "DC", "destination_id": "NORTH", "origin": "IMPORTED_AMENDMENT", "source_po_id": "PO-1", "amendment_action": "DEFER"}, "not imported or amended"),
+])
+def test_a_transfer_that_is_not_one_is_refused(vault, skus, body, reason):
+    from tests.integration.test_operating_product_api import _client
+    client = _client(vault, role="BUYER", actor_id="act_move")
+    r = client.post("/api/zaad/orders", json={"origin": "MANUAL", "lines": [{"sku": skus[0], "quantity": 5}], **body})
+    assert r.status_code == 422 and reason in r.json()["detail"]["message"], r.text

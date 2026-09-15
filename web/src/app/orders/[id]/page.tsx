@@ -202,6 +202,18 @@ function Evaluation({ draft, onChanged }: { draft: Draft; onChanged: () => void 
 
   const running = state?.status === "QUEUED" || state?.status === "RUNNING";
   const amendment = draft.origin === "IMPORTED_AMENDMENT";
+  if (draft.kind === "TRANSFER") {
+    return (
+      <Section title="What this move would do">
+        <Notice>
+          ZAAD evaluated this move inside the plan that recommended it, against your current plan. The planning
+          request carries lanes, not moves already in flight, so a transfer cannot be re-planned on its own without
+          inventing an object the engine does not have.{" "}
+          {draft.source_decision_id ? <Link href={`/decisions?decision=${encodeURIComponent(draft.source_decision_id)}`}>See the decision it came from.</Link> : null}
+        </Notice>
+      </Section>
+    );
+  }
   return (
     <Section title={amendment ? "What this change would do" : "What this order would do"}>
       {amendment && <AmendmentView draft={draft} />}
@@ -620,6 +632,11 @@ function DraftBody({ id }: { id: string }) {
       )}
 
       <Section title="The order">
+        {draft.kind === "TRANSFER" && (
+          <div style={{ marginBottom: 10 }}>
+            <Notice>A transfer of your own stock from <strong>{draft.transfer_origin_id}</strong> to <strong>{draft.destination_id ?? "a site not yet set"}</strong>. It has no supplier; the export names both sites.</Notice>
+          </div>
+        )}
         <HeaderFields value={header} onChange={(next) => { setHeader(next); setDirty(true); }}
           locations={locations} disabled={!editable} />
       </Section>

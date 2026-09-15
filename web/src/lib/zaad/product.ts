@@ -317,6 +317,9 @@ export interface DraftLine {
 export interface DraftSummary {
   draft_id: string; origin: DraftOrigin; state: DraftState; revision: number;
   reference: string | null; supplier_id: string | null; destination_id: string | null;
+  /** A transfer moves the operator's own stock from this site to `destination_id`; null on a purchase. */
+  transfer_origin_id?: string | null;
+  kind?: "PURCHASE" | "TRANSFER";
   currency: string | null; requested_order_date: string | null; requested_receipt_date: string | null;
   source_po_id: string | null; amendment_action: AmendmentAction | null;
   created_at: string; updated_at: string; approved_by: string | null; approved_at: string | null;
