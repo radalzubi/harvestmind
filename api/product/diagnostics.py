@@ -156,12 +156,15 @@ def supplier_page(
     opens AS (
       SELECT supplier_id, count(*) FILTER (WHERE open_units > 0) AS open_orders,
              count(*) FILTER (WHERE open_units > 0 AND promised IS NOT NULL AND promised < CAST(? AS DATE)) AS late_open_orders,
+             -- the denominator "past their date" is measured against: zero means not measurable, not "none late"
+             count(*) FILTER (WHERE open_units > 0 AND promised IS NOT NULL) AS open_orders_with_promise,
              sum(greatest(open_units, 0)) AS open_units
       FROM open_state GROUP BY supplier_id)
     """ if has_table(conn, "stg_fmcg_receipts") else """
     opens AS (
       SELECT any_value(supplier_id) AS supplier_id, count(DISTINCT po_id) AS open_orders,
-             CAST(NULL AS BIGINT) AS late_open_orders, sum(qty_ordered) AS open_units
+             CAST(NULL AS BIGINT) AS late_open_orders, CAST(NULL AS BIGINT) AS open_orders_with_promise,
+             sum(qty_ordered) AS open_units
       FROM stg_fmcg_purchase_orders GROUP BY supplier_id)
     """
     open_params: list[Any] = [as_of] if has_table(conn, "stg_fmcg_receipts") else []
@@ -186,7 +189,7 @@ def supplier_page(
            d.matched_orders, d.fill_rate, d.short_fill_rate, d.late_rate, d.mean_late_days,
            d.p50_lead_days, d.p90_lead_days, d.lead_sd_days, d.promised_lead_days, d.fill_sd,
            d.mean_lead_days, d.orders_with_promise, d.last_receipt,
-           o.open_orders, o.late_open_orders, o.open_units, s.skus
+           o.open_orders, o.late_open_orders, o.open_orders_with_promise, o.open_units, s.skus
     FROM master m
     LEFT JOIN measured d ON d.supplier_id = m.supplier_id
     LEFT JOIN opens o ON o.supplier_id = m.supplier_id

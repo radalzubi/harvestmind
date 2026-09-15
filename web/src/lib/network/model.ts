@@ -174,13 +174,18 @@ export interface NetworkModel {
 export type SelectionRef = { type: "node" | "edge"; id: string };
 
 /** Plain words for each state; the optimizer's own names stay under Advanced. */
+/**
+ * PROTECT is P0 holding cover where a measured driver justifies it — the plan working, not a
+ * warning. It was labelled "Risk rising" here while Home said the workspace was running normally,
+ * which read as a contradiction. The label names the stance; risk is stated by the risk level.
+ */
 export const STATE_LABEL: Record<ZaadState, string> = {
-  LEAN: "Stable", PROTECT: "Risk rising", ALLOCATE: "Supply constrained", RECOVER: "Recovering",
+  LEAN: "Stable", PROTECT: "Protecting stock", ALLOCATE: "Supply constrained", RECOVER: "Recovering",
 };
 export const STATE_TECHNICAL: Record<ZaadState, string> = { LEAN: "LEAN", PROTECT: "PROTECT", ALLOCATE: "ALLOCATE", RECOVER: "RECOVER" };
 export const STATE_SENTENCE: Record<ZaadState, string> = {
   LEAN: "Supply is stable.",
-  PROTECT: "Risk is rising. ZAAD recommends targeted protection.",
+  PROTECT: "A measured driver justifies holding extra cover here, and the plan is holding it.",
   ALLOCATE: "Supply is constrained. ZAAD is prioritising customers.",
   RECOVER: "Supply is returning to normal.",
 };

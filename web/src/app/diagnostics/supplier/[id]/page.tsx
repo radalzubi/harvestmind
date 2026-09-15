@@ -118,7 +118,12 @@ function SupplierBody({ id }: { id: string }) {
         <div><dt>Typical lead</dt><dd>{m.p50_lead_days != null ? `${NUMBER(m.p50_lead_days)} d` : "—"}
           <small>{m.p90_lead_days != null ? `one in ten takes ${COUNT(m.p90_lead_days, "day")}` : "not measured"}</small></dd></div>
         <div><dt>Open orders</dt><dd>{NUMBER(m.open_orders)}
-          <small>{m.late_open_orders ? `${COUNT(m.late_open_orders, "order")} past their date` : "none past their date"}</small></dd></div>
+          {/* "none past their date" is only true when some open order carries a promised date to
+              be past. On a workspace with no promised dates the count is zero because nothing
+              could be measured — the same false zero the routes table used to print. */}
+          <small>{m.late_open_orders
+            ? `${COUNT(m.late_open_orders, "order")} past their date`
+            : m.open_orders_with_promise ? "none past their date" : "no promised dates to measure against"}</small></dd></div>
         <div><dt>Products</dt><dd>{NUMBER(detail.exposure.skus)}
           <small>{detail.exposure.on_hand_value != null ? `${MONEY(detail.exposure.on_hand_value)} in stock` : "stock value not available"}</small></dd></div>
       </dl>

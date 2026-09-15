@@ -196,7 +196,7 @@ function ImportedPanel({ poId, onClose }: { poId: string; onClose: () => void })
                   <div style={{ marginTop: 12 }}>
                     <Notice>
                       ZAAD&rsquo;s last plan recommends <strong>{AMENDMENT_LABEL[commitment.recommended_action] ?? commitment.recommended_action}</strong> for this order.{" "}
-                      <Link href="/decisions">See the reasoning</Link>.
+                      <Link href={`/decisions?decision=${encodeURIComponent(`po:${poId}`)}`}>See the reasoning</Link>.
                     </Notice>
                   </div>
                 )}
