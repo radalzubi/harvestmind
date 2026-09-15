@@ -88,11 +88,15 @@ export function submitReview(decisionId: string, body: { status: "APPROVED" | "R
 
 export interface JobSummary {
   id: string;
-  status: "QUEUED" | "RUNNING" | "DONE" | "FAILED" | "TIMEOUT" | "CANCELLED";
+  /** ABANDONED: the service that owned the run stopped before it finished (a restart). */
+  status: "QUEUED" | "RUNNING" | "DONE" | "FAILED" | "TIMEOUT" | "CANCELLED" | "ABANDONED";
   created_at: string;
   started_at: string | null;
   finished_at: string | null;
   engine_version: string;
+  /** What the job was for; a workspace plan is WORKSPACE_PLAN, an evaluation's runs are PROPOSAL_*. */
+  purpose?: string;
+  reference?: string | null;
 }
 
 export interface JobDetail extends JobSummary {
@@ -101,8 +105,9 @@ export interface JobDetail extends JobSummary {
   timeout_s: number;
 }
 
+/** The workspace's own plans. An evaluation's runs carry another purpose and are never listed here. */
 export function listPlanJobs(): Promise<{ jobs: JobSummary[] }> {
-  return apiFetch<{ jobs: JobSummary[] }>("/api/zaad/network/jobs");
+  return apiFetch<{ jobs: JobSummary[] }>("/api/zaad/network/jobs?purpose=WORKSPACE_PLAN");
 }
 
 export function readPlanJob(id: string): Promise<JobDetail> {

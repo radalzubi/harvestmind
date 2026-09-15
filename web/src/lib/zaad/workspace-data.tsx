@@ -313,13 +313,15 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
         if (active) { watch(active.id); return; }
         // A run that failed after the last good plan is not silently forgotten on reload.
         const newest = plans[0];
-        if (newest && newest !== last && ["FAILED", "TIMEOUT", "CANCELLED"].includes(newest.status)) {
+        if (newest && newest !== last && ["FAILED", "TIMEOUT", "CANCELLED", "ABANDONED"].includes(newest.status)) {
           setLastRunFailed(
             newest.status === "TIMEOUT"
               ? "Your most recent run did not finish inside the time it is given. Try a smaller selection of products."
               : newest.status === "CANCELLED"
                 ? "Your most recent run was cancelled."
-                : "Your most recent run stopped without producing a plan.",
+                : newest.status === "ABANDONED"
+                  ? "Your most recent run was interrupted when the service restarted. Nothing was changed; run it again."
+                  : "Your most recent run stopped without producing a plan.",
           );
         } else {
           setLastRunFailed(null);
@@ -357,7 +359,7 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
           setPlanError(ABANDONED_MESSAGE);
           return;
         }
-        if (["DONE", "FAILED", "TIMEOUT", "CANCELLED"].includes(detail.status)) {
+        if (["DONE", "FAILED", "TIMEOUT", "CANCELLED", "ABANDONED"].includes(detail.status)) {
           if (poll.current) window.clearInterval(poll.current);
           poll.current = null;
           if (detail.status === "DONE" && detail.report) {
@@ -372,7 +374,9 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
             setPlanError(
               detail.status === "TIMEOUT"
                 ? "The run did not finish inside the time it is given. Try a smaller selection of products."
-                : detail.error || "The run stopped without producing a plan.",
+                : detail.status === "ABANDONED"
+                  ? "The run was interrupted when the service restarted. Nothing was changed; run it again."
+                  : detail.error || "The run stopped without producing a plan.",
             );
           }
         }

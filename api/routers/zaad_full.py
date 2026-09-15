@@ -411,9 +411,17 @@ async def submit_job(request: HTTPRequest, operator: str = Depends(authenticated
 
 
 @router.get("/jobs")
-def list_jobs(operator: str = Depends(authenticated)):
-    """Status reads are cheap SQLite lookups scoped to the caller; they are not rate limited so polling works."""
-    return {"jobs": runner().store.list(operator)}
+def list_jobs(operator: str = Depends(authenticated),
+              purpose: str | None = Query(None, description="WORKSPACE_PLAN | PROPOSAL_BASELINE | PROPOSAL_OVERLAY | …")):
+    """Status reads are cheap SQLite lookups scoped to the caller; they are not rate limited so polling works.
+
+    Every job carries a purpose. A surface that wants the workspace's last plan asks for
+    `purpose=WORKSPACE_PLAN` and never sees an evaluation's overlay run.
+    """
+    from zaad.full.jobs import PURPOSES
+    if purpose is not None and purpose not in PURPOSES:
+        raise HTTPException(400, f"Unknown job purpose {purpose!r}. One of {', '.join(PURPOSES)}.")
+    return {"jobs": runner().store.list(operator, purpose=purpose)}
 
 
 @router.get("/jobs/{job_id}")
