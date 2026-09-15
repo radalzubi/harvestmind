@@ -184,15 +184,14 @@ def health():
 def ready():
     """Readiness: the root database opens and the solver is importable."""
     from api.dependencies import get_db_path
-    from infrastructure.db_manager import release_cursor, vault_cursor
+    from infrastructure.db_manager import vault_cursor
     checks = {}
     try:
-        conn, key = vault_cursor(get_db_path())
+        conn = vault_cursor(get_db_path())
         try:
             conn.execute("SELECT 1").fetchone()
         finally:
             conn.close()
-            release_cursor(key)
         checks["database"] = "ok"
     except Exception as exc:  # noqa: BLE001
         checks["database"] = f"unavailable: {type(exc).__name__}"

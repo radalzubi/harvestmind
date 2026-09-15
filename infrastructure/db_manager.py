@@ -39,6 +39,7 @@ import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 import duckdb
 
@@ -82,12 +83,47 @@ def _evict_idle_locked() -> None:
         _LAST_USED.pop(victim, None)
 
 
-def vault_cursor(path: str | Path) -> tuple[duckdb.DuckDBPyConnection, str]:
+class VaultConnection:
+    """A request's connection: a cursor on the vault's anchor, counted while it is open.
+
+    Everything is forwarded to the DuckDB cursor. `close()` is the one method that matters here:
+    it closes the cursor and tells the anchor it is idle — once, however many times it is called —
+    so the count of live cursors is right whether a caller closes directly or through
+    :meth:`DBManager.close_all`. Only an accurate count lets an idle anchor be checkpointed, evicted
+    or released for a read-only attach without breaking a request in flight.
+    """
+
+    __slots__ = ("_cursor", "_key", "_released")
+
+    def __init__(self, cursor: duckdb.DuckDBPyConnection, key: str):
+        self._cursor = cursor
+        self._key = key
+        self._released = False
+
+    def __getattr__(self, name: str):
+        return getattr(self._cursor, name)
+
+    def close(self) -> None:
+        try:
+            self._cursor.close()
+        finally:
+            if not self._released:
+                self._released = True
+                release_cursor(self._key)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.close()
+        return False
+
+
+def vault_cursor(path: str | Path) -> VaultConnection:
     """A connection to ``path`` that shares the process's single instance of that file.
 
-    Returns the cursor and the anchor key; pass the key to :func:`release_cursor` after closing
-    the cursor so the anchor knows it is idle again. Used by :class:`DBManager` and by the two
-    places that open the legacy root database, so no code path opens a file a second way.
+    Used by :class:`DBManager` and by the places that open the legacy root database, so no code
+    path opens a file a second way. Close it when the request is done.
     """
     key = _key(path)
     with _ANCHOR_LOCK:
@@ -99,7 +135,7 @@ def vault_cursor(path: str | Path) -> tuple[duckdb.DuckDBPyConnection, str]:
         _LIVE[key] = _LIVE.get(key, 0) + 1
         _LAST_USED[key] = time.monotonic()
         cursor = anchor.cursor()
-    return cursor, key
+    return VaultConnection(cursor, key)
 
 
 def release_cursor(key: str) -> None:
@@ -133,6 +169,29 @@ def checkpoint_all() -> int:
     return written
 
 
+def release_idle_anchor(path: str | Path) -> bool:
+    """Close the anchor for ``path`` if no request holds a cursor on it. True when it is now free.
+
+    A read-only ATTACH of a vault (the pool pipeline's cross-operator read) cannot share a file the
+    process already holds read-write, so the anchor is let go first. A file with an open cursor is
+    left alone and False is returned; the caller decides what that means.
+    """
+    key = _key(path)
+    with _ANCHOR_LOCK:
+        if key not in _ANCHORS:
+            return True
+        if _LIVE.get(key, 0) > 0:
+            return False
+        try:
+            _ANCHORS.pop(key).close()
+        except Exception:  # noqa: BLE001
+            pass
+        _LIVE.pop(key, None)
+        _LAST_USED.pop(key, None)
+        _LAST_CHECKPOINT.pop(key, None)
+        return True
+
+
 def anchored_files() -> list[str]:
     """The files this process currently holds open — for tests and diagnostics."""
     with _ANCHOR_LOCK:
@@ -142,15 +201,15 @@ def anchored_files() -> list[str]:
 class DBManager:
     def __init__(self, registry: OperatorRegistry | None = None) -> None:
         self.registry = registry or OperatorRegistry()
-        self._open: list[tuple[duckdb.DuckDBPyConnection, str | None]] = []
+        self._open: list[Any] = []
 
     # ── single-operator access ───────────────────────────────────────────
 
     def get_operator_connection(self, operator_id: str) -> duckdb.DuckDBPyConnection:
         """A cursor on the process's anchor for this operator's vault (see the module docstring)."""
         path = self.registry.get_db_path(operator_id)
-        conn, key = vault_cursor(path)
-        self._open.append((conn, key))
+        conn = vault_cursor(path)
+        self._open.append(conn)
         return conn
 
     def get_read_only_connection(self, operator_id: str) -> duckdb.DuckDBPyConnection:
@@ -187,11 +246,17 @@ class DBManager:
         paths = {oid: self.registry.get_db_path(oid)  # raises on unknown
                  for oid in operator_ids}
 
+        # A vault held open read-write by this process cannot also be attached read-only. The
+        # anchors are released when idle; a vault a request is using right now is reported.
+        busy = [oid for oid, path in paths.items() if not release_idle_anchor(path)]
+        if busy:
+            raise RuntimeError(f"cross-operator read refused: vault(s) in use by a request right now: {busy}")
+
         conn = duckdb.connect(":memory:")
         for oid, path in paths.items():
             conn.execute(
                 f"ATTACH '{path}' AS {oid} (READ_ONLY)")
-        self._open.append((conn, None))
+        self._open.append(conn)
 
         log_dir = self.registry.registry_dir
         log_dir.mkdir(parents=True, exist_ok=True)
@@ -204,11 +269,9 @@ class DBManager:
         return conn
 
     def close_all(self) -> None:
-        for c, key in self._open:
+        for c in self._open:
             try:
                 c.close()
             except Exception:  # noqa: BLE001
                 pass
-            if key is not None:
-                release_cursor(key)
         self._open = []

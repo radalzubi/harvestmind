@@ -175,13 +175,12 @@ def get_conn(
     """
     op = _resolve_operator(operator_id, authed)
     if op is None:
-        from infrastructure.db_manager import release_cursor, vault_cursor
-        conn, key = vault_cursor(get_db_path())
+        from infrastructure.db_manager import vault_cursor
+        conn = vault_cursor(get_db_path())
         try:
             yield conn
         finally:
             conn.close()
-            release_cursor(key)
         return
     from infrastructure.db_manager import DBManager
     from infrastructure.operator_registry import (
@@ -208,13 +207,12 @@ def get_readonly_conn(
     if op is None:
         # One instance per file for the whole process (see infrastructure/db_manager.py): a
         # read-only open beside a read-write one is refused by DuckDB, so this shares the anchor.
-        from infrastructure.db_manager import release_cursor, vault_cursor
-        conn, key = vault_cursor(get_db_path())
+        from infrastructure.db_manager import vault_cursor
+        conn = vault_cursor(get_db_path())
         try:
             yield conn
         finally:
             conn.close()
-            release_cursor(key)
         return
     from infrastructure.db_manager import DBManager
     from infrastructure.operator_registry import (

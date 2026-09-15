@@ -155,7 +155,7 @@ class JobStore:
                        "heartbeat_at, lease_until) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                        (identity, operator, "QUEUED", now, None, None, req.seed,
                         hashlib.sha256(request_json.encode()).hexdigest(), VERSION, timeout_s, request_json, None, None,
-                        purpose, reference, owner, now if owner else None, _plus(LEASE_S) if owner else None))
+                        purpose, reference, owner, now, _plus(LEASE_S)))
         return identity
 
     def update(self, identity: str, **fields) -> None:
@@ -188,10 +188,14 @@ class JobStore:
         return [{"id": r[0], "operator": r[1], "was": r[2]} for r in rows]
 
     def adopt_queued(self, owner: str, now: str | None = None) -> list[str]:
-        """Take ownership of queued jobs nobody is renewing, so they run instead of rotting."""
+        """Take ownership of queued jobs nobody is renewing, so they run instead of rotting.
+
+        A queued job with no owner at all — created straight into the store rather than through a
+        runner — is adopted whatever its lease says: nobody else will ever run it.
+        """
         stamp = now or _now()
         with self.connect() as db:
-            rows = db.execute("SELECT id FROM jobs WHERE status = 'QUEUED' AND (lease_until IS NULL OR lease_until < ?)",
+            rows = db.execute("SELECT id FROM jobs WHERE status = 'QUEUED' AND (owner IS NULL OR lease_until IS NULL OR lease_until < ?)",
                               (stamp,)).fetchall()
             ids = [r[0] for r in rows]
             for identity in ids:
