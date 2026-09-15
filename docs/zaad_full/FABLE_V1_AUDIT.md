@@ -405,6 +405,5 @@ connection counts its own close; a job created without a runner keeps a lease) a
 | frontend `npm run build` | green |
 | `zaad/` files in the diff since the Opus head | `zaad/full/jobs.py` only — job infrastructure, no planner call changed |
 
-**V1 AUDITED CHECKPOINT: the SHA is written in the commit after this one and in PR #81's
-description.** Not merged. V2 continues on the same branch so that one exact-head merge carries
+**V1 AUDITED CHECKPOINT: `e0204da6529664d8905388b4b9926606e44d17e6`** (the commit carrying §6; this line was added by the commit after it). Not merged. V2 continues on the same branch so that one exact-head merge carries
 the whole product.
