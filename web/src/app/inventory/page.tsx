@@ -22,7 +22,7 @@ import { Button, ButtonLink, Disclosure, EmptyState, ErrorState, Loading, Notice
 import { Column, DataTable, Drawer, NotAvailable, Pager, SearchField, SelectField, Tally, Toolbar } from "@/components/workspace/Table";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import {
-  COUNT, DATE, MONEY, NUMBER, fetchDatasetValues, fetchInventory, fetchLocations, fetchSku,
+  COUNT, DATE, MONEY, NUMBER, fetchDatasetValues, fetchInventory, fetchLocations, fetchSku, track,
   type InventoryPage, type InventoryRow, type Location, type SkuDetail,
 } from "@/lib/zaad/product";
 
@@ -76,7 +76,7 @@ function SkuPanel({ sku, onClose }: { sku: string; onClose: () => void }) {
     let alive = true;
     setDetail(null);
     setError(null);
-    fetchSku(sku).then((d) => alive && setDetail(d)).catch((e) => alive && setError(e.message));
+    fetchSku(sku).then((d) => { if (alive) { setDetail(d); track("sku_opened", { sku }); } }).catch((e) => alive && setError(e.message));
     return () => { alive = false; };
   }, [sku]);
 
@@ -300,6 +300,7 @@ function InventoryBody() {
       .finally(() => { if (alive) setBusy(false); });
     return () => { alive = false; };
   }, [q, category, brand, supplier, cover, location, planned, sort, direction, offset, scope]);
+  useEffect(() => { track("inventory_opened", location ? { location } : {}); }, [location]);
 
   const columns: Column<InventoryRow>[] = useMemo(() => [
     { key: "sku", label: "Product", sortable: true, width: 240,

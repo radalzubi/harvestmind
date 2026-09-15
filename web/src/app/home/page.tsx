@@ -26,7 +26,7 @@ import { KIND_LABEL } from "@/lib/network/model";
 import { standing, type Standing } from "@/lib/zaad/standing";
 import { useSession } from "@/lib/session";
 import { Onboarding } from "@/components/workspace/Onboarding";
-import { COUNT, DATE, MONEY, NUMBER, fetchSummary, listDrafts, type DraftSummary, type OperatingSummary } from "@/lib/zaad/product";
+import { COUNT, DATE, MONEY, NUMBER, fetchSummary, listDrafts, track, type DraftSummary, type OperatingSummary } from "@/lib/zaad/product";
 import { STATE_LABEL } from "@/lib/zaad/product";
 import { operatorWarning } from "@/lib/zaad/warnings";
 import { ReadinessLine, useCapabilityReadiness } from "@/components/workspace/Readiness";
@@ -216,6 +216,7 @@ function HomeBody() {
   const { decisions, computedAt, planPhase, summary, build, request, directory } = useWorkspaceData();
   const { state, snapshot, recent } = useStanding();
   const { readiness } = useCapabilityReadiness();
+  useEffect(() => { track("workspace_opened", { surface: "home" }); }, []);
   const open = decisions.filter((d) => d.needsReview);
   const closed = decisions.filter((d) => !d.needsReview);
 

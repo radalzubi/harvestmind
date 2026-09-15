@@ -23,6 +23,7 @@ import { Button, ButtonLink, Disclosure, ErrorState, Loading, Notice, PageHead, 
 import { Column, DataTable, NotAvailable, Tally } from "@/components/workspace/Table";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import {
+  track,
   COUNT, DATE, MONEY, NUMBER, PERCENT, fetchSupplier, type SupplierDetail,
 } from "@/lib/zaad/product";
 
@@ -69,17 +70,21 @@ function Trend({ trend }: { trend: SupplierDetail["trend"] }) {
 }
 
 function SupplierBody({ id }: { id: string }) {
-  const { request } = useWorkspaceData();
+  const { request, decisions } = useWorkspaceData();
   const [detail, setDetail] = useState<SupplierDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
     fetchSupplier(id, request?.as_of?.slice(0, 10))
-      .then((d) => alive && setDetail(d))
+      .then((d) => { if (alive) { setDetail(d); track("supplier_opened", { supplier_id: id }); } })
       .catch((e) => alive && setError(e.message));
     return () => { alive = false; };
   }, [id, request]);
+
+  // What ZAAD decided about this supplier in the current plan: the diagnosis and the decision on
+  // one screen, so a measured lateness leads to the recommendation it fed rather than to a dead end.
+  const related = useMemo(() => decisions.filter((d) => d.target.id === id || d.target.label.includes(id)), [decisions, id]);
 
   const alternatives = detail?.alternatives;
   const bySku = useMemo(() => (detail?.by_product ?? []).filter((r) => r.orders > 0), [detail]);
@@ -230,6 +235,26 @@ function SupplierBody({ id }: { id: string }) {
             {alternatives?.note}
             {" "}Declare the sources you have qualified and ZAAD will consider them when it plans — including
             what it would cost to move volume if this supplier stops delivering.
+          </Notice>
+        )}
+      </Section>
+
+      <Section title="What ZAAD decided about this supplier" more="All decisions" moreHref="/decisions">
+        {related.length ? (
+          <div className="dec-list">
+            {related.slice(0, 4).map((d) => (
+              <Link key={d.id} href={`/decisions?decision=${encodeURIComponent(d.id)}`} style={{ textDecoration: "none", color: "inherit" }}>
+                <div className="dec">
+                  <div className="dec-top"><span className="dec-verb" data-tone={d.verb === "KEEP" ? "keep" : "change"}>{d.verb}</span><span className="dec-cat">{d.category}</span></div>
+                  <h3 className="dec-h" style={{ fontSize: 13.5 }}>{d.headline}</h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <Notice>
+            The current plan carries no decision that names this supplier. What is measured here feeds the next
+            plan through the fitted reliability above. <Link href={`/orders?tab=imported&poq=${encodeURIComponent(id)}`}>Its open orders</Link> are on Purchase orders.
           </Notice>
         )}
       </Section>

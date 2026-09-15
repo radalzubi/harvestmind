@@ -16,6 +16,7 @@ import { Plus, Trash2, Upload } from "lucide-react";
 import { Gate } from "@/components/workspace/Gate";
 import { Button, ButtonLink, EmptyState, Loading, Notice, PageHead, Section } from "@/components/workspace/ui";
 import { useToast } from "@/components/Toast";
+import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import {
   COUNT, deleteProfile, fetchProfiles, readTemplate, saveProfile,
   type ExportColumn, type ExportProfile,
@@ -24,7 +25,7 @@ import {
 const BLANK: ExportProfile = {
   profile_id: null, name: "", format: "csv", sheet_name: "Purchase Order", delimiter: ",",
   date_format: "iso", number_format: "plain", filename_template: "{reference}_{supplier}_{date}",
-  supplier_id: null, columns: [],
+  supplier_id: null, columns: [], is_default: false,
 };
 
 function ColumnRow({ column, fields, onChange, onRemove }: {
@@ -68,6 +69,7 @@ function Editor({ profile, fields, onSaved, onCancel }: {
   onSaved: () => void; onCancel: () => void;
 }) {
   const toast = useToast();
+  const { directory } = useWorkspaceData();
   const input = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState<ExportProfile>(profile);
   const [busy, setBusy] = useState(false);
@@ -131,6 +133,24 @@ function Editor({ profile, fields, onSaved, onCancel }: {
         <label><span className="fld-label">File name</span>
           <input className="fld fld--block" value={draft.filename_template ?? ""}
             onChange={(e) => setDraft({ ...draft, filename_template: e.target.value })} /></label>
+      </div>
+
+      {/* Which exports pick this format when none is named: the hierarchy is the chosen format,
+          then the supplier's default, then the workspace default, then ZAAD's standard. The
+          export line on each order says which of those applied. */}
+      <div className="fld-row" style={{ marginTop: 10 }}>
+        <label><span className="fld-label">For one supplier only</span>
+          <input className="fld fld--block" list="format-suppliers" value={draft.supplier_id ?? ""} placeholder="Every supplier"
+            aria-label="Supplier this format is for"
+            onChange={(e) => setDraft({ ...draft, supplier_id: e.target.value.trim() || null })} />
+          <datalist id="format-suppliers">
+            {(directory?.suppliers ?? []).map((sup) => <option key={sup.id} value={sup.id}>{sup.name ?? sup.id}</option>)}
+          </datalist>
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, alignSelf: "end", paddingBottom: 6 }}>
+          <input type="checkbox" checked={Boolean(draft.is_default)} onChange={(e) => setDraft({ ...draft, is_default: e.target.checked })} />
+          <span>{draft.supplier_id ? `Use for ${draft.supplier_id}'s orders unless another format is chosen` : "Use for every order unless another format is chosen"}</span>
+        </label>
       </div>
 
       <Section title="Columns">
@@ -218,6 +238,8 @@ function FormatsBody() {
                     <div className="dec-top">
                       <span className="dec-verb">{profile.format.toUpperCase()}</span>
                       <span className="dec-cat">{COUNT(profile.columns.length, "column")}</span>
+                      {profile.supplier_id && <span className="dec-cat">for {profile.supplier_id}</span>}
+                      {profile.is_default && <span className="chip" data-tone="good" style={{ marginInlineStart: "auto" }}>{profile.supplier_id ? `Default for ${profile.supplier_id}` : "Workspace default"}</span>}
                     </div>
                     <h3 className="dec-h">{profile.name}</h3>
                     <p className="dec-sub">{profile.columns.map((c) => c.header).join(" · ")}</p>

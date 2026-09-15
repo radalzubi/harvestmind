@@ -607,6 +607,8 @@ export interface ExportProfile {
   supplier_id?: string | null;
   columns: ExportColumn[];
   built_in?: boolean;
+  /** The format used when an export names none: per supplier when `supplier_id` is set, else for the workspace. */
+  is_default?: boolean;
 }
 
 export const fetchProfiles = () =>

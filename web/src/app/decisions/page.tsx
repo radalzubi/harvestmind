@@ -6,7 +6,7 @@
  * The list keeps its place while the detail opens beside it; the selected decision lives in
  * the address bar, so a decision can be sent to a colleague or opened from the network.
  */
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Gate } from "@/components/workspace/Gate";
 import { DecisionCard } from "@/components/workspace/DecisionCard";
@@ -17,7 +17,7 @@ import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { useSession } from "@/lib/session";
 import { useToast } from "@/components/Toast";
 import { bulkBodies, planBulk } from "@/lib/zaad/bulk";
-import { createDraftsBulk, track } from "@/lib/zaad/product";
+import { createDraftsBulk, listResponses, track, type DecisionResponse } from "@/lib/zaad/product";
 import { money, type Decision, type DecisionCategory } from "@/lib/zaad/decisions";
 
 type Filter = "needs-review" | "all" | DecisionCategory;
@@ -192,6 +192,17 @@ function DecisionsBody() {
   const { decisions, summary } = useWorkspaceData();
   const [checked, setChecked] = useState<Set<string>>(() => new Set());
   const canCreate = session.can("createProposal");
+  // The operator's responses in this plan, so each card carries where it stands (accepted,
+  // overridden, rejected, reviewed) and whether a proposal was raised from it.
+  const { planJobId } = useWorkspaceData();
+  const [responses, setResponses] = useState<Map<string, DecisionResponse>>(() => new Map());
+  useEffect(() => {
+    if (!planJobId) { setResponses(new Map()); return; }
+    let alive = true;
+    listResponses(planJobId).then((r) => { if (alive) setResponses(new Map(r.rows.map((x) => [x.decision_id, x]))); })
+      .catch(() => { if (alive) setResponses(new Map()); });
+    return () => { alive = false; };
+  }, [planJobId]);
   const selectable = useMemo(() => new Set(decisions.filter((d) => d.id.startsWith("buy:") && d.needsReview).map((d) => d.id)), [decisions]);
   const open = useMemo(() => decisions.filter((d) => d.needsReview), [decisions]);
   // Opening on an empty "Needs review" while six decisions sit behind "All" reads as a fault.
@@ -252,6 +263,7 @@ function DecisionsBody() {
           )}
           {shown.map((d) => (
             <DecisionCard key={d.id} decision={d} selected={selected?.id === d.id} onSelect={select}
+              response={responses.get(d.id) ?? null}
               checked={checked.has(d.id)}
               onCheck={canCreate && selectable.has(d.id)
                 ? (id, next) => setChecked((c) => { const n = new Set(c); if (next) n.add(id); else n.delete(id); return n; })

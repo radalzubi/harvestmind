@@ -13,7 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Building2, FileText, MapPin, Share2, Users } from "lucide-react";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
-import { searchWorkspace, type SearchHit } from "@/lib/zaad/product";
+import { STATE_LABEL, listDrafts, searchWorkspace, type SearchHit } from "@/lib/zaad/product";
 
 type Hit = { id: string; label: string; meta: string; href: string; Icon: typeof Box; rank: number };
 
@@ -62,9 +62,17 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     if (needle.length < 2) { setRemote([]); return; }
     let alive = true;
     const handle = window.setTimeout(() => {
-      searchWorkspace(needle, 8)
-        .then((r) => { if (alive) setRemote(r.results); })
-        .catch(() => { if (alive) setRemote([]); });
+      // Products, suppliers, orders and customers from the vault; proposals from the product's
+      // own ledger, matched on reference, supplier and product, so a proposal is as findable as
+      // the imported order it may amend.
+      Promise.all([
+        searchWorkspace(needle, 8).then((r) => r.results).catch(() => []),
+        listDrafts({ q: needle, limit: 5, sort: "updated_at", direction: "desc" }).then((r) => r.rows.map((d) => ({
+          kind: "proposal", id: d.draft_id, label: d.reference || d.draft_id.replace(/^draft_/, ""),
+          detail: `${STATE_LABEL[d.state]}${d.supplier_id ? ` · ${d.supplier_id}` : ""}`,
+          href: `/orders/${encodeURIComponent(d.draft_id)}`,
+        }))).catch(() => []),
+      ]).then(([vault, proposals]) => { if (alive) setRemote([...vault, ...proposals]); });
     }, 180);
     return () => { alive = false; window.clearTimeout(handle); };
   }, [q]);
@@ -114,10 +122,10 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   }, [q, decisions, network, request]);
 
   const REMOTE_ICON: Record<string, typeof Box> = {
-    product: Box, supplier: Building2, order: FileText, customer: Users,
+    product: Box, supplier: Building2, order: FileText, customer: Users, proposal: FileText,
   };
   const REMOTE_META: Record<string, string> = {
-    product: "Product", supplier: "Supplier", order: "Purchase order", customer: "Customer",
+    product: "Product", supplier: "Supplier", order: "Purchase order", customer: "Customer", proposal: "Proposal",
   };
 
   const hits = useMemo<Hit[]>(() => {

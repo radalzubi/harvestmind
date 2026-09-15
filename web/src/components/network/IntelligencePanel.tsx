@@ -13,10 +13,43 @@ import { describe, edgeTitle, affectedBy } from "@/lib/network/attention";
 import { EDGE_LABEL, KIND_LABEL, RISK_LABEL, STATE_LABEL, STATE_SENTENCE } from "@/lib/network/model";
 import type { NetworkEdge, NetworkNode } from "@/lib/network/model";
 import { Disclosure, Evidence, Facts, TechnicalDetails } from "@/components/workspace/ui";
+import { useEffect, useState } from "react";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money } from "@/lib/zaad/decisions";
-import { COUNT, NUMBER } from "@/lib/zaad/product";
+import { COUNT, EXTERNAL_LABEL, NUMBER, STATE_LABEL as DRAFT_STATE_LABEL, listDrafts, track, type DraftSummary } from "@/lib/zaad/product";
 import { useTwin } from "./store";
+
+/**
+ * V2: what has actually been done about this object — proposals against the supplier, their
+ * state in ZAAD and what a person recorded happened outside it. The recommendation above says
+ * what ZAAD thinks; this says what happened, and the two are never merged.
+ */
+function ExecutedActions({ supplierId }: { supplierId: string }) {
+  const [rows, setRows] = useState<DraftSummary[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    listDrafts({ supplier_id: supplierId, limit: 5, sort: "updated_at", direction: "desc" })
+      .then((r) => { if (alive) setRows(r.rows); }).catch(() => { if (alive) setRows([]); });
+    return () => { alive = false; };
+  }, [supplierId]);
+  if (!rows) return null;
+  if (!rows.length) return <p style={{ margin: 0, fontSize: 13, color: "var(--ink-500)" }}>No proposal has been raised against this supplier.</p>;
+  return (
+    <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6 }}>
+      {rows.map((d) => (
+        <li key={d.draft_id}>
+          <Link href={`/orders/${encodeURIComponent(d.draft_id)}`} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", textDecoration: "none", color: "inherit", fontSize: 13 }}>
+            <span className="chip">{DRAFT_STATE_LABEL[d.state]}</span>
+            <span style={{ fontWeight: 500, color: "var(--ink-950)" }}>{d.reference || d.draft_id.replace(/^draft_/, "")}</span>
+            <span style={{ color: "var(--ink-500)" }}>
+              {d.external_status ? `${EXTERNAL_LABEL[d.external_status]}${d.external_reference ? ` · ${d.external_reference}` : ""}` : "nothing recorded outside ZAAD"}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function Recommendations({ targetId }: { targetId: string }) {
   const { decisions } = useWorkspaceData();
@@ -158,6 +191,12 @@ function NodeBody({ node }: { node: NetworkNode }) {
       <div style={{ marginTop: 18 }}>
         <h3 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "var(--ink-950)" }}>What ZAAD recommends here</h3>
         <Recommendations targetId={node.id} />
+        {node.kind === "supplier" && (
+          <div style={{ marginTop: 14 }}>
+            <h3 style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "var(--ink-950)" }}>What has been done</h3>
+            <ExecutedActions supplierId={node.id.split(":").slice(1).join(":")} />
+          </div>
+        )}
         <Actions node={node} edge={null} index={index} />
       </div>
 
@@ -252,6 +291,10 @@ function EdgeBody({ edge }: { edge: NetworkEdge }) {
 export function IntelligencePanel() {
   const { state, index, select, model } = useTwin();
   const selection = state.selection;
+  // Before any early return, so the hook order is the same on every render.
+  useEffect(() => {
+    if (selection) track("network_object_opened", { node: selection.id, kind: selection.type });
+  }, [selection]);
 
   if (!selection) {
     return (

@@ -24,33 +24,34 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/site/Logo";
 import { useSession } from "@/lib/session";
+import { useLocale, type Copy } from "@/lib/i18n";
 import { DATE } from "@/lib/zaad/product";
 import { useOpenDecisions, useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { AssistantButton } from "@/components/Assistant";
 import { CommandPalette } from "./CommandPalette";
 
-interface Destination { href: string; label: string; Icon: typeof Home }
+interface Destination { href: string; label: string; key: keyof Copy["workspace"]["nav"]; Icon: typeof Home }
 
 const OPERATE: Destination[] = [
-  { href: "/home", label: "Home", Icon: Home },
-  { href: "/decisions", label: "Decisions", Icon: LayoutList },
-  { href: "/inventory", label: "Inventory", Icon: Boxes },
-  { href: "/orders", label: "Purchase orders", Icon: FileText },
+  { href: "/home", label: "Home", key: "home", Icon: Home },
+  { href: "/decisions", label: "Decisions", key: "decisions", Icon: LayoutList },
+  { href: "/inventory", label: "Inventory", key: "inventory", Icon: Boxes },
+  { href: "/orders", label: "Purchase orders", key: "orders", Icon: FileText },
 ];
 const ANALYZE: Destination[] = [
-  { href: "/network", label: "Network", Icon: Share2 },
-  { href: "/diagnostics", label: "Diagnostics", Icon: Stethoscope },
-  { href: "/history", label: "History", Icon: History },
+  { href: "/network", label: "Network", key: "network", Icon: Share2 },
+  { href: "/diagnostics", label: "Diagnostics", key: "diagnostics", Icon: Stethoscope },
+  { href: "/history", label: "History", key: "history", Icon: History },
 ];
 const DATA: Destination[] = [
-  { href: "/upload", label: "Upload", Icon: Upload },
-  { href: "/data", label: "Data", Icon: Database },
+  { href: "/upload", label: "Upload", key: "upload", Icon: Upload },
+  { href: "/data", label: "Data", key: "data", Icon: Database },
 ];
 
-const GROUPS: Array<{ label: string | null; items: Destination[] }> = [
-  { label: null, items: OPERATE },
-  { label: "Analyse", items: ANALYZE },
-  { label: "Data", items: DATA },
+const GROUPS: Array<{ label: string | null; key: keyof Copy["workspace"]["groups"]; items: Destination[] }> = [
+  { label: null, key: "operate", items: OPERATE },
+  { label: "Analyse", key: "analyse", items: ANALYZE },
+  { label: "Data", key: "data", items: DATA },
 ];
 
 /** The phone bar: the four things a person opens most, and everything else behind More. */
@@ -148,6 +149,8 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "/";
   const session = useSession();
   const { summary } = useWorkspaceData();
+  const { t, locale, setLocale } = useLocale();
+  const w = t.workspace;
   const [palette, setPalette] = useState(false);
   const [more, setMore] = useState(false);
 
@@ -168,18 +171,18 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="ws">
-      <a className="skip-link" href="#ws-content">Skip to content</a>
+      <a className="skip-link" href="#ws-content">{w.skip}</a>
       <aside className="ws-rail">
         {/* Logo renders its own link; wrapping it in another produces nested anchors. */}
         <div className="ws-rail-brand"><Logo size={21} href="/home" /></div>
         <div className="ws-rail-scroll">
           {GROUPS.map((group) => (
-            <div key={group.label ?? "operate"}>
-              {group.label && <div className="ws-secondary-label">{group.label}</div>}
-              <nav className="ws-nav" aria-label={group.label ?? "Operate"}>
-                {group.items.map(({ href, label, Icon }) => (
+            <div key={group.key}>
+              {group.label && <div className="ws-secondary-label">{w.groups[group.key]}</div>}
+              <nav className="ws-nav" aria-label={w.groups[group.key]}>
+                {group.items.map(({ href, key, Icon }) => (
                   <Link key={href} href={href} aria-current={current(pathname, href) ? "page" : undefined}>
-                    <Icon strokeWidth={1.7} aria-hidden /><span>{label}</span><NavCount href={href} />
+                    <Icon strokeWidth={1.7} aria-hidden /><span>{w.nav[key]}</span><NavCount href={href} />
                   </Link>
                 ))}
               </nav>
@@ -199,9 +202,9 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           )}
         </div>
         <div className="ws-rail-foot">
-          <div style={{ fontSize: 11.5, color: "var(--ink-500)", lineHeight: 1.5 }}>
-            ZAAD recommends and records approvals. It never sends an order to a supplier.
-          </div>
+          <div style={{ fontSize: 11.5, color: "var(--ink-500)", lineHeight: 1.5 }}>{w.foot}</div>
+          <button type="button" className="zb zb--tertiary zb--sm" style={{ marginTop: 8 }} lang={locale === "ar" ? "en" : "ar"}
+            aria-label={w.langLabel} onClick={() => setLocale(locale === "ar" ? "en" : "ar")}>{w.lang}</button>
         </div>
       </aside>
 
@@ -211,16 +214,16 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
             <span className="ws-top-name">{session.workspace?.name ?? "Workspace"}</span>
             {summary && <span className="ws-top-sub" title={`Information set ${summary.informationHash.slice(0, 12)}`}>
               {/* One formatter for one field: DATE() reads it in UTC, the way it is stated. */}
-              · as at {DATE(summary.asOf)}
+              · {w.asAt} <span className="fig">{DATE(summary.asOf)}</span>
             </span>}
           </div>
           <div className="ws-top-spacer" />
-          <button className="ws-search" onClick={() => setPalette(true)} aria-label="Search products, suppliers, orders and decisions">
+          <button className="ws-search" onClick={() => setPalette(true)} aria-label={w.searchLabel}>
             <Search size={14} aria-hidden />
-            <span>Search</span>
+            <span>{w.search}</span>
             <kbd aria-hidden>⌘K</kbd>
           </button>
-          <AssistantButton label="Help" variant="tertiary" icon={<HelpCircle size={15} aria-hidden />} />
+          <AssistantButton label={w.help} variant="tertiary" icon={<HelpCircle size={15} aria-hidden />} />
           <Account />
         </header>
         {/* tabIndex -1 keeps this out of the tab order but lets it *take* focus, which is the
@@ -231,14 +234,14 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <nav className="ws-tabs" aria-label="Workspace">
-        {TABS.map(({ href, label, Icon }) => (
+        {TABS.map(({ href, key, Icon }) => (
           <Link key={href} href={href} aria-current={current(pathname, href) ? "page" : undefined}>
-            <Icon strokeWidth={1.7} aria-hidden /><span>{label === "Purchase orders" ? "Orders" : label}</span><NavCount href={href} />
+            <Icon strokeWidth={1.7} aria-hidden /><span>{key === "orders" ? w.nav.ordersShort : w.nav[key]}</span><NavCount href={href} />
           </Link>
         ))}
         <button type="button" onClick={() => setMore((m) => !m)} aria-expanded={more}
           aria-current={MORE.some((m) => current(pathname, m.href)) ? "page" : undefined}>
-          <MoreHorizontal strokeWidth={1.7} aria-hidden /><span>More</span>
+          <MoreHorizontal strokeWidth={1.7} aria-hidden /><span>{w.nav.more}</span>
         </button>
       </nav>
 

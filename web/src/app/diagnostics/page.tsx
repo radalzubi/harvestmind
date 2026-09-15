@@ -21,6 +21,7 @@ import { Column, DataTable, NotAvailable, Pager, SearchField, SelectField, Tally
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import { money } from "@/lib/zaad/decisions";
 import {
+  track,
   COUNT, DATE, MONEY, NUMBER, PERCENT, fetchCorridors, fetchSector, fetchSuppliers,
   type SectorRow, type SupplierRow,
 } from "@/lib/zaad/product";
@@ -321,6 +322,7 @@ function DiagnosticsBody() {
   const params = useSearchParams();
   const router = useRouter();
   const tab = params.get("tab") ?? "suppliers";
+  useEffect(() => { track("diagnostic_opened", { tab }); }, [tab]);
   const set = useCallback((changes: Record<string, string | null>) => {
     const next = new URLSearchParams(params.toString());
     for (const [key, value] of Object.entries(changes)) {

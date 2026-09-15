@@ -120,9 +120,28 @@ function Explorer({ datasets }: { datasets: DatasetInfo[] }) {
     return () => { alive = false; };
   }, [dataset, q, sort, direction, offset, filterColumn, filterValue]);
 
+  // Which columns a person chose to hide on this dataset, kept in this browser only. A wide
+  // staging table has twenty columns and a buyer looks at six; the choice is a convenience, never
+  // data, so it never leaves the browser and an empty store simply shows every column.
+  const [hidden, setHidden] = useState<Set<string>>(() => new Set());
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(`zaad.data.hidden.${dataset}`);
+      setHidden(new Set(saved ? (JSON.parse(saved) as string[]) : []));
+    } catch { setHidden(new Set()); }
+  }, [dataset]);
+  const toggleColumn = useCallback((name: string) => {
+    setHidden((h) => {
+      const next = new Set(h);
+      if (next.has(name)) next.delete(name); else next.add(name);
+      try { window.localStorage.setItem(`zaad.data.hidden.${dataset}`, JSON.stringify([...next])); } catch { /* private mode */ }
+      return next;
+    });
+  }, [dataset]);
+
   const columns: Column<Record<string, unknown>>[] = useMemo(() => {
     if (!page) return [];
-    return page.columns.map((column, index) => ({
+    return page.columns.filter((column) => !hidden.has(column.name)).map((column, index) => ({
       key: column.name,
       label: column.label,
       numeric: column.kind === "number",
@@ -131,7 +150,7 @@ function Explorer({ datasets }: { datasets: DatasetInfo[] }) {
       title: (row) => (row[column.name] == null ? undefined : String(row[column.name])),
       render: (row) => cell(row[column.name], column.kind),
     }));
-  }, [page]);
+  }, [page, hidden]);
 
   const selected = useMemo(() => {
     if (!openRow || !page) return null;
@@ -162,6 +181,20 @@ function Explorer({ datasets }: { datasets: DatasetInfo[] }) {
         <div className="tbar-spacer" />
         <Button size="sm" role="tertiary" icon={<RefreshCw size={14} aria-hidden />} onClick={() => set({})}>Refresh</Button>
       </Toolbar>
+
+      {page && page.columns.length > 6 && (
+        <div style={{ margin: "8px 0 12px" }}>
+          <Disclosure summary="Columns" hint={hidden.size ? `${hidden.size} hidden · remembered in this browser` : "choose which to show"}>
+            <div className="chips" role="group" aria-label="Columns to show">
+              {page.columns.map((column) => (
+                <button key={column.name} type="button" className="chip" aria-pressed={!hidden.has(column.name)} onClick={() => toggleColumn(column.name)}>
+                  {column.label}
+                </button>
+              ))}
+            </div>
+          </Disclosure>
+        </div>
+      )}
 
       {error && <Notice tone="warn">{error}</Notice>}
       {!page && !error && <Loading label="Reading these records…" cards={2} />}

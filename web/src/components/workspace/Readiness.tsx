@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { DataTable } from "@/components/workspace/Table";
 import { Notice } from "@/components/workspace/ui";
-import { CAPABILITY_STATUS_LABEL, fetchReadiness, type CapabilityReadiness, type QualityCheck, type WorkspaceReadiness } from "@/lib/zaad/product";
+import { CAPABILITY_STATUS_LABEL, fetchReadiness, track, type CapabilityReadiness, type QualityCheck, type WorkspaceReadiness } from "@/lib/zaad/product";
 import { useSession } from "@/lib/session";
 
 export function useCapabilityReadiness(): { readiness: WorkspaceReadiness | null; error: string | null; refresh: () => void } {
@@ -24,7 +24,7 @@ export function useCapabilityReadiness(): { readiness: WorkspaceReadiness | null
   useEffect(() => {
     if (session.status !== "authenticated") return;
     let alive = true;
-    fetchReadiness().then((r) => { if (alive) { setReadiness(r); setError(null); } })
+    fetchReadiness().then((r) => { if (alive) { setReadiness(r); setError(null); track("data_readiness_opened", { surface: window.location.pathname.slice(1, 40) }); } })
       .catch((e) => { if (alive) setError(e instanceof Error ? e.message : String(e)); });
     return () => { alive = false; };
   }, [session.status, tick]);
