@@ -68,20 +68,24 @@ opens (§14).
 
 ## 3. Commits since the V1 checkpoint
 
-| commit | what it carries |
-|---|---|
-| `560066a` | location-aware inventory, capability readiness, numeric xlsx cells, bulk proposals |
-| `c2ce9f4` | amendment evaluated as a fixed counterfactual under its declared terms (migration 026) |
-| `<web surfaces>` | Arabic chrome, executed actions, lifecycle chips, telemetry, formats defaults, Data columns, search |
-| `<scope>` | joint-problem scope sentence; external solve profiler |
-| `69325b3` | transfer proposals (migration 027) |
-| `<record>` | scope fix; V2 record sections 10, 12–16 |
-| `<family>` | readiness names its upload family; silent on a produce workspace |
-| `d012ce0` | uncoupled products said to be separable |
-| *(this document's commit)* | release audit; V2 record §3–§8 landed, §17 known limits |
+On `feat/zaad-operating-product-v1`, after `77b7185`, oldest first (the commit carrying this section is the tested head; its CI run is recorded in the release ledger):
 
-(Short hashes for the middle rows are in `git log 77b7185..HEAD --oneline`; they are not
-repeated here to avoid a stale copy.)
+| commit | subject |
+|---|---|
+| `2a36037` | feat(api): V2 governance — actors and roles, audit log, self-approval policy, versions, idempotency, the closed loop |
+| `f3b4aa8` | feat(web): V2 governance surfaces — roles from the server, the closed loop on a proposal, decision responses, History |
+| `560066a` | feat(product): location-aware inventory, capability readiness, numeric xlsx cells, bulk proposals |
+| `c2ce9f4` | feat(product): evaluate an amendment as a fixed counterfactual under its declared terms |
+| `ca01577` | feat(web): remaining V2 surfaces — chrome in Arabic, executed actions, lifecycle chips, telemetry |
+| `b74824b` | feat(web): say whether a plan's products were solved as one joint problem; external solve profiler |
+| `69325b3` | feat(product): transfer proposals — a move between the operator's own sites, from a concrete P2 move |
+| `9560d31` | fix(web): count the plan's own products in the joint-problem sentence; record transfers, bulk, exports, telemetry, Arabic and the solve profile |
+| `ef46be6` | fix(product): readiness names its upload family and stays silent on a produce workspace |
+| `d012ce0` | fix(web): uncoupled products are said to be separable, not solved together |
+| `f1f01d7` | docs(zaad): V2 release audit; V2 record brought to landed status with known limits |
+| `731095d` | chore(scripts): one statement per line in the solve profiler; operating-product release smoke |
+| `c26eb25` | chore(scripts): release smoke can create its own throwaway workspace through the self-serve path |
+| `5027a5d` | chore(scripts): release smoke retries a transport timeout once, so a loopback port stall is not reported as a server failure |
 
 ## 4. What was walked live
 
@@ -169,4 +173,21 @@ a promised date on half the history; 8-product plan run through the API, `RETAIN
 
 ## 7. Release decision
 
-*Written after CI on the exact head.*
+The release gates of the brief (§93, §120) are: every required V2 item delivered or honestly
+declared blocked; the optimizer untouched with the frozen regression standing; the whole suite,
+lint, types, security scans and the frontend gates green; CI green on the exact head to be
+merged; live QA over more than one workspace with every finding fixed or recorded; documents
+that describe the tree. Sections 1–6 record each of those as met on this tree, with two things
+said plainly rather than hidden: the bulk-creation *sheet* was not driven end to end in a
+browser because neither QA workspace's current plan recommended a purchase or a move (its
+grouping and endpoint are tested, and its absence on a KEEP-only plan was verified live), and
+the frozen regression was not re-run for V2 because no `zaad/` file changed after the checkpoint
+where it last passed.
+
+**Decision: ZAAD OPERATING PRODUCT V2 — RELEASE PASS, conditional only on CI being green on this
+exact head.** If CI is not green on this head, the merge does not happen and the ledger records
+why. The merge, the deployment from a clean detached checkout of the merge commit, the
+production smoke (`scripts/operating_product_release_smoke.py --self-serve`), the log
+inspection and the tag `zaad-operating-product-v2-runtime` are recorded in
+`docs/ZAAD_RELEASE_LEDGER.md` and `docs/zaad_full/CURRENT_SYSTEM.md`, which are updated at
+release time and not before.
