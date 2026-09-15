@@ -1,9 +1,15 @@
 # ZAAD — current system (read this first)
 
-**Status line (2026-09-13):** production runtime `4b8621e` (tag `zaad-post-p4b-cleanup-runtime`, Fly `zaad-api` v24,
-image `canonical-4b8621e`) = the P4B V1 release runtime `1851f40` (`p4b-v1-release-runtime`) with six unused
-dependencies removed; optimizer, API and web bytes identical. `main` may be ahead of production by docs only; the
-release ledger's current-state table records when that is not the case.
+**Status line (2026-09-15):** production runtime is the Operating Product V1 + V2 merge `458fcaf`
+(Fly `zaad-api` v26, image `canonical-458fcaf`, digest `sha256:4ba1cd25…`; Vercel production from the
+same tree). Every operating surface and the proposal loop are verified in production and stay
+responsive while a plan runs; **the plan path is BLOCKED at the product's default scope**: on a
+rested `shared-cpu-2x` machine 1, 2 and 5 products complete inside their caps (4.6 s, 29 s, 138 s)
+and the 10-product default reaches TIMEOUT at 450 s with no throttling, while consecutive solves
+exhaust the shared CPU's burst balance and throttle the whole machine for up to an hour
+(`PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md`). No V2 runtime tag exists. `main` may be ahead of
+production by docs and by the planner-orchestration fix (one ordered solver lease); the release
+ledger's current-state table records the exact difference.
 
 ## What is released
 
@@ -27,9 +33,13 @@ audited and corrected, V2 built on the same branch — PR #81, merge `458fcaf`, 
 audited checkpoint no file under `zaad/` changed, and the only `zaad/` file in the whole release is
 `zaad/full/jobs.py` (job ownership, leases and purposes; the frozen regression passed on it and in
 CI). Every surface and the whole proposal loop were verified on production; the default 10-product
-plan and a 5-product plan both time out on the `shared-cpu-2x` machine (5 products need 306 s of
-solver time there against a 337 s cap), so **no runtime tag exists yet** — see the ledger for the
-two ways to unblock it. Architecture records: [`OPERATING_PRODUCT_V1.md`](OPERATING_PRODUCT_V1.md)
+plan timed out on the `shared-cpu-2x` machine, so **no runtime tag exists yet**. The recovery pass
+of 2026-09-15 (`PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md`) separated the two causes: the shared
+CPU's burst budget (one plan spends it; everything after runs at 6.25 % — the day's TIMEOUTs and
+40–80 s reads) and the planner's own scaling at ten products jointly (more than 450 s of one
+unthrottled core: the joint escalation solve and the per-service confirmation ladder). Two owner
+decisions unblock it: a dedicated CPU (`performance-2x`, spend) and the default scope or cap
+(product policy); the ledger records both with the measurements. Architecture records: [`OPERATING_PRODUCT_V1.md`](OPERATING_PRODUCT_V1.md)
 and [`OPERATING_PRODUCT_V2.md`](OPERATING_PRODUCT_V2.md); audits: [`FABLE_V1_AUDIT.md`](FABLE_V1_AUDIT.md)
 and [`FABLE_V2_RELEASE_AUDIT.md`](FABLE_V2_RELEASE_AUDIT.md). ZAAD still sends nothing to a supplier;
 exports are files; external status is human-recorded.

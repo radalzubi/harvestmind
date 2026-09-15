@@ -334,6 +334,20 @@ this release's remit; the numbers above are the baseline for it. On this fixture
 returned ABSTAIN (the incumbent and most network candidates infeasible under the declared
 commitments, `base_stock` optimal) — a property of the fixture's commitments, reported as such.
 
+### 16.1 Production recovery (2026-09-15, after the V2 deploy)
+
+The V2 deploy found the plan path timing out in production. The investigation, its measurements and
+its decisions are in [`PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md`](PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md).
+In short: the root cause was the `shared-cpu-2x` machine's CPU burst budget (6.25 % baseline per
+vCPU, a 500 s balance that one default plan spends), not the model — on a rested machine the same
+plans complete inside their caps with every routine read under half a second. The orchestration
+change that came out of it: the job runner holds one explicit solver lease, granted in submission
+order and shared with the synchronous planning routes (which answer `429 planner_busy` rather than
+solve beside a job); `QUEUED → RUNNING` is an atomic claim; a queued job's read carries
+`queue_position` and `running_now`, and the queued state on the web says how many runs are ahead.
+The profile above is superseded by that record's §5 (the joint escalation solves are where a plan's
+time goes on the sample data; 94–100 % of the wall clock is the solver at every size).
+
 ## 17. Known limits
 
 Recorded as they are established, from the V2 build and its audit (`FABLE_V2_RELEASE_AUDIT.md`).
