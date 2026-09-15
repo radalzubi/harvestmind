@@ -18,8 +18,14 @@ export interface SolveScope {
   components: number;
 }
 
-export function solveScope(request: Pick<ZaadRequest, "skus" | "sources"> & { supplier_terms?: Array<{ supplier: string }> }, catalogue: number | null): SolveScope {
-  const ids = request.skus.map((s) => s.id);
+export function solveScope(
+  request: Pick<ZaadRequest, "skus" | "sources"> & { supplier_terms?: Array<{ supplier: string }> },
+  catalogue: number | null,
+  /** The products the plan actually ran over, when narrower than the request held in memory. */
+  only?: Iterable<string>,
+): SolveScope {
+  const wanted = only ? new Set(only) : null;
+  const ids = request.skus.map((s) => s.id).filter((id) => !wanted || wanted.has(id));
   const parent = new Map<string, string>(ids.map((id) => [id, id]));
   const find = (x: string): string => {
     let cur = x;

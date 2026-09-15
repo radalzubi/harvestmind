@@ -51,7 +51,7 @@ export function ScopeNotice() {
             : " Anything outside that selection was not looked at. Run again over more products to widen it."}
           {/* Whether the selection is one joint problem is a property of the request, read from
               it: products sharing a supplier's capacity or order terms cannot be planned apart. */}
-          {request && <span className="fig" style={{ display: "block", marginTop: 4, color: "var(--ink-600)" }}>{scopeSentence(solveScope(request as never, scope.total))}</span>}
+          {request && <span className="fig" style={{ display: "block", marginTop: 4, color: "var(--ink-600)" }}>{scopeSentence(solveScope(request as never, scope.total, scope.skus))}</span>}
         </Notice>
       )}
     </>

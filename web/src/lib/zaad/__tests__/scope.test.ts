@@ -24,3 +24,8 @@ test("a single product is solved on its own and an empty request has no groups",
   assert.equal(scopeSentence(solveScope(req([{ sku: "A", supplier: "S1" }]), 10)), "Catalogue 10 · evaluated 1 · solved on its own.");
   assert.equal(solveScope({ skus: [], sources: [] } as never, 10).components, 0);
 });
+
+test("the plan's own products are the ones counted, not everything the request holds", () => {
+  const s = solveScope(req([{ sku: "A", supplier: "S1", resources: ["cap"] }, { sku: "B", supplier: "S1", resources: ["cap"] }, { sku: "C", supplier: "S2" }]), 150, ["A", "B"]);
+  assert.deepEqual(s, { catalogue: 150, evaluated: 2, coupled: 2, components: 1 });
+});

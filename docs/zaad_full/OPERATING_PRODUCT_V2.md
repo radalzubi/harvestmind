@@ -197,10 +197,20 @@ against 1,737 across the business. Tests: `tests/integration/test_location_inven
 Transfers and positioning: P2 reports transfers the *plan* would make; a Transfer draft object is
 built only if the report gives origin, destination, SKU and quantity — see §10.
 
-## 10. Transfer proposals *(designed, conditional)*
+## 10. Transfer proposals
 
-Built only if P2's network report carries concrete `transfers` with origin, destination, SKU and
-quantity. Otherwise recorded here as not expressible.
+P2's network report carries concrete transfers — an `action: transfer` with a lane id and a
+quantity, and the lane in the request names origin, destination and product — so the condition
+is met and a MOVE recommendation can become a proposal. A transfer proposal is a draft with
+`transfer_origin_id` (migration 027) and `destination_id`, no supplier, `kind = TRANSFER`
+(`api/product/drafts.py::_prepare_draft` refuses a supplier, a missing destination, a site moving
+to itself, and any amendment field). It exports through the same profiles; `origin_site` is an
+export field. Bulk creation groups moves by origin and destination (`web/src/lib/zaad/bulk.ts`).
+A transfer is refused an evaluation with the reason (`transfer_not_evaluated`): the released
+request carries lanes the engine may use, not moves already in flight, so a manual transfer cannot
+be re-planned on its own without inventing an object the contract does not have; the order page
+points at the decision that priced it. A move whose lane is not in the current request is listed
+as not creatable, never guessed.
 
 ## 11. Data readiness and quality
 
@@ -230,41 +240,87 @@ first gap). On the Acme workspace this reads: 6 ready, 1 partial, 5 blocked, 2 n
 — supplier lateness blocked by `expected_delivery_date` missing on every purchase order, which is
 the fact V1's diagnostics reported three ways and V1's readiness never did.
 
-## 12. Bulk purchase creation *(designed)*
+## 12. Bulk proposal creation
 
-Select recommendations → ZAAD proposes groupings on deterministic dimensions only (supplier,
-destination, currency, compatible order dates) → the buyer reviews → one canonical draft per
-group. A recommendation whose supplier or destination the report does not state is listed as
-"needs a choice" and is not grouped. MOQ, case, pack and capacity warnings come from the master
-and are labelled hard / economic / unknown.
+`POST /api/zaad/orders/bulk` takes `{"drafts": [...]}` (at most 50, same shape as a single
+create) and creates all of them in one transaction or none (`drafts.create_drafts`: every
+proposal is checked before any is written; a refused one names itself and "Nothing was
+created."). It needs `createProposal`, honours `Idempotency-Key`, and every proposal carries
+`batch` in its audit context. The client's grouping is deterministic and pure
+(`web/src/lib/zaad/bulk.ts`, tested): one proposal per supplier and destination for purchases,
+one per origin and destination for transfers; groups ordered by supplier, origin, destination;
+lines by product; the same product twice in a group is one line with the quantities summed and
+the decision ids recorded. What cannot become a line without guessing — a HOLD, an amendment, a
+source or lane not in the request — is listed on the review sheet with the reason and never
+created. Decisions shows checkboxes on purchase and transfer recommendations for anyone with
+`createProposal`, a "Review and create" sheet with the exact groups, and a single "Create N drafts
+— all or none" button; the created drafts start as DRAFT. The new-order form now prefills its
+lines from `?decision=` through the same rule (its header comment claimed it did in V1; it set
+only the provenance).
 
-## 13. Exports and the integration seam *(designed)*
+## 13. Exports and the integration seam
 
-Profile selection: explicit choice → the supplier's default profile → the workspace default →
-ask. The page shows which will be used before the button is pressed. XLSX: fields declared
-numeric are numeric cells; everything else is text through `safe_cell`. An outbound adapter
-interface (`validate`, `preview`, `submit`, `get_status`) with one real adapter (file export) and
-one labelled mock; an inbound seam over the existing upload path. No connector named for a system
-it does not integrate with.
+Declared-numeric fields (`exporting.NUMERIC_FIELDS`: quantity, units per case, cases, unit
+price, line value, line number, revision) are written as numeric xlsx cells with an Excel number
+format from the profile's `number_format`; every other cell, including any constant column, stays
+text through `safe_cell` and is typed as a string. CSV is unchanged. A profile can be scoped to a
+supplier and marked `is_default`; the formats page shows "Workspace default" / "Default for
+SUP-x", and the export line on an order says which rule chose the format (chosen → supplier
+default → workspace default → ZAAD standard). The outbound seam is unchanged from the V1
+corrective pass: `FileExportAdapter` is the one real adapter; `TestConnector` is labelled test;
+nothing is named after an ERP it does not integrate with. `X-ZAAD-Transmitted: false` on every
+export.
 
-## 14. Telemetry *(designed)*
+## 14. Telemetry
 
-`POST /api/zaad/telemetry`: an allowlisted event name and allowlisted identifier keys only;
-stored in the vault; no line contents, names, prices or records.
+`POST /api/zaad/telemetry` accepts only allowlisted event names (`zaad_history.TELEMETRY_EVENTS`,
+now including `bulk_created` and `inventory_opened`) and allowlisted property keys (ids,
+surface, tab, node, kind, count, locale); anything else is dropped and counted. Page opens are
+recorded on Home, Inventory (with the site), the SKU panel, Upload/Data readiness, Diagnostics
+(with the tab), the supplier page, the network panel (object id and kind), History, and on the
+actions already covered in V1. No record contents, prices, customer names or supplier secrets
+travel: an id and a surface name at most.
 
-## 15. Arabic and bidi *(designed)*
+## 15. Arabic and bidi
 
-Workspace chrome and operational labels through the existing dictionary (`lib/i18n`); one set
-of formatters isolates a value and its unit with Unicode bidi isolates so `27 d` and `USD 5,726`
-read correctly under `dir="rtl"`; raw codes stay untranslated.
+The workspace chrome reads its labels from `web/src/lib/i18n` (`workspace.groups`,
+`workspace.nav`, search, help, skip link, footer) with a locale toggle in the rail; the provider
+already sets `lang` and `dir` on the document. Figures are bidi-isolated in RTL by CSS
+(`globals.css`: numeric table cells, definition values, chips, fact values, `.fig`, `code`, `kbd`
+get `unicode-bidi: isolate; direction: ltr`), so "27 d lead" and "USD 1,794" keep their order in
+an Arabic page without invisible isolate characters in every formatter. Page copy inside the
+workspace surfaces remains English in this release; the chrome, direction and figures are the V2
+scope, and the limit is recorded in §17.
 
-## 16. Solve orchestration *(designed)*
+## 16. Solve orchestration
 
-Profiled from outside the engine (no instrumentation inside `zaad/`): data build, model build,
-solver, settlement and serialisation as wall-clock shares. A coupling graph over the request
-(shared supplier capacity, MOV, shared inventory and lanes, shared customer allocation, shared
-capital) reports catalogue size / evaluated scope / joint solve size. Decomposition is shipped
-only where monolithic and decomposed results are equal within tolerance; otherwise it is not.
+Profiled from outside the engine with `scripts/v2_solve_profile.py` (cProfile around the released
+`plan_network`; nothing under `zaad/` instrumented or changed). Fixture workspace, 10 products,
+sourcing and commitments on, `max_solve_seconds=15`, one solver thread:
+
+| stage | wall time | share |
+|---|---|---|
+| data build (`build_network_request`) | 0.22 s | 0.1 % |
+| model build (`model.matrix`, `var`, `row`) | ~1.7 s | 0.8 % |
+| solver (`scipy.optimize._highspy._core.run`, 50 MILP runs over 30 candidate solves) | 211.4 s | 95.8 % |
+| settlement, forecast draws, serialisation | < 1 s | < 0.5 % |
+| **total `plan_network`** | **220.7 s** | |
+
+The time is the solver's, not the product's: 96 % of the wall clock is inside HiGHS, and the
+candidate ladder runs the MILP fifty times for one plan (thirty candidate solves, some with
+several worlds). The coupling graph over the request gives 8 components across the 10 products
+(two pairs share a supplier capacity resource; the rest are singletons) — *decomposable in the
+graph* — but the request also carries a global tie (a site's storage capacity is shared by every
+product held there, and opening cash / financing spans every product), so solving the components
+separately is **not the same problem** and no decomposition is shipped. `decomposition_equivalent:
+false` is the script's own verdict, and it is the honest one. What V2 ships instead is the
+statement of scope: the scope notice reads the request's couplings (`web/src/lib/zaad/scope.ts`,
+tested) and says *catalogue / evaluated / solved together as one problem*, so a reader knows the
+ten products were planned jointly and why. A faster plan for this workspace is solver time
+(threads, the candidate ladder, the time cap), which is engine work under `zaad/` and outside
+this release's remit; the numbers above are the baseline for it. On this fixture the engine
+returned ABSTAIN (the incumbent and most network candidates infeasible under the declared
+commitments, `base_stock` optimal) — a property of the fixture's commitments, reported as such.
 
 ## 17. Known limits
 
