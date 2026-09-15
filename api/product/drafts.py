@@ -41,11 +41,18 @@ AMENDMENT_ACTIONS = ("KEEP", "DEFER", "EXPEDITE", "REDUCE", "CANCEL", "SPLIT")
 
 EDITABLE = ("DRAFT",)
 DELETABLE = ("DRAFT",)
+#: A file that looks like a purchase order leaves only for a decided one. Exporting a draft would
+#: put an unapproved document into someone's ERP with nothing on it saying so.
+EXPORTABLE = ("APPROVED", "EXPORTED")
 #: An approved or exported revision is history. Editing one makes a new revision instead.
 IMMUTABLE = ("APPROVED", "EXPORTED", "REJECTED", "SUPERSEDED")
 
 MAX_LINES = 500
 MAX_NOTE = 2000
+#: An identifier — a supplier code, a product code, a site, an order number — is a short string in
+#: every system this product exports to. A 300,000-character supplier id was stored and rendered on
+#: Home before this bound existed; nothing legitimate is that long.
+MAX_IDENTIFIER = 200
 #: A quantity or a price larger than this is a typo or a paste accident, not an order. A trillion
 #: units of anything is not a number an importer means, and it reaches the optimizer as one — where
 #: it is either nonsense or a solver failure, neither of which says what went wrong. Refused here,
@@ -55,6 +62,14 @@ MAX_LINE_VALUE = 1_000_000_000.0
 
 class DraftRefused(ValueError):
     """The document cannot be stored as asked. The message is written for the person reading it."""
+
+
+class EvaluationStale(DraftRefused):
+    """An approval was asked for over a comparison that no longer describes the proposal.
+
+    Not refused for ever: the caller may acknowledge it and approve anyway, and the acknowledgement
+    is written into the record. Refused silently is what §93 of the brief forbids.
+    """
 
 
 @dataclass(frozen=True)
@@ -104,6 +119,38 @@ def _number(value: Any, field: str, *, allow_none: bool = True) -> float | None:
     if out != out or out in (float("inf"), float("-inf")):
         raise DraftRefused(f"{field} is not a finite number.")
     return out
+
+
+def _identifier(value: Any, field: str) -> str | None:
+    """A bounded identifier, or None when absent."""
+    if value in (None, ""):
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    if len(text) > MAX_IDENTIFIER:
+        raise DraftRefused(f"{field} is {len(text):,} characters long; an identifier is at most {MAX_IDENTIFIER}. "
+                           "Check that the right value was pasted.")
+    return text
+
+
+def checkpoint(conn: Any) -> bool:
+    """Write the WAL into the database file now.
+
+    Schema changes must never wait in the write-ahead log. The vault's connection is held open for
+    the life of the process (see `infrastructure/db_manager.py`), so nothing checkpoints on close
+    the way a per-request connection used to — and a DuckDB file whose WAL holds an `ALTER TABLE`
+    on one of these tables **cannot be opened** after a hard stop: replay fails with an internal
+    error. Reproduced in the V1 audit with one `ADD COLUMN`, and held by
+    `test_a_vault_survives_a_hard_stop_right_after_ensure_tables`. A checkpoint fails when another
+    connection has a transaction open; that is reported, not raised, because the DDL itself is
+    committed and the next quiet moment checkpoints it.
+    """
+    try:
+        conn.execute("CHECKPOINT")
+        return True
+    except Exception:  # noqa: BLE001 - another transaction is open; the anchor checkpoints when idle
+        return False
 
 
 #: Tables `ensure_tables` is responsible for. If one of these is missing afterwards, the vault is
@@ -165,24 +212,40 @@ def ensure_tables(conn: Any) -> None:
     this release would otherwise meet a missing table on its first visit to Purchase Orders. Only
     the product's own tables are created here — never a staging table, and never a column on one.
     """
-    if has_table(conn, "zaad_draft_orders") and has_table(conn, "zaad_export_profiles"):
-        return
     from pathlib import Path
-    sql = (Path(__file__).resolve().parents[2] / "db" / "migrations" / "023_operating_product.sql").read_text()
-    for text in statements(sql):
-        if text.upper().startswith("ALTER TABLE STG_"):
-            continue  # staging columns belong to the migration runner, not to a page load
-        try:
-            conn.execute(text)
-        except Exception:  # noqa: BLE001 - already present, or a COMMENT the engine declines
-            continue
-    missing = [name for name in PRODUCT_TABLES if not has_table(conn, name)]
-    if missing:
-        raise DraftRefused(
-            "This workspace is not set up for proposed orders yet — "
-            + ", ".join(missing)
-            + " could not be created. Run the database migrations for this operator "
-              "(scripts/setup_db.py) and open the page again.")
+    migrations = Path(__file__).resolve().parents[2] / "db" / "migrations"
+    ran_ddl = False
+    if not (has_table(conn, "zaad_draft_orders") and has_table(conn, "zaad_export_profiles")):
+        sql = (migrations / "023_operating_product.sql").read_text()
+        for text in statements(sql):
+            if text.upper().startswith("ALTER TABLE STG_"):
+                continue  # staging columns belong to the migration runner, not to a page load
+            try:
+                conn.execute(text)
+                ran_ddl = True
+            except Exception:  # noqa: BLE001 - already present, or a COMMENT the engine declines
+                continue
+        missing = [name for name in PRODUCT_TABLES if not has_table(conn, name)]
+        if missing:
+            raise DraftRefused(
+                "This workspace is not set up for proposed orders yet — "
+                + ", ".join(missing)
+                + " could not be created. Run the database migrations for this operator "
+                  "(scripts/setup_db.py) and open the page again.")
+    # The V2 columns (migration 024) on a vault migrated to 023 by an earlier release. One PRAGMA
+    # per call; the ALTERs are `IF NOT EXISTS` and touch only the product's own tables.
+    present = {row[1] for row in conn.execute("PRAGMA table_info('zaad_evaluations')").fetchall()}
+    if "draft_hash" not in present:
+        for text in statements((migrations / "024_operating_product_v2.sql").read_text()):
+            if not text.upper().startswith("ALTER TABLE ZAAD_"):
+                continue
+            try:
+                conn.execute(text)
+                ran_ddl = True
+            except Exception:  # noqa: BLE001 - already present
+                continue
+    if ran_ddl:
+        checkpoint(conn)
 
 
 # ── reading ───────────────────────────────────────────────────────────────────
@@ -263,7 +326,7 @@ def read_draft(conn: Any, operator: str, draft_id: str) -> dict[str, Any]:
     evaluations = _rows(conn, "SELECT * FROM zaad_evaluations WHERE draft_id = ? AND operator_id = ? ORDER BY created_at DESC",
                         [draft_id, operator])
     row = head[0]
-    return {
+    draft = {
         **row,
         "lines": lines,
         "events": events,
@@ -271,10 +334,16 @@ def read_draft(conn: Any, operator: str, draft_id: str) -> dict[str, Any]:
         "evaluations": evaluations,
         "editable": row["state"] in EDITABLE,
         "deletable": row["state"] in DELETABLE,
+        "exportable": row["state"] in EXPORTABLE,
         "executable": False,
         "transmitted": False,
         "warnings": validate(conn, row, lines),
     }
+    newest = evaluations[0] if evaluations else None
+    stale, why = evaluation_freshness(conn, operator, draft, newest)
+    draft["evaluation_stale"] = stale
+    draft["evaluation_stale_reason"] = why
+    return draft
 
 
 # ── validation ────────────────────────────────────────────────────────────────
@@ -333,18 +402,13 @@ def validate(conn: Any, head: dict[str, Any], lines: list[dict[str, Any]]) -> li
 
 # ── writing ───────────────────────────────────────────────────────────────────
 
-def _write_lines(conn: Any, operator: str, draft_id: str, lines: list[dict[str, Any]]) -> None:
-    """Replace a proposal's lines.
-
-    Every line is read and checked **before** the first row is removed. An earlier version deleted
-    first and validated as it inserted, so one bad quantity in an edit left the proposal with no
-    lines at all — a refused edit must change nothing.
-    """
+def _check_lines(operator: str, draft_id: str, lines: list[dict[str, Any]]) -> list[list[Any]]:
+    """Every line read and checked, none written. A refused line refuses the whole document."""
     if len(lines) > MAX_LINES:
         raise DraftRefused(f"A proposal carries at most {MAX_LINES} lines; this one has {len(lines)}.")
     checked: list[list[Any]] = []
     for index, raw in enumerate(lines, start=1):
-        sku = str(raw.get("sku") or "").strip()
+        sku = _identifier(raw.get("sku"), f"Line {index} product code") or ""
         if not sku:
             raise DraftRefused(f"Line {index} has no product.")
         quantity = _number(raw.get("quantity"), f"Line {index} quantity", allow_none=False)
@@ -361,11 +425,63 @@ def _write_lines(conn: Any, operator: str, draft_id: str, lines: list[dict[str, 
         checked.append([draft_id, operator, index, sku, quantity, price, pack,
                         _as_date(raw.get("requested_receipt_date"), f"Line {index} requested receipt date"),
                         (str(raw.get("notes"))[:MAX_NOTE] if raw.get("notes") else None)])
+    return checked
+
+
+def _store_lines(conn: Any, operator: str, draft_id: str, checked: list[list[Any]]) -> None:
     conn.execute("DELETE FROM zaad_draft_lines WHERE draft_id = ? AND operator_id = ?", [draft_id, operator])
     for row in checked:
         conn.execute(
             "INSERT INTO zaad_draft_lines (draft_id, operator_id, line_no, sku, quantity, unit_price, "
             "units_per_case, requested_receipt_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", row)
+
+
+def _write_lines(conn: Any, operator: str, draft_id: str, lines: list[dict[str, Any]]) -> None:
+    """Replace a proposal's lines.
+
+    Every line is read and checked **before** the first row is removed. An earlier version deleted
+    first and validated as it inserted, so one bad quantity in an edit left the proposal with no
+    lines at all — a refused edit must change nothing.
+    """
+    _store_lines(conn, operator, draft_id, _check_lines(operator, draft_id, lines))
+
+
+class _transaction:
+    """BEGIN … COMMIT around a multi-statement write, rolled back on any error.
+
+    A connection that is already inside a transaction (a caller's, or a test's) is left to that
+    caller: the block then does nothing on enter and nothing on exit.
+    """
+
+    def __init__(self, conn: Any):
+        self.conn = conn
+        self.owned = False
+
+    def __enter__(self):
+        try:
+            self.conn.begin()
+            self.owned = True
+        except Exception:  # noqa: BLE001 - already in a transaction, or a connection without one
+            self.owned = False
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        if not self.owned:
+            return False
+        try:
+            if exc_type is None:
+                self.conn.commit()
+            else:
+                self.conn.rollback()
+        except Exception:  # noqa: BLE001 - nothing more to do than let the original error through
+            pass
+        return False
+
+
+def record_event(conn: Any, operator: str, draft_id: str, event: str, revision: int | None, actor: str | None,
+                 detail: str | None = None) -> None:
+    """One row in the draft's history. Append-only: nothing in the product deletes an event."""
+    _event(conn, operator, draft_id, event, revision, actor, detail)
 
 
 def _event(conn: Any, operator: str, draft_id: str, event: str, revision: int | None, actor: str | None,
@@ -398,25 +514,31 @@ def create_draft(conn: Any, operator: str, body: dict[str, Any], *, actor: str |
         raise DraftRefused("The requested receipt date is before the order date.")
 
     draft_id = _identity()
-    conn.execute("""
-        INSERT INTO zaad_draft_orders
-        (draft_id, operator_id, origin, state, revision, reference, supplier_id, destination_id, currency,
-         requested_order_date, requested_receipt_date, notes, source_decision_id, source_po_id,
-         amendment_action, created_by, created_at, updated_at, supersedes)
-        VALUES (?, ?, ?, 'DRAFT', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", [
+    # Everything is checked before anything is written, and the writes are one transaction. The
+    # head row used to be inserted first and the lines validated afterwards, so a refused line
+    # left an empty proposal behind — four of them appeared on Home in the V1 audit.
+    head = [
         draft_id, operator, origin, int(body.get("revision") or 1),
         (str(body.get("reference"))[:120] if body.get("reference") else None),
-        (str(body["supplier_id"]) if body.get("supplier_id") else None),
-        (str(body["destination_id"]) if body.get("destination_id") else None),
+        _identifier(body.get("supplier_id"), "Supplier code"),
+        _identifier(body.get("destination_id"), "Deliver to"),
         (str(body.get("currency") or "")[:3].upper() or None),
         ordered, receipt,
         (str(body.get("notes"))[:MAX_NOTE] if body.get("notes") else None),
-        (str(body["source_decision_id"]) if body.get("source_decision_id") else None),
-        (str(body["source_po_id"]) if body.get("source_po_id") else None),
+        _identifier(body.get("source_decision_id"), "Source decision"),
+        _identifier(body.get("source_po_id"), "The order this amends"),
         action, actor, _now(), _now(),
-        (str(body["supersedes"]) if body.get("supersedes") else None)])
-    _write_lines(conn, operator, draft_id, list(body.get("lines") or []))
-    _event(conn, operator, draft_id, "created", 1, actor, f"origin {origin}")
+        _identifier(body.get("supersedes"), "The revision this replaces")]
+    checked = _check_lines(operator, draft_id, list(body.get("lines") or []))
+    with _transaction(conn):
+        conn.execute("""
+            INSERT INTO zaad_draft_orders
+            (draft_id, operator_id, origin, state, revision, reference, supplier_id, destination_id, currency,
+             requested_order_date, requested_receipt_date, notes, source_decision_id, source_po_id,
+             amendment_action, created_by, created_at, updated_at, supersedes)
+            VALUES (?, ?, ?, 'DRAFT', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", head)
+        _store_lines(conn, operator, draft_id, checked)
+        _event(conn, operator, draft_id, "created", 1, actor, f"origin {origin}")
     return draft_id
 
 
@@ -437,12 +559,19 @@ def update_draft(conn: Any, operator: str, draft_id: str, body: dict[str, Any], 
 
     fields: list[str] = []
     params: list[Any] = []
-    for column, caster in (("reference", str), ("supplier_id", str), ("destination_id", str),
-                           ("currency", str), ("notes", str)):
+    for column, label in (("reference", "Your reference"), ("supplier_id", "Supplier code"),
+                          ("destination_id", "Deliver to"), ("currency", "Currency"), ("notes", "Notes")):
         if column in body:
             value = body[column]
             fields.append(f"{column} = ?")
-            params.append(None if value in (None, "") else caster(value)[:MAX_NOTE])
+            if column == "notes":
+                params.append(None if value in (None, "") else str(value)[:MAX_NOTE])
+            elif column == "reference":
+                params.append(None if value in (None, "") else str(value)[:120])
+            elif column == "currency":
+                params.append(None if value in (None, "") else str(value)[:3].upper())
+            else:
+                params.append(_identifier(value, label))
     if "requested_order_date" in body:
         fields.append("requested_order_date = ?")
         params.append(_as_date(body["requested_order_date"], "Order date"))
@@ -464,6 +593,43 @@ def update_draft(conn: Any, operator: str, draft_id: str, body: dict[str, Any], 
         _write_lines(conn, operator, draft_id, list(body["lines"] or []))
     _event(conn, operator, draft_id, "edited", int(row["revision"] or 1), actor)
     return read_draft(conn, operator, draft_id)
+
+
+def latest_evaluation(conn: Any, operator: str, draft_id: str) -> dict[str, Any] | None:
+    rows = _rows(conn, "SELECT * FROM zaad_evaluations WHERE draft_id = ? AND operator_id = ? "
+                       "ORDER BY created_at DESC LIMIT 1", [draft_id, operator])
+    return rows[0] if rows else None
+
+
+def evaluation_freshness(conn: Any, operator: str, draft: dict[str, Any], record: dict[str, Any] | None
+                         ) -> tuple[bool, str | None]:
+    """(stale, reason) for the newest evaluation of a draft, decided deterministically.
+
+    A record carrying `draft_hash` is compared with the hash of what the draft holds now, and its
+    `workspace_version` with the workspace's now. A record written before those existed falls back
+    to the one thing the timestamp rule can tell truthfully: whether an *edit* — not an approval,
+    a rejection or an export — happened after it.
+    """
+    from api.product.evaluation import content_hash, workspace_version
+
+    if record is None:
+        return False, None
+    if record.get("draft_hash"):
+        if record["draft_hash"] != content_hash(draft):
+            return True, ("This proposal was changed after it was evaluated, so the comparison describes "
+                          "the order as it was, not as it is now. Evaluate it again to compare what you have.")
+        if record.get("workspace_version") and record["workspace_version"] != workspace_version(conn):
+            return True, ("Your workspace data was replaced or added to after this evaluation ran, so the "
+                          "comparison was built from data ZAAD no longer holds. Evaluate it again.")
+        return False, None
+    evaluated_at = record.get("created_at")
+    edited_after = _rows(conn, "SELECT 1 FROM zaad_draft_events WHERE draft_id = ? AND operator_id = ? "
+                               "AND event = 'edited' AND happened_at > ? LIMIT 1",
+                         [draft["draft_id"], operator, evaluated_at]) if evaluated_at else []
+    if edited_after:
+        return True, ("This proposal was changed after it was evaluated, so the comparison describes "
+                      "the order as it was, not as it is now. Evaluate it again to compare what you have.")
+    return False, None
 
 
 def delete_draft(conn: Any, operator: str, draft_id: str, *, actor: str | None = None) -> None:
@@ -491,8 +657,13 @@ TO_STATE = {"submit": "READY_FOR_REVIEW", "reopen": "DRAFT", "approve": "APPROVE
 
 
 def transition(conn: Any, operator: str, draft_id: str, action: str, *, actor: str | None = None,
-               reason: str | None = None) -> dict[str, Any]:
-    """Move a proposal through its lifecycle. Approval is recorded with who and why."""
+               reason: str | None = None, acknowledge_stale: bool = False) -> dict[str, Any]:
+    """Move a proposal through its lifecycle. Approval is recorded with who, why, and against what.
+
+    An approval names the evaluation it was made against and whether that evaluation was current.
+    Approving over a stale comparison is refused unless the approver acknowledges it — and the
+    acknowledgement is part of the record, so a reviewer later can see the approver knew.
+    """
     ensure_tables(conn)
     if action not in TRANSITIONS:
         raise DraftRefused(f"Unknown action {action!r}")
@@ -506,16 +677,44 @@ def transition(conn: Any, operator: str, draft_id: str, action: str, *, actor: s
                            f"{ {'submit': 'sent for review', 'reopen': 'returned to draft', 'approve': 'approved', 'reject': 'rejected'}[action] }.")
     if action in ("approve", "reject") and not (reason or "").strip():
         raise DraftRefused("Record why. An approval without a reason is not a decision anyone can review later.")
+
+    evaluation_state: str | None = None
+    evaluation_ref: str | None = None
+    if action == "approve":
+        draft = read_draft(conn, operator, draft_id)
+        record = latest_evaluation(conn, operator, draft_id)
+        if record is None:
+            evaluation_state = "none"
+        else:
+            evaluation_ref = str(record["evaluation_id"])
+            stale, _why = evaluation_freshness(conn, operator, draft, record)
+            if stale and not acknowledge_stale:
+                raise EvaluationStale(
+                    "The comparison on this proposal is out of date — it describes the order as it was "
+                    "when it was evaluated, not as it is now. Evaluate it again, or approve it knowing that "
+                    "and say so.")
+            evaluation_state = "stale_acknowledged" if stale else "current"
+
     state = TO_STATE[action]
+    stamp = _now()
     conn.execute(
         "UPDATE zaad_draft_orders SET state = ?, updated_at = ?, approved_by = ?, approved_at = ?, "
-        "decision_reason = ? WHERE draft_id = ? AND operator_id = ?",
-        [state, _now(), actor if action in ("approve", "reject") else row.get("approved_by"),
-         _now() if action in ("approve", "reject") else row.get("approved_at"),
-         (reason or "").strip()[:MAX_NOTE] or row.get("decision_reason"), draft_id, operator])
+        "decision_reason = ?, approved_evaluation_id = ?, approval_evaluation_state = ? "
+        "WHERE draft_id = ? AND operator_id = ?",
+        [state, stamp, actor if action in ("approve", "reject") else row.get("approved_by"),
+         stamp if action in ("approve", "reject") else row.get("approved_at"),
+         (reason or "").strip()[:MAX_NOTE] or row.get("decision_reason"),
+         evaluation_ref if action == "approve" else row.get("approved_evaluation_id"),
+         evaluation_state if action == "approve" else row.get("approval_evaluation_state"),
+         draft_id, operator])
+    detail = (reason or "").strip()[:MAX_NOTE] or None
+    if action == "approve":
+        against = {"none": "without an evaluation", "current": f"against evaluation {evaluation_ref} (current)",
+                   "stale_acknowledged": f"against evaluation {evaluation_ref} (out of date — acknowledged)"}[evaluation_state or "none"]
+        detail = f"{detail} — {against}" if detail else against
     _event(conn, operator, draft_id, {"submit": "submitted", "reopen": "reopened",
                                       "approve": "approved", "reject": "rejected"}[action],
-           int(row["revision"] or 1), actor, (reason or "").strip()[:MAX_NOTE] or None)
+           int(row["revision"] or 1), actor, detail)
     return read_draft(conn, operator, draft_id)
 
 
@@ -628,6 +827,8 @@ def save_profile(conn: Any, operator: str, body: dict[str, Any], *, profile_id: 
     identity = profile_id or f"profile_{uuid.uuid4().hex[:12]}"
     existing = _rows(conn, "SELECT profile_id FROM zaad_export_profiles WHERE profile_id = ? AND operator_id = ?",
                      [identity, operator]) if profile_id else []
+    if profile_id and not existing:
+        raise KeyError(profile_id)   # an update names a format this workspace holds; it does not invent one
     values = [name[:120], fmt, (str(body.get("sheet_name") or "Purchase Order")[:60]),
               (str(body.get("delimiter") or ",")[:1]), str(body.get("date_format") or "iso"),
               str(body.get("number_format") or "plain"),

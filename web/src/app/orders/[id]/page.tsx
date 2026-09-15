@@ -312,6 +312,7 @@ function DraftBody({ id }: { id: string }) {
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+  const [acknowledgeStale, setAcknowledgeStale] = useState(false);
   const [profiles, setProfiles] = useState<ExportProfile[]>([]);
   const [profileId, setProfileId] = useState<string>("");
 
@@ -419,6 +420,10 @@ function DraftBody({ id }: { id: string }) {
           <Notice>
             Approved{draft.approved_by ? ` by ${draft.approved_by}` : ""}{draft.approved_at ? ` on ${DATE(draft.approved_at)}` : ""}
             {draft.decision_reason ? `: “${draft.decision_reason}”` : "."}
+            {/* An approval that does not say what it was looking at cannot be reviewed later. */}
+            {draft.approval_evaluation_state === "current" && " Approved against a current evaluation."}
+            {draft.approval_evaluation_state === "stale_acknowledged" && " Approved knowing the evaluation was out of date."}
+            {draft.approval_evaluation_state === "none" && " Approved without asking ZAAD to evaluate it."}
           </Notice>
         ) : draft.state === "REJECTED" ? (
           <Notice tone="warn">Rejected{draft.decision_reason ? `: “${draft.decision_reason}”` : "."}</Notice>
@@ -436,6 +441,19 @@ function DraftBody({ id }: { id: string }) {
                 ? "This is stored with the decision and shown to whoever reads the order next."
                 : "Approving or rejecting needs this sentence first. It is stored with the decision and shown to whoever reads the order next."}
             </p>
+            {/* Never silently. The comparison above may describe an earlier version of these
+                lines; the approver says they know, and that is written into the record. */}
+            {draft.evaluation_stale && (
+              <div style={{ marginTop: 10 }}>
+                <Notice tone="warn">
+                  <strong>The comparison is out of date.</strong> {draft.evaluation_stale_reason}
+                  <label style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
+                    <input type="checkbox" checked={acknowledgeStale} onChange={(e) => setAcknowledgeStale(e.target.checked)} />
+                    <span>I know the comparison is out of date and want to approve anyway. This is recorded with the approval.</span>
+                  </label>
+                </Notice>
+              </div>
+            )}
             <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
               {draft.state === "DRAFT" && (
                 <Button pending={busy === "submit"} onClick={() => act(() => actOnDraft(id, "submit"), "submit", "Sent for review.")}>
@@ -448,8 +466,8 @@ function DraftBody({ id }: { id: string }) {
                 </Button>
               )}
               <Button role="primary" icon={<CheckCircle2 size={15} aria-hidden />} pending={busy === "approve"}
-                disabled={!reason.trim()}
-                onClick={() => act(() => actOnDraft(id, "approve", reason), "approve", "Approved. Nothing has been sent to a supplier.")}>
+                disabled={!reason.trim() || (Boolean(draft.evaluation_stale) && !acknowledgeStale)}
+                onClick={() => act(() => actOnDraft(id, "approve", reason, { acknowledgeStale }), "approve", "Approved. Nothing has been sent to a supplier.")}>
                 Approve
               </Button>
               <Button role="danger" pending={busy === "reject"} disabled={!reason.trim()}
@@ -474,7 +492,7 @@ function DraftBody({ id }: { id: string }) {
             </select>
           </label>
           <Button icon={<Download size={15} aria-hidden />} pending={busy === "export"}
-            disabled={!draft.lines.length}
+            disabled={!draft.lines.length || !draft.exportable}
             onClick={() => act(async () => {
               const name = await exportDraft(id, { profileId: profileId || null });
               toast.push(`${name} downloaded. It has not been sent to anyone.`);
@@ -483,11 +501,17 @@ function DraftBody({ id }: { id: string }) {
           </Button>
           <ButtonLink size="sm" role="tertiary" href="/orders/formats">Define a format</ButtonLink>
         </div>
-        {!draft.lines.length && (
+        {!draft.lines.length ? (
           <p className="zhelp" style={{ marginTop: 8 }}>
             There is nothing to export until this proposal has a line. Add a product above.
           </p>
-        )}
+        ) : !draft.exportable ? (
+          <p className="zhelp" style={{ marginTop: 8 }}>
+            {draft.state === "REJECTED" || draft.state === "SUPERSEDED"
+              ? "This revision was not approved, so no file is produced from it."
+              : "A file is produced once this proposal is approved, so nothing unapproved leaves as a purchase order."}
+          </p>
+        ) : null}
         {draft.exports.length > 0 && (
           <div style={{ marginTop: 14 }}>
             <DataTable caption="Files exported from this proposal" dense rows={draft.exports} rowKey={(r) => r.export_id}

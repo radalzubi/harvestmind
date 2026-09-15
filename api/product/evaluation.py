@@ -31,6 +31,7 @@ What this module does **not** do:
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -181,6 +182,67 @@ def scope_for(draft: dict[str, Any], *, amendment_skus: set[str] | None = None) 
                 "time, because each one adds solve time. Split it into smaller proposals to compare them.")
         return ordered
     return ordered + extra
+
+
+# ── what an evaluation is about, deterministically ────────────────────────────
+
+#: The header fields the overlay reads. A change to any of them changes what was evaluated; a
+#: change to anything else (notes, the reference, the state, an approval) does not.
+_HASHED_HEADER = ("supplier_id", "destination_id", "requested_receipt_date", "currency")
+_HASHED_LINE = ("sku", "quantity", "unit_price", "units_per_case", "requested_receipt_date")
+
+#: The staging tables an evaluation's two runs are built from. Their upload lineage is what the
+#: workspace version hashes: a re-upload of any of them means the runs were built from data the
+#: workspace no longer holds.
+_VERSIONED_TABLES = ("stg_fmcg_skus", "stg_fmcg_orders", "stg_fmcg_purchase_orders", "stg_fmcg_receipts",
+                     "stg_fmcg_inventory", "stg_fmcg_suppliers", "stg_fmcg_locations", "stg_fmcg_lanes",
+                     "stg_fmcg_transfers", "stg_fmcg_sources", "stg_po_options", "stg_atp_customer_orders",
+                     "stg_fmcg_promotions", "stg_fmcg_economics")
+
+
+def _plain(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, float):
+        return value
+    if isinstance(value, (int,)):
+        return float(value)
+    return str(value)[:19] if hasattr(value, "isoformat") else str(value)
+
+
+def content_hash(draft: dict[str, Any]) -> str:
+    """A hash of exactly what an evaluation evaluated.
+
+    Staleness used to be judged by comparing the draft's `updated_at` with the evaluation's
+    `created_at` — and approving, rejecting or exporting a proposal bumps `updated_at`, so every
+    approved proposal reported its own comparison as out of date. This is deterministic: the same
+    lines and the same header fields give the same hash, whatever else happened to the record.
+    """
+    head = {key: _plain(draft.get(key)) for key in _HASHED_HEADER}
+    lines = sorted(
+        [{key: _plain(line.get(key)) for key in _HASHED_LINE} for line in (draft.get("lines") or [])],
+        key=lambda row: json.dumps(row, sort_keys=True))
+    return hashlib.sha256(json.dumps({"head": head, "lines": lines}, sort_keys=True).encode()).hexdigest()
+
+
+def workspace_version(conn: Any) -> str:
+    """A hash over the staging tables' upload lineage: row count and the latest upload stamp.
+
+    Cheap (one count per table) and honest: it changes when a source is replaced or appended to,
+    which is exactly when a comparison built from the old data stops describing the workspace.
+    """
+    from api.product.catalog import has_table
+
+    parts: list[Any] = []
+    for table in _VERSIONED_TABLES:
+        if not has_table(conn, table):
+            parts.append([table, None, None])
+            continue
+        columns = {row[1] for row in conn.execute(f"PRAGMA table_info('{table}')").fetchall()}  # noqa: S608  # nosec B608 - table names are code literals
+        stamp = "max(_uploaded_at)" if "_uploaded_at" in columns else "NULL"
+        count, latest = conn.execute(f"SELECT count(*), {stamp} FROM {table}").fetchone()  # noqa: S608  # nosec B608 - table names are code literals
+        parts.append([table, int(count), _plain(latest)])
+    return hashlib.sha256(json.dumps(parts, sort_keys=True).encode()).hexdigest()
 
 
 # ── the comparison ────────────────────────────────────────────────────────────
@@ -434,21 +496,42 @@ def _window_words(windows: list[dict[str, Any]]) -> str:
 
 def store_evaluation(conn: Any, operator: str, *, draft_id: str, revision: int | None,
                      baseline_job_id: str | None, proposal_job_id: str | None, as_of: str | None,
-                     scope: list[str], status: str, note: str | None = None) -> str:
+                     scope: list[str], status: str, note: str | None = None,
+                     draft_hash: str | None = None, workspace_version: str | None = None) -> str:
+    """Write the evaluation record.
+
+    Called **before** the two runs are submitted, so that a job is never in the store without the
+    record that says what it is for. The job ids are linked afterwards with `link_jobs`, and a
+    submission that fails between the steps is closed with `fail_evaluation`.
+    """
     from api.product.drafts import ensure_tables
 
     ensure_tables(conn)
     identity = evaluation_id()
     # One timestamp for both writes. Two calls to now() put the draft's `updated_at` a few hundred
-    # microseconds after the evaluation's `created_at`, and "has this proposal changed since it was
-    # evaluated?" is exactly that comparison — so every evaluation would have been born out of date.
+    # microseconds after the evaluation's `created_at`; the timestamp is only a fallback for records
+    # written before the content hash existed, but it should still be right.
     stamp = datetime.now(timezone.utc).replace(tzinfo=None)
     conn.execute(
         "INSERT INTO zaad_evaluations (evaluation_id, operator_id, draft_id, revision, baseline_job_id, "
-        "proposal_job_id, as_of, scope_skus, status, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "proposal_job_id, as_of, scope_skus, status, note, created_at, draft_hash, workspace_version) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [identity, operator, draft_id, revision, baseline_job_id, proposal_job_id, as_of,
-         json.dumps(scope), status, note, stamp])
+         json.dumps(scope), status, note, stamp, draft_hash, workspace_version])
     conn.execute("UPDATE zaad_draft_orders SET evaluation_id = ?, updated_at = ? "
                  "WHERE draft_id = ? AND operator_id = ?",
                  [identity, stamp, draft_id, operator])
     return identity
+
+
+def link_jobs(conn: Any, operator: str, evaluation_id: str, *, baseline_job_id: str, proposal_job_id: str) -> None:
+    conn.execute("UPDATE zaad_evaluations SET baseline_job_id = ?, proposal_job_id = ? "
+                 "WHERE evaluation_id = ? AND operator_id = ?",
+                 [baseline_job_id, proposal_job_id, evaluation_id, operator])
+
+
+def fail_evaluation(conn: Any, operator: str, evaluation_id: str, reason: str) -> None:
+    """An evaluation whose runs could not be submitted is FAILED with the reason, never left QUEUED."""
+    conn.execute("UPDATE zaad_evaluations SET status = 'FAILED', note = ?, finished_at = ? "
+                 "WHERE evaluation_id = ? AND operator_id = ?",
+                 [reason[:2000], datetime.now(timezone.utc).replace(tzinfo=None), evaluation_id, operator])

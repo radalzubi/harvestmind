@@ -187,7 +187,10 @@ export interface SupplierRow {
   p50_lead_days: number | null; p90_lead_days: number | null; lead_sd_days: number | null;
   promised_lead_days: number | null; fill_sd: number | null; mean_lead_days: number | null;
   orders_with_promise: number | null; last_receipt: string | null;
-  open_orders: number | null; late_open_orders: number | null; open_units: number | null;
+  open_orders: number | null; late_open_orders: number | null;
+  /** How many open orders carry a promised date — the denominator "past their date" is measured against. */
+  open_orders_with_promise?: number | null;
+  open_units: number | null;
   skus: number | null;
 }
 
@@ -316,9 +319,17 @@ export interface Draft extends Omit<DraftSummary, "lines"> {
   evaluations: Array<{ evaluation_id: string; status: string; created_at: string; as_of: string | null }>;
   editable: boolean;
   deletable: boolean;
+  /** Only an approved (or already exported) proposal produces a file. */
+  exportable: boolean;
   executable: boolean;
   transmitted: boolean;
   warnings: Array<{ level: string; message: string }>;
+  /** The newest evaluation no longer describes these lines, or the workspace data changed since. */
+  evaluation_stale?: boolean;
+  evaluation_stale_reason?: string | null;
+  /** What the approval was made against: an evaluation id, and whether it was current. */
+  approved_evaluation_id?: string | null;
+  approval_evaluation_state?: "current" | "stale_acknowledged" | "none" | null;
 }
 
 export const listDrafts = (options: {
@@ -350,9 +361,12 @@ export const updateDraft = (id: string, body: Record<string, unknown>) =>
 export const deleteDraft = (id: string) =>
   call<void>(`/api/zaad/orders/${encodeURIComponent(id)}`, { method: "DELETE" });
 
-export const actOnDraft = (id: string, action: "submit" | "reopen" | "approve" | "reject", reason?: string) =>
+export const actOnDraft = (
+  id: string, action: "submit" | "reopen" | "approve" | "reject", reason?: string,
+  options: { acknowledgeStale?: boolean } = {},
+) =>
   call<Draft>(`/api/zaad/orders/${encodeURIComponent(id)}/actions/${action}`, {
-    method: "POST", body: JSON.stringify({ reason: reason ?? "" }),
+    method: "POST", body: JSON.stringify({ reason: reason ?? "", acknowledge_stale: Boolean(options.acknowledgeStale) }),
   });
 
 export const reviseDraft = (id: string) =>

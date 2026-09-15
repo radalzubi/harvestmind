@@ -132,3 +132,46 @@ def test_a_refused_line_leaves_the_proposal_exactly_as_it_was():
     after = read_draft(conn, "op_1", draft_id)
     assert [(row["sku"], row["quantity"]) for row in after["lines"]] == [("SKU-1", 100.0)]
     conn.close()
+
+
+def test_a_vault_survives_a_hard_stop_right_after_ensure_tables(tmp_path):
+    """Schema changes never wait in the write-ahead log (Fable V1 audit).
+
+    The vault's connection is held open for the life of the process, so nothing checkpoints on
+    close. A DuckDB file whose WAL holds an `ALTER TABLE` on a product table cannot be opened after
+    a hard stop — replay fails with an internal error — which is exactly what a deploy followed by a
+    restart would do to every existing vault. `ensure_tables` checkpoints after any DDL it ran.
+    """
+    import os
+    import subprocess
+    import sys
+    import textwrap
+
+    import duckdb
+
+    from scripts.setup_db import setup_db
+
+    path = tmp_path / "vault.db"
+    conn = duckdb.connect(str(path))
+    setup_db(conn)
+    # a vault as an earlier release left it: migrated to 023, without the 024 columns
+    conn.execute("ALTER TABLE zaad_evaluations DROP COLUMN draft_hash")
+    conn.execute("ALTER TABLE zaad_evaluations DROP COLUMN workspace_version")
+    conn.execute("ALTER TABLE zaad_draft_orders DROP COLUMN approved_evaluation_id")
+    conn.execute("ALTER TABLE zaad_draft_orders DROP COLUMN approval_evaluation_state")
+    conn.close()
+
+    code = textwrap.dedent(f"""
+        import os, sys
+        sys.path.insert(0, {os.getcwd()!r})
+        import duckdb
+        from api.product.drafts import ensure_tables
+        conn = duckdb.connect({str(path)!r})
+        ensure_tables(conn)          # runs the 024 ALTERs on this vault, then checkpoints
+        os._exit(0)                  # a hard stop: no close, no shutdown hook
+    """)
+    subprocess.run([sys.executable, "-c", code], check=True)
+    reopened = duckdb.connect(str(path))
+    present = {row[1] for row in reopened.execute("PRAGMA table_info('zaad_evaluations')").fetchall()}
+    assert "draft_hash" in present
+    reopened.close()

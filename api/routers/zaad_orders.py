@@ -112,6 +112,8 @@ async def update_profile(profile_id: str, request: HTTPRequest, operator: Operat
     body = await body_of(request)
     try:
         drafts.save_profile(conn, operator, body, profile_id=profile_id)
+    except KeyError as exc:
+        raise HTTPException(404, "That format is not in this workspace.") from exc
     except drafts.DraftRefused as exc:
         raise _refused(exc) from exc
     return {"profile_id": profile_id}
@@ -195,15 +197,18 @@ def evaluation_jobs(operator: Operator, conn=Depends(get_conn)):
                  [operator])
     identities = {str(value) for row in rows for value in row.values() if value}
 
-    # A second, independent guard. The record above is the normal answer, but it lives in the
-    # operator's vault and a vault that is replaced (a re-upload, a restore) loses it while the job
-    # store keeps the runs. So the overlaid run is also recognised from its own request: the
-    # proposal's pipeline entries are the only ones ZAAD ever writes with a `proposal_` id.
+    # The job's own purpose is the authoritative answer since the V1 audit: every evaluation run is
+    # submitted as PROPOSAL_BASELINE or PROPOSAL_OVERLAY and a reader selects plans by purpose. The
+    # vault record above and the request-shape guard below remain for runs written before purposes
+    # existed, and for a vault that was replaced while the job store kept its runs.
     try:
         store = runner().store
         for job in store.list(operator):
             identity = str(job.get("id"))
             if identity in identities:
+                continue
+            if str(job.get("purpose") or "").startswith("PROPOSAL_"):
+                identities.add(identity)
                 continue
             try:
                 if '"proposal_' in store.request_json(identity):
@@ -251,9 +256,14 @@ async def act(draft_id: str, action: Literal["submit", "reopen", "approve", "rej
     body = await body_of(request)
     try:
         return drafts.transition(conn, operator, draft_id, action, actor=operator,
-                                 reason=body.get("reason"))
+                                 reason=body.get("reason"),
+                                 acknowledge_stale=bool(body.get("acknowledge_stale")))
     except KeyError as exc:
         raise HTTPException(404, "That proposal is not in this workspace.") from exc
+    except drafts.EvaluationStale as exc:
+        # Not silently. The approver may say "I know" — `acknowledge_stale: true` — and that is
+        # then part of the record the next reader sees.
+        raise HTTPException(422, {"code": "evaluation_stale", "message": str(exc)}) from exc
     except drafts.DraftRefused as exc:
         raise _refused(exc) from exc
 
@@ -292,6 +302,12 @@ def export_order(draft_id: str, operator: Operator, conn=Depends(get_conn),
         raise HTTPException(404, "That proposal is not in this workspace.") from exc
     if not draft.get("lines"):
         raise HTTPException(422, {"code": "proposal_refused", "message": "This proposal has no lines to export."})
+    if draft.get("state") not in drafts.EXPORTABLE:
+        # A file that reads as a purchase order leaves only for a decided one. Before this check an
+        # unapproved draft produced a file with nothing on it saying it was unapproved.
+        raise HTTPException(422, {"code": "not_approved", "message":
+                                  "Only an approved proposal is exported. Approve it first — or reject it, and "
+                                  "nothing leaves."})
     profile = dict(_profile_for(conn, operator, profile_id))
     if fmt:
         profile["format"] = fmt
@@ -388,18 +404,41 @@ async def evaluate(draft_id: str, operator: Operator, conn=Depends(get_conn),
         raise HTTPException(422, {"code": "proposal_refused", "message": str(exc)}) from exc
 
     run = runner()
-    try:
-        baseline_job = run.submit(operator, request)
-        proposal_job = run.submit(operator, overlaid)
-    except QuotaExceeded as exc:
+    # The quota is checked before anything is written, so a refused evaluation leaves no record.
+    if run.store.active(operator) + 2 > run.active_quota:
         raise HTTPException(429, {"code": "job_quota", "message":
-                                  f"{exc} An evaluation runs the engine twice, so it needs two."}) from exc
+                                  f"at most {run.active_quota} queued or running jobs per workspace. "
+                                  "An evaluation runs the engine twice, so it needs two."})
 
+    # Record first, then submit against the record. A reader that lands between the steps finds
+    # two jobs whose purpose says what they are and a record that names them; before this the jobs
+    # existed for a moment with nothing marking them, and a workspace read in that moment adopted
+    # the baseline run as the operator's plan.
     identity = evaluation.store_evaluation(
         conn, operator, draft_id=draft_id, revision=draft.get("revision"),
-        baseline_job_id=baseline_job, proposal_job_id=proposal_job,
+        baseline_job_id=None, proposal_job_id=None,
         as_of=request.as_of.isoformat(), scope=scope, status="QUEUED",
-        note="; ".join(notes) if notes else None)
+        note="; ".join(notes) if notes else None,
+        draft_hash=evaluation.content_hash(draft), workspace_version=evaluation.workspace_version(conn))
+    drafts.record_event(conn, operator, draft_id, "evaluation requested", draft.get("revision"), operator,
+                        f"{identity} over {len(scope)} product{'' if len(scope) == 1 else 's'}")
+    baseline_job: str | None = None
+    try:
+        baseline_job = run.submit(operator, request, purpose="PROPOSAL_BASELINE", reference=identity)
+        proposal_job = run.submit(operator, overlaid, purpose="PROPOSAL_OVERLAY", reference=identity)
+    except QuotaExceeded as exc:
+        if baseline_job:
+            run.cancel(baseline_job, operator)
+        evaluation.fail_evaluation(conn, operator, identity, f"not submitted: {exc}")
+        raise HTTPException(429, {"code": "job_quota", "message":
+                                  f"{exc} An evaluation runs the engine twice, so it needs two."}) from exc
+    except Exception as exc:  # noqa: BLE001 - a failed submission is a failed evaluation, never a silent one
+        if baseline_job:
+            run.cancel(baseline_job, operator)
+        evaluation.fail_evaluation(conn, operator, identity, f"not submitted: {type(exc).__name__}: {exc}"[:2000])
+        raise HTTPException(503, {"code": "evaluation_not_submitted", "message":
+                                  "The evaluation could not be started. Nothing was changed; try again."}) from exc
+    evaluation.link_jobs(conn, operator, identity, baseline_job_id=baseline_job, proposal_job_id=proposal_job)
     return {"evaluation_id": identity, "status": "QUEUED", "baseline_job_id": baseline_job,
             "proposal_job_id": proposal_job, "scope": scope, "commitments_included": commitments,
             "notes": notes, "executable": False}
@@ -444,8 +483,14 @@ def read_evaluation(draft_id: str, operator: Operator, conn=Depends(get_conn),
         if job.get("status") == "DONE":
             reports[key] = job.get("report")
 
+    if record.get("status") == "FAILED" and not states:
+        # Refused before its runs were submitted (a quota, a storage fault): the note says why.
+        return {"evaluation_id": record["evaluation_id"], "draft_id": draft_id, "status": "FAILED",
+                "runs": {}, "scope": scope, "as_of": record.get("as_of"), "evaluated_at": record.get("created_at"),
+                "stale": False, "stale_reason": None, "comparison": None, "executable": False,
+                "message": record.get("note")}
     status = "DONE" if len(reports) == 2 else (
-        "FAILED" if any(s.get("status") in ("FAILED", "TIMEOUT", "CANCELLED", "MISSING") for s in states.values())
+        "FAILED" if any(s.get("status") in ("FAILED", "TIMEOUT", "CANCELLED", "ABANDONED", "MISSING") for s in states.values())
         else "RUNNING" if any(s.get("status") == "RUNNING" for s in states.values()) else "QUEUED")
     if status != record.get("status"):
         conn.execute("UPDATE zaad_evaluations SET status = ?, finished_at = ? WHERE evaluation_id = ? AND operator_id = ?",
@@ -459,16 +504,14 @@ def read_evaluation(draft_id: str, operator: Operator, conn=Depends(get_conn),
 
     # An evaluation describes the lines as they were when it was submitted. A draft stays editable,
     # and an edit does not start a new revision — so without this the page would keep showing an
-    # engine answer for an order that no longer exists on the screen above it.
-    edited_at, evaluated_at = draft.get("updated_at"), record.get("created_at")
-    stale = bool(edited_at and evaluated_at and edited_at > evaluated_at)
+    # engine answer for an order that no longer exists on the screen above it. Decided by content
+    # hash, not by timestamp: approving or exporting a proposal is not a change to what it says.
+    stale, stale_reason = drafts.evaluation_freshness(conn, operator, draft, record)
 
     return {"evaluation_id": record["evaluation_id"], "draft_id": draft_id, "status": status,
             "runs": states, "scope": scope, "as_of": record.get("as_of"),
-            "evaluated_at": evaluated_at, "stale": stale,
-            "stale_reason": ("This proposal was changed after it was evaluated, so the comparison "
-                             "below describes the order as it was, not as it is now. Evaluate it "
-                             "again to compare what you have.") if stale else None,
+            "evaluated_at": record.get("created_at"), "stale": stale, "stale_reason": stale_reason,
+            "draft_hash": record.get("draft_hash"), "workspace_version": record.get("workspace_version"),
             "comparison": comparison, "executable": False}
 
 
@@ -486,11 +529,13 @@ def amendment(draft_id: str, operator: Operator, conn=Depends(get_conn)):
         raise HTTPException(422, {"code": "not_an_amendment",
                                   "message": "This proposal is a new order, not a change to an existing one."})
     report = None
-    for job in runner().store.list(operator):
+    # The last *workspace* plan. Selecting the first DONE job of any kind read an evaluation's
+    # overlay run — the workspace plus an order nobody placed — as "ZAAD's last plan".
+    store = runner().store
+    for job in store.list(operator, purpose="WORKSPACE_PLAN"):
         if job.get("status") != "DONE":
             continue
-        detail = runner().store.get(job["id"], operator)
-        report = detail.get("report")
+        report = store.get(job["id"], operator).get("report")
         break
     return {"draft_id": draft_id, "po_id": po_id,
             **evaluation.amendment_view(report, str(po_id), draft.get("amendment_action"))}

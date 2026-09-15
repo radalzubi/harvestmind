@@ -420,6 +420,7 @@ def test_a_company_format_maps_columns_and_constants(client, skus):
     assert made.status_code == 201
     profile_id = made.json()["profile_id"]
     draft = _create(client, skus)
+    client.post(f"/api/zaad/orders/{draft['draft_id']}/actions/approve", json={"reason": "agreed"})
     r = client.post(f"/api/zaad/orders/{draft['draft_id']}/export?profile_id={profile_id}")
     assert r.status_code == 200
     text = r.content.decode("utf-8-sig")
@@ -429,6 +430,7 @@ def test_a_company_format_maps_columns_and_constants(client, skus):
 
 def test_a_formula_never_leaves_in_an_export(client, skus):
     draft = _create(client, skus, reference="=cmd|'/c calc'!A1")
+    client.post(f"/api/zaad/orders/{draft['draft_id']}/actions/approve", json={"reason": "agreed"})
     r = client.post(f"/api/zaad/orders/{draft['draft_id']}/export")
     body = r.content.decode("utf-8-sig")
     assert "\n'=cmd" in body or body.splitlines()[1].startswith("'="), body.splitlines()[:2]
@@ -606,3 +608,137 @@ def test_a_browser_can_read_the_filename_the_export_profile_produced():
     assert "content-disposition" in exposed, "the export filename is unreadable without this"
     assert "x-request-id" in exposed, "the error copy tells people to quote it"
     assert "x-zaad-transmitted" in exposed, "the 'nothing was sent' assertion should be checkable"
+
+
+
+# ── Fable V1 audit corrections ────────────────────────────────────────────────
+
+def test_an_unapproved_draft_is_not_exported(client, skus):
+    """A file that reads as a purchase order leaves only for a decided proposal (audit M1)."""
+    draft = _create(client, skus)
+    r = client.post(f"/api/zaad/orders/{draft['draft_id']}/export")
+    assert r.status_code == 422 and r.json()["detail"]["code"] == "not_approved", r.text
+    assert draft["exportable"] is False
+    client.post(f"/api/zaad/orders/{draft['draft_id']}/actions/reject", json={"reason": "no"})
+    assert client.post(f"/api/zaad/orders/{draft['draft_id']}/export").status_code == 422
+    assert client.get(f"/api/zaad/orders/{draft['draft_id']}").json()["exports"] == []
+
+
+def test_a_refused_create_writes_nothing(client, skus, vault):
+    """The head row used to be inserted before the lines were checked (audit H6)."""
+    before = vault.execute(f"SELECT count(*) FROM zaad_draft_orders WHERE operator_id = '{OPERATOR}'").fetchone()[0]
+    r = client.post("/api/zaad/orders", json={"origin": "MANUAL", "supplier_id": "SUP-001",
+                                            "lines": [{"sku": skus[0], "quantity": 1e18}]})
+    assert r.status_code == 422
+    r = client.post("/api/zaad/orders", json={"origin": "MANUAL", "supplier_id": "SUP-001",
+                                            "lines": [{"sku": skus[0], "quantity": 1}] * 501})
+    assert r.status_code == 422
+    after = vault.execute(f"SELECT count(*) FROM zaad_draft_orders WHERE operator_id = '{OPERATOR}'").fetchone()[0]
+    assert after == before, "a refused proposal must leave no row behind"
+    empties = vault.execute(f"""SELECT count(*) FROM zaad_draft_orders d WHERE operator_id = '{OPERATOR}'
+                                AND NOT EXISTS (SELECT 1 FROM zaad_draft_lines l WHERE l.draft_id = d.draft_id)""").fetchone()[0]
+    assert empties == 0
+
+
+def test_identifiers_are_bounded(client, skus):
+    """A 300,000-character supplier id was stored and rendered on Home (audit M2)."""
+    r = client.post("/api/zaad/orders", json={"origin": "MANUAL", "supplier_id": "S" * 300_000,
+                                            "lines": [{"sku": skus[0], "quantity": 1}]})
+    assert r.status_code == 422 and "characters long" in r.json()["detail"]["message"]
+    r = client.post("/api/zaad/orders", json={"origin": "MANUAL", "supplier_id": "SUP-001",
+                                            "lines": [{"sku": "X" * 201, "quantity": 1}]})
+    assert r.status_code == 422
+    draft = _create(client, skus)
+    r = client.patch(f"/api/zaad/orders/{draft['draft_id']}", json={"destination_id": "D" * 201})
+    assert r.status_code == 422
+    assert client.get(f"/api/zaad/orders/{draft['draft_id']}").json()["destination_id"] == "DC"
+
+
+def test_approving_or_exporting_does_not_make_an_evaluation_stale(client, skus, vault):
+    """Staleness is a content hash, not a timestamp (audit H1).
+
+    The evaluation record is written directly — the jobs path needs a job store — with the hash of
+    the draft as it stands, the way `POST /evaluate` writes it.
+    """
+    from api.product.evaluation import content_hash, store_evaluation, workspace_version
+
+    draft = _create(client, skus, reference="FRESH")
+    identity = draft["draft_id"]
+    store_evaluation(vault, OPERATOR, draft_id=identity, revision=1, baseline_job_id="job_x", proposal_job_id="job_y",
+                     as_of="2026-01-05", scope=[skus[0]], status="DONE",
+                     draft_hash=content_hash(draft), workspace_version=workspace_version(vault))
+    assert client.get(f"/api/zaad/orders/{identity}").json()["evaluation_stale"] is False
+    approved = client.post(f"/api/zaad/orders/{identity}/actions/approve", json={"reason": "fine"}).json()
+    assert approved["evaluation_stale"] is False, "an approval is not a change to what was evaluated"
+    assert approved["approval_evaluation_state"] == "current"
+    assert approved["approved_evaluation_id"]
+    assert any("against evaluation" in (e["detail"] or "") for e in approved["events"] if e["event"] == "approved")
+
+
+def test_an_edit_makes_the_evaluation_stale_and_approval_needs_an_acknowledgement(client, skus, vault):
+    """§93: on a stale evaluation, do not approve silently (audit H2)."""
+    from api.product.evaluation import content_hash, store_evaluation, workspace_version
+
+    draft = _create(client, skus, reference="EDITED")
+    identity = draft["draft_id"]
+    store_evaluation(vault, OPERATOR, draft_id=identity, revision=1, baseline_job_id="job_x", proposal_job_id="job_y",
+                     as_of="2026-01-05", scope=[skus[0]], status="DONE",
+                     draft_hash=content_hash(draft), workspace_version=workspace_version(vault))
+    edited = client.patch(f"/api/zaad/orders/{identity}", json={"lines": [{"sku": skus[0], "quantity": 2400, "unit_price": 4.5}]}).json()
+    assert edited["evaluation_stale"] is True and "changed after it was evaluated" in edited["evaluation_stale_reason"]
+    refused = client.post(f"/api/zaad/orders/{identity}/actions/approve", json={"reason": "fine"})
+    assert refused.status_code == 422 and refused.json()["detail"]["code"] == "evaluation_stale"
+    assert client.get(f"/api/zaad/orders/{identity}").json()["state"] == "DRAFT"
+    acknowledged = client.post(f"/api/zaad/orders/{identity}/actions/approve",
+                               json={"reason": "fine", "acknowledge_stale": True}).json()
+    assert acknowledged["state"] == "APPROVED"
+    assert acknowledged["approval_evaluation_state"] == "stale_acknowledged"
+    assert any("acknowledged" in (e["detail"] or "") for e in acknowledged["events"] if e["event"] == "approved")
+
+
+def test_approving_without_an_evaluation_is_allowed_and_recorded_as_such(client, skus):
+    draft = _create(client, skus, reference="UNEVALUATED")
+    approved = client.post(f"/api/zaad/orders/{draft['draft_id']}/actions/approve", json={"reason": "manual order"}).json()
+    assert approved["state"] == "APPROVED" and approved["approval_evaluation_state"] == "none"
+    assert approved["approved_evaluation_id"] is None
+
+
+def test_a_workspace_data_change_makes_the_evaluation_stale(client, skus, vault):
+    from api.product.evaluation import content_hash, store_evaluation
+
+    draft = _create(client, skus, reference="DATA-CHANGED")
+    store_evaluation(vault, OPERATOR, draft_id=draft["draft_id"], revision=1, baseline_job_id="job_x",
+                     proposal_job_id="job_y", as_of="2026-01-05", scope=[skus[0]], status="DONE",
+                     draft_hash=content_hash(draft), workspace_version="a-version-the-workspace-no-longer-has")
+    body = client.get(f"/api/zaad/orders/{draft['draft_id']}").json()
+    assert body["evaluation_stale"] is True and "workspace data" in body["evaluation_stale_reason"]
+
+
+def test_an_old_evaluation_without_a_hash_is_stale_only_after_an_edit(client, skus, vault):
+    """Records written before the hash existed fall back to the one thing a timestamp can say."""
+    from api.product.evaluation import store_evaluation
+
+    draft = _create(client, skus, reference="LEGACY")
+    identity = draft["draft_id"]
+    store_evaluation(vault, OPERATOR, draft_id=identity, revision=1, baseline_job_id="job_x", proposal_job_id="job_y",
+                     as_of="2026-01-05", scope=[skus[0]], status="DONE")
+    assert client.get(f"/api/zaad/orders/{identity}").json()["evaluation_stale"] is False
+    approved = client.post(f"/api/zaad/orders/{identity}/actions/approve", json={"reason": "fine"}).json()
+    assert approved["evaluation_stale"] is False, "approving bumps updated_at; that is not an edit"
+
+
+def test_updating_an_unknown_export_format_is_not_an_upsert(client):
+    r = client.put("/api/zaad/orders/profiles/profile_does_not_exist",
+                   json={"name": "x", "columns": [{"header": "a", "field": "sku"}]})
+    assert r.status_code == 404
+    assert all(p["profile_id"] != "profile_does_not_exist" for p in client.get("/api/zaad/orders/profiles").json()["profiles"])
+
+
+def test_supplier_open_orders_carry_the_promise_denominator(client):
+    """"none past their date" is only true when some open order carries a date to be past (audit H7)."""
+    body = client.get("/api/zaad/workspace/suppliers").json()
+    assert body["rows"], "this fixture has suppliers"
+    for row in body["rows"]:
+        assert "open_orders_with_promise" in row
+        if row["late_open_orders"]:
+            assert row["open_orders_with_promise"] >= row["late_open_orders"]
