@@ -15,10 +15,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { Play, RotateCw } from "lucide-react";
 import { DEFAULT_SCOPE, SCOPE_CHOICES, useWorkspaceData } from "@/lib/zaad/workspace-data";
+import { scopeSentence, solveScope } from "@/lib/zaad/scope";
 import { Button, ButtonLink, EmptyState, ErrorState, Notice } from "./ui";
 
 export function ScopeNotice() {
-  const { scope, readScope, lastRunFailed, degraded, planPhase } = useWorkspaceData();
+  const { scope, readScope, lastRunFailed, degraded, planPhase, request } = useWorkspaceData();
   // While the solve is still going there is no plan yet, so the scope is the run's, not a plan's.
   const inFlight = planPhase === "queued" || planPhase === "running";
   if (!scope && !readScope && !lastRunFailed && !degraded) return null;
@@ -48,6 +49,9 @@ export function ScopeNotice() {
           {inFlight
             ? " Anything outside that selection is not being looked at."
             : " Anything outside that selection was not looked at. Run again over more products to widen it."}
+          {/* Whether the selection is one joint problem is a property of the request, read from
+              it: products sharing a supplier's capacity or order terms cannot be planned apart. */}
+          {request && <span className="fig" style={{ display: "block", marginTop: 4, color: "var(--ink-600)" }}>{scopeSentence(solveScope(request as never, scope.total))}</span>}
         </Notice>
       )}
     </>
