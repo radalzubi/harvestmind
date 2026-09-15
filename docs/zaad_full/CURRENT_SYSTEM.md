@@ -9,7 +9,8 @@ rested `shared-cpu-2x` machine 1, 2 and 5 products complete inside their caps (4
 and the 10-product default reaches TIMEOUT at 450 s with no throttling, while consecutive solves
 exhaust the shared CPU's burst balance and throttle the whole machine for up to an hour
 (`PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md`). No V2 runtime tag exists. `main` is production plus
-docs; the release ledger's current-state table records the exact difference.
+docs; the release ledger's current-state table records the exact difference. **Continuing this work:
+read [`HANDOFF_PLANNER_RECOVERY_2026-09-15.md`](HANDOFF_PLANNER_RECOVERY_2026-09-15.md) first.**
 
 ## What is released
 
