@@ -9,6 +9,11 @@ event with a disallowed name) and their refusal is what is checked.
 
 Usage:
     python3 scripts/operating_product_release_smoke.py --api https://zaad-api.fly.dev [--token <workspace key>]
+    python3 scripts/operating_product_release_smoke.py --api https://zaad-api.fly.dev --self-serve
+
+`--self-serve` creates its own smoke workspace through the released self-serve path
+(`POST /access/start`, then the sample FMCG upload), the way earlier release smokes did, so no
+production key is handled. The workspace it creates is a throwaway with sample data.
 """
 from __future__ import annotations
 
@@ -52,6 +57,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--api", required=True)
     ap.add_argument("--token", default=None)
+    ap.add_argument("--self-serve", action="store_true", help="create a throwaway smoke workspace with sample data")
     args = ap.parse_args()
     api = args.api.rstrip("/")
     results: list[tuple[str, bool, str]] = []
@@ -59,6 +65,17 @@ def main() -> int:
     def check(name: str, ok: bool, detail: str = "") -> None:
         results.append((name, ok, detail))
         print(f"{'PASS' if ok else 'FAIL'}  {name}{(' — ' + detail) if detail else ''}")
+
+    if args.self_serve and not args.token:
+        status, _, raw = fetch(f"{api}/access/start", method="POST",
+                               body={"sector": "commercial", "company": "Operating product release smoke"})
+        ws = json.loads(raw or b"{}") if status in (200, 201) else {}
+        check("self-serve workspace created", bool(ws.get("token")), f"status {status}, operator {ws.get('operator_id')}")
+        if ws.get("token"):
+            args.token = ws["token"]
+            status, _, raw = fetch(f"{api}/intake/load-sample-fmcg", token=args.token, method="POST", body={})
+            loaded = json.loads(raw or b"{}") if status == 200 else {}
+            check("sample FMCG data loaded", status == 200 and (loaded.get("total_rows") or 0) > 0, f"status {status}, rows {loaded.get('total_rows')}")
 
     status, _, raw = fetch(f"{api}/health")
     check("health answers 200", status == 200, f"status {status}")
