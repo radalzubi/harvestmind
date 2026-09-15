@@ -1,15 +1,15 @@
 # ZAAD — current system (read this first)
 
-**Status line (2026-09-15):** production runtime is the Operating Product V1 + V2 merge `458fcaf`
-(Fly `zaad-api` v26, image `canonical-458fcaf`, digest `sha256:4ba1cd25…`; Vercel production from the
-same tree). Every operating surface and the proposal loop are verified in production and stay
+**Status line (2026-09-15):** production runtime is `d2a3cb5` (Fly `zaad-api` v27, image
+`canonical-d2a3cb5`, digest `sha256:2d5f2b5a…`) = the Operating Product V1 + V2 merge `458fcaf` plus
+PR #83's planner orchestration (one ordered solver lease, honest queue); Vercel production from the
+same tree. Every operating surface and the proposal loop are verified in production and stay
 responsive while a plan runs; **the plan path is BLOCKED at the product's default scope**: on a
 rested `shared-cpu-2x` machine 1, 2 and 5 products complete inside their caps (4.6 s, 29 s, 138 s)
 and the 10-product default reaches TIMEOUT at 450 s with no throttling, while consecutive solves
 exhaust the shared CPU's burst balance and throttle the whole machine for up to an hour
-(`PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md`). No V2 runtime tag exists. `main` may be ahead of
-production by docs and by the planner-orchestration fix (one ordered solver lease); the release
-ledger's current-state table records the exact difference.
+(`PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md`). No V2 runtime tag exists. `main` is production plus
+docs; the release ledger's current-state table records the exact difference.
 
 ## What is released
 
