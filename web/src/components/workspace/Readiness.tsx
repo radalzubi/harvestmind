@@ -24,7 +24,7 @@ export function useCapabilityReadiness(): { readiness: WorkspaceReadiness | null
   useEffect(() => {
     if (session.status !== "authenticated") return;
     let alive = true;
-    fetchReadiness().then((r) => { if (alive) { setReadiness(r); setError(null); track("data_readiness_opened", { surface: window.location.pathname.slice(1, 40) }); } })
+    fetchReadiness().then((r) => { if (alive) { setReadiness(r.applies === false ? null : r); setError(null); track("data_readiness_opened", { surface: window.location.pathname.slice(1, 40) }); } })
       .catch((e) => { if (alive) setError(e instanceof Error ? e.message : String(e)); });
     return () => { alive = false; };
   }, [session.status, tick]);

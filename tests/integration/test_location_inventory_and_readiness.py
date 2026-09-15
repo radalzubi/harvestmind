@@ -170,3 +170,15 @@ def test_an_empty_workspace_is_blocked_not_broken():
     caps = {c["capability"]: c["status"] for c in got["capabilities"]}
     assert caps["PURCHASING"] == "BLOCKED" and got["summary"]["can_plan"] is False
     assert catalog.locations(conn) == []
+
+
+def test_a_produce_workspace_is_told_the_matrix_is_for_the_commercial_upload():
+    conn = duckdb.connect(":memory:")
+    setup_db(conn)
+    conn.execute("INSERT INTO stg_products (product_name) VALUES ('Tomatoes')")
+    got = readiness.readiness(conn)
+    assert got["family"] == "produce" and got["applies"] is False and got["capabilities"] == []
+    assert "fresh-produce" in got["note"]
+    empty = duckdb.connect(":memory:")
+    setup_db(empty)
+    assert readiness.readiness(empty)["family"] == "none" and readiness.readiness(empty)["applies"] is True

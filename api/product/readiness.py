@@ -433,7 +433,32 @@ def quality_checks(conn: Any) -> list[dict[str, Any]]:
     return out
 
 
+PRODUCE_TABLES = ("stg_products", "stg_supplier_deliveries", "stg_inventory_lots", "stg_buyer_orders")
+
+
+def upload_family(conn: Any) -> str:
+    """Which upload family the vault holds rows for: 'commercial' (FMCG), 'produce', or 'none'."""
+    def rows(table: str) -> int:
+        return int(_one(conn, f'SELECT count(*) FROM "{table}"') or 0) if has_table(conn, table) else 0  # noqa: S608  # nosec B608 - names are code literals
+    fmcg = sum(rows(src.table) for src in SOURCES)
+    produce = sum(rows(t) for t in PRODUCE_TABLES)
+    if fmcg:
+        return "commercial"
+    return "produce" if produce else "none"
+
+
 def readiness(conn: Any) -> dict[str, Any]:
+    family = upload_family(conn)
+    if family == "produce":
+        # The capability matrix describes the commercial upload. Showing a fresh-produce workspace
+        # fourteen "blocked" rows about purchase orders it will never upload would be a wall of
+        # false alarms; it is told which family this answer is for, and gets no capability rows.
+        return {"sources": [], "capabilities": [], "quality": [],
+                "summary": {"can_plan": False, "ready": 0, "partial": 0, "blocked": 0, "unavailable": 0, "material_issues": 0},
+                "family": family, "applies": False,
+                "note": "This workspace holds fresh-produce sources. The capability readiness here describes the "
+                        "commercial (FMCG) upload; produce readiness is reported by the produce diagnostics.",
+                "provenance": "COUNTED_FROM_THE_VAULT"}
     sources = source_readiness(conn)
     capabilities = capability_readiness(sources, conn)
     checks = quality_checks(conn)
@@ -455,5 +480,6 @@ def readiness(conn: Any) -> dict[str, Any]:
             "unavailable": sum(1 for c in capabilities if c["status"] == "UNAVAILABLE"),
             "material_issues": sum(1 for q in checks if q["severity"] in ("BLOCKING", "MATERIAL")),
         },
+        "family": family, "applies": True, "note": None,
         "provenance": "COUNTED_FROM_THE_VAULT",
     }

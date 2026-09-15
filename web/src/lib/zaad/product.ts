@@ -810,6 +810,10 @@ export interface WorkspaceReadiness {
   capabilities: CapabilityReadiness[];
   quality: QualityCheck[];
   summary: { can_plan: boolean; ready: number; partial: number; blocked: number; unavailable: number; material_issues: number };
+  /** Which upload family the answer describes; `applies` is false for a produce workspace, with `note` saying so. */
+  family?: "commercial" | "produce" | "none";
+  applies?: boolean;
+  note?: string | null;
   provenance: string;
 }
 
