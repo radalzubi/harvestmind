@@ -7,7 +7,7 @@ Nothing is merged, deployed or tagged yet. Resume from this file; do not rebuild
 
 | item | value |
 |---|---|
-| branch | `feat/zaad-insights-canonical-connectivity`, head **`b882e0a`**, pushed; base `main` `3a25b52` (production `d2a3cb5` + docs) |
+| branch | `feat/zaad-insights-canonical-connectivity`, head **`9c2cfc0`** (= `b882e0a` + this Markdown file; Markdown-only pushes do not run CI, so the exact-head run to cite is the one on `b882e0a` — if you want a run on the literal PR head, `gh workflow run ci.yml -R radalzubi/harvestmind --ref feat/zaad-insights-canonical-connectivity` before merging), pushed; base `main` `3a25b52` (production `d2a3cb5` + docs) |
 | PR | **#84** (draft): https://github.com/radalzubi/harvestmind/pull/84 |
 | CI on `b882e0a` | run `35011538354`, **in progress** at pause time (1/13 done, 0 failed). The previous run on `e2796f7` failed only ruff (one F541) and bandit (four B608 on `api/product/insights.py`); both are fixed in `b882e0a` |
 | working tree | clean at `b882e0a` (the Desktop clone is healthy; no scratch clone needed) |
