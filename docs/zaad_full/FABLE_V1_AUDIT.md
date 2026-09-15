@@ -398,7 +398,7 @@ connection counts its own close; a job created without a runner keeps a lease) a
 | whole backend suite, `python3 -m pytest tests/ -q -p no:randomly` | **2,134 passed, 2 skipped** in 387 s — 2,105 before this audit, 29 new tests, none removed |
 | frozen canonical regression, `PYTHONPATH=. python3 scripts/zaad_canonical_regression.py` | **CANONICAL REGRESSION PASS** — every P1 arm identical over 12 reviews; P0 cell 15 (router_cycle) identical, every review protection-owned |
 | `ruff check` over the changed trees | clean |
-| `mypy` at CI's scope | *Success: no issues found in 146 source files* |
+| `mypy` at CI's scope | **not green on `ba108b4`**: the local run that reported *Success: no issues found in 146 source files* was made before `39d4a57` introduced the `VaultConnection` handle, and CI on `ba108b4` reported three return/assignment type errors in `infrastructure/db_manager.py` and `api/dependencies.py`. Recorded here rather than rewritten. Fixed in the commit that carries this line (the handle is typed `Any`, connection-compatible), which is the corrected checkpoint; its CI is the one that counts. |
 | frontend `tsc --noEmit` | clean |
 | frontend `npm test` | 129 passed |
 | frontend `eslint` | no errors |

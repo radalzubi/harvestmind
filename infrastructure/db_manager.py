@@ -119,7 +119,9 @@ class VaultConnection:
         return False
 
 
-def vault_cursor(path: str | Path) -> VaultConnection:
+def vault_cursor(path: str | Path) -> Any:
+    # Typed Any on purpose: the handle forwards every DuckDB connection method, and callers are
+    # written against the connection's own interface (execute, fetchone, register, begin, close).
     """A connection to ``path`` that shares the process's single instance of that file.
 
     Used by :class:`DBManager` and by the places that open the legacy root database, so no code
@@ -205,14 +207,18 @@ class DBManager:
 
     # ── single-operator access ───────────────────────────────────────────
 
-    def get_operator_connection(self, operator_id: str) -> duckdb.DuckDBPyConnection:
-        """A cursor on the process's anchor for this operator's vault (see the module docstring)."""
+    def get_operator_connection(self, operator_id: str) -> Any:
+        """A cursor on the process's anchor for this operator's vault (see the module docstring).
+
+        Returns a :class:`VaultConnection`, which behaves as a DuckDB connection; typed ``Any`` so
+        every caller written against the connection's interface type-checks unchanged.
+        """
         path = self.registry.get_db_path(operator_id)
         conn = vault_cursor(path)
         self._open.append(conn)
         return conn
 
-    def get_read_only_connection(self, operator_id: str) -> duckdb.DuckDBPyConnection:
+    def get_read_only_connection(self, operator_id: str) -> Any:
         """The same cursor as above.
 
         DuckDB refuses to open one file read-only while the process holds it read-write, so a
