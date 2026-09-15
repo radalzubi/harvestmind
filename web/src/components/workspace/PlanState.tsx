@@ -101,16 +101,21 @@ export function RunPlan({ label = "Run ZAAD", role = "primary" }: { label?: stri
  * render this above its content and let it disappear.
  */
 export function PlanGate({ children }: { children?: React.ReactNode }) {
-  const { planPhase, planError, report, run } = useWorkspaceData();
+  const { planPhase, queueAhead, planError, report, run } = useWorkspaceData();
 
   if (planPhase === "ready" && report) return <>{children}</>;
 
   if (planPhase === "queued" || planPhase === "running") {
+    const queued = queueAhead == null
+      ? "Your run is queued…"
+      : queueAhead === 0
+        ? "Your run is next; the planner is finishing another run…"
+        : `Your run is queued behind ${queueAhead} other run${queueAhead === 1 ? "" : "s"}; the planner runs one at a time…`;
     return (
       <div className="state-box">
         <p className="phase" style={{ justifyContent: "center" }} aria-live="polite">
           <span className="spin" aria-hidden />
-          {planPhase === "queued" ? "Your run is queued…" : "Comparing every option against your current plan…"}
+          {planPhase === "queued" ? queued : "Comparing every option against your current plan…"}
         </p>
         <p style={{ marginTop: 12 }}>
           A full comparison takes a few minutes. You can leave this page — the run continues and the

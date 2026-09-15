@@ -37,6 +37,21 @@ evaluation's overlay run — a plan of the workspace plus an order nobody
 placed — as the operator's position. The purpose is persisted with the job
 so no reader has to infer it by joining other tables.
 
+The solver lease
+----------------
+A solve is minutes of one CPU. On the machine class ZAAD runs on, two of
+them at once do not finish twice as slowly: they starve the API process
+too, and every read the operator makes waits behind them (measured in
+`docs/zaad_full/PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md`). So the runner
+holds `workers` solver leases (one, by default) and grants them in
+submission order: the earliest queued job runs first, an evaluation's
+baseline and overlay run one after the other, and no workspace can jump
+another's queue. A job is RUNNING only once its solver process exists;
+while it waits it is QUEUED, and `queue_position` says how many are ahead
+of it. The synchronous planning routes take the same lease (`try_lease`)
+and answer "busy" instead of solving beside a job, so the cap is one
+place, not an accident of defaults.
+
 This is infrastructure. It calls the frozen planner and changes nothing
 about what the planner computes.
 """
@@ -158,6 +173,18 @@ class JobStore:
                         purpose, reference, owner, now, _plus(LEASE_S)))
         return identity
 
+    def claim(self, identity: str, owner: str) -> float | None:
+        """QUEUED -> RUNNING for one job, atomically; its wall clock, or None when it is no longer
+        queued (cancelled, or reconciled away) so the caller must not start it."""
+        now = _now()
+        with self.connect() as db:
+            cur = db.execute("UPDATE jobs SET status = 'RUNNING', started_at = ?, owner = ?, heartbeat_at = ?, lease_until = ? "
+                             "WHERE id = ? AND status = 'QUEUED'", (now, owner, now, _plus(LEASE_S), identity))
+            if cur.rowcount != 1:
+                return None
+            row = db.execute("SELECT timeout_s FROM jobs WHERE id = ?", (identity,)).fetchone()
+        return float(row[0])
+
     def update(self, identity: str, **fields) -> None:
         keys = ", ".join(f"{k} = ?" for k in fields)
         with self.connect() as db:
@@ -195,8 +222,8 @@ class JobStore:
         """
         stamp = now or _now()
         with self.connect() as db:
-            rows = db.execute("SELECT id FROM jobs WHERE status = 'QUEUED' AND (owner IS NULL OR lease_until IS NULL OR lease_until < ?)",
-                              (stamp,)).fetchall()
+            rows = db.execute("SELECT id FROM jobs WHERE status = 'QUEUED' AND (owner IS NULL OR lease_until IS NULL OR lease_until < ?) "
+                              "ORDER BY created_at, rowid", (stamp,)).fetchall()
             ids = [r[0] for r in rows]
             for identity in ids:
                 db.execute("UPDATE jobs SET owner = ?, heartbeat_at = ?, lease_until = ? WHERE id = ? AND status = 'QUEUED'",
@@ -262,8 +289,15 @@ class JobRunner:
         self.daily_quota = daily_quota or int(os.environ.get("ZAAD_JOB_QUOTA_DAILY", "24"))
         self.max_timeout_s = max_timeout_s or float(os.environ.get("ZAAD_JOB_MAX_SECONDS", "1800"))
         self.instance = f"{socket.gethostname()}:{os.getpid()}:{uuid.uuid4().hex[:8]}"
-        self._slots = threading.BoundedSemaphore(self.workers)
         self._lock = threading.Lock()
+        # The solver lease: `_free` leases, handed out in submission order to the jobs waiting in
+        # `_waiting` (sequence number, identity). A synchronous plan may take a lease only when
+        # nothing is waiting, so it never overtakes queued work.
+        self._turn = threading.Condition(self._lock)
+        self._free = self.workers
+        self._waiting: list[tuple[int, str]] = []
+        self._sequence = 0
+        self._order: dict[str, int] = {}   # each job's place in submission order, given in _start
         self._cancel: set[str] = set()
         self._procs: dict[str, Any] = {}   # spawn-context Process objects
         self._stopped = threading.Event()
@@ -273,8 +307,57 @@ class JobRunner:
         self.resumed_at_start = self.store.adopt_queued(self.instance) if resume else []
         self.abandoned_at_start = self.store.reconcile() if resume else []
         threading.Thread(target=self._heartbeat_loop, daemon=True, name="zaad-job-heartbeat").start()
-        for identity in self.resumed_at_start:
-            threading.Thread(target=self._execute, args=(identity,), daemon=True, name=identity).start()
+        for identity in self.resumed_at_start:   # adopted in creation order, so they queue in it
+            self._start(identity)
+
+    def _start(self, identity: str) -> None:
+        """Give the job its place in the queue, then execute it on its own thread."""
+        with self._lock:
+            self._sequence += 1
+            self._order[identity] = self._sequence
+        threading.Thread(target=self._execute, args=(identity,), daemon=True, name=identity).start()
+
+    # ── the solver lease ─────────────────────────────────────────────────────
+
+    def _acquire_slot(self, identity: str, sequence: int) -> None:
+        """Block until a lease is free and every job submitted earlier has taken its turn."""
+        with self._turn:
+            self._waiting.append((sequence, identity))
+            self._waiting.sort()
+            while not (self._free > 0 and self._waiting[0][1] == identity):
+                self._turn.wait()
+            self._waiting.pop(0)
+            self._free -= 1
+
+    def _release_slot(self) -> None:
+        with self._turn:
+            self._free += 1
+            self._turn.notify_all()
+
+    def try_lease(self) -> bool:
+        """A lease for a synchronous solve, granted only when one is free and no job is waiting.
+        The caller releases it with `release_lease`. Never blocks."""
+        with self._turn:
+            if self._free > 0 and not self._waiting:
+                self._free -= 1
+                return True
+            return False
+
+    def release_lease(self) -> None:
+        self._release_slot()
+
+    def queue_position(self, identity: str) -> int | None:
+        """1 when this job is the next to start; None when it is not waiting for a lease here."""
+        with self._lock:
+            for position, (_, waiting) in enumerate(self._waiting, start=1):
+                if waiting == identity:
+                    return position
+        return None
+
+    def leases(self) -> dict[str, int]:
+        """What the lease looks like now: how many are held, how many jobs wait."""
+        with self._lock:
+            return {"workers": self.workers, "held": self.workers - self._free, "waiting": len(self._waiting)}
 
     def timeout_for(self, req: Request) -> float:
         # every candidate/confirmation solve shares max_solve_seconds; 10 solves per service is the planner's shape
@@ -287,7 +370,7 @@ class JobRunner:
             raise QuotaExceeded(f"at most {self.daily_quota} jobs per workspace per day")
         identity = self.store.create(operator, req, self.timeout_for(req), purpose=purpose, reference=reference,
                                      owner=self.instance)
-        threading.Thread(target=self._execute, args=(identity,), daemon=True, name=identity).start()
+        self._start(identity)
         return identity
 
     def cancel(self, identity: str, operator: str) -> dict:
@@ -332,45 +415,62 @@ class JobRunner:
             if proc.is_alive():
                 proc.terminate()
 
+    def _launch(self, request_json: str) -> tuple[Any, Any]:
+        """Start the solver process for one request; returns (process, the parent's end of its pipe)."""
+        parent, child = mp.get_context("spawn").Pipe(duplex=False)
+        proc = mp.get_context("spawn").Process(target=_run, args=(request_json, child), daemon=True)
+        proc.start()
+        child.close()
+        return proc, parent
+
     def _execute_guarded(self, identity: str) -> None:
-        with self._slots:
+        with self._lock:
+            sequence = self._order.pop(identity, None)
+        if sequence is None:   # started outside _start: last in line
             with self._lock:
-                if identity in self._cancel:
-                    self.store.update(identity, status="CANCELLED", finished_at=_now(), error="cancelled while queued")
-                    return
+                self._sequence += 1
+                sequence = self._sequence
+        self._acquire_slot(identity, sequence)
+        try:
+            with self._lock:
+                # a cancel that landed while the job waited is already recorded in the store
+                # ("cancelled before start"); the conditional claim below finds no QUEUED row
+                self._cancel.discard(identity)
             request_json = self.store.request_json(identity)
-            with self.store.connect() as db:
-                row = db.execute("SELECT timeout_s, status FROM jobs WHERE id = ?", (identity,)).fetchone()
-            if row is None or row[1] != "QUEUED":
-                return   # cancelled or reconciled away while it waited for a slot
-            timeout = float(row[0])
-            parent, child = mp.get_context("spawn").Pipe(duplex=False)
-            proc = mp.get_context("spawn").Process(target=_run, args=(request_json, child), daemon=True)
+            timeout = self.store.claim(identity, self.instance)
+            if timeout is None:
+                return   # cancelled or reconciled away while it waited for a lease
+            # RUNNING is written before the process exists, so a cancel that lands in between finds a
+            # RUNNING row and a live lease; `cancel` then records that the run was not being executed
+            # rather than "before start", which would be untrue by a few milliseconds.
+            proc, parent = self._launch(request_json)
             with self._lock:
                 self._procs[identity] = proc
-            self.store.update(identity, status="RUNNING", started_at=_now(), owner=self.instance,
-                              heartbeat_at=_now(), lease_until=_plus(LEASE_S))
-            proc.start()
-            child.close()
-            deadline = time.monotonic() + timeout
-            status, report, error = "TIMEOUT", None, f"exceeded {timeout:.0f}s wall clock"
-            while time.monotonic() < deadline:
-                if parent.poll(0.25):
+            self._watch(identity, proc, parent, timeout)
+        finally:
+            self._release_slot()
+
+    def _watch(self, identity: str, proc: Any, parent: Any, timeout: float) -> None:
+        """Wait for the solver process: its result, its death, the wall clock, or a cancel."""
+        deadline = time.monotonic() + timeout
+        status, report, error = "TIMEOUT", None, f"exceeded {timeout:.0f}s wall clock"
+        while time.monotonic() < deadline:
+            if parent.poll(0.25):
+                status, report, error = parent.recv()
+                break
+            if not proc.is_alive():
+                if parent.poll(0.5):
                     status, report, error = parent.recv()
-                    break
-                if not proc.is_alive():
-                    if parent.poll(0.5):
-                        status, report, error = parent.recv()
-                    else:
-                        status, error = "FAILED", "worker exited without a result"
-                    break
-            with self._lock:
-                cancelled = identity in self._cancel
-                self._procs.pop(identity, None)
-                self._cancel.discard(identity)
-            if proc.is_alive():
-                proc.terminate()
-            proc.join(5)
-            if cancelled:
-                status, report, error = "CANCELLED", None, "cancelled by the workspace"
-            self.store.update(identity, status=status, finished_at=_now(), report_json=report, error=error)
+                else:
+                    status, error = "FAILED", "worker exited without a result"
+                break
+        with self._lock:
+            cancelled = identity in self._cancel
+            self._procs.pop(identity, None)
+            self._cancel.discard(identity)
+        if proc.is_alive():
+            proc.terminate()
+        proc.join(5)
+        if cancelled:
+            status, report, error = "CANCELLED", None, "cancelled by the workspace"
+        self.store.update(identity, status=status, finished_at=_now(), report_json=report, error=error)
