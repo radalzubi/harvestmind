@@ -39,6 +39,8 @@ if TYPE_CHECKING:
 # bit for bit (on the P1 fixture T the elimination is objective-exact to 1e-15 but breaks a tie
 # between two equal-cost source splits differently; a frozen path is not re-tuned for speed it does
 # not need). False restores the frozen formulation everywhere (diagnostic / equivalence runs).
+# A request may extend the rule to its single-location, physics-free formulation with
+# `fefo_symmetry_scope="all"` (performance pass 2026-09-16; exact, see contracts.Request).
 FEFO_SYMMETRY_ELIMINATION = True
 
 
@@ -510,7 +512,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           allowed_periods: frozenset[int] | None = None,
           expected_shortage: dict | None = None,
           continuation_feeds: dict[tuple[str, str], list[dict]] | None = None,
-          nodes: "NodeMap | None" = None) -> Solution:
+          nodes: "NodeMap | None" = None, service_only: bool = False) -> Solution:
     """excess_penalty (v6): {(sku, location): (baseline_units, cost_per_unit_period)} charges inventory
     held above the lean baseline while a temporary risk driver is gone, so the plan runs temporary
     protection down through demand rather than replenishing it. continuation (v6): {(sku, location):
@@ -520,7 +522,12 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     at the review only (fitted mean demand, declared lead). nodes (P4): the information-set node
     map of an adaptive solve - purchase and transfer columns of a period at or after a review epoch
     exist once per information set and every world reads its own set's column (non-anticipativity
-    by construction); None = the frozen builder path, bit for bit."""
+    by construction); None = the frozen builder path, bit for bit. service_only (performance pass):
+    with `service_first`, return the phase-one solution - the exact minimum of the priority-weighted
+    unmet demand - without the phase-two cost minimisation. For a caller that consumes only the
+    service optimum (the per-service frontier oracle) phase two is redundant work: its solution is
+    constrained to the same optimum to 1e-7, so the consumed number is the same and only the cost
+    ordering of equal-service plans, which the oracle never reads, is left unresolved."""
     started = time.monotonic()
     if not worlds or abs(sum(w.weight for w in worlds) - 1) > 1e-8 or any(w.weight <= 0 for w in worlds):
         raise ValueError("positive scenario weights must sum to one")
@@ -1023,7 +1030,9 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         # FEFO: consumption of younger cohorts requires older remaining stock zero.
                         # An older cohort beyond the window (outlives the horizon and every schedulable
                         # transfer arrival) is interchangeable with the younger one: omitted exactly.
-                        window = max(H, latest_due[sku]) if (FEFO_SYMMETRY_ELIMINATION and req.transfers) else math.inf
+                        window = (max(H, latest_due[sku])
+                                  if (FEFO_SYMMETRY_ELIMINATION and (req.transfers or (req.fefo_symmetry_scope == "all" and physics is None)))
+                                  else math.inf)
                         for expiry, q in consumptions:
                             older = [inv[sku, service.location, e, t, w] for e in cohorts[sku]
                                      if t < e < expiry and e <= window and (sku, service.location, e, t, w) in inv
@@ -1362,7 +1371,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     seed_objective=getattr(result, "seed_objective", None),
                     solver_accepted=bool(getattr(result, "seed_accepted", False)),
                     phase1_objective=result.fun, phase1_status=int(result.status))
-    if objective is not None and result.status == 0 and result.x is not None:
+    if objective is not None and result.status == 0 and result.x is not None and not service_only:
         optimum = float(np.dot(objective, result.x))
         m.row({i: float(v) for i, v in enumerate(objective) if v}, upper=optimum + 1e-7)
         remaining = budget - (time.monotonic() - started)

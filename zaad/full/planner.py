@@ -1368,7 +1368,9 @@ def plan(req: Request) -> dict:
 
     frontier = []
     for service in req.services:
-        oracle = solve(req, deterministic, service_first=service.id)
+        # The oracle answers one question - the best modeled unit fill of this service alone on the
+        # mean world - and that is the phase-one optimum; the cost phase is not consumed (perf pass).
+        oracle = solve(req, deterministic, service_first=service.id, service_only=True)
         best = oracle.projected_service.get(service.id)
         frontier.append({"service": service.id, "requested": service.target, "metric": service.metric,
                          "best_modeled_individual_unit_fill": best,
