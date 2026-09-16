@@ -16,7 +16,7 @@ numbers are **STRUCTURAL / RELATIVE BENCHMARK**, production numbers are **PRODUC
 | item | value |
 |---|---|
 | branch | `perf/zaad-full-performance-pass` from `main` `b818fd3801fa468144b0cba1906e9142b0c2108e` |
-| production runtime | `13dde49` (Merge PR #84), Fly `zaad-api` v28, image `zaad-api:canonical-13dde49`, digest `sha256:374b4e91f061cce054a05749aa48f29be1e9707c2f4bd642ba712b18617c3381` |
+| production runtime | `13dde49` (Merge PR #84), Fly `zaad-api` v28, image `zaad-api:canonical-13dde49`, digest `sha256:374b4e91…` (full digest in the ledger's V2.1A entry) |
 | Fly machine | `0804e0dfd1e948` (fra), `shared-cpu-2x`, 2,048 MB, one machine, volume `vol_4m3pel5k9mdm95gv`; `MemTotal` 2,015,640 kB |
 | production stack | Python 3.12.14, highspy 1.15.1, scipy 1.18.1, numpy 2.5.3, duckdb 1.5.5, x86-64 (measured on the machine in the recovery pass; the image is unchanged) |
 | local stack (structural benchmarks) | `venv312`: Python 3.12.14, highspy 1.15.1, scipy 1.18.1, numpy 2.5.3, duckdb 1.5.5, **arm64** (Apple M4 Pro, 12 cores, 24 GB) — same versions, different architecture: search paths differ, timings are relative only |
