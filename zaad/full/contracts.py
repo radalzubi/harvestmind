@@ -674,6 +674,18 @@ class Request(Record):
     # a first incumbent, so when the formulation has to repair the seed it is the best use of the
     # budget; it stops at its first feasible point and the main solve continues from there.
     warm_start_completion_share: float = Field(default=.6, gt=0., le=1.)
+    # FEFO symmetry elimination scope (performance pass, 2026-09-16). "network" is the released rule:
+    # the FEFO indicators between two cohorts that both outlive the horizon and every schedulable
+    # transfer arrival are omitted on network requests only, and the single-node formulation is kept
+    # verbatim (its frozen decision path reproduces bit for bit). "all" applies the same exact rule to
+    # a single-location request without sector physics: the projection of the feasible set onto
+    # purchases, amendments, unmet demand and cost is unchanged and the service optimum of every
+    # lexicographic phase one is identical to 1e-13 (measured 1-5 products on the product sample);
+    # 91% of the integer columns disappear and a 5-product plan falls from 135 s to 5 s. It is a
+    # search-path change for the frozen gates: on the P1 fixture T the solver returns another of two
+    # equal-cost source splits, so the default stays "network" until the owner authorises the
+    # product path to set "all" (ZAAD_FULL_PERFORMANCE_PASS.md §5).
+    fefo_symmetry_scope: Literal["network", "all"] = "network"
     # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.

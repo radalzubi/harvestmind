@@ -11,12 +11,23 @@ candidate's build-and-settle time around them. It then times what the job path d
 planner: the plan shape, the report serialisation and the job-store write.
 
 Usage: python -m scripts.production_solve_benchmark [--products 1,2,5,8,10] [--vault sample|network]
-                                                    [--seconds 15] [--seed 7] [--out DIR]
+                                                    [--seconds 15] [--seed 7] [--out DIR] [--label NAME]
+                                                    [--dump-mps DIR] [--request-override KEY=JSON ...]
+                                                    [--structure-only]
+
+Performance pass (2026-09-16): every MILP is attributed to the planner stage that asked for it and
+to its lexicographic phase; the plan's report and shape are written beside the benchmark for
+decision-identity comparison (`scripts/plan_report_compare.py`); `--dump-mps` writes each MILP as
+HiGHS saw it for `scripts/milp_replay.py`; `--request-override` changes one Request field for an
+experiment; `--structure-only` builds every model the plan would solve and records its dimensions
+without solving (every solve returns "no feasible solution" instantly) - for sizes that must not be
+solved on the benchmark machine.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import linecache
 import os
 import platform
 import resource
@@ -54,6 +65,89 @@ class Recorder:
         self.settle_calls = 0
         self.solver_core_s = 0.
         self._orig: list[tuple] = []
+        # performance pass: stage attribution from outside (the planner line that asked for the
+        # solve), lexicographic phase, and the time of the other planner stages
+        self.t_start = time.perf_counter()
+        self.stages_s: dict[str, float] = {}
+        self.stage_calls: dict[str, int] = {}
+        self._last_lex: tuple[int, int] | None = None
+        self._current_kw: dict = {}
+        # optional: write every MILP the planner solves as an MPS file (the exact arrays HiGHS sees,
+        # with the phase's objective) so a solve can be replayed and studied in isolation
+        self.dump_dir: Path | None = None
+        self.structure_only = False
+
+    @staticmethod
+    def stage_of() -> tuple[str, str, int]:
+        """(stage, planner function, planner line) of the planner call that owns the running solve."""
+        frame = sys._getframe(2)
+        while frame is not None:
+            if frame.f_code.co_filename.endswith("planner.py"):
+                line = frame.f_lineno
+                text = linecache.getline(frame.f_code.co_filename, line).strip()
+                func = frame.f_code.co_name
+                stage = f"{func}:{line}"
+                if 'candidates["' in text:
+                    stage = text.split('candidates["', 1)[1].split('"', 1)[0]
+                elif text.startswith("oracle ="):
+                    stage = "service_frontier"
+                elif text.startswith("recovery ="):
+                    stage = "joint_recovery"
+                elif text.startswith("joint_fitted ="):
+                    stage = "joint_fitted"
+                elif text.startswith("base ="):
+                    stage = "base_stock_proxy"
+                elif text.startswith("incumbent ="):
+                    stage = "incumbent"
+                elif text.startswith("restricted ="):
+                    stage = "alternative_value"
+                elif text.startswith("static_comparator ="):
+                    stage = "recourse_static"
+                elif text.startswith("adaptive ="):
+                    stage = "recourse_adaptive"
+                elif text.startswith("perfect ="):
+                    stage = "recourse_perfect"
+                elif text.startswith("candidates[name] ="):
+                    stage = "cadence_candidate"
+                return stage, func, line
+            frame = frame.f_back
+        return "outside_planner", "", 0
+
+    def dump(self, m, objective, stage: str, phase: str, seconds: float, seed, options) -> None:
+        """Write the model as HiGHS sees it (cost = the phase objective) plus the solve's settings."""
+        import highspy
+        import numpy as np
+        assert self.dump_dir is not None
+        self.dump_dir.mkdir(parents=True, exist_ok=True)
+        index = len(self.solves)
+        stem = self.dump_dir / f"{index:03d}_{stage}_{phase}"
+        matrix = m.matrix()
+        h = highspy.Highs()
+        h.setOptionValue("output_flag", False)
+        lp = highspy.HighsLp()
+        lp.num_col_, lp.num_row_ = len(m.names), len(m.rows)
+        lp.col_cost_ = np.asarray(m.cost if objective is None else objective, dtype=float)
+        lp.col_lower_ = np.asarray(m.lower, dtype=float)
+        lp.col_upper_ = np.asarray(m.upper, dtype=float)
+        lp.row_lower_ = np.asarray(m.lo, dtype=float)
+        lp.row_upper_ = np.asarray(m.hi, dtype=float)
+        lp.a_matrix_.format_ = highspy.MatrixFormat.kColwise
+        lp.a_matrix_.start_ = np.asarray(matrix.indptr, dtype=np.int32)
+        lp.a_matrix_.index_ = np.asarray(matrix.indices, dtype=np.int32)
+        lp.a_matrix_.value_ = np.asarray(matrix.data, dtype=float)
+        lp.integrality_ = [highspy.HighsVarType.kInteger if i else highspy.HighsVarType.kContinuous for i in m.integer]
+        h.passModel(lp)
+        h.writeModel(str(stem) + ".mps")
+        meta = {"stage": stage, "phase": phase, "budget_s": seconds, "seeded": seed is not None, "options": options,
+                "cols": len(m.names), "rows": len(m.rows), "integer": int(sum(m.integer)),
+                "names": [str(n) for n in m.names]}
+        (stem.with_suffix(".json")).write_text(json.dumps(meta))
+        if seed is not None:
+            np.save(str(stem) + "_seed.npy", np.asarray(seed, dtype=float))
+
+    def add_stage(self, name: str, seconds: float) -> None:
+        self.stages_s[name] = self.stages_s.get(name, 0.) + seconds
+        self.stage_calls[name] = self.stage_calls.get(name, 0) + 1
 
     def install(self) -> None:
         import zaad.full.model as model
@@ -65,8 +159,31 @@ class Recorder:
 
         def model_solve(self_, seconds, objective=None, solver="highs", mip_gap=1e-6, seed=None, options=None):
             t, c = time.perf_counter(), time.process_time()
-            result, residual = orig_model_solve(self_, seconds, objective, solver, mip_gap, seed, options)
+            stage, func, line = rec.stage_of()
+            # lexicographic phase: a solve with a service objective is phase one; the next solve of
+            # the same model without one is phase two (the cost objective under the service optimum)
+            key = (id(self_), len(self_.rows))
+            if objective is not None:
+                phase = "lex1"
+                rec._last_lex = (id(self_), len(self_.rows) + 1)
+            elif rec._last_lex is not None and rec._last_lex == key:
+                phase = "lex2"
+                rec._last_lex = None
+            else:
+                phase = "single"
+                rec._last_lex = None
+            if rec.dump_dir is not None:
+                rec.dump(self_, objective, stage, phase, seconds, seed, options)
+            if rec.structure_only:
+                from types import SimpleNamespace
+                result, residual = SimpleNamespace(x=None, fun=None, status=1, message="structure-only: not solved",
+                                                   mip_gap=None, mip_dual_bound=None, mip_node_count=0), float("inf")
+            else:
+                result, residual = orig_model_solve(self_, seconds, objective, solver, mip_gap, seed, options)
             rec.solves.append({
+                "stage": stage, "planner_function": func, "planner_line": line, "phase": phase,
+                "service_first": rec._current_kw.get("service_first"), "worlds": rec._current_kw.get("worlds"),
+                "t_offset_s": round(t - rec.t_start, 3), "objective": getattr(result, "fun", None),
                 "cols": len(self_.names), "rows": len(self_.rows),
                 "integer": int(sum(1 for i in self_.integer if i)),
                 "binary": int(sum(1 for i, lo, hi in zip(self_.integer, self_.lower, self_.upper) if i and lo == 0 and hi == 1)),
@@ -110,11 +227,17 @@ class Recorder:
 
         def solve(req, worlds, **kw):
             t, n0 = time.perf_counter(), len(rec.solves)
-            out = orig_solve(req, worlds, **kw)
+            rec._current_kw = {"service_first": kw.get("service_first"), "worlds": len(worlds)}
+            try:
+                out = orig_solve(req, worlds, **kw)
+            finally:
+                rec._current_kw = {}
             wall = time.perf_counter() - t
             mine = rec.solves[n0:]
+            stage = mine[0]["stage"] if mine else "no_milp"
+            rec.add_stage("build+milp:" + stage, wall)
             rec.candidates.append({
-                "index": len(rec.candidates), "status": out.status, "wall_s": wall,
+                "index": len(rec.candidates), "stage": stage, "status": out.status, "wall_s": wall,
                 "milp_wall_s": sum(s["wall_s"] for s in mine), "build_and_settle_s": wall - sum(s["wall_s"] for s in mine),
                 "milps": len(mine), "worlds": len(worlds), "variables": out.variables, "constraints": out.constraints,
                 "solve_seconds_reported": out.solve_seconds, "gap": out.gap,
@@ -144,6 +267,23 @@ class Recorder:
         self._orig.append((settlement, "settle", orig_settle))
         self._orig.append((planner, "settle", orig_settle))
 
+        # the planner's other stages, timed by name where the planner binds them as module globals
+        for name in ("forecast_all", "supply_profiles", "protection_profile", "draw", "targets", "screen",
+                     "evaluate", "alternative_value", "procurement_timing", "resolve_commitments"):
+            fn = getattr(planner, name, None)
+            if fn is None or not callable(fn):
+                continue
+
+            def timed(*a, _fn=fn, _name=name, **k):
+                t = time.perf_counter()
+                try:
+                    return _fn(*a, **k)
+                finally:
+                    rec.add_stage(_name, time.perf_counter() - t)
+
+            setattr(planner, name, timed)
+            self._orig.append((planner, name, fn))
+
     def uninstall(self) -> None:
         for obj, name, orig in reversed(self._orig):
             setattr(obj, name, orig)
@@ -155,7 +295,8 @@ def _maxrss_mb() -> float:
     return rss / (1024 * 1024) if sys.platform == "darwin" else rss / 1024
 
 
-def run_one(n: int, vault: str, seconds: float, seed: int, out_dir: Path) -> dict:
+def run_one(n: int, vault: str, seconds: float, seed: int, out_dir: Path, label: str = "", dump_mps: Path | None = None,
+            overrides: dict | None = None, structure_only: bool = False) -> dict:
     from scripts.setup_db import setup_db
     from scripts.v2_solve_profile import coupling
     from zaad.full.jobs import JobStore, report_json
@@ -185,10 +326,17 @@ def run_one(n: int, vault: str, seconds: float, seed: int, out_dir: Path) -> dic
     request, build = build_network_request(conn, "bench", horizon=12, service_target=.95, max_solve_seconds=seconds,
                                            skus=chosen, **phases)
     t_build = time.perf_counter() - t0
+    if overrides:
+        # experiment: a request setting changed from outside (e.g. warm_start=false); recorded in the output
+        request = request.model_copy(update=overrides)
 
     rec = Recorder()
+    rec.structure_only = structure_only
+    if dump_mps is not None:
+        rec.dump_dir = dump_mps / f"{vault}_{n:02d}"
     rec.install()
     cpu0, t0 = time.process_time(), time.perf_counter()
+    rec.t_start = t0
     try:
         report = plan_network(request)
     finally:
@@ -214,12 +362,27 @@ def run_one(n: int, vault: str, seconds: float, seed: int, out_dir: Path) -> dic
 
     quality = report.get("solve_quality") or {}
     milp_wall = sum(s["wall_s"] for s in rec.solves)
+    by_stage: dict[str, dict] = {}
+    for s_ in rec.solves:
+        row = by_stage.setdefault(s_["stage"], {"milps": 0, "wall_s": 0., "cpu_s": 0., "lex1_s": 0., "lex2_s": 0., "time_limited": 0})
+        row["milps"] += 1
+        row["wall_s"] += s_["wall_s"]
+        row["cpu_s"] += s_["cpu_s"]
+        if s_["phase"] == "lex1":
+            row["lex1_s"] += s_["wall_s"]
+        elif s_["phase"] == "lex2":
+            row["lex2_s"] += s_["wall_s"]
+        row["time_limited"] += int(s_["highs_status"] == 1)
+    for row in by_stage.values():
+        for k in ("wall_s", "cpu_s", "lex1_s", "lex2_s"):
+            row[k] = round(row[k], 3)
+        row["share_of_plan"] = round(row["wall_s"] / t_plan, 4) if t_plan else None
     result = {
         "run_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "host": {"platform": platform.platform(), "machine": platform.machine(), "cpus": os.cpu_count(),
                  "python": platform.python_version(), "fly_machine": os.environ.get("FLY_MACHINE_ID"),
                  "fly_vm_size": os.environ.get("FLY_VM_SIZE") or os.environ.get("FLY_VM_MEMORY_MB")},
-        "vault": vault, "seed": seed, "max_solve_seconds": seconds,
+        "vault": vault, "seed": seed, "max_solve_seconds": seconds, "request_overrides": overrides or {}, "structure_only": structure_only,
         "products": {"catalogue": len(full.skus), "requested": n, "planned": len(request.skus), "chosen": chosen},
         "request": {
             "horizon": request.horizon, "scenarios": request.scenarios, "skus": len(request.skus),
@@ -254,6 +417,9 @@ def run_one(n: int, vault: str, seconds: float, seed: int, out_dir: Path) -> dic
                                         "achieved_gap": c.get("achieved_gap"), "nodes": c.get("nodes")}
                                 for name, c in (quality.get("candidates") or {}).items()},
         "milps": rec.solves,
+        "milp_by_stage": by_stage,
+        "planner_stages_s": {k: round(v, 3) for k, v in sorted(rec.stages_s.items())},
+        "planner_stage_calls": dict(sorted(rec.stage_calls.items())),
         "milp_summary": {
             "count": len(rec.solves), "max_cols": max((s["cols"] for s in rec.solves), default=0),
             "max_rows": max((s["rows"] for s in rec.solves), default=0), "max_integer": max((s["integer"] for s in rec.solves), default=0),
@@ -266,8 +432,11 @@ def run_one(n: int, vault: str, seconds: float, seed: int, out_dir: Path) -> dic
         "coupling": coupling(request),
     }
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"bench_{vault}_{n:02d}.json"
+    path = out_dir / (f"bench_{vault}_{n:02d}" + (f"_{label}" if label else "") + ".json")
     path.write_text(json.dumps(result, indent=2, default=str))
+    # the full report and the plan shape, for decision-identity comparison between runs
+    (out_dir / (f"report_{vault}_{n:02d}" + (f"_{label}" if label else "") + ".json")).write_text(serialised)
+    (out_dir / (f"plan_{vault}_{n:02d}" + (f"_{label}" if label else "") + ".json")).write_text(json.dumps(shape, indent=1, default=str))
     t = result["timings_s"]
     print(f"{vault} n={n}: plan {t['plan_wall']:.1f}s (solver core {t['solver_core_total']:.1f}s = "
           f"{100 * (result['shares']['solver_core_of_plan'] or 0):.0f}%), {len(rec.solves)} MILPs, "
@@ -285,9 +454,20 @@ def main() -> None:
     ap.add_argument("--seconds", type=float, default=15.)
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--out", default="artifacts/solve_benchmark")
+    ap.add_argument("--label", default="", help="suffix for the output file names (e.g. baseline, exp1)")
+    ap.add_argument("--dump-mps", default=None, help="directory: write every MILP the planner solves as MPS + settings")
+    ap.add_argument("--request-override", action="append", default=[], metavar="KEY=JSON",
+                    help="experiment: override a Request field, e.g. warm_start=false (JSON value)")
+    ap.add_argument("--structure-only", action="store_true", help="build every model, solve none: dimensions only")
     args = ap.parse_args()
+    overrides = {}
+    for item in args.request_override:
+        key, _, value = item.partition("=")
+        overrides[key] = json.loads(value)
     for n in (int(x) for x in args.products.split(",") if x.strip()):
-        run_one(n, args.vault, args.seconds, args.seed, Path(args.out))
+        run_one(n, args.vault, args.seconds, args.seed, Path(args.out), label=args.label,
+                dump_mps=Path(args.dump_mps) if args.dump_mps else None, overrides=overrides or None,
+                structure_only=args.structure_only)
 
 
 if __name__ == "__main__":

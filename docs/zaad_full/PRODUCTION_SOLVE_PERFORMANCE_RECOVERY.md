@@ -428,3 +428,27 @@ inside its cap), **ZAAD V2 PRODUCTION PLANNER — BLOCKED**, on two owner decisi
 (spend) and the default scope or cap (product policy). The orchestration fix in this pass (one
 ordered solver lease, honest queue) stands on its own and is merged through the exact-head gate;
 no runtime tag is created for an unhealthy plan path.
+
+## 15. Addendum (2026-09-16) — the planner's scaling, root-caused by the full performance pass
+
+Historical sections above are unchanged. The full performance pass
+(`ZAAD_FULL_PERFORMANCE_PASS.md`) profiled the same plans by planner stage and lexicographic phase
+and replayed the individual MILPs in isolation. Its findings correct §5.3's attribution:
+
+* The "per-service confirmation ladder" is the service-frontier oracle (one lexicographic solve per
+  service, §5.3's `alternative_value` attribution was wrong: `alternative_value` never runs on the
+  sample). Only its phase-one optimum is read; its phase two (a full cost minimisation per product)
+  was 57 % of an 8-product plan and is now skipped exactly (`service_only=True`, merged).
+* The joint escalation solves are not intrinsically hard: 91 % of their integer columns are FEFO
+  indicators between cohorts that all outlive the horizon — the pure symmetry the P2 pass removed
+  on network requests and kept on the single-node formulation for the frozen record's sake. With
+  the same rule applied to single-location requests (`fefo_symmetry_scope="all"`, a request field
+  merged default-off) the 5-product plan takes 5 s instead of 135 s and the 8-product plan 181 s
+  instead of 429 s; enabling it on the product path is the owner's call because it moves an
+  equal-cost tie on the frozen fixture T.
+* What remains at 8–10 products with the symmetry removed is the phase-two cost proof at the
+  requested MIP gap of 1e-6 on a 4.5e7 objective — 90 s per joint solve for the last 46 units;
+  at 1e-5 the 8-product plan completes in 4 s with tolerance-level differences. Not changed
+  (default gap policy), evidence recorded for the owner.
+* The machine (§4) is still the machine: the burst budget throttles consecutive solves exactly as
+  measured; nothing in the pass changes that, and Fly was not upgraded.

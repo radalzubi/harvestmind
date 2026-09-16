@@ -13,6 +13,7 @@ import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from api.product.drafts import DraftRefused
 from api.routers import zaad_insights
@@ -135,6 +136,14 @@ async def _draft_refused(request: _Request, exc: DraftRefused) -> _JSONResponse:
 # was innermost, an unhandled error reached the browser with no CORS headers at all, so the page
 # saw only "Failed to fetch" and could not read the request id the error copy tells people to
 # quote. `tests/integration/test_api_error_boundary.py` holds this.
+# Response compression (performance pass, SERIALIZATION). The workspace read the web makes on every
+# open (`/api/zaad/network/request/from-workspace`) is 3.6 MB of JSON for the 150-product sample
+# and a completed plan's report is 50-330 KB; both are text that compresses about ten to one.
+# Registered before CORS so that CORS stays the outermost middleware (see below). The security-
+# header middleware streams every response, so the 1 KB floor does not apply and small bodies are
+# compressed too (microseconds); nothing about the JSON itself changes.
+app.add_middleware(GZipMiddleware, minimum_size=1024)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,

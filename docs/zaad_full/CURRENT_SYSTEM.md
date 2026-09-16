@@ -64,8 +64,11 @@ savings claim is established by this repository.
   forecasting infrastructure ingestion optimization pool reports risk synthetic training ...` is the legacy HarvestMind
   platform: still mounted, gated where it plans (`ZAAD_LEGACY_PLANNERS=0` in production), not the optimizer.
 * `web/` — the Next.js site and workspace (Vercel, production branch `main`). The workspace is
-  four surfaces — Home, Decisions, Network, Data — over one read of the operator's vault; planning
-  runs on the asynchronous jobs path because a solve takes minutes. `FRONTEND_UX_REBUILD.md` is the
+  three groups of surfaces — Home, Decisions, Inventory, Purchase orders | Insights, Network,
+  Diagnostics, History | Upload, Data — the operating surfaces over bounded server-side reads of
+  the operator's records, Home / Decisions / Network over one read of the planning request (gzip
+  since the performance pass), Insights over server-side aggregations; planning runs on the
+  asynchronous jobs path because a solve takes minutes. `FRONTEND_UX_REBUILD.md` is the
   record of how it is built and what it deliberately does not claim.
 * `db/migrations/` — 27 idempotent migrations applied by `scripts/setup_db.py` (023–027 are the operating product's own tables and columns, also applied lazily by `api/product/drafts.py::ensure_tables`).
 
