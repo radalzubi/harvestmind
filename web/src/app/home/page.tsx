@@ -26,7 +26,10 @@ import { KIND_LABEL } from "@/lib/network/model";
 import { standing, type Standing } from "@/lib/zaad/standing";
 import { useSession } from "@/lib/session";
 import { Onboarding } from "@/components/workspace/Onboarding";
-import { COUNT, DATE, MONEY, NUMBER, fetchSummary, listDrafts, track, type DraftSummary, type OperatingSummary } from "@/lib/zaad/product";
+import { COUNT, DATE, MONEY, NUMBER, PERCENT, fetchSummary, listDrafts, track, type DraftSummary, type OperatingSummary } from "@/lib/zaad/product";
+import { EMPTY, fetchOverview, linksFor, periodLabel, planSentence, shown, type Overview } from "@/lib/zaad/insights";
+import { ChartCard } from "@/components/insights/ChartCard";
+import { MultiLine } from "@/components/charts";
 import { STATE_LABEL } from "@/lib/zaad/product";
 import { operatorWarning } from "@/lib/zaad/warnings";
 import { ReadinessLine, useCapabilityReadiness } from "@/components/workspace/Readiness";
@@ -113,6 +116,54 @@ function Snapshot({ summary }: { summary: OperatingSummary }) {
  * thing observed afterwards — from the record, not from the plan. Not project management: five
  * lines, each a link to the place where the work is done.
  */
+/**
+ * Three summaries from Insights, and no more: what customers ordered over the last twelve weeks,
+ * the inventory exposure now, and what was decided. Read from the same server aggregations as the
+ * Insights page, so Home and Insights never disagree; the detail lives on Insights.
+ */
+function Glance() {
+  const [data, setData] = useState<Overview | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetchOverview({ ...EMPTY, bucket: "week" }).then((d) => alive && setData(d)).catch(() => undefined);
+    return () => { alive = false; };
+  }, []);
+  if (!data || !(data.demand.available || data.inventory.available || data.decisions.recommended)) return null;
+  const series = data.demand.series.map((p) => ({ label: periodLabel(p.period, "week"), ordered: p.ordered, shipped: p.shipped }));
+  const d = data.demand; const inv = data.inventory; const dec = data.decisions;
+  const responses = (dec.responses ?? []).reduce((a, r) => a + r.n, 0);
+  return (
+    <Section title="At a glance" more="Open Insights" moreHref="/insights">
+      <div className="ins-grid" style={{ marginTop: 0 }}>
+        {d.available && (
+          <ChartCard title="Observed customer orders — 12 weeks" description="Orders your customers placed, by week. Not a demand estimate." leads={[{ href: linksFor.insights("demand", {}), label: "Open Demand" }]}>
+            <MultiLine data={series} series={[{ key: "ordered", name: "Ordered" }, { key: "shipped", name: "Shipped" }]} height={160} area />
+            {d.period_over_period && <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "var(--ink-700)" }}>Last week vs the one before: {shown(d.period_over_period.change_share, (v) => PERCENT(v, 1), "UNKNOWN")}.</p>}
+          </ChartCard>
+        )}
+        {inv.available && inv.position && (
+          <ChartCard title="Inventory exposure" description="Units on hand at the latest count, what is inbound on open orders, and the cover that implies." leads={[{ href: linksFor.insights("inventory", {}), label: "Open Inventory insights" }]}>
+            <dl className="ins-stat">
+              <div><dt>On hand</dt><dd><span className="ins-num">{shown(inv.position.on_hand, NUMBER, "NO_DATA")}</span></dd></div>
+              <div><dt>Inbound</dt><dd><span className="ins-num">{shown(inv.position.inbound_units, NUMBER, "NO_DATA")}</span></dd></div>
+              <div><dt>Weeks of cover</dt><dd><span className="ins-num">{shown(inv.position.weeks_of_cover, (v) => NUMBER(v, 1), inv.position.cover_reason)}</span></dd></div>
+            </dl>
+          </ChartCard>
+        )}
+        {dec.recommended && (
+          <ChartCard title="Decisions and actions" description={planSentence(data.plan, DATE)} leads={[{ href: linksFor.insights("decisions", {}), label: "Open Decisions & value" }]}>
+            <dl className="ins-stat">
+              <div><dt>Recommended</dt><dd><span className="ins-num">{NUMBER(dec.recommended.total)}</span></dd></div>
+              <div><dt>Responses</dt><dd><span className="ins-num">{NUMBER(responses)}</span></dd></div>
+              <div><dt>Placed externally</dt><dd><span className="ins-num">{NUMBER((dec.external_status ?? []).reduce((a, r) => a + r.n, 0))}</span><small>{NUMBER(dec.outcomes?.recorded)} outcomes recorded</small></dd></div>
+            </dl>
+          </ChartCard>
+        )}
+      </div>
+    </Section>
+  );
+}
+
 function ClosedLoop() {
   const [feed, setFeed] = useState<HistoryFeed | null>(null);
   useEffect(() => {
@@ -287,6 +338,7 @@ function HomeBody() {
       </Section>
 
       {snapshot && <Snapshot summary={snapshot} />}
+      <Glance />
 
       <Watches state={state} />
 

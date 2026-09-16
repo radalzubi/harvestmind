@@ -1,7 +1,16 @@
 export const en = {
   workspace: {
     groups: { operate: "Operate", analyse: "Analyse", data: "Data" },
-    nav: { home: "Home", decisions: "Decisions", inventory: "Inventory", orders: "Purchase orders", ordersShort: "Orders", network: "Network", diagnostics: "Diagnostics", history: "History", upload: "Upload", data: "Data", more: "More" },
+    nav: { home: "Home", decisions: "Decisions", inventory: "Inventory", orders: "Purchase orders", ordersShort: "Orders", insights: "Insights", network: "Network", diagnostics: "Diagnostics", history: "History", upload: "Upload", data: "Data", more: "More" },
+    insights: {
+      title: "Insights", sub: "Your records, aggregated: what customers ordered, what you hold, what is inbound, how suppliers deliver, and what ZAAD decided. Nothing here starts a run.",
+      tabs: { overview: "Overview", demand: "Demand", inventory: "Inventory", supply: "Supply & suppliers", service: "Service & customers", decisions: "Decisions & value", perishability: "Perishability" },
+      bucket: { day: "Daily", week: "Weekly", month: "Monthly" },
+      filters: { sku: "Product", category: "Category", brand: "Brand", customer: "Customer", location: "Site", supplier: "Supplier", start: "From", end: "To", clear: "Clear filters" },
+      observed: "Observed customer orders", ordered: "Ordered", shipped: "Shipped", unfulfilled: "Unfulfilled", notDemand: "Orders your customers placed — not a demand estimate.",
+      latestPlan: "Latest ZAAD plan", dataChanged: "Workspace data changed afterward.", noPlan: "No completed ZAAD plan yet.", runFromHome: "Run one from Home",
+      dataScope: "Data & scope", showTable: "Show as table", showChart: "Show as chart", openPeriod: "Open this period", demoLabel: "Demo / synthetic data",
+    },
     search: "Search", searchLabel: "Search products, suppliers, orders, proposals and decisions", help: "Help",
     skip: "Skip to content", asAt: "as at", foot: "ZAAD recommends and records approvals. It never sends an order to a supplier.",
     lang: "عربي", langLabel: "Switch to Arabic",

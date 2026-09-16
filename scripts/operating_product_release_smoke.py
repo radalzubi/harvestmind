@@ -145,6 +145,27 @@ def main() -> int:
         status, _, raw = fetch(f"{api}/api/zaad/history", token=t)
         h = json.loads(raw or b"{}") if status == 200 else {}
         check("history feed keeps the registers apart", status == 200 and "backtested" in h, f"status {status}")
+        # V2.1A Insights: server-side aggregations that agree with the workspace summary, honest nulls, and no solve started
+        status, _, raw = fetch(f"{api}/api/zaad/insights/summary", token=t)
+        summary = json.loads(raw or b"{}") if status == 200 else {}
+        check("insights summary answers", status == 200 and "plan" in summary and "demand" in summary, f"status {status}")
+        status, _, raw = fetch(f"{api}/api/zaad/insights/demand?bucket=month", token=t)
+        demand = json.loads(raw or b"{}") if status == 200 else {}
+        check("insights demand is observed orders, not demand", status == 200 and demand.get("label") == "OBSERVED CUSTOMER ORDERS" and "provenance" in demand,
+              f"status {status}, {len(demand.get('series') or [])} months")
+        status, _, raw = fetch(f"{api}/api/zaad/insights/suppliers?bucket=month", token=t)
+        sup = json.loads(raw or b"{}") if status == 200 else {}
+        unmeasured = [r for r in sup.get("suppliers") or [] if r.get("lateness", {}).get("value") is None]
+        check("insights lateness is never 0 without promised dates", status == 200 and all(r["lateness"].get("reason") == "NOT_MEASURED" for r in unmeasured),
+              f"status {status}, {len(sup.get('suppliers') or [])} suppliers, {len(unmeasured)} without a measured lateness")
+        status, _, raw = fetch(f"{api}/api/zaad/insights/value", token=t)
+        value = json.loads(raw or b"{}") if status == 200 else {}
+        check("insights keeps five value registers apart", status == 200 and value.get("order") == ["MODELED_DIFFERENCE", "BACKTESTED_OPPORTUNITY", "APPROVED_EXPECTED_DIFFERENCE", "OBSERVED_AFTER_ACTION", "REALIZED_VALUE"],
+              f"status {status}")
+        status, _, raw = fetch(f"{api}/api/zaad/insights/connectivity", token=t)
+        conn_matrix = json.loads(raw or b"{}") if status == 200 else {}
+        check("insights engine connectivity matrix lists every family", status == 200 and {f["family"] for f in conn_matrix.get("families") or []} == {"P0", "P1", "P2", "Sector physics", "P3", "P4", "P5", "P4B"},
+              f"status {status}")
 
     failed = [n for n, ok, _ in results if not ok]
     print(f"\n{len(results) - len(failed)}/{len(results)} checks passed")

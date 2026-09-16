@@ -6,7 +6,16 @@ import type { en } from "./en";
 export const ar: typeof en = {
   workspace: {
     groups: { operate: "التشغيل", analyse: "التحليل", data: "البيانات" },
-    nav: { home: "الرئيسية", decisions: "القرارات", inventory: "المخزون", orders: "أوامر الشراء", ordersShort: "الأوامر", network: "الشبكة", diagnostics: "التشخيص", history: "السجل", upload: "الرفع", data: "البيانات", more: "المزيد" },
+    nav: { home: "الرئيسية", decisions: "القرارات", inventory: "المخزون", orders: "أوامر الشراء", ordersShort: "الأوامر", insights: "الرؤى", network: "الشبكة", diagnostics: "التشخيص", history: "السجل", upload: "الرفع", data: "البيانات", more: "المزيد" },
+    insights: {
+      title: "الرؤى", sub: "سجلاتك مجمّعة: ما طلبه العملاء، وما تحتفظ به، وما هو قادم، وكيف يسلّم الموردون، وما قررته زاد. لا شيء هنا يبدأ تشغيلاً جديداً.",
+      tabs: { overview: "نظرة عامة", demand: "الطلب", inventory: "المخزون", supply: "التوريد والموردون", service: "الخدمة والعملاء", decisions: "القرارات والقيمة", perishability: "القابلية للتلف" },
+      bucket: { day: "يومي", week: "أسبوعي", month: "شهري" },
+      filters: { sku: "المنتج", category: "الفئة", brand: "العلامة", customer: "العميل", location: "الموقع", supplier: "المورد", start: "من", end: "إلى", clear: "مسح المرشحات" },
+      observed: "طلبات العملاء المرصودة", ordered: "المطلوب", shipped: "المشحون", unfulfilled: "غير الملبّى", notDemand: "الطلبات التي قدّمها عملاؤك — وليست تقديراً للطلب.",
+      latestPlan: "آخر خطة زاد", dataChanged: "تغيّرت بيانات المساحة بعد ذلك.", noPlan: "لا توجد خطة زاد مكتملة بعد.", runFromHome: "شغّل واحدة من الرئيسية",
+      dataScope: "البيانات والنطاق", showTable: "عرض كجدول", showChart: "عرض كرسم", openPeriod: "افتح هذه الفترة", demoLabel: "بيانات تجريبية / اصطناعية",
+    },
     search: "بحث", searchLabel: "ابحث في المنتجات والموردين والأوامر والمقترحات والقرارات", help: "مساعدة",
     skip: "انتقل إلى المحتوى", asAt: "كما في", foot: "زاد يوصي ويسجّل الموافقات. لا يرسل أي أمر إلى مورد أبداً.",
     lang: "EN", langLabel: "Switch to English",

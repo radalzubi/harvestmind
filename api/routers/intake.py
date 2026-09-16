@@ -824,3 +824,17 @@ def load_fmcg_sample_into(conn, seed: int = 7, archetype: str = "E_mixed_portfol
 @router.post("/load-sample-fmcg", status_code=status.HTTP_200_OK, dependencies=[Depends(can_manage_data)])
 def load_sample_fmcg(seed: int = 7, conn=Depends(get_conn)):
     return load_fmcg_sample_into(conn, seed=seed)
+
+
+@router.post("/load-demo-company", status_code=status.HTTP_200_OK, dependencies=[Depends(can_manage_data)])
+def load_demo_company(seed: int = 7, as_of: str | None = None, conn=Depends(get_conn),
+                      operator: str | None = Depends(require_operator)):
+    """Load the complete DEMO company (synthetic; never a customer) into this workspace, replacing its
+    FMCG data. Its amendment rights and customer orders are keyed to this workspace."""
+    from datetime import date as _date
+
+    from synthetic.fmcg.demo_company import load_demo_company_into
+    if operator is None:
+        raise HTTPException(status_code=401, detail="Open your workspace to load the demo company into it.")
+    when = _date.fromisoformat(as_of[:10]) if as_of else None
+    return load_demo_company_into(conn, operator, as_of=when, seed=seed)

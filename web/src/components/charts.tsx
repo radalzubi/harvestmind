@@ -356,3 +356,72 @@ export function Waterfall({
     </ResponsiveContainer>
   );
 }
+
+// ── MultiLine / StackedBars (Insights) ─────────────────────────────────────────
+//
+// Generic series for the Insights surface: the keys are whatever the server sent, the colours are
+// the product palette, and a null stays a gap in the line rather than a zero. Non-colour
+// distinction: every series also differs by stroke dash, so two lines never rely on hue alone.
+
+const PALETTE = ["#4F46E5", "#0EA5E9", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6", "#64748B"];
+const DASHES = ["0", "6 3", "2 2", "8 4 2 4", "4 2", "10 2", "1 3"];
+
+export interface GenericPoint { label: string; [key: string]: number | string | null | undefined }
+
+export function MultiLine({
+  data, series, height = 260, yFormat = (v: number) => v.toLocaleString("en-US"), onPoint, area = false,
+}: {
+  data: GenericPoint[];
+  series: { key: string; name: string; color?: string }[];
+  height?: number;
+  yFormat?: (v: number) => string;
+  onPoint?: (label: string) => void;
+  area?: boolean;
+}) {
+  const Chart = area ? AreaChart : AreaChart;
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <Chart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}
+             onClick={(state: { activeLabel?: string | number } | null) => { if (onPoint && state?.activeLabel != null) onPoint(String(state.activeLabel)); }}>
+        <CartesianGrid stroke="#F2F2EF" vertical={false} />
+        <XAxis dataKey="label" tick={AXIS_STYLE} tickLine={false} axisLine={false} minTickGap={24} />
+        <YAxis tick={AXIS_STYLE} tickLine={false} axisLine={false} width={56} tickFormatter={yFormat} />
+        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: ValueType | undefined, name: NameType | undefined) => [v == null ? "—" : yFormat(toNum(v)), String(name)]} />
+        {series.map((s, i) => (
+          <Area key={s.key} type="monotone" dataKey={s.key} name={s.name} stroke={s.color ?? PALETTE[i % PALETTE.length]}
+                strokeWidth={2} strokeDasharray={DASHES[i % DASHES.length]} fill={s.color ?? PALETTE[i % PALETTE.length]}
+                fillOpacity={area ? 0.08 : 0} connectNulls={false} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />
+        ))}
+      </Chart>
+    </ResponsiveContainer>
+  );
+}
+
+export function StackedBars({
+  data, series, height = 260, yFormat = (v: number) => v.toLocaleString("en-US"), onBar, layout = "horizontal",
+}: {
+  data: GenericPoint[];
+  series: { key: string; name: string; color?: string }[];
+  height?: number;
+  yFormat?: (v: number) => string;
+  onBar?: (label: string) => void;
+  layout?: "horizontal" | "vertical";
+}) {
+  const vertical = layout === "vertical";
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={data} layout={layout} margin={{ top: 8, right: vertical ? 40 : 8, left: 8, bottom: 4 }}
+                onClick={(state: { activeLabel?: string | number } | null) => { if (onBar && state?.activeLabel != null) onBar(String(state.activeLabel)); }}>
+        <CartesianGrid stroke="#F2F2EF" vertical={vertical} horizontal={!vertical} />
+        {vertical
+          ? <><XAxis type="number" tick={AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={yFormat} /><YAxis type="category" dataKey="label" tick={AXIS_STYLE} tickLine={false} axisLine={false} width={150} /></>
+          : <><XAxis dataKey="label" tick={AXIS_STYLE} tickLine={false} axisLine={false} minTickGap={24} /><YAxis tick={AXIS_STYLE} tickLine={false} axisLine={false} width={56} tickFormatter={yFormat} /></>}
+        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: ValueType | undefined, name: NameType | undefined) => [v == null ? "—" : yFormat(toNum(v)), String(name)]} />
+        {series.map((s, i) => (
+          <Bar key={s.key} dataKey={s.key} name={s.name} stackId="stack" fill={s.color ?? PALETTE[i % PALETTE.length]}
+               radius={i === series.length - 1 ? [3, 3, 0, 0] : 0} isAnimationActive={false} />
+        ))}
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
