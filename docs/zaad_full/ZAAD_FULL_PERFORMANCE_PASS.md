@@ -448,7 +448,7 @@ then 5); results in §10.2.
 |---|---|---|---|---|---|---|---|---|---|---|
 | 8 (15:23:35 UTC) | 67 min (steal flat at 883 s since 14:17) | 405 s | 0.00 s | **208.4 s** | **DONE, RETAIN_INCUMBENT** (`joint_recovery` FEASIBLE_TIME_LIMIT at 89.7 s — the phase-two proof at its cap, as §4 #2 predicts; `base_stock` OPTIMAL 1.8 s) | health 0.28 / 0.30 / 0.45 · summary 0.32 / 0.38 / 0.43 · inventory 0.40 / 0.58 / 0.71 · POs 0.34 / 0.41 / 0.42 · readiness 0.52 / 0.64 / 0.73 · Insights 0.81 / 0.93 / 1.10 · job 0.23 / 0.31 / 0.58 | 0 in 168 | user +263 s, **steal +5.0 s** (unthrottled) | 596 MB | 1,065 MB |
 | 10 (16:13:10 UTC) | 45 min (steal +0.3 s over the rest) | 450 s | 0.01 s | **212.6 s** | **DONE, RETAIN_INCUMBENT** (`joint_recovery` FEASIBLE_TIME_LIMIT at 89.7 s; `base_stock` OPTIMAL 14.1 s; `hedged_network` INFEASIBLE 1.0 s) | health 0.28 / 0.30 / 0.36 · summary 0.31 / 0.43 / 0.44 · inventory 0.40 / 0.52 / 0.63 · POs 0.37 / 0.45 / 0.47 · readiness 0.49 / 0.62 / 0.68 · Insights 0.82 / 1.00 / 1.36 · job 0.24 / 0.32 / 0.65 | 0 in 168 | user +264 s, **steal +5.5 s** (unthrottled) | 648 MB | 935 MB |
-| 5 | (16:55 UTC) | 338 s | | | | | | | | |
+| 5 (16:42:45 UTC) | 25 min (steal +0.1 s) | 338 s | 0.01 s | **133.7 s** | **DONE, RETAIN_INCUMBENT** | health 0.28 / 0.34 / 0.39 · summary 0.36 / 0.40 / 0.44 · inventory 0.40 / 0.51 / 0.57 · POs 0.36 / 0.45 / 0.53 · readiness 0.52 / 0.70 / 0.80 · Insights 0.82 / 0.94 / 0.96 · job 0.22 / 0.39 / 0.51 | 0 in 112 | user +168 s, **steal +2.9 s** | 682 MB | 1,029 MB |
 
 **8 products: TIMEOUT at 405 s on v28 this morning (§1.4) → DONE in 208 s on v29; 10 products
 (the product's default): TIMEOUT at 450 s on the released planner (recovery record §3.1) → DONE in
@@ -457,7 +457,7 @@ arm64 structural runs did (187 s and 278 s); the remaining time is the two joint
 their 90 s cap (§4 #2), which is the owner's MIP-gap question. Each of these plans spends ~265 s of
 the 500 s burst balance, so the honest sustained capacity of `shared-cpu-2x` is one default plan
 per ~35 minutes of idle; a second plan inside that window runs throttled (§10.1 shows what that
-looks like). The 5-product row is filled from the 16:55 UTC run.
+looks like). 5 products: 139.0 s on v28 → 133.7 s on v29 (unchanged by construction; the 135 → 5 s lever is the owner's E5).
 
 ## 11. Final decision matrix (§48 of the brief)
 
@@ -469,7 +469,7 @@ looks like). The 5-product row is filled from the 16:55 UTC run.
 | 10 k / 50 k data scale | every operating read ≤ 60 / ≤ 310 ms; planner workspace read 3.6 s / 14 s scoped to 200 | unchanged (SQL scoping exact but not the cost; DEFERRED) | documented |
 | 1-product solve (production, rested) | 4.6 s | 4.4 s | unchanged |
 | 2-product solve | 29.7 s | 30.4 s | unchanged |
-| 5-product solve | 139.0 s | (16:55 run) | unchanged by construction (frontier cost negligible at 5; the 135 → 5 s lever is the owner's E5) |
+| 5-product solve | 139.0 s | 133.7 s | unchanged by construction (frontier cost negligible at 5; the 135 → 5 s lever is the owner's E5) |
 | 8-product solve | **TIMEOUT at 405 s** | **DONE 208 s** | fixed on a rested machine |
 | 10-product solve (the default) | **TIMEOUT at 450 s** | **DONE 213 s** | fixed on a rested machine; sustained use still burst-limited |
 | evaluation (baseline + overlay, sequential) | 2 × a plan of the proposal's scope | 2 × the new plan times (frontier removed from both) | improved proportionally; not re-measured separately |
