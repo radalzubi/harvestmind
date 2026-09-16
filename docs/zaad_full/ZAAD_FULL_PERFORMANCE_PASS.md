@@ -109,9 +109,24 @@ The reads stay in their idle band while the solver holds one vCPU, as in the rec
 one read outside 0.5 s is the **Insights summary (0.55–0.67 s idle, 0.75–0.83 s median during a
 solve, 1.08 s max)** — the largest server-side aggregation the workspace makes (§2).
 
-### 1.4 Production 8 and 10 products (rested, sequential)
+### 1.4 Production 8 products (rested), and the 10-product baseline
 
-(filled when the runs complete)
+**8 products, run at 12:56:04 UTC after 32 idle minutes** (`/proc/stat` before: user 664.3 s,
+steal 2,138.1 s; load 0.00): job cap 405 s, queued 0.006 s, **TIMEOUT — "exceeded 405 s wall
+clock", run 407.7 s, no report.** Machine CPU over the run: user +485 s, steal +10 s (the balance
+ran out only in the last seconds: 32 minutes refill ≈ 240 s on top of the ~230 s left after the
+morning's runs). Solver child RSS max 704 MB, 17 threads; `MemAvailable` min 995 MB; load 1.52.
+Reads while solving (median / p95 / max s): health 0.24 / 0.30 / 0.62, summary 0.31 / 0.39 / 0.42,
+inventory 0.40 / 0.48 / 0.85, purchase orders 0.36 / 0.44 / 0.58, readiness 0.49 / 0.62 / 0.64,
+Insights summary 0.75 / 0.88 / 0.93, job 0.24 / 0.32; 0 errors in 259 reads. So the released
+planner's cap holds on production up to 5 products and **fails from 8 products** on a rested
+shared machine — the local 429 s structural number is in the same place.
+
+**10 products** is not re-run on production for the baseline: the recovery record measured it on
+the same planner code on a rested machine 2026-09-15 (TIMEOUT at 450 s, 509 s of CPU, 7.3 s steal;
+its §3.1), the image since then changed nothing under `zaad/` that computes a plan, and the run
+would spend the whole burst balance (≥ 1 h of idle to refill) that the post-deploy verification
+needs. The local 10-product structural row (§1.1) is recorded when its run ends.
 
 ## 2. Phase B — site, API and data-scale profile
 
@@ -337,13 +352,14 @@ excluded as volatile.
 | E5 vs E5 + gap 1e-5 (E7) | 8 | one-pack differences on four recovery lines; `recovery_guidance.status` OPTIMAL vs FEASIBLE_TIME_LIMIT; statuses and gates identical |
 | E5 vs gap 1e-4 / 1e-3 | 8 | economically visible: objectives −0.004 % / −0.05 %, gate reasons and AVOIDABLE / UNAVOIDABLE classes change → rejected |
 | frozen gates on the merged tree (default scope + E6) | P0 cell 15, P1 fixtures B / T / Q / A | canonical regression **PASS**; P1 invariants **720 clean**; the label variance under time limits on cell 15 is the pre-existing recorded one |
+| P2 evidence (`p2_benchmark`, 200 cells, 1,720 reviews) on the merged tree | P2 fixtures, all policies and seeds | against the frozen x86 record: 1,674 identical / 46 differing — **the unchanged `main` tree on the same arm64 machine differs from the record in exactly the same 46 reviews** (tie noise of the architecture, not the change); **unchanged `main` vs the merged tree on the same machine: 1,720 / 1,720 identical**, p2 invariants PASS; and faster (review p50 0.75 → 0.50 s, p95 8.9 → 5.5 s, max 24.1 → 16.6 s) |
 | frozen gates with `fefo_symmetry_scope="all"` forced (E5) | same | P0 cell 15 identical; P1 B / Q / A identical; **T differs**: reviews 0 and 5 split 1,920 units between src_A and src_B as 1,368 / 552 instead of 1,248 / 672 (equal cost) → the tie the P2 note predicted |
 
 ## 8. Memory (§24)
 
 | run | API process | solver child | plan peak (local, RSS high-water of the benchmark process) |
 |---|---|---|---|
-| production, 1 / 2 / 5 products | 531 MB, 12 threads (constant) | 1 product: n/a (4 s); 2 products ≤ 0.6 GB; 5 products **610 MB**, 16 threads; `MemAvailable` ≥ 1,103 MB of 2,015 MB | — |
+| production, 1 / 2 / 5 / 8 products | 531 MB, 12 threads (constant) | 5 products **610 MB**, 16 threads, `MemAvailable` ≥ 1,103 MB of 2,015 MB; 8 products **704 MB**, 17 threads, `MemAvailable` ≥ 995 MB | — |
 | local baseline (released formulation) 1 / 2 / 3 / 4 / 5 / 8 | — | — | 525 / 658 / 658 / 689 / 1,112 / 1,219 MB |
 | local E5 (`fefo_symmetry_scope="all"`) 1–5 / 8 | — | — | 576 MB at 5, 889 MB at 8 |
 | local E6 (frontier phase-one) 8 | — | — | (filled from the candidate run) |
@@ -353,4 +369,26 @@ products, ≈ 1.2 GB at 8–10 on the released formulation by the local high-wat
 no accepted change increases memory — E6 removes solves, E5 removes 91 % of the integer columns
 (peak 1,112 → 576 MB at 5 products), gzip buffers one response at a time. The 10-product production
 row is filled from the sampler when that run completes (§1.4).
+
+## 9. Phase H — full benchmarks re-run on the candidate tree (local STRUCTURAL, same machine, same seed)
+
+`candidate` = the merged tree (frontier phase one only; `fefo_symmetry_scope` at its default);
+`candidate + all` = the same tree with `fefo_symmetry_scope="all"` (the owner's option, E5).
+Baseline = the unchanged runtime. Time-limited MILPs in brackets.
+
+| products | baseline | candidate (merged) | candidate + `fefo_symmetry_scope="all"` | what remains at the cap |
+|---|---|---|---|---|
+| 1 | 0.5 s | 0.6 s | 0.4 s | — |
+| 2 | 3.0 s | 3.3 s | 0.6 s | — |
+| 3 | 6.5 s | 3.1 s | 1.4 s | — |
+| 5 | 135.1 s [2] | 134.6 s [2] | **7.1 s** [0] | joint phase ones (symmetry) |
+| 8 | 429.2 s [2] | **186.9 s** [2] | **181.3 s** [2] | the two joint phase-two proofs at 1e-6 (90 s cap each) |
+| 10 | > 60 min running at the time of writing (the cap is 450 s; the recovery record's production run TIMEOUT at 450 s) | **277.6 s** [3] | **182.6 s** [2] | merged: base-stock proxy and both joint phase ones at the 90 s cap (symmetry); with `all`: the two phase-two proofs |
+| peak RSS (local) at 8 / 10 | 1,219 / — MB | 1,250 / 1,250 MB | 789 / 869 MB | |
+
+The merged tree removes the frontier's discarded work everywhere (−243 s at 8, −224 s at 10 with
+`all`) and, on the released formulation, brings the 8- and 10-product structural plans under their
+caps (405 s, 450 s) on this machine; the production run after deploy decides whether the x86 search
+path agrees (§10). The symmetry (E5) is what makes 5 products a 7 s plan and takes 8–10 products to
+the residual 1e-6 proofs; both remain the owner's decisions (§6).
 
