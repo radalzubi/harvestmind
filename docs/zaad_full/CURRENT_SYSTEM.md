@@ -38,6 +38,8 @@ read the ledger's "Exact next action".**
 
 Not started (each needs its own authorization): P4B V2 (node-indexed amendments), P6, P7, P8, P9.
 
+Architecture only, not built: the enterprise analytics and AI exploration blueprint (Insights → Explore → Ask ZAAD on one governed semantic layer) — `ENTERPRISE_ANALYTICS_ARCHITECTURE.md`, `SEMANTIC_LAYER_ARCHITECTURE.md`, `ASK_ZAAD_AI_ANALYTICS_ARCHITECTURE.md` (2026-09-16); its phases A1–A11 each need their own authorization.
+
 **Merged and deployed 2026-09-15, plan path blocked in production: the operating product** (V1
 audited and corrected, V2 built on the same branch — PR #81, merge `458fcaf`, Fly v26
 `canonical-458fcaf`, Vercel production from the merge). It adds no optimizer behaviour: after the V1
