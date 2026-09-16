@@ -121,12 +121,13 @@ def main() -> int:
             raise SystemExit(f"workspace not created: {status} {ws}")
         token = ws["token"]
         say("workspace created", f"{ws.get('operator_id')} — DEMO / SYNTHETIC DATA")
+        say("  token", token)   # printed now, so a run that stops later still leaves a way in
     status, me = call(f"{api}/me", token=token)
     operator = (me or {}).get("operator_id") if status == 200 else None
     say("workspace", f"{operator or 'unknown'} ({status})")
 
     query = f"?seed={args.seed}" + (f"&as_of={args.as_of}" if args.as_of else "")
-    status, loaded = call(f"{api}/intake/load-demo-company{query}", token=token, method="POST", body={}, timeout=300)
+    status, loaded = call(f"{api}/intake/load-demo-company{query}", token=token, method="POST", body={}, timeout=900)
     if status != 200 or not loaded:
         raise SystemExit(f"demo company not loaded: {status} {loaded}")
     say("demo company loaded", f"{loaded['total_rows']:,} rows · {loaded['classification']} · as of {loaded['scenarios']['as_of']}")
