@@ -1,20 +1,37 @@
 # ZAAD release ledger
 
-## Current state (2026-09-16, V2.1A Insights released) — the only section that describes NOW
+## Current state (2026-09-16 evening, full performance pass released) — the only section that describes NOW
 
 | item | value |
 |---|---|
-| production runtime | `13dde49` = `Merge PR #84: feat(zaad): V2.1A Insights — visual insights, canonical connectivity, customer demand intelligence` (tested head `2901ee9`, CI 35011852846 13 / 13, tree `1b5cb85` identical) on `d2a3cb5` (planner recovery, PR #83) on the V2 merge `458fcaf`. Fly `zaad-api` **v28**, image `canonical-13dde49`, digest `sha256:374b4e91f061cce054a05749aa48f29be1e9707c2f4bd642ba712b18617c3381`, deployed by the `deploy-api` workflow (run 35052495247) at 03:40 UTC; machine `0804e0dfd1e948`, `shared-cpu-2x` / 2 GB, volume, secrets and env unchanged. Vercel production `13dde49` (Ready). Optimizer bytes = the P4B V1 release + `zaad/full/jobs.py` orchestration (solver lease); the frozen regression and P1 invariants pass |
-| production health | release smoke on v28 **24 / 24** (19 V2 checks + 5 Insights checks); reads stay in their idle band while a plan runs. **Plan path BLOCKED at the default scope** (see the recovery record); V2.1A does not depend on it — Insights never starts a solve |
-| current `main` | = production `13dde49` plus docs commits and PR #85 (`75be986`, scripts only: the demo script prints its token early and waits for a slow load; not deployed, not part of the runtime tag) |
-| RELEASED | P0 … P4B V1 (as before); Operating Product V1 + V2 (deployed, plan path blocked — no V2 planner tag); **Operating Product V2.1A Insights** (tag `zaad-operating-product-v2.1a-runtime` = `13dde49`) |
-| DEFERRED | reconciling the per-MILP budget with the job cap (same knob as the scope decision); exposing CPU steal on Diagnostics; P4 adaptive recourse visuals (in the connectivity matrix as *not visualized*) |
-| REJECTED | component-wise decomposition of the joint escalation solve; raising the cap or lowering the default scope without the owner's decision; solver option changes; caching the workspace read |
+| production runtime | `914c5c33b8c9bc92a098b60ac2248613a31e788a` = `Merge PR #86: perf(zaad): full application and planner performance pass` (tested head `e563800`, CI 35104491427 13 / 13, tree `99d43e2` identical) on the V2.1A merge `13dde49`. Fly `zaad-api` **v29**, image `canonical-914c5c3`, digest `sha256:bfe6177f866969e819847fd37f80f010ea533fa19ede73abd2b9236b1a12125b`, deploy-api run 35105475528; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; Vercel production `zaad` + `harvestmind` from `914c5c3` |
+| production health | release smoke on v29 **24 / 24**; rested probes on v29: 1 / 2 / 8 / 10 products DONE 4.4 / 30.4 / 208.4 / 212.6 s (8 and 10 timed out on v28), reads in their idle band, steal ≤ 5.5 s; a plan spends ~265 s of the burst balance, so a second plan within ~35 min runs throttled (`ZAAD_FULL_PERFORMANCE_PASS.md` §10) |
+| current `main` | = production `914c5c3` plus the performance-pass docs commits |
+| RELEASED | P0 … P4B V1 (as before); Operating Product V1 + V2 (deployed, plan path blocked — no V2 planner tag); **Operating Product V2.1A Insights** (tag `zaad-operating-product-v2.1a-runtime` = `13dde49`); **full performance pass** (tag `zaad-full-performance-pass-runtime` = `914c5c3`) |
+| DEFERRED | the workspace read's Python-side construction cost at 10 k+ products (3.6 s / 14 s scoped to 200); a compact display read + server-side plan submission by scope; reconciling the per-MILP budget with the job cap; exposing CPU steal on Diagnostics; P4 adaptive recourse visuals |
+| REJECTED | component-wise decomposition; MIP gap 1e-4 / 1e-3; HiGHS thread changes; warm-start policy change; SQL-side SKU scoping of the workspace read (exact, not the cost); raising the cap or lowering the default scope without the owner |
 | NOT STARTED | P4B V2, P6, P7, P8, P9 — each needs its own authorization |
-| owner decisions pending | (1) `fly scale vm performance-2x --memory 4096 -a zaad-api` (+$52.56 / month); (2) the default plan scope (5, with 10 / 25 / 50 as explicit costed choices) or a budget-following cap (~900 s for 10 products) — both in `HANDOFF_PLANNER_RECOVERY_2026-09-15.md` |
+| owner decisions pending | (1) `fefo_symmetry_scope="all"` on the product path — exact, 5 products 135 → 5 s, 8 / 10 → ~181 s local; moves an equal-cost tie on frozen fixture T (`ZAAD_FULL_PERFORMANCE_PASS.md` §5 E5); (2) `solver_mip_gap` 1e-5 — 8 products 226 → 4 s local with tolerance-level differences (E7); (3) the machine: `fly scale vm performance-2x --memory 4096 -a zaad-api` (+$52.56 / month) for repeated use — the rested default plan now fits its cap, sustained use does not; (4) the V2 planner runtime tag: the handoff's two-in-a-row proof on v29 after (3) or on a rested machine |
 | tags that never move | `p0-frozen`, `p1-frozen-product`, `p1-frozen`, `pre-canonical-integration`, `sector-physics-release-runtime`, `p3-performance-closure-runtime`, `p4-release-runtime`, `p4-performance-closure-runtime`, `p5-frozen-product`, `p5-frozen`, `p5-release-runtime`, `p4b-v1-frozen-product`, `p4b-v1-frozen`, `p4b-v1-release-runtime`, `zaad-post-p4b-cleanup-runtime`, `frontend-rebuild-runtime`, **`zaad-operating-product-v2.1a-runtime`**; no `zaad-operating-product-v2-runtime` (withheld until the planner passes) |
 | current entry point | `docs/zaad_full/CURRENT_SYSTEM.md` |
 | CI | one workflow (`.github/workflows/ci.yml`): 13 jobs, `cancel-in-progress` per branch (a docs push cancels a running PR run; the `pull_request` event re-runs it); `deploy-api.yml` deploys an exact SHA to Fly from a GitHub runner (secret `FLY_API_TOKEN`, 30-day token created 2026-09-15); Markdown-only pushes do not run CI; branch protection unavailable on this plan |
+
+## Full performance pass (2026-09-16)
+
+| item | value |
+|---|---|
+| branch / PR | `perf/zaad-full-performance-pass`, PR #86 |
+| tested head | `e563800`, CI run 35104491427, 13 / 13 (earlier heads: one gitleaks false positive on an image tag written as app:tag, resolved with exact fingerprints in `.gitleaksignore`; one flaky pass of the solver-lease unit test under CI load, green on every later head) |
+| merge | `914c5c33b8c9bc92a098b60ac2248613a31e788a`, tree `99d43e2` identical to the tested head; `main` was `b818fd3` |
+| deploy | Fly v29 `canonical-914c5c3`, digest `sha256:bfe6177f866969e819847fd37f80f010ea533fa19ede73abd2b9236b1a12125b`, deploy-api run 35105475528; Vercel production from `914c5c3`; **Fly machine unchanged** |
+| runtime tag | `zaad-full-performance-pass-runtime` = `914c5c3` (the V2 planner runtime tag stays withheld) |
+| what changed | frontier oracle phase one only (`solve(service_only=True)`, PROVEN DECISION-EQUIVALENT); `Request.fefo_symmetry_scope` default `network` (NO SEMANTIC IMPACT; `all` is the owner's); gzip on the API; the workspace provider starts its independent reads beside the planning read; benchmark tooling (`production_solve_benchmark` stage / phase attribution, MPS dump, request overrides, structure-only; `milp_replay`, `production_machine_sampler`, `workspace_scale_qa`, `plan_report_compare`) |
+| root causes | (1) FEFO indicator symmetry on single-location requests (91 % of integer columns; joint phase one 66 s → 0.08 s without it); (2) the phase-two cost proof at MIP gap 1e-6 on a 4.5e7 objective (90 s per joint solve); (3) the frontier oracle's discarded cost phase (57 % of an 8-product plan) |
+| before / after (production, rested) | 8 products TIMEOUT 405 s → DONE 208 s; 10 products TIMEOUT 450 s → DONE 213 s; 1 / 2 products unchanged (4.4 / 30.4 s); reads in their idle band during every solve; solver RSS ≤ 648 MB |
+| decision equivalence | reports and plan shapes identical at 1–5 products; canonical PASS; P1 invariants 720; same-machine identity vs unchanged `main`: P2 1,720 / 1,720, sector 416 / 416, P3 2,304 / 2,304, P0 arm 118 / 120 (cell 21's two time-limited reviews vary run to run on the same code) |
+| gates | ruff, mypy (153 files), bandit, pip-audit, gitleaks, docker, frontend typecheck / lint / 101 tests / build, pytest shards |
+| record | `docs/zaad_full/ZAAD_FULL_PERFORMANCE_PASS.md`; addendum §15 of `PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md` |
+| verdict | **ZAAD FULL PERFORMANCE PASS — RELEASE PASS**; Fly recommendation **B — YES FOR RELIABILITY** |
 
 Every section below this line is historical: it records the state at the time it was written and is not
 updated retroactively. "Next action" sentences inside historical sections are superseded by this table.

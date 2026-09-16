@@ -1,6 +1,12 @@
 # ZAAD — current system (read this first)
 
-**Status line (2026-09-16):** production runtime is `13dde49` (Fly `zaad-api` v28, image
+**Status line (2026-09-16, evening):** production runtime is `914c5c3` (Fly `zaad-api` **v29**, image
+`canonical-914c5c3`, digest `sha256:bfe6177f…`) = the V2.1A runtime `13dde49` + the **full performance pass**
+(PR #86: the frontier oracle's discarded cost phase removed exactly, gzip on the API, the workspace's
+independent reads started in parallel, benchmark tooling; `Request.fefo_symmetry_scope` merged
+default-off). Fly machine unchanged (`shared-cpu-2x`, 2 GB). Rested on that machine the 8- and 10-product
+plans now complete (208 s / 213 s; both timed out before); repeated use is still throttled by the shared
+CPU's burst balance — `ZAAD_FULL_PERFORMANCE_PASS.md`. Superseded status line: production runtime was `13dde49` (Fly `zaad-api` v28, image
 `canonical-13dde49`, digest `sha256:374b4e91…`) = the Operating Product V1 + V2 (`458fcaf`) + the
 planner orchestration fix (PR #83) + **V2.1A Insights** (PR #84: server-side aggregations, the latest
 completed plan read back, five value registers, engine connectivity matrix, one complete DEMO
@@ -27,6 +33,8 @@ read the ledger's "Exact next action".**
 | P4B V1 | open PO / commitment intervention (KEEP / DEFER / EXPEDITE / REDUCE / CANCEL / SPLIT) | `1851f40` (Fly v23, `p4b-v1-release-runtime`) | `evidence/p4b/release_audit/P4B_RELEASE_AUDIT.md` |
 | Operating product V1 + V2 | inventory, purchase orders, proposal evaluation and export, governance, closed loop, readiness, amendment counterfactual, transfers, bulk | `458fcaf` merged; Fly v26 `canonical-458fcaf`; **production plan path BLOCKED on shared-cpu-2x** (no runtime tag) | `OPERATING_PRODUCT_V1.md`, `OPERATING_PRODUCT_V2.md`, `FABLE_V1_AUDIT.md`, `FABLE_V2_RELEASE_AUDIT.md` |
 | Operating product V2.1A — Insights | Insights section (Overview, Demand, Inventory, Supply & suppliers, Service & customers, Decisions & value, Perishability when declared): server-side aggregation of the operator's records, the latest completed plan read back, drill-downs, chart → action and action → insights links, five value registers, engine connectivity matrix; the DEMO company and its API-driven loop | `13dde49` merged (PR #84, tested head `2901ee9`, CI 35011852846 13 / 13); Fly v28 `canonical-13dde49`; production smoke 24 / 24 | `OPERATING_PRODUCT_V2_1_INSIGHTS.md`, `FABLE_V2_1_RELEASE_AUDIT.md` |
+
+| Full performance pass | frontier oracle phase one only (exact), `fefo_symmetry_scope` request field (default = released), gzip, parallel workspace reads, benchmark tooling; no default scope / cap / gap / semantics change; Fly unchanged | `914c5c3` merged (PR #86); Fly v29 `canonical-914c5c3`; tag `zaad-full-performance-pass-runtime`; rested production 8 / 10 products DONE 208 / 213 s | `ZAAD_FULL_PERFORMANCE_PASS.md` |
 
 Not started (each needs its own authorization): P4B V2 (node-indexed amendments), P6, P7, P8, P9.
 

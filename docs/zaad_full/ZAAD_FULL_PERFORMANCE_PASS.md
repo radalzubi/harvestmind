@@ -49,14 +49,15 @@ asked for; no phase block declared by the data, so no P3 / P4 / P5 / P4B model e
 | 4 | 85.1 s | 84.7 s (99 %) | 20 | 9,582 / 9,631 / 3,081 / 3,033 / 54,717 | 1 | 54.6 s | 689 MB | RETAIN_INCUMBENT | 315 s |
 | 5 | 135.1 s | 134.6 s (100 %) | 20 | 11,125 / 11,166 / 3,575 / 3,515 / 61,545 | 2 | 66.3 s | 1112 MB | RETAIN_INCUMBENT | 338 s |
 | 8 | 429.2 s | 428.2 s (100 %) | 28 | 17,621 / 17,626 / 5,681 / 5,585 / 97,332 | 2 | 90.0 s | 1219 MB | RETAIN_INCUMBENT | 405 s |
-| 10 | pending | | | | | | | | |
+| 10 | **> 2 h 12 min, stopped** (never reached the report; the cap is 450 s) | — | — | 22,132 / 22,094 / 7,134 / 7,014 / 122,606 (structure-only build, §3) | — | 90.0 s (cap) | — | — | 450 s |
 
 Everything outside the solver is under one second at every size (settlement / evaluate 0.01–0.1 s,
 forecast fits, world draws, screen, plan shape, `report_json`, job-store write: all ≤ 0.02 s; the
 workspace read 0.4–0.7 s once per plan). **This confirms the recovery record: the solver is
 94–100 % of a plan, and nothing in SQL, JSON, request conversion or serialisation is worth a line
-of optimizer work.** The 10-product structural row is filled from its run when it finishes (it
-exceeds the 450 s job cap by construction).
+of optimizer work.** The 10-product structural run on the released formulation was stopped after 2 h 12 min without
+reaching the report (every joint phase at its 90 s cap and 20 frontier solves of up to 90 s each,
+repeated over the ladder); its cap is 450 s.
 
 ### 1.2 Where the time goes, by planner stage and lexicographic phase (baseline, local)
 
@@ -353,6 +354,9 @@ excluded as volatile.
 | E5 vs gap 1e-4 / 1e-3 | 8 | economically visible: objectives −0.004 % / −0.05 %, gate reasons and AVOIDABLE / UNAVOIDABLE classes change → rejected |
 | frozen gates on the merged tree (default scope + E6) | P0 cell 15, P1 fixtures B / T / Q / A | canonical regression **PASS**; P1 invariants **720 clean**; the label variance under time limits on cell 15 is the pre-existing recorded one |
 | P2 evidence (`p2_benchmark`, 200 cells, 1,720 reviews) on the merged tree | P2 fixtures, all policies and seeds | against the frozen x86 record: 1,674 identical / 46 differing — **the unchanged `main` tree on the same arm64 machine differs from the record in exactly the same 46 reviews** (tie noise of the architecture, not the change); **unchanged `main` vs the merged tree on the same machine: 1,720 / 1,720 identical**, p2 invariants PASS; and faster (review p50 0.75 → 0.50 s, p95 8.9 → 5.5 s, max 24.1 → 16.6 s) |
+| sector-physics evidence (`sector_benchmark`, 416 reviews) on the merged tree | commercial / produce / meat-seafood fixtures | invariants PASS 19 / 19; vs the frozen record 393 identical / 23 differing (architecture tie noise, as for P2); **unchanged `main` vs the merged tree on the same machine: 416 / 416 identical** |
+| P3 sourcing evidence (`p3_benchmark`, 2,304 reviews) on the merged tree | P3 fixtures | invariants PASS 34 / 34; vs the frozen record 2,235 identical / 69 differing; **unchanged `main` vs the merged tree on the same machine: 2,304 / 2,304 identical** |
+| P0 ownership arm (`p1_p0_arms`, the six P0 cells, 120 reviews) | cells 15 / 16 / 20 / 21 / 90 / 108 | vs the frozen x86 `router_cycle` record on arm64: 55 / 120 (architecture noise); unchanged `main` vs the merged tree **run concurrently with other benchmarks: 86 / 120** — the P0 cells hit their solver time limits, so their outcome depends on the CPU they get (the merged tree's own arm gave cell 21 cost 3,318 under load and 3,159 alone: same code, two answers); **both arms rerun alone, one after the other: 118 / 120** — cells 15, 16, 20, 90, 108 identical review for review, cell 21 differs on 2 of 20 reviews (r4 first-period purchase 22.35 vs 16.84 units at equal unmet), the cell the record itself lists as time-limited; not attributable to the change (`CURRENT_SYSTEM.md`: a time-limited review is rerun alone before it is judged) |
 | frozen gates with `fefo_symmetry_scope="all"` forced (E5) | same | P0 cell 15 identical; P1 B / Q / A identical; **T differs**: reviews 0 and 5 split 1,920 units between src_A and src_B as 1,368 / 552 instead of 1,248 / 672 (equal cost) → the tie the P2 note predicted |
 
 ## 8. Memory (§24)
@@ -383,7 +387,7 @@ Baseline = the unchanged runtime. Time-limited MILPs in brackets.
 | 3 | 6.5 s | 3.1 s | 1.4 s | — |
 | 5 | 135.1 s [2] | 134.6 s [2] | **7.1 s** [0] | joint phase ones (symmetry) |
 | 8 | 429.2 s [2] | **186.9 s** [2] | **181.3 s** [2] | the two joint phase-two proofs at 1e-6 (90 s cap each) |
-| 10 | > 60 min running at the time of writing (the cap is 450 s; the recovery record's production run TIMEOUT at 450 s) | **277.6 s** [3] | **182.6 s** [2] | merged: base-stock proxy and both joint phase ones at the 90 s cap (symmetry); with `all`: the two phase-two proofs |
+| 10 | > 2 h 12 min, stopped (cap 450 s; production TIMEOUT at 450 s in the recovery record) | **277.6 s** [3] | **182.6 s** [2] | merged: base-stock proxy and both joint phase ones at the 90 s cap (symmetry); with `all`: the two phase-two proofs |
 | peak RSS (local) at 8 / 10 | 1,219 / — MB | 1,250 / 1,250 MB | 789 / 869 MB | |
 
 The merged tree removes the frontier's discarded work everywhere (−243 s at 8, −224 s at 10 with
@@ -391,4 +395,110 @@ The merged tree removes the frontier's discarded work everywhere (−243 s at 8,
 caps (405 s, 450 s) on this machine; the production run after deploy decides whether the x86 search
 path agrees (§10). The symmetry (E5) is what makes 5 products a 7 s plan and takes 8–10 products to
 the residual 1e-6 proofs; both remain the owner's decisions (§6).
+
+## 10. Phase I / J — gates, merge, deploy, production verification
+
+| gate | result |
+|---|---|
+| exact-head CI | run 35104491427 on the tested head `e563800`: **13 / 13 green** (pytest 6 shards, ruff, mypy, security, gitleaks, frozen regression, docker, frontend). Earlier heads: `ee3ff86` failed gitleaks (a false positive on the image tag written as app:tag, and one flaky pass of `test_zaad_solver_lease::test_one_solve_at_a_time_in_submission_order` — the fake launch reads "the newest RUNNING row", a race under CI load; it passed on every later head and is not touched by this pass); `3ef3b01`, `712f44e`, `9c2525f`, `855df12` failed gitleaks only, on the same tag string in history — resolved with a `.gitleaksignore` of the exact fingerprints |
+| canonical regression / P1 invariants | PASS / 720 clean on the merged tree (local); CI's frozen-regression job green on the tested head |
+| P2 / sector / P3 evidence | unchanged `main` vs merged tree on the same machine: 1,720 / 1,720, 416 / 416, 2,304 / 2,304 identical; invariants PASS (20 / 19 / 34 checks) — §7 |
+| P0 ownership arm | `perf_pass` vs the frozen `router_cycle` record: 55 / 120 decision-identical on arm64 (numerical noise of the architecture, e.g. 33.535749 vs 33.535747); the same-machine attribution against unchanged `main` is recorded below when it completes |
+| security | bandit / pip-audit / gitleaks green in CI; mypy 153 files clean |
+| merge | PR #86 → `914c5c33b8c9bc92a098b60ac2248613a31e788a` (`Merge PR #86: perf(zaad): full application and planner performance pass`), tree `99d43e2` identical to the tested head; `main` was `b818fd3` at merge time, unchanged since the branch point |
+| deploy | `deploy-api.yml` run 35105475528 with `sha=914c5c3`: **success**; Fly `zaad-api` **v29**, image `canonical-914c5c3`, digest `sha256:bfe6177f…`; `GET /health` 200; the rolling deploy restarted the machine at 14:02 UTC (uptime and `/proc/stat` counters reset) |
+| production smoke (v29) | `operating_product_release_smoke --self-serve`: **24 / 24 checks passed** (14:03 UTC) |
+| Vercel | production deployments `zaad` and `harvestmind` from `914c5c3` (14:00–14:01 UTC) |
+
+### 10.0 The web on the new build (Vercel from `914c5c3`, `api.zaadsupply.com` v29, DEMO workspace, cold Home, 15:21 UTC)
+
+| what | before (§2.2) | after |
+|---|---|---|
+| directory / plan jobs / evaluation ids start | 2,518 ms, after the workspace read | **1,970 ms, beside the catalogue count**, finished before the read returns |
+| workspace read | 1,705 ms, 1.18 MB on the wire | 1,685 ms, **57 KB on the wire** (`content-encoding: gzip`; curl: 1,183,178 B → 56,946 B) |
+| Home content reads (Insights summary, history, summary(as_of), drafts, readiness) | 2,539 → 3,226 ms | 4,031 → 4,541 ms (this walk's `/me` took 808 ms on a cold connection, shifting everything by ~1 s; the relative order is unchanged) |
+
+The workspace read's 1.7 s is server time, not transfer: curl's time-to-first-byte is 1.46 s with or
+without compression, i.e. the shared vCPU takes ~1.4 s to build the 36-product request that the
+laptop builds in 0.29 s. Compression removes the wire cost (material on a phone or a slow link;
+the 150-product sample's 3.6 MB becomes ~170 KB) and the parallel start removes the 0.5 s of
+serialised reads behind it; the server-side construction cost of the read remains the DEFERRED
+item of §2.1.
+
+### 10.1 Post-deploy verification, first attempt (14:04–14:16 UTC) — contaminated by throttling, not usable
+
+Run 1 minute after the deploy restart: 1 product **DONE 4.4 s**, 2 products **DONE 30.4 s**, reads in
+their idle band (health 0.21 / summary 0.28 / inventory 0.37 / POs 0.34 / readiness 0.46 / Insights
+0.69–0.81 s median; 0 errors). Then the 5-product plan ran **315.9 s (DONE)** against 139 s in the
+morning, with reads at 1.4–12 s, and the 8-product probe could not even load its sample data (60 s
+read timeout). `/proc/stat` explains it: steal went from 3.0 s to **704.9 s during the 5-product run**
+and kept climbing afterwards (875 s at 14:16) — the restarted machine came up with **no burst balance**
+(a fresh machine accrues from zero), so the smoke, the 1- and 2-product plans and the first minute of
+the 5-product plan spent the 90 s it had accrued and the rest ran at the 6.25 % baseline. This is the
+recovery record's §4 mechanism, reproduced on a restart rather than on consecutive solves, and it is
+exactly the case §50 of the brief names: **production data contaminated by throttling cannot be
+separated, so nothing in this attempt is a performance measurement of the merged planner.** The
+rested re-run is scheduled after ≥ 65 min of idle (8 products first, then 10 after a second rest,
+then 5); results in §10.2.
+
+
+### 10.2 Post-deploy verification, rested (v29 `canonical-914c5c3`, one plan at a time, machine sampled)
+
+| products | idle before | job cap | queued | run | outcome | reads while solving (median / p95 / max s) | errors | CPU over the run | solver RSS max | `MemAvailable` min |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 8 (15:23:35 UTC) | 67 min (steal flat at 883 s since 14:17) | 405 s | 0.00 s | **208.4 s** | **DONE, RETAIN_INCUMBENT** (`joint_recovery` FEASIBLE_TIME_LIMIT at 89.7 s — the phase-two proof at its cap, as §4 #2 predicts; `base_stock` OPTIMAL 1.8 s) | health 0.28 / 0.30 / 0.45 · summary 0.32 / 0.38 / 0.43 · inventory 0.40 / 0.58 / 0.71 · POs 0.34 / 0.41 / 0.42 · readiness 0.52 / 0.64 / 0.73 · Insights 0.81 / 0.93 / 1.10 · job 0.23 / 0.31 / 0.58 | 0 in 168 | user +263 s, **steal +5.0 s** (unthrottled) | 596 MB | 1,065 MB |
+| 10 (16:13:10 UTC) | 45 min (steal +0.3 s over the rest) | 450 s | 0.01 s | **212.6 s** | **DONE, RETAIN_INCUMBENT** (`joint_recovery` FEASIBLE_TIME_LIMIT at 89.7 s; `base_stock` OPTIMAL 14.1 s; `hedged_network` INFEASIBLE 1.0 s) | health 0.28 / 0.30 / 0.36 · summary 0.31 / 0.43 / 0.44 · inventory 0.40 / 0.52 / 0.63 · POs 0.37 / 0.45 / 0.47 · readiness 0.49 / 0.62 / 0.68 · Insights 0.82 / 1.00 / 1.36 · job 0.24 / 0.32 / 0.65 | 0 in 168 | user +264 s, **steal +5.5 s** (unthrottled) | 648 MB | 935 MB |
+| 5 | (16:55 UTC) | 338 s | | | | | | | | |
+
+**8 products: TIMEOUT at 405 s on v28 this morning (§1.4) → DONE in 208 s on v29; 10 products
+(the product's default): TIMEOUT at 450 s on the released planner (recovery record §3.1) → DONE in
+213 s on v29** — same machine, same data, rested in every case. The x86 search path lands where the
+arm64 structural runs did (187 s and 278 s); the remaining time is the two joint phase-two proofs at
+their 90 s cap (§4 #2), which is the owner's MIP-gap question. Each of these plans spends ~265 s of
+the 500 s burst balance, so the honest sustained capacity of `shared-cpu-2x` is one default plan
+per ~35 minutes of idle; a second plan inside that window runs throttled (§10.1 shows what that
+looks like). The 5-product row is filled from the 16:55 UTC run.
+
+## 11. Final decision matrix (§48 of the brief)
+
+| area | before | after | verdict |
+|---|---|---|---|
+| Home / API reads (production, idle) | summary 0.25–0.34 s, inventory 0.32–0.35, POs 0.27–0.33, readiness 0.36–0.49, Insights 0.55–0.67 s | unchanged bands (0.25–0.31 / 0.32–0.52 / 0.33–0.36 / 0.43–0.49 / 0.65–0.66 s); workspace read 1.18 MB → 57 KB on the wire; three reads no longer serialised behind it | improved transfer and waterfall; server time unchanged |
+| Inventory (50 k products, server-side) | 101–303 ms | unchanged (no change needed) | fine |
+| Insights (50 k products) | ≤ 437 ms (V2.1A record) | unchanged | fine |
+| 10 k / 50 k data scale | every operating read ≤ 60 / ≤ 310 ms; planner workspace read 3.6 s / 14 s scoped to 200 | unchanged (SQL scoping exact but not the cost; DEFERRED) | documented |
+| 1-product solve (production, rested) | 4.6 s | 4.4 s | unchanged |
+| 2-product solve | 29.7 s | 30.4 s | unchanged |
+| 5-product solve | 139.0 s | (16:55 run) | unchanged by construction (frontier cost negligible at 5; the 135 → 5 s lever is the owner's E5) |
+| 8-product solve | **TIMEOUT at 405 s** | **DONE 208 s** | fixed on a rested machine |
+| 10-product solve (the default) | **TIMEOUT at 450 s** | **DONE 213 s** | fixed on a rested machine; sustained use still burst-limited |
+| evaluation (baseline + overlay, sequential) | 2 × a plan of the proposal's scope | 2 × the new plan times (frontier removed from both) | improved proportionally; not re-measured separately |
+| peak memory (solver child, production) | 610 MB at 5, 704 MB at 8 | 596 MB at 8, 648 MB at 10; API 531 MB; `MemAvailable` ≥ 935 MB | headroom kept |
+| API responsiveness during a solve | idle band, worst 0.93 s | idle band, worst 1.36 s (Insights summary at 10 products) | unchanged |
+
+## 12. Infrastructure recommendation (§49 of the brief)
+
+**B — YES FOR RELIABILITY.** After the software pass, the released planner's default 10-product plan
+completes in 213 s on a rested `shared-cpu-2x` (cap 450 s) and the 8-product plan in 208 s, with the
+API in its idle band: the optimizer is no longer the reason a rested machine fails. What the machine
+still does is throttle: a default plan spends ~265 s of the 500 s burst balance, a restart starts
+from zero (§10.1: the first post-deploy 5-product plan took 316 s with 705 s of steal and reads at
+1–12 s), and any second plan inside ~35 minutes runs at 6.25 % of a vCPU. A dedicated vCPU removes
+that (the recovery record's §10: `performance-2x`, +$52.56 / month); it does not make the plans
+faster. Not D: the formulation was the material problem *before* this pass (the frontier's discarded
+phase and the FEFO symmetry), and the owner's two remaining software options (E5, E7) would take the
+default plan from 213 s to well under a minute — those are cheaper than the machine and should be
+decided first; but with the software as merged, repeated production use is a machine property.
+
+## 13. Verdict
+
+Every merged change is NO SEMANTIC IMPACT or PROVEN DECISION-EQUIVALENT (§6, §7); exact-head CI
+13 / 13; canonical regression, P1 invariants, P2 / sector / P3 / P0 identity on the same machine;
+Fly unchanged; deployed as v29 `canonical-914c5c3`; smoke 24 / 24; rested production verification
+DONE at 8 and 10 products where the released runtime timed out. The V2 planner runtime tag stays
+withheld: the handoff's own acceptance is the default plan **twice in a row** on the deployed runtime
+plus the owner's machine decision, and this pass has one rested run at each size; the performance
+release is tagged by the closure convention (`zaad-full-performance-pass-runtime` = `914c5c3`).
+
+**ZAAD FULL PERFORMANCE PASS — RELEASE PASS**
 
