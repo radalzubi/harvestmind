@@ -276,6 +276,14 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
         }
       };
 
+      // The reads that do not depend on the workspace request start now, beside it, instead of
+      // after it (performance pass): the supplier directory, the plan-job list and the evaluation
+      // ids are each ~150 ms on production and were serialised behind a 1.7 s read.
+      const directoryPromise = fetchDirectory().catch(() => null);
+      const jobsPromise = Promise.all([
+        listPlanJobs(),
+        fetchEvaluationJobIds().catch(() => ({ evaluation_job_ids: [] as string[] })),
+      ]).catch(() => null);
       try {
         // How big is this catalogue? One indexed count, tens of milliseconds. A workspace larger
         // than the read bound is read over a named selection rather than in full — the alternative
@@ -303,17 +311,16 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
       setBuild(state.build);
       setPhase("ready");
       // A workspace without the optional supplier upload still plans, so this never blocks a page.
-      fetchDirectory().then((d) => live && setDirectory(d)).catch(() => live && setDirectory(null));
+      directoryPromise.then((d) => live && setDirectory(d));
 
       // The last plan this workspace computed, whenever it was — and never an evaluation run. An
       // evaluation uses the same jobs path, and one of its two runs carries a proposed order
       // overlaid on the pipeline; showing that as "your plan" would present an order nobody has
       // placed as the operator's position.
       try {
-        const [{ jobs }, evaluations] = await Promise.all([
-          listPlanJobs(),
-          fetchEvaluationJobIds().catch(() => ({ evaluation_job_ids: [] as string[] })),
-        ]);
+        const listed = await jobsPromise;
+        if (!listed) return;
+        const [{ jobs }, evaluations] = listed;
         const ours = new Set(evaluations.evaluation_job_ids);
         const plans = jobs.filter((j) => !ours.has(j.id));
         const last = plans.find((j) => j.status === "DONE");
