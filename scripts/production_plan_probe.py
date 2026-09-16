@@ -140,6 +140,7 @@ def main() -> None:
         ("inventory", f"{api}/api/zaad/workspace/inventory?limit=25", token),
         ("purchase_orders", f"{api}/api/zaad/workspace/purchase-orders?limit=25", token),
         ("readiness", f"{api}/api/zaad/workspace/readiness", token),
+        ("insights_summary", f"{api}/api/zaad/insights/summary", token),
     ]
     idle: dict[str, list[float]] = {name: [] for name, _, _ in reads}
     for _ in range(3):
