@@ -95,12 +95,32 @@ Plan-backed workspace (`op_8f0e526c`, after `scripts/zaad_demo_workspace.py` ran
 
 ## 7. CI, merge, deploy
 
-Recorded below.
+| step | result |
+|---|---|
+| exact-head CI | run 35011852846 on `2901ee9` (the PR head: code head `b882e0a` + two Markdown commits; the `pull_request` event ran the full workflow): **13 / 13** — gitleaks, ruff, mypy, bandit + pip-audit, unit-core, unit-zaad-1…4, integration, zaad frozen regression, frontend (typecheck, lint, test, build), docker build |
+| earlier heads | `e2796f7`: ruff (one F541) and bandit (four B608 on `api/product/insights.py`) failed → fixed in `b882e0a`; runs on `b882e0a` / `9c2cfc0` were cancelled by `cancel-in-progress` when the next commit was pushed |
+| ready + merge | PR #84 marked ready; `main` verified unchanged at `3a25b52`; merged as **`13dde49`** (`Merge PR #84: …`, parents `3a25b52` + `2901ee9`, tree `1b5cb85` = the tested head's) |
+| backend deploy | `deploy-api` workflow run 35052495247 from the exact merge → Fly `zaad-api` **v28**, image `canonical-13dde49`, digest `sha256:374b4e91f061cce054a05749aa48f29be1e9707c2f4bd642ba712b18617c3381`; rolling restart clean (application startup 03:40:25 UTC, health passing) |
+| Vercel | GitHub deployment records `Production – zaad` and `Production – harvestmind` for `13dde49`; `vercel ls --prod` Ready |
 
 ## 8. Production
 
-Recorded below.
+| check | result |
+|---|---|
+| `GET /health` | 200, 0.45 s |
+| release smoke on v28 (`scripts/operating_product_release_smoke.py --self-serve`, throwaway `op_15bc84a7`, 427,995-row sample) | **24 / 24**: the 19 V2 checks plus five Insights checks — summary answers; demand is labelled OBSERVED CUSTOMER ORDERS with provenance (36 months); lateness NOT_MEASURED for all eight sample suppliers (no promised dates in the sample — never 0 late); five value registers in order; the connectivity matrix lists every family |
+| Fly logs | the rolling restart's usual uvicorn SIGINT trace, then startup and health; no application errors |
+| demo on production (`scripts/zaad_demo_workspace.py --products 5`, throwaway `op_387d9787`) | the company loaded (42,280 rows); the 5-product plan over three sites reached **TIMEOUT at its 562 s cap** — the V2 planner's known limit on `shared-cpu-2x` (recovery record §3.1), not an Insights defect; the job row records it honestly and the workspace's Insights read *No completed ZAAD plan yet*. The full loop through the API (plan → responses → proposal → evaluation → approval → export → external status → outcomes) completed twice on the local server with the same code (§6). That solve spent the machine's burst balance (steal 990 s in the 17 min after the restart), so a plan-backed production demo has to wait for the balance and, for the default scope, for the owner's machine decision |
+| Insights on production, browser walk | recorded below on the data-only demo workspace |
 
 ## 9. Release decision
 
-Recorded below.
+V2.1A is judged on what the brief asks of Insights: server-side aggregation of the operator's
+records, engine-backed visuals read from the latest completed plan, honest nulls, five registers
+apart, connectivity documented, drill-downs and links in both directions, a complete demo company
+that reconciles, scale under budget, tenant isolation, Arabic, accessibility, exact-head CI, merge,
+deploy, production smoke. All of it is in place and verified; the one production step that did not
+complete — the demo's own plan — is the planner latency the brief explicitly told this release not
+to wait for ("Insights must NOT depend on starting a fresh optimizer run just to render"), and the
+page behaves exactly as specified when no plan exists. **ZAAD OPERATING PRODUCT V2.1A — RELEASE
+PASS**, with the planner's default-scope latency still the owner's decision recorded in the ledger.

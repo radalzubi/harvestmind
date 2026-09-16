@@ -1,16 +1,17 @@
 # ZAAD — current system (read this first)
 
-**Status line (2026-09-15):** production runtime is `d2a3cb5` (Fly `zaad-api` v27, image
-`canonical-d2a3cb5`, digest `sha256:2d5f2b5a…`) = the Operating Product V1 + V2 merge `458fcaf` plus
-PR #83's planner orchestration (one ordered solver lease, honest queue); Vercel production from the
-same tree. Every operating surface and the proposal loop are verified in production and stay
-responsive while a plan runs; **the plan path is BLOCKED at the product's default scope**: on a
-rested `shared-cpu-2x` machine 1, 2 and 5 products complete inside their caps (4.6 s, 29 s, 138 s)
-and the 10-product default reaches TIMEOUT at 450 s with no throttling, while consecutive solves
-exhaust the shared CPU's burst balance and throttle the whole machine for up to an hour
-(`PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md`). No V2 runtime tag exists. `main` is production plus
+**Status line (2026-09-16):** production runtime is `13dde49` (Fly `zaad-api` v28, image
+`canonical-13dde49`, digest `sha256:374b4e91…`) = the Operating Product V1 + V2 (`458fcaf`) + the
+planner orchestration fix (PR #83) + **V2.1A Insights** (PR #84: server-side aggregations, the latest
+completed plan read back, five value registers, engine connectivity matrix, one complete DEMO
+company); Vercel production from the same tree. Every operating surface, the proposal loop and the
+Insights section are verified in production (release smoke 24 / 24). **The plan path is still
+BLOCKED at the product's default scope** (10 products exceed the 450 s cap even unthrottled; the
+shared CPU's burst budget throttles consecutive solves — `PRODUCTION_SOLVE_PERFORMANCE_RECOVERY.md`,
+two owner decisions pending in `HANDOFF_PLANNER_RECOVERY_2026-09-15.md`). Runtime tag for V2.1A:
+`zaad-operating-product-v2.1a-runtime` (see the ledger); no V2 planner tag. `main` is production plus
 docs; the release ledger's current-state table records the exact difference. **Continuing this work:
-read [`HANDOFF_PLANNER_RECOVERY_2026-09-15.md`](HANDOFF_PLANNER_RECOVERY_2026-09-15.md) first.**
+read the ledger's "Exact next action".**
 
 ## What is released
 
@@ -25,6 +26,7 @@ read [`HANDOFF_PLANNER_RECOVERY_2026-09-15.md`](HANDOFF_PLANNER_RECOVERY_2026-09
 | P5 | ATP / scarce-supply allocation | `2fc7b50` (Fly v22, `p5-release-runtime`) | `evidence/p5/release_audit/P5_RELEASE_AUDIT.md` |
 | P4B V1 | open PO / commitment intervention (KEEP / DEFER / EXPEDITE / REDUCE / CANCEL / SPLIT) | `1851f40` (Fly v23, `p4b-v1-release-runtime`) | `evidence/p4b/release_audit/P4B_RELEASE_AUDIT.md` |
 | Operating product V1 + V2 | inventory, purchase orders, proposal evaluation and export, governance, closed loop, readiness, amendment counterfactual, transfers, bulk | `458fcaf` merged; Fly v26 `canonical-458fcaf`; **production plan path BLOCKED on shared-cpu-2x** (no runtime tag) | `OPERATING_PRODUCT_V1.md`, `OPERATING_PRODUCT_V2.md`, `FABLE_V1_AUDIT.md`, `FABLE_V2_RELEASE_AUDIT.md` |
+| Operating product V2.1A — Insights | Insights section (Overview, Demand, Inventory, Supply & suppliers, Service & customers, Decisions & value, Perishability when declared): server-side aggregation of the operator's records, the latest completed plan read back, drill-downs, chart → action and action → insights links, five value registers, engine connectivity matrix; the DEMO company and its API-driven loop | `13dde49` merged (PR #84, tested head `2901ee9`, CI 35011852846 13 / 13); Fly v28 `canonical-13dde49`; production smoke 24 / 24 | `OPERATING_PRODUCT_V2_1_INSIGHTS.md`, `FABLE_V2_1_RELEASE_AUDIT.md` |
 
 Not started (each needs its own authorization): P4B V2 (node-indexed amendments), P6, P7, P8, P9.
 

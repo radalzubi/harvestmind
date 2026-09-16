@@ -1,5 +1,7 @@
 # CONTINUE HERE — V2.1A Insights, paused mid-release (2026-09-15, ~19:10 UTC)
 
+> **Superseded 2026-09-16:** the release completed — PR #84 merged as `13dde49`, Fly v28 `canonical-13dde49`, tag `zaad-operating-product-v2.1a-runtime`. Kept as the record of the pause; read `CURRENT_SYSTEM.md` and the ledger's current-state table instead.
+
 The laptop was shut down with V2.1A built, tested locally, pushed, and its PR open with CI running.
 Nothing is merged, deployed or tagged yet. Resume from this file; do not rebuild what is here.
 

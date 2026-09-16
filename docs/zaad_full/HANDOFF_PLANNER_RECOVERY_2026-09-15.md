@@ -20,7 +20,7 @@ investigation), [`CURRENT_SYSTEM.md`](CURRENT_SYSTEM.md) (status line) and
 | runtime tag | **none** for the operating product (`zaad-operating-product-v2-runtime` must not be created until §2 passes); last runtime tags `zaad-post-p4b-cleanup-runtime`, `frontend-rebuild-runtime` |
 | GitHub Actions | working again since 14:22 UTC (the billing refusal of 10:35 UTC cleared; re-running the refused run started all jobs). CI = `.github/workflows/ci.yml` (13 jobs); deploy = `.github/workflows/deploy-api.yml` (`workflow_dispatch`, inputs `sha` + `app`, secret `FLY_API_TOKEN`, 30-day deploy token created 2026-09-15) — **use it**, the laptop cannot push a build context to Fly |
 | PR #83 | merged; nothing open |
-| V2.1 (Insights) | **not started**, by rule: only after the planner passes |
+| V2.1 (Insights) | **V2.1A released 2026-09-16** on the owner's instruction not to wait for the planner (PR #84 → `13dde49`, Fly v28, tag `zaad-operating-product-v2.1a-runtime`); the planner decisions below still stand |
 | P4B V2, P6–P10 | not started; each needs its own authorization |
 
 Verify before trusting any of it:
