@@ -14,13 +14,3 @@ host's presigned-URL credential parameter and that path only; history is not rew
 regexTarget = "match"
 regexes = ['''objects\.githubusercontent\.com/[^\s"']*X-Amz-Credential=AKIA[0-9A-Z]{16}%2F''']
 paths = ['''^artifacts/baseline/pip_audit\.json$''']
-
-[[allowlists]]
-description = """False positive: the performance-pass record (commits ee3ff86 and 3ef3b01 on
-perf/zaad-full-performance-pass) wrote the deployed image as `zaad-api:canonical-13dde49`, which the
-generic-api-key rule reads as a key named "api" with a hex-looking value. It is a Fly image tag - the
-app name and the short merge SHA - not a credential. The line was rephrased in the next commit; this
-allowlist is scoped to that file and that pattern. History is not rewritten."""
-regexTarget = "match"
-regexes = ['''zaad-api:canonical-[0-9a-f]{7}''']
-paths = ['''^docs/zaad_full/ZAAD_FULL_PERFORMANCE_PASS\.md$''']

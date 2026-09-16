@@ -1,0 +1,6 @@
+# gitleaks fingerprints of documented false positives (commit:file:rule:line). The performance-pass
+# record wrote the deployed image as `zaad-api:canonical-13dde49` in two commits; the generic-api-key
+# rule reads it as a key named api with a hex value. It is a Fly image tag, not a credential; the line
+# was rephrased in 712f44e. History is not rewritten.
+ee3ff86c112355c5d94475e464341a3da6ccff5b:docs/zaad_full/ZAAD_FULL_PERFORMANCE_PASS.md:generic-api-key:19
+3ef3b0105cd2d4f2d3cd9d007480d5d3d2a27ef6:docs/zaad_full/ZAAD_FULL_PERFORMANCE_PASS.md:generic-api-key:19
