@@ -119,6 +119,44 @@ class VaultConnection:
         return False
 
 
+#: Vault files whose schema this process has already brought forward. A vault is migrated when it is
+#: created (`OperatorRegistry.create_operator`) and, until this guard existed, never again: a
+#: workspace created before a later migration added a column kept its old shape for ever, and the
+#: first read that named the new column failed with a binder error — Diagnostics → Suppliers on a
+#: pre-018 vault answered 500 (`risk_group` not found). Every migration is additive and idempotent
+#: (`CREATE TABLE IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`), so replaying the set on an up-to-date
+#: file changes nothing and costs a few milliseconds once per process per file.
+_MIGRATED: set[str] = set()
+
+
+def migrate_on_open_enabled() -> bool:
+    raw = os.getenv("HARVESTMIND_VAULT_MIGRATE_ON_OPEN", "1").strip().lower()
+    return raw not in ("0", "false", "no", "")
+
+
+def _bring_schema_forward(anchor: duckdb.DuckDBPyConnection, key: str) -> None:
+    """Apply the repository's migrations to a freshly anchored file, once per process.
+
+    Never raises: a request must not fail because a migration could not be replayed; the failure is
+    logged with the file and the statement so it is found, and the file is served as it is.
+    """
+    if key in _MIGRATED or not migrate_on_open_enabled():
+        return
+    _MIGRATED.add(key)
+    try:
+        from scripts.setup_db import setup_db
+        setup_db(anchor)
+    except Exception:  # noqa: BLE001 - logged; the vault is still served
+        import logging
+        logging.getLogger("harvestmind.vault").exception("schema migration on open failed for %s", key)
+
+
+def migrated_files() -> list[str]:
+    """The files whose schema this process has brought forward — for tests and diagnostics."""
+    with _ANCHOR_LOCK:
+        return sorted(_MIGRATED)
+
+
 def vault_cursor(path: str | Path) -> Any:
     # Typed Any on purpose: the handle forwards every DuckDB connection method, and callers are
     # written against the connection's own interface (execute, fetchone, register, begin, close).
@@ -133,6 +171,7 @@ def vault_cursor(path: str | Path) -> Any:
         if anchor is None:
             _evict_idle_locked()
             anchor = duckdb.connect(key)
+            _bring_schema_forward(anchor, key)
             _ANCHORS[key] = anchor
         _LIVE[key] = _LIVE.get(key, 0) + 1
         _LAST_USED[key] = time.monotonic()

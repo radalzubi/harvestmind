@@ -134,6 +134,11 @@ function Glance() {
   const responses = (dec.responses ?? []).reduce((a, r) => a + r.n, 0);
   return (
     <Section title="At a glance" more="Open Insights" moreHref="/insights">
+      <p className="ins-leads" style={{ margin: "0 0 10px" }}>
+        <Link href="/explore" className="zb zb--tertiary zb--sm">Explore <ArrowRight size={13} aria-hidden /></Link>
+        <Link href="/dashboards" className="zb zb--tertiary zb--sm">Dashboards <ArrowRight size={13} aria-hidden /></Link>
+        <Link href="/ask" className="zb zb--tertiary zb--sm">Ask ZAAD <ArrowRight size={13} aria-hidden /></Link>
+      </p>
       <div className="ins-grid" style={{ marginTop: 0 }}>
         {d.available && (
           <ChartCard title="Observed customer orders — 12 weeks" description="Orders your customers placed, by week. Not a demand estimate." leads={[{ href: linksFor.insights("demand", {}), label: "Open Demand" }]}>

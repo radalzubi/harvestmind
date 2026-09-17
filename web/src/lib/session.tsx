@@ -25,7 +25,9 @@ export type SessionStatus = "unknown" | "anonymous" | "authenticated" | "error";
  */
 export type Capability =
   | "view" | "manageData" | "createProposal" | "editDraft" | "evaluate" | "review" | "approve" | "export"
-  | "recordExternal" | "recordOutcome" | "respondDecision" | "manageProfiles" | "manageSettings" | "manageActors";
+  | "recordExternal" | "recordOutcome" | "respondDecision" | "manageProfiles" | "manageSettings" | "manageActors"
+  // Enterprise Analytics V1: the analytics surfaces over the same roles, granted by the server per role.
+  | "viewAnalytics" | "createAnalysis" | "editOwnAnalysis" | "shareAnalysis" | "exportAnalytics" | "askZaad" | "manageAnalytics";
 
 export interface Actor {
   id: string;
@@ -69,6 +71,7 @@ export interface Session {
 const PILOT_CAPABILITIES: Capability[] = [
   "view", "manageData", "createProposal", "editDraft", "evaluate", "review", "approve", "export",
   "recordExternal", "recordOutcome", "respondDecision", "manageProfiles", "manageSettings", "manageActors",
+  "viewAnalytics", "createAnalysis", "editOwnAnalysis", "shareAnalysis", "exportAnalytics", "askZaad", "manageAnalytics",
 ];
 
 function workspaceFrom(me: Me): Workspace {
