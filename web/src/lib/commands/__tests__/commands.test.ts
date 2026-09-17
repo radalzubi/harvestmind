@@ -5,11 +5,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { DESTINATIONS, DEFAULT_QUICK_ACTIONS, MAX_QUICK_ACTIONS, byRoute, integrity, paletteDestinations, search, visible, type Visibility } from "../destinations";
-import { detectDevice, detectPlatform, displayBinding as _unused, keyGlyph } from "../platform";
+import { detectDevice, detectPlatform, keyGlyph } from "../platform";
 import { COMMANDS, bindingProblem, collidesWith, collisions, comboOf, defaultBindings, displayBinding, effectiveBindings, isEditableTarget, normaliseBinding, resolve } from "../shortcuts";
 import { EMPTY_USER, MemoryPreferenceStore, mergedOverrides, pinnedDestinations, quickActions, resetAll, restoreDefault, setBinding, setQuickActions, togglePinned } from "../preferences";
 import { loadRecents, pushRecent, saveRecents } from "../recents";
-void _unused;
 
 const everyone: Visibility = { device: "desktop", can: () => true, family: "commercial" };
 const viewer: Visibility = { device: "desktop", can: (c) => c === "view" || c === "viewAnalytics", family: "commercial" };

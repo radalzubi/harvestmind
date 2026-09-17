@@ -50,7 +50,7 @@ def _master_cte(conn: Any) -> str:
     def col(name: str) -> str:
         return f"any_value({name})" if name in cols else "CAST(NULL AS VARCHAR)"
 
-    return (f"master AS (SELECT sku, {col('sku_name')} AS sku_name, {col('category')} AS category, {col('sub_category')} AS sub_category, "
+    return (f"master AS (SELECT sku, {col('sku_name')} AS sku_name, {col('category')} AS category, {col('sub_category')} AS sub_category, "  # nosec B608 - code literals; values bind
             f"{col('brand')} AS brand, {col('abc_class')} AS abc_class, {col('sector')} AS sector, {col('supplier_id')} AS supplier_id, "
             f"{'any_value(unit_cost)' if 'unit_cost' in cols else 'CAST(NULL AS DOUBLE)'} AS unit_cost FROM stg_fmcg_skus GROUP BY sku)")
 
@@ -63,7 +63,7 @@ def _supplier_cte(conn: Any) -> str:
     def col(name: str) -> str:
         return f"any_value({name})" if name in cols else "CAST(NULL AS VARCHAR)"
 
-    return (f"sup AS (SELECT supplier_id, {col('supplier_name')} AS supplier_name, {col('origin_iso3')} AS origin_iso3, {col('route')} AS route "
+    return (f"sup AS (SELECT supplier_id, {col('supplier_name')} AS supplier_name, {col('origin_iso3')} AS origin_iso3, {col('route')} AS route "  # nosec B608 - code literals; values bind
             "FROM stg_fmcg_suppliers WHERE supplier_id IS NOT NULL GROUP BY supplier_id)")
 
 
@@ -165,7 +165,7 @@ class _Fact:
                 "recv_po AS (SELECT NULL AS po_id, NULL AS q, NULL AS first_receipt WHERE FALSE)")
         dest = "any_value(CAST(destination_id AS VARCHAR))" if dest_ok else "CAST(NULL AS VARCHAR)"
         self.ctes.append(recv)
-        self.ctes.append(f"po_line AS (SELECT po_id, sku, sum(qty_ordered) AS ordered, min(po_date) AS po_date, min(expected_delivery_date) AS eta, "
+        self.ctes.append(f"po_line AS (SELECT po_id, sku, sum(qty_ordered) AS ordered, min(po_date) AS po_date, min(expected_delivery_date) AS eta, "  # nosec B608 - code literals; values bind
                          f"any_value(supplier_id) AS supplier_id, {dest} AS destination_id, count(*) OVER (PARTITION BY po_id) AS lines_on_po "
                          "FROM stg_fmcg_purchase_orders GROUP BY po_id, sku)")
         self.ctes.append("po_state AS (SELECT l.po_id, l.sku, l.ordered, l.po_date, l.eta, l.supplier_id, l.destination_id, "
@@ -386,7 +386,7 @@ class DuckDBAdapter:
         cutoff = None
         if fact.cutoff_expr:
             fact_where = (" WHERE " + " AND ".join(fact.where)) if fact.where else ""
-            cutoff_sql = (f"WITH {', '.join(fact.ctes)} " if fact.ctes else "") + f"SELECT {fact.cutoff_expr} FROM {fact.from_sql}{fact_where}"
+            cutoff_sql = (f"WITH {', '.join(fact.ctes)} " if fact.ctes else "") + f"SELECT {fact.cutoff_expr} FROM {fact.from_sql}{fact_where}"  # nosec B608 - code literals; values bind
             cutoff = self._run_scalar(cutoff_sql, list(fact.params), plan.timeout_s)
             if hasattr(cutoff, "date"):
                 cutoff = cutoff.date() if not isinstance(cutoff, date) else cutoff
@@ -402,7 +402,7 @@ class DuckDBAdapter:
         dim_cols = ", ".join(f"{expr} AS d_{name}" for name, expr in select_dims)
         projection = ", ".join(x for x in (dim_cols, raw_cols) if x)
         where_sql = (" WHERE " + " AND ".join(where)) if where else ""
-        base = f"base AS (SELECT {projection} FROM {fact.from_sql}{where_sql})"
+        base = f"base AS (SELECT {projection} FROM {fact.from_sql}{where_sql})"  # nosec B608 - code literals; values bind
         ctes = [*fact.ctes, base]
 
         dim_ids = [name for name, _ in select_dims]
@@ -446,7 +446,7 @@ class DuckDBAdapter:
                 if has_table(self.conn, "stg_fmcg_orders"):
                     site_col = ", CAST(location_id AS VARCHAR) AS location_key" if (by_site and site_ok) else ""
                     group = "GROUP BY sku, location_id" if (by_site and site_ok) else "GROUP BY sku"
-                    extra_ctes.append(f"demand AS (SELECT sku{site_col}, sum(qty_ordered) / {COVER_WEEKS}.0 AS weekly_demand FROM stg_fmcg_orders "
+                    extra_ctes.append(f"demand AS (SELECT sku{site_col}, sum(qty_ordered) / {COVER_WEEKS}.0 AS weekly_demand FROM stg_fmcg_orders "  # nosec B608 - code literals; values bind
                                       f"WHERE order_date > (SELECT max(order_date) FROM stg_fmcg_orders) - INTERVAL {COVER_WEEKS * 7} DAY {group})")
                 else:
                     extra_ctes.append("demand AS (SELECT NULL AS sku, NULL AS weekly_demand WHERE FALSE)")
@@ -455,9 +455,9 @@ class DuckDBAdapter:
                 # one stock row per product (and per site only when the query is by site), so a
                 # product's weekly demand is counted once, never once per site it is stocked at
                 keys = "c.sku_key, c.location_key" if (by_site and site_ok) else "c.sku_key"
-                extra_ctes.append(f"stock_sku AS (SELECT {gcols + ', ' if gcols else ''}{keys}, sum(c.on_hand) AS on_hand FROM current c "
+                extra_ctes.append(f"stock_sku AS (SELECT {gcols + ', ' if gcols else ''}{keys}, sum(c.on_hand) AS on_hand FROM current c "  # nosec B608 - code literals; values bind
                                   f"GROUP BY {gcols + ', ' if gcols else ''}{keys})")
-                extra_ctes.append(f"cover AS (SELECT {gcols + ', ' if gcols else ''}sum(c.on_hand) AS weeks_of_cover__num, sum(d.weekly_demand) AS weeks_of_cover__den, "
+                extra_ctes.append(f"cover AS (SELECT {gcols + ', ' if gcols else ''}sum(c.on_hand) AS weeks_of_cover__num, sum(d.weekly_demand) AS weeks_of_cover__den, "  # nosec B608 - code literals; values bind
                                   f"count(*) FILTER (WHERE d.weekly_demand IS NOT NULL) AS weeks_of_cover__cov_num, count(*) AS weeks_of_cover__cov_den, count(*) AS weeks_of_cover__n "
                                   f"FROM stock_sku c LEFT JOIN demand d ON {join}{' GROUP BY ' + gcols if gcols else ''})")
 
@@ -475,26 +475,26 @@ class DuckDBAdapter:
             else:
                 rank_expr = by_spec[0]
             col = f"d_{topn['dimension_id']}"
-            extra_ctes.append(f"ranked AS (SELECT {col} AS member FROM {source} GROUP BY 1 ORDER BY {rank_expr} DESC NULLS LAST LIMIT {int(topn['n'])})")
+            extra_ctes.append(f"ranked AS (SELECT {col} AS member FROM {source} GROUP BY 1 ORDER BY {rank_expr} DESC NULLS LAST LIMIT {int(topn['n'])})")  # nosec B608 - code literals; values bind
             if topn.get("others"):
-                folded = ", ".join(f"CASE WHEN {c} IN (SELECT member FROM ranked) THEN {c} ELSE '{OTHERS}' END AS {c}" if c == col else c for c in group_cols)
-                extra_ctes.append(f"folded AS (SELECT {folded}{', ' if group_cols else ''}* EXCLUDE ({', '.join(group_cols)}) FROM {source})" if group_cols else f"folded AS (SELECT * FROM {source})")
+                folded = ", ".join(f"CASE WHEN {c} IN (SELECT member FROM ranked) THEN {c} ELSE '{OTHERS}' END AS {c}" if c == col else c for c in group_cols)  # nosec B608 - code literals; values bind
+                extra_ctes.append(f"folded AS (SELECT {folded}{', ' if group_cols else ''}* EXCLUDE ({', '.join(group_cols)}) FROM {source})" if group_cols else f"folded AS (SELECT * FROM {source})")  # nosec B608 - code literals; values bind
                 source = "folded"
             else:
-                rank_where = f" WHERE {col} IN (SELECT member FROM ranked)"
+                rank_where = f" WHERE {col} IN (SELECT member FROM ranked)"  # nosec B608 - code literals; values bind
 
         select_parts = [*group_cols, *measure_sql, *coverage_sql]
         group_sql = f" GROUP BY {', '.join(group_cols)}" if group_cols else ""
         order_sql = self._order_sql(plan, dim_ids, group_cols)
         has_cover = fact.snapshot and any(m.metric_id == "weeks_of_cover" for m in plan.metrics)
         cover_cols = ["weeks_of_cover__num", "weeks_of_cover__den", "weeks_of_cover__cov_num", "weeks_of_cover__cov_den", "weeks_of_cover__n"]
-        inner = f"SELECT {', '.join(select_parts) if select_parts else 'count(*) AS __rows'} FROM {source}{rank_where}{group_sql}"
+        inner = f"SELECT {', '.join(select_parts) if select_parts else 'count(*) AS __rows'} FROM {source}{rank_where}{group_sql}"  # nosec B608 - code literals; values bind
         if has_cover:
             if group_cols:
                 on = " AND ".join(f"g.{c} IS NOT DISTINCT FROM v.{c}" for c in group_cols)
-                main = f"SELECT g.*, {', '.join('v.' + c for c in cover_cols)} FROM ({inner}) g LEFT JOIN cover v ON {on}{order_sql} LIMIT {int(plan.limit) + 1}"
+                main = f"SELECT g.*, {', '.join('v.' + c for c in cover_cols)} FROM ({inner}) g LEFT JOIN cover v ON {on}{order_sql} LIMIT {int(plan.limit) + 1}"  # nosec B608 - code literals; values bind
             else:
-                main = f"SELECT g.*, {', '.join('v.' + c for c in cover_cols)} FROM ({inner}) g CROSS JOIN cover v LIMIT {int(plan.limit) + 1}"
+                main = f"SELECT g.*, {', '.join('v.' + c for c in cover_cols)} FROM ({inner}) g CROSS JOIN cover v LIMIT {int(plan.limit) + 1}"  # nosec B608 - code literals; values bind
         else:
             main = f"{inner}{order_sql} LIMIT {int(plan.limit) + 1}"
 
@@ -515,9 +515,9 @@ class DuckDBAdapter:
         coverage: dict[str, dict[str, float | None]] = {}
         cov_parts = [*measure_sql, *coverage_sql]
         if has_cover:
-            cov_parts.extend(f"(SELECT sum({c}) FROM cover) AS {c}" for c in cover_cols)
+            cov_parts.extend(f"(SELECT sum({c}) FROM cover) AS {c}" for c in cover_cols)  # nosec B608 - code literals; values bind
         if cov_parts:
-            cov_stmt = f"WITH {', '.join([*ctes, *extra_ctes])} SELECT {', '.join(cov_parts)} FROM {source}{rank_where}"
+            cov_stmt = f"WITH {', '.join([*ctes, *extra_ctes])} SELECT {', '.join(cov_parts)} FROM {source}{rank_where}"  # nosec B608 - code literals; values bind
             total = self._run_rows(cov_stmt, params, plan.timeout_s)
             whole = total[0] if total else {}
             for m in plan.metrics:
@@ -549,7 +549,7 @@ class DuckDBAdapter:
             idx -= 1
         if start:
             shifted_where_params[idx] = shift(date.fromisoformat(start)).isoformat()
-        statement = f"WITH {', '.join([*ctes, *extra_ctes])} SELECT {', '.join(select_parts)} FROM {source}{rank_where}{group_sql}{order_sql} LIMIT {int(plan.limit) + 1}"
+        statement = f"WITH {', '.join([*ctes, *extra_ctes])} SELECT {', '.join(select_parts)} FROM {source}{rank_where}{group_sql}{order_sql} LIMIT {int(plan.limit) + 1}"  # nosec B608 - code literals; values bind
         rows = self._run_rows(statement, shifted_where_params, plan.timeout_s)
         for r in rows:
             for k in list(r):

@@ -202,9 +202,23 @@ the projections it is 99–122 ms. Record: `docs/zaad_full/evidence/analytics/an
 | 50,000 |  | `kpi_fill_rate` | 38 | 41 | 1 | 5.9 |
 | 50,000 |  | `period_over_period` | 49 | 49 | 13 | 4.1 |
 
-## 10. Production QA
+## 10. Browser walk (local) and production QA
 
-Filled after deployment.
+**Local browser walk (2026-09-17, web dev server on a local API with the DEMO company, rules planner):**
+Explore opened with the model panel (domains, definitions, classified-only metrics greyed); *Units ordered* gave a
+KPI with its Data & scope and the records link; grain *month* gave the area series (25 rows); *Category* added gave
+the stacked bars by category × month (150 rows, recommended); *Save analysis* stored "Monthly demand by category"
+as a workspace analysis; Dashboards → *New dashboard* opened the editor, *Add visual* listed the saved analysis,
+*Done* saved "Operations (DEMO)" with the freshness line (data cutoff 13 Sept 2026, last updated 17 Sept 2026);
+*Show as table* and a click on the *Beverages* member produced the cross-filter chip "Category = Beverages" and
+narrowed the tile; Ask ZAAD answered "Which suppliers have been getting less reliable?" with the supplier
+reliability series, a gaps legend (BLOCKED_BY_DATA × 1, not zero), six typed claims, "How this was planned", the
+records and supplier leads (the mixed-unit axis this exposed is fixed in `071a7ee`); ⌘K listed *Dashboards* with
+its chord and pin; *G then I* opened Inventory; Settings → Shortcuts showed the Mac bindings, recorded ⌘⇧E for
+*Go to Explore* and restored the default; Arabic rendered the shell, Explore and the model panel right-to-left;
+the phone viewport showed the four quick actions and More with no keyboard hints, and Ask ZAAD usable.
+
+**Production QA:** filled after deployment (§11).
 
 ## 11. Gates, CI, merge, deploy
 
