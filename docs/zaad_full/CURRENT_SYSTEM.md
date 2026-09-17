@@ -1,6 +1,11 @@
 # ZAAD — current system (read this first)
 
-**Status line (2026-09-17):** production runtime is `172d808` (Fly `zaad-api` **v30**, image `canonical-172d808`, digest
+**Status line (2026-09-17, later):** production runtime is `e512a62` (Fly `zaad-api` **v32**, image `canonical-e512a62`, digest
+`sha256:9c7c6ab1…`) = the Enterprise Analytics V1 runtime `172d808` + **Diagnostic report V2** (PR #89 + #90: the free
+diagnostic's run lifecycle — queued with a position, running with real stages, timed out / cancelled as explicit states,
+reconnect after refresh, no duplicate work — and a consulting-grade report built from deterministic structured findings,
+rendered identically as PDF and in the app). Runtime tag `zaad-diagnostic-report-v2-runtime`. Fly machine unchanged; the
+optimizer is untouched — `DIAGNOSTIC_REPORT_V2_IMPLEMENTATION.md`. Superseded status line: production runtime was `172d808` (Fly `zaad-api` **v30**, image `canonical-172d808`, digest
 `sha256:79f598a2…`) = the performance-pass runtime `914c5c3` + **Enterprise Analytics V1** (PR #88: the governed semantic
 layer, the typed query engine over the vault, Explore, saved analyses, dashboards, Ask ZAAD behind a provider boundary,
 the optimizer hand-off, one destination registry with the command centre and device-aware shortcuts, and the NTDCO
@@ -40,6 +45,7 @@ read the ledger's "Exact next action".**
 | Operating product V1 + V2 | inventory, purchase orders, proposal evaluation and export, governance, closed loop, readiness, amendment counterfactual, transfers, bulk | `458fcaf` merged; Fly v26 `canonical-458fcaf`; **production plan path BLOCKED on shared-cpu-2x** (no runtime tag) | `OPERATING_PRODUCT_V1.md`, `OPERATING_PRODUCT_V2.md`, `FABLE_V1_AUDIT.md`, `FABLE_V2_RELEASE_AUDIT.md` |
 | Operating product V2.1A — Insights | Insights section (Overview, Demand, Inventory, Supply & suppliers, Service & customers, Decisions & value, Perishability when declared): server-side aggregation of the operator's records, the latest completed plan read back, drill-downs, chart → action and action → insights links, five value registers, engine connectivity matrix; the DEMO company and its API-driven loop | `13dde49` merged (PR #84, tested head `2901ee9`, CI 35011852846 13 / 13); Fly v28 `canonical-13dde49`; production smoke 24 / 24 | `OPERATING_PRODUCT_V2_1_INSIGHTS.md`, `FABLE_V2_1_RELEASE_AUDIT.md` |
 
+| Diagnostic report V2 | diagnostic job lifecycle (queued / running with real stages / done / failed / timed_out / cancelled, FIFO solver slot, hard timeout, cancel, persistence, `GET /jobs/latest`, `report.json`); additive summary evidence; deterministic structured findings; consulting-style PDF and the same report in-app; indeterminate animated run view with reconnect and no duplicate work | `e88c660` (PR #89, tested head `eceed3f`, CI 35236930051) + `e512a62` (PR #90, tested head `b2ff8c8`, CI 35239397661); Fly v32 `canonical-e512a62`; tag `zaad-diagnostic-report-v2-runtime` | `DIAGNOSTIC_REPORT_V2_IMPLEMENTATION.md` |
 | Enterprise Analytics V1 | governed semantic layer (38 contracts, 23 dimensions, join graph), typed query engine with a DuckDB adapter, dataset versions, Explore, saved analyses, dashboards, Ask ZAAD (provider-neutral, rules planner, validated model candidates), signals, optimizer hand-off, command centre and shortcuts; NTDCO vault migration-on-open | `172d808` merged (PR #88, tested head `5b9784d`, CI 35180417835); Fly v30 `canonical-172d808`; tag `zaad-enterprise-analytics-v1-runtime` | `ENTERPRISE_ANALYTICS_V1_IMPLEMENTATION.md`, `ENTERPRISE_ANALYTICS_V1_API.md` |
 
 | Full performance pass | frontier oracle phase one only (exact), `fefo_symmetry_scope` request field (default = released), gzip, parallel workspace reads, benchmark tooling; no default scope / cap / gap / semantics change; Fly unchanged | `914c5c3` merged (PR #86); Fly v29 `canonical-914c5c3`; tag `zaad-full-performance-pass-runtime`; rested production 8 / 10 products DONE 208 / 213 s | `ZAAD_FULL_PERFORMANCE_PASS.md` |

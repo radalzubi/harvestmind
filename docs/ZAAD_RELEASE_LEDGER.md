@@ -1,13 +1,13 @@
 # ZAAD release ledger
 
-## Current state (2026-09-17, Enterprise Analytics V1 released) — the only section that describes NOW
+## Current state (2026-09-17, Diagnostic report V2 released) — the only section that describes NOW
 
 | item | value |
 |---|---|
-| production runtime | `172d808a37e9bc619e5d7e8fd82c8f0076c88371` = `Merge PR #88: feat(zaad): enterprise analytics V1 — semantic layer, Explore, dashboards and Ask ZAAD` (tested head `5b9784d`, CI 35180417835 13 / 13) on the performance-pass merge `914c5c3`. Fly `zaad-api` **v30**, image `canonical-172d808`, digest `sha256:79f598a2a236d2479ab19e0522707c9f0e4ae08c2c3a906e950f62dc46411560`, deploy-api run 35181157905; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; Vercel production from `172d808` |
+| production runtime | `e512a62a4ab5299d9e6efc64e02a82b88da39166` = `Merge PR #90: fix(zaad): diagnostic report wording follow-ups from production QA` (tested head `b2ff8c8`, CI 35239397661 13 / 13) on `e88c660` = `Merge PR #89: feat(zaad): diagnostic run lifecycle and a consulting-grade diagnostic report` (tested head `eceed3f`, CI 35236930051 13 / 13) on the Enterprise Analytics V1 merge `172d808`. Fly `zaad-api` **v32**, image `canonical-e512a62`, digest `sha256:9c7c6ab1abc87bcf549291e4c4fd5d2a0fbf0d97d4cb8f297d7e7ad18f5390cd`, deploy-api run 35240675975; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; Vercel production from `e512a62` |
 | production health | release smoke on v29 **24 / 24**; rested probes on v29: 1 / 2 / 5 / 8 / 10 products DONE 4.4 / 30.4 / 133.7 / 208.4 / 212.6 s (8 and 10 timed out on v28), reads in their idle band, steal ≤ 5.5 s; a plan spends ~265 s of the burst balance, so a second plan within ~35 min runs throttled (`ZAAD_FULL_PERFORMANCE_PASS.md` §10) |
-| current `main` | = production `172d808` plus the post-merge docs commits |
-| RELEASED | P0 … P4B V1 (as before); Operating Product V1 + V2 (deployed, plan path blocked — no V2 planner tag); **Operating Product V2.1A Insights** (tag `zaad-operating-product-v2.1a-runtime` = `13dde49`); **full performance pass** (tag `zaad-full-performance-pass-runtime` = `914c5c3`); **Enterprise Analytics V1** (tag `zaad-enterprise-analytics-v1-runtime` = `172d808`) |
+| current `main` | = production `e512a62` plus the post-merge docs commit |
+| RELEASED | P0 … P4B V1 (as before); Operating Product V1 + V2 (deployed, plan path blocked — no V2 planner tag); **Operating Product V2.1A Insights** (tag `zaad-operating-product-v2.1a-runtime` = `13dde49`); **full performance pass** (tag `zaad-full-performance-pass-runtime` = `914c5c3`); **Enterprise Analytics V1** (tag `zaad-enterprise-analytics-v1-runtime` = `172d808`); **Diagnostic report V2** (tag `zaad-diagnostic-report-v2-runtime` = `e512a62`) |
 | DEFERRED | the workspace read's Python-side construction cost at 10 k+ products (3.6 s / 14 s scoped to 200); a compact display read + server-side plan submission by scope; reconciling the per-MILP budget with the job cap; exposing CPU steal on Diagnostics; P4 adaptive recourse visuals |
 | REJECTED | component-wise decomposition; MIP gap 1e-4 / 1e-3; HiGHS thread changes; warm-start policy change; SQL-side SKU scoping of the workspace read (exact, not the cost); raising the cap or lowering the default scope without the owner |
 | NOT STARTED | P4B V2, P6, P7, P8, P9 — each needs its own authorization |
@@ -15,6 +15,21 @@
 | tags that never move | `p0-frozen`, `p1-frozen-product`, `p1-frozen`, `pre-canonical-integration`, `sector-physics-release-runtime`, `p3-performance-closure-runtime`, `p4-release-runtime`, `p4-performance-closure-runtime`, `p5-frozen-product`, `p5-frozen`, `p5-release-runtime`, `p4b-v1-frozen-product`, `p4b-v1-frozen`, `p4b-v1-release-runtime`, `zaad-post-p4b-cleanup-runtime`, `frontend-rebuild-runtime`, **`zaad-operating-product-v2.1a-runtime`**; no `zaad-operating-product-v2-runtime` (withheld until the planner passes) |
 | current entry point | `docs/zaad_full/CURRENT_SYSTEM.md` |
 | CI | one workflow (`.github/workflows/ci.yml`): 13 jobs, `cancel-in-progress` per branch (a docs push cancels a running PR run; the `pull_request` event re-runs it); `deploy-api.yml` deploys an exact SHA to Fly from a GitHub runner (secret `FLY_API_TOKEN`, 30-day token created 2026-09-15); Markdown-only pushes do not run CI; branch protection unavailable on this plan |
+
+## Diagnostic report V2 — run lifecycle + consulting-grade report (2026-09-17)
+
+| item | value |
+|---|---|
+| branch / PR | `feat/diagnostic-report-consulting`, PR #89 (from `ed2d15c`); wording follow-ups `fix/diagnostic-report-wording`, PR #90 |
+| tested heads | `eceed3f` (CI 35236930051, 13 / 13 after one re-run of a pre-existing solver-lease test race); `b2ff8c8` (CI 35239397661, 13 / 13) |
+| merges | `e88c660c47e0d79a9d5c7c5c6bd698ae93d8eafa` (PR #89); `e512a62a4ab5299d9e6efc64e02a82b88da39166` (PR #90) |
+| deploy | Fly v31 `canonical-e88c660` (run 35238653172), then v32 `canonical-e512a62`, digest `sha256:9c7c6ab1abc87bcf549291e4c4fd5d2a0fbf0d97d4cb8f297d7e7ad18f5390cd` (run 35240675975); Vercel production from `e512a62`; **Fly machine unchanged** |
+| runtime tag | `zaad-diagnostic-report-v2-runtime` = `e512a62` (old tags untouched) |
+| what changed | `api/routers/jobs.py` (queued / running with real stages / done / failed / timed_out / cancelled, FIFO solver slot with queue position, hard timeout, cancel, persistence of every terminal state, `GET /jobs/latest`, `GET /jobs/{id}/report.json`), `api/worker.py` (stage forwarding, stop on cancel); `reports/diagnostic_summary.py` (additive evidence), `reports/diagnostic_findings.py` (deterministic structured findings), `reports/diagnostic_pdf.py`; web `lib/diagnostic/lifecycle.ts`, `components/diagnostic/DiagnosticRun.tsx`, `DiagnosticReport.tsx`, `/start` |
+| optimizer | untouched (no file under `zaad/full`, `optimization`, `risk`, `backtesting` changed; frozen regression green on both tested heads) |
+| gates | ruff, mypy, bandit, pip-audit, gitleaks, docker, frontend typecheck / lint / tests / build, six pytest shards, frozen regression |
+| production QA | demo workspace `op_428f8767` only; lifecycle, isolation, PDF and browser walk in `DIAGNOSTIC_REPORT_V2_IMPLEMENTATION.md` §7 |
+| record | `docs/zaad_full/DIAGNOSTIC_REPORT_V2_IMPLEMENTATION.md` |
 
 ## Enterprise Analytics V1 (2026-09-17)
 

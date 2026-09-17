@@ -1,6 +1,6 @@
 # ZAAD Diagnostic run experience + consulting-grade diagnostic report — implementation tracker
 
-**Status: IN PROGRESS (2026-09-17).** Branch `feat/diagnostic-report-consulting` from `main` `ed2d15c`.
+**Status: DONE — RELEASED (2026-09-17).** Branch `feat/diagnostic-report-consulting` from `main` `ed2d15c` → PR #89 (tested head `eceed3f`, CI 35236930051 13 / 13) merged as `e88c660`; wording follow-ups from production QA in PR #90 (tested head `b2ff8c8`, CI 35239397661 13 / 13) merged as `e512a62`. Fly `zaad-api` **v32** `canonical-e512a62` (digest `sha256:9c7c6ab1abc87bcf549291e4c4fd5d2a0fbf0d97d4cb8f297d7e7ad18f5390cd`, deploy-api run 35240675975; v31 `canonical-e88c660` in between, deploy-api run 35238653172); Vercel production from `e512a62`; machine `0804e0dfd1e948` unchanged; tag `zaad-diagnostic-report-v2-runtime` = `e512a62`.
 
 ## 0. What is being fixed
 
@@ -87,7 +87,7 @@ selector's reason string.
       end-to-end diagnostic test still passes with the enriched summary
 - [x] Manual QA on a local demo workspace (below)
 - [x] Performance measurement (below)
-- [ ] PR, CI on exact head, merge, deploy, production QA, tag, docs
+- [x] PR, CI on exact head, merge, deploy, production QA, tag, docs (§7)
 
 ## 4. Manual QA (local, synthetic demo company, 2026-09-17)
 
@@ -122,6 +122,20 @@ rather than provoked in the browser.
 
 The diagnostic itself was not changed: scenario count, folds, gates and candidates are as before. Production
 runs on a dedicated 4-CPU machine; a customer-scale run is measured in production QA.
+
+## 7. Release and production QA (2026-09-17)
+
+| step | value |
+|---|---|
+| PR #89 | `feat/diagnostic-report-consulting`, tested head `eceed3f`, CI run 35236930051 13 / 13 (the `unit-zaad-4` shard failed once on a pre-existing timing race in `tests/unit/test_zaad_solver_lease.py`'s fake — a module this change does not touch — and passed on re-run of the same head); merge `e88c660c47e0d79a9d5c7c5c6bd698ae93d8eafa` |
+| Fly v31 | `canonical-e88c660`, digest `sha256:a82b870be64364aa875b8858cf2fde555bc4e49971e8ceb1f659b8db80b84dc7`, deploy-api run 35238653172 |
+| production QA on v31 | demo workspace `op_428f8767` only: `POST /jobs/diagnostic` 5.6 s (synchronous machine launch, pre-existing) → `queued` "starting a dedicated solver machine" 36 s → `running` with machine-forwarded stages (`lanes`, `testing`) → `done` in 41 s; second press returned the same job; `report.json` 37 KB; PDF 25 KB, 8 pages, 0.86 s; other-tenant 404 and anonymous 401 on job, report.json, report.pdf, cancel, latest, start. Browser (zaadsupply.com): reconnect to the running job, animated bar (`diag-slide`), queued → running → result. Found: "anchored to the your current policy" and a truncated executive line for an adopted candidate |
+| PR #90 | `fix/diagnostic-report-wording`, tested head `b2ff8c8`, CI run 35239397661 13 / 13; merge `e512a62a4ab5299d9e6efc64e02a82b88da39166` |
+| Fly v32 | `canonical-e512a62`, digest `sha256:9c7c6ab1abc87bcf549291e4c4fd5d2a0fbf0d97d4cb8f297d7e7ad18f5390cd`, deploy-api run 35240675975; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB unchanged |
+| Vercel | production alias `zaadsupply.com` → deployment `zaad-9zl99eg5h` built from `e512a62` |
+| production QA on v32 | same walk: `done` in 42 s (queue wait 37 s for the machine), report.json 37 KB, PDF 25 KB 8 pages, isolation 404 / 401 on every route, wording clean ("anchored to your current policy"; the executive line for the adopted candidate complete); the production page reconnects to the finished run and renders the report |
+| tag | `zaad-diagnostic-report-v2-runtime` = `e512a62` (annotated; old tags untouched) |
+| NTDCO | not opened (no customer key held); its production output was not read. The report renders its old-shape summary through the tested fallbacks |
 
 ## 6. Decisions and limits (kept current)
 
