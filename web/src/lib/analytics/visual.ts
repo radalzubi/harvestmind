@@ -15,6 +15,8 @@ export interface ChartData {
   seriesDimension: ResultColumn | null;
   /** cells that were null with a reason, so the legend can say so */
   gaps: Array<{ label: string; series: string; reason: string }>;
+  /** measures not drawn because their unit differs from the axis's; they stay in the table twin */
+  notDrawn: Array<{ id: string; name: string; unit?: string }>;
 }
 
 export const SHAPE_MATRIX: Record<string, VisualType[]> = {
@@ -70,11 +72,15 @@ export function chartData(result: ResultSet, encoding: Encoding | undefined, loc
   const seriesId = encoding?.series ?? dims.find(({ c }) => c.id !== xId)?.c.id ?? null;
   const s = dims.find(({ c }) => c.id === seriesId && c.id !== xId) ?? null;
   const yIds = encoding?.y?.length ? encoding.y : measures.map(({ c }) => c.id);
-  const ys = measures.filter(({ c }) => yIds.includes(c.id));
+  // one unit per axis: a count next to a ratio would flatten the ratio to zero; the rest stay in the table
+  const wanted = measures.filter(({ c }) => yIds.includes(c.id));
+  const axisUnit = wanted[0]?.c.unit;
+  const ys = wanted.filter(({ c }) => c.unit === axisUnit);
+  const notDrawn = wanted.filter(({ c }) => c.unit !== axisUnit).map(({ c }) => ({ id: c.id, name: c.label[locale] ?? c.label.en, unit: c.unit }));
   const points = new Map<string, SeriesPoint>();
   const series = new Map<string, ChartData["series"][number]>();
   const gaps: ChartData["gaps"] = [];
-  if (result.empty) return { points: [], series: [], xDimension: x?.c ?? null, seriesDimension: s?.c ?? null, gaps };
+  if (result.empty) return { points: [], series: [], xDimension: x?.c ?? null, seriesDimension: s?.c ?? null, gaps, notDrawn };
   for (const row of result.rows) {
     const key = x ? cellText(row[x.i]) : "all";
     const label = x ? formatDimension(row[x.i], x.c, locale) : "";
@@ -96,9 +102,9 @@ export function chartData(result: ResultSet, encoding: Encoding | undefined, loc
   if (seriesList.length > 12) {
     const keep = new Set(seriesList.slice(0, 12).map((z) => z.key));
     ordered = ordered.map((p) => Object.fromEntries(Object.entries(p).filter(([k]) => k === "label" || k === "key" || keep.has(k))) as SeriesPoint);
-    return { points: ordered, series: seriesList.slice(0, 12), xDimension: x?.c ?? null, seriesDimension: s?.c ?? null, gaps };
+    return { points: ordered, series: seriesList.slice(0, 12), xDimension: x?.c ?? null, seriesDimension: s?.c ?? null, gaps, notDrawn };
   }
-  return { points: ordered, series: seriesList, xDimension: x?.c ?? null, seriesDimension: s?.c ?? null, gaps };
+  return { points: ordered, series: seriesList, xDimension: x?.c ?? null, seriesDimension: s?.c ?? null, gaps, notDrawn };
 }
 
 export interface ScatterPoint { name: string; x: number; y: number; key: string }

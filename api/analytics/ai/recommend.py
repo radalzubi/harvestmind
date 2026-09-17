@@ -74,6 +74,10 @@ def encoding_for(validated: ValidatedQuery, visual_type: str) -> dict[str, Any]:
     members = [d.dimension.id for d in validated.member_dimensions]
     measures = [m.metric_id for m in validated.metrics]
     enc: dict[str, Any] = {"y": measures}
+    if visual_type in ("line", "area", "bar", "hbar", "stacked_bar") and len(validated.metrics) > 1:
+        # one unit per axis: the chart draws the first measure's unit; the others stay in the table twin
+        unit = validated.metrics[0].unit
+        enc["y"] = [m.metric_id for m in validated.metrics if m.unit == unit]
     if visual_type in ("line", "area", "bar", "stacked_bar") and time_dim:
         enc["x"] = "date"
         if members:

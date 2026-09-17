@@ -97,6 +97,11 @@ test("visual mapping: shape, allowed types, recommendation, series with gaps, sc
   assert.equal(data.points.length, 2);
   assert.equal(data.points[1]["supplier_fill_rate::S1"], null, "a blocked cell is a gap");
   assert.equal(data.gaps[0].reason, "BLOCKED_BY_DATA");
+  const mixed = result({ columns: [r.columns[0], r.columns[2], { ...r.columns[2], id: "matched_orders", metric_id: "matched_orders", unit: "orders", additive: true, label: { en: "Measured orders", ar: "" } }],
+                         rows: [["2026-01-01", { value: 0.9 }, 120]], spec: { measures: [{ metric_id: "supplier_fill_rate" }, { metric_id: "matched_orders" }], time: { grain: "month" } } });
+  const one = chartData(mixed, undefined, "en");
+  assert.deepEqual(one.series.map((x) => x.key), ["supplier_fill_rate"], "a count is never drawn on a ratio axis");
+  assert.deepEqual(one.notDrawn.map((x) => x.id), ["matched_orders"]);
   const kpi = result({ columns: [r.columns[2]], rows: [[{ value: 0.9 }]], spec: { measures: [{ metric_id: "supplier_fill_rate" }] } });
   assert.equal(shapeOf(kpi), "kpi");
   assert.equal(recommendVisual(kpi), "kpi");
