@@ -235,7 +235,7 @@ def _limitation_from_warning(w: str) -> str | None:
 
 def _humanise_weakened(w: str) -> str:
     t = w
-    t = t.replace("incumbent", "your current policy")
+    t = t.replace("to the incumbent", "to your current policy").replace("the incumbent", "your current policy").replace("incumbent", "your current policy")
     t = t.replace("UNKNOWN", "unknown").replace("INFERRED", "inferred").replace("ASSUMED", "assumed")
     t = t.replace("the safe selector needs", "the policy comparison needs").replace("run multiple folds", "test several historical periods")
     t = t.replace("will defer to your current policy", "keeps your current policy")
