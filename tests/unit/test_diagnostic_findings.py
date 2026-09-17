@@ -341,6 +341,8 @@ def test_candidate_adopted_case(old_summary):
     assert r["policy_comparison"]["outcome"] == "adopt_candidate" and r["conclusion"]["kind"] == "adopt_candidate"
     assert r["actions"]["now"][0]["link"]["kind"] == "decision"
     assert any(f["id"] == "policy-adopt" for f in r["findings"])
+    top = r["executive_summary"]["findings"][0]
+    assert top["id"] == "policy-adopt" and "held its advantage on the unseen validation periods (+11.0%)" in top["line"]
 
 
 def test_produce_sector_report_renders():
