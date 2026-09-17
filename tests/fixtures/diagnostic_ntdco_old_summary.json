@@ -1,0 +1,41 @@
+{
+  "sector": "commercial",
+  "readiness": {"verdict": "READY_WITH_CAVEATS", "score": 0.771, "missing": []},
+  "incumbent": "client policy (INFERRED from PO history)",
+  "incumbent_notes": [
+    "SKU-0137: inventory position at PO date unknown; cover inferred from quantity alone",
+    "SKU-0012: inventory position at PO date unknown; cover inferred from quantity alone",
+    "SKU-0044: 3 POs, too few to infer a rule; default cover used",
+    "SKU-0051: inventory position at PO date unknown; cover inferred from quantity alone",
+    "SKU-0088: inventory position at PO date unknown; cover inferred from quantity alone"
+  ],
+  "history_periods": 52,
+  "products": 180,
+  "suppliers": 6,
+  "decision": "incumbent",
+  "reason": "order_up_to won the selection folds but did not beat the incumbent on 2 held-out fold(s) (mean 0.012); incumbent retained",
+  "improvement": null,
+  "candidates": {
+    "order_up_to": {"mean": 0.154, "lower_bound": 0.139, "passed": true},
+    "deterministic_sp": {"mean": 0.021, "lower_bound": -0.048, "passed": false},
+    "stochastic_sp": {"mean": 0.033, "lower_bound": -0.012, "passed": false},
+    "anchored_sp": {"mean": 0.018, "lower_bound": -0.020, "passed": false},
+    "adaptive_sp": {"mean": 0.025, "lower_bound": -0.031, "passed": false}
+  },
+  "state": {"mode": "normal", "dominant": "NORMAL", "p_disruptive": 0.18, "stress": 0.31,
+            "reasons": ["SKU-0137: demand CV 2.04, zero-share 77%", "SKU-0090: demand CV 1.15, zero-share 41%", "SUP-02: lead time 1.4x its long-run mean"]},
+  "lanes": {"aqaba": {"risk": 0.64, "quality": 0.42,
+                      "reasons": ["bab_el_mandeb transits at 61% of their trailing norm", "gscpi elevated (1.21)", "fuel_index elevated (1.18)"],
+                      "missing": ["port:AQABA", "freight_index_yoy"]}},
+  "signal_sources": {"portwatch_rows": 0, "path": "regional_ports_daily.csv", "provenance": null,
+                     "indicators": {"chokepoint": 2, "region": 3}, "indicator_cache": "data/external/indicators (scripts/fetch_indicators.py)"},
+  "priors_in_use": {"SUP-05": {"value": 0.35, "source": "public prior by origin country", "provenance": "public_benchmark",
+                               "receipts_recorded": 3, "note": "prior in use; replaced by measured lead times once 8+ receipts exist"}},
+  "provenance": {"unit_cost": "operator", "shortage_cost_per_unit": "unknown", "supplier_fill": "measured", "lead_time": "measured",
+                 "supplier_capacity": "measured", "opening_inventory": "operator", "holding_rate_per_period": "public_benchmark"},
+  "warnings": [
+    "23 SKU(s) have no contribution margin or price; their shortage cost is UNKNOWN, so they are anchored to the incumbent (e.g. ['SKU-0003', 'SKU-0019', 'SKU-0027'])",
+    "supplier capacity not supplied for every SKU: INFERRED from historical PO peaks (x1.25) or ASSUMED at 2x mean demand; capacity-bound recommendations are advisory",
+    "carrying cost not supplied: PUBLIC benchmark 24%/yr used; the policy ranking is sensitive to it, see carrying_cost_sensitivity"
+  ]
+}

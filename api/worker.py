@@ -87,11 +87,16 @@ def run_job(job_id: str) -> int:
     job: dict[str, Any] = {"id": job_id, "status": "running", "progress": "worker starting"}
 
     def hook(kw: dict) -> None:
-        if "progress" in kw:
+        if "progress" in kw or "stage" in kw:
             try:
-                _call("POST", f"/jobs/internal/{job_id}/progress", {"progress": kw["progress"]}, tries=2)
+                out = _call("POST", f"/jobs/internal/{job_id}/progress",
+                            {"progress": kw.get("progress", job.get("progress", "")), "stage": kw.get("stage", job.get("stage"))}, tries=2)
             except RuntimeError as exc:
                 log.warning("progress not delivered: %s", exc)
+                return
+            if isinstance(out, dict) and out.get("ok") is False:
+                # the operator cancelled, or the API timed the job out: stop solving
+                raise SystemExit(3)
     job["_hook"] = hook
 
     blob = _call("GET", f"/jobs/internal/{job_id}/bundle", raw=True)
