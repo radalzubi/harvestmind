@@ -1,6 +1,6 @@
 # ZAAD Enterprise Analytics V1 — implementation record
 
-**Status: IN PROGRESS (2026-09-17).** This file tracks every requirement of the V1 brief against the
+**Status: DONE — RELEASED WITH DOCUMENTED LIMITS (2026-09-17).** Merge `172d808a37e9bc619e5d7e8fd82c8f0076c88371` (`Merge PR #88`), tested head `5b9784d` (CI 35180417835, 13 / 13), Fly `zaad-api` v30 `canonical-172d808`, Vercel production from `172d808`, tag `zaad-enterprise-analytics-v1-runtime`; gates, deploy and production QA in §10–§11. This file tracks every requirement of the V1 brief against the
 architecture (`ENTERPRISE_ANALYTICS_ARCHITECTURE.md`, `SEMANTIC_LAYER_ARCHITECTURE.md`,
 `ASK_ZAAD_AI_ANALYTICS_ARCHITECTURE.md`) and where it landed in the repository. Branch
 `feat/enterprise-analytics-v1` from `main` `ea08a93`. The optimizer (P0–P5, P4B, solver settings,
@@ -218,8 +218,52 @@ its chord and pin; *G then I* opened Inventory; Settings → Shortcuts showed th
 *Go to Explore* and restored the default; Arabic rendered the shell, Explore and the model panel right-to-left;
 the phone viewport showed the four quick actions and More with no keyboard hints, and Ask ZAAD usable.
 
-**Production QA:** filled after deployment (§11).
+**Production QA (2026-09-17, https://zaadsupply.com on `172d808`, Fly v30, a throwaway DEMO workspace
+`op_428f8767` created for the walk; no customer workspace touched):**
+
+- `scripts/analytics_demo_walk.py` against production: DEMO WALK OK — 36 queryable metrics, the same figures as
+  locally, dashboard `db_831be088b622` created, the Ask ZAAD visual saved, the hand-off built a plan request for
+  12 SKUs (not submitted against production capacity).
+- Tenant isolation smoke: a second workspace `op_995aea39` gets 404 on the first workspace's analysis, dashboard and
+  run endpoints and an empty list; anonymous 401; an empty vault answers NO_DATA, never a fabricated figure.
+- Browser (Mac, Chromium engine): Explore → *Units ordered* gave the KPI 4,137,864 units with Data & scope and the
+  records link; `?m=ordered_units&d=category&g=month` gave the stacked bars by category × month (150 rows); the
+  saved dashboard "Operations (DEMO)" rendered with "Data cutoff: 13 Sept 2026 · Last updated: 17 Sept 2026", the
+  shared filter chip *Category is Beverages* and both tiles; Ask ZAAD answered "Which suppliers have been getting
+  less reliable?" with the three-measure supplier series, the gaps legend (BLOCKED_BY_DATA × 1, "not zeros"), six
+  typed claims (OBSERVATION / ASSOCIATION / MISSING), "How this was planned", the records and supplier leads and
+  the Data & scope line (2025-09-01 → 2026-09-13 · Month · no filters · 60 rows). The production server has no
+  language model configured, so the page states it answers from the governed rules planner (the AI-generated chart
+  path is verified with the provider test double in CI; see Known limits).
+- Diagnostics on the DEMO workspace: Suppliers (six suppliers, late rate / days late / quantity arrived / days,
+  "Not available" for the supplier without measured orders), Routes (aqaba, jeddah, umm_qasr, road_saudi), Product
+  physics (honest empty state "No sector physics declared" — decision A, §3), Value ("No plan to price yet").
+  The exact NTDCO request shape (`sort=late_rate&direction=desc&limit=50&offset=0&as_of=…`) returned 200; the Fly
+  logs since the deploy carry no 500, no `Binder Error` and no failed migration-on-open. The NTDCO workspace itself
+  needs the customer's key and was not opened.
+- Command centre: ⌘K listed *Diagnostics* with the chord *G then D* rendered with Mac glyphs; Settings → Shortcuts
+  showed "This device: Mac (⌘ is the primary modifier)", every page with Change / Remove / Reset all, and the
+  quick-action picker; Arabic rendered the shell, Explore and the model panel right-to-left; the 375 px phone
+  viewport showed the four quick actions with More and no keyboard hints. No console errors on any page.
+- Windows / Linux display is covered by the platform unit tests (`commands.test.ts`), not by a real Windows browser.
 
 ## 11. Gates, CI, merge, deploy
 
-Filled after the pass.
+| gate | result |
+|---|---|
+| local pytest | analytics 77, NTDCO / migrations 21, Insights + governance suites green (115 in the release run); `tests/unit/test_diagnostics_legacy_vault.py` reproduces the NTDCO 500 on a vault frozen at migration 017 and passes after the fix |
+| ruff / mypy / bandit | clean (bandit B608 on the adapter marked `nosec` where the SQL is built from code literals and values bind) |
+| frontend | typecheck 0 errors, lint 0 errors, 122 unit tests pass (the only local failure is an untracked, uncommitted network test that is not part of the release), `next build` green in CI |
+| CI on tested head `5b9784d` | run 35180417835, 13 / 13 including the frozen canonical regression and the P1 invariants → optimizer identity (no file under `zaad/full`, `optimization`, `risk` changed) |
+| merge | `172d808a37e9bc619e5d7e8fd82c8f0076c88371` = `Merge PR #88: feat(zaad): enterprise analytics V1 — semantic layer, Explore, dashboards and Ask ZAAD`; `main` was `ea08a93`; the merge tree equals the tested head's tree |
+| deploy | `deploy-api.yml` run 35181157905 → Fly `zaad-api` v30, image `canonical-172d808`, digest `sha256:79f598a2a236d2479ab19e0522707c9f0e4ae08c2c3a906e950f62dc46411560`, machine `0804e0dfd1e948` unchanged (no Fly upgrade); `/health` env pilot, auth enforced, rate limit 60; Vercel production `zaad` + `harvestmind` from `172d808`; `https://zaadsupply.com/explore` 200 |
+| runtime tag | `zaad-enterprise-analytics-v1-runtime` = `172d808`; older tags untouched |
+| production QA | §10 |
+
+**Known limits carried into the release (all documented in §4):** one fact per query (no cross-fact joins); comparison
+is period-over-period only; no row-level scopes; no async query ids; PDF export is the browser's print; no language
+model configured on the production API, so Ask ZAAD answers from the rules planner there until an `ANTHROPIC_API_KEY`
+is set; the NTDCO workspace itself was not opened (customer key); Windows / Linux shortcut display verified by unit
+tests only.
+
+**Verdict: ZAAD ENTERPRISE ANALYTICS V1 — RELEASED WITH DOCUMENTED LIMITS.**

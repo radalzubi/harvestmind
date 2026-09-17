@@ -1,13 +1,13 @@
 # ZAAD release ledger
 
-## Current state (2026-09-16 evening, full performance pass released) — the only section that describes NOW
+## Current state (2026-09-17, Enterprise Analytics V1 released) — the only section that describes NOW
 
 | item | value |
 |---|---|
-| production runtime | `914c5c33b8c9bc92a098b60ac2248613a31e788a` = `Merge PR #86: perf(zaad): full application and planner performance pass` (tested head `e563800`, CI 35104491427 13 / 13, tree `99d43e2` identical) on the V2.1A merge `13dde49`. Fly `zaad-api` **v29**, image `canonical-914c5c3`, digest `sha256:bfe6177f866969e819847fd37f80f010ea533fa19ede73abd2b9236b1a12125b`, deploy-api run 35105475528; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; Vercel production `zaad` + `harvestmind` from `914c5c3` |
+| production runtime | `172d808a37e9bc619e5d7e8fd82c8f0076c88371` = `Merge PR #88: feat(zaad): enterprise analytics V1 — semantic layer, Explore, dashboards and Ask ZAAD` (tested head `5b9784d`, CI 35180417835 13 / 13) on the performance-pass merge `914c5c3`. Fly `zaad-api` **v30**, image `canonical-172d808`, digest `sha256:79f598a2a236d2479ab19e0522707c9f0e4ae08c2c3a906e950f62dc46411560`, deploy-api run 35181157905; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; Vercel production from `172d808` |
 | production health | release smoke on v29 **24 / 24**; rested probes on v29: 1 / 2 / 5 / 8 / 10 products DONE 4.4 / 30.4 / 133.7 / 208.4 / 212.6 s (8 and 10 timed out on v28), reads in their idle band, steal ≤ 5.5 s; a plan spends ~265 s of the burst balance, so a second plan within ~35 min runs throttled (`ZAAD_FULL_PERFORMANCE_PASS.md` §10) |
-| current `main` | = production `914c5c3` plus the performance-pass docs commits |
-| RELEASED | P0 … P4B V1 (as before); Operating Product V1 + V2 (deployed, plan path blocked — no V2 planner tag); **Operating Product V2.1A Insights** (tag `zaad-operating-product-v2.1a-runtime` = `13dde49`); **full performance pass** (tag `zaad-full-performance-pass-runtime` = `914c5c3`) |
+| current `main` | = production `172d808` plus the post-merge docs commits |
+| RELEASED | P0 … P4B V1 (as before); Operating Product V1 + V2 (deployed, plan path blocked — no V2 planner tag); **Operating Product V2.1A Insights** (tag `zaad-operating-product-v2.1a-runtime` = `13dde49`); **full performance pass** (tag `zaad-full-performance-pass-runtime` = `914c5c3`); **Enterprise Analytics V1** (tag `zaad-enterprise-analytics-v1-runtime` = `172d808`) |
 | DEFERRED | the workspace read's Python-side construction cost at 10 k+ products (3.6 s / 14 s scoped to 200); a compact display read + server-side plan submission by scope; reconciling the per-MILP budget with the job cap; exposing CPU steal on Diagnostics; P4 adaptive recourse visuals |
 | REJECTED | component-wise decomposition; MIP gap 1e-4 / 1e-3; HiGHS thread changes; warm-start policy change; SQL-side SKU scoping of the workspace read (exact, not the cost); raising the cap or lowering the default scope without the owner |
 | NOT STARTED | P4B V2, P6, P7, P8, P9 — each needs its own authorization |
@@ -15,6 +15,23 @@
 | tags that never move | `p0-frozen`, `p1-frozen-product`, `p1-frozen`, `pre-canonical-integration`, `sector-physics-release-runtime`, `p3-performance-closure-runtime`, `p4-release-runtime`, `p4-performance-closure-runtime`, `p5-frozen-product`, `p5-frozen`, `p5-release-runtime`, `p4b-v1-frozen-product`, `p4b-v1-frozen`, `p4b-v1-release-runtime`, `zaad-post-p4b-cleanup-runtime`, `frontend-rebuild-runtime`, **`zaad-operating-product-v2.1a-runtime`**; no `zaad-operating-product-v2-runtime` (withheld until the planner passes) |
 | current entry point | `docs/zaad_full/CURRENT_SYSTEM.md` |
 | CI | one workflow (`.github/workflows/ci.yml`): 13 jobs, `cancel-in-progress` per branch (a docs push cancels a running PR run; the `pull_request` event re-runs it); `deploy-api.yml` deploys an exact SHA to Fly from a GitHub runner (secret `FLY_API_TOKEN`, 30-day token created 2026-09-15); Markdown-only pushes do not run CI; branch protection unavailable on this plan |
+
+## Enterprise Analytics V1 (2026-09-17)
+
+| item | value |
+|---|---|
+| branch / PR | `feat/enterprise-analytics-v1`, PR #88 (from `ea08a93`) |
+| tested head | `5b9784d`, CI run 35180417835, 13 / 13 (earlier heads: a stray test import and unmarked literal SQL for bandit, both fixed) |
+| merge | `172d808a37e9bc619e5d7e8fd82c8f0076c88371`; `main` was `ea08a93` |
+| deploy | Fly v30 `canonical-172d808`, digest `sha256:79f598a2a236d2479ab19e0522707c9f0e4ae08c2c3a906e950f62dc46411560`, deploy-api run 35181157905; Vercel production from `172d808`; **Fly machine unchanged** |
+| runtime tag | `zaad-enterprise-analytics-v1-runtime` = `172d808` (old tags untouched; the V2 planner runtime tag stays withheld) |
+| what changed | `api/analytics/*` (semantic registry, contracts, validator, planner, DuckDB adapter, results, freshness, cache, saved objects, exports, Ask ZAAD, signals, hand-off, Insights bridge), `api/routers/zaad_analytics.py`, migration 028, seven analytics capabilities in governance; web Explore / Dashboards / Ask ZAAD / Settings → Shortcuts, one destination registry, command centre; `db_manager` migration-on-open; `diagnostics` supplier-master guards |
+| optimizer | untouched (no file under `zaad/full`, `optimization`, `risk` changed; canonical regression and P1 invariants green on the tested head) |
+| gates | ruff, mypy, bandit, pip-audit, gitleaks, docker, frontend typecheck / lint / tests / build, six pytest shards, frozen regression |
+| scale | 150 / 10k / 50k products: worst median 25 / 609 / 167 ms, payloads < 13 KB (`docs/zaad_full/evidence/analytics/analytics_scale.json`) |
+| demo loop | `scripts/analytics_demo_walk.py` DEMO WALK OK locally and in production (`ENTERPRISE_ANALYTICS_V1_IMPLEMENTATION.md` §8, §10) |
+| record | `docs/zaad_full/ENTERPRISE_ANALYTICS_V1_IMPLEMENTATION.md`, `ENTERPRISE_ANALYTICS_V1_API.md` |
+| verdict | see the implementation record §11 |
 
 ## Full performance pass (2026-09-16)
 
