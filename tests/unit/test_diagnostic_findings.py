@@ -308,6 +308,7 @@ def test_formatting_and_rounding():
 def test_no_raw_floats_or_enums_in_customer_copy(old_summary):
     r = build_report(_enriched(old_summary), job_id="j", company="C")
     text = _all_text(_customer_copy(r))
+    assert "the your" not in text and "anchored to your current policy" in text
     assert not re.search(r"\d\.\d{4,}", text), re.search(r"\S*\d\.\d{4,}\S*", text).group(0)
     for enum in ("READY_WITH_CAVEATS", "order_up_to", "stochastic_sp", "held-out fold", "zero-share", "incumbent"):
         assert enum not in text, enum
@@ -340,6 +341,8 @@ def test_candidate_adopted_case(old_summary):
     assert r["policy_comparison"]["outcome"] == "adopt_candidate" and r["conclusion"]["kind"] == "adopt_candidate"
     assert r["actions"]["now"][0]["link"]["kind"] == "decision"
     assert any(f["id"] == "policy-adopt" for f in r["findings"])
+    top = r["executive_summary"]["findings"][0]
+    assert top["id"] == "policy-adopt" and "held its advantage on the unseen validation periods (+11.0%)" in top["line"]
 
 
 def test_produce_sector_report_renders():

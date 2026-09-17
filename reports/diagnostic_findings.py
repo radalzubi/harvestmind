@@ -235,7 +235,7 @@ def _limitation_from_warning(w: str) -> str | None:
 
 def _humanise_weakened(w: str) -> str:
     t = w
-    t = t.replace("incumbent", "your current policy")
+    t = t.replace("to the incumbent", "to your current policy").replace("the incumbent", "your current policy").replace("incumbent", "your current policy")
     t = t.replace("UNKNOWN", "unknown").replace("INFERRED", "inferred").replace("ASSUMED", "assumed")
     t = t.replace("the safe selector needs", "the policy comparison needs").replace("run multiple folds", "test several historical periods")
     t = t.replace("will defer to your current policy", "keeps your current policy")
@@ -528,8 +528,11 @@ def findings_section(summary: dict, policy: dict, readiness: dict) -> list[dict]
                             "Adopt it for the next order cycle with your current policy as fallback; review the first cycle's orders line by line in ZAAD before release.",
                             "High", "measured on your own history with held-out validation periods", materiality=1.0,
                             driver_tag="OBSERVED", evidence=[{"label": "Average cost change", "value": pct(_f(ev.get("mean")), signed=True)},
-                                                             {"label": "Conservative estimate", "value": pct(_f(ev.get("lower_bound")), signed=True)}],
-                            related=[{"kind": "decision", "id": "decisions", "label": "Run a decision"}]))
+                                                             {"label": "Conservative estimate", "value": pct(_f(ev.get("lower_bound")), signed=True)},
+                                                             {"label": "Unseen validation periods", "value": pct(_f(ev.get("holdout_mean")), signed=True) if ev.get("holdout_mean") is not None else "held"}],
+                            related=[{"kind": "decision", "id": "decisions", "label": "Run a decision"}],
+                            summary_line=f"{CANDIDATE_SHORT.get(name, name)} cost {pct(abs(_f(ev.get('mean')) or 0))} less on average on the selection periods (conservative estimate {pct(_f(ev.get('lower_bound')), signed=True)}) and held its advantage on the unseen validation periods"
+                                         + (f" ({pct(_f(ev.get('holdout_mean')), signed=True)})" if ev.get("holdout_mean") is not None else "") + "."))
     elif policy.get("outcome") == "keep_current" and name:
         out.append(_finding("policy-keep", "policy", "No tested alternative beat your current policy with enough margin", "info",
                             policy["explanation"][0] if policy.get("explanation") else "",
