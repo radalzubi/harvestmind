@@ -28,14 +28,24 @@ ROLES = ("VIEWER", "BUYER", "APPROVER", "ADMIN")
 #: The capability vocabulary. Every name here is checked somewhere; nothing checked is absent.
 CAPABILITIES = ("view", "manageData", "createProposal", "editDraft", "evaluate", "review",
                 "approve", "export", "recordExternal", "recordOutcome", "respondDecision",
-                "manageProfiles", "manageSettings", "manageActors")
+                "manageProfiles", "manageSettings", "manageActors",
+                # Enterprise Analytics V1: the analytics surfaces over the same four roles. A viewer
+                # reads curated and workspace-shared analytics; a buyer builds, exports and asks;
+                # an approver may share with the workspace; an administrator manages everything.
+                "viewAnalytics", "createAnalysis", "editOwnAnalysis", "shareAnalysis", "exportAnalytics",
+                "askZaad", "manageAnalytics")
+
+ANALYTICS_CAPABILITIES = ("viewAnalytics", "createAnalysis", "editOwnAnalysis", "shareAnalysis", "exportAnalytics",
+                          "askZaad", "manageAnalytics")
 
 ROLE_CAPABILITIES: dict[str, frozenset[str]] = {
-    "VIEWER": frozenset({"view"}),
+    "VIEWER": frozenset({"view", "viewAnalytics"}),
     "BUYER": frozenset({"view", "manageData", "createProposal", "editDraft", "evaluate", "review", "export",
-                        "recordExternal", "recordOutcome", "respondDecision"}),
+                        "recordExternal", "recordOutcome", "respondDecision",
+                        "viewAnalytics", "createAnalysis", "editOwnAnalysis", "exportAnalytics", "askZaad"}),
     "APPROVER": frozenset({"view", "createProposal", "editDraft", "evaluate", "review", "approve", "export",
-                           "recordExternal", "recordOutcome", "respondDecision"}),
+                           "recordExternal", "recordOutcome", "respondDecision",
+                           "viewAnalytics", "createAnalysis", "editOwnAnalysis", "shareAnalysis", "exportAnalytics", "askZaad"}),
     "ADMIN": frozenset(CAPABILITIES),
 }
 
@@ -71,6 +81,9 @@ CAPABILITY_WORDS = {
     "approve": "approve or reject a proposal", "export": "export a proposal", "recordExternal": "record what happened outside ZAAD",
     "recordOutcome": "record an outcome", "respondDecision": "respond to a decision",
     "manageProfiles": "manage export formats", "manageSettings": "change workspace settings", "manageActors": "manage people",
+    "viewAnalytics": "view analytics", "createAnalysis": "create an analysis", "editOwnAnalysis": "edit an analysis",
+    "shareAnalysis": "share an analysis with the workspace", "exportAnalytics": "export an analysis", "askZaad": "use Ask ZAAD",
+    "manageAnalytics": "manage every analysis and dashboard in the workspace",
 }
 
 

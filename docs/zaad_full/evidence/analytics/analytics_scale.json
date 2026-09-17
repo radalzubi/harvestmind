@@ -1,0 +1,410 @@
+{
+  "generated_at": "2026-09-16T23:52:14",
+  "results": [
+    {
+      "products": 150,
+      "rows": {
+        "stg_fmcg_skus": 36,
+        "stg_fmcg_orders": 21011,
+        "stg_fmcg_inventory": 11232,
+        "stg_fmcg_purchase_orders": 1872,
+        "stg_fmcg_receipts": 1939
+      },
+      "build_s": 7.7,
+      "runs": 5,
+      "queries": {
+        "time_series_demand_week": {
+          "median_ms": 13.0,
+          "p95_ms": 15.0,
+          "planned_median_ms": 8.0,
+          "executed_median_ms": 4.9,
+          "payload_bytes": 8013,
+          "rows": 104,
+          "truncated": false,
+          "empty": false
+        },
+        "time_series_demand_month_category": {
+          "median_ms": 13.2,
+          "p95_ms": 13.5,
+          "planned_median_ms": 7.8,
+          "executed_median_ms": 5.3,
+          "payload_bytes": 9128,
+          "rows": 150,
+          "truncated": false,
+          "empty": false
+        },
+        "supplier_ranking": {
+          "median_ms": 18.4,
+          "p95_ms": 18.8,
+          "planned_median_ms": 7.8,
+          "executed_median_ms": 10.3,
+          "payload_bytes": 7387,
+          "rows": 5,
+          "truncated": false,
+          "empty": false
+        },
+        "supplier_trend_month": {
+          "median_ms": 17.8,
+          "p95_ms": 18.0,
+          "planned_median_ms": 7.7,
+          "executed_median_ms": 9.9,
+          "payload_bytes": 9946,
+          "rows": 60,
+          "truncated": false,
+          "empty": false
+        },
+        "sku_inventory_cover_top": {
+          "median_ms": 21.7,
+          "p95_ms": 21.9,
+          "planned_median_ms": 8.2,
+          "executed_median_ms": 13.4,
+          "payload_bytes": 8581,
+          "rows": 36,
+          "truncated": false,
+          "empty": false
+        },
+        "inventory_by_site_month": {
+          "median_ms": 15.8,
+          "p95_ms": 16.2,
+          "planned_median_ms": 7.9,
+          "executed_median_ms": 7.5,
+          "payload_bytes": 9244,
+          "rows": 75,
+          "truncated": false,
+          "empty": false
+        },
+        "customer_service": {
+          "median_ms": 16.3,
+          "p95_ms": 19.6,
+          "planned_median_ms": 8.0,
+          "executed_median_ms": 8.2,
+          "payload_bytes": 5734,
+          "rows": 8,
+          "truncated": false,
+          "empty": false
+        },
+        "multi_dimension_group": {
+          "median_ms": 13.7,
+          "p95_ms": 15.4,
+          "planned_median_ms": 8.1,
+          "executed_median_ms": 5.5,
+          "payload_bytes": 12526,
+          "rows": 162,
+          "truncated": false,
+          "empty": false
+        },
+        "drilldown_category_to_sku": {
+          "median_ms": 13.1,
+          "p95_ms": 13.3,
+          "planned_median_ms": 7.1,
+          "executed_median_ms": 5.8,
+          "payload_bytes": 5381,
+          "rows": 42,
+          "truncated": false,
+          "empty": false
+        },
+        "open_po_by_supplier": {
+          "median_ms": 24.9,
+          "p95_ms": 26.0,
+          "planned_median_ms": 8.1,
+          "executed_median_ms": 16.9,
+          "payload_bytes": 6181,
+          "rows": 5,
+          "truncated": false,
+          "empty": false
+        },
+        "kpi_fill_rate": {
+          "median_ms": 13.1,
+          "p95_ms": 13.7,
+          "planned_median_ms": 8.2,
+          "executed_median_ms": 4.8,
+          "payload_bytes": 5990,
+          "rows": 1,
+          "truncated": false,
+          "empty": false
+        },
+        "period_over_period": {
+          "median_ms": 13.4,
+          "p95_ms": 14.3,
+          "planned_median_ms": 7.8,
+          "executed_median_ms": 5.5,
+          "payload_bytes": 4096,
+          "rows": 13,
+          "truncated": false,
+          "empty": false
+        }
+      },
+      "worst_median_ms": 24.9
+    },
+    {
+      "products": 10000,
+      "rows": {
+        "stg_fmcg_skus": 10000,
+        "stg_fmcg_orders": 520000,
+        "stg_fmcg_inventory": 30000,
+        "stg_fmcg_purchase_orders": 120000,
+        "stg_fmcg_receipts": 100000
+      },
+      "build_s": 0.2,
+      "runs": 5,
+      "queries": {
+        "time_series_demand_week": {
+          "median_ms": 21.7,
+          "p95_ms": 21.8,
+          "planned_median_ms": 9.3,
+          "executed_median_ms": 12.1,
+          "payload_bytes": 6467,
+          "rows": 52,
+          "truncated": false,
+          "empty": false
+        },
+        "time_series_demand_month_category": {
+          "median_ms": 22.2,
+          "p95_ms": 22.7,
+          "planned_median_ms": 9.1,
+          "executed_median_ms": 13.0,
+          "payload_bytes": 6079,
+          "rows": 65,
+          "truncated": false,
+          "empty": false
+        },
+        "supplier_ranking": {
+          "median_ms": 38.4,
+          "p95_ms": 41.6,
+          "planned_median_ms": 9.0,
+          "executed_median_ms": 29.0,
+          "payload_bytes": 10099,
+          "rows": 20,
+          "truncated": false,
+          "empty": false
+        },
+        "supplier_trend_month": {
+          "median_ms": 39.9,
+          "p95_ms": 40.1,
+          "planned_median_ms": 9.3,
+          "executed_median_ms": 30.3,
+          "payload_bytes": 10805,
+          "rows": 60,
+          "truncated": false,
+          "empty": false
+        },
+        "sku_inventory_cover_top": {
+          "median_ms": 29.8,
+          "p95_ms": 30.2,
+          "planned_median_ms": 9.1,
+          "executed_median_ms": 20.4,
+          "payload_bytes": 10054,
+          "rows": 50,
+          "truncated": false,
+          "empty": false
+        },
+        "inventory_by_site_month": {
+          "median_ms": 17.8,
+          "p95_ms": 17.9,
+          "planned_median_ms": 8.8,
+          "executed_median_ms": 8.7,
+          "payload_bytes": 5239,
+          "rows": 3,
+          "truncated": false,
+          "empty": false
+        },
+        "customer_service": {
+          "median_ms": 27.3,
+          "p95_ms": 27.8,
+          "planned_median_ms": 8.7,
+          "executed_median_ms": 18.5,
+          "payload_bytes": 7551,
+          "rows": 25,
+          "truncated": false,
+          "empty": false
+        },
+        "multi_dimension_group": {
+          "median_ms": 21.9,
+          "p95_ms": 22.3,
+          "planned_median_ms": 8.5,
+          "executed_median_ms": 13.2,
+          "payload_bytes": 7813,
+          "rows": 75,
+          "truncated": false,
+          "empty": false
+        },
+        "drilldown_category_to_sku": {
+          "median_ms": 21.8,
+          "p95_ms": 22.0,
+          "planned_median_ms": 8.4,
+          "executed_median_ms": 13.2,
+          "payload_bytes": 9008,
+          "rows": 140,
+          "truncated": false,
+          "empty": false
+        },
+        "open_po_by_supplier": {
+          "median_ms": 47.6,
+          "p95_ms": 48.2,
+          "planned_median_ms": 8.7,
+          "executed_median_ms": 38.7,
+          "payload_bytes": 11775,
+          "rows": 120,
+          "truncated": false,
+          "empty": false
+        },
+        "kpi_fill_rate": {
+          "median_ms": 19.3,
+          "p95_ms": 20.2,
+          "planned_median_ms": 8.4,
+          "executed_median_ms": 10.8,
+          "payload_bytes": 6018,
+          "rows": 1,
+          "truncated": false,
+          "empty": false
+        },
+        "period_over_period": {
+          "median_ms": 23.6,
+          "p95_ms": 24.0,
+          "planned_median_ms": 8.4,
+          "executed_median_ms": 15.0,
+          "payload_bytes": 4233,
+          "rows": 13,
+          "truncated": false,
+          "empty": false
+        }
+      },
+      "worst_median_ms": 47.6
+    },
+    {
+      "products": 50000,
+      "rows": {
+        "stg_fmcg_skus": 50000,
+        "stg_fmcg_orders": 2600000,
+        "stg_fmcg_inventory": 150000,
+        "stg_fmcg_purchase_orders": 600000,
+        "stg_fmcg_receipts": 500000
+      },
+      "build_s": 0.7,
+      "runs": 5,
+      "queries": {
+        "time_series_demand_week": {
+          "median_ms": 41.2,
+          "p95_ms": 43.0,
+          "planned_median_ms": 12.1,
+          "executed_median_ms": 28.4,
+          "payload_bytes": 6580,
+          "rows": 52,
+          "truncated": false,
+          "empty": false
+        },
+        "time_series_demand_month_category": {
+          "median_ms": 41.0,
+          "p95_ms": 41.4,
+          "planned_median_ms": 11.1,
+          "executed_median_ms": 29.7,
+          "payload_bytes": 6146,
+          "rows": 65,
+          "truncated": false,
+          "empty": false
+        },
+        "supplier_ranking": {
+          "median_ms": 77.1,
+          "p95_ms": 78.2,
+          "planned_median_ms": 11.6,
+          "executed_median_ms": 65.2,
+          "payload_bytes": 10184,
+          "rows": 20,
+          "truncated": false,
+          "empty": false
+        },
+        "supplier_trend_month": {
+          "median_ms": 81.1,
+          "p95_ms": 82.6,
+          "planned_median_ms": 11.8,
+          "executed_median_ms": 69.2,
+          "payload_bytes": 10908,
+          "rows": 60,
+          "truncated": false,
+          "empty": false
+        },
+        "sku_inventory_cover_top": {
+          "median_ms": 62.9,
+          "p95_ms": 64.7,
+          "planned_median_ms": 13.9,
+          "executed_median_ms": 48.1,
+          "payload_bytes": 10056,
+          "rows": 50,
+          "truncated": false,
+          "empty": false
+        },
+        "inventory_by_site_month": {
+          "median_ms": 32.8,
+          "p95_ms": 35.0,
+          "planned_median_ms": 11.5,
+          "executed_median_ms": 21.2,
+          "payload_bytes": 5255,
+          "rows": 3,
+          "truncated": false,
+          "empty": false
+        },
+        "customer_service": {
+          "median_ms": 56.9,
+          "p95_ms": 58.1,
+          "planned_median_ms": 11.4,
+          "executed_median_ms": 45.3,
+          "payload_bytes": 7631,
+          "rows": 25,
+          "truncated": false,
+          "empty": false
+        },
+        "multi_dimension_group": {
+          "median_ms": 43.9,
+          "p95_ms": 44.4,
+          "planned_median_ms": 11.3,
+          "executed_median_ms": 32.4,
+          "payload_bytes": 7885,
+          "rows": 75,
+          "truncated": false,
+          "empty": false
+        },
+        "drilldown_category_to_sku": {
+          "median_ms": 37.4,
+          "p95_ms": 37.8,
+          "planned_median_ms": 11.3,
+          "executed_median_ms": 25.9,
+          "payload_bytes": 9012,
+          "rows": 140,
+          "truncated": false,
+          "empty": false
+        },
+        "open_po_by_supplier": {
+          "median_ms": 151.8,
+          "p95_ms": 183.5,
+          "planned_median_ms": 11.9,
+          "executed_median_ms": 140.1,
+          "payload_bytes": 12093,
+          "rows": 120,
+          "truncated": false,
+          "empty": false
+        },
+        "kpi_fill_rate": {
+          "median_ms": 37.8,
+          "p95_ms": 40.7,
+          "planned_median_ms": 11.6,
+          "executed_median_ms": 26.1,
+          "payload_bytes": 6036,
+          "rows": 1,
+          "truncated": false,
+          "empty": false
+        },
+        "period_over_period": {
+          "median_ms": 48.7,
+          "p95_ms": 48.9,
+          "planned_median_ms": 11.4,
+          "executed_median_ms": 37.1,
+          "payload_bytes": 4247,
+          "rows": 13,
+          "truncated": false,
+          "empty": false
+        }
+      },
+      "worst_median_ms": 151.8
+    }
+  ]
+}

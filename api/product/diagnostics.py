@@ -108,6 +108,28 @@ class DiagnosticsRefused(ValueError):
     """A name in the request is not one this module serves."""
 
 
+def _supplier_master_sql(conn: Any) -> str:
+    """One row per supplier from the master, with the optional columns later migrations added.
+
+    `origin_iso3` (015), `route` (013 — optional on upload) and `risk_group` (018) are read only where
+    the vault carries them. A workspace created before a migration, or whose supplier upload never
+    declared the column, answers with NULL in that column rather than a binder error — the NTDCO
+    production workspace failed exactly here (`Referenced column "risk_group" not found`).
+    """
+    if not has_table(conn, "stg_fmcg_suppliers"):
+        return ("SELECT DISTINCT supplier_id, CAST(NULL AS VARCHAR) AS name, CAST(NULL AS VARCHAR) AS origin, "
+                "CAST(NULL AS VARCHAR) AS route, CAST(NULL AS VARCHAR) AS risk_group "
+                "FROM stg_fmcg_purchase_orders WHERE supplier_id IS NOT NULL")
+    cols = {row[1] for row in conn.execute("PRAGMA table_info('stg_fmcg_suppliers')").fetchall()}
+
+    def col(name: str) -> str:
+        return f"any_value({name})" if name in cols else "CAST(NULL AS VARCHAR)"
+
+    return (f"SELECT supplier_id, {col('supplier_name')} AS name, {col('origin_iso3')} AS origin, "
+            f"{col('route')} AS route, {col('risk_group')} AS risk_group "
+            "FROM stg_fmcg_suppliers WHERE supplier_id IS NOT NULL GROUP BY supplier_id")  # nosec B608 - column names are code literals checked against the table
+
+
 def supplier_page(
     conn: Any,
     *,
@@ -138,12 +160,7 @@ def supplier_page(
         "NULL AS units_ordered, NULL AS units_received, NULL AS orders_with_promise, " \
         "NULL AS first_order, NULL AS last_receipt WHERE FALSE"
 
-    master = ("SELECT supplier_id, any_value(supplier_name) AS name, any_value(origin_iso3) AS origin, "
-              "any_value(route) AS route, any_value(risk_group) AS risk_group "
-              "FROM stg_fmcg_suppliers GROUP BY supplier_id") if has_table(conn, "stg_fmcg_suppliers") else \
-             ("SELECT DISTINCT supplier_id, CAST(NULL AS VARCHAR) AS name, CAST(NULL AS VARCHAR) AS origin, "
-              "CAST(NULL AS VARCHAR) AS route, CAST(NULL AS VARCHAR) AS risk_group "
-              "FROM stg_fmcg_purchase_orders WHERE supplier_id IS NOT NULL")
+    master = _supplier_master_sql(conn)
 
     open_sql = """
     open_state AS (

@@ -20,9 +20,9 @@ import { test } from "node:test";
 const SRC = join(process.cwd(), "src");
 /** The operating product. The legacy produce surfaces are a different release and not this pass. */
 const SCOPE = [
-  join(SRC, "lib", "zaad"), join(SRC, "lib", "network"), join(SRC, "components", "workspace"),
-  join(SRC, "components", "network"),
-  ...["home", "decisions", "inventory", "orders", "diagnostics", "data", "upload", "network", "access"]
+  join(SRC, "lib", "zaad"), join(SRC, "lib", "network"), join(SRC, "lib", "analytics"), join(SRC, "lib", "commands"),
+  join(SRC, "components", "workspace"), join(SRC, "components", "network"), join(SRC, "components", "analytics"),
+  ...["home", "decisions", "inventory", "orders", "diagnostics", "data", "upload", "network", "access", "explore", "dashboards", "ask", "settings"]
     .map((route) => join(SRC, "app", route)),
 ];
 
