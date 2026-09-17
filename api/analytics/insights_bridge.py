@@ -2,7 +2,7 @@
 
 One definition, three consumers. The demand series, the inventory series and the supplier trend
 that Insights draws are re-expressed here as `AnalyticsQuerySpec`s over the registry's metrics and
-proven identical to the released SQL by `tests/integration/test_analytics_insights_identity.py`.
+proven identical to the released SQL by `tests/integration/test_analytics_engine.py`.
 Insights' composite payloads keep their assembler; the numbers inside them are the contract's.
 """
 from __future__ import annotations
