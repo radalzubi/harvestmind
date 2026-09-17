@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "postinstall": "node scripts/vendor-maplibre-worker.mjs",
     "vendor:maplibre": "node scripts/vendor-maplibre-worker.mjs",
-    "test": "tsx --test src/lib/zaad/__tests__/*.test.ts src/lib/network/__tests__/*.test.ts src/lib/commands/__tests__/*.test.ts src/lib/analytics/__tests__/*.test.ts"
+    "test": "tsx --test src/lib/zaad/__tests__/*.test.ts src/lib/network/__tests__/*.test.ts src/lib/commands/__tests__/*.test.ts src/lib/analytics/__tests__/*.test.ts src/lib/diagnostic/__tests__/*.test.ts"
   },
   "dependencies": {
     "@xyflow/react": "^12.11.6",

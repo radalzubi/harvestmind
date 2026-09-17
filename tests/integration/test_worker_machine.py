@@ -88,15 +88,18 @@ def test_worker_round_trip(client, history, tmp_path, monkeypatch):
     assert saved["status"] == "done" and saved["summary"]["decision"] == j["summary"]["decision"]
 
 
-def test_stale_machine_job_is_failed(client, monkeypatch):
+def test_stale_machine_job_is_timed_out(client, monkeypatch):
+    """A machine job that stopped reporting ends as TIMED_OUT (a retryable terminal state), never a spinner."""
     cl, h, _ = client
     from api.routers import jobs as J
     monkeypatch.setenv("HARVESTMIND_JOB_STALE_S", "0")
-    J.STALE_AFTER_S = 0
+    monkeypatch.setattr(J, "STALE_AFTER_S", 0)
+    monkeypatch.setattr(J, "MAX_RUN_S", 10 ** 9)   # exercise the stale rule, not the wall clock
+    monkeypatch.setattr(J.fly_machines, "destroy_machine", lambda mid: None)
     with J._LOCK:
         J._JOBS["job_stale"] = {"id": "job_stale", "operator_id": cl.get("/me", headers=h).json()["operator_id"], "kind": "diagnostic",
                                 "sector": "commercial", "status": "running", "progress": "x", "runner": "machine",
                                 "created_at": "2020-01-01T00:00:00+00:00", "updated_at": "2020-01-01T00:00:00+00:00",
                                 "finished_at": None, "error": None, "summary": None}
     j = cl.get("/jobs/job_stale", headers=h).json()
-    assert j["status"] == "failed" and "no progress" in j["error"]
+    assert j["status"] == "timed_out" and "no progress" in j["error"] and "run it again" in j["error"]

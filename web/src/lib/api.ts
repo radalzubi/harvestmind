@@ -590,12 +590,58 @@ export interface Me {
 }
 export function getMe(): Promise<Me> { return apiFetch<Me>("/me"); }
 
+export type JobStatus = "queued" | "running" | "done" | "failed" | "timed_out" | "cancelled";
+export interface JobStage { key: string; label: string }
 export interface Job {
-  id: string; kind: string; status: "queued" | "running" | "done" | "failed"; progress: string;
-  created_at: string; finished_at?: string | null; error?: string | null; summary?: Record<string, unknown> | null;
+  id: string; kind: string; status: JobStatus; progress: string;
+  /** the real step the backend is in (one of `stages`), or null before the first stage */
+  stage?: string | null; stages?: JobStage[];
+  /** 1 = next to start; null when unknown or not queued */
+  queue_position?: number | null;
+  /** the id to quote when asking ZAAD about a failed run */
+  reference?: string;
+  created_at: string; started_at?: string | null; finished_at?: string | null; error?: string | null;
+  summary?: Record<string, unknown> | null;
+  /** the structured diagnostic report (present when done) */
+  report?: DiagnosticReport | null;
+  timing?: { queue_wait_s?: number; run_s?: number; report_build_s?: number } | null;
 }
 export function startDiagnostic(): Promise<Job> { return apiFetch<Job>("/jobs/diagnostic", { method: "POST" }); }
 export function getJob(id: string): Promise<Job> { return apiFetch<Job>(`/jobs/${encodeURIComponent(id)}`); }
+export async function latestJob(): Promise<Job | null> { return (await apiFetch<{ job: Job | null }>("/jobs/latest")).job; }
+export function cancelJob(id: string): Promise<Job> { return apiFetch<Job>(`/jobs/${encodeURIComponent(id)}/cancel`, { method: "POST" }); }
+export function getReport(id: string): Promise<DiagnosticReport> { return apiFetch<DiagnosticReport>(`/jobs/${encodeURIComponent(id)}/report.json`); }
+
+// ── the structured diagnostic report (reports/diagnostic_findings.py) ──
+export type Severity = "high" | "medium" | "low" | "info";
+export interface ReportRelated { kind: "sku" | "supplier" | "po" | "screen" | "decision" | string; id: string; label: string }
+export interface ReportFinding {
+  id: string; category: string; headline: string; severity: Severity; materiality: number | null;
+  observation: string; business_implication: string; possible_driver: string | null; driver_tag: "OBSERVED" | "LIKELY DRIVER" | "UNKNOWN" | string;
+  recommendation: string; confidence: "High" | "Moderate" | "Low" | string; confidence_basis: string;
+  evidence: { label: string; value: string }[]; related: ReportRelated[]; summary_line?: string | null;
+}
+export interface ReportAction { text: string; link: ReportRelated | null }
+export interface ReportLane {
+  lane: string; label: string; attention: "ELEVATED" | "WATCH" | "NORMAL" | "UNAVAILABLE" | string; score: string; score_meaning: string;
+  evidence_strength: string; evidence_note: string; external: string[]; exposure: string[]; response: string;
+}
+export interface DiagnosticReport {
+  version: string; run_id: string; company: string; generated_at: string | null; sector: string | null;
+  conclusion: { kind: string; headline: string; body: string };
+  executive_summary: { findings: { id: string; headline: string; line: string; severity: Severity; confidence: string }[]; actions: string[]; confidence: { level: string; statement: string } };
+  readiness: { label: string; level: string; confidence: string; confidence_rule: string; statement: string; facts: { label: string; value: string }[];
+    limitations: { effect: string }[]; missing_fields: { field: string }[]; required_missing: string[]; history_weeks: number | null; products: number | null; suppliers: number | null };
+  ordering_today: { summary: string; items: { label: string; value: string; note: string | null; tag: string }[] };
+  policy_comparison: { available: boolean; current_label: string; candidate: string | null; candidate_label: string; rows: { metric: string; current: string; candidate: string; difference: string; note: string | null }[];
+    explanation: string[]; outcome: string | null; fold_chart: { selection: number[]; holdout_mean: number | null; threshold: number | null; title: string } | null };
+  findings: ReportFinding[];
+  suppliers: { available: boolean; rows: { supplier: string; share_of_value: string; products: string; receipts: string; fill: string; lead_time: string; lead_spread: string; lane: string; reading: string; evidence: string }[]; note: string };
+  lanes: ReportLane[];
+  actions: { now: ReportAction[]; next: ReportAction[]; monitor: ReportAction[] };
+  appendix: { methodology: string[]; assumptions: { input: string; provenance: string }[]; candidates: Record<string, string>[]; gates: Record<string, unknown>; warnings: string[];
+    run: Record<string, unknown>; glossary: { term: string; internal: string; meaning: string }[] };
+}
 export function reportUrl(id: string): string { return `${BASE_URL}/jobs/${encodeURIComponent(id)}/report.pdf`; }
 export async function downloadReport(id: string): Promise<void> {
   const res = await fetch(reportUrl(id), { headers: authHeaders() });
@@ -603,6 +649,6 @@ export async function downloadReport(id: string): Promise<void> {
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = `harvestmind-diagnostic-${id}.pdf`; a.click();
+  a.href = url; a.download = `zaad-diagnostic-${id}.pdf`; a.click();
   URL.revokeObjectURL(url);
 }

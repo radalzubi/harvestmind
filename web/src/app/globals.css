@@ -708,3 +708,88 @@ table.t td.product { color: var(--ink-900); font-weight: 500; }
 .ws-chord { position: fixed; bottom: 18px; inset-inline-start: 50%; transform: translateX(-50%); z-index: 60; background: var(--ink-950); color: #fff; font-size: 12.5px; padding: 8px 14px; border-radius: 999px; box-shadow: var(--shadow-lg); }
 [dir="rtl"] .ws-chord { transform: translateX(50%); }
 @media (max-width: 860px) { .ws-chord { bottom: 82px; } }
+
+/* ── diagnostic run + report (components/diagnostic) ───────────────────────── */
+.diag-run { display: grid; gap: 10px; }
+.diag-run-title { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.diag-run-detail { color: var(--ink-700); font-size: 13px; margin: 0; }
+.diag-run-meta { display: flex; flex-wrap: wrap; gap: 16px; color: var(--ink-600); font-size: 12.5px; }
+.diag-run-lost { color: var(--warn); display: inline-flex; align-items: center; gap: 6px; }
+.diag-run-note { color: var(--ink-500); font-size: 12px; }
+.diag-run-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 4px; }
+.diag-run-terminal.bad .diag-run-title { color: var(--bad); }
+.diag-run-terminal.neutral .diag-run-title { color: var(--ink-700); }
+/* indeterminate bar: a band that travels continuously. No percentage exists, so none is drawn. */
+.diag-bar { position: relative; height: 6px; border-radius: 999px; background: var(--ink-100); overflow: hidden; }
+.diag-bar-fill { position: absolute; inset-block: 0; width: 38%; border-radius: 999px; background: linear-gradient(90deg, var(--accent-soft), var(--accent), var(--accent-strong)); animation: diag-slide 1.6s cubic-bezier(.45,.05,.55,.95) infinite; }
+@keyframes diag-slide { from { inset-inline-start: -40%; } to { inset-inline-start: 100%; } }
+@media (prefers-reduced-motion: reduce) { .diag-bar-fill { animation-duration: 3.2s; } }
+.diag-stages { list-style: none; padding: 0; margin: 4px 0 0; display: grid; gap: 6px; }
+.diag-stage { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-500); }
+.diag-stage.current { color: var(--ink-900); font-weight: 600; }
+.diag-stage.done { color: var(--ink-600); }
+.diag-stage-mark { width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; border: 1px solid var(--line-strong); color: var(--good); }
+.diag-stage.done .diag-stage-mark { background: var(--good-bg); border-color: var(--good-line); }
+.diag-stage.current .diag-stage-mark { border-color: var(--accent); }
+.diag-stage-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-300); }
+.diag-stage-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: diag-pulse 1.2s ease-in-out infinite; }
+@keyframes diag-pulse { 0%, 100% { transform: scale(.7); opacity: .5; } 50% { transform: scale(1.1); opacity: 1; } }
+
+.diag-report { display: grid; gap: 18px; font-size: 13.5px; line-height: 1.5; min-width: 0; }
+.diag-report > *, .diag-section > *, .diag-card, .diag-lane { min-width: 0; max-width: 100%; }
+.diag-report p { margin: 6px 0; }
+.diag-report ul, .diag-report ol { margin: 4px 0 8px; padding-inline-start: 20px; }
+.diag-report li { margin: 3px 0; }
+.diag-exec { background: var(--accent-08); border-inline-start: 3px solid var(--accent-strong); border-radius: 8px; padding: 16px 18px; }
+.diag-kicker { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-strong); }
+.diag-headline { font-size: 18px; line-height: 1.3; margin: 4px 0 6px; }
+.diag-sub { font-weight: 600; margin-top: 10px; font-size: 13px; }
+.diag-exec-list { margin: 4px 0 6px; }
+.diag-exec-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 10px; }
+.diag-section { border-top: 1px solid var(--line); padding-top: 12px; }
+.diag-h { font-size: 15px; margin: 0 0 6px; color: var(--accent-strong); }
+.diag-muted { color: var(--ink-500); }
+.diag-small { font-size: 12px; }
+.diag-facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 18px; margin: 8px 0; }
+.diag-facts > div { display: grid; gap: 1px; }
+.diag-facts dt { font-size: 11.5px; color: var(--ink-500); }
+.diag-facts dd { margin: 0; font-weight: 600; }
+.diag-table-wrap { overflow-x: auto; margin: 8px 0; }
+.diag-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 520px; }
+.diag-table th { text-align: start; font-weight: 600; font-size: 12px; color: var(--ink-600); border-bottom: 1px solid var(--line-strong); padding: 6px 8px; }
+.diag-table td { vertical-align: top; padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
+.diag-tag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; padding: 1px 6px; border-radius: 4px; background: var(--ink-100); color: var(--ink-700); white-space: nowrap; }
+.diag-tag.likely-driver { background: var(--warn-bg); color: var(--warn); }
+.diag-tag.unknown { background: var(--surface-2); color: var(--ink-500); }
+.diag-card { border: 1px solid var(--line); border-inline-start-width: 3px; border-radius: 8px; padding: 12px 14px; margin: 10px 0; background: var(--surface); }
+.diag-card.sev-high { border-inline-start-color: var(--bad); }
+.diag-card.sev-medium { border-inline-start-color: var(--warn); }
+.diag-card.sev-low { border-inline-start-color: var(--good); }
+.diag-card.sev-info { border-inline-start-color: var(--ink-300); }
+.diag-card-kicker { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-500); }
+.diag-sev.sev-high { color: var(--bad); } .diag-sev.sev-medium { color: var(--warn); } .diag-sev.sev-low { color: var(--good); }
+.diag-card-head { font-weight: 700; font-size: 14px; margin: 2px 0 4px; }
+.diag-card-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 6px; }
+.diag-toggle { background: none; border: 0; padding: 0; color: var(--ink-700); font: inherit; font-size: 12.5px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.diag-links { display: inline-flex; flex-wrap: wrap; gap: 10px; }
+.diag-link { color: var(--accent-strong); font-size: 12.5px; display: inline-flex; align-items: center; gap: 3px; text-decoration: none; }
+.diag-link:hover { text-decoration: underline; }
+.diag-lane { border: 1px solid var(--line); border-inline-start-width: 3px; border-radius: 8px; padding: 12px 14px; margin: 10px 0; }
+.diag-lane.elevated { border-inline-start-color: var(--bad); } .diag-lane.elevated .diag-lane-attn { color: var(--bad); }
+.diag-lane.watch { border-inline-start-color: var(--warn); } .diag-lane.watch .diag-lane-attn { color: var(--warn); }
+.diag-lane.normal { border-inline-start-color: var(--good); } .diag-lane.normal .diag-lane-attn { color: var(--good); }
+.diag-lane.unavailable { border-inline-start-color: var(--ink-300); }
+.diag-lane-row.watch .diag-lane-attn { color: var(--warn); font-weight: 600; } .diag-lane-row.normal .diag-lane-attn { color: var(--good); font-weight: 600; }
+.diag-lane-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 18px; }
+.diag-appendix { margin-top: 8px; }
+.diag-chart { margin: 12px 0; }
+.diag-chart figcaption { font-weight: 600; font-size: 12.5px; margin-bottom: 6px; }
+.diag-chart-row { display: grid; grid-template-columns: 150px 1fr 60px; align-items: center; gap: 8px; margin: 3px 0; font-size: 12px; }
+.diag-chart-label { color: var(--ink-600); }
+.diag-chart-track { position: relative; height: 14px; background: var(--surface-2); border-radius: 3px; }
+.diag-chart-zero { position: absolute; top: -2px; bottom: -2px; width: 1px; background: var(--ink-500); }
+.diag-chart-thr { position: absolute; top: -2px; bottom: -2px; width: 0; border-inline-start: 1px dashed var(--accent-strong); }
+.diag-chart-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 2px; }
+.diag-chart-bar.pos { background: #3E7D66; } .diag-chart-bar.neg { background: var(--bad); } .diag-chart-bar.hold { background: var(--ink-400); }
+.diag-chart-val { font-variant-numeric: tabular-nums; text-align: end; }
+@media (max-width: 640px) { .diag-chart-row { grid-template-columns: 110px 1fr 54px; } .diag-headline { font-size: 16px; } }

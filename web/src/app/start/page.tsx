@@ -1,15 +1,17 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, Circle, Download, Loader2, Play } from "lucide-react";
+import { CheckCircle, Circle, Play } from "lucide-react";
 import { Card, CardBody, CardHead, InfoBanner, PageHeader, Tbtn } from "@/components/ui";
-import { apiFetch, downloadReport, familyOf, getApiToken, getJob, getMe, setSector, startDiagnostic, type IntakeStatus, type Job, type Me } from "@/lib/api";
-
-const SECTOR_LABEL: Record<string, string> = { commercial: "Commercial goods", produce: "Fresh produce", meats: "Meat and seafood" };
+import { apiFetch, cancelJob, downloadReport, familyOf, getApiToken, getJob, getMe, latestJob, setSector, startDiagnostic, type IntakeStatus, type Me } from "@/lib/api";
+import { DiagnosticPoller, isTerminal, type PollerState } from "@/lib/diagnostic/lifecycle";
+import { DiagnosticRun } from "@/components/diagnostic/DiagnosticRun";
+import { DiagnosticReportView } from "@/components/diagnostic/DiagnosticReport";
 import { useToast } from "@/components/Toast";
 
+const SECTOR_LABEL: Record<string, string> = { commercial: "Commercial goods", produce: "Fresh produce", meats: "Meat and seafood" };
 
 const FILES: Record<"commercial" | "produce", Array<{ table: string; label: string }>> = {
   commercial: [
@@ -29,6 +31,23 @@ const FILES: Record<"commercial" | "produce", Array<{ table: string; label: stri
   ],
 };
 
+/** The poller with browser timers. One per mounted page; it reconnects to the newest job first. */
+function usePoller(enabled: boolean) {
+  const [state, setState] = useState<PollerState>({ job: null, connectionLost: false, starting: false });
+  const ref = useRef<DiagnosticPoller | null>(null);
+  useEffect(() => {
+    if (!enabled) return;
+    const p = new DiagnosticPoller({
+      fetchJob: getJob, start: startDiagnostic, latest: latestJob, cancel: cancelJob,
+      setTimer: (fn, ms) => window.setTimeout(fn, ms), clearTimer: (h) => window.clearTimeout(h as number),
+    }, setState);
+    ref.current = p;
+    void p.reconnect();
+    return () => { p.stop(); ref.current = null; };
+  }, [enabled]);
+  return { state, poller: ref };
+}
+
 function StartInner() {
   const toast = useToast();
   const params = useSearchParams();
@@ -36,40 +55,47 @@ function StartInner() {
   const [copied, setCopied] = useState(false);
   const [me, setMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<IntakeStatus | null>(null);
-  const [job, setJob] = useState<Job | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const timer = useRef<number | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const { state, poller } = usePoller(!!me);
+  const job = state.job;
+  const lastStatus = useRef<string | null>(null);
 
   useEffect(() => {
     if (!getApiToken()) { setError("no-token"); return; }
     getMe().then((m) => { setMe(m); setSector(m.sector); }).catch((e) => setError(e.message));
     apiFetch<IntakeStatus>("/intake/status").then(setStatus).catch(() => {});
-    return () => { if (timer.current) window.clearInterval(timer.current); };
   }, []);
 
-  const poll = (id: string) => {
-    if (timer.current) window.clearInterval(timer.current);
-    timer.current = window.setInterval(async () => {
-      try {
-        const j = await getJob(id);
-        setJob(j);
-        if (j.status === "done" || j.status === "failed") {
-          if (timer.current) window.clearInterval(timer.current);
-          toast.push(j.status === "done" ? "Diagnostic ready" : `Diagnostic failed: ${j.error ?? ""}`);
-        }
-      } catch { /* keep polling */ }
-    }, 3000);
-  };
-
-  const run = async () => {
-    try {
-      const j = await startDiagnostic();
-      setJob(j);
-      poll(j.id);
-    } catch (e) {
-      toast.push(`Could not start: ${e instanceof Error ? e.message : String(e)}`);
+  // one toast per transition into a terminal state
+  useEffect(() => {
+    const s = job?.status ?? null;
+    if (s && s !== lastStatus.current && isTerminal(s) && lastStatus.current != null) {
+      toast.push(s === "done" ? "Diagnostic ready" : s === "cancelled" ? "Diagnostic cancelled" : `Diagnostic ${s === "timed_out" ? "timed out" : "failed"} (reference ${job?.reference ?? job?.id})`);
     }
-  };
+    lastStatus.current = s;
+  }, [job?.status, job?.reference, job?.id, toast]);
+
+  const run = useCallback(async () => {
+    try { await poller.current?.start(); }
+    catch (e) { toast.push(`Could not start: ${e instanceof Error ? e.message : String(e)}`); }
+  }, [poller, toast]);
+
+  const cancel = useCallback(async () => {
+    setCancelling(true);
+    try { await poller.current?.cancel(); }
+    catch (e) { toast.push(`Could not cancel: ${e instanceof Error ? e.message : String(e)}`); }
+    finally { setCancelling(false); }
+  }, [poller, toast]);
+
+  const download = useCallback(async () => {
+    if (!job) return;
+    setDownloading(true);
+    try { await downloadReport(job.id); }
+    catch (e) { toast.push(`Download failed: ${e instanceof Error ? e.message : String(e)}`); }
+    finally { setDownloading(false); }
+  }, [job, toast]);
 
   if (error === "no-token") {
     return (
@@ -89,10 +115,9 @@ function StartInner() {
   const rows = (t: string) => tables[t]?.row_count ?? 0;
   const uploaded = files.filter((f) => rows(f.table) > 0).length;
   const requiredDone = files.filter((f) => !f.label.includes("optional")).every((f) => rows(f.table) > 0);
-  const uploadHref = "/upload";
-  const running = job && (job.status === "queued" || job.status === "running");
-  const summary = (job?.summary ?? null) as Record<string, unknown> | null;
-  const improvement = summary?.improvement as { mean?: number; lower_bound?: number; worst?: number; n_folds?: number } | null | undefined;
+  // the first run button; a finished run shows "Run again" beside its result, a failed, timed-out
+  // or cancelled run shows its own retry inside the terminal state
+  const showButton = job == null;
 
   return (
     <div className="page">
@@ -127,51 +152,48 @@ function StartInner() {
             })}
           </ul>
           <div style={{ marginTop: 14 }}>
-            <Link href={uploadHref}><Tbtn variant="primary">Upload files</Tbtn></Link>
+            <Link href="/upload"><Tbtn variant="primary">Upload files</Tbtn></Link>
           </div>
         </CardBody>
       </Card>
 
       <Card style={{ marginTop: 16 }}>
-        <CardHead title="2. Run the diagnostic" sub="Your current policy as read from your history, a backtested comparison with a conservative lower bound, and your lane risk today. A few minutes." />
+        <CardHead title="2. Run the diagnostic" sub="How you order today as read from your history, alternative policies tested on that same history with a conservative estimate, and your supply lanes. A few minutes; you can leave this page and come back." />
         <CardBody>
-          {!running && (
-            <Tbtn variant="primary" icon={<Play size={13} />} onClick={run} disabled={!requiredDone}>
-              {requiredDone ? "Run diagnostic" : "Upload the required files first"}
+          {showButton && (
+            <Tbtn variant="primary" icon={<Play size={13} />} onClick={run} disabled={!requiredDone} pending={state.starting}>
+              {requiredDone ? (job ? "Run the diagnostic again" : "Run diagnostic") : "Upload the required files first"}
             </Tbtn>
           )}
-          {running && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--ink-600)" }}>
-              <Loader2 size={16} className="spin" /> {job?.progress}
+          <DiagnosticRun job={job} connectionLost={state.connectionLost} onCancel={cancel} onRetry={run} cancelling={cancelling} />
+          {job?.status === "done" && (
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12 }}>
+              <span style={{ color: "var(--ink-600)", fontSize: 13 }}>Diagnostic ready{job.timing?.run_s != null ? ` in ${Math.round(job.timing.run_s)} s` : ""}. Your result is below.</span>
+              <Tbtn variant="ghost" icon={<Play size={13} />} onClick={run} disabled={!requiredDone} pending={state.starting}>Run again</Tbtn>
             </div>
           )}
-          {job?.status === "failed" && <p style={{ color: "var(--bad)" }} role="alert">{job.error}</p>}
         </CardBody>
       </Card>
 
-      {job?.status === "done" && summary && (
+      {job?.status === "done" && job.report && (
         <Card style={{ marginTop: 16 }}>
-          <CardHead title="3. Your result" sub={String(summary.reason ?? "")} />
+          <CardHead title="3. Your result" sub={`Purchasing diagnostic for ${job.report.company}`} />
           <CardBody>
-            <p style={{ margin: "0 0 10px" }}>Decision: <b>{String(summary.decision)}</b></p>
-            {improvement && (
-              <p style={{ margin: "0 0 10px", color: "var(--ink-700)" }}>
-                Cost change versus your own policy on your own history: mean {fmtPct(improvement.mean)}, conservative lower bound {fmtPct(improvement.lower_bound)}, worst fold {fmtPct(improvement.worst)} over {improvement.n_folds} folds. Positive is a reduction.
-              </p>
-            )}
-            {!improvement && <p style={{ margin: "0 0 10px", color: "var(--ink-700)" }}>No candidate was evidenced against your policy; your current ordering was retained. That is a valid result.</p>}
-            <Tbtn variant="primary" icon={<Download size={13} />} onClick={() => downloadReport(job.id).catch((e) => toast.push(String(e)))}>
-              Download the report (PDF)
-            </Tbtn>
+            <DiagnosticReportView report={job.report} onDownload={download} downloading={downloading} />
+          </CardBody>
+        </Card>
+      )}
+      {job?.status === "done" && !job.report && (
+        <Card style={{ marginTop: 16 }}>
+          <CardHead title="3. Your result" sub={String(job.summary?.reason ?? "")} />
+          <CardBody>
+            <p style={{ margin: "0 0 10px" }}>The structured report could not be built for this run; the PDF is still available.</p>
+            <Tbtn variant="primary" onClick={download} pending={downloading}>Download the report (PDF)</Tbtn>
           </CardBody>
         </Card>
       )}
     </div>
   );
-}
-
-function fmtPct(x?: number | null): string {
-  return x == null ? "n/a" : `${x >= 0 ? "+" : ""}${(x * 100).toFixed(1)}%`;
 }
 
 export default function StartPage() {

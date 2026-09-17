@@ -2,20 +2,37 @@
 
 A diagnostic is the thing the front door promises: the operator's inferred
 policy, a backtested comparison with a conservative lower bound, the lane
-risk today, and a PDF that says all of it including "no material
+risk today, and a report that says all of it including "no material
 improvement" when that is the answer. Solves can take minutes, so the job
-runs in a worker thread against the operator's own vault and the UI polls.
-When Fly machine launching is configured (infrastructure/fly_machines.py)
-the job instead runs on a dedicated ephemeral machine that fetches a data
-bundle over the private network and posts the result back:
+runs off the request thread and the UI polls. When Fly machine launching
+is configured (infrastructure/fly_machines.py) the job runs on a dedicated
+ephemeral machine that fetches a data bundle over the private network and
+posts the result back; otherwise it runs on a worker thread in this process.
+
+Lifecycle (what the UI shows is exactly this, nothing invented):
+
+  queued      created; waiting for a solver slot in this process (with a
+              queue position) or for the dedicated machine to boot
+  running     the diagnostic is executing; `stage` names the real step
+  done        summary and structured report are attached
+  failed      an error with the job id as the reference
+  timed_out   exceeded HARVESTMIND_JOB_MAX_S, or a machine job went quiet
+              for HARVESTMIND_JOB_STALE_S; the operator may run it again
+  cancelled   the operator cancelled it
+
+Every terminal state is persisted under the operator's vault so a refreshed
+browser or a restarted process still finds the result.
+
+  POST /jobs/diagnostic          operator: start (returns the active job if one exists)
+  GET  /jobs/latest              operator: the newest job (for reconnect after a refresh)
+  GET  /jobs/{id}                operator: status, stage, progress, summary, report
+  GET  /jobs/{id}/report.json    operator: the structured report
+  GET  /jobs/{id}/report.pdf     operator: the report as a PDF
+  POST /jobs/{id}/cancel         operator: cancel
 
   GET  /jobs/internal/{id}/bundle    worker: staging tables as parquet, zipped
-  POST /jobs/internal/{id}/progress  worker: progress text
+  POST /jobs/internal/{id}/progress  worker: progress text and stage
   POST /jobs/internal/{id}/result    worker: done/failed + summary
-
-  POST /jobs/diagnostic          operator: start (one at a time per operator)
-  GET  /jobs/{id}                operator: status, progress, summary
-  GET  /jobs/{id}/report.pdf     operator: the report
 """
 from __future__ import annotations
 
@@ -45,6 +62,30 @@ log = logging.getLogger("harvestmind.jobs")
 _JOBS: dict[str, dict] = {}
 _LOCK = threading.Lock()
 
+ACTIVE = ("queued", "running")
+TERMINAL = ("done", "failed", "timed_out", "cancelled")
+# The real steps of a commercial diagnostic, in order. Shown to the operator
+# as stages; never as a percentage, because the solver has no meaningful one.
+STAGES: list[dict] = [
+    {"key": "preparing", "label": "Preparing your historical data"},
+    {"key": "reconstructing", "label": "Reconstructing your purchasing behaviour"},
+    {"key": "lanes", "label": "Reading supply conditions on your lanes"},
+    {"key": "testing", "label": "Testing alternative policies on your own history"},
+    {"key": "reporting", "label": "Building your report"},
+]
+STALE_AFTER_S = int(os.environ.get("HARVESTMIND_JOB_STALE_S", "1800"))
+BOOT_STALE_S = int(os.environ.get("HARVESTMIND_JOB_BOOT_STALE_S", "300"))
+MAX_RUN_S = int(os.environ.get("HARVESTMIND_JOB_MAX_S", "3600"))
+BOOT_PROGRESS = "starting a dedicated solver machine"
+
+
+class JobCancelled(Exception):
+    """Raised inside the worker when the job was cancelled or timed out."""
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
 
 def _reports_dir(registry: OperatorRegistry, op: str) -> Path:
     d = registry.vault_dir(op) / "reports"
@@ -53,42 +94,109 @@ def _reports_dir(registry: OperatorRegistry, op: str) -> Path:
 
 
 def _set(job: dict, **kw: Any) -> None:
+    """Update a job; the machine worker's hook forwards progress and stage."""
     with _LOCK:
         job.update(kw)
-        job["updated_at"] = datetime.now(timezone.utc).isoformat()
+        job["updated_at"] = _now()
     hook = job.get("_hook")
     if hook is not None:
         hook(kw)
 
 
+def _stage(job: dict, key: str, progress: str | None = None) -> None:
+    """Enter a real stage. Stops the worker cooperatively when the job was
+    cancelled or timed out while it was busy."""
+    cancel = job.get("_cancel")
+    if cancel is not None and cancel.is_set():
+        raise JobCancelled()
+    with _LOCK:
+        if job.get("status") in TERMINAL:
+            raise JobCancelled()
+    label = next((s["label"] for s in STAGES if s["key"] == key), key)
+    _set(job, stage=key, progress=progress or label)
+
+
+def _finish(job: dict, **kw: Any) -> bool:
+    """Move to a terminal state once. A worker that finishes after a
+    cancel or timeout does not overwrite the state the operator saw."""
+    with _LOCK:
+        if job.get("status") in TERMINAL:
+            return False
+        job.update(kw)
+        job["updated_at"] = _now()
+        job["finished_at"] = _now()
+    _persist(job)
+    return True
+
+
+# ── the solver slot: one diagnostic at a time in this process ────────────────
+class _Gate:
+    """FIFO slots for in-process diagnostics. A job waiting here is QUEUED
+    and knows its position; the API thread never solves."""
+
+    def __init__(self, workers: int) -> None:
+        self.cv = threading.Condition()
+        self.free = max(1, workers)
+        self.waiting: list[str] = []
+
+    def acquire(self, ident: str, cancel: threading.Event) -> bool:
+        with self.cv:
+            self.waiting.append(ident)
+            while not (self.free > 0 and self.waiting[0] == ident):
+                if cancel.is_set():
+                    self.waiting.remove(ident)
+                    self.cv.notify_all()
+                    return False
+                self.cv.wait(0.5)
+            self.waiting.pop(0)
+            self.free -= 1
+            self.cv.notify_all()
+            return True
+
+    def release(self) -> None:
+        with self.cv:
+            self.free += 1
+            self.cv.notify_all()
+
+    def position(self, ident: str) -> int | None:
+        with self.cv:
+            return self.waiting.index(ident) + 1 if ident in self.waiting else None
+
+
+_GATE = _Gate(int(os.environ.get("HARVESTMIND_DIAG_WORKERS", "1")))
+
+
+# ── the diagnostic itself (unchanged optimizer path, real stages) ────────────
 def _run_commercial(conn, job: dict) -> dict:
     from api.routers.fmcg import _state_for, build_inputs
     from backtesting.counterfactual import EXTRA_CANDIDATES
     from backtesting.safe_selector import SafeSelectionConfig, safe_select
     from ingestion.pilot_readiness import assess
+    from reports.diagnostic_summary import enrich
     import numpy as np
-    _set(job, progress="checking readiness")
+    _stage(job, "preparing", "checking what your history can support")
     ready = assess(conn)
-    _set(job, progress="reading your history and inferring your current policy")
+    _stage(job, "reconstructing", "reading your history and inferring your current policy")
     fi, report = build_inputs(conn, horizon=12, train_weeks=52, service_level=0.97, holding_rate_per_week=None,
                               currency="USD", incumbent_cover_weeks=None)
-    _set(job, progress="estimating the operating state and lane risk")
+    _stage(job, "lanes", "estimating the operating state and lane risk")
     est, src = _state_for(fi)
     fi.posture = est.posture
     # Scenario count for the fold candidates. Validation ran at 20; the pilot
     # machine (shared CPU) can be set lower via env to trade fidelity of the
     # candidates' own decisions for wall time. The truth folds are unaffected.
     n_scen = int(os.environ.get("HARVESTMIND_GATE_SCENARIOS", "20"))
-    _set(job, progress=f"backtesting candidates on your own history at {n_scen} scenarios per fold (this is the slow part)")
+    _stage(job, "testing", f"backtesting candidates on your own history at {n_scen} scenarios per fold, then re-testing the winner on unseen periods (this is the slow part)")
     decision = safe_select(fi, None, np.random.default_rng(0), SafeSelectionConfig(n_scen=n_scen), posture=est.posture,
                            extra_candidates={"anchored_sp": EXTRA_CANDIDATES["anchored_sp"],
                                              "adaptive_sp": EXTRA_CANDIDATES["adaptive_sp"]})
+    _stage(job, "reporting", "assembling the evidence for your report")
     ev = decision.evidence.get(decision.mode_run)
     stats = ev.stats if ev is not None else {}
     summary = {
         "sector": "commercial",
         "readiness": {"verdict": getattr(ready, "verdict", None), "score": getattr(ready, "score", None),
-                      "missing": list(getattr(ready, "missing_required", []) or [])[:12]},
+                      "missing": list(getattr(ready, "required_missing", []) or [])[:12]},
         "incumbent": report.get("incumbent"), "incumbent_notes": report.get("incumbent_notes", []),
         "history_periods": decision.history_periods, "products": len(fi.products),
         "suppliers": len(set(fi.supplier_of.values())),
@@ -107,26 +215,63 @@ def _run_commercial(conn, job: dict) -> dict:
         "provenance": report.get("provenance", {}),
         "warnings": list(report.get("warnings", [])) + list(decision.warnings),
     }
-    return summary
+    return enrich(summary, ready=ready, fi=fi, est=est, decision=decision, report=report, conn=conn)
 
 
 def _run_produce(conn, job: dict) -> dict:
     from backtesting.benchmark_suite import run_benchmark
     from ingestion.pilot_readiness import assess
-    _set(job, progress="checking readiness")
+    _stage(job, "preparing", "checking what your history can support")
     ready = assess(conn)
-    _set(job, progress="rolling-origin benchmark on your own history (this is the slow part)")
+    _stage(job, "testing", "rolling-origin benchmark on your own history (this is the slow part)")
     bench = run_benchmark(conn)
+    _stage(job, "reporting")
     return {
         "sector": "produce",
         "readiness": {"verdict": getattr(ready, "verdict", None), "score": getattr(ready, "score", None),
-                      "missing": list(getattr(ready, "missing_required", []) or [])[:12]},
+                      "missing": list(getattr(ready, "required_missing", []) or [])[:12]},
         "benchmark": {k: v for k, v in bench.items() if k in ("status", "gate_passed", "verdict", "weeks_available",
                                                                "weeks_required", "summary", "policies", "edge")},
         "decision": "stochastic two-sided plan" if bench.get("gate_passed") else "baseline retained",
         "reason": bench.get("verdict"),
         "warnings": [],
     }
+
+
+def _company_name(op: str) -> str:
+    try:
+        return OperatorRegistry().get_operator(op).name
+    except Exception:  # noqa: BLE001
+        return "your workspace"
+
+
+def _build_report(job: dict, summary: dict) -> dict | None:
+    from reports.diagnostic_findings import build_report
+    try:
+        return build_report(summary, job_id=job["id"], company=_company_name(job["operator_id"]),
+                            generated_at=job.get("finished_at") or _now())
+    except Exception:  # noqa: BLE001  the summary stands on its own; the report is rebuilt on read
+        log.exception("report build failed for %s", job.get("id"))
+        return None
+
+
+def _complete(job: dict, summary: dict) -> None:
+    finished = _now()
+    with _LOCK:
+        job["finished_at"] = finished
+    t0 = datetime.now(timezone.utc)
+    report = _build_report(job, summary)
+    report_s = (datetime.now(timezone.utc) - t0).total_seconds()
+    created, started = job.get("created_at"), job.get("started_at")
+    timing = {**(job.get("timing") or {}), "finished_at": finished, "report_build_s": round(report_s, 3)}
+    try:
+        if created and started:
+            timing["queue_wait_s"] = round((datetime.fromisoformat(started) - datetime.fromisoformat(created)).total_seconds(), 1)
+        if started:
+            timing["run_s"] = round((datetime.fromisoformat(finished) - datetime.fromisoformat(started)).total_seconds(), 1)
+    except (TypeError, ValueError):
+        pass
+    _finish(job, status="done", stage="reporting", progress="report ready", summary=summary, report=report, timing=timing)
 
 
 def _worker(job: dict, op: str, sector: str) -> None:
@@ -137,27 +282,50 @@ def _worker(job: dict, op: str, sector: str) -> None:
         os.nice(10)
     except (AttributeError, OSError):
         pass
+    cancel: threading.Event = job["_cancel"]
+    if not _GATE.acquire(job["id"], cancel):
+        return                                  # cancelled or timed out while queued; state already recorded
     registry = OperatorRegistry()
     dbm = DBManager(registry)
     try:
+        with _LOCK:
+            if job.get("status") != "queued":
+                return
+            job["status"] = "running"
+            job["started_at"] = _now()
+            job["queue_position"] = None
+            job["updated_at"] = job["started_at"]
         conn = dbm.get_operator_connection(op)
         summary = _run_commercial(conn, job) if sector == "commercial" else _run_produce(conn, job)
-        _set(job, status="done", progress="report ready", summary=summary,
-             finished_at=datetime.now(timezone.utc).isoformat())
-        _persist(job)
+        _complete(job, summary)
+    except JobCancelled:
+        pass
     except Exception as exc:  # noqa: BLE001
         log.exception("diagnostic failed for %s", op)
-        _set(job, status="failed", progress="failed", error=f"{type(exc).__name__}: {exc}"[:300],
-             finished_at=datetime.now(timezone.utc).isoformat())
+        _finish(job, status="failed", progress="failed", error=f"{type(exc).__name__}: {exc}"[:300])
     finally:
+        _GATE.release()
         try:
             dbm.close_all()
         except Exception:  # noqa: BLE001
             pass
 
 
+# ── operator-facing endpoints ────────────────────────────────────────────────
+def _active_for(op: str) -> dict | None:
+    with _LOCK:
+        active = [j for j in _JOBS.values() if j["operator_id"] == op and j["status"] in ACTIVE]
+    for j in active:
+        _check_stale(j)
+    active = [j for j in active if j["status"] in ACTIVE]
+    active.sort(key=lambda j: j["created_at"])
+    return active[0] if active else None
+
+
 @router.post("/diagnostic", dependencies=[Depends(rate_limiter)])
 def start_diagnostic(authed: str | None = Depends(require_operator)):
+    """Start a diagnostic. Idempotent while one is active: a second press
+    or a second tab gets the same job back, never a duplicate run."""
     if not authed:
         raise HTTPException(401, "operator token required")
     registry = OperatorRegistry()
@@ -166,25 +334,32 @@ def start_diagnostic(authed: str | None = Depends(require_operator)):
     except OperatorNotFoundError:
         raise HTTPException(404, "unknown operator")
     with _LOCK:
-        running = [j for j in _JOBS.values() if j["operator_id"] == authed and j["status"] in ("queued", "running")]
-    for j in running:
-        _check_stale(j)
-    running = [j for j in running if j["status"] == "running"]
-    if running:
-        return _public(running[0])
-    job_id = f"job_{uuid.uuid4().hex[:10]}"
-    job: dict = {"id": job_id, "operator_id": authed, "kind": "diagnostic",
-           "sector": getattr(rec, "sector", "produce"), "status": "running", "progress": "starting",
-           "created_at": datetime.now(timezone.utc).isoformat(), "finished_at": None, "error": None, "summary": None}
-    with _LOCK:
-        _JOBS[job_id] = job
-    _dispatch(job, authed)
+        active = _active_locked(authed)
+        if active is None:
+            job_id = f"job_{uuid.uuid4().hex[:10]}"
+            job: dict = {"id": job_id, "operator_id": authed, "kind": "diagnostic",
+                         "sector": getattr(rec, "sector", "produce"), "status": "queued", "stage": None,
+                         "progress": "waiting for a solver slot", "queue_position": None,
+                         "created_at": _now(), "started_at": None, "finished_at": None, "error": None,
+                         "summary": None, "report": None, "timing": {}, "_cancel": threading.Event()}
+            job["updated_at"] = job["created_at"]
+            _JOBS[job_id] = job
+            created = True
+        else:
+            job, created = active, False
+    if created:
+        _dispatch(job, authed)
+    else:
+        _check_stale(job)
+        if job["status"] not in ACTIVE:           # it just ended: start a fresh one
+            return start_diagnostic(authed)
     return _public(job)
 
 
-STALE_AFTER_S = int(os.environ.get("HARVESTMIND_JOB_STALE_S", "1800"))
-BOOT_STALE_S = int(os.environ.get("HARVESTMIND_JOB_BOOT_STALE_S", "300"))
-BOOT_PROGRESS = "starting a dedicated solver machine"
+def _active_locked(op: str) -> dict | None:
+    active = [j for j in _JOBS.values() if j["operator_id"] == op and j["status"] in ACTIVE]
+    active.sort(key=lambda j: j["created_at"])
+    return active[0] if active else None
 
 
 def _dispatch(job: dict, op: str) -> None:
@@ -204,99 +379,86 @@ def _dispatch(job: dict, op: str) -> None:
 
 
 def _persist(job: dict) -> None:
-    registry = OperatorRegistry()
-    path = _reports_dir(registry, job["operator_id"]) / f"{job['id']}.json"
-    path.write_text(json.dumps({k: v for k, v in job.items() if not k.startswith("_")}, indent=1, default=str))
+    try:
+        registry = OperatorRegistry()
+        path = _reports_dir(registry, job["operator_id"]) / f"{job['id']}.json"
+        path.write_text(json.dumps({k: v for k, v in job.items() if not k.startswith("_")}, indent=1, default=str))
+    except Exception:  # noqa: BLE001  the in-memory state is still served; persistence is best effort
+        log.exception("could not persist job %s", job.get("id"))
+
+
+def _age_s(stamp: Any) -> float | None:
+    try:
+        return (datetime.now(timezone.utc) - datetime.fromisoformat(str(stamp))).total_seconds()
+    except (TypeError, ValueError):
+        return None
 
 
 def _check_stale(job: dict) -> None:
-    """A machine job that stopped reporting is marked failed rather than
-    spinning forever in the UI."""
-    if job.get("status") != "running" or job.get("runner") != "machine":
+    """Timeouts are applied on read so no background sweeper is needed:
+    a job that ran too long is TIMED_OUT (the worker stops at its next
+    stage; a machine is destroyed); a machine job that stopped reporting
+    is TIMED_OUT rather than spinning forever in the UI."""
+    if job.get("status") not in ACTIVE:
         return
-    last = str(job.get("updated_at") or job.get("created_at") or "")
-    try:
-        age = (datetime.now(timezone.utc) - datetime.fromisoformat(last)).total_seconds()
-    except (TypeError, ValueError):
+    started = _age_s(job.get("started_at") or job.get("created_at"))
+    if started is not None and started > MAX_RUN_S:
+        _time_out(job, f"the diagnostic exceeded {MAX_RUN_S // 60} minutes; run it again or contact ZAAD with reference {job['id']}")
+        return
+    if job.get("runner") != "machine":
+        return
+    age = _age_s(job.get("updated_at") or job.get("created_at"))
+    if age is None:
         return
     # a machine that never fetched the data (boot or network failure) frees
     # the workspace quickly; one that went quiet mid-solve gets the long limit
     limit = BOOT_STALE_S if job.get("progress") == BOOT_PROGRESS else STALE_AFTER_S
     if age > limit:
-        _set(job, status="failed", progress="failed", finished_at=datetime.now(timezone.utc).isoformat(),
-             error=f"no progress from the solver machine for {int(age // 60)} minutes; run it again")
-        if job.get("machine_id"):
-            fly_machines.destroy_machine(job["machine_id"])
-        _persist(job)
+        _time_out(job, f"no progress from the solver machine for {int(age // 60)} minutes; run it again or contact ZAAD with reference {job['id']}")
 
 
-# ── worker-facing endpoints (private network + shared token) ────────────────
-def require_worker(x_worker_token: str | None = Header(default=None)) -> None:
-    expected = os.environ.get("HARVESTMIND_WORKER_TOKEN", "")
-    if not expected or not x_worker_token or not hmac.compare_digest(expected, x_worker_token):
-        raise HTTPException(401, "worker token required")
+def _time_out(job: dict, message: str) -> None:
+    cancel = job.get("_cancel")
+    if cancel is not None:
+        cancel.set()
+    if _finish(job, status="timed_out", progress="timed out", error=message) and job.get("machine_id"):
+        fly_machines.destroy_machine(job["machine_id"])
 
 
-def _job_for_worker(job_id: str) -> dict:
+@router.get("/latest")
+def latest_job(authed: str | None = Depends(require_operator)):
+    """The operator's newest job, active or finished, so a refreshed
+    browser reconnects to a run instead of starting another."""
+    if not authed:
+        raise HTTPException(401, "operator token required")
     with _LOCK:
-        job = _JOBS.get(job_id)
-    if job is None or job.get("runner") != "machine":
-        raise HTTPException(404, "unknown job")
-    return job
-
-
-@router.get("/internal/{job_id}/bundle", dependencies=[Depends(require_worker)])
-def worker_bundle(job_id: str):
-    """The workspace's non-empty staging tables as parquet in a zip, plus job meta."""
-    from api.routers.intake import STAGING_TABLES
-    job = _job_for_worker(job_id)
-    registry = OperatorRegistry()
-    rec = registry.get_operator(job["operator_id"])
-    dbm = DBManager(registry)
-    buf = io.BytesIO()
-    try:
-        conn = dbm.get_operator_connection(job["operator_id"])
-        with tempfile.TemporaryDirectory() as td, zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-            zf.writestr("job.json", json.dumps({"id": job_id, "sector": job["sector"], "name": rec.name}))
-            for table in STAGING_TABLES:
-                row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()  # noqa: S608  # nosec B608 - allowlisted names
-                if not row or not row[0]:
-                    continue
-                path = Path(td) / f"{table}.parquet"
-                conn.execute(f"COPY (SELECT * FROM {table}) TO '{path}' (FORMAT PARQUET)")  # noqa: S608  # nosec B608
-                zf.write(path, f"{table}.parquet")
-    finally:
+        mine = [j for j in _JOBS.values() if j["operator_id"] == authed]
+    for j in mine:
+        _check_stale(j)
+    if not mine:
+        registry = OperatorRegistry()
+        stored = sorted(_reports_dir(registry, authed).glob("job_*.json"), key=lambda p: p.stat().st_mtime)
+        if not stored:
+            return {"job": None}
         try:
-            dbm.close_all()
-        except Exception:  # noqa: BLE001
-            pass
-    _set(job, progress="solver machine fetched the data")
-    return Response(content=buf.getvalue(), media_type="application/zip")
-
-
-@router.post("/internal/{job_id}/progress", dependencies=[Depends(require_worker)])
-def worker_progress(job_id: str, body: dict = Body(...)):
-    job = _job_for_worker(job_id)
-    _set(job, progress=str(body.get("progress", ""))[:200])
-    return {"ok": True}
-
-
-@router.post("/internal/{job_id}/result", dependencies=[Depends(require_worker)])
-def worker_result(job_id: str, body: dict = Body(...)):
-    job = _job_for_worker(job_id)
-    if body.get("status") == "done" and body.get("summary"):
-        _set(job, status="done", progress="report ready", summary=body["summary"],
-             finished_at=datetime.now(timezone.utc).isoformat())
-    else:
-        _set(job, status="failed", progress="failed", error=str(body.get("error", "worker failed"))[:300],
-             finished_at=datetime.now(timezone.utc).isoformat())
-    _persist(job)
-    return {"ok": True}
+            job = json.loads(stored[-1].read_text())
+        except (OSError, ValueError):
+            return {"job": None}
+        return {"job": _public(job) if job.get("operator_id") == authed else None}
+    newest = max(mine, key=lambda j: j["created_at"])
+    return {"job": _public(newest)}
 
 
 def _public(job: dict) -> dict:
     _check_stale(job)
-    return {k: v for k, v in job.items() if k != "operator_id" and not k.startswith("_")}
+    out = {k: v for k, v in job.items() if k != "operator_id" and not k.startswith("_")}
+    out["stages"] = STAGES if job.get("sector") == "commercial" else [s for s in STAGES if s["key"] in ("preparing", "testing", "reporting")]
+    out["reference"] = job["id"]
+    if job.get("status") == "queued" and job.get("runner") != "machine":
+        out["queue_position"] = _GATE.position(job["id"])
+    if job.get("status") == "done" and job.get("summary") and not out.get("report"):
+        out["report"] = _build_report(job, job["summary"])   # a job persisted before structured reports existed
+    return out
 
 
 def _get(job_id: str, authed: str | None) -> dict:
@@ -321,6 +483,30 @@ def get_job(job_id: str, authed: str | None = Depends(require_operator)):
     return _public(_get(job_id, authed))
 
 
+@router.post("/{job_id}/cancel")
+def cancel_job(job_id: str, authed: str | None = Depends(require_operator)):
+    job = _get(job_id, authed)
+    if job.get("status") in TERMINAL:
+        return _public(job)
+    cancel = job.get("_cancel")
+    if cancel is not None:
+        cancel.set()
+    if _finish(job, status="cancelled", progress="cancelled", error=None) and job.get("machine_id"):
+        fly_machines.destroy_machine(job["machine_id"])
+    return _public(job)
+
+
+@router.get("/{job_id}/report.json")
+def report_json(job_id: str, authed: str | None = Depends(require_operator)):
+    job = _get(job_id, authed)
+    if job["status"] != "done" or not job.get("summary"):
+        raise HTTPException(409, "report not ready")
+    report = job.get("report") or _build_report(job, job["summary"])
+    if report is None:
+        raise HTTPException(500, "report could not be built")
+    return report
+
+
 @router.get("/{job_id}/report.pdf")
 def report_pdf(job_id: str, authed: str | None = Depends(require_operator)):
     job = _get(job_id, authed)
@@ -330,95 +516,90 @@ def report_pdf(job_id: str, authed: str | None = Depends(require_operator)):
     rec = registry.get_operator(authed)  # type: ignore[arg-type]
     pdf = render_report_pdf(rec.name, job)
     return Response(content=pdf, media_type="application/pdf",
-                    headers={"Content-Disposition": f'attachment; filename="harvestmind-diagnostic-{job_id}.pdf"'})
-
-
-def _pct(x: Any) -> str:
-    return "n/a" if x is None else f"{float(x):+.1%}"
+                    headers={"Content-Disposition": f'attachment; filename="zaad-diagnostic-{job_id}.pdf"'})
 
 
 def render_report_pdf(company: str, job: dict) -> bytes:
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import ParagraphStyle
-    from reportlab.lib.units import mm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
-    s = job["summary"]
+    """The PDF for a finished job: the structured report rendered by
+    reports/diagnostic_pdf. Built from the stored report when there is
+    one, else from the summary (older jobs)."""
+    from reports.diagnostic_findings import build_report
+    from reports.diagnostic_pdf import render_pdf
+    report = job.get("report")
+    if not report or report.get("company") != company:
+        report = build_report(job["summary"], job_id=job["id"], company=company,
+                              generated_at=job.get("finished_at") or _now())
+    return render_pdf(report)
+
+
+# ── worker-facing endpoints (private network + shared token) ────────────────
+def require_worker(x_worker_token: str | None = Header(default=None)) -> None:
+    expected = os.environ.get("HARVESTMIND_WORKER_TOKEN", "")
+    if not expected or not x_worker_token or not hmac.compare_digest(expected, x_worker_token):
+        raise HTTPException(401, "worker token required")
+
+
+def _job_for_worker(job_id: str) -> dict:
+    with _LOCK:
+        job = _JOBS.get(job_id)
+    if job is None or job.get("runner") != "machine":
+        raise HTTPException(404, "unknown job")
+    return job
+
+
+@router.get("/internal/{job_id}/bundle", dependencies=[Depends(require_worker)])
+def worker_bundle(job_id: str):
+    """The workspace's non-empty staging tables as parquet in a zip, plus job meta."""
+    from api.routers.intake import STAGING_TABLES
+    job = _job_for_worker(job_id)
+    if job.get("status") in TERMINAL:
+        raise HTTPException(409, "job is no longer active")
+    registry = OperatorRegistry()
+    rec = registry.get_operator(job["operator_id"])
+    dbm = DBManager(registry)
     buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=18*mm, rightMargin=18*mm, topMargin=18*mm, bottomMargin=18*mm,
-                            title=f"Zaad Supply diagnostic: {company}")
-    ink = colors.HexColor("#111111")
-    grey = colors.HexColor("#555555")
-    rule = colors.HexColor("#CCCCCC")
-    H1 = ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=18, leading=22, textColor=ink, spaceAfter=4)
-    H2 = ParagraphStyle("h2", fontName="Helvetica-Bold", fontSize=12.5, leading=16, textColor=ink, spaceBefore=14, spaceAfter=6)
-    P = ParagraphStyle("p", fontName="Helvetica", fontSize=10, leading=14, textColor=ink)
-    S = ParagraphStyle("s", parent=P, textColor=grey, fontSize=9, leading=12)
-    el: list = [Paragraph(f"Zaad Supply diagnostic: {company}", H1),
-                Paragraph(f"Sector {s.get('sector')} · run {job['id']} · {str(job.get('finished_at') or '')[:10]} · "
-                          "a backtest on your own history against your own policy, not a forecast of savings", S)]
+    try:
+        conn = dbm.get_operator_connection(job["operator_id"])
+        with tempfile.TemporaryDirectory() as td, zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("job.json", json.dumps({"id": job_id, "sector": job["sector"], "name": rec.name}))
+            for table in STAGING_TABLES:
+                row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()  # noqa: S608  # nosec B608 - allowlisted names
+                if not row or not row[0]:
+                    continue
+                path = Path(td) / f"{table}.parquet"
+                conn.execute(f"COPY (SELECT * FROM {table}) TO '{path}' (FORMAT PARQUET)")  # noqa: S608  # nosec B608
+                zf.write(path, f"{table}.parquet")
+    finally:
+        try:
+            dbm.close_all()
+        except Exception:  # noqa: BLE001
+            pass
+    with _LOCK:
+        if job.get("status") == "queued":
+            job["status"] = "running"
+            job["started_at"] = _now()
+    _set(job, stage="preparing", progress="solver machine fetched the data")
+    return Response(content=buf.getvalue(), media_type="application/zip")
 
-    def table(rows, widths):
-        t = Table(rows, colWidths=widths)
-        t.setStyle(TableStyle([("FONT", (0, 0), (-1, -1), "Helvetica", 9.5), ("FONT", (0, 0), (-1, 0), "Helvetica-Bold", 9.5),
-                               ("LINEBELOW", (0, 0), (-1, 0), 0.8, ink), ("LINEBELOW", (0, 1), (-1, -1), 0.4, rule),
-                               ("VALIGN", (0, 0), (-1, -1), "TOP"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]))
-        return t
 
-    r = s.get("readiness") or {}
-    el += [Paragraph("1. Data readiness", H2),
-           Paragraph(f"Verdict: <b>{r.get('verdict')}</b>. " + (f"Missing: {', '.join(r['missing'])}." if r.get("missing") else "Nothing required is missing."), P)]
-    if s.get("sector") == "commercial":
-        el += [Paragraph("2. How you order today", H2),
-               Paragraph(f"{s.get('incumbent')} · {s.get('history_periods')} weeks of history · {s.get('products')} products · {s.get('suppliers')} suppliers", P)]
-        for n in (s.get("incumbent_notes") or [])[:4]:
-            el.append(Paragraph(f"• {n}", S))
-        imp = s.get("improvement") or {}
-        el += [Paragraph("3. What a safe optimizer would have done on your history", H2),
-               Paragraph(f"Decision: <b>{s.get('decision')}</b>. {s.get('reason')}", P)]
-        if imp:
-            el.append(Paragraph(f"Mean cost change vs your policy {_pct(imp.get('mean'))}; conservative lower bound "
-                                f"{_pct(imp.get('lower_bound'))}; worst fold {_pct(imp.get('worst'))} over {imp.get('n_folds')} folds. "
-                                "Positive is a cost reduction.", P))
-        cands = s.get("candidates") or {}
-        if cands:
-            rows = [["Candidate", "Mean vs your policy", "Lower bound", "Cleared the gate"]]
-            for k, v in cands.items():
-                rows.append([k, _pct(v.get("mean")), _pct(v.get("lower_bound")), "yes" if v.get("passed") else "no"])
-            el.append(table(rows, [55*mm, 40*mm, 35*mm, 35*mm]))
-        st = s.get("state") or {}
-        el += [Paragraph("4. Your operating state and supply lanes today", H2),
-               Paragraph(f"Mode <b>{st.get('mode')}</b>, dominant regime {st.get('dominant')}, probability of a disruptive regime "
-                         f"{float(st.get('p_disruptive') or 0):.0%}, stress {float(st.get('stress') or 0):.2f}.", P)]
-        for n in (st.get("reasons") or [])[:5]:
-            el.append(Paragraph(f"• {n}", S))
-        lanes = s.get("lanes") or {}
-        if lanes:
-            rows = [["Lane", "Risk", "Evidence quality", "Why"]]
-            for k, v in lanes.items():
-                rows.append([k, f"{float(v.get('risk') or 0):.0%}", f"{float(v.get('quality') or 0):.2f}", "; ".join(v.get("reasons") or [])[:110]])
-            el.append(table(rows, [25*mm, 18*mm, 28*mm, 100*mm]))
-        pri = s.get("priors_in_use") or {}
-        el += [Paragraph("5. Assumptions and priors used", H2)]
-        if pri:
-            for k, v in list(pri.items())[:10]:
-                el.append(Paragraph(f"• {k}: {v.get('source')} ({v.get('provenance')}); {v.get('note')}", S))
-        else:
-            el.append(Paragraph("No public priors were needed; every supplier had enough receipts.", S))
-        for k, v in (s.get("provenance") or {}).items():
-            el.append(Paragraph(f"• {k}: {v}", S))
+@router.post("/internal/{job_id}/progress", dependencies=[Depends(require_worker)])
+def worker_progress(job_id: str, body: dict = Body(...)):
+    job = _job_for_worker(job_id)
+    if job.get("status") in TERMINAL:
+        return {"ok": False, "status": job["status"]}   # tells the machine to stop
+    kw: dict = {"progress": str(body.get("progress", ""))[:200]}
+    stage = body.get("stage")
+    if isinstance(stage, str) and any(s["key"] == stage for s in STAGES):
+        kw["stage"] = stage
+    _set(job, **kw)
+    return {"ok": True}
+
+
+@router.post("/internal/{job_id}/result", dependencies=[Depends(require_worker)])
+def worker_result(job_id: str, body: dict = Body(...)):
+    job = _job_for_worker(job_id)
+    if body.get("status") == "done" and body.get("summary"):
+        _complete(job, body["summary"])
     else:
-        b = s.get("benchmark") or {}
-        el += [Paragraph("2. Rolling-origin benchmark on your history", H2),
-               Paragraph(f"Decision: <b>{s.get('decision')}</b>. {s.get('reason')}", P),
-               Paragraph(f"Status {b.get('status')} · gate passed {b.get('gate_passed')} · weeks available {b.get('weeks_available')} of {b.get('weeks_required')} required", S)]
-        summ = b.get("summary")
-        if isinstance(summ, dict):
-            for k, v in list(summ.items())[:12]:
-                el.append(Paragraph(f"• {k}: {v}", S))
-    if s.get("warnings"):
-        el += [Paragraph("Notes", H2)] + [Paragraph(f"• {w}", S) for w in s["warnings"][:10]]
-    el += [Spacer(1, 10), Paragraph("Every number above is measured on your own uploaded history with identifiers pseudonymised. "
-                                     "It is not a promise about the future.", S)]
-    doc.build(el)
-    return buf.getvalue()
+        _finish(job, status="failed", progress="failed", error=str(body.get("error", "worker failed"))[:300])
+    return {"ok": True}
