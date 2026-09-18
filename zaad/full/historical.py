@@ -35,6 +35,7 @@ counts and materiality rules are called unchanged.
 """
 from __future__ import annotations
 
+import copy
 import logging
 import math
 import resource
@@ -234,6 +235,7 @@ class _LegMethods:
     def __init__(self, initial: Request, actual: dict[int, dict[str, float]], on_solve: Callable[[dict], None] | None = None):
         self.initial, self.actual, self.on_solve = initial, actual, on_solve
         self.zaad_log: list[dict] = []
+        self.solutions: dict[int, Solution] = {}   # the decision taken at each review, served again after a budget stop
         self.conformance: list[dict] = []   # recorded orders changed to satisfy the declared physical envelope
 
     def review_of(self, req: Request) -> int:
@@ -265,13 +267,20 @@ class _LegMethods:
             from zaad.full.policies import baseline_plan
             solution = baseline_plan(req, req.incumbent_rule or "reorder_point")
             solution.warnings = [f"{status}", str(policy), "fallback=operator_rule", *solution.warnings]
-        entry = {"review": self.review_of(req), "as_of": req.as_of.isoformat(), "status": status, "selected_policy": policy,
+        review = self.review_of(req)
+        entry = {"review": review, "as_of": req.as_of.isoformat(), "status": status, "selected_policy": policy,
                  "fallback_to_rule": fallback, "solve_seconds": round(seconds, 2),
                  "orchestration": getattr(solution, "orchestration", None), "history_periods": len({r.period for r in req.history})}
         self.zaad_log.append(entry)
+        self.solutions[review] = copy.deepcopy(solution)
         if self.on_solve:
             self.on_solve(entry)
         return solution
+
+    def zaad_recorded(self, req: Request) -> Solution:
+        """The decision already taken at this review, served again (never re-solved) so the clean-prefix
+        re-run after a budget stop costs settlement time only."""
+        return copy.deepcopy(self.solutions[self.review_of(req)])
 
 
 # ── point-in-time attestation ────────────────────────────────────────────────
@@ -428,6 +437,7 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
     tag = f"historical_{operator_id}_{int(started * 1000)}"
     NETWORK_METHODS[f"{tag}:actual"] = methods.actual_orders
     NETWORK_METHODS[f"{tag}:zaad"] = methods.zaad
+    NETWORK_METHODS[f"{tag}:zaad_recorded"] = methods.zaad_recorded
     legs: dict[str, dict] = {}
     snapshots: dict[str, list[Request]] = {}
     stopped_at: int | None = None
@@ -458,11 +468,12 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
             legs["zaad"] = replay(initial, truth, reviews, f"{tag}:zaad", keep_requests=keep_z, rolling=True)
         except _BudgetExhausted as stop:
             stopped_at = stop.reviews_done
-            legs["zaad"] = _partial_from(initial, truth, stopped_at, f"{tag}:zaad", methods, keep_z)
+            legs["zaad"] = _partial_from(initial, truth, stopped_at, f"{tag}:zaad_recorded", methods, keep_z)
         snapshots["zaad"] = keep_z
     finally:
         NETWORK_METHODS.pop(f"{tag}:actual", None)
         NETWORK_METHODS.pop(f"{tag}:zaad", None)
+        NETWORK_METHODS.pop(f"{tag}:zaad_recorded", None)
     W = min(len(leg_out.get("reviews", [])) for leg_out in legs.values() if leg_out.get("reviews") is not None) if legs else 0
     if W == 0:
         return {"status": "unavailable", "version": HISTORICAL_REPLAY_VERSION,
@@ -516,17 +527,12 @@ class _BudgetExhausted(Exception):
 
 def _partial_from(initial: Request, truth: World, reviews_done: int, method: str, methods: "_LegMethods", keep: list[Request]) -> dict:
     """Re-run the ZAAD leg for exactly the completed reviews so its settlements are a clean prefix. The
-    planner's decisions are deterministic given the same snapshots, so this reproduces them; the solves
-    already recorded are kept (the log is trimmed to the prefix by the caller)."""
-    saved_log = list(methods.zaad_log[:reviews_done])
-    saved_hook = methods.on_solve
-    methods.on_solve = None
-    methods.zaad_log = []
+    decisions already taken are served again from the record (`method` is the `:zaad_recorded` method),
+    never re-solved: the state evolves identically, so the prefix reproduces at settlement cost only.
+    The solve log is trimmed to the prefix."""
+    methods.zaad_log = list(methods.zaad_log[:reviews_done])
     keep.clear()
-    out = replay(initial, truth, reviews_done, method, keep_requests=keep, rolling=True)
-    methods.zaad_log = saved_log
-    methods.on_solve = saved_hook
-    return out
+    return replay(initial, truth, reviews_done, method, keep_requests=keep, rolling=True)
 
 
 def _score(initial: Request, out: dict, W: int) -> dict:
