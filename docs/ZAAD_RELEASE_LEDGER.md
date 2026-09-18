@@ -1,13 +1,13 @@
 # ZAAD release ledger
 
-## Current state (2026-09-17, Diagnostic report V2 released) — the only section that describes NOW
+## Current state (2026-09-18, Diagnostic V3 released) — the only section that describes NOW
 
 | item | value |
 |---|---|
-| production runtime | `e512a62a4ab5299d9e6efc64e02a82b88da39166` = `Merge PR #90: fix(zaad): diagnostic report wording follow-ups from production QA` (tested head `b2ff8c8`, CI 35239397661 13 / 13) on `e88c660` = `Merge PR #89: feat(zaad): diagnostic run lifecycle and a consulting-grade diagnostic report` (tested head `eceed3f`, CI 35236930051 13 / 13) on the Enterprise Analytics V1 merge `172d808`. Fly `zaad-api` **v32**, image `canonical-e512a62`, digest `sha256:9c7c6ab1abc87bcf549291e4c4fd5d2a0fbf0d97d4cb8f297d7e7ad18f5390cd`, deploy-api run 35240675975; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; Vercel production from `e512a62` |
+| production runtime | `d0edf15309573ad97ea30dec4fcfb3ac2445e0bd` = `Merge PR #92: perf(zaad): serve recorded decisions in the replay's clean-prefix re-run` (tested head `0ecb5a2`, CI 35368689123 13 / 13) on the Diagnostic V3 merge `03bcf2c` (PR #91, tested head `4177b9c`, CI 35363075037 13 / 13) on the Diagnostic report V2 merge `e512a62`. Fly `zaad-api` **v34**, image `canonical-d0edf15`, digest `sha256:7a820f007d0760faa6faea5f3eeffe9d30b005212a48200b8c487040cd7059de`, deploy-api run 35370542365; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; Vercel production `dpl_GXAAN52UJ4FK6UEXSZt8MrrsUEpd` from `d0edf15` |
 | production health | release smoke on v29 **24 / 24**; rested probes on v29: 1 / 2 / 5 / 8 / 10 products DONE 4.4 / 30.4 / 133.7 / 208.4 / 212.6 s (8 and 10 timed out on v28), reads in their idle band, steal ≤ 5.5 s; a plan spends ~265 s of the burst balance, so a second plan within ~35 min runs throttled (`ZAAD_FULL_PERFORMANCE_PASS.md` §10) |
-| current `main` | = production `e512a62` plus the post-merge docs commit |
-| RELEASED | P0 … P4B V1 (as before); Operating Product V1 + V2 (deployed, plan path blocked — no V2 planner tag); **Operating Product V2.1A Insights** (tag `zaad-operating-product-v2.1a-runtime` = `13dde49`); **full performance pass** (tag `zaad-full-performance-pass-runtime` = `914c5c3`); **Enterprise Analytics V1** (tag `zaad-enterprise-analytics-v1-runtime` = `172d808`); **Diagnostic report V2** (tag `zaad-diagnostic-report-v2-runtime` = `e512a62`) |
+| current `main` | = production `d0edf15` plus the post-merge docs commit |
+| RELEASED | P0 … P4B V1 (as before); Operating Product V1 + V2 (deployed, plan path blocked — no V2 planner tag); **Operating Product V2.1A Insights** (tag `zaad-operating-product-v2.1a-runtime` = `13dde49`); **full performance pass** (tag `zaad-full-performance-pass-runtime` = `914c5c3`); **Enterprise Analytics V1** (tag `zaad-enterprise-analytics-v1-runtime` = `172d808`); **Diagnostic report V2** (tag `zaad-diagnostic-report-v2-runtime` = `e512a62`); **Diagnostic V3** (tag `zaad-diagnostic-v3-runtime` = `d0edf15`) |
 | DEFERRED | the workspace read's Python-side construction cost at 10 k+ products (3.6 s / 14 s scoped to 200); a compact display read + server-side plan submission by scope; reconciling the per-MILP budget with the job cap; exposing CPU steal on Diagnostics; P4 adaptive recourse visuals |
 | REJECTED | component-wise decomposition; MIP gap 1e-4 / 1e-3; HiGHS thread changes; warm-start policy change; SQL-side SKU scoping of the workspace read (exact, not the cost); raising the cap or lowering the default scope without the owner |
 | NOT STARTED | P4B V2, P6, P7, P8, P9 — each needs its own authorization |
@@ -15,6 +15,20 @@
 | tags that never move | `p0-frozen`, `p1-frozen-product`, `p1-frozen`, `pre-canonical-integration`, `sector-physics-release-runtime`, `p3-performance-closure-runtime`, `p4-release-runtime`, `p4-performance-closure-runtime`, `p5-frozen-product`, `p5-frozen`, `p5-release-runtime`, `p4b-v1-frozen-product`, `p4b-v1-frozen`, `p4b-v1-release-runtime`, `zaad-post-p4b-cleanup-runtime`, `frontend-rebuild-runtime`, **`zaad-operating-product-v2.1a-runtime`**; no `zaad-operating-product-v2-runtime` (withheld until the planner passes) |
 | current entry point | `docs/zaad_full/CURRENT_SYSTEM.md` |
 | CI | one workflow (`.github/workflows/ci.yml`): 13 jobs, `cancel-in-progress` per branch (a docs push cancels a running PR run; the `pull_request` event re-runs it); `deploy-api.yml` deploys an exact SHA to Fly from a GitHub runner (secret `FLY_API_TOKEN`, 30-day token created 2026-09-15); Markdown-only pushes do not run CI; branch protection unavailable on this plan |
+
+## Diagnostic V3 — policy benchmark separated from a rolling replay of the ZAAD optimizer (2026-09-18)
+
+| item | value |
+|---|---|
+| branches / PRs | `feat/diagnostic-v3-optimizer-replay` PR #91 (from `521ed68`); `fix/replay-partial-prefix-cache` PR #92 (from `03bcf2c`) |
+| tested heads | `4177b9c` (CI 35363075037, 13 / 13); `0ecb5a2` (CI 35368689123, 13 / 13 after one re-run of the known solver-lease timing race) |
+| merges | `03bcf2c2fbf9c80a2829cb812bdbf7b9b6e4782b`; `d0edf15309573ad97ea30dec4fcfb3ac2445e0bd` |
+| deploys | Fly v33 `canonical-03bcf2c` (35364778824); Fly v34 `canonical-d0edf15`, digest `sha256:7a820f007d0760faa6faea5f3eeffe9d30b005212a48200b8c487040cd7059de` (35370542365); Vercel production `dpl_GXAAN52UJ4FK6UEXSZt8MrrsUEpd` from `d0edf15`; **Fly machine unchanged** |
+| runtime tag | `zaad-diagnostic-v3-runtime` = `d0edf15` (old tags untouched) |
+| what changed | `zaad/full/historical.py` (rolling replay of `zaad.full.planner.plan` at every weekly decision date on a truth reconstructed from the operator's records; actual-orders and reconstructed-rule legs through the same settlement; MEASURED / INFERRED / SIMULATED / ASSUMED settlement labels; lookahead attestation; deterministic replay confidence; recorded decisions served in the budget-stop re-run), `api/routers/jobs.py` (stage `replaying`, budget, never fails the diagnostic), `reports/diagnostic_v3.py` (benchmark framing, replay section, synthesis findings, one canonical provenance ledger with consistency checks), report builder / PDF / UI sections, `api.ts` types |
+| optimizer | untouched (planner, model, replay loop, settlement, optimization, risk, backtesting unchanged; frozen regression green on every head) |
+| production QA | throwaway demo workspaces `op_9246979a` / `op_ddbd8a22` only; `DIAGNOSTIC_V3_OPTIMIZER_REPLAY.md` §7 |
+| record | `docs/zaad_full/DIAGNOSTIC_V3_OPTIMIZER_REPLAY.md` |
 
 ## Diagnostic report V2 — run lifecycle + consulting-grade report (2026-09-17)
 
