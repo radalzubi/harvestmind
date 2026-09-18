@@ -49,7 +49,7 @@ class FakeDiagnostic:
             J._stage(job, key)
             if key == self.hold_at:
                 self.reached.set()
-                self.release.wait(10)
+                self.release.wait(90)     # long enough that a loaded CI runner never sees the hold expire mid-assertion
         if self.fail:
             raise RuntimeError("solver exploded")
         J._stage(job, "reporting")
