@@ -223,14 +223,20 @@ def test_budget_stops_the_zaad_leg_and_scores_the_common_prefix(vault, monkeypat
     import zaad.full.historical as H
     conn, op = vault["conn"], vault["op"]
 
+    solves = []
+
     def slow(req, method):
         time.sleep(0.05)
+        solves.append(req.as_of)
         return _rule_or_nothing(req, method)
     monkeypatch.setattr(H, "choose", slow)
     monkeypatch.setattr(H, "DEFAULT_BUDGET_S", 0.01)
     out = H.run_historical_replay(conn, op, skus=2, reviews=4, horizon=8, budget_s=0.01)
     assert out["status"] == "partial" and out["coverage"]["stopped_by_budget"] is True
     W = out["coverage"]["reviews_completed"]
+    # the clean-prefix re-run serves the recorded decisions: no decision date is solved twice
+    assert len(solves) == W and len(set(solves)) == W
+    assert out["performance"]["optimizer_solves"] == W
     assert 1 <= W < 4 and all(v["reviews"] == W for v in out["legs"].values())
     assert len(out["per_review"]["actual"]) == W == len(out["per_review"]["zaad"])
     assert any("planned decision dates completed within the time budget" in r for r in out["confidence"]["reasons"])
