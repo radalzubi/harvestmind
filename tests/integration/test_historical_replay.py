@@ -23,13 +23,14 @@ def vault(tmp_path_factory):
     """A commercial workspace with 70 weeks of synthetic history, loaded through the intake so the vault is
     exactly what an operator's upload produces."""
     root = tmp_path_factory.mktemp("data")
-    orm.DEFAULT_DATA_ROOT = root
+    mp = pytest.MonkeyPatch()                      # module-scoped, undone at teardown: nothing leaks into later modules
+    mp.setattr(orm, "DEFAULT_DATA_ROOT", root)
+    mp.setenv("HARVESTMIND_AUTH_REQUIRED", "true")
+    mp.setenv("HARVESTMIND_SOLVER_THREADS", "1")
+    mp.setenv("HARVESTMIND_WORKER_MACHINES", "false")
     reg = orm.OperatorRegistry(data_root=root)
     op = reg.create_operator("Replay Co", sector="commercial")
     tok = reg.issue_token(op.operator_id)
-    import os
-    os.environ["HARVESTMIND_AUTH_REQUIRED"] = "true"
-    os.environ["HARVESTMIND_SOLVER_THREADS"] = "1"
     from fastapi.testclient import TestClient
     import api.main as api_main
     cl, h = TestClient(api_main.app), {"Authorization": f"Bearer {tok}"}
@@ -49,6 +50,7 @@ def vault(tmp_path_factory):
     conn = dbm.get_operator_connection(op.operator_id)
     yield {"conn": conn, "op": op.operator_id, "root": root, "client": cl, "headers": h}
     dbm.close_all()
+    mp.undo()
 
 
 def _rule_or_nothing(req, method):
