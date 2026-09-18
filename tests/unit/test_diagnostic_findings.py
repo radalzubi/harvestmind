@@ -87,8 +87,8 @@ def _customer_copy(report: dict) -> dict:
     body = copy.deepcopy({k: v for k, v in report.items() if k != "appendix"})
     for f in body["findings"]:
         f.pop("id", None)
-    body["policy_comparison"].pop("internal", None)
-    body["policy_comparison"].pop("candidate", None)
+    body["policy_benchmark"].pop("internal", None)
+    body["policy_benchmark"].pop("candidate", None)
     for ln in body["lanes"]:
         ln.pop("internal", None)
     for k in ("internal_verdict", "missing_fields", "required_missing"):
@@ -102,7 +102,7 @@ def _customer_copy(report: dict) -> dict:
 # ── the confusing case ───────────────────────────────────────────────────────
 def test_incumbent_retained_despite_strong_candidate_is_explained_old_shape(old_summary):
     r = build_report(old_summary, job_id="job_x", company="NTDCO", generated_at="2026-09-17T00:00:00+00:00")
-    pc = r["policy_comparison"]
+    pc = r["policy_benchmark"]
     assert pc["outcome"] == "keep_current_after_holdout" and pc["candidate"] == "order_up_to"
     text = " ".join(pc["explanation"])
     assert "15.4% less" in text and "+13.9%" in text
@@ -122,7 +122,7 @@ def test_incumbent_retained_despite_strong_candidate_is_explained_old_shape(old_
 def test_incumbent_retained_despite_strong_candidate_enriched_shape(old_summary):
     s = _enriched(old_summary)
     r = build_report(s, job_id="job_y", company="NTDCO", generated_at="2026-09-17T00:00:00+00:00")
-    pc = r["policy_comparison"]
+    pc = r["policy_benchmark"]
     assert pc["outcome"] == "keep_current_after_holdout"
     text = " ".join(pc["explanation"])
     assert "exceed 3.0%" in text and "80% confidence" in " ".join(x["difference"] for x in pc["rows"])
@@ -236,10 +236,10 @@ def test_no_plan_no_policy_result():
          "improvement": None, "candidates": {}, "state": {"mode": "normal", "dominant": "NORMAL", "p_disruptive": 0.1, "stress": 0.1, "reasons": []},
          "lanes": {}, "signal_sources": {}, "priors_in_use": {}, "provenance": {}, "warnings": []}
     r = build_report(s, job_id="j", company="C")
-    assert r["policy_comparison"]["available"] is False and r["policy_comparison"]["outcome"] == "not_run"
-    assert "insufficient history (20 < 26 periods)" in r["policy_comparison"]["explanation"][0]
+    assert r["policy_benchmark"]["available"] is False and r["policy_benchmark"]["outcome"] == "not_run"
+    assert "insufficient history (20 < 26 periods)" in r["policy_benchmark"]["explanation"][0]
     assert r["conclusion"]["kind"] == "not_run" and r["readiness"]["confidence"] == "Low"
-    assert r["actions"]["now"][0]["text"] == "Keep your current purchasing policy."
+    assert r["actions"]["now"][0]["text"].startswith("Keep your current purchasing rule")
     assert render_pdf(r)[:4] == b"%PDF"
 
 
@@ -263,7 +263,7 @@ def test_null_is_never_shown_as_zero(old_summary):
     r = build_report(s, job_id="j", company="C")
     f = next(x for x in r["findings"] if x["id"] == "demand-intermittent-SKU-0137")
     assert {e["label"]: e["value"] for e in f["evidence"]}["Share of demand value"] == NOT_AVAILABLE and f["materiality"] is None
-    rows = {x["metric"]: x for x in r["policy_comparison"]["rows"]}
+    rows = {x["metric"]: x for x in r["policy_benchmark"]["rows"]}
     assert "Worst historical period" not in rows
     assert rows["Service (fill rate) difference"]["candidate"] == NOT_AVAILABLE
     assert "0.0%" not in rows["Service (fill rate) difference"]["candidate"]
@@ -338,7 +338,7 @@ def test_candidate_adopted_case(old_summary):
     s["candidate_evidence"]["order_up_to"]["holdout_lower_bound"] = 0.06
     s["candidate_evidence"]["order_up_to"]["holdout_gates"] = {k: True for k in s["candidate_evidence"]["order_up_to"]["holdout_gates"]}
     r = build_report(s, job_id="j", company="C")
-    assert r["policy_comparison"]["outcome"] == "adopt_candidate" and r["conclusion"]["kind"] == "adopt_candidate"
+    assert r["policy_benchmark"]["outcome"] == "adopt_candidate" and r["conclusion"]["kind"] == "adopt_candidate"
     assert r["actions"]["now"][0]["link"]["kind"] == "decision"
     assert any(f["id"] == "policy-adopt" for f in r["findings"])
     top = r["executive_summary"]["findings"][0]

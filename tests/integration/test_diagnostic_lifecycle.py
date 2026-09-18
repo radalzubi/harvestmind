@@ -79,7 +79,7 @@ def test_queued_running_stages_done_with_report(api, monkeypatch):
     monkeypatch.setattr(J, "_run_commercial", fake)
     j = cl.post("/jobs/diagnostic", headers=h).json()
     assert j["status"] in ("queued", "running") and j["reference"] == j["id"]
-    assert [s["key"] for s in j["stages"]] == ["preparing", "reconstructing", "lanes", "testing", "reporting"]
+    assert [s["key"] for s in j["stages"]] == ["preparing", "reconstructing", "lanes", "testing", "replaying", "reporting"]
     assert fake.reached.wait(5)
     running = cl.get(f"/jobs/{j['id']}", headers=h).json()
     assert running["status"] == "running" and running["stage"] == "testing" and running["started_at"]

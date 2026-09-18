@@ -33,19 +33,21 @@ from typing import Any
 REPORT_VERSION = "2026.09.2"
 NOT_AVAILABLE = "Not available from current data"
 
+# The benchmark candidates are fixed rules and benchmark planning models from the backtest library
+# (`backtesting/counterfactual.py`); none of them is ZAAD's production optimizer, and the labels say so.
 CANDIDATE_LABEL = {
-    "order_up_to": "an order-up-to (cover level) policy",
-    "deterministic_sp": "a deterministic optimisation policy",
-    "stochastic_sp": "a scenario-based optimisation policy",
-    "anchored_sp": "an anchored scenario-based policy",
-    "adaptive_sp": "an adaptive scenario-based policy",
-    "service_target": "a service-target policy",
-    "dro": "a distributionally robust policy",
+    "order_up_to": "a fixed order-up-to (cover level) rule",
+    "deterministic_sp": "a fixed plan from a point forecast (benchmark model)",
+    "stochastic_sp": "a fixed plan from demand scenarios (benchmark model)",
+    "anchored_sp": "a fixed plan anchored to your rule (benchmark model)",
+    "adaptive_sp": "a fixed plan with state-adapted scenarios (benchmark model)",
+    "service_target": "a fixed service-target rule",
+    "dro": "a fixed robust plan (benchmark model)",
 }
 CANDIDATE_SHORT = {
-    "order_up_to": "Order-up-to policy", "deterministic_sp": "Deterministic optimiser",
-    "stochastic_sp": "Scenario optimiser", "anchored_sp": "Anchored scenario optimiser",
-    "adaptive_sp": "Adaptive scenario optimiser", "service_target": "Service-target policy", "dro": "Robust optimiser",
+    "order_up_to": "Fixed order-up-to rule", "deterministic_sp": "Point-forecast benchmark model",
+    "stochastic_sp": "Scenario benchmark model", "anchored_sp": "Anchored benchmark model",
+    "adaptive_sp": "State-adapted benchmark model", "service_target": "Fixed service-target rule", "dro": "Robust benchmark model",
 }
 CURRENT_LABEL = "Your current purchasing policy"
 
@@ -168,12 +170,19 @@ def readiness_section(summary: dict) -> dict:
 
     limitations: list[dict] = []
     seen: set = set()
-    field_by_effect: dict = {}
-    for f in preferred_missing:
-        # the readiness module already phrases the consequence; pair it with the field
-        field_by_effect.setdefault(_field_label(f), f)
+    # the readiness module phrases a consequence per missing preferred field; a consequence the run's own
+    # provenance contradicts (capacity declared in the supplier list, carrying cost declared, every margin
+    # known) is dropped here so every section reads from the same ledger
+    prov = summary.get("provenance") or {}
+    contradicted = []
+    if str(prov.get("supplier_capacity", "")).lower() == "operator":
+        contradicted += ["capacity is INFERRED", "supplier-level capacity is INFERRED"]
+    if str(prov.get("holding_rate_per_period", "")).lower() == "operator":
+        contradicted += ["carrying cost and penalties are ASSUMED"]
+    if not unknown_margin and str(prov.get("shortage_cost_per_unit", "")).lower() == "operator":
+        contradicted += ["shortage cost is UNKNOWN"]
     for w in weakened:
-        if w in seen:
+        if w in seen or any(c in w for c in contradicted):
             continue
         seen.add(w)
         limitations.append({"effect": _humanise_weakened(w), "internal": w})
@@ -508,10 +517,10 @@ def findings_section(summary: dict, policy: dict, readiness: dict) -> list[dict]
     name = str(policy.get("candidate") or "")
     if policy.get("outcome") == "keep_current_after_holdout":
         ev = (policy.get("internal") or {}).get("candidate_evidence") or {}
-        out.append(_finding("policy-holdout", "policy", "An alternative policy looked better on average but was not consistent",
+        out.append(_finding("policy-holdout", "policy", "A fixed replenishment rule looked better on average but did not generalise",
                             "medium", policy["explanation"][0] if policy.get("explanation") else "",
-                            "Changing a purchasing policy on an unstable result risks paying for a change that does not hold. ZAAD kept your current policy.",
-                            "Keep your current policy for now; re-run the diagnostic when another quarter of history is available, and supply stock-on-hand at order date.",
+                            "Replacing your rule with a fixed policy on an unstable result risks paying for a change that does not hold. Your rule was kept as the fixed baseline. This says nothing about ZAAD's adaptive decisions, which are replayed separately.",
+                            "Keep your current rule as the fixed baseline; re-run the diagnostic when another quarter of history is available, and supply stock-on-hand at order date.",
                             "High", "measured on your own history with held-out validation periods",
                             materiality=1.0, driver="Advantage on the selection periods that did not repeat on unseen validation periods", driver_tag="OBSERVED",
                             evidence=[{"label": "Average cost change (selection periods)", "value": pct(_f(ev.get("mean")), signed=True)},
@@ -522,7 +531,7 @@ def findings_section(summary: dict, policy: dict, readiness: dict) -> list[dict]
                                          + (f"only {pct(_f(ev.get('holdout_mean')), signed=True)}" if ev.get("holdout_mean") is not None else "did not hold") + " on the unseen validation periods, so your policy was kept."))
     elif policy.get("outcome") == "adopt_candidate":
         ev = (policy.get("internal") or {}).get("candidate_evidence") or {}
-        out.append(_finding("policy-adopt", "policy", f"{CANDIDATE_SHORT.get(name, name)} outperformed your policy consistently on your history", "high",
+        out.append(_finding("policy-adopt", "policy", f"{CANDIDATE_SHORT.get(name, name)} beat your rule consistently on your history", "high",
                             policy["explanation"][0] if policy.get("explanation") else "",
                             "The advantage held on unseen validation periods, which is the standard ZAAD requires before recommending a change.",
                             "Adopt it for the next order cycle with your current policy as fallback; review the first cycle's orders line by line in ZAAD before release.",
@@ -534,7 +543,7 @@ def findings_section(summary: dict, policy: dict, readiness: dict) -> list[dict]
                             summary_line=f"{CANDIDATE_SHORT.get(name, name)} cost {pct(abs(_f(ev.get('mean')) or 0))} less on average on the selection periods (conservative estimate {pct(_f(ev.get('lower_bound')), signed=True)}) and held its advantage on the unseen validation periods"
                                          + (f" ({pct(_f(ev.get('holdout_mean')), signed=True)})" if ev.get("holdout_mean") is not None else "") + "."))
     elif policy.get("outcome") == "keep_current" and name:
-        out.append(_finding("policy-keep", "policy", "No tested alternative beat your current policy with enough margin", "info",
+        out.append(_finding("policy-keep", "policy", "No fixed replenishment rule beat your current rule with enough margin", "info",
                             policy["explanation"][0] if policy.get("explanation") else "",
                             "Your current policy is the defensible choice on the evidence available; this is a valid outcome, not a failure.",
                             "Keep your current policy; the data actions below raise the chance a future comparison is decisive either way.",
@@ -701,7 +710,7 @@ def findings_section(summary: dict, policy: dict, readiness: dict) -> list[dict]
                             "Nothing to do unless these suppliers matter more than the receipt count suggests; then upload their receipt history.",
                             "High", "receipt count", materiality=0.0, driver_tag="OBSERVED", related=[{"kind": "supplier", "id": s, "label": s} for s in few[:5]]))
 
-    out.sort(key=lambda f: (0 if f["category"] == "policy" else 1, -_sev_rank(f["severity"]), -(f.get("materiality") or 0.0), f["id"]))
+    out.sort(key=lambda f: ({"policy": 0, "replay": 1, "synthesis": 2}.get(f["category"], 3), -_sev_rank(f["severity"]), -(f.get("materiality") or 0.0), f["id"]))
     return out
 
 
@@ -822,9 +831,9 @@ def actions_section(policy: dict, findings: list[dict], lanes: list[dict], suppl
     mon: list[dict] = []
     oc = policy.get("outcome")
     if oc in ("keep_current", "keep_current_after_holdout", "not_run"):
-        now.append({"text": "Keep your current purchasing policy.", "link": None})
+        now.append({"text": "Keep your current purchasing rule as the fixed baseline; do not switch to a fixed alternative on this evidence.", "link": None})
     elif oc == "adopt_candidate":
-        now.append({"text": f"Adopt {policy.get('candidate_label')} for the next order cycle, keeping your current policy as fallback; review the first cycle's orders in ZAAD before release.",
+        now.append({"text": f"Adopt the {str(policy.get('candidate_label')).lower()} for the next order cycle, keeping your current rule as fallback; review the first cycle's orders in ZAAD before release.",
                     "link": {"kind": "decision", "id": "decisions", "label": "Run a decision"}})
     inter = [f for f in findings if f["category"] == "demand" and f["id"].startswith("demand-intermittent-") and f["id"] != "demand-intermittent-rest"]
     if inter:
@@ -910,6 +919,7 @@ def appendix_section(summary: dict, policy: dict, readiness: dict, job_id: str, 
            "history_range": summary.get("history_range"), "signal_sources": summary.get("signal_sources"),
            "internal_readiness_verdict": readiness.get("internal_verdict"), "internal_decision": summary.get("decision"),
            "internal_reason": summary.get("reason")}
+    methodology.insert(0, "Two separate analyses: the simple policy benchmark (fixed rules and benchmark models from the backtest library, selection folds, gates, held-out re-check) and ZAAD's historical decision replay (the production optimizer re-run at every weekly decision date, one settlement for every leg). Neither result stands in for the other.")
     return {"methodology": methodology, "assumptions": assumptions, "candidates": cand_rows, "gates": gates,
             "carrying_cost_sensitivity": sens if isinstance(sens, (list, dict)) else None,
             "warnings": list(summary.get("warnings") or []), "run": run,
@@ -932,16 +942,16 @@ def conclusion(summary: dict, policy: dict, readiness: dict) -> dict:
         return {"kind": "insufficient_data", "headline": "Not enough data for a purchasing diagnostic yet",
                 "body": "Required fields are missing from the upload; see Data readiness for what to add."}
     if oc == "adopt_candidate":
-        return {"kind": "adopt_candidate", "headline": f"{policy.get('candidate_label')} outperformed your current policy consistently on your history",
-                "body": policy["explanation"][-1] if policy.get("explanation") else ""}
+        return {"kind": "adopt_candidate", "headline": f"A {str(policy.get('candidate_label')).lower()} beat your current purchasing rule consistently on your history",
+                "body": policy.get("statement") or (policy["explanation"][-1] if policy.get("explanation") else "")}
     if oc == "keep_current_after_holdout":
-        return {"kind": "keep_current", "headline": "Keep your current purchasing policy: an alternative looked better on average but did not hold up on unseen periods",
-                "body": "ZAAD found an alternative replenishment policy with stronger average historical performance, but its advantage was not consistent across the unseen validation periods. ZAAD therefore does not recommend replacing your current policy yet."}
+        return {"kind": "keep_current", "headline": "Keep your current purchasing rule: a fixed alternative looked better on average but did not hold up on unseen periods",
+                "body": policy.get("statement") or "A fixed replenishment rule performed strongly on the periods used to select it, but the improvement did not persist on later unseen periods. ZAAD therefore does not recommend replacing your existing purchasing rule with that fixed policy."}
     if oc == "keep_current":
-        return {"kind": "keep_current", "headline": "Keep your current purchasing policy: no tested alternative beat it with enough margin",
-                "body": "On your own history, no alternative cleared ZAAD's conservative selection rule. That is a valid result: your current policy is the defensible choice on the evidence available."}
+        return {"kind": "keep_current", "headline": "Keep your current purchasing rule: no fixed alternative beat it with enough margin",
+                "body": "On your own history, no fixed replenishment rule cleared the conservative selection rule against your own. That is a valid result: your rule is the defensible fixed baseline on the evidence available."}
     if oc == "not_run":
-        return {"kind": "not_run", "headline": "Your current purchasing policy stands; the policy comparison could not run in full",
+        return {"kind": "not_run", "headline": "Your current purchasing rule stands; the fixed-rule benchmark could not run in full",
                 "body": policy["explanation"][0] if policy.get("explanation") else ""}
     return {"kind": "other", "headline": "Diagnostic completed", "body": str(summary.get("reason") or "")}
 
@@ -950,26 +960,68 @@ def build_report(summary: dict, *, job_id: str, company: str, generated_at: str 
     sector = str(summary.get("sector") or "")
     if sector and sector != "commercial":
         return _produce_report(summary, job_id=job_id, company=company, generated_at=generated_at)
+    from reports.diagnostic_v3 import (consistency_checks, frame_benchmark, provenance_ledger, replay_headline,
+                                       replay_section, synthesis_findings)
     readiness = readiness_section(summary)
     ordering = ordering_section(summary)
-    policy = policy_section(summary)
-    findings = findings_section(summary, policy, readiness)
+    policy = frame_benchmark(policy_section(summary))
+    replay = replay_section(summary)
     suppliers = supplier_section(summary)
     lanes = lanes_section(summary)
+    findings = findings_section(summary, policy, readiness)
+    synth = synthesis_findings(summary, lanes)
+    if synth:
+        findings = [f for f in findings if f["category"] == "policy"] + synth + [f for f in findings if f["category"] != "policy"]
+    findings = _with_replay_finding(findings, replay)
     actions = actions_section(policy, findings, lanes, suppliers)
     appendix = appendix_section(summary, policy, readiness, job_id, generated_at)
+    ledger = provenance_ledger(summary)
+    appendix["provenance_ledger"] = ledger
+    appendix["replay"] = {"engine": replay.get("engine"), "performance": replay.get("performance"), "lookahead": replay.get("lookahead"),
+                          "settlement_rules": (replay.get("settlement") or {}).get("rules"), "limits": replay.get("limits"),
+                          "confidence_rule": (replay.get("confidence") or {}).get("rule")}
     concl = conclusion(summary, policy, readiness)
+    concl["benchmark_headline"] = concl["headline"]
+    concl["replay_headline"] = replay_headline(replay)
     top = [f for f in findings if f["severity"] != "info"][:5]
     if len(top) < 3:
         top = findings[:5]
     exec_actions = (actions["now"] + actions["next"])[:4]
-    return {"version": REPORT_VERSION, "run_id": job_id, "company": company, "generated_at": generated_at, "sector": "commercial",
-            "conclusion": concl,
-            "executive_summary": {"findings": [{"id": f["id"], "headline": f["headline"], "line": _one_line(f), "severity": f["severity"], "confidence": f["confidence"]} for f in top],
-                                  "actions": [a["text"] for a in exec_actions],
-                                  "confidence": {"level": readiness["confidence"], "statement": readiness["statement"]}},
-            "readiness": readiness, "ordering_today": ordering, "policy_comparison": policy, "findings": findings,
-            "suppliers": suppliers, "lanes": lanes, "actions": actions, "appendix": appendix}
+    report = {"version": REPORT_VERSION, "run_id": job_id, "company": company, "generated_at": generated_at, "sector": "commercial",
+              "conclusion": concl,
+              "executive_summary": {"benchmark": {"label": "SIMPLE POLICY BENCHMARK", "statement": policy.get("statement")},
+                                    "replay": {"label": "ZAAD DECISION REPLAY", "statement": replay.get("statement"), "available": replay.get("available")},
+                                    "findings": [{"id": f["id"], "headline": f["headline"], "line": _one_line(f), "severity": f["severity"], "confidence": f["confidence"]} for f in top],
+                                    "actions": [a["text"] for a in exec_actions],
+                                    "confidence": {"level": readiness["confidence"], "statement": readiness["statement"],
+                                                   "replay_level": (replay.get("confidence") or {}).get("level")}},
+              "readiness": readiness, "ordering_today": ordering, "policy_benchmark": policy, "optimizer_replay": replay, "findings": findings,
+              "suppliers": suppliers, "lanes": lanes, "actions": actions, "appendix": appendix, "provenance_ledger": ledger}
+    report["consistency_checks"] = consistency_checks(report)
+    return report
+
+
+def _with_replay_finding(findings: list[dict], replay: dict) -> list[dict]:
+    """The replay result as a finding of its own, placed right after the policy finding so the two are
+    read together and never confused."""
+    if not replay.get("available"):
+        f = _finding("replay-unavailable", "replay", "ZAAD's decision replay could not run on this history", "info",
+                     str(replay.get("statement") or ""), "No optimizer performance figure is reported; the policy benchmark above is about fixed rules only.",
+                     "Supply the missing history (see the reason) and re-run the diagnostic.", "High", "the replay's own status", materiality=0.95, driver_tag="OBSERVED")
+    else:
+        per, conf = replay.get("periods") or {}, replay.get("confidence") or {}
+        table = {r["metric"]: r for r in replay.get("table") or []}
+        cost = table.get("Total modelled cost over the window") or {}
+        f = _finding("replay-result", "replay", "What ZAAD itself would have decided, replayed at each historical date", "high" if conf.get("level") in ("High", "Moderate") else "medium",
+                     str(replay.get("statement") or ""), str(per.get("text") or ""),
+                     "Read the replay section for the per-period picture and the share of the comparison that is measured versus simulated before drawing a conclusion.",
+                     str(conf.get("level") or "Low"), "; ".join(conf.get("reasons") or ["replay confidence assessment"]), materiality=0.95, driver_tag="OBSERVED",
+                     evidence=[{"label": "Total modelled cost, your orders", "value": cost.get("actual", NOT_AVAILABLE)}, {"label": "Total modelled cost, ZAAD", "value": cost.get("zaad", NOT_AVAILABLE)},
+                               {"label": "Periods ZAAD cheaper", "value": pct(per.get("improved"), nd=0)}, {"label": "Decision dates", "value": num((replay.get("coverage") or {}).get("completed"))}],
+                     related=[{"kind": "decision", "id": "decisions", "label": "Run a decision"}],
+                     summary_line=str(replay.get("statement") or ""))
+    policy_idx = max([i for i, x in enumerate(findings) if x["category"] == "policy"], default=-1)
+    return findings[:policy_idx + 1] + [f] + findings[policy_idx + 1:]
 
 
 def _one_line(f: dict) -> str:

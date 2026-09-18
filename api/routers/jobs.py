@@ -70,9 +70,14 @@ STAGES: list[dict] = [
     {"key": "preparing", "label": "Preparing your historical data"},
     {"key": "reconstructing", "label": "Reconstructing your purchasing behaviour"},
     {"key": "lanes", "label": "Reading supply conditions on your lanes"},
-    {"key": "testing", "label": "Testing alternative policies on your own history"},
+    {"key": "testing", "label": "Testing simple policies on your own history"},
+    {"key": "replaying", "label": "Replaying ZAAD's own decisions at each historical date"},
     {"key": "reporting", "label": "Building your report"},
 ]
+REPLAY_ENABLED = os.environ.get("HARVESTMIND_REPLAY", "1").lower() not in ("0", "false", "no")
+REPLAY_SKUS = int(os.environ.get("HARVESTMIND_REPLAY_SKUS", "5"))
+REPLAY_REVIEWS = int(os.environ.get("HARVESTMIND_REPLAY_REVIEWS", "26"))
+REPLAY_BUDGET_S = float(os.environ.get("HARVESTMIND_REPLAY_BUDGET_S", "1200"))
 STALE_AFTER_S = int(os.environ.get("HARVESTMIND_JOB_STALE_S", "1800"))
 BOOT_STALE_S = int(os.environ.get("HARVESTMIND_JOB_BOOT_STALE_S", "300"))
 MAX_RUN_S = int(os.environ.get("HARVESTMIND_JOB_MAX_S", "3600"))
@@ -190,6 +195,7 @@ def _run_commercial(conn, job: dict) -> dict:
     decision = safe_select(fi, None, np.random.default_rng(0), SafeSelectionConfig(n_scen=n_scen), posture=est.posture,
                            extra_candidates={"anchored_sp": EXTRA_CANDIDATES["anchored_sp"],
                                              "adaptive_sp": EXTRA_CANDIDATES["adaptive_sp"]})
+    replay_result = _run_replay(conn, job)
     _stage(job, "reporting", "assembling the evidence for your report")
     ev = decision.evidence.get(decision.mode_run)
     stats = ev.stats if ev is not None else {}
@@ -215,7 +221,34 @@ def _run_commercial(conn, job: dict) -> dict:
         "provenance": report.get("provenance", {}),
         "warnings": list(report.get("warnings", [])) + list(decision.warnings),
     }
+    summary["optimizer_replay"] = replay_result
     return enrich(summary, ready=ready, fi=fi, est=est, decision=decision, report=report, conn=conn)
+
+
+def _run_replay(conn, job: dict) -> dict:
+    """The rolling replay of the production optimizer (zaad/full/historical.py). Its own stage with
+    progress per decision date; a failure or an unavailable replay never fails the diagnostic."""
+    if not REPLAY_ENABLED:
+        return {"status": "unavailable", "reason": "disabled by configuration (HARVESTMIND_REPLAY=0)"}
+    _stage(job, "replaying", "reconstructing the historical state at the first decision date")
+    from zaad.full.historical import run_historical_replay
+
+    def progress(stage: str, info: dict) -> None:
+        leg = info.get("leg")
+        if leg == "zaad":
+            _stage(job, "replaying", f"ZAAD re-solved decision date {info.get('review')} of {info.get('reviews')} "
+                                     f"(last solve {info.get('solve_seconds')} s)")
+        else:
+            what = "the operator's actual orders" if leg == "actual" else "the reconstructed purchasing rule"
+            _stage(job, "replaying", f"replaying {what} through the same settlement")
+    try:
+        return run_historical_replay(conn, job.get("operator_id") or job["id"], skus=REPLAY_SKUS, reviews=REPLAY_REVIEWS,
+                                     budget_s=REPLAY_BUDGET_S, progress=progress)
+    except JobCancelled:
+        raise
+    except Exception as exc:  # noqa: BLE001  the replay is reported as unavailable, the diagnostic stands
+        log.exception("historical replay failed for %s", job.get("id"))
+        return {"status": "unavailable", "reason": f"{type(exc).__name__}: {exc}"[:300]}
 
 
 def _run_produce(conn, job: dict) -> dict:

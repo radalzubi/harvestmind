@@ -628,19 +628,44 @@ export interface ReportLane {
 }
 export interface DiagnosticReport {
   version: string; run_id: string; company: string; generated_at: string | null; sector: string | null;
-  conclusion: { kind: string; headline: string; body: string };
-  executive_summary: { findings: { id: string; headline: string; line: string; severity: Severity; confidence: string }[]; actions: string[]; confidence: { level: string; statement: string } };
+  conclusion: { kind: string; headline: string; body: string; benchmark_headline?: string; replay_headline?: string };
+  executive_summary: { benchmark: { label: string; statement: string | null }; replay: { label: string; statement: string | null; available: boolean };
+    findings: { id: string; headline: string; line: string; severity: Severity; confidence: string }[]; actions: string[]; confidence: { level: string; statement: string; replay_level?: string | null } };
   readiness: { label: string; level: string; confidence: string; confidence_rule: string; statement: string; facts: { label: string; value: string }[];
     limitations: { effect: string }[]; missing_fields: { field: string }[]; required_missing: string[]; history_weeks: number | null; products: number | null; suppliers: number | null };
   ordering_today: { summary: string; items: { label: string; value: string; note: string | null; tag: string }[] };
-  policy_comparison: { available: boolean; current_label: string; candidate: string | null; candidate_label: string; rows: { metric: string; current: string; candidate: string; difference: string; note: string | null }[];
+  policy_benchmark: { available: boolean; title?: string; question?: string; explainer?: string; statement?: string | null; current_label: string; candidate: string | null; candidate_label: string;
+    rows: { metric: string; current: string; candidate: string; difference: string; note: string | null }[];
     explanation: string[]; outcome: string | null; fold_chart: { selection: number[]; holdout_mean: number | null; threshold: number | null; title: string } | null };
+  optimizer_replay: {
+    title?: string; question: string; explainer: string; available: boolean; status: string; statement: string; reason?: string | null;
+    currency?: string | null; currency_note?: string | null;
+    scope?: { skus: string[]; sku_count: number; skus_in_workspace: number; demand_value_share: number | null; origin: string; horizon_weeks: number; rule: string | null; text: string };
+    coverage?: { completed: number; planned: number; partial: boolean; dates: string[]; text: string; selection_rule: string };
+    table?: { metric: string; actual: string; rule: string; zaad: string; difference: string; better: boolean | null; note: string | null }[];
+    not_measured?: string[]; retention_note?: string | null;
+    decisions_summary?: { rows: number; changed: number; retained_rule_reviews?: number; identical_to_rule?: boolean; zaad_ordered_where_you_did_not: number; zaad_ordered_less: number; zaad_ordered_more: number; zaad_did_not_order_where_you_did: number; abstained_reviews: number; units_difference: number };
+    periods?: { series: number[]; dates: string[]; currency: string | null; improved: number | null; worse: number | null; mean: number | null; median: number | null; worst: number | null; best: number | null; sd: number | null; ci80: [number, number] | null; n_negative: number; worst_date: string | null; text: string };
+    vs_rule?: { relative: number | null; improved: number | null; identical?: boolean; text: string };
+    regimes?: { state: string; periods: number; mean: number | null; improved: number | null; text: string }[]; regime_note?: string;
+    settlement?: { shares: Record<string, number>; orders: number; rules: Record<string, string>; text: string };
+    lookahead?: { clean: boolean | null; snapshots: number; text: string };
+    confidence?: { level: string; reasons: string[]; dimensions: Record<string, string>; rule: string };
+    performance?: Record<string, number | string | null>; engine?: Record<string, string>; limits?: string[];
+    decisions?: { review: number; date: string; sku: string; supplier: string | null; location: string; actual_qty: number | null; rule_qty: number | null; zaad_qty: number | null;
+      quantity_difference: number | null; zaad_action: string; zaad_status: string | null; zaad_policy: string | null; fallback_to_rule: boolean | null; timing: string | null;
+      settlement: string | null; settlement_cell: string; outcome: Record<string, { served: number; demand: number; end_stock: number }>; economic_outcome: string }[];
+  };
+  provenance_ledger?: { input: string; provenance: string; plain: string; basis: string; note: string | null; replay_provenance: string | null; replay_note: string | null }[];
+  consistency_checks?: { check: string; pass: boolean; detail: string }[];
   findings: ReportFinding[];
   suppliers: { available: boolean; rows: { supplier: string; share_of_value: string; products: string; receipts: string; fill: string; lead_time: string; lead_spread: string; lane: string; reading: string; evidence: string }[]; note: string };
   lanes: ReportLane[];
   actions: { now: ReportAction[]; next: ReportAction[]; monitor: ReportAction[] };
   appendix: { methodology: string[]; assumptions: { input: string; provenance: string }[]; candidates: Record<string, string>[]; gates: Record<string, unknown>; warnings: string[];
-    run: Record<string, unknown>; glossary: { term: string; internal: string; meaning: string }[] };
+    run: Record<string, unknown>; glossary: { term: string; internal: string; meaning: string }[];
+    replay?: { engine?: Record<string, string> | null; performance?: Record<string, number | string | null> | null; lookahead?: { clean: boolean | null; text: string } | null;
+      settlement_rules?: Record<string, string> | null; limits?: string[] | null; confidence_rule?: string | null } };
 }
 export function reportUrl(id: string): string { return `${BASE_URL}/jobs/${encodeURIComponent(id)}/report.pdf`; }
 export async function downloadReport(id: string): Promise<void> {
