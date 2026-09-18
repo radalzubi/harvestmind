@@ -127,12 +127,16 @@ def render_pdf(report: dict) -> bytes:
                          P(_e(it.get("tag")), "cells")])
         el.append(grid(rows, [48 * mm, W - 48 * mm - 28 * mm, 28 * mm]))
 
-    # ── policy comparison ──
-    pc = report.get("policy_comparison") or {}
-    el.append(P("3. Historical policy comparison", "h1"))
+    # ── simple policy benchmark ──
+    pc = report.get("policy_benchmark") or report.get("policy_comparison") or {}
+    el.append(P("3. Simple policy benchmark", "h1"))
+    el.append(P(f"<b>{_e(pc.get('question'))}</b>", "p"))
+    el.append(P(_e(pc.get("explainer")), "s"))
+    if pc.get("statement"):
+        el.append(panel_box([P(_e(pc.get("statement")), "pb")], bar=colors.HexColor("#7A7A7A")))
     if pc.get("available"):
-        el.append(P(f"<b>{_e(pc.get('current_label'))}</b> versus <b>{_e(pc.get('candidate_label'))}</b>, replayed on your own history."))
-        rows = [[P("Measure", "cellb"), P("Your current policy", "cellb"), P(_e(pc.get("candidate_label")), "cellb"), P("Reading", "cellb")]]
+        el.append(P(f"<b>{_e(pc.get('current_label'))}</b> versus <b>{_e(pc.get('candidate_label'))}</b>, both replayed on your own history by the benchmark."))
+        rows = [[P("Measure", "cellb"), P("Your current rule", "cellb"), P(_e(pc.get("candidate_label")), "cellb"), P("Reading", "cellb")]]
         for r in pc.get("rows") or []:
             rows.append([P(_e(r["metric"]) + (f"<br/><font color='{MUTED}' size='7.6'>{_e(r['note'])}</font>" if r.get("note") else ""), "cell"),
                          P(_e(r["current"]), "cell"), P(_e(r["candidate"]), "cell"), P(_e(r["difference"]), "cells")])
@@ -145,17 +149,74 @@ def render_pdf(report: dict) -> bytes:
         if chart and chart.get("selection"):
             el.append(Spacer(1, 4))
             el.append(_fold_chart(chart, W))
-            el.append(P("Each bar is one historical period: the candidate's cost change against your policy on that period. Positive = the candidate cost less. The dashed line is the selection threshold; the grey bar is the average on the unseen validation periods.", "s"))
+            el.append(P("Each bar is one historical period: the fixed rule's cost change against your rule on that period. Positive = the fixed rule cost less. The dashed line is the selection threshold; the grey bar is the average on the unseen validation periods.", "s"))
     else:
         for para in pc.get("explanation") or []:
             el.append(P(_e(para)))
 
+    # ── ZAAD historical decision replay ──
+    rp = report.get("optimizer_replay") or {}
+    el.append(P("4. ZAAD historical decision replay", "h1"))
+    el.append(P(f"<b>{_e(rp.get('question'))}</b>", "p"))
+    el.append(P(_e(rp.get("explainer")), "s"))
+    if not rp.get("available"):
+        el.append(panel_box([P("NOT AVAILABLE ON THIS HISTORY", "label"), P(_e(rp.get("statement")), "p")], bar=colors.HexColor("#7A7A7A")))
+    else:
+        conf = rp.get("confidence") or {}
+        el.append(panel_box([P("ZAAD ROLLING HISTORICAL REPLAY", "label"), P(_e(rp.get("statement")), "pb"),
+                             P(f"Replay confidence: <b>{_e(conf.get('level'))}</b>. " + "; ".join(_e(x) for x in (conf.get("reasons") or [])[:4]), "s")], bar=brand))
+        sc, cv = rp.get("scope") or {}, rp.get("coverage") or {}
+        el.append(P(f"Scope: {_e(sc.get('text'))}. Coverage: {_e(cv.get('text'))}. Selection: {_e(cv.get('selection_rule'))}.", "s"))
+        if rp.get("currency_note"):
+            el.append(P(_e(rp.get("currency_note")), "s"))
+        rows = [[P(h, "cellb") for h in ("Measure", "Your actual orders", "Your reconstructed rule", "ZAAD, re-run at each date", "ZAAD − actual")]]
+        for r in rp.get("table") or []:
+            mark = "" if r.get("better") is None else (" ▲" if r["better"] else " ▼")
+            rows.append([P(_e(r["metric"]) + (f"<br/><font color='{MUTED}' size='7.4'>{_e(r['note'])}</font>" if r.get("note") else ""), "cell"),
+                         P(_e(r["actual"]), "cell"), P(_e(r["rule"]), "cell"), P(_e(r["zaad"]), "cell"), P(_e(r["difference"]) + mark, "cell")])
+        el.append(grid(rows, [50 * mm, 28 * mm, 30 * mm, 32 * mm, W - 140 * mm], zebra=True))
+        el.append(P("▲ better for ZAAD · ▼ worse for ZAAD · lower cost, unmet demand and breaches are better; higher service is better; stock and purchases are neither.", "s"))
+        for nm in rp.get("not_measured") or []:
+            el.append(P("• " + _e(nm), "cells"))
+        if rp.get("retention_note"):
+            el.append(panel_box([P(_e(rp.get("retention_note")), "p")], color=colors.white, bar=colors.HexColor("#7A7A7A")))
+        ds = rp.get("decisions_summary") or {}
+        el.append(P(f"Decisions: {_e(ds.get('rows'))} product-weeks replayed; ZAAD ordered where you did not on {_e(ds.get('zaad_ordered_where_you_did_not'))}, "
+                    f"less than you on {_e(ds.get('zaad_ordered_less'))}, more on {_e(ds.get('zaad_ordered_more'))}, and did not order where you did on "
+                    f"{_e(ds.get('zaad_did_not_order_where_you_did'))}; the planner abstained and your rule stood on {_e(ds.get('abstained_reviews'))} decision date(s).", "p"))
+        per = rp.get("periods") or {}
+        if per.get("series"):
+            el.append(Spacer(1, 4))
+            el.append(_period_chart(per, W))
+            el.append(P(_e(per.get("text")), "p"))
+        if rp.get("vs_rule"):
+            el.append(P(_e(rp["vs_rule"].get("text")), "p"))
+        for rg in rp.get("regimes") or []:
+            el.append(P("• " + _e(rg.get("text")), "cell"))
+        el.append(P(_e(rp.get("regime_note")), "s"))
+        stl = rp.get("settlement") or {}
+        el.append(P("What is measured and what is simulated", "h2"))
+        el.append(P(_e(stl.get("text")), "p"))
+        lk = rp.get("lookahead") or {}
+        el.append(P(_e(lk.get("text")), "s"))
+        decs = [d for d in (rp.get("decisions") or []) if (d.get("zaad_qty") or 0) > 0 or (d.get("actual_qty") or 0) > 0]
+        if decs:
+            el.append(P(f"Decision-level detail: first {min(10, len(decs))} of {len(decs)} product-weeks with an order by you or by ZAAD (every row is in the app)", "h2"))
+            rows = [[P(h, "cellb") for h in ("Date", "Product", "Supplier", "You ordered", "Rule", "ZAAD", "ZAAD action", "Settlement")]]
+            for d in decs[:10]:
+                rows.append([P(_e(d.get("date")), "cells"), P(_e(d.get("sku")), "cells"), P(_e(d.get("supplier")), "cells"),
+                             P(f"{float(d.get('actual_qty') or 0):,.0f}", "cells"), P(f"{float(d.get('rule_qty') or 0):,.0f}", "cells"), P(f"{float(d.get('zaad_qty') or 0):,.0f}", "cells"),
+                             P(_e(d.get("zaad_action")) + (f" ({_e(d.get('timing'))})" if d.get("timing") and d.get("timing") != "same week" else ""), "cells"), P(_e(d.get("settlement") or "—"), "cells")])
+            el.append(grid(rows, [18 * mm, 24 * mm, 24 * mm, 18 * mm, 16 * mm, 16 * mm, W - 136 * mm, 20 * mm], zebra=True))
+        el.append(P("Limits of the replay are listed in the appendix.", "s"))
+
     # ── findings ──
     fs = report.get("findings") or []
     if fs:
-        el.append(P("4. Management attention", "h1"))
+        el.append(P("5. Management attention", "h1"))
         el.append(P("Ranked by severity and, where a defensible measure exists, by the share of your demand value involved. Each card says what happened, why it matters, what appears to drive it, what to consider, and how confident ZAAD is.", "s"))
-        cards = [f for f in fs if f.get("severity") in ("high", "medium")]
+        # cards: every high finding and the policy / replay / synthesis findings, at most eight; the rest compact
+        cards = [f for f in fs if f.get("severity") == "high" or f.get("category") in ("policy", "replay", "synthesis")][:8]
         rest = [f for f in fs if f not in cards]
         for f in cards:
             col = colors.HexColor(SEV.get(f.get("severity"), "#7A7A7A"))
@@ -179,7 +240,7 @@ def render_pdf(report: dict) -> bytes:
 
     # ── suppliers ──
     sp = report.get("suppliers") or {}
-    el.append(P("5. Supplier analysis", "h1"))
+    el.append(P("6. Supplier analysis", "h1"))
     if sp.get("available") and sp.get("rows"):
         rows = [[P(h, "cellb") for h in ("Supplier", "Share of value", "Products", "Receipts", "Fill", "Lead time", "Spread", "Lane", "Reading")]]
         for r in sp["rows"]:
@@ -193,7 +254,7 @@ def render_pdf(report: dict) -> bytes:
 
     # ── lanes ──
     lanes = report.get("lanes") or []
-    el.append(P("6. Supply lane risk", "h1"))
+    el.append(P("7. Supply lane risk", "h1"))
     if lanes:
         el.append(P(_e(lanes[0].get("score_meaning")), "s"))
         blocks = [ln for ln in lanes if ln.get("attention") in ("ELEVATED", "UNAVAILABLE")]
@@ -219,7 +280,7 @@ def render_pdf(report: dict) -> bytes:
 
     # ── actions ──
     ac = report.get("actions") or {}
-    el.append(P("7. Recommended actions", "h1"))
+    el.append(P("8. Recommended actions", "h1"))
     for key, title in (("now", "NOW"), ("next", "NEXT"), ("monitor", "MONITOR")):
         items = ac.get(key) or []
         if not items:
@@ -243,7 +304,21 @@ def render_pdf(report: dict) -> bytes:
     g = ap.get("gates") or {}
     if g:
         el.append(P("Selection rule parameters: " + ", ".join(f"{_e(k)} = {_e(v)}" for k, v in g.items() if not isinstance(v, dict)), "s"))
-    if ap.get("assumptions"):
+    ledger = report.get("provenance_ledger") or []
+    if ledger:
+        el.append(P("Inputs and their provenance (one canonical label per input)", "h2"))
+        rows = [[P("Input", "cellb"), P("Provenance", "cellb"), P("Basis", "cellb"), P("In the replay engine", "cellb")]]
+        for a in ledger:
+            note = (f"<br/><font color='{MUTED}' size='7.4'>{_e(a['note'])}</font>" if a.get("note") else "")
+            rnote = (f"<br/><font color='{MUTED}' size='7.4'>{_e(a['replay_note'])}</font>" if a.get("replay_note") else "")
+            rows.append([P(_e(a["input"]), "cell"), P(f"<b>{_e(a['provenance'])}</b> — {_e(a['plain'])}" + note, "cell"), P(_e(a["basis"]), "cells"),
+                         P((_e(a["replay_provenance"]) if a.get("replay_provenance") else "same") + rnote, "cells")])
+        el.append(grid(rows, [36 * mm, 60 * mm, 40 * mm, W - 136 * mm], zebra=True))
+        el.append(P("OPERATOR = supplied by you · MEASURED = measured from your transactions · INFERRED = inferred from your history · PUBLIC_BENCHMARK = a published figure · ASSUMED = a stated default · UNKNOWN = nothing known, the decision does not depend on it", "s"))
+        checks = report.get("consistency_checks") or []
+        if checks:
+            el.append(P("Consistency checks: " + "; ".join(f"{'pass' if c.get('pass') else 'FAIL'} — {_e(c.get('check'))}" for c in checks), "s"))
+    if ap.get("assumptions") and not ledger:
         el.append(P("Inputs and their provenance", "h2"))
         rows = [[P("Input", "cellb"), P("Provenance", "cellb")]] + [[P(_e(a["input"]), "cell"), P(_e(a["provenance"]), "cell")] for a in ap["assumptions"]]
         el.append(grid(rows, [55 * mm, W - 55 * mm], zebra=True))
@@ -258,6 +333,21 @@ def render_pdf(report: dict) -> bytes:
         el.append(grid(rows, [48 * mm, 40 * mm, W - 88 * mm]))
     if ap.get("warnings"):
         el += [P("Run notes (verbatim)", "h2")] + bullets([_e(w) for w in ap["warnings"][:12]], "cells")
+    rap = ap.get("replay") or {}
+    if rap.get("engine"):
+        el.append(P("Historical decision replay: engine, settlement and limits", "h2"))
+        eng = rap["engine"]
+        el += bullets([f"Optimizer: {_e(eng.get('optimizer'))}", f"Loop: {_e(eng.get('loop'))}", f"Settlement: {_e(eng.get('settlement'))}", f"Snapshot: {_e(eng.get('request'))}"], "cells")
+        for k, v in (rap.get("settlement_rules") or {}).items():
+            el.append(P(f"• {_e(k)}: {_e(v)}", "cells"))
+        pf = rap.get("performance") or {}
+        if pf:
+            el.append(P(f"Performance: {_e(pf.get('decision_points'))} decision dates, {_e(pf.get('optimizer_solves'))} optimizer solves, {_e(pf.get('skus'))} products, "
+                        f"mean solve {_e(pf.get('solve_seconds_mean'))} s (max {_e(pf.get('solve_seconds_max'))} s), total {_e(pf.get('total_seconds'))} s, peak memory {_e(pf.get('peak_rss_mb'))} MB.", "cells"))
+        if rap.get("confidence_rule"):
+            el.append(P(f"Replay confidence rule: {_e(rap.get('confidence_rule'))}.", "cells"))
+        for lim in rap.get("limits") or []:
+            el.append(P(f"• {_e(lim)}", "cells"))
     el.append(P("Run identity", "h2"))
     rid = [f"run {_e(run.get('run_id'))}", f"generated {_e(run.get('generated_at'))}", f"report version {_e(run.get('report_version'))}",
            f"summary version {_e(run.get('summary_version') or 'pre-2026.09.2')}", f"sector {_e(run.get('sector'))}"]
@@ -339,4 +429,37 @@ def _fold_chart(chart: dict, width: float):
         fill = colors.HexColor("#9A9A9A") if is_hold else (colors.HexColor("#3E7D66") if v >= 0 else colors.HexColor("#B23A2E"))
         d.add(Rect(x0, y, max(x1 - x0, 0.5), row_h, fillColor=fill, strokeColor=None))
         d.add(String(x1 + 3 if v >= 0 else x0 - 28, y + 2, f"{v * 100:+.1f}%", fontName="Helvetica", fontSize=7, fillColor=colors.HexColor(INK)))
+    return d
+
+
+def _period_chart(per: dict, width: float):
+    """Per-period cost difference (your orders − ZAAD): one bar per decision date, positive = ZAAD cheaper.
+    Drawn with primitives, no decoration."""
+    from reportlab.graphics.shapes import Drawing, Line, Rect, String
+    from reportlab.lib import colors
+    series = [float(x) for x in per.get("series") or []]
+    dates = per.get("dates") or []
+    if not series:
+        return Drawing(width, 10)
+    lo, hi = min(series + [0.0]), max(series + [0.0])
+    span = (hi - lo) or 1.0
+    n = len(series)
+    left, right, top, bottom = 10, 10, 18, 26
+    h = 120
+    plot_w, plot_h = width - left - right, h - top - bottom
+    bar_w = plot_w / n
+    d = Drawing(width, h)
+    d.add(String(0, h - 10, "Cost difference per decision date: your orders − ZAAD (positive = ZAAD cost less)", fontName="Helvetica-Bold", fontSize=8, fillColor=colors.HexColor(INK)))
+
+    def y_of(v: float) -> float:
+        return bottom + (v - lo) / span * plot_h
+    d.add(Line(left, y_of(0.0), left + plot_w, y_of(0.0), strokeColor=colors.HexColor(MUTED), strokeWidth=0.6))
+    for i, v in enumerate(series):
+        x = left + i * bar_w + 1
+        y0, y1 = sorted((y_of(0.0), y_of(v)))
+        d.add(Rect(x, y0, max(bar_w - 2, 1), max(y1 - y0, 0.5), fillColor=colors.HexColor("#3E7D66") if v >= 0 else colors.HexColor("#B23A2E"), strokeColor=None))
+        if n <= 30 and i < len(dates) and (i % max(1, n // 8) == 0 or i == n - 1):
+            d.add(String(x, 4, str(dates[i])[5:], fontName="Helvetica", fontSize=6, fillColor=colors.HexColor(MUTED)))
+    d.add(String(left, bottom + plot_h + 2, f"best {hi:,.0f}", fontName="Helvetica", fontSize=6.5, fillColor=colors.HexColor(MUTED)))
+    d.add(String(left + plot_w - 60, bottom + 2, f"worst {lo:,.0f}", fontName="Helvetica", fontSize=6.5, fillColor=colors.HexColor(MUTED)))
     return d

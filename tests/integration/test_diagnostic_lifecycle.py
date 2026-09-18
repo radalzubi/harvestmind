@@ -49,7 +49,7 @@ class FakeDiagnostic:
             J._stage(job, key)
             if key == self.hold_at:
                 self.reached.set()
-                self.release.wait(10)
+                self.release.wait(90)     # long enough that a loaded CI runner never sees the hold expire mid-assertion
         if self.fail:
             raise RuntimeError("solver exploded")
         J._stage(job, "reporting")
@@ -79,7 +79,7 @@ def test_queued_running_stages_done_with_report(api, monkeypatch):
     monkeypatch.setattr(J, "_run_commercial", fake)
     j = cl.post("/jobs/diagnostic", headers=h).json()
     assert j["status"] in ("queued", "running") and j["reference"] == j["id"]
-    assert [s["key"] for s in j["stages"]] == ["preparing", "reconstructing", "lanes", "testing", "reporting"]
+    assert [s["key"] for s in j["stages"]] == ["preparing", "reconstructing", "lanes", "testing", "replaying", "reporting"]
     assert fake.reached.wait(5)
     running = cl.get(f"/jobs/{j['id']}", headers=h).json()
     assert running["status"] == "running" and running["stage"] == "testing" and running["started_at"]

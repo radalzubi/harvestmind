@@ -793,3 +793,10 @@ table.t td.product { color: var(--ink-900); font-weight: 500; }
 .diag-chart-bar.pos { background: #3E7D66; } .diag-chart-bar.neg { background: var(--bad); } .diag-chart-bar.hold { background: var(--ink-400); }
 .diag-chart-val { font-variant-numeric: tabular-nums; text-align: end; }
 @media (max-width: 640px) { .diag-chart-row { grid-template-columns: 110px 1fr 54px; } .diag-headline { font-size: 16px; } }
+
+.diag-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin: 10px 0; }
+.diag-two-cell { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.diag-two-cell.muted { color: var(--ink-600); }
+.diag-callout { background: var(--surface-2); border-inline-start: 3px solid var(--ink-500); border-radius: 6px; padding: 10px 12px; margin: 8px 0; }
+.diag-callout.muted { color: var(--ink-600); }
+.diag-good { color: var(--good); font-weight: 600; } .diag-bad { color: var(--bad); font-weight: 600; }
