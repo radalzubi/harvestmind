@@ -376,13 +376,29 @@ function ReplayView({ rp }: { rp: NonNullable<Report["optimizer_replay"]> }) {
       {rp.decisions_summary && (
         <p>Decisions: {rp.decisions_summary.rows} product-weeks replayed; ZAAD ordered where you did not on {rp.decisions_summary.zaad_ordered_where_you_did_not}, less than you on {rp.decisions_summary.zaad_ordered_less}, more on {rp.decisions_summary.zaad_ordered_more}, and did not order where you did on {rp.decisions_summary.zaad_did_not_order_where_you_did}; the planner abstained and your rule stood on {rp.decisions_summary.abstained_reviews} decision date(s).</p>
       )}
+      {rp.decision_changes && (
+        <>
+          <div className="diag-sub">How often ZAAD decided differently from your rule</div>
+          <p>{rp.decision_changes.text}</p>
+        </>
+      )}
+      {rp.rule_conformance_note && <p className="diag-muted diag-small">{rp.rule_conformance_note}</p>}
       {per && per.series.length > 0 && <PeriodChart per={per} />}
       {per && <p>{per.text}</p>}
       {rp.vs_rule && <p>{rp.vs_rule.text}</p>}
       {(rp.regimes ?? []).length > 0 && <ul>{rp.regimes!.map((g) => <li key={g.state}>{g.text}</li>)}</ul>}
       <p className="diag-muted diag-small">{rp.regime_note}</p>
+      {(rp.operating_regimes ?? []).length > 0 && (
+        <>
+          <div className="diag-sub">Performance by operating regime</div>
+          <ul>{rp.operating_regimes!.map((g) => <li key={g.regime}>{g.text}{g.definition ? <span className="diag-muted diag-small"> — {g.definition}</span> : null}</li>)}</ul>
+        </>
+      )}
+      <p className="diag-muted diag-small">{rp.operating_regime_note}</p>
       <div className="diag-sub">What is measured and what is simulated</div>
       <p>{rp.settlement?.text}</p>
+      {rp.evidence_basis && <p>{rp.evidence_basis.text}</p>}
+      {rp.engine_text && <p className="diag-muted diag-small">{rp.engine_text}</p>}
       <p className="diag-muted diag-small">{rp.lookahead?.text}</p>
       {(rp.decisions ?? []).length > 0 && (
         <>

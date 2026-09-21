@@ -221,6 +221,44 @@ def _conform(source: Any, q: float, t: int = 0) -> tuple[float, str | None]:
     return out, note
 
 
+def _conform_shared(req: Request, purchases: dict[tuple[str, int], float]) -> tuple[dict[tuple[str, int], float], list[dict]]:
+    """A projected plan made admissible against every shared resource (supplier capacity) the request declares:
+    in each period whose lines together exceed a resource's capacity, every line is scaled by the same factor
+    and rounded down to its declared multiples (a line that falls below its minimum is dropped). The
+    reconstructed rule orders every SKU of a supplier in the same week, which the operator's own staggered
+    orders never did; without this the rule's plan is physically unsettleable at wide scopes and the
+    planner, handed it as the declared incumbent, abstains. Returns the plan and one note per changed line."""
+    from fractions import Fraction
+    from math import lcm
+    sources = {s.id: s for s in req.sources}
+    volume = {s.id: s.volume for s in req.skus}
+    out = dict(purchases)
+    notes: list[dict] = []
+    for res in req.resources:
+        for t in range(req.horizon):
+            cap = res.capacity_by_period[min(t, len(res.capacity_by_period) - 1)]
+            lines = [(sid, q) for (sid, k), q in out.items() if k == t and q > 0 and sid in sources and res.id in sources[sid].resources]
+            load = sum(q * volume[sources[sid].sku] for sid, q in lines)
+            if load <= cap + 1e-9:
+                continue
+            factor = cap / load
+            for sid, q in lines:
+                source = sources[sid]
+                mults = [m for m in (source.multiple, source.case_multiple, source.pallet_multiple, source.transport_multiple) if m and m > 0]
+                scaled = q * factor
+                if mults:
+                    fr = [Fraction(m).limit_denominator(1000) for m in mults]
+                    den = lcm(*[f.denominator for f in fr])
+                    step = float(Fraction(lcm(*[int(f * den) for f in fr]), den))
+                    scaled = math.floor(scaled / step + 1e-9) * step
+                if 0 < scaled < source.minimum - 1e-9:
+                    scaled = 0.0
+                out[sid, t] = scaled
+                notes.append({"review_period": t, "source": sid, "resource": res.id, "projected": q, "settled": scaled,
+                              "note": f"scaled by {factor:.3f} to the declared capacity {cap:g} of {res.id} shared by {len(lines)} lines"})
+    return out, notes
+
+
 def _fixed_solution(req: Request, purchases: dict[str, float], note: str) -> Solution:
     """A fixed order set as a settleable plan: the purchases at period 0 and every open order kept
     (the same keep amendments the declared-rule baseline carries)."""
@@ -251,12 +289,40 @@ class _LegMethods:
             out, note = _conform(sources[src], q)
             conformed[src] = out
             if note:
-                self.conformance.append({"review": t, "source": src, "recorded": q, "settled": out, "note": note})
+                self.conformance.append({"leg": "actual", "review": t, "source": src, "recorded": q, "settled": out, "note": note})
         return _fixed_solution(req, conformed, "ACTUAL_ORDERS")
+
+    def rule(self, req: Request) -> Solution:
+        """The reconstructed rule's own projection, made admissible against the declared shared capacity."""
+        from zaad.full.policies import baseline_plan
+        solution = baseline_plan(req, req.incumbent_rule or "reorder_point")
+        conformed, notes = _conform_shared(req, solution.purchases)
+        if notes:
+            t = self.review_of(req)
+            self.conformance += [{"leg": "rule", "review": t, **n} for n in notes]
+            solution.purchases = conformed
+        return solution
+
+    def _conformed_incumbent(self, req: Request) -> Request:
+        """The declared incumbent the planner is compared against, made admissible against shared capacity;
+        the planner's own semantics (declared orders are the incumbent) are untouched."""
+        if not req.incumbent_orders:
+            return req
+        declared = {(o.source, o.period): o.quantity for o in req.incumbent_orders}
+        conformed, notes = _conform_shared(req, declared)
+        if not notes:
+            return req
+        t = self.review_of(req)
+        self.conformance += [{"leg": "zaad_incumbent", "review": t, **n} for n in notes]
+        from zaad.full.contracts import IncumbentOrder
+        return req.model_copy(update={"incumbent_orders": tuple(
+            IncumbentOrder(known_at=o.known_at, source=o.source, period=o.period, quantity=conformed[o.source, o.period])
+            for o in req.incumbent_orders if conformed[o.source, o.period] > 0)})
 
     def zaad(self, req: Request) -> Solution:
         """The production optimizer; an abstaining or unusable review keeps the operator's rule."""
         started = time.perf_counter()
+        req = self._conformed_incumbent(req)
         solution = choose(req, "gated")
         seconds = time.perf_counter() - started
         status = solution.warnings[0] if solution.warnings else solution.status
@@ -264,13 +330,15 @@ class _LegMethods:
         fallback = False
         if not solution.usable_plan:
             fallback = True
-            from zaad.full.policies import baseline_plan
-            solution = baseline_plan(req, req.incumbent_rule or "reorder_point")
+            solution = self.rule(req)
             solution.warnings = [f"{status}", str(policy), "fallback=operator_rule", *solution.warnings]
         review = self.review_of(req)
         entry = {"review": review, "as_of": req.as_of.isoformat(), "status": status, "selected_policy": policy,
                  "fallback_to_rule": fallback, "solve_seconds": round(seconds, 2),
-                 "orchestration": getattr(solution, "orchestration", None), "history_periods": len({r.period for r in req.history})}
+                 "orchestration": getattr(solution, "orchestration", None), "history_periods": len({r.period for r in req.history}),
+                 # the same-snapshot comparison (§16): what the declared incumbent would have executed now, and what ZAAD executed
+                 "incumbent_orders": {o.source: float(o.quantity) for o in req.incumbent_orders if o.period == 0 and o.quantity > 0},
+                 "executed_orders": {sid: float(q) for (sid, t), q in solution.purchases.items() if t == 0 and q > 0}}
         self.zaad_log.append(entry)
         self.solutions[review] = copy.deepcopy(solution)
         if self.on_solve:
@@ -383,9 +451,88 @@ def select_skus(initial: Request, n: int) -> tuple[list[str], float]:
     return chosen, sum(value[k] for k in chosen) / total
 
 
+SCOPE_RULES = ("window_value", "d0_value")
+INTERMITTENT_ZERO_SHARE = 0.35     # the diagnostic's own intermittency threshold (reports/diagnostic_v3.py synthesis)
+
+
+def select_scope(conn: Any, probe: Request, n: int, *, origin: pd.Timestamp, periods: int, rule: str = "window_value") -> dict:
+    """Which products the replay studies - a STUDY SELECTION, labelled as such: it may read the whole replay
+    window (demand after the first decision date) to decide *which* products are replayed, and that is the
+    only place window information is used; every decision request is then built strictly from data before
+    its own date (attested per snapshot). Deterministic; ties broken by product id.
+
+    "window_value": rank by demand value over the replay window (units ordered × unit cost), take the top n,
+    then make the set stratified: if none of them is an intermittent-demand product (zero demand in at least
+    35% of the window's weeks) and one exists, the last slot goes to the highest-value intermittent product.
+    A top-by-value-at-D0 rule ("d0_value", the V3 rule) survives as an option; both coverages are reported.
+    The rule never looks at outcomes, orders or the optimizer's results, only at demand value and demand
+    pattern, so it cannot favour products where any policy did well."""
+    if rule not in SCOPE_RULES:
+        raise ValueError(f"scope rule must be one of {SCOPE_RULES}")
+    cost = {s.id: s.asset_value for s in probe.skus}
+    d0_ranked, _ = select_skus(probe, len(probe.skus))
+    d0_value: dict[str, float] = {}
+    sku_of_service = {s.id: s.sku for s in probe.services}
+    hist: dict[str, list[float]] = {}
+    for r in probe.history:
+        hist.setdefault(sku_of_service[r.service], []).append(r.quantity)
+    for sku, xs in hist.items():
+        d0_value[sku] = (statistics.fmean(xs) if xs else 0.0) * cost.get(sku, 0.0)
+    start, end = origin.to_pydatetime(), (origin + pd.Timedelta(days=7 * periods)).to_pydatetime()
+    frame = conn.execute("SELECT sku, order_date, qty_ordered FROM stg_fmcg_orders WHERE order_date >= ? AND order_date < ?", [start, end]).fetchdf()
+    window_units: dict[str, float] = {}
+    zero_share: dict[str, float] = {}
+    if len(frame):
+        frame["order_date"] = pd.to_datetime(frame["order_date"])
+        frame["week"] = ((frame["order_date"] - origin).dt.days // 7).astype(int)
+        for sku, g in frame.groupby("sku"):
+            k = str(sku)
+            if k not in cost:
+                continue
+            window_units[k] = float(g["qty_ordered"].sum())
+            weekly = g.groupby("week")["qty_ordered"].sum()
+            zero_share[k] = 1.0 - float((weekly > 0).sum()) / max(1, periods)
+    window_value = {k: window_units.get(k, 0.0) * cost.get(k, 0.0) for k in cost}
+    for k in cost:
+        zero_share.setdefault(k, 1.0)
+    total_window = sum(window_value.values()) or 1.0
+    total_d0 = sum(d0_value.values()) or 1.0
+    if rule == "d0_value":
+        chosen = list(d0_ranked[:n])
+        swapped: list[dict] = []
+    else:
+        ranked = sorted(cost, key=lambda k: (-window_value[k], k))
+        chosen = ranked[:n]
+        swapped = []
+        intermittent = [k for k in ranked if zero_share[k] >= INTERMITTENT_ZERO_SHARE and window_value[k] > 0]
+        if chosen and intermittent and not any(zero_share[k] >= INTERMITTENT_ZERO_SHARE for k in chosen) and len(ranked) > n:
+            dropped, added = chosen[-1], intermittent[0]
+            chosen = chosen[:-1] + [added]
+            swapped.append({"dropped": dropped, "added": added, "reason": "stratification: one intermittent-demand product in the study set"})
+    chosen = sorted(chosen, key=lambda k: (-window_value[k], k))
+    # purchase-order line coverage over the window (how much of the operator's ordering the study set carries)
+    po = conn.execute("SELECT sku, COUNT(*) AS n FROM stg_fmcg_purchase_orders WHERE po_date >= ? AND po_date < ? GROUP BY sku", [start, end]).fetchall()
+    po_lines = {str(r[0]): int(r[1]) for r in po}
+    po_total = sum(po_lines.values()) or 1
+    return {"skus": chosen, "rule": rule,
+            "information": ("STUDY SELECTION: demand value and demand pattern over the whole replay window "
+                            f"({origin.date()} to {(origin + pd.Timedelta(days=7 * periods - 1)).date()}), used only to choose which products are replayed; "
+                            "no decision request reads anything after its own date (attested per snapshot)") if rule == "window_value" else
+                           ("point-in-time: demand value over the history before the first decision date (V3 rule)"),
+            "window": {"start": str(origin.date()), "end": str((origin + pd.Timedelta(days=7 * periods - 1)).date()), "weeks": periods},
+            "coverage": {"window_demand_value_share": round(sum(window_value[k] for k in chosen) / total_window, 4),
+                         "d0_demand_value_share": round(sum(d0_value.get(k, 0.0) for k in chosen) / total_d0, 4),
+                         "purchase_order_line_share": round(sum(po_lines.get(k, 0) for k in chosen) / po_total, 4),
+                         "sku_count": len(chosen), "skus_with_window_demand": sum(1 for v in window_value.values() if v > 0), "skus_in_workspace": len(cost)},
+            "strata": {"intermittent": sum(1 for k in chosen if zero_share[k] >= INTERMITTENT_ZERO_SHARE), "regular": sum(1 for k in chosen if zero_share[k] < INTERMITTENT_ZERO_SHARE),
+                       "threshold": f"zero demand in at least {int(INTERMITTENT_ZERO_SHARE * 100)}% of the window's weeks"},
+            "swapped": swapped, "zero_share": {k: round(zero_share[k], 3) for k in chosen}}
+
+
 def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] = DEFAULT_SKUS, reviews: int = DEFAULT_REVIEWS,
                           horizon: int = 12, budget_s: float = DEFAULT_BUDGET_S, seed: int = 41001,
-                          progress: Callable[[str, dict], None] | None = None, end_before: datetime | None = None) -> dict:
+                          progress: Callable[[str, dict], None] | None = None, end_before: datetime | None = None,
+                          scope_rule: str = "window_value", fefo: str = "network") -> dict:
     """Run the three legs and score them on the common completed prefix. Never raises for a replay that
     cannot run: returns status "unavailable" with the reason."""
     started = time.perf_counter()
@@ -420,22 +567,33 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
         probe, _ = build_request(conn, operator_id, as_of=as_of, horizon=horizon)
     except WorkspaceError as exc:
         return {"status": "unavailable", "reason": str(exc), "version": HISTORICAL_REPLAY_VERSION}
+    periods = reviews - 1 + horizon
     if isinstance(skus, int):
-        chosen, value_share = select_skus(probe, skus)
+        selection = select_scope(conn, probe, skus, origin=origin, periods=periods, rule=scope_rule)
+        chosen, value_share = selection["skus"], selection["coverage"]["d0_demand_value_share"]
     else:
         chosen, value_share = [s for s in skus if any(k.id == s for k in probe.skus)], None
+        selection = {"skus": chosen, "rule": "explicit", "information": "an explicit product list supplied by the caller", "coverage": {}, "strata": {}, "swapped": []}
     if not chosen:
         return {"status": "unavailable", "reason": "no SKU with history at the replay origin", "version": HISTORICAL_REPLAY_VERSION}
     try:
         initial, build = build_request(conn, operator_id, as_of=as_of, horizon=horizon, skus=chosen, seed=seed)
     except WorkspaceError as exc:
         return {"status": "unavailable", "reason": str(exc), "version": HISTORICAL_REPLAY_VERSION}
-    periods = reviews - 1 + horizon
+    if fefo not in ("network", "certified", "all"):
+        raise ValueError("fefo must be network, certified or all")
+    if fefo != "network":
+        # the engine choice rides on the request; the replay loop carries request fields forward
+        initial = initial.model_copy(update={"fefo_symmetry_scope": fefo})
+    import zaad.full.model as _model
+    certificate_log: list[dict] = []
+    _model.CERTIFICATE_LOG = certificate_log
     truth, truth_prov = build_truth(conn, initial, periods=periods, seed=seed)
     actual = actual_orders_by_review(conn, initial, reviews)
     methods = _LegMethods(initial, actual)
     tag = f"historical_{operator_id}_{int(started * 1000)}"
     NETWORK_METHODS[f"{tag}:actual"] = methods.actual_orders
+    NETWORK_METHODS[f"{tag}:rule"] = methods.rule
     NETWORK_METHODS[f"{tag}:zaad"] = methods.zaad
     NETWORK_METHODS[f"{tag}:zaad_recorded"] = methods.zaad_recorded
     legs: dict[str, dict] = {}
@@ -445,7 +603,7 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
         for leg in ("actual", "rule"):
             if progress:
                 progress("replaying", {"leg": leg, "review": 0, "reviews": reviews})
-            method = f"{tag}:actual" if leg == "actual" else "incumbent"
+            method = f"{tag}:actual" if leg == "actual" else f"{tag}:rule"
             keep: list[Request] = []
             if leg == "rule" and not initial.incumbent_rule:
                 legs[leg] = {"status": "unavailable", "reason": "no reconstructed rule"}
@@ -471,7 +629,9 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
             legs["zaad"] = _partial_from(initial, truth, stopped_at, f"{tag}:zaad_recorded", methods, keep_z)
         snapshots["zaad"] = keep_z
     finally:
+        _model.CERTIFICATE_LOG = None
         NETWORK_METHODS.pop(f"{tag}:actual", None)
+        NETWORK_METHODS.pop(f"{tag}:rule", None)
         NETWORK_METHODS.pop(f"{tag}:zaad", None)
         NETWORK_METHODS.pop(f"{tag}:zaad_recorded", None)
     W = min(len(leg_out.get("reviews", [])) for leg_out in legs.values() if leg_out.get("reviews") is not None) if legs else 0
@@ -481,15 +641,19 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
     per = {leg: _per_review(initial, out) for leg, out in legs.items() if out.get("reviews")}
     scores = {leg: _score(initial, out, W) for leg, out in legs.items() if out.get("reviews")}
     decisions = _decision_rows(initial, per, methods, truth_prov, W)
+    changes = _decision_changes(initial, per, methods, W)
+    evidence = _evidence_basis(initial, per, truth_prov, W, build)
+    regime_labels = [_review_regimes(r) for r in (snapshots.get("zaad") or [])[:W]]
     rss1 = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     elapsed = time.perf_counter() - started
     solves = [e["solve_seconds"] for e in methods.zaad_log]
     result: dict[str, Any] = {
         "version": HISTORICAL_REPLAY_VERSION, "status": "complete" if stopped_at is None else "partial",
         "engine": {"optimizer": "zaad.full.planner.plan (production path, unchanged)", "loop": "zaad.full.replay.replay(rolling=True)",
-                   "settlement": "zaad.full.settlement.settle", "request": "zaad.full.workspace.build_request(as_of=decision date)"},
+                   "settlement": "zaad.full.settlement.settle", "request": "zaad.full.workspace.build_request(as_of=decision date)",
+                   "formulation": fefo, "formulation_note": ENGINE_NOTES[fefo], "certificates": _certificate_summary(certificate_log)},
         "scope": {"skus": chosen, "sku_count": len(chosen), "skus_in_workspace": len(probe.skus), "demand_value_share": None if value_share is None else round(value_share, 4),
-                  "currency": initial.currency,
+                  "selection": selection, "currency": initial.currency,
                   "origin": str(origin.date()), "horizon": horizon, "period_days": initial.period_days, "reviews_planned": reviews,
                   "incumbent_rule": initial.incumbent_rule, "rule_provenance": (build.get("incumbent_rule") or {}).get("provenance"),
                   "history_weeks_before_origin": weeks_before if weeks_before >= MIN_HISTORY_WEEKS else int((origin - first_day).days // 7)},
@@ -500,11 +664,16 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
                         "zaad_vs_rule": _summarise_difference(per["rule"], per["zaad"], W, scores.get("rule"), scores.get("zaad")) if "rule" in per and "zaad" in per else None,
                         "rule_vs_actual": _summarise_difference(per["actual"], per["rule"], W, scores.get("actual"), scores.get("rule")) if "rule" in per and "actual" in per else None},
         "decisions": decisions, "zaad_reviews": methods.zaad_log[:W],
-        "actual_conformance": {"changed_orders": len([c for c in methods.conformance if c["review"] < W]), "rows": [c for c in methods.conformance if c["review"] < W][:50],
+        "actual_conformance": {"changed_orders": len([c for c in methods.conformance if c["review"] < W and c["leg"] == "actual"]),
+                               "rows": [c for c in methods.conformance if c["review"] < W and c["leg"] == "actual"][:50],
                                "note": "recorded orders rounded to the declared pack multiple or clamped to the declared capacity / minimum so the settlement's physical checks hold; the recorded quantity is kept on each row"},
         "settlement_provenance": _settlement_shares(decisions, truth_prov),
         "attestation": {leg: attest(reqs[:W]) for leg, reqs in snapshots.items()},
-        "regimes": _regime_split(per, methods.zaad_log, W),
+        "regimes": _regime_split(per, methods.zaad_log, W, regime_labels),
+        "decision_changes": changes, "evidence_basis": evidence,
+        "rule_conformance": {"changed_lines": len([c for c in methods.conformance if c["review"] < W and c["leg"] != "actual"]),
+                             "rows": [c for c in methods.conformance if c["review"] < W and c["leg"] != "actual"][:50],
+                             "note": "the reconstructed rule's projected orders scaled to the declared shared supplier capacity where the rule would order every product of a supplier in the same week; applied to the rule leg and to the declared incumbent the optimizer is compared against"},
         "build": {"provenance": build.get("provenance"), "fits": build.get("fits"), "warnings": build.get("warnings"), "leakage_guard": build.get("leakage_guard")},
         "performance": {"decision_points": W, "optimizer_solves": len(methods.zaad_log), "skus": len(chosen), "sources": len(initial.sources),
                         "solve_seconds_mean": round(statistics.fmean(solves), 2) if solves else None, "solve_seconds_max": round(max(solves), 2) if solves else None,
@@ -605,7 +774,194 @@ def _settlement_shares(decisions: list[dict], truth_prov: dict) -> dict:
                       "ASSUMED": "no observation for the supplier: the declared or assumed lead and fill"}}
 
 
-def _regime_split(per: dict, zlog: list[dict], W: int) -> dict:
+ENGINE_NOTES = {
+    "network": "the released formulation, every FEFO indicator kept: the production planner's own search path (ties resolve as production resolves them on this machine)",
+    "certified": "symmetry-reduced formulation accepted per solve only under an exact tie certificate, otherwise the released formulation: identical decisions by proof, at the certificate's cost",
+    "all": "symmetry-reduced formulation (an exact projection: the same feasible decisions at the same objective) without a certificate: on an objective-flat tie the solver may return another optimal plan - an owner option, not the released default",
+}
+
+
+def _certificate_summary(log: list[dict]) -> dict | None:
+    if not log:
+        return None
+    attempted = [c for c in log if c.get("attempted")]
+    return {"solves": len(log), "attempted": len(attempted), "certified": sum(1 for c in attempted if c.get("certified")),
+            "fallbacks": sum(1 for c in log if not c.get("certified")),
+            "reasons": {r: sum(1 for c in log if c.get("reason") == r) for r in sorted({str(c.get("reason")) for c in log})},
+            "certificate_seconds": round(sum(float(c.get("certificate_seconds") or 0.0) for c in attempted), 2),
+            "certificate_seconds_max": round(max((float(c.get("certificate_seconds") or 0.0) for c in attempted), default=0.0), 2)}
+
+
+def _decision_changes(initial: Request, per: dict, methods: "_LegMethods", W: int) -> dict:
+    """How often, and by how much, ZAAD's executed decision differed from the reconstructed rule's on the same
+    snapshot (§16): per review the planner's outcome; per line the quantity class; timing where a line moves
+    by one week; source and open-order changes where the request allows them at all. Materiality is the
+    production planner's own `materiality_cost_fraction` applied to the review's rule purchase value; a
+    quantity difference below dust is "same"."""
+    if "zaad" not in per or not methods.zaad_log:
+        return {"available": False, "reason": "the ZAAD leg did not complete"}
+    sources = {s.id: s for s in initial.sources}
+    price = {s.id: float(s.unit_price + s.freight_per_unit + s.handling_per_unit) for s in initial.sources}
+    pack = {s.id: max(s.multiple, s.case_multiple, s.pallet_multiple, s.transport_multiple, 0.0) or 1.0 for s in initial.sources}
+    from zaad.full.tolerance import is_dust as _dust
+    zlog = {e["review"]: e for e in methods.zaad_log}
+    classes = {"same": 0, "more": 0, "less": 0, "new": 0, "dropped": 0}
+    timing = {"advanced_one_week": 0, "deferred_one_week": 0}
+    material_lines = 0
+    material_reviews = 0
+    units_added = units_removed = 0.0
+    value_added = value_removed = 0.0
+    review_outcomes = {"retained_rule": 0, "own_plan": 0, "abstained_or_fallback": 0}
+    per_review: list[dict] = []
+    for t in range(W):
+        e = zlog.get(t, {})
+        # the incumbent the planner was handed on this very snapshot, and what it executed: one state, two decisions
+        rq, zq = e.get("incumbent_orders") or {}, e.get("executed_orders") or per["zaad"][t]["purchases"]
+        if e.get("fallback_to_rule"):
+            review_outcomes["abstained_or_fallback"] += 1
+        elif str(e.get("status")) == "RETAIN_INCUMBENT":
+            review_outcomes["retained_rule"] += 1
+        else:
+            review_outcomes["own_plan"] += 1
+        rule_value = sum(q * price.get(sid, 0.0) for sid, q in rq.items())
+        review_material = False
+        line_rows = []
+        for sid in sources:
+            r, z = float(rq.get(sid, 0.0)), float(zq.get(sid, 0.0))
+            d = z - r
+            if _dust(d, pack[sid]):
+                cls = "same"
+            elif r <= 0 < z:
+                cls = "new"
+            elif z <= 0 < r:
+                cls = "dropped"
+            else:
+                cls = "more" if d > 0 else "less"
+            classes[cls] += 1
+            if cls == "same":
+                continue
+            value = d * price.get(sid, 0.0)
+            if d > 0:
+                units_added += d
+                value_added += value
+            else:
+                units_removed -= d
+                value_removed -= value
+            material = abs(value) > initial.materiality_cost_fraction * max(rule_value, 1e-9)
+            material_lines += int(material)
+            review_material = review_material or material
+            # timing, on ZAAD's own path: a dropped line that ZAAD orders the next week while the next snapshot's incumbent does not is a
+            # deferral; a new line that the next snapshot's incumbent orders while ZAAD does not is an advance
+            nxt = zlog.get(t + 1, {})
+            if cls == "dropped" and nxt and float((nxt.get("executed_orders") or {}).get(sid, 0.0)) > 0 and float((nxt.get("incumbent_orders") or {}).get(sid, 0.0)) <= 0:
+                timing["deferred_one_week"] += 1
+            if cls == "new" and nxt and float((nxt.get("incumbent_orders") or {}).get(sid, 0.0)) > 0 and float((nxt.get("executed_orders") or {}).get(sid, 0.0)) <= 0:
+                timing["advanced_one_week"] += 1
+            line_rows.append({"source": sid, "sku": sources[sid].sku, "rule": r, "zaad": z, "class": cls, "value_difference": round(value, 2), "material": material})
+        material_reviews += int(review_material)
+        per_review.append({"review": t, "as_of": per["zaad"][t]["as_of"], "status": e.get("status"), "selected_policy": e.get("selected_policy"),
+                           "fallback_to_rule": bool(e.get("fallback_to_rule")), "changed_lines": len(line_rows), "material": review_material, "lines": line_rows[:20]})
+    multi_source = any(sum(1 for s in initial.sources if s.sku == k.id) > 1 for k in initial.skus)
+    non_keep = any(o.action != "keep" for p in initial.pipeline for o in p.options)
+    return {"available": True, "reviews": W, "review_outcomes": review_outcomes, "lines": classes,
+            "lines_total": sum(classes.values()), "changed_lines": sum(v for k, v in classes.items() if k != "same"),
+            "material_lines": material_lines, "material_reviews": material_reviews, "timing": timing,
+            "source_changes": ("not applicable: the workspace declares one source per product, so the optimizer had no source to switch" if not multi_source else "not measured"),
+            "open_order_changes": ("not applicable: every open order carries keep-only options, so no amendment was available" if not non_keep else "not measured"),
+            "magnitude": {"units_added": round(units_added, 1), "units_removed": round(units_removed, 1), "value_added": round(value_added, 2), "value_removed": round(value_removed, 2)},
+            "materiality_rule": f"a line is material when its value difference exceeds {initial.materiality_cost_fraction:g} of the incumbent's purchase value at that review (the planner's own materiality fraction); a quantity difference below dust is the same order",
+            "basis": "same snapshot: the declared incumbent the planner was handed at each date against what it executed; the rule leg's own path is compared separately (vs_rule)",
+            "per_review": per_review}
+
+
+def _evidence_basis(initial: Request, per: dict, truth_prov: dict, W: int, build: dict) -> dict:
+    """Settlement basis at overall and metric level (§15): for each leg the units-weighted share of its supply
+    that settled on MEASURED / INFERRED / SIMULATED / ASSUMED supplier behaviour; the demand side and the
+    opening state carry their own provenance. Cost and service of a leg both rest on the same cells, so the
+    metric-level basis is the leg's; nothing inferred is presented as observed."""
+    supply, actual_qty = truth_prov.get("supply") or {}, truth_prov.get("supply_actual_qty") or {}
+    out: dict = {"by_leg": {}, "demand": "MEASURED: the operator's customer orders, week by week",
+                 "opening_state": "MEASURED: stock counts in the upload" if (build.get("provenance") or {}).get("stock.opening") not in ("CONFIGURED_ASSUMPTION", "NOT_AVAILABLE") else "ASSUMED",
+                 "rules": {"MEASURED": "the operator's own received order in that week: its observed lead and fill, at the same quantity",
+                           "INFERRED": "observed supplier behaviour applied to a different quantity, or the nearest received order of the same supplier within ±4 weeks",
+                           "SIMULATED": "a seeded draw from the supplier's empirical fill and lead over the history",
+                           "ASSUMED": "no observation for the supplier: the declared or assumed lead and fill"}}
+    settled_actual = {f"{src}|{t}": float(q) for t, row in enumerate(per.get("actual") or []) for src, q in row["purchases"].items()}
+    for leg, rows in per.items():
+        units = {"MEASURED": 0.0, "INFERRED": 0.0, "SIMULATED": 0.0, "ASSUMED": 0.0}
+        for t in range(min(W, len(rows))):
+            for src, q in rows[t]["purchases"].items():
+                if q <= 0:
+                    continue
+                key = f"{src}|{t}"
+                label = supply.get(key, "ASSUMED")
+                # the operator's own received order is measured for the operator's leg; another leg gets the same label only
+                # when it placed the same order (the settled quantity), otherwise the observed behaviour is applied to a
+                # different quantity: inferred
+                reference = settled_actual.get(key, float(actual_qty.get(key, 0.0)))
+                if label == "MEASURED" and leg != "actual" and abs(q - reference) > 1e-6:
+                    label = "INFERRED"
+                units[label] += float(q)
+        total = sum(units.values())
+        out["by_leg"][leg] = {"units": round(total, 1), "shares": {k: (round(v / total, 4) if total > 0 else 0.0) for k, v in units.items()}}
+    out["metrics"] = {m: "the leg's supply basis above (cost and service both settle on the same delivered units) with measured demand" for m in ("cost", "service", "inventory")}
+    return out
+
+
+def _review_regimes(req: Request) -> list[str]:
+    """Operating-regime labels of one decision snapshot (§17), from the snapshot only (point in time):
+    supplier deterioration (a source's recent fill 6 points below its longer record, or recent lead 1.3× it),
+    intermittent demand (at least half the products with zero demand in 35%+ of the last 26 weeks),
+    constrained inventory (at least half the products opening below one lead time of cover); "stable" when
+    none applies. Analysis only: nothing here enters a request."""
+    labels: list[str] = []
+    by_source: dict[str, list] = {}
+    for r in req.shipment_history:
+        if getattr(r, "arrived", False):
+            by_source.setdefault(r.source, []).append(r)
+    deteriorated = 0
+    for sid, obs in by_source.items():
+        obs = sorted(obs, key=lambda r: r.known_at)
+        if len(obs) < 8:
+            continue
+        recent, older = obs[-4:], obs[:-4]
+        fr = [float(r.accepted_ratio) for r in recent if r.accepted_ratio is not None]
+        fo = [float(r.accepted_ratio) for r in older if r.accepted_ratio is not None]
+        lr = [float(r.elapsed_days) for r in recent]
+        lo = [float(r.elapsed_days) for r in older]
+        if (fr and fo and statistics.fmean(fr) < statistics.fmean(fo) - 0.06) or (lo and statistics.fmean(lr) > 1.3 * statistics.fmean(lo)):
+            deteriorated += 1
+    if deteriorated:
+        labels.append("supplier_deterioration")
+    series: dict[str, list[tuple[int, float]]] = {}
+    for h in req.history:
+        series.setdefault(h.service, []).append((int(h.period), float(h.quantity)))
+    inter = 0
+    mean_weekly: dict[str, float] = {}
+    for svc, rows in series.items():
+        rows = sorted(rows)[-26:]
+        qs = [q for _, q in rows]
+        if qs and sum(1 for q in qs if q <= 0) / len(qs) >= INTERMITTENT_ZERO_SHARE:
+            inter += 1
+        mean_weekly[svc] = statistics.fmean(qs) if qs else 0.0
+    if series and inter / len(series) >= 0.5:
+        labels.append("intermittent_demand")
+    sku_of_service = {s.id: s.sku for s in req.services}
+    stock: dict[str, float] = {}
+    for lot in req.stock:
+        stock[lot.sku] = stock.get(lot.sku, 0.0) + lot.usable
+    lead_weeks = {s.sku: max(1.0, s.lead_days / max(1, req.period_days)) for s in req.sources}
+    thin = 0
+    for svc, mu in mean_weekly.items():
+        sku = sku_of_service[svc]
+        if mu > 0 and stock.get(sku, 0.0) / mu < lead_weeks.get(sku, 1.0):
+            thin += 1
+    if mean_weekly and thin / len(mean_weekly) >= 0.5:
+        labels.append("constrained_inventory")
+    return labels or ["stable"]
+
+
+def _regime_split(per: dict, zlog: list[dict], W: int, labels: list[list[str]] | None = None) -> dict:
     """ZAAD − actual cost difference split by the planner's own review state and by whether the week's
     observed fill was short; reported only where each side has three or more periods."""
     if "actual" not in per or "zaad" not in per:
@@ -619,6 +975,18 @@ def _regime_split(per: dict, zlog: list[dict], W: int) -> dict:
     for k, xs in groups.items():
         if len(xs) >= 3:
             out["by_planner_state"][k] = {"periods": len(xs), "mean": float(statistics.fmean(xs)), "share_improved": float(sum(1 for x in xs if x > 0) / len(xs))}
+    if labels:
+        by_label: dict[str, list[float]] = {}
+        for t in range(min(W, len(labels))):
+            for lab in labels[t]:
+                by_label.setdefault(lab, []).append(diffs[t])
+        out["by_operating_regime"] = {k: {"periods": len(xs), "mean": float(statistics.fmean(xs)), "share_improved": float(sum(1 for x in xs if x > 0) / len(xs))}
+                                      for k, xs in by_label.items() if len(xs) >= 3}
+        out["labels_per_review"] = [labels[t] for t in range(min(W, len(labels)))]
+        out["definitions"] = {"supplier_deterioration": "a supplier's last four receipts fill six points below its earlier record or arrive 1.3× later",
+                              "intermittent_demand": "at least half the replayed products had zero demand in 35% or more of the last 26 weeks",
+                              "constrained_inventory": "at least half the replayed products opened the week below one lead time of cover",
+                              "stable": "none of the above"}
     return out
 
 

@@ -265,8 +265,21 @@ def replay_section(summary: dict) -> dict:
     out["scope"] = {"skus": scope.get("skus"), "sku_count": scope.get("sku_count"), "skus_in_workspace": scope.get("skus_in_workspace"),
                     "demand_value_share": share, "origin": scope.get("origin"), "horizon_weeks": scope.get("horizon"), "rule": scope.get("incumbent_rule"),
                     "text": f"{scope_txt}; weekly decision dates from {scope.get('origin')}; the optimizer plans {num(scope.get('horizon'))} weeks ahead at each date"}
+    sel = scope.get("selection") or {}
+    scov = sel.get("coverage") or {}
+    if sel.get("rule") == "window_value":
+        sel_text = (f"STUDY SELECTION: the {num(scope.get('sku_count'))} products carrying the most demand value over the whole replay window "
+                    f"({(sel.get('window') or {}).get('start')} to {(sel.get('window') or {}).get('end')}), one intermittent-demand product included where one exists; "
+                    f"this choice reads the window's demand only to decide which products are studied and never enters a decision request. "
+                    f"Coverage: {pct(_f(scov.get('window_demand_value_share')), nd=0)} of window demand value, {pct(_f(scov.get('d0_demand_value_share')), nd=0)} of demand value at the first decision date, "
+                    f"{pct(_f(scov.get('purchase_order_line_share')), nd=0)} of the purchase-order lines placed in the window")
+    elif sel.get("rule") == "d0_value":
+        sel_text = f"the top products by demand value at the first decision date (a fixed rule, not a choice of dates); coverage {pct(share, nd=0)} of demand value"
+    else:
+        sel_text = "the top products by demand value at the first decision date (a fixed rule, not a choice of dates)"
     out["coverage"] = {"completed": W, "planned": planned, "partial": r.get("status") == "partial", "dates": cov.get("dates"),
-                       "text": coverage_txt, "selection_rule": "the top products by demand value at the first decision date (a fixed rule, not a choice of dates); every weekly decision date in the window in order"}
+                       "text": coverage_txt, "selection_rule": sel_text + "; every weekly decision date in the window in order",
+                       "selection": {"rule": sel.get("rule"), "information": sel.get("information"), "coverage": scov, "strata": sel.get("strata"), "swapped": sel.get("swapped")}}
     # summary table: only measured legs and metrics
     rows: list[dict] = []
 
@@ -315,6 +328,37 @@ def replay_section(summary: dict) -> dict:
                              if identical_to_rule and retained == W and W > 0 else
                              (f"The optimizer retained your reconstructed rule on {num(retained)} of the {num(W)} decision dates and recommended its own plan on the others."
                               if retained else None))
+    # decision-change rate against the reconstructed rule (§16), the planner's own materiality
+    ch = r.get("decision_changes") or {}
+    if ch.get("available"):
+        ro, ln, mg = ch.get("review_outcomes") or {}, ch.get("lines") or {}, ch.get("magnitude") or {}
+        n_changed = ch.get("changed_lines") or 0
+        out["decision_changes"] = {
+            **{k: v for k, v in ch.items() if k != "per_review"},
+            "text": (f"On {num(ro.get('retained_rule'))} of the {num(W)} decision dates the optimizer retained your reconstructed rule, on {num(ro.get('own_plan'))} it recommended its own plan, "
+                     f"and on {num(ro.get('abstained_or_fallback'))} it abstained and the rule stood. Across {num(ch.get('lines_total'))} product-weeks ZAAD's order matched the rule's on "
+                     f"{num(ln.get('same'))}; it ordered more on {num(ln.get('more'))}, less on {num(ln.get('less'))}, placed an order the rule did not on {num(ln.get('new'))} "
+                     f"and dropped one the rule placed on {num(ln.get('dropped'))}. {num(ch.get('material_lines'))} of the {num(n_changed)} changed lines were material by the planner's own "
+                     f"standard ({ch.get('materiality_rule')}); {num((ch.get('timing') or {}).get('deferred_one_week'))} were a one-week deferral and "
+                     f"{num((ch.get('timing') or {}).get('advanced_one_week'))} a one-week advance. Units added {num(mg.get('units_added'))}, removed {num(mg.get('units_removed'))} "
+                     f"(value {money(mg.get('value_added'), currency)} / {money(mg.get('value_removed'), currency)}). Source changes: {ch.get('source_changes')}. Open-order changes: {ch.get('open_order_changes')}.")
+                    if n_changed else
+                    (f"On every one of the {num(W)} decision dates ZAAD's executed orders matched the reconstructed rule's line for line: the optimizer retained the rule on "
+                     f"{num(ro.get('retained_rule'))} dates and abstained on {num(ro.get('abstained_or_fallback'))}. No value is claimed from a plan that was never different.")}
+    else:
+        out["decision_changes"] = {"available": False, "text": "Decision-change accounting is not available: " + str(ch.get("reason") or "the rule leg did not complete")}
+    ev = r.get("evidence_basis") or {}
+    if ev.get("by_leg"):
+        def basis_txt(leg: str) -> str:
+            sh = ((ev["by_leg"].get(leg) or {}).get("shares") or {})
+            return ", ".join(f"{pct(sh.get(k), nd=0)} {k.lower()}" for k in ("MEASURED", "INFERRED", "SIMULATED", "ASSUMED"))
+        out["evidence_basis"] = {**ev, "text": (f"Settlement basis of each leg's delivered units — your actual orders: {basis_txt('actual')}; the reconstructed rule: {basis_txt('rule')}; "
+                                                f"ZAAD: {basis_txt('zaad')}. Demand is measured throughout; cost and service of a leg both rest on its delivered units, so an inferred share "
+                                                "is an inferred share of both. Nothing inferred or simulated is an observed outcome.")}
+    rc = r.get("rule_conformance") or {}
+    if rc.get("changed_lines"):
+        out["rule_conformance_note"] = (f"The reconstructed rule's projected orders were scaled to the declared shared supplier capacity on {num(rc.get('changed_lines'))} line(s) "
+                                        "(the rule orders every product of a supplier in the same week, which your own staggered orders never did); the scaled plan is the rule leg and the incumbent ZAAD was compared against.")
     # per period
     series, dates = d_actual.get("series") or [], cov.get("dates") or []
     negatives = [(dates[i] if i < len(dates) else str(i), v) for i, v in enumerate(series) if v < -1e-9]
@@ -347,6 +391,13 @@ def replay_section(summary: dict) -> dict:
                       for k, v in sorted(reg.items(), key=lambda kv: -kv[1]["periods"])]
     out["regime_note"] = ("Split by the planner's own review state; only groups with three or more periods are shown." if out["regimes"] else
                           "Too few periods per planner state to split performance by regime.")
+    oreg = (r.get("regimes") or {}).get("by_operating_regime") or {}
+    defs = (r.get("regimes") or {}).get("definitions") or {}
+    out["operating_regimes"] = [{"regime": k, "periods": v["periods"], "mean": _f(v["mean"]), "improved": _f(v["share_improved"]), "definition": defs.get(k),
+                                 "text": f"{k.replace('_', ' ').capitalize()} weeks ({num(v['periods'])}): ZAAD better in {pct(_f(v['share_improved']), nd=0)} of periods, average {money(abs(v['mean']), currency)} {'in ZAAD’s favour' if v['mean'] > 0 else 'against'}"}
+                                for k, v in sorted(oreg.items(), key=lambda kv: -kv[1]["periods"])]
+    out["operating_regime_note"] = ("Weeks labelled from each decision snapshot only (supplier deterioration, intermittent demand, constrained inventory, stable); a week can carry several labels. "
+                                    "Analysis only: nothing here was used by the optimizer." if out["operating_regimes"] else "Too few weeks per operating regime to split performance.")
     # settlement provenance
     shares = prov.get("shares_by_zaad_order") or {}
     out["settlement"] = {"shares": shares, "orders": prov.get("zaad_orders"), "rules": prov.get("rules"),
@@ -364,6 +415,11 @@ def replay_section(summary: dict) -> dict:
     perf = r.get("performance") or {}
     out["performance"] = perf
     out["engine"] = r.get("engine")
+    eng = r.get("engine") or {}
+    certs = eng.get("certificates") or {}
+    out["engine_text"] = (f"Formulation: {eng.get('formulation_note') or 'the released formulation'}."
+                          + (f" Tie certificates: {num(certs.get('certified'))} of {num(certs.get('attempted'))} attempted solves certified, {num(certs.get('fallbacks'))} solved on the released formulation instead; "
+                             f"certificate time {num(certs.get('certificate_seconds'))} s." if certs else ""))
     out["decisions"] = decs
     out["limits"] = [
         "Prices, the product set, calendars and economics are frozen at the first decision date (assumed constant over the window).",

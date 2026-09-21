@@ -78,6 +78,11 @@ REPLAY_ENABLED = os.environ.get("HARVESTMIND_REPLAY", "1").lower() not in ("0", 
 REPLAY_SKUS = int(os.environ.get("HARVESTMIND_REPLAY_SKUS", "5"))
 REPLAY_REVIEWS = int(os.environ.get("HARVESTMIND_REPLAY_REVIEWS", "26"))
 REPLAY_BUDGET_S = float(os.environ.get("HARVESTMIND_REPLAY_BUDGET_S", "1200"))
+# the replay's engine: "network" (the released formulation, default), "certified" (symmetry-reduced under an exact
+# tie certificate, otherwise released) or "all" (symmetry-reduced, an owner option); and the study-selection
+# rule for the replayed products ("window_value" or "d0_value")
+REPLAY_FEFO = os.environ.get("HARVESTMIND_REPLAY_FEFO", "network").strip().lower() or "network"
+REPLAY_SCOPE_RULE = os.environ.get("HARVESTMIND_REPLAY_SCOPE_RULE", "window_value").strip().lower() or "window_value"
 STALE_AFTER_S = int(os.environ.get("HARVESTMIND_JOB_STALE_S", "1800"))
 BOOT_STALE_S = int(os.environ.get("HARVESTMIND_JOB_BOOT_STALE_S", "300"))
 MAX_RUN_S = int(os.environ.get("HARVESTMIND_JOB_MAX_S", "3600"))
@@ -243,7 +248,7 @@ def _run_replay(conn, job: dict) -> dict:
             _stage(job, "replaying", f"replaying {what} through the same settlement")
     try:
         return run_historical_replay(conn, job.get("operator_id") or job["id"], skus=REPLAY_SKUS, reviews=REPLAY_REVIEWS,
-                                     budget_s=REPLAY_BUDGET_S, progress=progress)
+                                     budget_s=REPLAY_BUDGET_S, progress=progress, scope_rule=REPLAY_SCOPE_RULE, fefo=REPLAY_FEFO)
     except JobCancelled:
         raise
     except Exception as exc:  # noqa: BLE001  the replay is reported as unavailable, the diagnostic stands

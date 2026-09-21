@@ -685,7 +685,18 @@ class Request(Record):
     # search-path change for the frozen gates: on the P1 fixture T the solver returns another of two
     # equal-cost source splits, so the default stays "network" until the owner authorises the
     # product path to set "all" (ZAAD_FULL_PERFORMANCE_PASS.md §5).
-    fefo_symmetry_scope: Literal["network", "all"] = "network"
+    # "certified" (Diagnostic V3.1, `DIAGNOSTIC_V3_1_REPLAY_SCALE.md`): the reduced formulation is solved
+    # first as a fast candidate and its solution is accepted only under an exact tie certificate — a
+    # second, small MILP on the same reduced model proving that no other solution within
+    # `tie_certificate_cutoff` of its objective differs in any decision the planner reads (purchases,
+    # amendments, transfers). Otherwise the released formulation is solved exactly as with "network"
+    # (the frozen search path, ties included). A recourse, fixed or service-only solve never takes the
+    # reduced path. The certificate's outcome is recorded on the solution (`symmetry_certificate`).
+    fefo_symmetry_scope: Literal["network", "all", "certified"] = "network"
+    # Cutoff of the tie certificate: "tolerance" = the solver's own relative gap (`solver_mip_gap`) around
+    # the reduced optimum — rigorous against every solution the released solver may stop at;
+    # "strict" = objective-flat ties only (1e-7 relative, the solver's feasibility tolerance).
+    tie_certificate_cutoff: Literal["tolerance", "strict"] = "tolerance"
     # Bounded terminal continuation (v6, investigated): end-of-horizon stock and committed arrivals may
     # serve post-horizon demand over one lead at the service margin. Off by default: on development6 it
     # deferred buying into closures and severe delays (cells 21, 49, 91) in both of its forms.

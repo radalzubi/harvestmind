@@ -20,7 +20,7 @@ from scipy.sparse import coo_matrix
 from zaad.full.contracts import Request, SupplierTerms
 from zaad.sectors.contracts import resolve as sector_physics
 from zaad.sourcing.contracts import resolve as sourcing_view
-from zaad.full.tolerance import is_dust, po_closed, source_pack
+from zaad.full.tolerance import dust_threshold, is_dust, po_closed, source_pack
 from zaad.full.worlds import World, dates, next_open
 
 if TYPE_CHECKING:
@@ -42,6 +42,14 @@ if TYPE_CHECKING:
 # A request may extend the rule to its single-location, physics-free formulation with
 # `fefo_symmetry_scope="all"` (performance pass 2026-09-16; exact, see contracts.Request).
 FEFO_SYMMETRY_ELIMINATION = True
+# Certified path (Diagnostic V3.1): the reduced formulation is worth a certificate only when the reduction is
+# material - at least this share of the model's integer columns would be interchangeable-cohort indicators.
+# Below it the released formulation is solved directly (the certificate would cost more than it saves;
+# exactness is unaffected either way).
+CERTIFY_MIN_REDUCTION = 0.25
+# When a list, every certified-path outcome (certificate or immaterial-reduction fallback) is appended to it
+# (instrumentation for the replay's engine summary; None in every normal run).
+CERTIFICATE_LOG: list | None = None
 
 
 class Linear:
@@ -242,6 +250,8 @@ class Solution:
     recourse_worlds: tuple[str, ...] | None = None
     # instrumentation (P4): integer columns of the model
     binaries: int | None = None
+    # tie certificate of a certified symmetry-reduced solve (Diagnostic V3.1); None when not attempted
+    symmetry_certificate: dict | None = None
 
     @property
     def usable_plan(self) -> bool:
@@ -500,6 +510,74 @@ def activation_bounds(req: Request, worlds: list[World], *, targets=None, contin
     return bounds
 
 
+def tie_certificate(m: Linear, result, controls: dict[int, float], req: Request, seconds: float) -> dict:
+    """Exact tie certificate of a symmetry-reduced solve (Diagnostic V3.1).
+
+    The reduced formulation is an exact projection of the released one: the same feasible decisions
+    (purchases, amendments, transfers, unmet demand) at the same objective. What it cannot reproduce is
+    the released solver's search path, so on an objective-flat tie it may return another optimal
+    solution. This certificate asks the reduced model one more question: does any solution with an
+    objective within the cutoff of the returned optimum differ, by more than dust, in any decision the
+    planner reads? It maximises the dust-normalised deviation of every control from the returned point
+    under an objective cutoff row (one direction binary per control; big-M = the control's own bound
+    width, so the rows are valid for every feasible point). A proven maximum below one dust unit means no
+    such solution exists: the released solver, stopping anywhere inside the cutoff, could only return the
+    same decisions. Anything else - a deviation found, a time limit, a solver error - is "not certified"
+    and the caller solves the released formulation instead. The reduced solution must itself be proven
+    optimal; a time-limited candidate is never certified.
+
+    Cutoff (`req.tie_certificate_cutoff`): "tolerance" = the reduced optimum plus `solver_mip_gap` × its
+    magnitude (the released solver's own stopping band); "strict" = plus 1e-7 × its magnitude (an
+    objective-flat tie at the solver's feasibility tolerance)."""
+    started = time.monotonic()
+    out: dict = {"attempted": True, "cutoff": req.tie_certificate_cutoff, "controls": len(controls), "certified": False, "fallback": False}
+    if result.x is None or int(result.status) != 0:
+        out.update(reason="reduced solve not proven optimal", reduced_status=int(result.status), certificate_seconds=0.)
+        return out
+    z = float(np.dot(np.asarray(m.cost, dtype=float), result.x))
+    band = (req.solver_mip_gap if req.tie_certificate_cutoff == "tolerance" else 1e-7) * max(1., abs(z))
+    cutoff = z + band
+    n0, r0 = len(m.names), len(m.rows)
+    saved = (list(m.names), list(m.cost), list(m.lower), list(m.upper), list(m.integer), list(m.rows), list(m.lo), list(m.hi))
+    try:
+        m.row({i: float(c) for i, c in enumerate(m.cost) if c}, upper=cutoff)
+        deviations: list[tuple[int, float]] = []
+        for i, pack in controls.items():
+            v, lo, hi = float(result.x[i]), float(m.lower[i]), float(m.upper[i])
+            if hi - lo <= 0:
+                continue
+            thr = dust_threshold(pack)
+            d = m.var(("tie_deviation", i), upper=max(hi - v, v - lo, 0.))
+            b = m.var(("tie_direction", i), upper=1, integer=True)
+            m.row({d: 1., i: -1., b: (v - lo)}, upper=-lo)          # d <= v_i - v + (v - lo)(1 - b): downward branch when b = 0
+            m.row({d: 1., i: 1., b: -(hi - v)}, upper=v)            # d <= v - v_i + (hi - v) b: upward branch when b = 1
+            deviations.append((d, thr))
+        objective = np.zeros(len(m.names))
+        for d, thr in deviations:
+            objective[d] = -1. / thr
+        # an incumbent that already deviates by one dust unit answers the question: stop there (objective_target)
+        probe = m._highspy_solve(m.matrix(), objective, max(1., seconds), 1e-6, options={"objective_target": -1.})
+    finally:
+        m.names, m.cost, m.lower, m.upper, m.integer, m.rows, m.lo, m.hi = saved
+    total = (-float(probe.fun)) if probe.x is not None and probe.fun is not None else None
+    bound = -float(probe.mip_dual_bound) if probe.mip_dual_bound is not None else None
+    proven = int(probe.status) == 0
+    infeasible = int(probe.status) == 2
+    out.update(objective=z, band=band, reduced_columns=n0, reduced_rows=r0, certificate_columns=len(controls) * 2, proven=proven,
+               max_deviation_dust_units=total, deviation_bound_dust_units=bound, nodes=probe.mip_node_count, status=str(probe.message),
+               certificate_seconds=round(time.monotonic() - started, 3))
+    if infeasible:
+        # numerically the returned point itself sits outside the cutoff row: nothing else can sit inside it either
+        out.update(certified=True, reason="cutoff region contains only the returned point (probe infeasible)")
+    elif proven and total is not None and total < 1.:
+        out.update(certified=True, reason="no solution within the cutoff differs in any decision by a dust unit")
+    elif total is not None and total >= 1.:
+        out.update(reason="an alternative solution within the cutoff differs in a decision")
+    else:
+        out.update(reason="certificate not proven within its time budget")
+    return out
+
+
 def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           service_first: str | None = None, cvar_weight: float = 0.,
           fixed: Solution | None = None, disabled: frozenset[str] = frozenset(),
@@ -532,6 +610,12 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     if not worlds or abs(sum(w.weight for w in worlds) - 1) > 1e-8 or any(w.weight <= 0 for w in worlds):
         raise ValueError("positive scenario weights must sum to one")
     H = req.horizon
+    # Certified symmetry reduction (Diagnostic V3.1): the reduced formulation is a fast candidate whose
+    # solution is kept only under the tie certificate below; every other solve keeps the released path.
+    _kwargs: dict[str, Any] = dict(service_floor=service_floor, service_first=service_first, cvar_weight=cvar_weight, fixed=fixed, disabled=disabled,
+                   targets=targets, per_world_service=per_world_service, service_risk=service_risk, service_risk_levels=service_risk_levels,
+                   excess_penalty=excess_penalty, continuation=continuation, seed=seed, allowed_periods=allowed_periods,
+                   expected_shortage=expected_shortage, continuation_feeds=continuation_feeds, nodes=nodes, service_only=service_only)
     if any(len(w.demand[s.id]) != H for w in worlds for s in req.services):
         raise ValueError("world dimensions do not match request")
     skus = {s.id: s for s in req.skus}
@@ -544,6 +628,10 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     # below reads it. Physics changes the decision environment - which cohorts may be received,
     # held, moved or sold, and what a residual unit is worth - never the objective's ownership.
     physics = sector_physics(req)
+    certify = (req.fefo_symmetry_scope == "certified" and physics is None and not req.transfers
+               and fixed is None and not service_only and nodes is None)
+    reduce_fefo = FEFO_SYMMETRY_ELIMINATION and (bool(req.transfers) or (physics is None and (req.fefo_symmetry_scope == "all" or certify)))
+    omitted_fefo = 0     # indicators the window rule omitted (certified path: the reduction's materiality)
     # Sourcing portfolio (P3): None on a frozen request. Adds declared share rows, one first-stage
     # switching binary per declared non-incumbent source, and skips the binaries of a source-period
     # that can carry nothing (exact). Never a new objective of its own.
@@ -1030,13 +1118,13 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         # FEFO: consumption of younger cohorts requires older remaining stock zero.
                         # An older cohort beyond the window (outlives the horizon and every schedulable
                         # transfer arrival) is interchangeable with the younger one: omitted exactly.
-                        window = (max(H, latest_due[sku])
-                                  if (FEFO_SYMMETRY_ELIMINATION and (req.transfers or (req.fefo_symmetry_scope == "all" and physics is None)))
-                                  else math.inf)
+                        window = max(H, latest_due[sku]) if reduce_fefo else math.inf
                         for expiry, q in consumptions:
                             older = [inv[sku, service.location, e, t, w] for e in cohorts[sku]
                                      if t < e < expiry and e <= window and (sku, service.location, e, t, w) in inv
                                      and (physics is None or physics.sellable(sku, e, t))]
+                            if certify and not older and any(t < e < expiry and (sku, service.location, e, t, w) in inv for e in cohorts[sku]):
+                                omitted_fefo += 1
                             if older:
                                 active = m.var(("fefo", sku, service.id, expiry, t, w), upper=1, integer=True)
                                 m.row({q: 1, active: -d}, upper=0)
@@ -1379,6 +1467,30 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
             # the phase-one optimum satisfies the new row exactly, so it seeds phase two
             result, residual = m.solve(remaining, solver=solver_name, mip_gap=req.solver_mip_gap,
                                        seed=(result.x if solver_name == "highspy" else None), options=options)
+    certificate: dict | None = None
+    if certify and omitted_fefo < CERTIFY_MIN_REDUCTION * (omitted_fefo + sum(m.integer)):
+        # the reduction is immaterial on this model: the released formulation directly, no certificate
+        frozen = solve(req.model_copy(update={"fefo_symmetry_scope": "network"}), worlds, **_kwargs)
+        frozen.symmetry_certificate = {"attempted": False, "certified": False, "fallback": True, "reason": "reduction immaterial",
+                                       "omitted_indicators": omitted_fefo, "integer_columns": int(sum(m.integer)),
+                                       "reduced_seconds": round(time.monotonic() - started, 3)}
+        if CERTIFICATE_LOG is not None:
+            CERTIFICATE_LOG.append(frozen.symmetry_certificate)
+        return frozen
+    if certify:
+        pack_of_ = {source.id: source_pack(source) for source in req.sources}
+        controls: dict[int, float] = {q: pack_of_[k[0]] for k, q in x.items() if k[2] is None}
+        controls.update({q: 1. for k, q in tr.items() if k[3] is None})
+        controls.update({q: pack_of_[next(o.source for o in req.pipeline if o.id == k[0])] for k, q in po.items()})
+        certificate = tie_certificate(m, result, controls, req, budget)
+        certificate["omitted_indicators"] = omitted_fefo
+        if CERTIFICATE_LOG is not None:
+            CERTIFICATE_LOG.append(certificate)
+        if not certificate["certified"]:
+            # the fast candidate is not proven unique: the released formulation decides, exactly as today
+            frozen = solve(req.model_copy(update={"fefo_symmetry_scope": "network"}), worlds, **_kwargs)
+            frozen.symmetry_certificate = {**certificate, "fallback": True, "reduced_seconds": round(time.monotonic() - started, 3)}
+            return frozen
     # Solve states (v8). scipy's milp reports status 1 for "iteration or time limit reached", and in
     # that case `result.x` frequently holds a genuine feasible incumbent. V7 threw that away and
     # returned an empty plan, so on long cells whole candidate classes silently vanished from the
@@ -1422,7 +1534,7 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     if not physically_usable:
         return Solution(state, {}, {}, {}, {}, None, [], elapsed,
                         len(m.names), len(m.rows), gap, residual if math.isfinite(residual) else None, [str(result.message)],
-                        best_bound=bound, nodes=nodes_count, warm_start=warm)
+                        best_bound=bound, nodes=nodes_count, warm_start=warm, symmetry_certificate=certificate)
     values = result.x
     service_result = {}
     for service in req.services:
@@ -1459,4 +1571,4 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     elapsed, len(m.names), len(m.rows), gap, residual,
                     ([] if state == "OPTIMAL" else [f"{state}: feasible plan returned without a proof of optimality"]),
                     best_bound=bound, nodes=nodes_count, warm_start=warm, planning_surrogate=telemetry, recourse=recourse_block,
-                    binaries=int(sum(m.integer)))
+                    binaries=int(sum(m.integer)), symmetry_certificate=certificate)

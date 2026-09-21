@@ -184,6 +184,11 @@ def render_pdf(report: dict) -> bytes:
         el.append(P(f"Decisions: {_e(ds.get('rows'))} product-weeks replayed; ZAAD ordered where you did not on {_e(ds.get('zaad_ordered_where_you_did_not'))}, "
                     f"less than you on {_e(ds.get('zaad_ordered_less'))}, more on {_e(ds.get('zaad_ordered_more'))}, and did not order where you did on "
                     f"{_e(ds.get('zaad_did_not_order_where_you_did'))}; the planner abstained and your rule stood on {_e(ds.get('abstained_reviews'))} decision date(s).", "p"))
+        if (rp.get("decision_changes") or {}).get("text"):
+            el.append(P("How often ZAAD decided differently from your rule", "h2"))
+            el.append(P(_e(rp["decision_changes"]["text"]), "p"))
+        if rp.get("rule_conformance_note"):
+            el.append(P(_e(rp.get("rule_conformance_note")), "s"))
         per = rp.get("periods") or {}
         if per.get("series"):
             el.append(Spacer(1, 4))
@@ -194,9 +199,18 @@ def render_pdf(report: dict) -> bytes:
         for rg in rp.get("regimes") or []:
             el.append(P("• " + _e(rg.get("text")), "cell"))
         el.append(P(_e(rp.get("regime_note")), "s"))
+        if rp.get("operating_regimes"):
+            el.append(P("Performance by operating regime", "h2"))
+            for rg in rp["operating_regimes"]:
+                el.append(P("• " + _e(rg.get("text")) + (f" — {_e(rg.get('definition'))}" if rg.get("definition") else ""), "cell"))
+            el.append(P(_e(rp.get("operating_regime_note")), "s"))
         stl = rp.get("settlement") or {}
         el.append(P("What is measured and what is simulated", "h2"))
         el.append(P(_e(stl.get("text")), "p"))
+        if (rp.get("evidence_basis") or {}).get("text"):
+            el.append(P(_e(rp["evidence_basis"]["text"]), "p"))
+        if rp.get("engine_text"):
+            el.append(P(_e(rp.get("engine_text")), "s"))
         lk = rp.get("lookahead") or {}
         el.append(P(_e(lk.get("text")), "s"))
         decs = [d for d in (rp.get("decisions") or []) if (d.get("zaad_qty") or 0) > 0 or (d.get("actual_qty") or 0) > 0]
