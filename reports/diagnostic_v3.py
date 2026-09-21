@@ -272,7 +272,7 @@ def replay_section(summary: dict) -> dict:
                     f"({(sel.get('window') or {}).get('start')} to {(sel.get('window') or {}).get('end')}), one intermittent-demand product included where one exists; "
                     f"this choice reads the window's demand only to decide which products are studied and never enters a decision request. "
                     f"Coverage: {pct(_f(scov.get('window_demand_value_share')), nd=0)} of window demand value, {pct(_f(scov.get('d0_demand_value_share')), nd=0)} of demand value at the first decision date, "
-                    f"{pct(_f(scov.get('purchase_order_line_share')), nd=0)} of the purchase-order lines placed in the window.")
+                    f"{pct(_f(scov.get('purchase_order_line_share')), nd=0)} of the purchase-order lines placed in the window")
     elif sel.get("rule") == "d0_value":
         sel_text = f"the top products by demand value at the first decision date (a fixed rule, not a choice of dates); coverage {pct(share, nd=0)} of demand value"
     else:

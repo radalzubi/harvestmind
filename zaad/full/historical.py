@@ -335,7 +335,10 @@ class _LegMethods:
         review = self.review_of(req)
         entry = {"review": review, "as_of": req.as_of.isoformat(), "status": status, "selected_policy": policy,
                  "fallback_to_rule": fallback, "solve_seconds": round(seconds, 2),
-                 "orchestration": getattr(solution, "orchestration", None), "history_periods": len({r.period for r in req.history})}
+                 "orchestration": getattr(solution, "orchestration", None), "history_periods": len({r.period for r in req.history}),
+                 # the same-snapshot comparison (§16): what the declared incumbent would have executed now, and what ZAAD executed
+                 "incumbent_orders": {o.source: float(o.quantity) for o in req.incumbent_orders if o.period == 0 and o.quantity > 0},
+                 "executed_orders": {sid: float(q) for (sid, t), q in solution.purchases.items() if t == 0 and q > 0}}
         self.zaad_log.append(entry)
         self.solutions[review] = copy.deepcopy(solution)
         if self.on_solve:
@@ -795,8 +798,8 @@ def _decision_changes(initial: Request, per: dict, methods: "_LegMethods", W: in
     by one week; source and open-order changes where the request allows them at all. Materiality is the
     production planner's own `materiality_cost_fraction` applied to the review's rule purchase value; a
     quantity difference below dust is "same"."""
-    if "rule" not in per or "zaad" not in per:
-        return {"available": False, "reason": "the rule leg or the ZAAD leg did not complete"}
+    if "zaad" not in per or not methods.zaad_log:
+        return {"available": False, "reason": "the ZAAD leg did not complete"}
     sources = {s.id: s for s in initial.sources}
     price = {s.id: float(s.unit_price + s.freight_per_unit + s.handling_per_unit) for s in initial.sources}
     pack = {s.id: max(s.multiple, s.case_multiple, s.pallet_multiple, s.transport_multiple, 0.0) or 1.0 for s in initial.sources}
@@ -811,8 +814,9 @@ def _decision_changes(initial: Request, per: dict, methods: "_LegMethods", W: in
     review_outcomes = {"retained_rule": 0, "own_plan": 0, "abstained_or_fallback": 0}
     per_review: list[dict] = []
     for t in range(W):
-        rq, zq = per["rule"][t]["purchases"], per["zaad"][t]["purchases"]
         e = zlog.get(t, {})
+        # the incumbent the planner was handed on this very snapshot, and what it executed: one state, two decisions
+        rq, zq = e.get("incumbent_orders") or {}, e.get("executed_orders") or per["zaad"][t]["purchases"]
         if e.get("fallback_to_rule"):
             review_outcomes["abstained_or_fallback"] += 1
         elif str(e.get("status")) == "RETAIN_INCUMBENT":
@@ -846,10 +850,12 @@ def _decision_changes(initial: Request, per: dict, methods: "_LegMethods", W: in
             material = abs(value) > initial.materiality_cost_fraction * max(rule_value, 1e-9)
             material_lines += int(material)
             review_material = review_material or material
-            # timing: a dropped line that ZAAD orders the next week (and the rule does not) is a deferral; a new line the rule orders the next week is an advance
-            if cls == "dropped" and t + 1 < W and float(per["zaad"][t + 1]["purchases"].get(sid, 0.0)) > 0 and float(per["rule"][t + 1]["purchases"].get(sid, 0.0)) <= 0:
+            # timing, on ZAAD's own path: a dropped line that ZAAD orders the next week while the next snapshot's incumbent does not is a
+            # deferral; a new line that the next snapshot's incumbent orders while ZAAD does not is an advance
+            nxt = zlog.get(t + 1, {})
+            if cls == "dropped" and nxt and float((nxt.get("executed_orders") or {}).get(sid, 0.0)) > 0 and float((nxt.get("incumbent_orders") or {}).get(sid, 0.0)) <= 0:
                 timing["deferred_one_week"] += 1
-            if cls == "new" and t + 1 < W and float(per["rule"][t + 1]["purchases"].get(sid, 0.0)) > 0 and float(per["zaad"][t + 1]["purchases"].get(sid, 0.0)) <= 0:
+            if cls == "new" and nxt and float((nxt.get("incumbent_orders") or {}).get(sid, 0.0)) > 0 and float((nxt.get("executed_orders") or {}).get(sid, 0.0)) <= 0:
                 timing["advanced_one_week"] += 1
             line_rows.append({"source": sid, "sku": sources[sid].sku, "rule": r, "zaad": z, "class": cls, "value_difference": round(value, 2), "material": material})
         material_reviews += int(review_material)
@@ -863,7 +869,8 @@ def _decision_changes(initial: Request, per: dict, methods: "_LegMethods", W: in
             "source_changes": ("not applicable: the workspace declares one source per product, so the optimizer had no source to switch" if not multi_source else "not measured"),
             "open_order_changes": ("not applicable: every open order carries keep-only options, so no amendment was available" if not non_keep else "not measured"),
             "magnitude": {"units_added": round(units_added, 1), "units_removed": round(units_removed, 1), "value_added": round(value_added, 2), "value_removed": round(value_removed, 2)},
-            "materiality_rule": f"a line is material when its value difference exceeds {initial.materiality_cost_fraction:g} of the rule's purchase value at that review (the planner's own materiality fraction); a quantity difference below dust is the same order",
+            "materiality_rule": f"a line is material when its value difference exceeds {initial.materiality_cost_fraction:g} of the incumbent's purchase value at that review (the planner's own materiality fraction); a quantity difference below dust is the same order",
+            "basis": "same snapshot: the declared incumbent the planner was handed at each date against what it executed; the rule leg's own path is compared separately (vs_rule)",
             "per_review": per_review}
 
 
@@ -879,6 +886,7 @@ def _evidence_basis(initial: Request, per: dict, truth_prov: dict, W: int, build
                            "INFERRED": "observed supplier behaviour applied to a different quantity, or the nearest received order of the same supplier within ±4 weeks",
                            "SIMULATED": "a seeded draw from the supplier's empirical fill and lead over the history",
                            "ASSUMED": "no observation for the supplier: the declared or assumed lead and fill"}}
+    settled_actual = {f"{src}|{t}": float(q) for t, row in enumerate(per.get("actual") or []) for src, q in row["purchases"].items()}
     for leg, rows in per.items():
         units = {"MEASURED": 0.0, "INFERRED": 0.0, "SIMULATED": 0.0, "ASSUMED": 0.0}
         for t in range(min(W, len(rows))):
@@ -887,7 +895,11 @@ def _evidence_basis(initial: Request, per: dict, truth_prov: dict, W: int, build
                     continue
                 key = f"{src}|{t}"
                 label = supply.get(key, "ASSUMED")
-                if label == "MEASURED" and abs(q - float(actual_qty.get(key, 0.0))) > 1e-6:
+                # the operator's own received order is measured for the operator's leg; another leg gets the same label only
+                # when it placed the same order (the settled quantity), otherwise the observed behaviour is applied to a
+                # different quantity: inferred
+                reference = settled_actual.get(key, float(actual_qty.get(key, 0.0)))
+                if label == "MEASURED" and leg != "actual" and abs(q - reference) > 1e-6:
                     label = "INFERRED"
                 units[label] += float(q)
         total = sum(units.values())

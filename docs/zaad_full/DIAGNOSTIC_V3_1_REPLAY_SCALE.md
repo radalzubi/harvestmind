@@ -250,9 +250,43 @@ share, share of the window's purchase-order lines, strata, any stratification sw
 | D. `solver_mip_gap` 1e-5 (pass E7) | the phase-two proof time from 8 products up | pass §5 E7: 8 products 226 s → 4 s, one-pack differences on recovery guidance | unchanged (the brief forbids it) |
 | E. Fly machine | the 5–10× production-over-local factor (§3.5) | §3.5 | after A: measure a performance CPU against the shared one on the same replay before deciding (§18 of the brief) |
 
-## 7. Benchmarks before / after
+### 6.3 Repeated solves (§9), coupling (§10) and exact decomposition (§11)
 
-*(pending)*
+**Repeated solves.** Per decision date the planner solves: the base-stock proxy and the incumbent's fixed
+projection (0.01–0.14 s each), six candidate classes (all INFEASIBLE in 0.02 s on these requests: the service
+floors are unreachable from the opening position), `joint_recovery` (phase one + phase two), `joint_fitted`
+(phase one + phase two; a different world set — the selection worlds without the declared stress — so not a
+duplicate of the recovery solve; it would be one only on a request that declares no stress, and every
+workspace request declares one), and one phase-one frontier solve per service. No solve's output is unread
+since the pass removed the frontier's phase two. Nothing to remove.
+
+**Coupling graph of the replay's requests** (`scripts.v2_solve_profile.coupling`, products as nodes, an edge
+for every declared shared constraint): the only real coupling is the shared supplier-capacity resource — no
+supplier terms, no MOQ / MOV, no transfers, no substitutions, no allocation, no shared service.
+
+| request | products | real components (one per supplier) | products per supplier | artificial couplings in the formulation |
+|---|---|---|---|---|
+| demo 5 | 5 | 4 | 2 / 1 / 1 / 1 | the cash balance rows (one balance across every product; opening cash 10⁹, never binding), the warehouse-volume rows (10⁹, never binding), the pooled lexicographic objective |
+| demo 10 | 10 | 4 | 4 / 2 / 2 / 2 | same |
+| demo 25 | 25 | 5 | 7 / 6 / 5 / 4 / 3 | same |
+| sample 50 | 50 | 8 | 8 / 7 / 7 / 7 / 7 / 5 / 5 / 4 | same |
+
+**Exact decomposition.** With the artificial couplings never binding, the joint phase-one objective (priority-
+weighted unmet demand summed over products) is a sum of component objectives, so its minimum is the sum
+of the component minima, and phase two (cost at that service optimum, with a 1e-7 slack) then forces every
+component to its own service minimum: component-wise solving is exact **when no shared row binds**, a
+condition that can be certified after the fact (every shared row slack at the assembled solution, and the sum
+of the component optima equal to the joint dual bound). It is not implemented here: (i) it is a search-path
+change of the same class as the FEFO reduction — every component solve has its own tie exposure, so the same
+certificate question returns; (ii) the measured cost is one supplier's joint solve, and the demo's largest
+component (7 products) is above the size at which the phase-two proof hits its cap. Recorded as the next
+architecture step after the owner's decision on A (§6.2): CATALOG → STUDY SET → COUPLING GRAPH → COMPONENT
+SOLVES → SHARED-ROW CERTIFICATE → the joint solve only where the certificate fails.
+
+## 7. Benchmarks before / after (§13–14)
+
+*(filled from the coverage runs: released formulation at 5 / 10 / 25 × 26 dates and 50 × 8; the reduced
+formulation on the same dates; decision agreement between them)*
 
 ## 8. Release record
 
