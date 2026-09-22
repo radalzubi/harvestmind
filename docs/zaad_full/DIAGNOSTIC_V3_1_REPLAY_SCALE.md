@@ -1,7 +1,6 @@
 # Diagnostic V3.1 — scale the rolling optimizer replay without changing optimization semantics
 
-**Status: IN PROGRESS (2026-09-21).** Branch `feat/diagnostic-v3.1-replay-scale` from `main` `9c5519c`
-(= the Diagnostic V3 runtime `d0edf15` plus its docs commit). Tracker written before any code change.
+**Status: DONE — RELEASED (2026-09-21).** Branch `feat/diagnostic-v3.1-replay-scale` from `main` `9c5519c` (= the Diagnostic V3 runtime `d0edf15` plus its docs commit) → PR #93 (tested head `9c46fc2`, CI 35665692963 13 / 13) merged as `0cad5de`; Fly `zaad-api` **v35** `canonical-0cad5de` (digest `sha256:117dc421258aa763720372ecb962723141fbe284dc9b6d6243cc01a2cab00439`, deploy-api run 35667130197); Vercel production `dpl_G6PQvzhHghC9zxnQtXY9JUnnyWNn` from `0cad5de`; machine `0804e0dfd1e948` unchanged; runtime tag `zaad-diagnostic-v3.1-runtime` = `0cad5de`. Tracker written before any code change; release record in §8.
 
 Primary principle of the brief: **optimization quality over speed.** No acceleration is acceptable if it can
 change a recommendation the production optimizer would make on the same request. Every candidate change
@@ -285,9 +284,73 @@ SOLVES → SHARED-ROW CERTIFICATE → the joint solve only where the certificate
 
 ## 7. Benchmarks before / after (§13–14)
 
-*(filled from the coverage runs: released formulation at 5 / 10 / 25 × 26 dates and 50 × 8; the reduced
-formulation on the same dates; decision agreement between them)*
+Local = STRUCTURAL / RELATIVE (Python 3.12, highspy 1.15.1, arm64 M4 Pro; two or three benchmark
+processes shared the machine, so wall times carry contention of up to ≈ 2×); production = the Fly
+`shared-cpu-2x` machine. Released formulation unless stated. Coverage = decision dates completed of
+planned. "Time-limited" = MILPs that reached their cap (66 s at 5 products, 90 s from 8).
 
-## 8. Release record
+### 7.1 Coverage and runtime by scope (released formulation, the engine production runs)
 
-*(pending)*
+| scope | dates | coverage | total | median / p90 / max plan wall | MILPs (time-limited) | outcome | peak RSS |
+|---|---|---|---|---|---|---|---|
+| demo 5 | 3 (window from 2026-06-08) | 3 / 3 | 57 s | 22.8 / 33.2 / 33.2 s | 48 (0) | RETAIN × 2, PENDING_REVIEW × 1 (base stock) | 421 MB |
+| demo 5 | 13 (window from 2026-03-30) | 13 / 13 | 1,295 s | 67 / 261 / 267 s | 198 (19) | RETAIN × 13 | 759 MB |
+| demo 5 | **26** (window from 2026-01-05) | **26 / 26** | **4,770 s (79 min)** | 197 / 328 / 358 s | 377 (57) | RETAIN × 25, PENDING_REVIEW × 1 (`cvar_network`) | 753 MB |
+| demo 10 | 3 | 3 / 3 | 100 s | 3.6 / 92.7 / 92.7 s | 88 (1) | RETAIN × 3 | 518 MB |
+| demo 25 | 3 | 3 / 3 (after the rule conformance; 1 / 3 before, PHYSICAL_FAILURE) | 148 s | 20.3 / 107 / 107 s | 159 (1) | RETAIN × 3 (PROTECT) | 714 MB |
+| sample 50 | 8 | 8 / 8 | 109 s | 13.1 / 13.4 / 13.4 s | 480 (0) | ABSTAIN × 8 — every joint solve numerically infeasible (§3.3) | 1,017 MB |
+| **production** demo 5 (v33 / v34 / **v35**) | 26 planned | **8 / 9 / 7 of 26** in the 1200 s budget | 2,567 / 1,457 / 1,369 s | per-date solves 3–401 s (v35: 4.8 / 70 / 113 / 72 / 271 / 401 s + one) | — | v35: RETAIN × 6, own plan × 1 | 413 MB |
+
+Reading. At 5 products the 26-date local replay completes in 79 minutes on the released formulation: on
+the earlier dates (January–March) every candidate class is *feasible and expensive* — 17 of 26
+`deterministic_network` solves, 14 of 26 `hedged_network` and 9 of 26 `stochastic_network` /
+`protected_network` reach the 66 s cap (the FEFO symmetry of pass §4 #1: candidates enter as
+FEASIBLE_TIME_LIMIT with a wide gap, are not cost-comparable, and the rule is retained) — whereas on the
+recent dates (June) the same classes are infeasible in 0.02 s and the time is the joint recovery's
+phase-two proof. Production is 5–10× slower per date on the same requests (§3.5), so the budget of
+1200 s covers 7–9 dates there. The 10- and 25-product 26-date runs on the released formulation were
+started on the same machine and had not completed when this record was written (projected from the
+3-date rows: ≈ 90–150 min each); they are not claimed.
+
+### 7.2 Symmetry-reduced formulation (`fefo_symmetry_scope="all"`, the owner's option A) on the same dates
+
+| scope | released | reduced | decision agreement (status, policy, executed period-0 orders) |
+|---|---|---|---|
+| demo 5 × 3 | 57.5 s | 14.5 s | 3 / 3 dates identical |
+| demo 5 × 13 (window from 2026-03-30) | 1,295 s (22 CPU-min) | **not completed when this record was written: 73 CPU-minutes and still running** on the same 13 dates | not measurable yet |
+| demo 10 × 8 | not started (queued behind the row above) | | |
+
+The 5 × 13 row is the finding: on the earlier window, where the expensive solves are the *candidate*
+classes with feasible service floors (§7.1) rather than the joint phase one the pass measured, the
+symmetry-reduced formulation is **slower**, not faster, at least 3× in CPU on the same dates before it
+finished. The reduction removes the FEFO indicators; what remains at the cap on these dates is the
+1e-6 cost proof (pass §4 #2, owner decision D), which the reduction does not touch. The 5 × 3 row (the
+recent window, joint-solve-dominated) is where the 4× of the pass reappears. Owner decision A therefore
+buys a 4× on one kind of date and nothing on the other; the honest expectation for a production replay
+under `all` is "some dates fast, the rest unchanged", not a coverage jump. When the running comparison
+completes its result lands in the session scratchpad (`prof/replay_demo_05x13_all_cmp13.json`); it is
+not claimed here.
+
+### 7.3 What the targets of §14 look like against these numbers
+
+| target | achieved (released, local) | achieved (production) |
+|---|---|---|
+| 5 × 26 "comfortably complete" | complete in 79 min (57 time-limited candidate solves); not comfortable | 7–9 of 26 in 20 min |
+| 10 × 26 "practical diagnostic runtime" | projected 1.5–2.5 h | not attempted |
+| 25 × 26 "customer-usable" | projected > 2 h; the rule leg now settles | not attempted |
+| 50 × 26 "serious evidence" | blocked by the adapter's capacity placeholder (§3.3), not by the solver: every date abstains in 13 s | not attempted |
+
+No target is met by an exact change in this pass; the exact change that would meet the first two (the
+FEFO reduction) is owner decision A because its tie exposure cannot be certified cheaply (§5), and the
+third and fourth are blocked by adapter placeholders (owner decision B) before the solver is reached.
+
+## 8. Release record (2026-09-21)
+
+| step | value |
+|---|---|
+| PR #93 | `feat/diagnostic-v3.1-replay-scale`; tested head `9c46fc2`; CI run 35665692963 13 / 13 on the first run (ruff, mypy, bandit / pip-audit, gitleaks, docker, frontend typecheck / lint / test / build, six pytest shards, frozen regression) |
+| merge | `0cad5dec1c5906d8a03c7671a245de5cc4efd6a0` (`Merge PR #93`, main was `9c5519c`) |
+| deploy | Fly `zaad-api` **v35**, image `canonical-0cad5de`, digest `sha256:117dc421258aa763720372ecb962723141fbe284dc9b6d6243cc01a2cab00439`, deploy-api run 35667130197; Vercel production `dpl_G6PQvzhHghC9zxnQtXY9JUnnyWNn` from `0cad5de`; machine `0804e0dfd1e948` `shared-cpu-2x` unchanged; no Fly configuration change; replay engine env not set (the released formulation) |
+| production QA (v35) | throwaway self-serve workspace **V3 QA DEMO (synthetic)** `op_9246979a` (the synthetic DEMO company, 36 products) and second tenant `op_ddbd8a22`; no customer workspace touched. `POST /jobs/diagnostic` 3.0 s, second press returned the same job; `queued` (30 s machine boot) → `preparing` → `testing` → `replaying` → `done`, run 1,369 s (`job_e41d633fe9`). Replay **partial**: 7 of 26 dates within the 1200 s budget, solves 4.8 / 70 / 113 / 72 / 271 / 401 s + one (mean 188 s, max 401 s), peak RSS 413 MB; engine `network` (released formulation, stated in the report); study selection `window_value`: 5 of 36 products, 31 % of window demand value, 31 % at the first date, 14 % of the window's purchase-order lines, no intermittent product in the top five; rule conformance 0 lines. Decision changes on the same snapshot: rule retained on 6 dates, own plan on 1, none abstained; 30 of 35 product-weeks identical to the incumbent, 5 new lines (all material by the planner's 1 % rule), no timing change; source and open-order changes not applicable (one source per product, keep-only options). Settlement basis: actual orders 100 % measured, rule and ZAAD 100 % inferred (their quantities differ from the recorded orders); attestation clean on all legs. Operating regimes: supplier-deterioration weeks (5) ZAAD better in 60 %, constrained-inventory weeks (3) better in 67 %. Result stated plainly: ZAAD 3.9 % less costly than the actual orders over the 7-date window, 4 of 7 periods better, worst period 2026-01-26 −187,263 JOD, too few periods for an interval; confidence **Low** (coverage). Six consistency checks pass; isolation 404 / 401 on job, report.json, report.pdf; PDF 41,509 bytes, 11 pages; payload 204 KB. Browser (zaadsupply.com, Chromium engine, the demo key): section 4 renders the decision-change paragraph, the operating-regime list, the settlement-basis and engine lines, and the 35-row decision detail. |
+| runtime tag | `zaad-diagnostic-v3.1-runtime` = `0cad5de` (annotated; older tags untouched) |
+| not done | the certified path is not the engine anywhere (§5); the two adapter placeholders (§6.2 B, C) are unchanged; no machine benchmark (§6.2 E); NTDCO: no customer key held |
