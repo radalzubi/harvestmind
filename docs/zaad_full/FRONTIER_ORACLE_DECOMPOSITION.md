@@ -229,8 +229,12 @@ extraction cost 2–20 ms. Build reuse by itself (one build instead of N) saves 
 | demo 25 | monolithic → component | 25 → 25 | 11.2 → 2.1 s | 13,428 → 3,622 | 21 | 25 / 25 exact |
 | sample 25 **stress** (declared cash 3.0 M / 300 k facility, MOV and fixed order cost per supplier) | monolithic → component | 25 → 25 | 17.5 → 17.5 s | 13,666 → **13,666** | **1** | 25 / 25 exact |
 | sample 50 **stress** | monolithic → component | 50 → 50 | 101.1 → 100.9 s | 27,136 → **27,136** | **1** | 50 / 50 exact |
+| sample 100 **stress** (206 k-column plan model; the oracle's mean-world model 53,896 columns / 17,966 integer / 255 k nnz) | monolithic → component | 100 → 100 | 619.4 → 611.3 s (5.9 s median per solve, every solve proven at the root) | 53,896 → **53,896** | **1** | 100 / 100 exact |
 
-The stress fixture is the §6 case of the brief: a declared cash balance is one row per period over every product's payments,
+At 100 coupled products the frontier is inherently expensive — a hundred 54 k-column LP-dominated solves of one component —
+and this pass says so rather than approximating it (§22 of the brief): the only exact savings available there are the witness
+rule (services the incumbent's projection already serves in full) and the one-build reuse. The stress fixture is the §6 case
+of the brief: a declared cash balance is one row per period over every product's payments,
 so the partition finds **one** component and the "decomposed" oracle is the monolithic solve — same cost, same values, no
 approximation. True global coupling is honoured by construction, never ignored.
 
