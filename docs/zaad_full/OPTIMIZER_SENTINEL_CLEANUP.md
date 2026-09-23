@@ -84,17 +84,155 @@ When `opening_cash` is declared and `credit_limit is None`: the debt column is u
 terminal-solvency row is omitted (it read `≤ credit − minimum_cash`); the settlement skips the limit check.
 When both are declared: verbatim.
 
-## 5. Objective-scale audit, 6. big-M audit, 7. equivalence, 9. abstention repro, 10. phase-two proof
+## 5. Objective-scale audit (measured, `scripts/formulation_audit.py`, Python 3.12 / highspy 1.15.1)
 
-*(filled as measured; tool `scripts/formulation_audit.py`)*
+BEFORE = the released adapter's request with its placeholders as declared values (the verbatim released
+formulation on identical data); AFTER = the same request with the constraints absent.
+
+| request | solve | BEFORE objective (solver) | BEFORE by family | AFTER objective | AFTER by family |
+|---|---|---|---|---|---|
+| demo 5 products, deterministic joint phase one | service objective; cost of the returned point | cost of the point: **cash −46,508,343**, purchase 4,125,640, inventory −2,809,388, unmet 208,928, amend 6,990 | | cost of the point: purchase 639,163, unmet 208,928, inventory −20,506, amend 7,164 (phase one is degenerate in cost; the two points differ) | |
+| demo 5, three-world joint, phase two (cost) | BEFORE: **INFEASIBLE** (numerical) — no phase two | — | — | **838,190**: purchase 694,793 (landed price + the deployed-capital charge), unmet 206,596, inventory −70,363 (holding less terminal value), amendments 7,164 | proven at gap 9.8e-7 = 0.8 cost units |
+| demo 5, planner's `joint_recovery` phase two (4 worlds) | BEFORE: INFEASIBLE | — | — | 837,351: purchase 694,713, unmet 209,297, inventory −73,824, amend 7,164 | |
+
+Why the objective was ≈ −5 × 10⁷: the working-capital term `−rate × cash_t` summed over 12 periods with
+cash ≈ opening 10⁹ *plus* the drawn credit 10⁹ (interest 0, so the model borrowed the whole facility to hold
+cash the term rewards): −0.00212 × 2 × 10⁹ × 12 ≈ −5.1 × 10⁷. Every real term (purchase ≈ 7 × 10⁵, unmet
+≈ 2 × 10⁵) was two orders of magnitude below the sentinel. AFTER, the objective is the plan's economics.
+
+## 6. Big-M audit (per binary family; M = the linking coefficient)
+
+| request | family | rows | BEFORE min / median / max | AFTER min / median / max | AFTER source |
+|---|---|---|---|---|---|
+| demo 5 (7.7 k columns) | depleted | 360 | 95 / 5.0 × 10⁸ / **10⁹** | 95 / 2,372 / 661,122 | flow bound: opening stock + 60,000 / week supplier capacity × periods so far |
+| | fefo | 4,464 | 95 / 5.0 × 10⁸ / 10⁹ | 95 / 2,367 / 661,122 | same |
+| | active (MOQ / fee) | 120 | 60 / 9,960 / 60,000 | unchanged | declared line capacity (not a sentinel) |
+| | po_option | 2 | 168 / 453 / 738 | unchanged | the order's remaining units |
+| sample 25 (14 k columns) | depleted | 600 | 61 / 5.0 × 10⁸ / 10⁹ | 61 / 2,210 / 142,624 | flow bound: 12,540 / week supplier capacity |
+| | fefo | 7,776 | 61 / 5.0 × 10⁸ / 10⁹ | 61 / 2,319 / 142,624 | same |
+| sample 50 (28 k columns) | depleted / fefo | 1,200 / 15,552 | … / 10⁹ | … / 181,597 | same |
+
+Coefficient ranges of the largest matrix: BEFORE max 10⁹, max/min ratio 1.1–1.4 × 10⁹, largest finite bound
+10⁹, largest rhs 10⁹; AFTER max 1.4–6.6 × 10⁵, ratio 1.6–9.4 × 10⁵, largest bound = the supplier's weekly
+capacity (12,540–60,000), largest rhs = the flow bound. The remaining ratio is the flow bound against unit
+coefficients; a demand-dominance bound (the `activation_bounds` argument) would tighten it further and is
+recorded, not applied (§2, supplier capacity).
+
+## 7. Mathematical equivalence
+
+**Volume rows and inventory bounds (capacity None).** The released rows read Σ volume × stock ≤ 10⁹ − locked
+and stock ≤ (10⁹ − locked)/volume. On the workspace requests the left-hand sides are bounded by the flow
+bound B(sku, location, t) (§3) ≤ 6.6 × 10⁵ ≪ 10⁹, so the rows are slack at every feasible point: removing
+them leaves the feasible set unchanged. Replacing the column bound by B is likewise exact: B is an upper
+bound on stock in every feasible point (conservation), so no feasible point is cut.
+
+**Linkage rows.** `Σ stock + M·empty ≤ M` with M ≥ every feasible Σ stock encodes exactly `empty = 1 ⇒ Σ
+stock = 0` and is vacuous at `empty = 0`; any two valid M give the same feasible set in the original
+variables (the binaries are auxiliary). B is valid, 10⁹ was valid: same feasible set, same optimal set,
+same objective. The `priority` rows: `Σ ratio × alloc + M·active ≤ M` with M = Σ ratio × upper(alloc) is
+the exact maximum of the left-hand side: same argument.
+
+**Cash (opening None).** With opening 10⁹ and credit 10⁹ the released balance rows are never binding at
+any feasible point (payments ≤ 10⁷ over the horizon), so the cash and debt columns are free variables
+whose only effect is the objective term Σ_t (−rate × cash_t + i × debt_{t−1}). Substituting the balance
+rows, cash_t = opening + credit_used_t + Σ_{s≤t}(decl_s) − Σ_{s≤t} pay_s(x) (debt at its bound or zero
+depending on interest), so the term is a plan-independent constant plus rate × Σ_s (H − s) × pay_s(x): the
+AFTER objective. Argmin sets and objective differences between any two plans are identical; the CVaR rows
+shift by the same constant in every world. **Not bit-identical**: the solver sees a different LP (no
+constant, no cash columns), so on an objective-flat tie its search may return another optimal point —
+the same exposure the frozen gates test for declared values, which are untouched (§16).
+
+**Evidence.** `tests/unit/test_zaad_sentinel_cleanup.py`: identical decisions, service and settlement
+between the verbatim released formulation with non-binding declared values (10⁶, the frozen fixtures'
+value) and the clean model, and projected costs that differ by exactly the placeholder's constant
+(identity checked to 1e-9); the demo-fixture reproduction (10⁹ → INFEASIBLE, 10⁶ / None → OPTIMAL, the
+cash placeholder alone benign); a declared capacity that binds on a thin-opening fixture and is enforced by
+the settlement; a declared cash ceiling that binds. Frozen canonical regression: identical (§16).
+
+## 9. The 25–50-product abstention, reproduced and fixed
+
+| request | BEFORE (released placeholders) | AFTER (constraints absent) |
+|---|---|---|
+| demo 5, three-world joint | INFEASIBLE in 0.02 s | OPTIMAL |
+| demo 5, planner | RETAIN_INCUMBENT in 1.4 s: every joint solve INFEASIBLE, the planner decided on nothing | RETAIN_INCUMBENT: joint recovery proven (5,845 nodes, 39.6 s), decision made on solved candidates |
+| sample 25, deterministic joint phase one | INFEASIBLE in 0.4 s (14,120 cols, 4,529 integer, matrix max 10⁹) | OPTIMAL at the root in 0.8 s (service 0.956) |
+| sample 50, deterministic joint phase one | INFEASIBLE in 0.9 s (28,140 cols, 9,032 integer) | *(planner-level run in §9.1)* |
+| demo six-period fixture, two worlds | INFEASIBLE | OPTIMAL (and OPTIMAL with a declared 1,000 or 10⁶) |
+
+The false verdicts are numerical: the feasible set with 10⁹ contains the one with 10⁶, which HiGHS solves;
+the released model was infeasible only in floating point. Reproduced in `tests/unit` and `tests/integration`.
+
+### 9.1 Planner level (`formulation_audit --plan`, the full released planner on the request; local arm64, contended machine)
+
+| request | BEFORE | AFTER |
+|---|---|---|
+| sample 25 (largest model 53 k columns, 17 k integer, 250 k non-zeros) | **ABSTAIN** in 4.6 s: incumbent, base-stock proxy and all six candidate classes INFEASIBLE; "incumbent itself has no verified feasible projection; no executable fallback is fabricated" | **RETAIN_INCUMBENT** in 165 s (35 MILPs, 1 time-limited, 860 MB): incumbent OPTIMAL, proxy OPTIMAL, the six candidate classes INFEASIBLE (service floors unreachable from the opening position — a genuine verdict, 0.0–0.1 s each), joint recovery FEASIBLE_TIME_LIMIT at gap 1.5e-4 (362 cost units on 2.44 M) |
+| sample 50 (110 k columns, 35 k integer, 527 k non-zeros) | **ABSTAIN** in 13.8 s, same pattern | **RETAIN_INCUMBENT** in 746 s (59 MILPs, 3 time-limited, **2.04 GB peak RSS**): the same candidate pattern, joint recovery evaluated |
+| demo 5 | RETAIN_INCUMBENT in 1.4 s: every joint solve INFEASIBLE, nothing evaluated | RETAIN_INCUMBENT in 55 s: joint recovery proven (11,034 nodes, 53 s) |
+| demo 10 | RETAIN_INCUMBENT in 4.3 s: same | RETAIN_INCUMBENT in 94 s: joint recovery FEASIBLE_TIME_LIMIT at gap 5.7e-3 |
+
+The false abstentions are gone; what replaces them is the real cost of solving the request. The 50-product
+plan's 2.04 GB peak RSS exceeds the production machine's 2 GB (`shared-cpu-2x`): the request that used to
+abstain in 14 s would now be killed by memory on production before it decides (§17–18).
+
+## 10. Phase-two proof at the same 1e-6 (measured; the honest answer is "harder")
+
+| request, joint recovery phase two | BEFORE (sentinel objective ≈ −5 × 10⁷; V3.1 profile on the same requests) | AFTER (objective = economics) |
+|---|---|---|
+| demo 5 (4 worlds, 10 k columns) | 24–30 s, proven, gap ≤ 1e-6 = **≈ 50 cost units** of band (V3.1 §3.1 — on the replay's requests; on the audit's request the solve was INFEASIBLE and never ran) | 53 s, proven, 11,034 nodes, gap 0 (band 0.8 units); the three-world joint 36 s / 8,754 nodes at gap 9.8e-7 |
+| demo 10 (21 k columns) | at the 90 s cap, gap 5.7e-5 (≈ 2,800 units of band on 5 × 10⁷ — reported as "nearly proven") | at the 90 s cap, gap 5.7e-3 (**8,113 units** on 1.43 M — the same solve, honestly measured) |
+| sample 25 (53 k columns) | never reached (INFEASIBLE) | at the 90 s cap, gap 1.5e-4 (362 units on 2.44 M) |
+
+Removing the constant does not make the same tolerance easier to prove: the relative gap is now measured
+against the plan's economics, so the absolute band shrinks 60× and the solver needs more nodes, not fewer.
+What the cleanup fixes is the *meaning* of every gap and comparability judgement (a 2 % `comparable_gap`
+is now 2 % of the plan's cost, not of 5 × 10⁷); it does not change `solver_mip_gap` (unchanged, 1e-6) and
+does not claim a speed-up. The prior pass's owner decision D (gap 1e-5) is where the phase-two time goes.
 
 ## 8. Declared constraints preserved
 
 *(tests; frozen regression)*
 
-## 12–14. Replay retest, stress cases, numerical health
+## 12. Replay retest (`scripts/replay_profile.py`, `--sentinel` = the released placeholders declared on the initial request, the released formulation verbatim; local arm64, contended by other benchmark processes, so walls are relative)
+
+### 12.1 Before / after on identical dates (demo company, window from 2026-04-27, 8 weekly decision dates)
+
+| scope | formulation | dates | total | plan wall median / p90 / max | MILPs (time-limited) | ZAAD outcomes | executed orders vs the other formulation | window cost ZAAD / actual | service |
+|---|---|---|---|---|---|---|---|---|---|
+| 5 × 8 | BEFORE (10⁹) | 8 / 8 | 720 s | 67 / 334 / 334 s | 118 (6) | **ABSTAIN × 1 (date 1, false)**, RETAIN × 7 | — | 666,574 / 665,099 | 0.6406 |
+| 5 × 8 | AFTER | 8 / 8 | 932 s | 86 / 334 / 334 s | 118 (7) | RETAIN × 8 | **identical on 8 / 8 dates** | 666,574 / 665,099 (identical) | 0.6406 (identical) |
+| 10 × 8 | BEFORE | 8 / 8 | 1,490 s | 95 / 467 / 467 s | 158 (16) | ABSTAIN × 1 (date 1, false), RETAIN × 7 | — | 1,153,279 / 1,158,341 | 0.6838 |
+| 10 × 8 | AFTER | 8 / 8 | 2,278 s | 274 / 543 / 543 s | 158 (25) | RETAIN × 8 | identical on 8 / 8 dates | identical | identical |
+
+Reading. The executed decisions are the same on every date (the false ABSTAIN fell back to the same rule
+orders the clean planner retained), so the settled economics are identical to the last digit. The clean
+replay is **slower**: candidate classes that the sentinel formulation declared INFEASIBLE in 0.02 s, or
+solved before the false constant, now run to their 66–90 s caps (5 × 8: `stochastic` / `cvar` / `protected`
+/ `hedged` 73–75 s → 93–129 s each over 8 dates; 10 × 8: `joint_recovery` 270 → 449 s, 3 → 5 time-limited).
+Nothing was gained in speed and nothing should have been: the brief's criterion is that the request is
+evaluated rather than falsely abstained, and the honest 1e-6 on the real objective is a tighter proof (§10).
+
+### 12.2 Coverage matrix (AFTER)
+
+*(filled as the runs complete)*
+
+## 13. Genuinely coupled stress cases
 
 *(filled as measured)*
+
+## 14. Numerical health (largest model of each planner run; `formulation_audit`)
+
+| request | BEFORE matrix max / finite bound max / rhs max | AFTER matrix max / bound max / rhs max | HiGHS verdicts BEFORE → AFTER |
+|---|---|---|---|
+| demo 5 | 10⁹ / 10⁹ / 10⁹ | 6.6 × 10⁵ / 6.6 × 10⁵ / 6.6 × 10⁵ (the flow bound: 60,000 / week × 11 weeks + stock) | joint solves "Infeasible" (Status 8) → "Optimal" (Status 7), integrality violation 0, primal infeasibility 0 |
+| sample 25 | 10⁹ / 10⁹ / 10⁹ (ratio 3 × 10¹³ against the smallest planner coefficient) | 1.4 × 10⁵ (ratio 4 × 10⁹) | Infeasible → Optimal / Time limit |
+| sample 50 | 10⁹ | 1.8 × 10⁵ | Infeasible → Optimal / Time limit |
+
+The remaining max/min ratio (≈ 10⁹–10¹⁰ at planner level) is the flow bound against the planner's smallest
+legitimate coefficients (holding rates ≈ 10⁻³, the timing tie-break 10⁻⁴ of price, the P1 smoothing
+charge); the joint solves alone sit at 10⁵–10⁶. Two exact tightenings remain available for a later pass:
+a demand-dominance stock bound (the `activation_bounds` argument) and a per-period rather than cumulative
+purchasable quantity. Neither was needed for the verdicts to be right.
 
 ## 19. Release record
 

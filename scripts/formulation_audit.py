@@ -49,10 +49,14 @@ def make_vault(kind: str, seed: int, stress: bool):
         load_fmcg_sample_into(conn, seed=seed)
         as_of = datetime(2025, 8, 11, tzinfo=timezone.utc)
     if stress:
-        # genuinely coupled: order-level economics per supplier (fixed order cost, minimum order value) and a
-        # declared, binding opening cash balance (about six weeks of purchases) with a small facility
-        for key, value in (("fixed_order_cost", "150"), ("minimum_order_value", "4000"), ("opening_cash", "250000"), ("credit_limit", "50000"),
-                           ("interest_annual", "0.09")):
+        # genuinely coupled: order-level economics per supplier (a fixed order cost and a minimum order value the
+        # operator's own weekly lines clear) and a declared opening cash balance of roughly seven weeks of the
+        # 25-product purchase run-rate with a small facility, so capital binds on wide requests without making
+        # the operator's own rule infeasible (a rule projection is cash-capped, never MOV-aware)
+        suppliers = [r[0] for r in conn.execute("SELECT DISTINCT supplier_id FROM stg_fmcg_purchase_orders").fetchall()]
+        rows = [("fixed_order_cost", "150"), ("opening_cash", "3000000"), ("credit_limit", "300000"), ("interest_annual", "0.09")]
+        rows += [(f"minimum_order_value_{sid}", "1000") for sid in suppliers]      # the adapter reads MOV per supplier
+        for key, value in rows:
             conn.execute("DELETE FROM stg_fmcg_economics WHERE key = ?", [key])
             conn.execute("INSERT INTO stg_fmcg_economics (key, value, provenance) VALUES (?, ?, 'OPERATOR_DECLARED')", [key, value])
     return conn, as_of

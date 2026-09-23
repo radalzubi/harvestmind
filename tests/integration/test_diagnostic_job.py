@@ -35,6 +35,12 @@ def test_commercial_diagnostic_end_to_end(tmp_path, monkeypatch, history):
     monkeypatch.setenv("HARVESTMIND_SOLVER_THREADS", "1")
     from fastapi.testclient import TestClient
     import api.main as api_main
+    import api.routers.jobs as jobs
+    # the end-to-end test bounds the optimizer replay (its own suites cover it): two products, three decision
+    # dates, a short budget - the real planner still runs at every date, inside this test's deadline
+    monkeypatch.setattr(jobs, "REPLAY_SKUS", 2)
+    monkeypatch.setattr(jobs, "REPLAY_REVIEWS", 3)
+    monkeypatch.setattr(jobs, "REPLAY_BUDGET_S", 120.0)
     cl, h = TestClient(api_main.app), {"Authorization": f"Bearer {tok}"}
 
     skus = history.skus[["sku", "supplier_id", "unit_cost", "unit_price", "units_per_case", "moq_units"]]
