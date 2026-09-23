@@ -252,6 +252,8 @@ class Solution:
     binaries: int | None = None
     # tie certificate of a certified symmetry-reduced solve (Diagnostic V3.1); None when not attempted
     symmetry_certificate: dict | None = None
+    # per-service frontier oracle telemetry (frontier decomposition pass): components, solves, skips; None otherwise
+    frontier: dict | None = None
 
     @property
     def usable_plan(self) -> bool:
@@ -590,7 +592,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
           allowed_periods: frozenset[int] | None = None,
           expected_shortage: dict | None = None,
           continuation_feeds: dict[tuple[str, str], list[dict]] | None = None,
-          nodes: "NodeMap | None" = None, service_only: bool = False) -> Solution:
+          nodes: "NodeMap | None" = None, service_only: bool = False,
+          frontier_services: tuple[str, ...] | None = None, frontier_witnesses: list | None = None) -> Solution:
     """excess_penalty (v6): {(sku, location): (baseline_units, cost_per_unit_period)} charges inventory
     held above the lean baseline while a temporary risk driver is gone, so the plan runs temporary
     protection down through demand rather than replenishing it. continuation (v6): {(sku, location):
@@ -605,7 +608,14 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     unmet demand - without the phase-two cost minimisation. For a caller that consumes only the
     service optimum (the per-service frontier oracle) phase two is redundant work: its solution is
     constrained to the same optimum to 1e-7, so the consumed number is the same and only the cost
-    ordering of equal-service plans, which the oracle never reads, is left unresolved."""
+    ordering of equal-service plans, which the oracle never reads, is left unresolved.
+    frontier_services (frontier decomposition pass): the per-service frontier oracle for every listed
+    service from ONE build - the model is partitioned into the exact connected components of its
+    constraint matrix and each service's phase-one minimum is solved on its own component (the same
+    rows, bounds, integrality and objective coefficients; `zaad.full.frontier`). `frontier_witnesses`
+    are physically usable solutions of restrictions of this model on the same worlds: a service one of
+    them serves in full has frontier 1 without a solve. The returned Solution carries every service's
+    value in `projected_service` and the decomposition telemetry in `frontier`."""
     started = time.monotonic()
     if not worlds or abs(sum(w.weight for w in worlds) - 1) > 1e-8 or any(w.weight <= 0 for w in worlds):
         raise ValueError("positive scenario weights must sum to one")
@@ -615,7 +625,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     _kwargs: dict[str, Any] = dict(service_floor=service_floor, service_first=service_first, cvar_weight=cvar_weight, fixed=fixed, disabled=disabled,
                    targets=targets, per_world_service=per_world_service, service_risk=service_risk, service_risk_levels=service_risk_levels,
                    excess_penalty=excess_penalty, continuation=continuation, seed=seed, allowed_periods=allowed_periods,
-                   expected_shortage=expected_shortage, continuation_feeds=continuation_feeds, nodes=nodes, service_only=service_only)
+                   expected_shortage=expected_shortage, continuation_feeds=continuation_feeds, nodes=nodes, service_only=service_only,
+                   frontier_services=frontier_services, frontier_witnesses=frontier_witnesses)
     if any(len(w.demand[s.id]) != H for w in worlds for s in req.services):
         raise ValueError("world dimensions do not match request")
     skus = {s.id: s for s in req.skus}
@@ -1494,6 +1505,15 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
     # highspy with the order-class search settings; every other model keeps the frozen route.
     options = search_options(req)
     solver_name = "highspy" if (seed_x is not None or req.solver == "highspy" or (options is not None and req.solver == "highs")) else req.solver
+    if frontier_services is not None:
+        # frontier decomposition pass: every listed service's phase-one minimum on its own exact component of
+        # THIS model, with the released budget, route, gap and options per solve; the build above is shared
+        from zaad.full.frontier import frontier_solve, witnesses_prove
+        proven, feasible_witness = witnesses_prove(frontier_services, frontier_witnesses or [])
+        frontier_values, state, frontier_telemetry = frontier_solve(m, unmet, worlds, req, frontier_services, budget, solver_name, options,
+                                                                    proven, feasible_witness, started)
+        return Solution(state, {}, {}, {}, frontier_values, None, [], time.monotonic() - started, len(m.names), len(m.rows), None, None,
+                        [] if state == "OPTIMAL" else [f"{state}: frontier oracle"], binaries=int(sum(m.integer)), frontier=frontier_telemetry)
     result, residual = m.solve(budget, objective, solver_name, mip_gap=req.solver_mip_gap, seed=seed_x, options=options)
     if warm is not None:
         warm.update(seed_status=getattr(result, "seed_status", None),
