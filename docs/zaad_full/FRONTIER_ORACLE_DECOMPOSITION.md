@@ -301,6 +301,30 @@ Planner decisions old vs new: identical on every request (status, selected polic
 candidate gates, economics, materiality, solve-quality statuses). Frozen canonical regression: PASS (P1 B / T / Q / A × 12
 reviews order for order, P0 cell 15 identical) on the branch.
 
-## 17–23. Replay, infrastructure, release record
+## 18. Replay after the frontier work (§18)
+
+`scripts.replay_profile` with `HARVESTMIND_FRONTIER_MODE=component`, the same vaults, scopes, seeds, budgets and
+`fefo_symmetry_scope="network"` as the sentinel-cleanup runs (`OPTIMIZER_SENTINEL_CLEANUP.md` §12.2); decisions compared
+date by date against those runs (status, selected policy, executed orders, settled service).
+
+| scope | before (sentinel record) | after | frontier before → after | plan wall median / p90 / max | MILPs (time-limited) | peak RSS | dates | decisions vs before |
+|---|---|---|---|---|---|---|---|---|
+| sample 50 × 8 | 6,231 s (104 min) | **1,911 s (32 min)** | 400 solves 4,331 s (15 at cap) → 201 solves **32 s** (0 at cap; 199 witness-proven) | 726 / 1,490 / 1,490 → **280 / 283 / 283 s** | 486 (34) → 287 (19) | 3,077 → **1,567 MB** | 8 / 8 | **identical orders, status and policy on 8 / 8**, identical service, identical window cost (1,679,933.69) |
+| demo 25 × 26 | 6,574 s (110 min) | 6,248 s (104 min) | 650 solves 312 s → 137 solves **9 s** (513 witness-proven) | 199 / 467 / 470 → 185 / 454 / 455 s | 932 (68) → 419 (68) | 958 → 873 MB | 26 / 26 | identical orders, status and policy on 26 / 26, identical service and window cost |
+| demo 10 × 26 | 8,337 s (139 min) | 8,303 s (138 min) | 260 solves 40 s → 47 solves **1.5 s** (213 witness-proven) | 274 / 543 / 544 → 272 / 542 / 542 s | 516 (87) → 303 (87) | 861 → 775 MB | 26 / 26 | identical orders, status and policy on 26 / 26, identical service and window cost |
+| demo 5 × 26 | 5,158 s (86 min) | 5,140 s (86 min) | 130 solves 6 s → 24 solves 0.3 s (106 witness-proven) | 170 / 399 / 399 → 179 / 399 / 399 s | 382 (59) → 276 (58) | 653 → 656 MB | 26 / 26 | identical orders, status and policy on 26 / 26, identical service and window cost |
+
+Every date of every replay completed; the decisions, settled service and window cost are identical to the sentinel-cleanup
+runs on 86 / 86 dates. The demo replays (5 / 10 / 25 products) barely move because their frontier was already cheap (the
+demo's products spread over more, smaller supplier components); the sample 50-product replay — the one the sentinel record
+flagged at 70 % frontier — is 3.3× faster and fits 1.6 GB instead of 3.1. 50 × 26 was not run: at ≈ 240 s per date it would
+be ≈ 1.7 h of a single process, practical now but not part of this pass's evidence; the 50 × 8 decision identity stands for it.
+26 reviews at 5–25 products remain a 1.5–2.5 h run locally: the joint solves' 1e-6 proofs at their caps, not the frontier
+(§21 of the brief: the replay is not yet "operationally usable" at 26 reviews, and this pass does not claim it).
+
+What remains of a 50-product date is the joint recovery (710 s over 8 dates, 8 of 13 at the cap), the base-stock proxy
+(556 s, 5 at cap) and the joint fitted solve (535 s): the honest 1e-6 proofs on real economics, not the frontier.
+
+## 19–23. Infrastructure, release record
 
 *(filled as the pass proceeds)*
