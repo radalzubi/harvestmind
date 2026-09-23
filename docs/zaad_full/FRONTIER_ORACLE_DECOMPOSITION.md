@@ -282,6 +282,25 @@ oracle (the sub-models are extracted lazily, one at a time, and dropped after th
 peaks (full + one component) against extracting everything first (2 × full). Nothing is cached across services; no log
 is retained beyond the per-solve telemetry row.
 
-## 15, 17–23. Replay, equivalence summary, infrastructure, release record
+## 15. Frontier values old vs new — the equivalence summary (§11)
+
+`scripts.frontier_profile --compare` on every pair (service ids identical everywhere; values compared exactly, then at 1e-9;
+statuses from each solve's HiGHS status):
+
+| request | services | exact | within 1e-9 | differences | why |
+|---|---|---|---|---|---|
+| sample 5 / 10 / 25 (oracle) | 5 / 10 / 25 | all | 0 | 0 | — |
+| sample 50 (oracle) | 50 | 47 | 1 | 2 | the released solves at their 90 s cap (incumbent 0.447 / 0.833; proven optimum 0.948 / 1.000) |
+| demo 5 / 10 / 25 (oracle) | 5 / 10 / 25 | all | 0 | 0 | — |
+| sample stress 25 / 50 / 100 (oracle; one component) | 25 / 50 / 100 | all | 0 | 0 | — |
+| sample 5 / 10 / 25 (whole planner, reports compared field by field) | 5 / 10 / 25 | all | 0 | 0 report differences | — |
+| sample 50 (whole planner) | 50 | 48 | 0 | 2 services, 8 report fields, all in `service_frontier` / `service_reliability` rows of those two services | the same two time-limited released solves (§14); decision, actions, gates, economics identical |
+| unit fixtures A–G (`tests/unit/test_zaad_frontier.py`) | — | all at 1e-9 | | 0 | shared supplier, cash, MOQ / MOV, location volume, transfer network each one component; independent products one per SKU; whole-planner reports identical on `example("normal")`, `example("understock")` and three independent P1 products with an incumbent rule |
+
+Planner decisions old vs new: identical on every request (status, selected policy, every action, incumbent actions,
+candidate gates, economics, materiality, solve-quality statuses). Frozen canonical regression: PASS (P1 B / T / Q / A × 12
+reviews order for order, P0 cell 15 identical) on the branch.
+
+## 17–23. Replay, infrastructure, release record
 
 *(filled as the pass proceeds)*
