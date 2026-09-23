@@ -234,6 +234,50 @@ The stress fixture is the §6 case of the brief: a declared cash balance is one 
 so the partition finds **one** component and the "decomposed" oracle is the monolithic solve — same cost, same values, no
 approximation. True global coupling is honoured by construction, never ignored.
 
-## 14–23. Planner, replay, equivalence, release record
+## 14. The whole planner (§14): before / after, identical reports
+
+`scripts.frontier_profile --plan` (the released `planner.plan` on the same sample requests; witnesses active in
+`component` mode). Reports compared with `scripts.plan_report_compare` (status, policy, every action, gates, frontier,
+reliability, economics, orchestration, solve-quality statuses): **no difference at 5, 10 or 25 products**; the recommendation
+is RETAIN_INCUMBENT (operator rule `replace_sold`) on every one.
+
+| products | mode | plan wall | frontier solves | frontier time | frontier share | witness-proven (no solve) | MILPs in the plan | where the rest goes | peak RSS |
+|---|---|---|---|---|---|---|---|---|---|
+| 5 | monolithic | 201.2 s | 5 | 1.4 s | 0.7 % | — | 13 (3 at cap) | three candidate classes at the 66 s cap | 720 MB |
+| 5 | component | 199.8 s | 1 | 0.01 s | 0.0 % | 4 of 5 | 9 | same | 545 MB |
+| 10 | monolithic | 98.2 s | 10 | 5.7 s | 5.8 % | — | 20 (1 at cap) | `joint_recovery` two phases 89.8 s | 534 MB |
+| 10 | component | 92.6 s | 5 | 0.16 s | 0.2 % | 5 of 10 | 15 | same | 530 MB |
+| 25 | monolithic | 169.4 s | 25 | 53.5 s | **31.6 %** | — | 35 (1 at cap) | `joint_recovery` 89.4 s, base-stock proxy 22.0 s | 766 MB |
+| 25 | component | **116.6 s** | 13 | 1.1 s | 0.9 % | 12 of 25 | 23 | same | 676 MB |
+| 50 | monolithic | 783.7 s | 50 | 626.6 s (2 at the cap) | **80.0 %** | — | 59 (3 at cap) | base-stock proxy 55.5 s, `joint_recovery` 89.5 s | **1,944 MB** |
+| 50 | component | **157.7 s** | 30 | 4.6 s | 2.9 % | 20 of 50 | 39 (1 at cap) | same | **985 MB** |
+
+**The one report difference, at 50 products.** The recommendation, the actions, every gate, the economics and 48 of 50
+frontier rows are identical. On `svc_SKU-0021` and `svc_SKU-0030` the released oracle's solve reached its 90 s cap (gap 0.91
+and 1.0) and the report carried the incumbent's fill — 0.447 and 0.833 — as `best_modeled_individual_unit_fill`; the
+component solves prove 0.948 and 1.000 in 0.2 s. For `svc_SKU-0021` that turned the reliability classification from
+UNAVOIDABLE `pre_existing: True` ("no feasible action meets the target even when this service alone is maximized") into
+UNAVOIDABLE `pre_existing: False` ("not jointly achievable with the other services' targets") — the released text was
+wrong, because its bound was a time-limited plan and not the frontier (§2). The class (UNAVOIDABLE) and the decision
+(RETAIN_INCUMBENT) are the same; `classify_service` is untouched. Reported as the difference it is, not as a match.
+
+At 5 and 10 products the frontier was never the cost: the plan is the joint recovery's two phases and the candidate classes
+at their caps (the sentinel record §10 — the honest 1e-6 proof on real economics). At 25 it was a third of the plan and is
+now under one percent. The witness rule fires on the services the incumbent's own projection already serves in full on the
+mean world (4 / 5, 5 / 10, 12 / 25 here).
+
+## 16. Memory (§16)
+
+Measured as the process high-water RSS of the oracle alone (§13) and of the whole plan (§14). The released loop's peak is
+the Python model (lists of row dicts, ≈ 28 k columns / 126 k non-zeros at 50 products) plus HiGHS's own copy of the whole
+model — presolve, LP and branch-and-bound working sets of the full matrix — rebuilt for every service and released between
+services (Python objects, no leak: the peak does not grow with the number of services solved). The decomposed oracle holds
+the same Python model once and hands HiGHS one component at a time (≤ 4,526 columns at 50 products): 1,875 → 531 MB for
+the oracle alone at 50 products, 766 → 676 MB for the 25-product plan. The full built model is kept for the duration of the
+oracle (the sub-models are extracted lazily, one at a time, and dropped after their solves), which is the lower of the two
+peaks (full + one component) against extracting everything first (2 × full). Nothing is cached across services; no log
+is retained beyond the per-solve telemetry row.
+
+## 15, 17–23. Replay, equivalence summary, infrastructure, release record
 
 *(filled as the pass proceeds)*

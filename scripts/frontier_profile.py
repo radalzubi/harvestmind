@@ -116,6 +116,14 @@ def run(kind: str, n: int, seconds: float, stress: bool, mode: str, oracle_only:
             report = planner.plan(req)
             values = {r["service"]: r["best_modeled_individual_unit_fill"] for r in report["service_frontier"]}
             telemetry = (report.get("orchestration") or {}).get("frontier")
+            frontier_rows = [s_ for s_ in rec.solves if s_["stage"] == "service_frontier"]
+            if mode == "monolithic" and len(frontier_rows) == len(req.services):
+                # the released loop: one solve per service in request order; its HiGHS status says whether the
+                # number is a proven optimum or an incumbent at the cap
+                statuses = {s_.id: {0: "OPTIMAL", 1: "FEASIBLE_TIME_LIMIT", 2: "INFEASIBLE"}.get(row["highs_status"], "ERROR")
+                            for s_, row in zip(req.services, frontier_rows)}
+            elif mode == "component":
+                statuses = {s_: "OPTIMAL" for s_ in (telemetry or {}).get("skipped_proven", [])}
     finally:
         rec.uninstall()
     wall, cpu = time.perf_counter() - t0, time.process_time() - c0
@@ -168,6 +176,11 @@ def compare(a_path: Path, b_path: Path, tol: float = 1e-9) -> int:
     a, b = json.loads(a_path.read_text()), json.loads(b_path.read_text())
     va, vb = a["frontier"]["values"], b["frontier"]["values"]
     sa, sb = a["frontier"].get("statuses", {}), b["frontier"].get("statuses", {})
+    for side, values, statuses in ((a, va, sa), (b, vb, sb)):
+        rows = side["frontier"].get("solves") or []
+        if not statuses and side["mode"] == "monolithic" and len(rows) == len(values):
+            # the released loop: one solve per service in request order (the report rows' order)
+            statuses.update({s: {0: "OPTIMAL", 1: "FEASIBLE_TIME_LIMIT", 2: "INFEASIBLE"}.get(r["highs_status"], "ERROR") for s, r in zip(values, rows)})
     problems: list[str] = []
     explained: list[str] = []
     if set(va) != set(vb):
@@ -192,10 +205,13 @@ def compare(a_path: Path, b_path: Path, tol: float = 1e-9) -> int:
         out["report_differences"] = diffs
         out["decision"] = {"A": (ra["status"], ra["selected_policy"]), "B": (rb["status"], rb["selected_policy"])}
         out["actions_identical"] = _actions(ra) == _actions(rb)
-        if diffs and not all("service_frontier" in d or "best_modeled_individual" in d or "orchestration.frontier" in d for d in diffs):
-            problems.extend(diffs)
-        elif diffs:
-            explained.extend(diffs)
+        # report rows that read the frontier of a service whose old solve was time-limited are explained by it
+        tl = [s for s in sa if sa[s] in ("FEASIBLE_TIME_LIMIT", "NO_FEASIBLE_SOLUTION")]
+        ids = [r["service"] for r in ra.get("service_frontier", [])]
+        tl_rows = {f"[{ids.index(s)}]" for s in tl if s in ids}
+        for d_ in diffs:
+            frontier_field = "service_frontier" in d_ or "best_modeled_individual" in d_ or "unavoidable" in d_ or "classification" in d_
+            (explained if frontier_field and any(row in d_ for row in tl_rows) else problems).append(d_)
     print(json.dumps(out, indent=1))
     return 1 if problems else 0
 
