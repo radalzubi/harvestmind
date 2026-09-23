@@ -212,13 +212,60 @@ solved before the false constant, now run to their 66–90 s caps (5 × 8: `stoc
 Nothing was gained in speed and nothing should have been: the brief's criterion is that the request is
 evaluated rather than falsely abstained, and the honest 1e-6 on the real objective is a tighter proof (§10).
 
-### 12.2 Coverage matrix (AFTER)
+### 12.2 Coverage matrix (AFTER; demo company unless stated; local arm64, 2–4 benchmark processes sharing the machine, walls relative)
 
-*(filled as the runs complete)*
+| scope | dates completed | total runtime | plan wall median / p90 / max | solver calls (time-limited) | abstain | retain incumbent | own plan | peak RSS | window cost ZAAD vs actual |
+|---|---|---|---|---|---|---|---|---|---|
+| 5 × 8 | 8 / 8 | 932 s | 86 / 334 / 334 s | 118 (7) | 0 | 8 | 0 | 527 MB | 666,574 vs 665,099 |
+| 5 × 26 | 26 / 26 | 5,158 s (86 min) | 170 / 399 / 399 s | 382 (59) | 0 | 26 | 0 | 653 MB | 1,827,693 vs 1,841,034 (service 0.885 vs 0.844) |
+| 10 × 8 | 8 / 8 | 2,278 s | 274 / 543 / 543 s | 158 (25) | 0 | 8 | 0 | 594 MB | 1,153,279 vs 1,158,341 |
+| 10 × 26 | 26 / 26 | 8,337 s (139 min) | 274 / 543 / 544 s | 516 (87) | 0 | 26 | 0 | 861 MB | 3,135,073 vs 3,158,811 (service 0.889 vs 0.846) |
+| 25 × 8 | 8 / 8 | 1,488 s | 197 / 291 / 291 s | 290 (15) | 0 | 8 | 0 | 775 MB | 1,999,615 vs 2,012,443 |
+| 25 × 26 | 26 / 26 | 6,574 s (110 min) | 199 / 467 / 470 s | 932 (68) | 0 | 26 | 0 | 958 MB | 5,456,015 vs 5,494,053 (service 0.883 vs 0.846) |
+| 50 × 8 (sample, 150-product vault) | 8 / 8 | 6,231 s (104 min) | 726 / 1,490 / 1,490 s | 486 (34) | 0 | 8 | 0 | **3.08 GB** | 2,497,719 vs 2,486,503 (service 0.923 vs 0.920) |
+| 50 × 26 | **not run: not practical** — a 50-product date costs ≈ 750 s locally (§9.1) and the request's peak memory exceeds the production machine; a 26-date run would take ≈ 5 h on this machine and could not run on production at all | | | | | | | | |
 
-## 13. Genuinely coupled stress cases
+At 50 products the time is no longer the joint solves: the per-service frontier oracle (50 phase-one solves of the full 117 k-column model per date, 15 of 400 at their cap) is 4,331 s of the 6,231 s — 70 % — against 711 s for the joint recovery; a frontier that solved per component rather than on the whole scope would be exact (the oracle reads one service's optimum) and is the next structural saving, recorded, not applied. The 3.08 GB peak (V3.1 measured 1.02 GB for the same scope when every solve was falsely infeasible) is the honest memory of a 50-product replay and is above the production machine.
 
-*(filled as measured)*
+Reading. Every run completes its dates (no abstention anywhere: the false abstentions are gone), the
+optimizer retains the reconstructed rule at every date on this synthetic company (as V3 and V3.1 found),
+and the executed decisions match the sentinel formulation's wherever both ran (§12.1). Runtime per date
+rises with scope roughly as the V3.1 profile predicted once the solves are real: ≈ 115 s at 5 products,
+≈ 285 s at 10, ≈ 185 s at 25 (fewer candidate classes survive the service floors at 25, so fewer capped
+solves per date). The V3.1 5 × 26 run on the sentinel formulation took 4,770 s with 57 time-limited MILPs
+against 5,158 s / 59 here: on that window the expensive solves were already the feasible candidate
+classes, which the sentinel did not break, so the cleanup neither speeds nor slows them.
+
+### 12.3 Completion
+
+Every row of the matrix except 50 × 26 (not practical, stated) completed before merge; the 26-date runs
+(5, 10, 25 products) ran on a machine shared with two other benchmark processes, so their walls are
+upper bounds. Total benchmark wall on this pass: ≈ 8.5 hours of replay plus ≈ 2 hours of planner audits.
+
+## 13. Genuinely coupled stress cases (`formulation_audit --stress --plan`)
+
+Sample vault (150 products, 8 suppliers, every supplier shared by 4–8 of the studied products, supplier
+capacities inferred from history and binding, service floors) with declared order-level economics — a fixed
+order cost of 150 and a minimum order value of 1,000 per supplier order (the P1 order class: one order
+binary per supplier and period, `activation_bounds`, the order-class search settings) — and a declared,
+binding capital position: opening cash 3.0 M (the operator's own rule spends ≈ 2.7 M over the horizon at 25
+products) with a 300 k facility at 9 % a year. Lead-time and fill uncertainty from the fitted supply
+profiles; single location (the released product path). The first attempt declared 250 k of cash, which made
+the operator's own rule projection cash-infeasible and the planner abstain (correctly: "incumbent itself has
+no verified feasible projection") — recorded, and the fixture corrected so that capital binds the plan, not
+the incumbent.
+
+| products | largest model (columns / rows / integer / non-zeros) | big-M max: order / depleted / fefo | outcome | wall | MILPs (time-limited) | peak RSS | candidates | joint recovery phase two |
+|---|---|---|---|---|---|---|---|---|
+| 25 | 53,070 / 52,980 / 17,225 / 259,091 | 12,540 / 142,624 / 142,624 | RETAIN_INCUMBENT | 203 s | 37 (2) | 741 MB | incumbent OPTIMAL, proxy FEASIBLE_TIME_LIMIT, joint recovery FEASIBLE_TIME_LIMIT; the six candidate classes and both cadence classes INFEASIBLE (service floors) | 83 s at the cap, gap 5.1e-4, 863 nodes; cost by family: purchase 2.31 M, unmet 187 k, inventory −134 k, **working capital −47.6 k (declared cash, the released rows), debt interest 5.7 k, order costs 7.7 k**, amendments 17.9 k |
+| 50 | 108,925 / 108,872 / 35,489 / 540,257 | 15,968 / 181,596 / 181,596 | RETAIN_INCUMBENT | 253 s | 61 (1) | 989 MB | incumbent OPTIMAL, proxy OPTIMAL, joint recovery FEASIBLE_TIME_LIMIT | at the cap |
+| 100 | 205,879 / 199,754 / 63,039 / 974,813 | 20,002 / 225,982 / 225,982 | **ABSTAIN** (genuine: the incumbent's fixed projection and the base-stock proxy find no feasible point inside their 90 s caps — NO_FEASIBLE_SOLUTION, not INFEASIBLE) | 860 s | 112 (3) | 1.6 GB | joint recovery FEASIBLE_TIME_LIMIT | at the cap |
+
+Reading. With real coupling the 25- and 50-product requests are decided on solved candidates; at 100
+products the per-MILP cap (90 s) is too short for a 206 k-column model to find its first incumbent, and the
+planner abstains for a true reason (no verified feasible projection inside the budget), which is the
+behaviour the brief asks for. Every big-M is a declared or flow-derived quantity; no coefficient above
+2.3 × 10⁵ anywhere.
 
 ## 14. Numerical health (largest model of each planner run; `formulation_audit`)
 
@@ -233,6 +280,35 @@ legitimate coefficients (holding rates ≈ 10⁻³, the timing tie-break 10⁻�
 charge); the joint solves alone sit at 10⁵–10⁶. Two exact tightenings remain available for a later pass:
 a demand-dominance stock bound (the `activation_bounds` argument) and a per-period rather than cumulative
 purchasable quantity. Neither was needed for the verdicts to be right.
+
+## 17. Performance acceptance (the brief's own standard: correctness first)
+
+| criterion | result |
+|---|---|
+| 25–50-product false abstentions disappear | **yes** — planner level, identical data: ABSTAIN → RETAIN_INCUMBENT at 25 and 50 (§9.1); the coupled stress cases decide at 25 and 50 and abstain for a true reason at 100 (§13) |
+| model coefficient ranges improve materially | **yes** — largest matrix coefficient / bound / rhs 10⁹ → 1.4–6.6 × 10⁵, every big-M a declared or flow-derived quantity (§6, §14) |
+| objective magnitude reflects real economics | **yes** — ≈ −5 × 10⁷ of placeholder → purchase + shortage + carrying + fees + working capital (§5) |
+| phase-two proof improves | **no** — the same 1e-6 is now measured against the plan's economics, so the absolute band is ≈ 60× tighter and the proof takes more nodes; the honest measurement, recorded (§10) |
+| replay coverage improves without changing semantics | **partly** — every studied date completes and none abstains, decisions are identical where both formulations ran; runtime per date is equal or higher because the solves are real (§12) |
+| runtime remains high | **yes** — a 5-product date costs ≈ 115 s, 10 products ≈ 285 s, 25 products ≈ 185 s, 50 products ≈ 750 s locally; production is 5–10× slower on the same requests (§18) |
+
+Partial success by the brief's own definition: numerical correctness fixed, runtime high. No optimisation
+change was made to hit a speed target.
+
+## 18. Infrastructure finding (measured; no machine was created or resized)
+
+| component | evidence |
+|---|---|
+| inherent solver time | local (arm64, no throttling): 5-product date 86 s median / 334 s max; 10 products 274 / 543 s; 25 products 197 / 291 s; a single 50-product plan 746 s (§9.1, §12.2). The time is the joint recovery's phase-two proof and the candidate classes at their 66–90 s caps; with the objective now at economic scale the proofs are honest and not cheaper (§10) |
+| burst-credit throttling and machine contention | production (Fly `shared-cpu-2x`, one vCPU of a shared core) ran the same 5-product dates in 3–401 s (mean 188 s at v35) against 1.3–33 s for the identical requests locally before this change (V3.1 record §3.5): a 5–10× multiplier that grows through a long run as the burst balance drains (`user` CPU refills at 0.125 s / s) — measured in the planner recovery pass, not re-measured here because `fly ssh` sampling is refused by the auto-mode classifier |
+| memory | the 50-product plan peaks at 2.04 GB RSS locally (§9.1); the production machine has 2 GB with the API process holding ≈ 0.5 GB — a 50-product request will not complete on production whatever its CPU |
+| infrastructure multiplier | ≈ 5–10× on CPU-bound solves; unbounded on memory above ≈ 25–30 products |
+
+Recommendation (for the owner, not applied): the software side is now correct and its remaining cost is
+inherent (the 1e-6 proof and the capped candidate classes, owner decisions A and D of the V3.1 record). A
+dedicated-CPU benchmark of the same requests would separate the 5–10× throttling from the inherent time;
+it needs a temporary machine, which is Fly spend and the owner's authorisation. Memory, not CPU, caps the
+product scope on the current machine at roughly 25–30 products.
 
 ## 19. Release record
 
