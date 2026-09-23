@@ -332,7 +332,7 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
             for j in range(H):
                 other[j] += deferred.pop(t + 1 + j, 0.)
             liquidity = req.liquidity.model_dump()
-            liquidity.update(known_at=now, opening_cash=outcome["trace"][0]["cash"], opening_debt=outcome["trace"][0]["debt"],
+            liquidity.update(known_at=now, opening_cash=(None if req.liquidity.opening_cash is None else outcome["trace"][0]["cash"]), opening_debt=outcome["trace"][0]["debt"],
                              known_receivables=[*req.liquidity.known_receivables[1:], req.liquidity.known_receivables[-1]],
                              other_payments=tuple(other))
         else:
@@ -342,7 +342,7 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
             for name in ("sources", "resources"):
                 data[name] = [{**r.model_dump(), "capacity_by_period": r.capacity_by_period[1:]} for r in getattr(req, name)]
             liquidity = req.liquidity.model_dump()
-            liquidity.update(known_at=now, opening_cash=outcome["trace"][0]["cash"], opening_debt=outcome["trace"][0]["debt"],
+            liquidity.update(known_at=now, opening_cash=(None if req.liquidity.opening_cash is None else outcome["trace"][0]["cash"]), opening_debt=outcome["trace"][0]["debt"],
                              known_receivables=req.liquidity.known_receivables[1:],
                              other_payments=tuple(req.liquidity.other_payments[k] + future.get(k, 0.) for k in range(1, H)))
         data["liquidity"] = liquidity

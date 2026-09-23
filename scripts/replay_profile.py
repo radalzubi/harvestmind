@@ -125,7 +125,7 @@ class ReplayTimer:
         self._orig.clear()
 
 
-def run_one(conn, n: int, reviews: int, seconds: float, fefo: str, budget: float, seed: int, out_dir: Path, label: str, vault: str) -> dict:
+def run_one(conn, n: int, reviews: int, seconds: float, fefo: str, budget: float, seed: int, out_dir: Path, label: str, vault: str, sentinel: bool = False) -> dict:
     import zaad.full.historical as H
     from zaad.full import workspace as W
     # the replay's requests carry the diagnostic's own solve cap; the FEFO scope is the experiment variable
@@ -135,6 +135,14 @@ def run_one(conn, n: int, reviews: int, seconds: float, fefo: str, budget: float
         req, build = orig_build(conn_, operator_id, max_solve_seconds=seconds, **kw)
         if fefo != "network":
             req = req.model_copy(update={"fefo_symmetry_scope": fefo})
+        if sentinel:
+            # the released adapter's placeholders as declared values: the released formulation verbatim (before / after)
+            from zaad.full.contracts import Request
+            data = req.model_dump(mode="python")
+            data["locations"] = [{**loc, "capacity_volume": 1e9} for loc in data["locations"]]
+            if data["liquidity"]["opening_cash"] is None:
+                data["liquidity"].update(opening_cash=1e9, credit_limit=1e9)
+            req = Request.model_validate(data)
         return req, build
     H.build_request = build_request
     rec, timer = Recorder(), ReplayTimer()
@@ -170,7 +178,7 @@ def run_one(conn, n: int, reviews: int, seconds: float, fefo: str, budget: float
     result = {
         "run_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "host": {"platform": platform.platform(), "machine": platform.machine(), "python": platform.python_version(), "cpus": os.cpu_count()},
-        "vault": vault, "skus_requested": n, "reviews_requested": reviews, "max_solve_seconds": seconds, "fefo_symmetry_scope": fefo, "seed": seed,
+        "vault": vault, "skus_requested": n, "reviews_requested": reviews, "max_solve_seconds": seconds, "fefo_symmetry_scope": fefo, "seed": seed, "sentinel": sentinel,
         "replay": {"status": out.get("status"), "reason": out.get("reason"), "coverage": out.get("coverage"), "scope": {k: v for k, v in (out.get("scope") or {}).items() if k != "skus"},
                    "performance": out.get("performance"), "confidence": (out.get("confidence") or {}).get("level")},
         "zaad_reviews": [{k: e.get(k) for k in ("review", "as_of", "status", "selected_policy", "fallback_to_rule", "solve_seconds")} for e in zaad_log],
@@ -214,10 +222,11 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=41001)
     ap.add_argument("--out", default="artifacts/replay_profile")
     ap.add_argument("--label", default="")
+    ap.add_argument("--sentinel", action="store_true", help="declare the released adapter's 1e9 placeholders on the request (the released formulation, for before / after)")
     args = ap.parse_args()
     conn = make_vault(args.vault, 7)
     for n in [int(x) for x in args.skus.split(",") if x]:
-        run_one(conn, n, args.reviews, args.seconds, args.fefo, args.budget, args.seed, Path(args.out), args.label, args.vault)
+        run_one(conn, n, args.reviews, args.seconds, args.fefo, args.budget, args.seed, Path(args.out), args.label, args.vault, sentinel=args.sentinel)
 
 
 if __name__ == "__main__":

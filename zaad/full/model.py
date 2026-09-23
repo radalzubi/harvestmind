@@ -728,6 +728,26 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 post[w][inbound.sku, inbound.destination][q] += 1.
                 post_expiry[q] = int(inbound.expires_in)
     tail: list[dict[int, float]] = [defaultdict(float) for _ in worlds]
+    # Undeclared storage capacity (sentinel cleanup): the depleted / FEFO / direct-first rows of a location
+    # that declares no capacity take, as their big-M, the most stock of the SKU that any feasible plan can
+    # hold there at the end of period t: opening usable stock, every inbound transfer, every open order's
+    # remaining units, every purchase that can land by t (placed before t, at its declared line capacity)
+    # and every lane's capacity over the periods so far. Fill ratios are at most one and a purchase placed
+    # at s lands at s + 1 or later, so the sum never under-counts: the feasible set is unchanged.
+    _stock_bound_cache: dict[tuple[str, str, int], float] = {}
+
+    def stock_bound(sku_id: str, location: str, t: int) -> float:
+        key = (sku_id, location, t)
+        if key not in _stock_bound_cache:
+            total = sum(v for (k, loc_, _), v in initial.items() if k == sku_id and loc_ == location)
+            total += sum(i.accepted_quantity for i in req.inbound_transfers if i.sku == sku_id and i.destination == location)
+            srcs = [s for s in req.sources if s.sku == sku_id and s.destination == location]
+            ids = {s.id for s in srcs}
+            total += sum(p.remaining for p in req.pipeline if p.source in ids and not po_closed(p, sources[p.source]))
+            total += sum(min(s.maximum, s.capacity_by_period[min(k, len(s.capacity_by_period) - 1)]) for s in srcs for k in range(t))
+            total += sum(a.capacity * t for a in req.transfers if a.sku == sku_id and a.destination == location)
+            _stock_bound_cache[key] = float(total)
+        return _stock_bound_cache[key]
 
     def expense(index, amount, w, when):
         costs[w][index] += amount
@@ -1058,9 +1078,13 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                 for expiry in sorted(cohorts[sku]):
                     if expiry <= t:
                         continue
+                    declared_cap = locs[location].capacity_volume
+                    # no declared capacity: the column keeps the flow-derived stock bound (valid for every feasible
+                    # point, so the feasible set is unchanged) rather than an infinite bound
                     index = m.var(("inventory", sku, location, expiry, t, w),
                                   upper=(0. if physics is not None and not physics.location_ok(sku, location)
-                                         else max(0., (locs[location].capacity_volume - locked[location]) / skus[sku].volume)))
+                                         else stock_bound(sku, location, t) if declared_cap is None
+                                         else max(0., (declared_cap - locked[location]) / skus[sku].volume)))
                     inv[sku, location, expiry, t, w] = index
                     stock_indices[sku, location, t, w].append(index)
                     costs[w][index] += skus[sku].asset_value * locs[location].holding_per_value_period
@@ -1113,7 +1137,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         # Available compatible stock cannot be hoarded while demand is lost.
                         empty = m.var(("depleted", sku, service.id, t, w), upper=1, integer=True)
                         m.row({u: 1, empty: -d}, upper=0)
-                        cap = locs[service.location].capacity_volume / skus[sku].volume
+                        declared_cap = locs[service.location].capacity_volume
+                        cap = stock_bound(sku, service.location, t) if declared_cap is None else declared_cap / skus[sku].volume
                         m.row({**{i: 1 for i in stocks}, empty: cap}, upper=cap)
                         # FEFO: consumption of younger cohorts requires older remaining stock zero.
                         # An older cohort beyond the window (outlives the horizon and every schedulable
@@ -1147,14 +1172,18 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                         if lower_units:
                             active = m.var(("priority", high.id, low.id, sku, t, w), upper=1, integer=True)
                             m.row({unmet[high.id, t, w]: 1, active: -high_demand}, upper=0)
-                            cap = locs[high.location].capacity_volume / skus[sku].volume
+                            # no declared capacity: the row's left-hand side is at most the allocation columns' own bounds
+                            declared_cap = locs[high.location].capacity_volume
+                            cap = (sum(ratio_ * m.upper[q_] for q_, ratio_ in lower_units.items()) if declared_cap is None
+                                   else declared_cap / skus[sku].volume)
                             m.row({**lower_units, active: cap}, upper=cap)
                 direct_remaining = stock_indices[high.sku, high.location, t, w]
                 substitute_units = {q: 1 for sku in eligible_skus if sku != high.sku
                                     for q in use_for_service[high.id, sku, t, w]}
                 if direct_remaining and substitute_units:
                     active = m.var(("direct_first", high.id, t, w), upper=1, integer=True)
-                    cap = locs[high.location].capacity_volume / skus[high.sku].volume
+                    declared_cap = locs[high.location].capacity_volume
+                    cap = stock_bound(high.sku, high.location, t) if declared_cap is None else declared_cap / skus[high.sku].volume
                     m.row({**substitute_units, active: -high_demand}, upper=0)
                     m.row({**{i: 1 for i in direct_remaining}, active: cap}, upper=cap)
             for sku, location in sorted(pairs):
@@ -1175,6 +1204,8 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     opening = initial[sku, location, expiry] if t == 0 else 0.
                     m.row(row, opening, opening)
             for warehouse in req.locations:
+                if warehouse.capacity_volume is None:
+                    continue      # no declared storage capacity: no volume row (sentinel cleanup)
                 row = {index: skus[sku].volume for (sku, location_key, _, period, scenario), index in inv.items()
                        if location_key == warehouse.id and period == t and scenario == w}
                 if row:
@@ -1194,8 +1225,17 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     m.row(before, upper=warehouse.capacity_volume - locked[warehouse.id] - initial_volume)
             # Cash balance: contractual payments, explicit debt and interest, no forecast sales receipts.
             liquidity = req.liquidity
+            if liquidity.opening_cash is None:
+                # Undeclared capital (sentinel cleanup): no cash or debt column, no balance, reserve or
+                # solvency row. The released working-capital term sum_t -rate * cash_t equals a plan-
+                # independent constant plus rate * sum_s (H - s) * payments_s, so the cost of capital is
+                # charged here on every payment of this period for the periods it stays deployed: the
+                # same objective differences between plans, none of the sentinel's constant.
+                for q, amount in payments[w][t].items():
+                    costs[w][q] += liquidity.cost_of_capital_per_period * (H - t) * amount
+                continue
             c = m.var(("cash", t, w), lower=liquidity.minimum_cash)
-            b = m.var(("debt", t, w), upper=liquidity.credit_limit)
+            b = m.var(("debt", t, w), upper=np.inf if liquidity.credit_limit is None else liquidity.credit_limit)
             cash[t, w], debt[t, w] = c, b
             # Working capital (P1): the operator's own cash below its opening balance earns the
             # cost of capital elsewhere; charging -rate x cash is that charge up to a constant
@@ -1222,9 +1262,10 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     if world.arrival[source.id, placed] > t:
                         reserve[xw(w, source.id, placed)] += source.unit_price * term.fx_rate_to_currency * term.letter_of_credit_fraction
             m.row(reserve, upper=-liquidity.minimum_cash)
-            if t == H - 1 and tail[w]:
+            if t == H - 1 and tail[w] and liquidity.credit_limit is not None:
                 # Terminal solvency: closing cash above the floor plus unused credit must cover every
                 # invoice this plan commits to after the horizon. No forecast receipts are counted.
+                # (No facility ceiling declared: the headroom is unbounded and the row is not built.)
                 terminal = defaultdict(float, {c: -1, b: 1})
                 for q, amount in tail[w].items():
                     terminal[q] += amount
@@ -1567,7 +1608,13 @@ def solve(req: Request, worlds: list[World], *, service_floor: bool = False,
                     {k[:3]: float(max(0, values[q])) for k, q in tr.items() if k[3] is None and not is_dust(values[q])},
                     {k: float(max(0, values[q])) for k, q in po.items() if not is_dust(values[q], po_pack[k[0]])},
                     service_result, float(economic),
-                    [{"period": t, "scenario": w, "cash": float(values[cash[t, w]]), "debt": float(values[debt[t, w]])} for w in range(len(worlds)) for t in range(H)],
+                    ([{"period": t, "scenario": w, "cash": float(values[cash[t, w]]), "debt": float(values[debt[t, w]])} for w in range(len(worlds)) for t in range(H)]
+                     if req.liquidity.opening_cash is not None else
+                     # undeclared capital: the cash position from an untracked opening balance (negative = deployed), no debt
+                     [{"period": t, "scenario": w,
+                       "cash": float(sum(req.liquidity.known_receivables[s] - req.liquidity.other_payments[s] for s in range(t + 1))
+                                     - sum(values[q] * amount for s in range(t + 1) for q, amount in payments[w][s].items())),
+                       "debt": 0.} for w in range(len(worlds)) for t in range(H)]),
                     elapsed, len(m.names), len(m.rows), gap, residual,
                     ([] if state == "OPTIMAL" else [f"{state}: feasible plan returned without a proof of optimality"]),
                     best_bound=bound, nodes=nodes_count, warm_start=warm, planning_surrogate=telemetry, recourse=recourse_block,

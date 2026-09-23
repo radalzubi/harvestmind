@@ -89,9 +89,12 @@ def apply_cash_cap(req: Request, purchases: dict[tuple[str, int], float]) -> Non
     """Keep each period's cumulative purchase value inside the cash the request declares: opening
     cash plus dated receivables less other payments to date, plus the credit limit. A buyer who
     cannot pay for a full lot orders what can be paid for and reorders when cash allows."""
+    if req.liquidity.opening_cash is None:
+        return      # no cash balance declared: capital does not cap the projection (sentinel cleanup)
     terms = {x.id: x for x in req.terms}
     sources = {s.id: s for s in req.sources}
-    available = req.liquidity.opening_cash - req.liquidity.opening_debt + req.liquidity.credit_limit - req.liquidity.minimum_cash
+    credit = math.inf if req.liquidity.credit_limit is None else req.liquidity.credit_limit
+    available = req.liquidity.opening_cash - req.liquidity.opening_debt + credit - req.liquidity.minimum_cash
     for t in range(req.horizon):
         available += req.liquidity.known_receivables[t] - req.liquidity.other_payments[t]
         lines = [(sid, q) for (sid, k), q in purchases.items() if k == t and q > 0]
