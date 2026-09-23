@@ -13,6 +13,7 @@ from datetime import timedelta
 import hashlib
 import json
 import math
+import os
 from statistics import mean
 from typing import cast, Any
 
@@ -178,6 +179,11 @@ def evaluate(req, solution, worlds, terminal: dict[str, float] | None = None, fi
 WEIGHTED_STATS = True     # False: selector statistics ignore scenario weights
 BAND_GUARD = True         # False: the band's shortage-exposure guard is off
 TRACE: dict | None = None  # when a dict, plan() records its selection internals into it
+# Per-service frontier oracle (frontier decomposition pass): "component" builds the mean-world model once
+# and solves every service's phase-one minimum on its own exact connected component, skipping a service a
+# deterministic witness already serves in full; "monolithic" is the released loop (one full build and
+# solve per service), kept for the equivalence harness and the tests. The values are the same frontier.
+FRONTIER_MODE: str = os.environ.get("HARVESTMIND_FRONTIER_MODE", "component")
 EXCLUDE_FROM_SELECTION: frozenset = frozenset()   # diagnostic: candidates evaluated but never selectable
 
 
@@ -1367,11 +1373,25 @@ def plan(req: Request) -> dict:
         reasons.append("No selection candidate achieves every requested service metric.")
 
     frontier = []
+    frontier_best_of: dict[str, float | None] = {}
+    frontier_telemetry: dict | None = None
+    if FRONTIER_MODE == "component":
+        # The oracle answers one question per service - the best modeled unit fill of that service alone on
+        # the mean world - and that is the phase-one optimum on the exact component of the model that holds
+        # the service (frontier decomposition pass): one build, one solve per unproven service. The witnesses
+        # are this review's usable solutions of restrictions of the same model on the same world: a service
+        # one of them serves in full is at its frontier already.
+        witnesses = [base, incumbent, candidates.get("deterministic_network")]
+        oracle = solve(req, deterministic, service_first="all", service_only=True, frontier_services=tuple(s.id for s in req.services), frontier_witnesses=witnesses)
+        frontier_best_of = {s.id: oracle.projected_service.get(s.id) for s in req.services}
+        frontier_telemetry = oracle.frontier
+    else:
+        for service in req.services:
+            # the released loop: one full build and phase-one solve per service (the cost phase is not consumed)
+            oracle = solve(req, deterministic, service_first=service.id, service_only=True)
+            frontier_best_of[service.id] = oracle.projected_service.get(service.id)
     for service in req.services:
-        # The oracle answers one question - the best modeled unit fill of this service alone on the
-        # mean world - and that is the phase-one optimum; the cost phase is not consumed (perf pass).
-        oracle = solve(req, deterministic, service_first=service.id, service_only=True)
-        best = oracle.projected_service.get(service.id)
+        best = frontier_best_of[service.id]
         frontier.append({"service": service.id, "requested": service.target, "metric": service.metric,
                          "best_modeled_individual_unit_fill": best,
                          "selected_modeled_unit_fill": final.projected_service.get(service.id) if final else None,
@@ -1549,7 +1569,13 @@ def plan(req: Request) -> dict:
                 "milps_no_feasible_solution": sum(1 for c in candidates.values() if c.status == "NO_FEASIBLE_SOLUTION"),
                 "milps_infeasible": sum(1 for c in candidates.values() if c.status == "INFEASIBLE"),
                 "solver_seconds_total": sum(c.solve_seconds or 0. for c in candidates.values()),
-                "adaptive_escalation": req.adaptive_escalation},
+                "adaptive_escalation": req.adaptive_escalation,
+                # frontier decomposition pass: how the per-service frontier was obtained (components, solves, skips);
+                # None on the released monolithic loop
+                "frontier": ({"mode": FRONTIER_MODE, **{k: v for k, v in frontier_telemetry.items() if k != "solves"},
+                              "solves": len(frontier_telemetry.get("solves", [])),
+                              "time_limited": sum(1 for s in frontier_telemetry.get("solves", []) if s["status"] == "FEASIBLE_TIME_LIMIT")}
+                             if frontier_telemetry is not None else None)},
             "solve_quality": {
                 "comparable_gap_threshold": req.comparable_gap, "requested_mip_gap": req.solver_mip_gap,
                 "max_solve_seconds": req.max_solve_seconds,
