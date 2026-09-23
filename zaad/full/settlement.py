@@ -122,7 +122,12 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             if po.remaining - cancelled < po.minimum_remaining_quantity - 1e-6:
                 raise PhysicalViolation("PO reduced below its declared minimum remaining quantity")
         ledger["opening_assets"] += po.prepaid_per_remaining_unit * po.remaining
-    cash, debt = req.liquidity.opening_cash, req.liquidity.opening_debt
+    # Undeclared capital (sentinel cleanup): the cash position is tracked from an untracked opening balance
+    # (0 here; negative = deployed), nothing is borrowed, no floor, ceiling or solvency check applies, and
+    # the cost of capital is charged on the deployed position - the charge a never-exhausted balance produced.
+    opening_cash = req.liquidity.opening_cash
+    credit_limit = req.liquidity.credit_limit
+    cash, debt = (0. if opening_cash is None else opening_cash), req.liquidity.opening_debt
     service_by_period: list[dict] = []
     for t in range(end):
         period_start = req.as_of + timedelta(days=t * req.period_days)
@@ -149,6 +154,8 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
                 rest.append((sku, location, expiry, due, quantity, kind))
         pending = rest
         for warehouse in req.locations:
+            if warehouse.capacity_volume is None:
+                continue      # no declared storage capacity (sentinel cleanup)
             volume = locked[warehouse.id] + sum(q * skus[s].volume for (s, location_key, _), q in stock.items() if location_key == warehouse.id)
             if volume > warehouse.capacity_volume + 1e-5:
                 raise PhysicalViolation("receiving capacity breach")
@@ -330,19 +337,22 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
         ledger["financing"] += interest
         cash += req.liquidity.known_receivables[t] - req.liquidity.other_payments[t] - payments[t] - interest
         reserve = sum(value for due, value in lc if due > t)
-        required = req.liquidity.minimum_cash + reserve
-        borrow = max(0., required - cash)
-        debt += borrow
-        cash += borrow
-        if debt > req.liquidity.credit_limit + 1e-5:
-            raise PhysicalViolation("insufficient dated liquidity")
-        repay = min(debt, max(0., cash - required))
-        cash -= repay
-        debt -= repay
-        # Working capital (P1): own cash deployed below the opening balance earns the cost of
-        # capital elsewhere. Charged after borrowing, so the part financed by drawn credit carries
-        # interest above and never a second capital charge; idle cash above opening earns nothing.
-        ledger["working_capital"] += req.liquidity.cost_of_capital_per_period * max(0., req.liquidity.opening_cash - cash)
+        if opening_cash is None:
+            ledger["working_capital"] += req.liquidity.cost_of_capital_per_period * max(0., -cash)
+        else:
+            required = req.liquidity.minimum_cash + reserve
+            borrow = max(0., required - cash)
+            debt += borrow
+            cash += borrow
+            if credit_limit is not None and debt > credit_limit + 1e-5:
+                raise PhysicalViolation("insufficient dated liquidity")
+            repay = min(debt, max(0., cash - required))
+            cash -= repay
+            debt -= repay
+            # Working capital (P1): own cash deployed below the opening balance earns the cost of
+            # capital elsewhere. Charged after borrowing, so the part financed by drawn credit carries
+            # interest above and never a second capital charge; idle cash above opening earns nothing.
+            ledger["working_capital"] += req.liquidity.cost_of_capital_per_period * max(0., opening_cash - cash)
         trace.append({"period": t, "inventory_value": sum(q * skus[s].asset_value for (s, _, _), q in stock.items()),
                       "cash": cash, "debt": debt, "payments": payments[t], "lc_reserve": reserve,
                       "pending_units": sum(p[4] for p in pending), "expired_units": expired_units})
@@ -352,9 +362,11 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
     # the same declared cash flows the model's own liquidity rows use, so model and settlement agree.
     terminal_liability = sum(v for due, v in payments.items() if due >= end)
     declared_tail = sum(req.liquidity.known_receivables[k] - req.liquidity.other_payments[k] for k in range(end, req.horizon))
-    terminal_headroom = (cash - req.liquidity.minimum_cash) + (req.liquidity.credit_limit - debt) + declared_tail
-    if terminal_liability > terminal_headroom + 1e-5:
-        raise PhysicalViolation(f"post-horizon obligations {terminal_liability:.2f} exceed terminal financing headroom {terminal_headroom:.2f}")
+    terminal_headroom: float | None = None      # None = unbounded (no balance or no ceiling declared)
+    if opening_cash is not None and credit_limit is not None:
+        terminal_headroom = (cash - req.liquidity.minimum_cash) + (credit_limit - debt) + declared_tail
+        if terminal_liability > terminal_headroom + 1e-5:
+            raise PhysicalViolation(f"post-horizon obligations {terminal_liability:.2f} exceed terminal financing headroom {terminal_headroom:.2f}")
     closing_units = sum(stock.values()) + sum(p[4] for p in pending if p[5] == "transfer")
     # External quantities still in transit have not yet entered the conservation equation.
     conservation = initial_units + received_units - served_inputs - expired_units - transit_loss - closing_units

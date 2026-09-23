@@ -38,7 +38,7 @@ from zaad.full.uncertainty import MIN_SUPPLY_RECORDS
 LOCATION = "main"
 CUSTOMER = "customers"
 CALENDAR = "always"
-UNBOUNDED = 1e9
+UNBOUNDED = 1e9          # supplier capacity only, when a supplier has neither a declared capacity nor a purchase order before the origin (see OPTIMIZER_SENTINEL_CLEANUP.md §2)
 PUBLIC_COST_OF_CAPITAL_ANNUAL = .10      # the same public benchmark the FMCG path falls back to
 PUBLIC_STORAGE_HANDLING_ANNUAL = .08
 ASSUMED_FILL = (.95, .05)                # (mean, sd) when fewer than MIN_SUPPLY_RECORDS closed orders
@@ -226,6 +226,13 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         currency = "USD"
     opening_cash = _num(economics.get("opening_cash"), None)
     provenance["liquidity.opening_cash"] = "CUSTOMER_PROVIDED" if opening_cash is not None else "NOT_AVAILABLE"
+    credit_limit = _num(economics.get("credit_limit"), None)
+    provenance["liquidity.credit_limit"] = "CUSTOMER_PROVIDED" if credit_limit is not None else "NOT_AVAILABLE"
+    if opening_cash is None and credit_limit is not None:
+        warnings.append("a credit limit is declared without an opening cash balance: capital is not constrained in the plan (declare opening_cash to enforce it)")
+        credit_limit = None
+    # no location table is read here: the single location declares no storage capacity (sentinel cleanup)
+    provenance["location.main.capacity_volume"] = "NOT_AVAILABLE"
     rule_override = economics.get("incumbent_rule")
     if isinstance(rule_override, str) and rule_override:
         incumbent_rule, rule_prov = rule_override, "CUSTOMER_PROVIDED"
@@ -526,7 +533,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     payload: dict[str, Any] = {
         "operator_id": operator_id, "as_of": known_at + timedelta(seconds=1), "currency": currency, "period_days": period_days, "horizon": horizon,
         "skus": sku_rows,
-        "locations": [{**known, "id": LOCATION, "kind": "warehouse", "capacity_volume": UNBOUNDED, "holding_per_value_period": holding_per_period, "receiving_calendar": CALENDAR}],
+        "locations": [{**known, "id": LOCATION, "kind": "warehouse", "capacity_volume": None, "holding_per_value_period": holding_per_period, "receiving_calendar": CALENDAR}],
         "calendars": [{**known, "id": CALENDAR}],
         "terms": terms_rows, "resources": resource_rows, "sources": source_rows, "stock": stock_rows, "transfers": [], "substitutions": [],
         "customers": [{**known, "id": CUSTOMER, "channel": "wholesale", "priority": 1.}],
@@ -542,8 +549,9 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         "recourse": declared_recourse,
         # ATP / scarce-supply allocation (P5, migration 020): the operator's declared orders, classes and policy; None without the flag or rows
         "atp": declared_atp,
-        "liquidity": {**known, "opening_cash": float(opening_cash if opening_cash is not None else UNBOUNDED), "minimum_cash": 0.,
-                      "credit_limit": float(_num(economics.get("credit_limit"), UNBOUNDED) or UNBOUNDED), "opening_debt": 0.,
+        # undeclared opening cash / credit limit are absent constraints (None), never a large placeholder (sentinel cleanup)
+        "liquidity": {**known, "opening_cash": (None if opening_cash is None else float(opening_cash)), "minimum_cash": 0.,
+                      "credit_limit": (None if credit_limit is None else float(credit_limit)), "opening_debt": 0.,
                       "interest_per_period": interest_period, "cost_of_capital_per_period": cost_of_capital_period,
                       "known_receivables": [0.] * horizon, "other_payments": [0.] * horizon},
         # P1 scope: the fitted world itself is the declared stress (cycle-stock economics, not disruption

@@ -39,11 +39,8 @@ from zaad.sectors.workspace import lot_expiry_periods, parse_states
 
 LANE_CAPACITY_WEEKS = 10.        # declared assumption when a lane's capacity is not given: ten weeks of the destination's demand per week
 LANE_LEAD_DAYS = 7               # declared assumption when neither the lane nor its history gives a lead
-# "No declared capacity" for a location. The frozen model uses the location capacity as the big-M of its
-# depletion and FEFO rows; the single-location adapter's 1e9 is numerically unsafe once a second served
-# location holds more than a period of demand (HiGHS reports infeasible), 1e8 is not. Ten million eaches
-# is beyond any pilot vault and keeps the rows well conditioned.
-UNBOUNDED_LOCATION_UNITS = 1e7
+# "No declared capacity" for a location is an absent constraint (`capacity_volume=None`, sentinel cleanup):
+# no volume row, and the depletion / FEFO rows take a flow-derived bound instead of a placeholder.
 
 
 def _location_rows(conn) -> pd.DataFrame:
@@ -114,7 +111,8 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
         states = parse_states(getattr(row, "storage_states", None))   # sector physics; [] = unrestricted
         if states:
             provenance[f"location.{lid}.storage_states"] = "CUSTOMER_PROVIDED"
-        loc_rows.append({**known, "id": lid, "kind": kind, "capacity_volume": float(capacity) if capacity else UNBOUNDED_LOCATION_UNITS,
+        provenance[f"location.{lid}.capacity_volume"] = "CUSTOMER_PROVIDED" if capacity else "NOT_AVAILABLE"
+        loc_rows.append({**known, "id": lid, "kind": kind, "capacity_volume": float(capacity) if capacity else None,
                          "holding_per_value_period": float(holding), "receiving_calendar": CALENDAR, "storage_states": states})
         kinds[lid] = kind
     ids = {r["id"] for r in loc_rows}

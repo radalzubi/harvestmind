@@ -49,7 +49,11 @@ class Calendar(Dated):
 class Location(Dated):
     id: str
     kind: Literal["central_dc", "regional_dc", "branch", "warehouse"]
-    capacity_volume: float = Field(gt=0)
+    # Storage capacity in volume units. None = the location declares no storage capacity: no volume
+    # constraint is built and the binary linkages that used the capacity as their big-M take a bound
+    # derived from the flow that can reach the location (sentinel cleanup, OPTIMIZER_SENTINEL_CLEANUP.md).
+    # A declared value is enforced exactly as released. The field stays required: an adapter states None.
+    capacity_volume: float | None = Field(gt=0)
     holding_per_value_period: float = Field(ge=0)
     receiving_calendar: str
     # Storage states this location can hold (sector physics). Empty (default) = unrestricted, the
@@ -409,9 +413,15 @@ class SupplierTerms(Dated):
 
 
 class Liquidity(Dated):
-    opening_cash: float
+    # None = no cash balance is declared (sentinel cleanup): capital is not a constraint - no cash floor,
+    # no borrowing, no facility - and purchases are financed as they fall due; the cost of capital is
+    # charged on the cash deployed since the plan's start, in the model and the settlement alike (the
+    # same charge a never-exhausted balance produced). A declared balance keeps the released liquidity rows.
+    opening_cash: float | None
     minimum_cash: float
-    credit_limit: float = Field(ge=0)
+    # None = no facility ceiling: borrowing is unbounded at the declared interest. Irrelevant (and required
+    # to be None) when no opening balance is declared.
+    credit_limit: float | None = Field(ge=0)
     opening_debt: float = Field(ge=0)
     interest_per_period: float = Field(ge=0, le=1)
     # Opportunity cost of the operator's own cash deployed in inventory, per period (P1). Charged on
@@ -420,6 +430,12 @@ class Liquidity(Dated):
     cost_of_capital_per_period: float = Field(default=0., ge=0, le=1)
     known_receivables: tuple[float, ...]
     other_payments: tuple[float, ...]
+
+    @model_validator(mode="after")
+    def undeclared_capital_is_absent(self):
+        if self.opening_cash is None and (self.credit_limit is not None or self.opening_debt > 0):
+            raise ValueError("without an opening cash balance there is nothing to borrow against: credit_limit must be None and opening_debt zero")
+        return self
 
 
 class Stress(Record):
@@ -828,7 +844,7 @@ class Request(Record):
             require(term.currency == self.currency or term.fx_basis == "contracted_hedge")
             require(term.currency != self.currency or term.fx_rate_to_currency == 1)
         require(len(self.liquidity.known_receivables) >= self.horizon and len(self.liquidity.other_payments) >= self.horizon)
-        require(self.liquidity.opening_debt <= self.liquidity.credit_limit)
+        require(self.liquidity.credit_limit is None or self.liquidity.opening_debt <= self.liquidity.credit_limit)
         require(min(self.liquidity.known_receivables) >= 0 and min(self.liquidity.other_payments) >= 0)
         if self.sector_mode is not None or self.sku_physics:
             from zaad.sectors.validation import validate_request

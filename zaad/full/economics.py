@@ -79,7 +79,8 @@ def working_capital(req: Request, result: dict) -> dict[str, float | None]:
     trace = result.get("trace") or []
     if not trace:
         return {"cash_deployed_mean": None, "inventory_value_mean": None, "peak_cash_deployed": None}
-    deployed = [max(0., req.liquidity.opening_cash - row["cash"] + row["debt"]) for row in trace]
+    opening = req.liquidity.opening_cash if req.liquidity.opening_cash is not None else 0.   # undeclared: the position is tracked from 0
+    deployed = [max(0., opening - row["cash"] + row["debt"]) for row in trace]
     return {"cash_deployed_mean": mean(deployed), "peak_cash_deployed": max(deployed),
             "inventory_value_mean": mean(row["inventory_value"] for row in trace)}
 
@@ -420,7 +421,11 @@ def provenance(req: Request) -> dict[str, dict[str, Any]]:
             out[key] = {"value": value, "provenance": label(key, value)}
     for field in ("interest_per_period", "cost_of_capital_per_period", "credit_limit"):
         key = f"liquidity.{field}"
-        value = float(getattr(req.liquidity, field))
+        raw = getattr(req.liquidity, field)
+        if raw is None:
+            out[key] = {"value": None, "provenance": "NOT_AVAILABLE"}      # no facility ceiling declared
+            continue
+        value = float(raw)
         out[key] = {"value": value, "provenance": label(key, value)}
     for st in req.supplier_terms:
         for field in ("minimum_order_value", "fixed_order_cost", "receiving_fee_per_receipt", "receiving_per_pallet", "freight_per_pallet"):

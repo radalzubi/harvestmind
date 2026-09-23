@@ -72,7 +72,7 @@ class NodeView:
     kind: str
     echelon: int | None
     holding_per_value_period: float
-    capacity_volume: float
+    capacity_volume: float | None
     buys: list[str] = field(default_factory=list)       # approved, cleared source ids
     serves: list[str] = field(default_factory=list)     # service ids
     fed_by: list[str] = field(default_factory=list)     # approved lane ids into this node
