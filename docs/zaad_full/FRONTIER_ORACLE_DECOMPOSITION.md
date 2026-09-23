@@ -342,7 +342,27 @@ of each scope on a fresh machine, **consecutive** = the second pass immediately 
 pass with 50 products added; the same requests, scenarios, `solver_mip_gap`, threads and budgets as everywhere else in
 this record. Wall, CPU, frontier and solver time, MILP statuses and peak RSS come from the script's own output.
 
-*(results below when both machines report)*
+### 19.1 Results (wall of the whole plan; frontier time in brackets; every plan RETAIN_INCUMBENT with identical reports)
+
+| products | local M4 Pro (reference, §14) | shared-cpu-2x cold | shared consecutive | shared rested | performance-2x cold | performance consecutive | performance rested | shared / performance |
+|---|---|---|---|---|---|---|---|---|
+| 5 | 199.8 s | 216.4 s (0.4) | 220.5 s (0.1) | 217.0 s (0.4) | 201.8 s (0.04) | 201.8 s (0.04) | 201.8 s (0.04) | 1.08× |
+| 10 | 92.6 s | 185.2 s (3.6) | 168.5 s (4.0) | 182.9 s (3.9) | 100.8 s (0.4) | 101.0 s (0.4) | 100.8 s (0.5) | 1.7–1.8× |
+| 25 | 116.6 s | 325.2 s (**43.8**) | 315.5 s (37.3) | 321.8 s (38.1) | 181.5 s (5.1) | 180.5 s (4.9) | 183.0 s (4.9) | 1.75× (frontier **8×**) |
+| 50 | 157.7 s (985 MB) | — | — | **574.7 s** (frontier 38 solves 156.8 s, 548 MB) | — | — | **225.9 s** (frontier 29 solves 16.0 s, 748 MB) | **2.5×** (frontier 10×) |
+
+**CPU steal.** The shared machine's `/proc/stat` at the end of its run: user 688 s, system 15 s, **steal 3,911 s** — the
+hypervisor took 85 % of the non-idle time from the shared vCPU while the benchmark ran (the performance machine reports no
+steal by construction). That is the "shared-CPU throttling" of §19 of the brief, measured, and it is why the same code on the
+same requests takes 1.7–2.5× longer there and why the frontier's many short solves suffer most (8–10×).
+
+Reading: the 5-product plan is the same everywhere because three candidate classes sit at their 66 s caps (algorithm
+cost, budget-bound). At 10 and 25 products the shared machine is 1.7–1.8× the performance machine on the same image and
+requests, and its frontier — 13 small solves — is 8× slower (43.8 s vs 5.1 s): many short solves suffer most from
+shared-CPU scheduling. Cold, consecutive and rested runs differ by under 5 % on both machines (no warm-up effect; no
+throttling visible inside a pass). The performance machine is 1.4–1.6× the local laptop at 10–50 products. A 50-product
+plan runs in 226 s on the performance machine at 748 MB — inside the 2 GB the production machine has.
+
 
 ## 20. Release record (2026-09-23)
 
@@ -357,4 +377,30 @@ this record. Wall, CPU, frontier and solver time, MILP statuses and peak RSS com
 | tenant isolation | other tenant 404 / anonymous 401 on the job, `report.json` and `report.pdf` |
 | runtime tag | `zaad-frontier-decomposition-runtime` = `328a294` (annotated; older tags untouched) |
 
-## 21–23. *(filled as the pass proceeds)*
+## 21. Infrastructure recommendation (§20) — for the owner, no change made
+
+Separated by the measurements above: **algorithm cost** is now the joint solves' 1e-6 proofs at their caps (identical on every
+machine at 5 products, 100–180 s on a dedicated CPU at 10–25, 226 s at 50); **shared-CPU throttling** multiplies that by
+1.7–2.5× (steal 85 %) and the many-small-solve stages by 8–10×; the **memory ceiling** is no longer the binding constraint for
+the planner (a 50-product plan peaks at 0.75–1.0 GB after this pass; the replay at 50 × 8 peaks at 1.6 GB, tight against 2 GB).
+
+Recommendation: move the optimizer workload to a **dedicated-CPU worker** (`performance-2x`, 4 GB — the class's minimum
+memory, which also lifts the replay's ceiling) rather than resize the API machine: the API's reads degrade 10–20× while a
+plan runs on the same vCPU (§20, the probe's Insights summary 0.64 → 12.5 s p95), so the solver and the API should not share
+a machine at all. A larger shared machine does not remove the steal. The owner decides; nothing was resized, and both
+temporary machines were destroyed after their logs were read (only `0804e0dfd1e948` remains).
+
+## 22. Known limits
+
+* The 26-review replays at 5–25 products remain 1.5–2.5 h locally and partial (8 of 26 dates in the 1,200 s budget) on the
+  shared machine: the joint solves at their caps, not the frontier.
+* No frontier saving on a request with a declared cash balance or supplier-order economics across products (one component).
+* Where the released oracle's solve hit its cap the report carried an incumbent's fill as the frontier; such rows now differ
+  (they are correct now) — seen on two of fifty services at 50 products, never on a frozen fixture.
+* The supplier-capacity `1e9` placeholder stays (§10, with its removal plan).
+* The performance machine ran with 4 GB (Fly's minimum for the class); memory does not enter the 5–25-product comparison.
+
+## 23. Next action
+
+Owner decision on the dedicated worker (§21); the supplier-capacity sentinel removal as its own pass (§10); the two V3 replay
+robustness items on partially loaded workspaces (sentinel record §19) remain open.
