@@ -1,7 +1,6 @@
 # Optimizer numerical-formulation cleanup — undeclared capacity and capital are absent constraints, not 10⁹
 
-**Status: IN PROGRESS (2026-09-22).** Branch `fix/optimizer-sentinel-cleanup` from `main` `34221d4` (= the
-Diagnostic V3.1 runtime `0cad5de` plus its docs commit). Tracker written before any code change.
+**Status: DONE — RELEASED (2026-09-23).** Branch `fix/optimizer-sentinel-cleanup` from `main` `34221d4` (= the Diagnostic V3.1 runtime `0cad5de` plus its docs commit) → PR #94 (tested head `e09b854`, CI 35831587816 13 / 13) merged as `6b8e38d`; Fly `zaad-api` **v36** `canonical-6b8e38d` (digest `sha256:a2902398184b9a65aa74542e4c8000e1238bf4afc7c2383a340b130aefbf7ba1`, deploy-api run 35834091598); Vercel production `dpl_AxcC9XfyaytWybAZzvjgSHj8pMiw` from `6b8e38d`; machine `0804e0dfd1e948` unchanged; runtime tag `zaad-sentinel-cleanup-runtime` = `6b8e38d`. Tracker written before any code change; release record in §19.
 
 Principle of the brief: a missing business constraint is represented as a missing constraint. The optimizer
 abstains because the business problem is unsupported or infeasible, never because an adapter inserted 10⁹
@@ -310,6 +309,13 @@ dedicated-CPU benchmark of the same requests would separate the 5–10× throttl
 it needs a temporary machine, which is Fly spend and the owner's authorisation. Memory, not CPU, caps the
 product scope on the current machine at roughly 25–30 products.
 
-## 19. Release record
+## 19. Release record (2026-09-23)
 
-*(pending)*
+| step | value |
+|---|---|
+| PR #94 | `fix/optimizer-sentinel-cleanup`; tested head `e09b854`; CI run 35831587816 13 / 13 (the first head `e1904a4` failed the integration shard on three tests the change exposed — the end-to-end diagnostic test polling 600 s while the replay used its 1200 s budget on real solves, the lifecycle test queued behind that job, and the 25-product scale test reaching its time cap on the 2-vCPU runner — all three test-only, fixed in `d5744ca`) |
+| merge | `6b8e38d59b5aef262e32a6d34e2c10c356ec23ac` (`Merge PR #94`, main was `34221d4`) |
+| deploy | Fly `zaad-api` **v36**, image `canonical-6b8e38d`, digest `sha256:a2902398184b9a65aa74542e4c8000e1238bf4afc7c2383a340b130aefbf7ba1`, deploy-api run 35834091598; Vercel production `dpl_AxcC9XfyaytWybAZzvjgSHj8pMiw` from `6b8e38d`; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB unchanged; no Fly configuration change |
+| production QA (v36) | `GET /health` 200 on v36. **Planner QA, 25 products** (`production_plan_probe --self-serve --products 25`: a throwaway sample workspace `Planner performance probe`, the product's own plan request with every phase, job `job_b33129fd…`): **TIMEOUT at the 788 s job cap** (`min(1800, 15 × (10 + 25) × 1.5)`), 790 s of run — locally the same request decides in 165 s (§9.1), so the shared machine is ≈ 5× slower and the cap is reached before the joint recovery finishes; before this change the same request abstained falsely in 5 s. Reads during the solve degraded (Insights summary 0.7 s idle → 9–13 s; inventory 0.4 → 2.6 s; 0 errors in 240 reads), the shared vCPU saturated. No 50-product production run (it cannot fit in 2 GB, §17). **Replay QA** (throwaway workspaces **SENTINEL QA DEMO (synthetic)** `op_21daea8e` loaded once with the demo company — the load itself took 689 s on the throttled machine and a first attempt with a 300 s client timeout left a half-loaded workspace `op_9246979a`-style whose replay reported `unavailable` honestly; a second load overlapping the first left duplicate PO rows and `unavailable: duplicate entity ID` — both recorded as V3 robustness items, neither a crash — and second tenant `op_64a8b6ce`; job `job_31df782a10`): `POST` 2.8 s, second press the same job; `queued` 28 s → `reconstructing` → `testing` → `replaying` → `done`, run 1,364 s. Replay **partial**: 8 of 26 dates in the 1200 s budget, solves mean 164 s / max 401 s, peak RSS 391 MB; engine `network`; study selection 5 of 36 products, 31 % of window demand value; every date `RETAIN_INCUMBENT`, 40 of 40 product-weeks identical to the incumbent; attestation clean on all legs; settlement basis actual 100 % measured, rule / ZAAD 3 % measured 97 % inferred; six consistency checks pass; isolation other tenant 404 / anonymous 401 on job, report.json, report.pdf; PDF 41,129 bytes, 11 pages; payload 212 KB. Result stated plainly: ZAAD (= the rule) 0.2 % less costly than the actual orders over the 8-date window, 3 of 8 periods better, worst period 2026-02-02 −110,615 JOD, confidence Low (coverage). |
+| runtime tag | `zaad-sentinel-cleanup-runtime` = `6b8e38d` (annotated; older tags untouched) |
+| not done | supplier-capacity placeholder (§2, deferred with the reason); the 50 × 26 replay (not practical, §12.2); no machine benchmark beyond the shared-vs-local multiplier (§18) |
