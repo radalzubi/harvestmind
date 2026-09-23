@@ -1,6 +1,6 @@
 # Optimizer performance pass — exact frontier oracle decomposition and reuse
 
-**Status: IN PROGRESS (2026-09-23).** Branch `perf/frontier-oracle-decomposition` from `main` `b9d28cc` (= the sentinel
+**Status: DONE — RELEASED (2026-09-23).** PR #95 (tested head `14ba8f4`, CI 35882180173 13 / 13) merged as `328a294`; Fly `zaad-api` **v37** `canonical-328a294`; Vercel production `dpl_DoNrfbM7…`; machine unchanged; runtime tag `zaad-frontier-decomposition-runtime` (§20). Branch `perf/frontier-oracle-decomposition` from `main` `b9d28cc` (= the sentinel
 cleanup runtime `6b8e38d` plus its docs commit). Tracker written before any code change. Brief: make the per-service frontier
 oracle exactly cheaper — identical frontier values, gates, comparability and recommendation — then benchmark the identical
 code on the shared Fly CPU against a temporary performance CPU. Optimization integrity over speed; nothing in §10 of the
@@ -325,6 +325,36 @@ be ≈ 1.7 h of a single process, practical now but not part of this pass's evid
 What remains of a 50-product date is the joint recovery (710 s over 8 dates, 8 of 13 at the cap), the base-stock proxy
 (556 s, 5 at cap) and the joint fitted solve (535 s): the honest 1e-6 proofs on real economics, not the frontier.
 
-## 19–23. Infrastructure, release record
+## 19. Infrastructure benchmark (§19) — set-up
 
-*(filled as the pass proceeds)*
+Only after the software work: the **identical merged image** `registry.fly.io/zaad-api:canonical-328a294` (digest
+`sha256:a8c9333c…`, the image production runs as v37) on two temporary one-shot machines in `fra`, started with
+`fly machine run … -- bash -c '<benchmark>'` (no service, no traffic, destroyed after reading their logs; the production
+machine `0804e0dfd1e948` untouched):
+
+| machine | size | memory | why that memory |
+|---|---|---|---|
+| `bench-shared` `185e6dea5d74e8` | `shared-cpu-2x` (2 vCPU, AMD EPYC) | 2,048 MB | = production |
+| `bench-performance` `d8939d0f119938` | `performance-2x` (2 dedicated vCPU, AMD EPYC) | 4,096 MB | Fly's minimum for the class (`invalid config.guest.memory_mb, minimum required 4096 MiB`); the 5 / 10 / 25-product plans peak below 1 GB, so memory does not enter the comparison; the 50-product plan (985 MB locally) is run on both |
+
+Benchmark: `scripts.frontier_profile --vault sample --products 5,10,25 --plan` twice back to back (**cold** = the first plan
+of each scope on a fresh machine, **consecutive** = the second pass immediately after), then 300 s idle, then a **rested**
+pass with 50 products added; the same requests, scenarios, `solver_mip_gap`, threads and budgets as everywhere else in
+this record. Wall, CPU, frontier and solver time, MILP statuses and peak RSS come from the script's own output.
+
+*(results below when both machines report)*
+
+## 20. Release record (2026-09-23)
+
+| step | value |
+|---|---|
+| PR #95 | `perf/frontier-oracle-decomposition`; tested head `14ba8f49c876d793e5bfb0e8a5066c52e75beddc`; CI run 35882180173, 13 / 13 jobs (plus both Vercel previews; the first `Vercel – zaad` preview of an earlier head failed on a Google Fonts fetch inside `next/font` on Vercel's builder and passed on redeploy of the same commit) |
+| merge | `328a294a00c7e5349685be0cc54a09e4cde9a4ff` (`Merge PR #95`, main was `b9d28cc`) |
+| deploy | Fly `zaad-api` **v37**, image `canonical-328a294`, digest `sha256:a8c9333cce05bd3c2a2d342dc4ac39969ed620fa038c46047b4ef44c722e1da7`, deploy-api run 35885104825; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; no Fly configuration change; Vercel production `dpl_DoNrfbM7DpccU3FFGiUyGJ9HKRnW` (Ready, created at the merge push) |
+| production smoke | `GET /health` 200 (0.46 s) on v37 |
+| production planner QA | `production_plan_probe --self-serve --products 25` (throwaway sample workspace `op_8c12c21a`, the product's own request with every phase, job `job_ff24a607…`): **DONE in 306 s, RETAIN_INCUMBENT** (base-stock proxy 26 s OPTIMAL, incumbent OPTIMAL, `joint_recovery` FEASIBLE_TIME_LIMIT at 89.5 s, six candidate classes INFEASIBLE in 0.5–2 s) — on v36 the same request **timed out at the 788 s cap**. Reads during the solve: 176 reads, 0 errors; Insights summary 0.64 s idle → p95 12.5 s / max 15.0 s; inventory 0.41 → max 3.4 s; the shared vCPU still saturates while a plan runs |
+| production replay QA (v37) | throwaway workspaces **FRONTIER QA DEMO (synthetic)** `op_171b96d3` (demo company loaded once, 1,800 s client timeout) and second tenant `op_db0f80db`; job `job_ede909f180`: `POST` 2.6 s, second press the same job; `queued` 9.5 s → `lanes` → `testing` → `replaying` → `done`, run 1,370 s. Replay **partial, 8 of 26 dates** in the 1,200 s budget (the same coverage as v36: the demo's 5-product date is the joint solves at their caps, solves mean 165 s / max 400 s, peak RSS 383 MB — the frontier was never its cost); study selection 5 of 36 products, 31 % of window demand value; every date RETAIN_INCUMBENT, 40 of 40 product-weeks identical to the incumbent; attestation clean on all legs; settlement basis actual 100 % measured, rule / ZAAD 3 % measured 97 % inferred; six consistency checks pass; report statements identical in substance to v36's (0.2 % less costly than the actual orders over the window, 3 of 8 periods better, worst period 2026-02-02 −110,615 JOD, confidence Low); PDF 41,140 bytes, 11 pages; payload 212 KB |
+| tenant isolation | other tenant 404 / anonymous 401 on the job, `report.json` and `report.pdf` |
+| runtime tag | `zaad-frontier-decomposition-runtime` = `328a294` (annotated; older tags untouched) |
+
+## 21–23. *(filled as the pass proceeds)*

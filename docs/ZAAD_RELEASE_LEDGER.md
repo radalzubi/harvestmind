@@ -1,13 +1,13 @@
 # ZAAD release ledger
 
-## Current state (2026-09-23, optimizer sentinel cleanup released) — the only section that describes NOW
+## Current state (2026-09-23, frontier oracle decomposition released) — the only section that describes NOW
 
 | item | value |
 |---|---|
-| production runtime | `6b8e38d59b5aef262e32a6d34e2c10c356ec23ac` = `Merge PR #94: fix(zaad): undeclared warehouse capacity and capital are absent constraints, not 1e9` (tested head `e09b854`, CI 35831587816 13 / 13) on the Diagnostic V3.1 runtime `0cad5de` (+ its docs commit `34221d4`). Fly `zaad-api` **v36**, image `canonical-6b8e38d`, digest `sha256:a2902398184b9a65aa74542e4c8000e1238bf4afc7c2383a340b130aefbf7ba1`, deploy-api run 35834091598; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; Vercel production `dpl_AxcC9XfyaytWybAZzvjgSHj8pMiw` from `6b8e38d` |
+| production runtime | `328a294a00c7e5349685be0cc54a09e4cde9a4ff` = `Merge PR #95: perf(zaad): Solve the per-service frontier oracle on exact model components` (tested head `14ba8f4`, CI 35882180173 13 / 13) on the sentinel-cleanup runtime `6b8e38d` (+ its docs commit `b9d28cc`). Fly `zaad-api` **v37**, image `canonical-328a294`, digest `sha256:a8c9333cce05bd3c2a2d342dc4ac39969ed620fa038c46047b4ef44c722e1da7`, deploy-api run 35885104825; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; Vercel production `dpl_DoNrfbM7DpccU3FFGiUyGJ9HKRnW` from `328a294` |
 | production health | release smoke on v29 **24 / 24**; rested probes on v29: 1 / 2 / 5 / 8 / 10 products DONE 4.4 / 30.4 / 133.7 / 208.4 / 212.6 s (8 and 10 timed out on v28), reads in their idle band, steal ≤ 5.5 s; a plan spends ~265 s of the burst balance, so a second plan within ~35 min runs throttled (`ZAAD_FULL_PERFORMANCE_PASS.md` §10) |
-| current `main` | = production `6b8e38d` plus the post-merge docs commit |
-| RELEASED | P0 … P4B V1 (as before); Operating Product V1 + V2 (deployed, plan path blocked — no V2 planner tag); **Operating Product V2.1A Insights** (tag `zaad-operating-product-v2.1a-runtime` = `13dde49`); **full performance pass** (tag `zaad-full-performance-pass-runtime` = `914c5c3`); **Enterprise Analytics V1** (tag `zaad-enterprise-analytics-v1-runtime` = `172d808`); **Diagnostic report V2** (tag `zaad-diagnostic-report-v2-runtime` = `e512a62`); **Diagnostic V3** (tag `zaad-diagnostic-v3-runtime` = `d0edf15`); **Diagnostic V3.1** (tag `zaad-diagnostic-v3.1-runtime` = `0cad5de`); **optimizer sentinel cleanup** (tag `zaad-sentinel-cleanup-runtime` = `6b8e38d`) |
+| current `main` | = production `328a294` plus the post-merge docs commit |
+| RELEASED | P0 … P4B V1 (as before); Operating Product V1 + V2 (deployed, plan path blocked — no V2 planner tag); **Operating Product V2.1A Insights** (tag `zaad-operating-product-v2.1a-runtime` = `13dde49`); **full performance pass** (tag `zaad-full-performance-pass-runtime` = `914c5c3`); **Enterprise Analytics V1** (tag `zaad-enterprise-analytics-v1-runtime` = `172d808`); **Diagnostic report V2** (tag `zaad-diagnostic-report-v2-runtime` = `e512a62`); **Diagnostic V3** (tag `zaad-diagnostic-v3-runtime` = `d0edf15`); **Diagnostic V3.1** (tag `zaad-diagnostic-v3.1-runtime` = `0cad5de`); **optimizer sentinel cleanup** (tag `zaad-sentinel-cleanup-runtime` = `6b8e38d`); **frontier oracle decomposition** (tag `zaad-frontier-decomposition-runtime` = `328a294`) |
 | DEFERRED | the workspace read's Python-side construction cost at 10 k+ products (3.6 s / 14 s scoped to 200); a compact display read + server-side plan submission by scope; reconciling the per-MILP budget with the job cap; exposing CPU steal on Diagnostics; P4 adaptive recourse visuals |
 | REJECTED | component-wise decomposition; MIP gap 1e-4 / 1e-3; HiGHS thread changes; warm-start policy change; SQL-side SKU scoping of the workspace read (exact, not the cost); raising the cap or lowering the default scope without the owner |
 | NOT STARTED | P4B V2, P6, P7, P8, P9 — each needs its own authorization |
@@ -15,6 +15,21 @@
 | tags that never move | `p0-frozen`, `p1-frozen-product`, `p1-frozen`, `pre-canonical-integration`, `sector-physics-release-runtime`, `p3-performance-closure-runtime`, `p4-release-runtime`, `p4-performance-closure-runtime`, `p5-frozen-product`, `p5-frozen`, `p5-release-runtime`, `p4b-v1-frozen-product`, `p4b-v1-frozen`, `p4b-v1-release-runtime`, `zaad-post-p4b-cleanup-runtime`, `frontend-rebuild-runtime`, **`zaad-operating-product-v2.1a-runtime`**; no `zaad-operating-product-v2-runtime` (withheld until the planner passes) |
 | current entry point | `docs/zaad_full/CURRENT_SYSTEM.md` |
 | CI | one workflow (`.github/workflows/ci.yml`): 13 jobs, `cancel-in-progress` per branch (a docs push cancels a running PR run; the `pull_request` event re-runs it); `deploy-api.yml` deploys an exact SHA to Fly from a GitHub runner (secret `FLY_API_TOKEN`, 30-day token created 2026-09-15); Markdown-only pushes do not run CI; branch protection unavailable on this plan |
+
+## Frontier oracle decomposition — the per-service frontier on exact model components (2026-09-23)
+
+| item | value |
+|---|---|
+| branch / PR | `perf/frontier-oracle-decomposition`, PR #95 (from `b9d28cc`) |
+| tested head | `14ba8f4` (CI 35882180173, 13 / 13) |
+| merge | `328a294a00c7e5349685be0cc54a09e4cde9a4ff` |
+| deploy | Fly v37 `canonical-328a294`, digest `sha256:a8c9333cce05bd3c2a2d342dc4ac39969ed620fa038c46047b4ef44c722e1da7` (35885104825); Vercel production `dpl_DoNrfbM7DpccU3FFGiUyGJ9HKRnW` from `328a294`; **Fly machine unchanged** |
+| runtime tag | `zaad-frontier-decomposition-runtime` = `328a294` (old tags untouched) |
+| what changed | `zaad/full/frontier.py` + `model.solve(frontier_services=, frontier_witnesses=)` + `planner.FRONTIER_MODE`: the per-service frontier oracle builds the mean-world model once, partitions its constraint matrix into exact connected components (from the rows the builder produced) and solves each service's phase-one minimum on its own component; a service a deterministic witness already serves in full is at its frontier without a solve; the released loop stays callable as `monolithic`; `scripts/frontier_profile.py`; `orchestration.frontier` telemetry in the report |
+| optimizer | frontier values identical wherever the released solve proved its optimum (the two 50-product services whose released solve hit its cap now carry the proven optimum instead of an incumbent's fill); decisions identical on every request and on 86 / 86 replay dates; frozen canonical regression PASS; `solver_mip_gap`, scenarios, floors, gates, tie-breaks, `fefo_symmetry_scope` untouched |
+| effect | sample 50 products: frontier 592 → 8 s, plan 784 → 158 s, RSS 1.9 → 1.0 GB; replay 50 × 8 104 → 32 min (3.1 → 1.6 GB); 25 products plan 169 → 117 s; production 25-product planner DONE in 306 s (was TIMEOUT at 788 s). No gain on cash-coupled requests (one component); the joint solves' 1e-6 proofs remain the cost everywhere else |
+| production QA | throwaway workspaces only; `FRONTIER_ORACLE_DECOMPOSITION.md` §20 |
+| record | `docs/zaad_full/FRONTIER_ORACLE_DECOMPOSITION.md` |
 
 ## Optimizer sentinel cleanup — undeclared capacity and capital are absent constraints, not 10⁹ (2026-09-23)
 
