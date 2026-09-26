@@ -24,7 +24,7 @@ from zaad.full.planner import plan
 from zaad.full.workspace import build_request as build_workspace_request
 
 PAT = (r'"(information_hash|request_hash|fingerprint|input_fingerprint)": "[0-9a-f]+"'
-       r'|"(solve_seconds|solver_seconds_total|seconds|elapsed_seconds|wall_seconds|plan_wall_s)": [^,}]+')
+       r'|"(solve_seconds|solver_seconds_total|seconds|elapsed_seconds|wall_seconds|plan_wall_s|partition_seconds|extract_seconds)": [^,}]+')
 
 
 def _strip(rep: dict) -> str:

@@ -23,7 +23,7 @@ from zaad.full.planner import plan, report_json
 
 
 PAT = (r'\\?"(information_hash|request_hash|fingerprint)\\?": \\?"[0-9a-f]+\\?"'
-       r'|\\?"(solve_seconds|solver_seconds_total|seconds|elapsed_seconds|wall_seconds|plan_wall_s)\\?": [0-9.e-]+'
+       r'|\\?"(solve_seconds|solver_seconds_total|seconds|elapsed_seconds|wall_seconds|plan_wall_s|partition_seconds|extract_seconds)\\?": [0-9.e-]+'
        r'|\\?"atp\\?": (null|\{[^{}]*\})')   # timing, hashes (also inside embedded JSON strings) and the request echo of the block itself
 
 
