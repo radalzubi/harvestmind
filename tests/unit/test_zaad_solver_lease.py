@@ -63,6 +63,9 @@ class FakeSolves:
         return FakeProcess(done), FakePipe(done, ("DONE", "{}", None))
 
     def finish(self, identity: str) -> None:
+        # the runner marks a job RUNNING before it launches the process, so a test that saw RUNNING may
+        # finish the job before this fake has registered it: wait for the launch, then finish it
+        _until(lambda: identity in self.events)
         self.events[identity].set()
 
 
