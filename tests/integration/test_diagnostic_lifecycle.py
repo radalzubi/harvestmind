@@ -12,6 +12,8 @@ import time
 
 import pytest
 
+from api.routers import jobs as jobs_router
+
 import infrastructure.operator_registry as orm
 from api.routers import jobs as J
 
@@ -140,7 +142,8 @@ def test_failed_carries_a_reference(api, monkeypatch):
     monkeypatch.setattr(J, "_run_commercial", FakeDiagnostic(fail=True))
     j = cl.post("/jobs/diagnostic", headers=h).json()
     failed = _wait(cl, h, j["id"], lambda x: x["status"] == "failed")
-    assert "solver exploded" in failed["error"] and failed["reference"] == j["id"]
+    # the operator sees the failure's class and a reference; the message stays in the server log (security review 2026-09, SEC-024)
+    assert "RuntimeError" in failed["error"] and "solver exploded" not in failed["error"] and failed["reference"] == j["id"]
     assert cl.get(f"/jobs/{j['id']}/report.pdf", headers=h).status_code == 409
 
 
@@ -214,7 +217,7 @@ def test_stale_machine_job_is_reaped_and_machine_destroyed(api, monkeypatch):
     assert destroyed == ["m-1"]
     # a worker that reports late is told to stop and does not resurrect the job
     monkeypatch.setenv("HARVESTMIND_WORKER_TOKEN", "wt")
-    late = cl.post(f"/jobs/internal/{job['id']}/progress", headers={"X-Worker-Token": "wt"}, json={"progress": "still here", "stage": "testing"})
+    late = cl.post(f"/jobs/internal/{job['id']}/progress", headers={"X-Worker-Token": jobs_router.job_token(job["id"])}, json={"progress": "still here", "stage": "testing"})
     assert late.json()["ok"] is False
     assert cl.get(f"/jobs/{job['id']}", headers=h).json()["status"] == "timed_out"
 
@@ -279,14 +282,14 @@ def test_worker_progress_accepts_stage_and_rejects_unknown_stage(api, monkeypatc
            "summary": None, "report": None, "timing": {}, "_cancel": threading.Event()}
     J._JOBS[job["id"]] = job
     assert cl.get(f"/jobs/{job['id']}", headers=h).json()["status"] == "queued"
-    assert cl.post(f"/jobs/internal/{job['id']}/progress", headers={"X-Worker-Token": "wt"}, json={"progress": "x", "stage": "bogus"}).json()["ok"]
+    assert cl.post(f"/jobs/internal/{job['id']}/progress", headers={"X-Worker-Token": jobs_router.job_token(job["id"])}, json={"progress": "x", "stage": "bogus"}).json()["ok"]
     assert cl.get(f"/jobs/{job['id']}", headers=h).json()["stage"] is None
-    assert cl.post(f"/jobs/internal/{job['id']}/progress", headers={"X-Worker-Token": "wt"}, json={"progress": "y", "stage": "testing"}).json()["ok"]
+    assert cl.post(f"/jobs/internal/{job['id']}/progress", headers={"X-Worker-Token": jobs_router.job_token(job["id"])}, json={"progress": "y", "stage": "testing"}).json()["ok"]
     assert cl.get(f"/jobs/{job['id']}", headers=h).json()["stage"] == "testing"
     assert cl.post(f"/jobs/internal/{job['id']}/progress", headers={"X-Worker-Token": "nope"}, json={"progress": "z"}).status_code == 401
     # result completes the job with a structured report
     summary = FakeDiagnostic()(None, {"id": job["id"], "status": "running"})
-    r = cl.post(f"/jobs/internal/{job['id']}/result", headers={"X-Worker-Token": "wt"}, json={"status": "done", "summary": summary})
+    r = cl.post(f"/jobs/internal/{job['id']}/result", headers={"X-Worker-Token": jobs_router.job_token(job["id"])}, json={"status": "done", "summary": summary})
     assert r.json()["ok"]
     done = cl.get(f"/jobs/{job['id']}", headers=h).json()
     assert done["status"] == "done" and done["report"]["conclusion"]["kind"] == "keep_current"

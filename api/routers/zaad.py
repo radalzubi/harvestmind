@@ -28,7 +28,8 @@ _slots = threading.BoundedSemaphore(2)
 def bounded_rate(request: Request) -> None:
     """Mandatory per-process cap, never disabled by legacy dev settings."""
     now = time.monotonic()
-    client = request.client.host if request.client else "unknown"
+    from api.dependencies import client_ip
+    client = client_ip(request)      # the proxy-stamped address, never X-Forwarded-For (security review 2026-09, SEC-008)
     with _lock:
         for key in list(_recent):
             bucket = _recent[key]

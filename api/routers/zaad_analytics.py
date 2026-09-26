@@ -63,7 +63,7 @@ async def body_of(request: HTTPRequest) -> dict[str, Any]:
         raw.extend(chunk)
     try:
         parsed = json.loads(raw or b"{}")
-    except ValueError as exc:
+    except (ValueError, RecursionError) as exc:      # a document nested past the interpreter's limit is not valid input either
         raise HTTPException(400, "That request body is not valid JSON.") from exc
     if not isinstance(parsed, dict):
         raise HTTPException(400, "A JSON object is expected.")

@@ -28,6 +28,7 @@ flagged in its metadata.
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -35,7 +36,18 @@ from typing import Any
 
 from ingestion.llm_extractor import ExtractionResult, SourcePayload
 
-AUDIT_ROOT = Path(__file__).resolve().parents[1] / "training" / "audit_log"
+# Under the deployment's data directory when one is declared (the volume), else the repository's
+# training/audit_log for local development (security review 2026-09, SEC-030: nothing tenant-derived is
+# written under the application directory in a deployment).
+AUDIT_ROOT = (Path(os.environ["HARVESTMIND_DATA_ROOT"]) / "extraction_sessions" if os.environ.get("HARVESTMIND_DATA_ROOT")
+              else Path(__file__).resolve().parents[1] / "training" / "audit_log")
+
+#: The only shape a session id has (`llm_extractor.extract`); anything else never becomes a path (SEC-004).
+SESSION_ID = re.compile(r"^[A-Za-z0-9_-]{4,64}$")
+
+
+def valid_session_id(session_id: object) -> bool:
+    return isinstance(session_id, str) and bool(SESSION_ID.match(session_id))
 
 _EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 _PHONE_RE = re.compile(
@@ -81,9 +93,31 @@ def _scrub_result(result: ExtractionResult) -> tuple[dict, bool]:
 
 
 def _session_dir(session_id: str, root: Path | None = None) -> Path:
+    if not valid_session_id(session_id):
+        raise ValueError("invalid extraction session id")
     d = (root or AUDIT_ROOT) / session_id
     d.mkdir(parents=True, exist_ok=True)
     return d
+
+
+def bind_session(session_id: str, operator_id: str, root: Path | None = None) -> None:
+    """Record which workspace produced the session (written once; SEC-002 / SEC-003)."""
+    d = _session_dir(session_id, root)
+    owner = d / "owner.json"
+    if not owner.exists():
+        owner.write_text(json.dumps({"operator_id": operator_id}))
+
+
+def session_owner(session_id: str, root: Path | None = None) -> str | None:
+    if not valid_session_id(session_id):
+        return None
+    owner = (root or AUDIT_ROOT) / session_id / "owner.json"
+    if not owner.exists():
+        return None
+    try:
+        return str(json.loads(owner.read_text()).get("operator_id") or "") or None
+    except ValueError:
+        return None
 
 
 def _median_tokens(root: Path) -> float | None:
@@ -164,10 +198,19 @@ def log_extraction(
     return d
 
 
-def load_session(session_id: str, root: Path | None = None) -> dict | None:
-    """Load the logged (scrubbed) result for the confirmation UI / API."""
+def load_session(session_id: str, root: Path | None = None, operator_id: str | None = None) -> dict | None:
+    """Load the logged (scrubbed) result for the confirmation UI / API.
+
+    With `operator_id`, only a session that workspace produced is returned (a session of another
+    workspace is indistinguishable from a missing one); an unbound session is never returned to a
+    workspace-scoped caller."""
+    if not valid_session_id(session_id):
+        return None
     f = (root or AUDIT_ROOT) / session_id / "result.json"
     if not f.exists():
+        return None
+    owner = session_owner(session_id, root)
+    if operator_id is not None and owner != operator_id:
         return None
     return json.loads(f.read_text())
 

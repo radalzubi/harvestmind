@@ -176,8 +176,9 @@ async def respond(request: HTTPRequest, who: Who, conn=Depends(get_conn)):
         job = runner().store.get(job_id, who.operator_id)
     except KeyError as exc:
         raise HTTPException(404, "That plan is not in this workspace.") from exc
-    except HTTPException:
-        job = {}
+    except HTTPException as exc:
+        # no job store: the plan's ownership cannot be established, so nothing is recorded (security review 2026-09)
+        raise HTTPException(503, {"code": "job_store_unavailable", "message": "Decision responses need the planning job store."}) from exc
     report = job.get("report") or {}
     existing = _rows(conn, "SELECT * FROM zaad_decision_responses WHERE operator_id = ? AND job_id = ? AND decision_id = ?",
                      [who.operator_id, job_id, decision_id])

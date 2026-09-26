@@ -151,6 +151,9 @@ def update_analysis(conn: Any, operator: str, actor: Actor | None, analysis_id: 
         raise AnalyticsRefused("spec_invalid", f"Cannot change {', '.join(sorted(unknown))}.")
     name = str(changes.get("name", row["name"]))[:160]
     description = changes.get("description", row["description"])
+    description = None if description is None else str(description)[:2000]
+    if "notes" in changes and changes["notes"] is not None:
+        changes["notes"] = str(changes["notes"])[:2000]
     visibility = str(changes.get("visibility", row["visibility"]))
     if visibility not in ("private", "workspace"):
         raise AnalyticsRefused("spec_invalid", "visibility is private or workspace.")

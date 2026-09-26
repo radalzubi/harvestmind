@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { KeyRound, LogOut } from "lucide-react";
 import { Card, CardBody, CardHead, InfoBanner, PageHeader, Tbtn } from "@/components/ui";
-import { apiFetch, clearApiToken, getApiToken, setApiToken } from "@/lib/api";
+import { BASE_URL, apiFetch, clearApiToken, getApiToken, setApiToken } from "@/lib/api";
 import { useToast } from "@/components/Toast";
 
 function AccessInner() {
@@ -24,14 +24,18 @@ function AccessInner() {
   useEffect(() => {
     const t = params.get("token");
     if (!t) return;
-    setApiToken(t);
-    apiFetch("/me").then(() => {
+    // The credential leaves the address bar and the history entry before anything else happens, and it is
+    // stored only once the API has accepted it (security review 2026-09, SEC-011).
+    window.history.replaceState(window.history.state, "", "/access");
+    fetch(`${BASE_URL}/me`, { headers: { Authorization: `Bearer ${t.trim()}` } }).then((r) => {
+      if (!r.ok) throw new Error("refused");
+      setApiToken(t);
       setConnected(true);
       toast.push("Workspace connected");
       router.replace("/start");
     }).catch(() => {
       clearApiToken();
-      setRefused("That access link is not valid. It may already have been used, or replaced since it was sent.");
+      setRefused("That access link is not valid. It may have been replaced since it was sent.");
       toast.push("That access link is not valid.");
       router.replace("/access");
     });

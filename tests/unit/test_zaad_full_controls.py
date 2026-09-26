@@ -8,7 +8,8 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from api.main import app
-from api.dependencies import require_operator
+from api.product.governance import actor_from as _actor_from
+from api.dependencies import require_actor, require_operator
 from zaad.full.contracts import Request, ShipmentObservation
 from zaad.full.demo import example
 from zaad.full.eta import conditional_eta
@@ -172,6 +173,8 @@ def test_settlement_rejects_phantom_transfer():
 
 def test_api_shadow_requires_authentication_even_dev():
     app.dependency_overrides[require_operator] = lambda: None
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: None)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     try:
         client = TestClient(app)
         assert client.post("/api/zaad/network/shadow", json=example().model_dump(mode="json")).status_code == 401
@@ -181,6 +184,8 @@ def test_api_shadow_requires_authentication_even_dev():
 
 def test_api_rejects_cross_tenant():
     app.dependency_overrides[require_operator] = lambda: "different"
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: "different")(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     try:
         client = TestClient(app)
         assert client.post("/api/zaad/network/plan", json=example().model_dump(mode="json")).status_code == 403

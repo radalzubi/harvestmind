@@ -28,10 +28,10 @@ Project root `web/`. Environment: `NEXT_PUBLIC_API_URL=https://zaad-api.fly.dev`
 Set one secret and the API creates them at startup (idempotent):
 
 ```bash
-fly secrets set HARVESTMIND_SEED_WORKSPACES="NTDCO|commercial|839285|/logos/ntdco.jpg"
+fly secrets set HARVESTMIND_SEED_WORKSPACES="<Customer>|commercial|<access code: 12+ random characters, never a number, never written down here>|/logos/<customer>.jpg"
 ```
 
-Entries are `name|sector|key|logo`, separated by `;`. The key is stored hashed and works like a token: the customer types it on the landing page and lands on a welcome screen with their name and logo, then their workspace. Put the logo file in `web/public/logos/`. Short keys are for a handful of invited pilots; rotate them with `scripts/seed_workspace.py` and clear them after the pilot.
+Entries are `name|sector|key|logo`, separated by `;`. The key is stored hashed and works like a token: the customer types it on the landing page and lands on a welcome screen with their name and logo, then their workspace. Put the logo file in `web/public/logos/`. Keys are for a handful of invited pilots; they must be at least twelve random characters (a code authenticates as the workspace administrator), must never be committed anywhere, and are rotated with `scripts/seed_workspace.py` and cleared after the pilot. Failed authentications are throttled (10 per minute per address, 300 per minute overall).
 
 ## 2c. DNS at Namecheap for zaadsupply.com
 

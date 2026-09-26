@@ -380,11 +380,13 @@ def to_pdf(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: di
     small = ParagraphStyle("small", parent=styles["Normal"], fontSize=8.5, leading=11,
                            textColor=colors.HexColor("#5A5A55"))
     story: list[Any] = [
-        Paragraph(f"<b>Purchase order</b> {safe_cell(draft.get('reference') or draft.get('draft_id'))}", styles["Title"]),
+        # customer text is XML-escaped: a paragraph parses markup, and `<img src=…>` would make reportlab fetch a
+        # URL or read a file (security review 2026-09, SEC-014); the formula guard stays for the spreadsheet formats
+        Paragraph(f"<b>Purchase order</b> {escape(safe_cell(draft.get('reference') or draft.get('draft_id')))}", styles["Title"]),
         Paragraph(" · ".join(x for x in [
-            workspace,
-            f"Supplier {safe_cell(draft.get('supplier_id'))}" if draft.get("supplier_id") else "",
-            f"Deliver to {safe_cell(draft.get('destination_id'))}" if draft.get("destination_id") else "",
+            escape(str(workspace)),
+            f"Supplier {escape(safe_cell(draft.get('supplier_id')))}" if draft.get("supplier_id") else "",
+            f"Deliver to {escape(safe_cell(draft.get('destination_id')))}" if draft.get("destination_id") else "",
             f"Revision {draft.get('revision')}" if draft.get("revision") else "",
         ] if x), small),
         Spacer(1, 8),
@@ -413,7 +415,7 @@ def to_pdf(draft: dict[str, Any], profile: dict[str, Any], *, supplier_names: di
     story.append(table)
     story.append(Spacer(1, 10))
     if draft.get("notes"):
-        story.append(Paragraph(safe_cell(draft["notes"]), small))
+        story.append(Paragraph(escape(safe_cell(draft["notes"])), small))
         story.append(Spacer(1, 6))
     story.append(Paragraph(
         "This document was produced by ZAAD for the operator to place themselves. ZAAD has not sent it "

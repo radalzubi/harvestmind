@@ -86,6 +86,67 @@ def auth_posture() -> dict:
             "rate_limit_per_min": int(os.getenv("HARVESTMIND_RATE_LIMIT_PER_MIN", "0"))}
 
 
+# ── client address ───────────────────────────────────────────────────────────
+# The server runs behind Fly's proxy with proxy headers trusted from any peer (`api/serve.py`), so
+# `request.client.host` is whatever the caller wrote into X-Forwarded-For (security review 2026-09,
+# SEC-008). The proxy itself stamps `Fly-Client-IP` with the real address and overwrites any value a
+# client sends; that header is the address of record whenever it is present, and the socket peer
+# otherwise (local runs, the private network). X-Forwarded-For is never read for a limit.
+
+def client_ip(request: Request) -> str:
+    stamped = request.headers.get("fly-client-ip")
+    if stamped:
+        return stamped.strip()[:64]
+    client = getattr(request, "client", None)
+    return (client.host if client else "unknown")[:64]
+
+
+# ── failed authentication throttle ──────────────────────────────────────────
+# A pilot access code is short and human-typed, so guessing must be expensive: after
+# FAILED_AUTH_PER_MIN wrong tokens from one address (or FAILED_AUTH_GLOBAL_PER_MIN across all) the
+# API answers 429 with Retry-After for the rest of the minute, before touching the registry.
+FAILED_AUTH_PER_MIN = int(os.getenv("HARVESTMIND_FAILED_AUTH_PER_MIN", "10"))
+FAILED_AUTH_GLOBAL_PER_MIN = int(os.getenv("HARVESTMIND_FAILED_AUTH_GLOBAL_PER_MIN", "300"))
+_FAILED_AUTH: dict[str, list[float]] = {}
+_FAILED_AUTH_GLOBAL: list[float] = []
+_AUTH_LOCK = __import__("threading").Lock()
+
+
+def _prune(bucket: list[float], now: float) -> list[float]:
+    return [t for t in bucket if now - t < 60.0]
+
+
+def _auth_throttled(client: str | None) -> bool:
+    if client is None:
+        return False
+    import time
+    now = time.time()
+    with _AUTH_LOCK:
+        global _FAILED_AUTH_GLOBAL
+        _FAILED_AUTH_GLOBAL = _prune(_FAILED_AUTH_GLOBAL, now)
+        own = _FAILED_AUTH[client] = _prune(_FAILED_AUTH.get(client, []), now)
+        for key in [k for k, v in _FAILED_AUTH.items() if not v]:
+            del _FAILED_AUTH[key]
+        return len(own) >= FAILED_AUTH_PER_MIN or len(_FAILED_AUTH_GLOBAL) >= FAILED_AUTH_GLOBAL_PER_MIN
+
+
+def _auth_failed(client: str | None) -> None:
+    if client is None:
+        return
+    import time
+    now = time.time()
+    with _AUTH_LOCK:
+        _FAILED_AUTH.setdefault(client, []).append(now)
+        _FAILED_AUTH_GLOBAL.append(now)
+        if len(_FAILED_AUTH) > 10000:      # bounded memory whatever the address churn
+            _FAILED_AUTH.clear()
+
+
+def _refuse_throttled() -> None:
+    raise HTTPException(status_code=429, detail="Too many failed authentication attempts; retry in a minute.",
+                        headers={"Retry-After": "60"})
+
+
 def _token_from_headers(authorization: str | None, x_api_key: str | None) -> str | None:
     if authorization and authorization.lower().startswith("bearer "):
         return authorization[7:].strip()
@@ -97,19 +158,24 @@ def _token_from_headers(authorization: str | None, x_api_key: str | None) -> str
 def authenticate_operator(
     authorization: str | None = None,
     x_api_key: str | None = None,
+    client: str | None = None,
 ) -> str | None:
     """Core auth logic (plain Python, callable in tests).
 
     Returns the token's operator_id when a valid token is presented (in any
     mode); returns None when no token is presented and auth is not enforced
     (dev fallback — callers then use their legacy param); raises 401 when a
-    token is invalid, or when none is presented and auth IS enforced.
+    token is invalid, or when none is presented and auth IS enforced. `client`
+    is the address of record for the failed-authentication throttle (429).
     """
     token = _token_from_headers(authorization, x_api_key)
     if token:
+        if _auth_throttled(client):
+            _refuse_throttled()
         from infrastructure.operator_registry import OperatorRegistry
         oid = OperatorRegistry().operator_id_for_token(token)
         if oid is None:
+            _auth_failed(client)
             raise HTTPException(status_code=401, detail="Invalid API token")
         return oid
     if auth_required():
@@ -118,14 +184,15 @@ def authenticate_operator(
 
 
 def require_operator(
+    request: Request,
     authorization: str | None = Header(default=None),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> str | None:
     """FastAPI dependency wrapper around :func:`authenticate_operator`."""
-    return authenticate_operator(authorization, x_api_key)
+    return authenticate_operator(authorization, x_api_key, client_ip(request))
 
 
-def authenticate_actor(authorization: str | None = None, x_api_key: str | None = None):
+def authenticate_actor(authorization: str | None = None, x_api_key: str | None = None, client: str | None = None):
     """Who is acting: the actor record for the token, or None in permissive dev with no token.
 
     The workspace's own token is its pilot administrator; a named actor's token carries the
@@ -135,9 +202,12 @@ def authenticate_actor(authorization: str | None = None, x_api_key: str | None =
 
     token = _token_from_headers(authorization, x_api_key)
     if token:
+        if _auth_throttled(client):
+            _refuse_throttled()
         from infrastructure.operator_registry import OperatorRegistry
         record = OperatorRegistry().actor_for_token(token)
         if record is None:
+            _auth_failed(client)
             raise HTTPException(status_code=401, detail="Invalid API token")
         return actor_from(record)
     if auth_required():
@@ -146,11 +216,36 @@ def authenticate_actor(authorization: str | None = None, x_api_key: str | None =
 
 
 def require_actor(
+    request: Request,
     authorization: str | None = Header(default=None),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ):
     """FastAPI dependency: the acting person, with role and capabilities (Operating Product V2)."""
-    return authenticate_actor(authorization, x_api_key)
+    return authenticate_actor(authorization, x_api_key, client_ip(request))
+
+
+def capability(name: str):
+    """FastAPI dependency factory: the acting person must hold `name` (security review 2026-09, SEC-007).
+
+    Every route that starts a solve, a diagnostic or a model call, records a decision or an outcome, changes
+    a workspace-level setting or writes traceability data names the capability its role must grant; the
+    role always comes from the token. In permissive dev with no token there is no actor and the route
+    behaves as it always has. A refusal is 403 with the governance message, never a 500.
+    """
+    from api.product.governance import CAPABILITIES, Forbidden, need
+    if name not in CAPABILITIES:
+        raise ValueError(f"unknown capability {name!r}")
+
+    def dependency(actor=Depends(require_actor)) -> None:
+        if actor is None:
+            return
+        try:
+            need(actor, name)
+        except Forbidden as exc:
+            raise HTTPException(status_code=403, detail={"code": "forbidden", "message": str(exc)}) from exc
+
+    dependency.__name__ = f"capability_{name}"
+    return dependency
 
 
 # ── Rate limiting (heavy/expensive endpoints) ────────────────────────────────
@@ -161,24 +256,30 @@ _RL_BUCKETS: dict = {}
 
 
 def rate_limiter(request: Request) -> None:
-    """FastAPI dependency: cap requests/min per client IP + path.
+    """FastAPI dependency: cap requests/min per client address + route.
 
     No-op unless HARVESTMIND_RATE_LIMIT_PER_MIN > 0, so dev/tests are
-    unaffected. 429 when the per-minute cap is exceeded.
+    unaffected. 429 when the per-minute cap is exceeded. The address is the
+    proxy-stamped one (`client_ip`), the key is the route template rather than
+    the raw path (an id in the path does not buy a fresh bucket), and empty
+    buckets are dropped so the map cannot grow with address churn.
     """
     limit = int(os.getenv("HARVESTMIND_RATE_LIMIT_PER_MIN", "0"))
     if limit <= 0:
         return
     import time
     now = time.time()
-    client = getattr(request, "client", None)
-    ip = client.host if client else "unknown"
-    key = (ip, request.url.path)
-    bucket = [t for t in _RL_BUCKETS.get(key, []) if now - t < 60.0]
-    if len(bucket) >= limit:
-        raise HTTPException(status_code=429, detail="Rate limit exceeded")
-    bucket.append(now)
-    _RL_BUCKETS[key] = bucket
+    route = request.scope.get("route")
+    template = getattr(route, "path", None) or request.url.path
+    key = (client_ip(request), template)
+    with _AUTH_LOCK:
+        for stale in [k for k, v in _RL_BUCKETS.items() if not v or now - v[-1] >= 60.0]:
+            del _RL_BUCKETS[stale]
+        bucket = [t for t in _RL_BUCKETS.get(key, []) if now - t < 60.0]
+        if len(bucket) >= limit:
+            raise HTTPException(status_code=429, detail="Rate limit exceeded", headers={"Retry-After": "60"})
+        bucket.append(now)
+        _RL_BUCKETS[key] = bucket
 
 
 def get_db_path() -> str:

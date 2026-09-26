@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.dependencies import require_operator
+from api.dependencies import capability, require_operator
 
 router = APIRouter(prefix="/pool", tags=["pool"])
 
@@ -39,7 +39,7 @@ def pool_status(operator_id: str | None = None,
     return out
 
 
-@router.post("/consent")
+@router.post("/consent", dependencies=[Depends(capability("manageSettings"))])
 def set_pool_consent(consented: bool, operator_id: str | None = None,
                      authed: str | None = Depends(require_operator)):
     """Dashboard toggle. Withdrawal stops future contributions

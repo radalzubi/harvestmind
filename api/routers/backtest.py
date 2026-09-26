@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.dependencies import get_conn, rate_limiter
+from api.dependencies import capability, get_conn, rate_limiter
 from api.models.schemas import BacktestRequest, BacktestResponse
 
 router = APIRouter(prefix="/backtest", tags=["backtest"])
 
 
 @router.post("/run", response_model=BacktestResponse,
-             dependencies=[Depends(rate_limiter)])
+             dependencies=[Depends(rate_limiter), Depends(capability("runPlanner"))])
 def run_backtest(req: BacktestRequest, conn=Depends(get_conn)):
     """Run rolling-origin backtest against historical data in the DB."""
     from backtesting.rolling_origin_engine import RollingOriginEngine, BacktestConfig
@@ -68,7 +68,7 @@ def get_backtest_results(conn=Depends(get_conn)):
     return df.to_dict("records")
 
 
-@router.post("/benchmark")
+@router.post("/benchmark", dependencies=[Depends(capability("runPlanner"))])
 def run_benchmark_suite(
     folds: int = 8,
     train_weeks: int = 26,

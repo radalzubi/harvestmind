@@ -62,6 +62,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import multiprocessing as mp
+import logging
 import os
 from pathlib import Path
 import socket
@@ -109,8 +110,9 @@ def _run(request_json: str, conn) -> None:  # child process entry
         req = Request.model_validate_json(request_json)
         report = plan(req)
         conn.send(("DONE", report_json(report), None))
-    except Exception as exc:  # noqa: BLE001  the parent records the failure verbatim
-        conn.send(("FAILED", None, f"{type(exc).__name__}: {exc}"[:2000]))
+    except Exception as exc:  # noqa: BLE001  the parent records the failure's class; the text stays in the worker log
+        logging.getLogger("zaad.full.jobs").exception("planning job failed")
+        conn.send(("FAILED", None, f"the planner failed ({type(exc).__name__})"))
     finally:
         conn.close()
 
@@ -403,7 +405,8 @@ class JobRunner:
             self._execute_guarded(identity)
         except Exception as exc:  # noqa: BLE001  a runner fault is a recorded failure, not a hung job
             try:
-                self.store.update(identity, status="FAILED", finished_at=_now(), error=f"runner: {type(exc).__name__}: {exc}"[:2000])
+                logging.getLogger("zaad.full.jobs").exception("planning runner failed for %s", identity)
+                self.store.update(identity, status="FAILED", finished_at=_now(), error=f"the planning runner failed ({type(exc).__name__})")
             except Exception:  # noqa: BLE001  storage gone (e.g. test teardown): nothing left to record into
                 pass
 

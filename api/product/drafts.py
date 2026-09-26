@@ -636,7 +636,10 @@ def _prepare_draft(operator: str, body: dict[str, Any], actor: str | None) -> Pr
         action, actor, _now(), _now(),
         _identifier(body.get("supersedes"), "The revision this replaces"),
         transfer_origin]
-    checked = _check_lines(operator, draft_id, list(body.get("lines") or []))
+    raw_lines = body.get("lines") or []
+    if not isinstance(raw_lines, list) or any(not isinstance(line, dict) for line in raw_lines):
+        raise DraftRefused("Lines are a list of objects, each with a SKU and a quantity.")   # security review 2026-09, SEC-036
+    checked = _check_lines(operator, draft_id, list(raw_lines))
     return draft_id, origin, head, checked
 
 

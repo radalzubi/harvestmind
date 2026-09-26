@@ -11,7 +11,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-from api.dependencies import get_conn, require_operator
+from api.product.governance import actor_from as _actor_from
+from api.dependencies import get_conn, require_actor, require_operator
 from api.routers import zaad_full
 from scripts.setup_db import setup_db
 from tests.unit.test_zaad_sourcing_workspace import make_network_vault
@@ -95,6 +96,8 @@ def _app(vault, operator="tenant_n"):
 
     app.dependency_overrides[get_conn] = conn_override
     app.dependency_overrides[require_operator] = lambda: operator
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: operator)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     from api.routers.zaad import bounded_rate
     app.dependency_overrides[bounded_rate] = lambda: None
     return app
@@ -134,6 +137,8 @@ def test_planner_api_carries_the_block_and_the_plan_shape():
     app = FastAPI()
     app.include_router(zaad_full.router)
     app.dependency_overrides[require_operator] = lambda: req.operator_id
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: req.operator_id)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     from api.routers.zaad import bounded_rate
     app.dependency_overrides[bounded_rate] = lambda: None
     r = TestClient(app).post("/api/zaad/network/plan", json=req.model_dump(mode="json"))
@@ -222,6 +227,8 @@ def test_release_audit_api_bounds_the_declared_option_set():
     app = FastAPI()
     app.include_router(zaad_full.router)
     app.dependency_overrides[require_operator] = lambda: req.operator_id
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: req.operator_id)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     from api.routers.zaad import bounded_rate
     app.dependency_overrides[bounded_rate] = lambda: None
     r = TestClient(app).post("/api/zaad/network/plan", json=req.model_dump(mode="json"))
@@ -244,6 +251,8 @@ def test_release_audit_api_shape_without_declaration_carries_no_commitment_keys(
     app = FastAPI()
     app.include_router(zaad_full.router)
     app.dependency_overrides[require_operator] = lambda: req.operator_id
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: req.operator_id)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     from api.routers.zaad import bounded_rate
     app.dependency_overrides[bounded_rate] = lambda: None
     body = TestClient(app).post("/api/zaad/network/plan", json=req.model_dump(mode="json")).json()

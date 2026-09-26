@@ -98,6 +98,9 @@ def store_session_snapshot(
     snapshot_json: str,
 ) -> Path:
     """Copy a confirmed session snapshot into the operator's vault."""
+    from ingestion.extraction_sessions import valid_session_id
+    if not valid_session_id(session_id):
+        raise ValueError("invalid extraction session id")
     d = registry.vault_dir(operator_id) / "sessions"
     d.mkdir(parents=True, exist_ok=True)
     target = d / f"{session_id}.json"

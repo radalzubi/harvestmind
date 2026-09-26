@@ -14,7 +14,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, Field, field_validator
 
-from api.dependencies import get_conn, get_readonly_conn
+from api.dependencies import capability, get_conn, get_readonly_conn
 from dashboard.lib.fsma_metrics import (
     fsma_coverage_score,
     ftl_product_list,
@@ -158,7 +158,7 @@ class LotCreate(BaseModel):
     tlc_source_reference: str = Field(..., max_length=255)
 
 
-@router.post("/lots/create", status_code=status.HTTP_201_CREATED)
+@router.post("/lots/create", status_code=status.HTTP_201_CREATED, dependencies=[Depends(capability("manageData"))])
 def create_lot(payload: LotCreate, conn=Depends(get_conn)):
     """Create a lot. Returns 409 on duplicate TLC."""
     existing = conn.execute(
@@ -216,7 +216,7 @@ class CTECreate(BaseModel):
         return v
 
 
-@router.post("/cte/record", status_code=status.HTTP_201_CREATED)
+@router.post("/cte/record", status_code=status.HTTP_201_CREATED, dependencies=[Depends(capability("manageData"))])
 def record_cte(payload: CTECreate, conn=Depends(get_conn)):
     """Record a Critical Tracking Event. Returns 404 if lot_id unknown."""
     lot = conn.execute(

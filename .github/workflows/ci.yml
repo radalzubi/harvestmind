@@ -45,6 +45,8 @@ jobs:
         include:
           - shard: integration
             paths: tests/integration
+          - shard: security
+            paths: tests/security
           - shard: unit-core
             paths: tests/unit --ignore-glob='tests/unit/test_zaad_*.py'
           - shard: unit-zaad-1

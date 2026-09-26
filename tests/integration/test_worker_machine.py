@@ -7,6 +7,7 @@ import json
 import pytest
 
 import infrastructure.operator_registry as orm
+from api.routers import jobs as jobs_router
 from synthetic.fmcg.distributor_sim import ARCHETYPES, ArchetypeSpec, build_history
 
 
@@ -65,7 +66,7 @@ def test_worker_round_trip(client, history, tmp_path, monkeypatch):
 
     # bundle needs the worker token, and the operator token does not open it
     assert cl.get(f"/jobs/internal/{job_id}/bundle", headers=h).status_code == 401
-    blob = cl.get(f"/jobs/internal/{job_id}/bundle", headers={"X-Worker-Token": "wt-test"}).content
+    blob = cl.get(f"/jobs/internal/{job_id}/bundle", headers={"X-Worker-Token": jobs_router.job_token(job_id)}).content
     conn, meta = W.restore_bundle(blob, tmp_path / "scratch")
     assert meta["sector"] == "commercial"
     n_orders = conn.execute("SELECT COUNT(*) FROM stg_fmcg_orders").fetchone()[0]
@@ -73,7 +74,7 @@ def test_worker_round_trip(client, history, tmp_path, monkeypatch):
 
     # the worker's HTTP calls routed through the test client
     def fake_call(method, path, body=None, raw=False, tries=5):
-        hdr = {"X-Worker-Token": "wt-test"}
+        hdr = {"X-Worker-Token": jobs_router.job_token(job_id)}
         resp = cl.get(path, headers=hdr) if method == "GET" else cl.post(path, headers=hdr, json=body)
         assert resp.status_code == 200, resp.text
         return resp.content if raw else resp.json()

@@ -1,9 +1,16 @@
 type Cell = string | number | null | undefined;
 
-function escape(v: Cell): string {
+/**
+ * A cell that starts with = + - @ or a tab / carriage return is a formula to Excel, Sheets and LibreOffice,
+ * whatever produced the file. Such a cell is prefixed with an apostrophe (the spreadsheet convention for
+ * "this is text") and quoted, so a customer-controlled product or supplier name can never execute
+ * (security review 2026-09, SEC-013).
+ */
+export function escape(v: Cell): string {
   if (v == null) return "";
-  const s = String(v);
-  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  let s = String(v);
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }
 

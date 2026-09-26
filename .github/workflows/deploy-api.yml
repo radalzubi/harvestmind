@@ -28,28 +28,38 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: read
+    # Inputs reach the shell through the environment, never through `${{ }}` inside `run:` (security review
+    # 2026-09, SEC-018); the app name is allowlisted and the commit must be on main.
+    env:
+      DEPLOY_SHA: ${{ inputs.sha }}
+      DEPLOY_APP: ${{ inputs.app }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.sha }}
-          fetch-depth: 1
-      - name: The checkout is exactly the requested commit
+          fetch-depth: 0
+      - name: The checkout is exactly the requested commit, and the commit is on main
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "${{ inputs.sha }}"
+          case "$DEPLOY_APP" in zaad-api) ;; *) echo "refusing: app '$DEPLOY_APP' is not deployable from this workflow"; exit 1;; esac
+          test "$(git rev-parse HEAD)" = "$DEPLOY_SHA"
           test -z "$(git status --porcelain)"
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "$DEPLOY_SHA" origin/main || { echo "refusing: $DEPLOY_SHA is not on main"; exit 1; }
           echo "deploying $(git rev-parse HEAD) tree $(git rev-parse HEAD^{tree})"
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1  # 1.6
       - name: Deploy with the canonical image label
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           set -euo pipefail
           SHORT="$(git rev-parse --short=7 HEAD)"
-          flyctl deploy -a "${{ inputs.app }}" --image-label "canonical-${SHORT}" --strategy rolling --yes --remote-only --build-context-warn-size 0
+          flyctl deploy -a "$DEPLOY_APP" --image-label "canonical-${SHORT}" --strategy rolling --yes --remote-only --build-context-warn-size 0
       - name: Record what runs
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          flyctl status -a "${{ inputs.app }}"
-          flyctl releases -a "${{ inputs.app }}" | head -5
+          flyctl status -a "$DEPLOY_APP"
+          flyctl releases -a "$DEPLOY_APP" | head -5

@@ -33,7 +33,10 @@ CAPABILITIES = ("view", "manageData", "createProposal", "editDraft", "evaluate",
                 # reads curated and workspace-shared analytics; a buyer builds, exports and asks;
                 # an approver may share with the workspace; an administrator manages everything.
                 "viewAnalytics", "createAnalysis", "editOwnAnalysis", "shareAnalysis", "exportAnalytics",
-                "askZaad", "manageAnalytics")
+                "askZaad", "manageAnalytics",
+                # security review 2026-09: starting the optimizer / planners and the diagnostic are capabilities of
+                # their own, checked on every route that starts a solve (a viewer reads; it does not compute)
+                "runPlanner", "runDiagnostic")
 
 ANALYTICS_CAPABILITIES = ("viewAnalytics", "createAnalysis", "editOwnAnalysis", "shareAnalysis", "exportAnalytics",
                           "askZaad", "manageAnalytics")
@@ -42,10 +45,12 @@ ROLE_CAPABILITIES: dict[str, frozenset[str]] = {
     "VIEWER": frozenset({"view", "viewAnalytics"}),
     "BUYER": frozenset({"view", "manageData", "createProposal", "editDraft", "evaluate", "review", "export",
                         "recordExternal", "recordOutcome", "respondDecision",
-                        "viewAnalytics", "createAnalysis", "editOwnAnalysis", "exportAnalytics", "askZaad"}),
+                        "viewAnalytics", "createAnalysis", "editOwnAnalysis", "exportAnalytics", "askZaad",
+                        "runPlanner", "runDiagnostic"}),
     "APPROVER": frozenset({"view", "createProposal", "editDraft", "evaluate", "review", "approve", "export",
                            "recordExternal", "recordOutcome", "respondDecision",
-                           "viewAnalytics", "createAnalysis", "editOwnAnalysis", "shareAnalysis", "exportAnalytics", "askZaad"}),
+                           "viewAnalytics", "createAnalysis", "editOwnAnalysis", "shareAnalysis", "exportAnalytics", "askZaad",
+                           "runPlanner", "runDiagnostic"}),
     "ADMIN": frozenset(CAPABILITIES),
 }
 
@@ -84,6 +89,7 @@ CAPABILITY_WORDS = {
     "viewAnalytics": "view analytics", "createAnalysis": "create an analysis", "editOwnAnalysis": "edit an analysis",
     "shareAnalysis": "share an analysis with the workspace", "exportAnalytics": "export an analysis", "askZaad": "use Ask ZAAD",
     "manageAnalytics": "manage every analysis and dashboard in the workspace",
+    "runPlanner": "run the planner", "runDiagnostic": "run the diagnostic",
 }
 
 

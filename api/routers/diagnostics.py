@@ -35,7 +35,20 @@ def get_diagnostic_summary(
 
     This is the single authoritative data pull for all dashboard panels.
     """
-    return diagnostic_summary(conn, partner_name=partner_name, days=days)
+    return json_safe(diagnostic_summary(conn, partner_name=partner_name, days=days))
+
+
+def json_safe(value):
+    """NaN and infinities are not JSON; a metric that could not be computed is null, never a 500
+    (security review 2026-09, SEC-037)."""
+    import math
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, dict):
+        return {k: json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [json_safe(v) for v in value]
+    return value
 
 
 @router.get("/waste")

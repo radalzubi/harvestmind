@@ -40,6 +40,10 @@ def _app(vault, operator: str = "tenant_a") -> FastAPI:
 
     app.dependency_overrides[get_conn] = conn_override
     app.dependency_overrides[require_operator] = lambda: operator
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    from api.dependencies import require_actor
+    from api.product.governance import actor_from
+    app.dependency_overrides[require_actor] = lambda: actor_from({"operator_id": operator, "actor_id": operator, "name": operator, "role": "ADMIN"})
     return app
 
 

@@ -9,6 +9,7 @@ operator onboarding / key rotation, called by an operator/CLI, not the app UI.
 from __future__ import annotations
 
 import hmac
+import logging
 import os
 
 from fastapi import APIRouter, Depends, Header, HTTPException
@@ -48,6 +49,7 @@ def issue_operator_token(operator_id: str):
         raise HTTPException(status_code=404,
                             detail=f"Unknown operator {operator_id!r}")
     token = registry.issue_token(operator_id)
+    logging.getLogger("harvestmind.security").info("security event=token_rotated operator=%s", operator_id)
     return {
         "operator_id": operator_id,
         "token": token,
@@ -75,5 +77,6 @@ def issue_actor_token(operator_id: str, body: dict):
         raise HTTPException(status_code=404, detail=f"Unknown operator {operator_id!r}")
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
+    logging.getLogger("harvestmind.security").info("security event=actor_issued operator=%s actor=%s role=%s", operator_id, actor_id, role)
     return {"operator_id": operator_id, "actor_id": actor_id, "name": name, "role": role, "token": token,
             "note": "Store this token now — it cannot be recovered. Send it as 'Authorization: Bearer <token>'."}
