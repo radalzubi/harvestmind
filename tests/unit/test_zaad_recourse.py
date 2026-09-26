@@ -22,7 +22,7 @@ def test_absent_and_disabled_blocks_are_frozen():
     off = Request.model_validate({**base.model_dump(mode="json"), "recourse": {"enabled": False, "review_periods": [3]}})
     assert resolve(off) is None
     def strip(s):
-        return re.sub(r'"information_hash": "[0-9a-f]+"|"solve_seconds": [0-9.e-]+|"solver_seconds_total": [0-9.e-]+|"seconds": [0-9.e-]+', "", s)
+        return re.sub(r'"information_hash": "[0-9a-f]+"|"[a-z_]*seconds(?:_total)?": [0-9.e-]+', "", s)   # hashes and every timing
     r0, r1 = plan(base), plan(off)
     assert "recourse" not in r1 and strip(report_json(r0)) == strip(report_json(r1))
 

@@ -28,7 +28,22 @@ export function setApiToken(token: string): void {
   window.dispatchEvent(new Event("harvestmind-auth-change"));
 }
 
+/** Every key the interface writes for a workspace, cleared with the credential (security review 2026-09, SEC-029). */
+export function clearWorkspaceStorage(): void {
+  if (typeof window === "undefined") return;
+  try { window.sessionStorage.removeItem("harvestmind.sector"); } catch { /* storage unavailable */ }
+  try {
+    const stale: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (key && key.startsWith("zaad.recents.")) stale.push(key);
+    }
+    stale.forEach((key) => window.localStorage.removeItem(key));
+  } catch { /* storage unavailable */ }
+}
+
 export function clearApiToken(): void {
+  clearWorkspaceStorage();
   setApiToken("");
 }
 

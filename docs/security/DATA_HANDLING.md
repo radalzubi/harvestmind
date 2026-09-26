@@ -31,3 +31,12 @@ There is no administrator endpoint or screen that returns a workspace's rows. Th
 - Hashing is pseudonymisation, not full anonymisation: a party holding both the secret and the hashes can re-identify. That party is the operator.
 - Quantities and dates are a fingerprint of a business even without names. The vault, per-operator isolation and no-pooling-without-consent are the controls for that; there is no technical control that makes a full purchase history unrecognisable to someone who already knows it.
 - Free-text columns are matched by name; an unusual column name carrying a name or address would pass through. The upload response lists every untouched column so this is visible.
+
+## Extraction (confirmation flow) — added by the 2026-09 security review
+
+`POST /intake/extract` sends the uploaded document's text to the language-model provider **as uploaded** (no
+pseudonymisation: extraction needs the raw fields), stores the raw file in the workspace's vault and keeps a scrubbed
+session (identifiers regex-scrubbed for tax ids) under the deployment's data directory, bound to the workspace that
+produced it. Nothing from the extraction path enters the pool or the training corpus without the confirm step. A
+customer who must not have identifiers leave the platform should upload CSV through `/intake/upload` (pseudonymised
+before storage) rather than through extraction.

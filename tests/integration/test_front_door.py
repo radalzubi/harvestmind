@@ -96,22 +96,22 @@ def test_key_only_mode(registry, monkeypatch):
 
 
 def test_short_key_opens_seeded_workspace_and_greets_the_company(registry, monkeypatch):
-    monkeypatch.setenv("HARVESTMIND_SEED_WORKSPACES", "NTDCO|commercial|839285|/logos/ntdco.jpg")
+    monkeypatch.setenv("HARVESTMIND_SEED_WORKSPACES", "NTDCO|commercial|pilot-key-example-2026|/logos/ntdco.jpg")
     from infrastructure.seed_workspaces import seed_workspaces_from_env
     ids = seed_workspaces_from_env(registry)
     assert len(ids) == 1
     # idempotent: a second seeding keeps the same workspace
     assert seed_workspaces_from_env(registry) == ids
     cl = TestClient(api_main.app)
-    me = cl.get("/me", headers={"Authorization": "Bearer 839285"})
+    me = cl.get("/me", headers={"Authorization": "Bearer pilot-key-example-2026"})
     assert me.status_code == 200, me.text
     assert me.json()["display_name"] == "NTDCO" and me.json()["logo_url"] == "/logos/ntdco.jpg"
     assert me.json()["sector"] == "commercial"
-    assert cl.get("/me", headers={"Authorization": "Bearer 839286"}).status_code == 401
+    assert cl.get("/me", headers={"Authorization": "Bearer pilot-key-example-2027"}).status_code == 401
     # the code is stored hashed, never in clear
     import json as _json
     raw = _json.dumps(_json.loads((registry.registry_dir / "operators.json").read_text()))
-    assert "839285" not in raw
+    assert "pilot-key-example-2026" not in raw
 
 
 def test_commercial_sample_loads_into_the_workspace(registry):

@@ -19,6 +19,8 @@ from api.product.drafts import DraftRefused
 from api.routers import zaad_insights, zaad_analytics
 from api.routers import assistant, fmcg, planning, backtest, data, fsma, reports, diagnostics, intake, forecasts, training, pool, admin, access, jobs, zaad, zaad_full, zaad_atp, zaad_workspace, zaad_orders, zaad_history
 
+from api.dependencies import auth_required as _auth_required
+
 app = FastAPI(
     title="Zaad Supply API",
     description="Available-to-promise and traceability diagnostics for perishable produce operators",
@@ -26,6 +28,59 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+# The interactive schema is a development aid; in an enforced (deployed) environment the route list is not
+# published — decided per request, so the posture follows the environment (security review 2026-09, SEC-027).
+_SCHEMA_PATHS = ("/docs", "/redoc", "/openapi.json", "/docs/oauth2-redirect")
+
+# Request bodies are bounded before they are read (security review 2026-09, SEC-009): a declared length over
+# the route class's cap is refused with 413, and a body without a declared length is cut off at the cap while
+# it streams. Uploads (multipart) may carry up to UPLOAD_BODY_LIMIT; every other route JSON_BODY_LIMIT (the
+# batch planning payload is 16 MiB; the analytics and order routes cap themselves lower).
+UPLOAD_BODY_LIMIT = int(os.getenv("HARVESTMIND_UPLOAD_BODY_LIMIT", str(64 * 1024 * 1024)))
+JSON_BODY_LIMIT = int(os.getenv("HARVESTMIND_JSON_BODY_LIMIT", str(20 * 1024 * 1024)))
+_UPLOAD_PREFIXES = ("/intake/upload/", "/intake/extract", "/api/zaad/orders/profiles/read-template", "/api/zaad/orders/read-proposal")
+
+
+class BodySizeLimit:
+    def __init__(self, app_):
+        self.app = app_
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        path = scope.get("path", "")
+        limit = UPLOAD_BODY_LIMIT if path.startswith(_UPLOAD_PREFIXES) else JSON_BODY_LIMIT
+        declared = None
+        for name, value in scope.get("headers", []):
+            if name == b"content-length":
+                try:
+                    declared = int(value)
+                except ValueError:
+                    declared = limit + 1
+        if declared is not None and declared > limit:
+            await _JSONResponse(status_code=413, content={"detail": f"Request body exceeds the limit of {limit // (1024 * 1024)} MiB."})(scope, receive, send)
+            return
+        seen = 0
+
+        async def bounded_receive():
+            nonlocal seen
+            message = await receive()
+            if message["type"] == "http.request":
+                seen += len(message.get("body", b""))
+                if seen > limit:
+                    raise _BodyTooLarge(limit)
+            return message
+
+        try:
+            await self.app(scope, bounded_receive, send)
+        except _BodyTooLarge as exc:
+            await _JSONResponse(status_code=413, content={"detail": f"Request body exceeds the limit of {exc.limit // (1024 * 1024)} MiB."})(scope, receive, send)
+
+
+class _BodyTooLarge(Exception):
+    def __init__(self, limit: int) -> None:
+        self.limit = limit
 
 # CORS — allowlist driven by env var. Defaults to local development origins
 # only; production deployments must set CORS_ALLOWED_ORIGINS explicitly.
@@ -57,6 +112,8 @@ async def security_headers(request, call_next):
     in a localhost pilot. HSTS is harmless over plain HTTP and takes
     effect once the deployment is fronted by TLS.
     """
+    if request.url.path in _SCHEMA_PATHS and _auth_required():
+        return _JSONResponse(status_code=404, content={"detail": "Not found"})
     response = await call_next(request)
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
@@ -64,6 +121,9 @@ async def security_headers(request, call_next):
     response.headers.setdefault(
         "Strict-Transport-Security", "max-age=63072000; includeSubDomains"
     )
+    # every answer of this API is tenant data or posture: never stored by a browser or a shared cache
+    # (security review 2026-09, SEC-026)
+    response.headers.setdefault("Cache-Control", "no-store")
     return response
 
 # ── Request ids, structured error boundary ───────────────────────────────────
@@ -73,11 +133,14 @@ async def security_headers(request, call_next):
 # stack trace never reaches a browser. Validation and HTTP errors keep their
 # curated `detail`.
 _log = _logging.getLogger("harvestmind.api")
+_REQUEST_ID = __import__("re").compile(r"^[A-Za-z0-9._-]{1,64}$")
 
 
 @app.middleware("http")
 async def _request_id_middleware(request: _Request, call_next):
-    rid = request.headers.get("X-Request-ID") or f"req-{_uuid.uuid4().hex[:12]}"
+    supplied = request.headers.get("X-Request-ID") or ""
+    # a client-supplied id is echoed and logged, so it is bounded to a safe alphabet (security review 2026-09, SEC-025)
+    rid = supplied if _REQUEST_ID.match(supplied) else f"req-{_uuid.uuid4().hex[:12]}"
     request.state.request_id = rid
     try:
         response = await call_next(request)
@@ -143,6 +206,7 @@ async def _draft_refused(request: _Request, exc: DraftRefused) -> _JSONResponse:
 # header middleware streams every response, so the 1 KB floor does not apply and small bodies are
 # compressed too (microseconds); nothing about the JSON itself changes.
 app.add_middleware(GZipMiddleware, minimum_size=1024)
+app.add_middleware(BodySizeLimit)
 
 app.add_middleware(
     CORSMiddleware,
@@ -206,13 +270,13 @@ def ready():
         finally:
             conn.close()
         checks["database"] = "ok"
-    except Exception as exc:  # noqa: BLE001
-        checks["database"] = f"unavailable: {type(exc).__name__}"
+    except Exception:  # noqa: BLE001
+        checks["database"] = "unavailable"
     try:
         import highspy  # noqa: F401
         checks["solver"] = "ok"
-    except Exception as exc:  # noqa: BLE001
-        checks["solver"] = f"unavailable: {type(exc).__name__}"
+    except Exception:  # noqa: BLE001
+        checks["solver"] = "unavailable"
     ok = all(v == "ok" for v in checks.values())
     from fastapi.responses import JSONResponse
     return JSONResponse(status_code=200 if ok else 503,

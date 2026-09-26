@@ -6,7 +6,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from api.dependencies import get_conn, require_operator
+from api.product.governance import actor_from as _actor_from
+from api.dependencies import get_conn, require_actor, require_operator
 from api.routers import zaad_full
 from scripts.setup_db import setup_db
 from tests.unit.test_zaad_sourcing_workspace import make_network_vault
@@ -31,6 +32,8 @@ def _app(vault, operator: str = "tenant_n") -> FastAPI:
 
     app.dependency_overrides[get_conn] = conn_override
     app.dependency_overrides[require_operator] = lambda: operator
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: operator)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     from api.routers.zaad import bounded_rate
     app.dependency_overrides[bounded_rate] = lambda: None
     return app

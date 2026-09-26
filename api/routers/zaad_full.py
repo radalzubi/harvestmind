@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request as HTTPReq
 from pydantic import Field, ValidationError, model_validator
 from starlette.concurrency import run_in_threadpool
 
-from api.dependencies import get_conn, require_operator
+from api.dependencies import capability, get_conn, require_operator
 from api.routers.zaad import bounded_rate
 from zaad.contracts import Record
 from zaad.full.contracts import Request
@@ -257,7 +257,7 @@ def fixture(case: Literal["normal", "transfer", "substitution", "recovery", "cas
     return example(case)
 
 
-@router.post("/plan", dependencies=[Depends(bounded_rate)])
+@router.post("/plan", dependencies=[Depends(bounded_rate), Depends(capability("runPlanner"))])
 async def recommend(request: HTTPRequest, operator: str | None = Depends(require_operator)):
     req = await payload(request)
     if operator is not None and req.operator_id != operator:
@@ -310,7 +310,7 @@ def workspace_request(operator: str = Depends(authenticated), conn=Depends(get_c
     return {"request": req.model_dump(mode="json"), "build": build}
 
 
-@router.post("/plan/from-workspace", dependencies=[Depends(bounded_rate)])
+@router.post("/plan/from-workspace", dependencies=[Depends(bounded_rate), Depends(capability("runPlanner"))])
 async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(get_conn), horizon: int = Query(12, ge=4, le=26),
                          service_target: float = Query(.95, gt=.5, le=1.), skus: str | None = Query(None, description="comma-separated subset"),
                          max_solve_seconds: float = Query(15., gt=0, le=120), commit_window_weeks: int = Query(4, ge=1, le=8),
@@ -349,7 +349,7 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
     return out
 
 
-@router.post("/shadow", dependencies=[Depends(bounded_rate)])
+@router.post("/shadow", dependencies=[Depends(bounded_rate), Depends(capability("runPlanner"))])
 async def record(request: HTTPRequest, operator: str = Depends(authenticated)):
     req = await payload(request)
     if req.operator_id != operator:
@@ -375,7 +375,7 @@ class Review(Record):
     reason: str = Field(min_length=1, max_length=2000)
 
 
-@router.post("/shadow/{decision_id}/review", dependencies=[Depends(bounded_rate)])
+@router.post("/shadow/{decision_id}/review", dependencies=[Depends(bounded_rate), Depends(capability("approve"))])
 def review(decision_id: str, body: Review, operator: str = Depends(authenticated)):
     try:
         return ledger().review(decision_id, operator, body.status, body.information_hash, body.version, body.reason)
@@ -399,7 +399,7 @@ class Outcome(Record):
         return self
 
 
-@router.post("/shadow/{decision_id}/outcome", dependencies=[Depends(bounded_rate)])
+@router.post("/shadow/{decision_id}/outcome", dependencies=[Depends(bounded_rate), Depends(capability("recordOutcome"))])
 def outcome(decision_id: str, body: Outcome, operator: str = Depends(authenticated)):
     try:
         ledger().outcome(decision_id, operator, body.model_dump(mode="json"))
@@ -408,7 +408,7 @@ def outcome(decision_id: str, body: Outcome, operator: str = Depends(authenticat
     return {"recorded": True, "used_for_training": False}
 
 
-@router.post("/jobs", dependencies=[Depends(bounded_rate)], status_code=202)
+@router.post("/jobs", dependencies=[Depends(bounded_rate), Depends(capability("runPlanner"))], status_code=202)
 async def submit_job(request: HTTPRequest, operator: str = Depends(authenticated)):
     """Queue a large planning run. Small requests should use /plan, which answers inline."""
     req = await large_payload(request)
@@ -454,7 +454,7 @@ def read_job(job_id: str, operator: str = Depends(authenticated)):
     return job
 
 
-@router.delete("/jobs/{job_id}", dependencies=[Depends(bounded_rate)])
+@router.delete("/jobs/{job_id}", dependencies=[Depends(bounded_rate), Depends(capability("runPlanner"))])
 def cancel_job(job_id: str, operator: str = Depends(authenticated)):
     try:
         return runner().cancel(job_id, operator)

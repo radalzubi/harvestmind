@@ -40,19 +40,33 @@ def _request(method: str, path: str, body: dict | None = None, timeout: float = 
     return json.loads(raw) if raw else {}
 
 
+#: What a worker machine may know (security review 2026-09, SEC-005). Never the admin key, the seeded
+#: customer access codes, the demo token or the shared worker secret: a worker holds a token for its own
+#: job only (`api.routers.jobs.job_token`), handed in by the launcher through `env`.
+WORKER_ENV_ALLOWLIST = ("HARVESTMIND_ENV", "HARVESTMIND_DATA_ROOT", "HARVESTMIND_WORKER_CPUS", "HARVESTMIND_WORKER_MEMORY_MB",
+                        "HARVESTMIND_WORKER_CPU_KIND", "HARVESTMIND_JOB_STALE_S", "HARVESTMIND_REQUIRE_ANONYMIZED")
+
+
+def worker_env(job_id: str, env: dict[str, str]) -> dict[str, str]:
+    """The environment of one worker machine: the allowlisted settings plus the job's own values."""
+    from api.routers.jobs import job_token
+    passthrough = {k: v for k, v in os.environ.items() if k in WORKER_ENV_ALLOWLIST}
+    out = {**passthrough, "HARVESTMIND_SOLVER_THREADS": "1", "HARVESTMIND_ROLE": "worker", **env,
+           "ZAAD_JOB_TOKEN": job_token(job_id)}
+    return out
+
+
 def launch_worker(job_id: str, env: dict[str, str]) -> str:
     """Create a one-shot machine running ``python -m api.worker`` and return its id."""
     cpus = int(os.environ.get("HARVESTMIND_WORKER_CPUS", "4"))
     memory = int(os.environ.get("HARVESTMIND_WORKER_MEMORY_MB", "8192"))
     kind = os.environ.get("HARVESTMIND_WORKER_CPU_KIND", "performance")
-    passthrough = {k: v for k, v in os.environ.items()
-                   if k.startswith("HARVESTMIND_") and k not in ("HARVESTMIND_SOLVER_THREADS", "HARVESTMIND_WORKER_MACHINES")}
     config = {
         "image": os.environ["FLY_IMAGE_REF"],
         "guest": {"cpu_kind": kind, "cpus": cpus, "memory_mb": memory},
         "auto_destroy": True,
         "restart": {"policy": "no"},
-        "env": {**passthrough, "HARVESTMIND_SOLVER_THREADS": "1", "HARVESTMIND_ROLE": "worker", **env},
+        "env": worker_env(job_id, env),
         "init": {"cmd": ["python", "-m", "api.worker"]},
         "metadata": {"zaad_role": "worker", "zaad_job": job_id},
     }

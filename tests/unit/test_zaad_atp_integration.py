@@ -10,7 +10,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from api.dependencies import get_conn, require_operator
+from api.product.governance import actor_from as _actor_from
+from api.dependencies import get_conn, require_actor, require_operator
 from api.routers import zaad_atp, zaad_full
 from scripts.setup_db import setup_db
 from tests.unit.test_zaad_sourcing_workspace import make_network_vault
@@ -24,7 +25,7 @@ from zaad.full.planner import plan
 from zaad.full.workspace import build_request
 
 PAT = (r'"(information_hash|request_hash|fingerprint|input_fingerprint)": "[0-9a-f]+"'
-       r'|"(solve_seconds|solver_seconds_total|seconds|elapsed_seconds|wall_seconds|plan_wall_s)": [^,}]+')
+       r'|"(solve_seconds|solver_seconds_total|seconds|elapsed_seconds|wall_seconds|plan_wall_s|partition_seconds|extract_seconds)": [^,}]+')
 
 
 def _frozen(report: dict) -> str:
@@ -138,6 +139,8 @@ def _app(vault, operator="tenant_n"):
 
     app.dependency_overrides[get_conn] = conn_override
     app.dependency_overrides[require_operator] = lambda: operator
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: operator)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     from api.routers.zaad import bounded_rate
     app.dependency_overrides[bounded_rate] = lambda: None
     return app

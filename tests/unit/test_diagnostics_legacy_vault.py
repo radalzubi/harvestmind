@@ -16,7 +16,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from api.dependencies import get_conn, require_operator
+from api.product.governance import actor_from as _actor_from
+from api.dependencies import get_conn, require_actor, require_operator
 from api.product import diagnostics
 from api.routers import zaad_workspace
 from scripts.setup_db import MIGRATIONS_DIR, _exec_statements
@@ -72,6 +73,8 @@ def client(vault):
 
     app.dependency_overrides[get_conn] = conn_override
     app.dependency_overrides[require_operator] = lambda: OPERATOR
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: OPERATOR)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     return TestClient(app)
 
 

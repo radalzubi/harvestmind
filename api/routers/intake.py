@@ -17,19 +17,26 @@ from __future__ import annotations
 
 import io
 import tempfile
+import sys
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from loguru import logger
 
-from api.dependencies import get_conn, rate_limiter, require_actor, require_operator
+from api.dependencies import auth_required, get_conn, rate_limiter, require_actor, require_operator
+
 from api.product.governance import Forbidden, need
 
 
 from ingestion.csv_ingestor import COLUMN_MAPS, ingest_csv
 
 router = APIRouter(prefix="/intake", tags=["intake"])
+# loguru's default sink prints the local variables of every frame in a traceback (`diagnose=True`), which
+# for this router means the confirm body and the rows of a tenant's upload (security review 2026-09,
+# SEC-015): messages and the traceback only, never the values.
+logger.remove()
+logger.add(sys.stderr, level="INFO", diagnose=False, backtrace=False)
 
 
 def can_manage_data(actor=Depends(require_actor)):
@@ -238,7 +245,10 @@ async def upload_csv(
                 _already = False
             if anonymize and not _already:
                 secret = registry.anonymization_secret(operator_id)
-                contents, rep = anonymize_csv_bytes(contents, secret)
+                try:
+                    contents, rep = anonymize_csv_bytes(contents, secret)
+                except (UnicodeDecodeError, ValueError):
+                    raise HTTPException(status_code=422, detail="The file is not readable text (UTF-8 CSV expected).")
                 anonymization = {**rep.as_dict(), "mode": "server"}
             elif _already:
                 anonymization = {"mode": "client", "note": "file arrived pseudonymised; stored as received"}
@@ -588,21 +598,27 @@ async def extract_files(
         # original filenames, not temp names, for the UI
         payload["source_files"] = [f.filename for f in files]
         payload["operator_id"] = operator_id
+        if operator_id is not None:
+            # the session belongs to the workspace that produced it (SEC-002 / SEC-003)
+            from ingestion.extraction_sessions import bind_session
+            bind_session(str(payload.get("session_id") or ""), operator_id)
         return payload
     finally:
         for p in tmp_paths:
             p.unlink(missing_ok=True)
 
 
-@router.get("/session/{session_id}")
-def get_extraction_session(session_id: str):
-    """Fetch a logged extraction session for the confirmation UI."""
-    from ingestion.extraction_sessions import load_session
+@router.get("/session/{session_id}", dependencies=[Depends(can_manage_data)])
+def get_extraction_session(session_id: str, operator_id: str | None = None, authed: str | None = Depends(require_operator)):
+    """Fetch a logged extraction session for the confirmation UI: the caller's own workspace's session only."""
+    from ingestion.extraction_sessions import load_session, valid_session_id
 
-    data = load_session(session_id)
+    operator_id = authed or operator_id
+    if not valid_session_id(session_id) or (operator_id is None and auth_required()):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such session")
+    data = load_session(session_id, operator_id=operator_id)      # dev without a workspace: unbound sessions only
     if data is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"No session {session_id!r}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such session")
     return data
 
 
@@ -630,10 +646,15 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
     corrections = body.get("corrections", [])
     actioned = set(body.get("actioned_flag_indices", []))
 
-    session = load_session(session_id) if session_id else None
+    from ingestion.extraction_sessions import valid_session_id
+    operator_id = authed or body.get("operator_id")   # token wins; the body names a workspace in permissive dev only
+    # the session must exist, have a valid id and belong to this workspace (SEC-002 / SEC-003 / SEC-004)
+    if not valid_session_id(session_id) or (operator_id is None and auth_required()):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such session")
+    session_id = str(session_id)
+    session = load_session(session_id, operator_id=operator_id)
     if session is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"No session {session_id!r}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such session")
 
     flagged = {r["row_index"] for r in session.get("extracted_rows", [])
                if r.get("requires_confirmation") and not r.get("rejected")}
@@ -726,7 +747,7 @@ def confirm_extraction(body: dict, conn=Depends(get_conn),
             raise
         except Exception:  # noqa: BLE001 — surface a clean 422, log internally
             conn.execute("ROLLBACK")
-            logger.exception("confirm insert failed for session %s", session_id)
+            logger.exception("confirm insert failed for session {}", session_id)
             raise HTTPException(
                 status_code=422,
                 detail="Could not insert confirmed rows; no data was written.",

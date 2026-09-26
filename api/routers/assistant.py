@@ -20,7 +20,7 @@ from typing import Any
 from fastapi import APIRouter, Body, Depends, HTTPException
 
 from adaptive.plain_language import explain_state, state_summary_text
-from api.dependencies import get_conn, rate_limiter, require_operator
+from api.dependencies import capability, get_conn, rate_limiter, require_operator
 
 router = APIRouter(prefix="/assistant", tags=["assistant"])
 log = logging.getLogger("harvestmind.assistant")
@@ -110,7 +110,7 @@ def _ask_model(ctx: dict, question: str, history: list[dict], lang: str) -> str:
     return "".join(b.text for b in response.content if b.type == "text").strip()
 
 
-@router.get("/summary", dependencies=[Depends(rate_limiter)])
+@router.get("/summary", dependencies=[Depends(rate_limiter), Depends(capability("askZaad"))])
 def summary(lang: str = "en", conn=Depends(get_conn), authed: str | None = Depends(require_operator)):
     if not authed:
         raise HTTPException(401, "operator token required")
@@ -134,7 +134,7 @@ def summary(lang: str = "en", conn=Depends(get_conn), authed: str | None = Depen
         return {"summary": fallback, "source": "rules", "model": None}
 
 
-@router.post("/ask", dependencies=[Depends(rate_limiter)])
+@router.post("/ask", dependencies=[Depends(rate_limiter), Depends(capability("askZaad"))])
 def ask(body: dict = Body(...), conn=Depends(get_conn), authed: str | None = Depends(require_operator)):
     if not authed:
         raise HTTPException(401, "operator token required")
@@ -145,6 +145,9 @@ def ask(body: dict = Body(...), conn=Depends(get_conn), authed: str | None = Dep
     history = body.get("history") or []
     if not isinstance(history, list):
         history = []
+    # the client may replay its own questions, never the assistant's side of the conversation: a forged
+    # assistant turn is a prompt-injection vector (security review 2026-09, SEC-032)
+    history = [turn for turn in history if isinstance(turn, dict) and turn.get("role") == "user"][-8:]
     ctx = _context(conn, authed)
     if not _model_available():
         base = state_summary_text(ctx["plain"]) if "plain" in ctx else "Upload your files and run the diagnostic first."

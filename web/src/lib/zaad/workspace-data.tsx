@@ -237,6 +237,11 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
 
   /** Read the whole workspace, then attach the last completed plan if there is one. */
   useEffect(() => {
+    // Nothing of a previous workspace survives a sign-out or a switch: the read below is keyed on the
+    // workspace id and the state is cleared first (security review 2026-09, SEC-017).
+    if (poll.current) { window.clearInterval(poll.current); poll.current = null; }
+    setRequest(null); setBuild(null); setReport(null); setDirectory(null); setScope(null); setReadScope(null);
+    setPlanJobId(null); setPlanPhase("none"); setQueueAhead(null); setComputedAt(null); setLastRunFailed(null); setDegraded(null);
     if (session.status !== "authenticated") { setPhase("idle"); return; }
     let live = true;
     setPhase("reading");
@@ -356,7 +361,7 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
 
     return () => { live = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session.status, tick]);
+  }, [session.status, session.workspace?.id, tick]);
 
   const watch = (jobId: string) => {
     if (poll.current) window.clearInterval(poll.current);

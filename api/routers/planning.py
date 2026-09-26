@@ -7,13 +7,13 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from api.dependencies import get_conn, rate_limiter
+from api.dependencies import capability, get_conn, rate_limiter
 from api.models.schemas import PlanningRequest, PlanningResponse, CommitmentResponse
 
 router = APIRouter(prefix="/planning", tags=["planning"])
 
 
-@router.post("/run", response_model=PlanningResponse, deprecated=True)
+@router.post("/run", response_model=PlanningResponse, deprecated=True, dependencies=[Depends(capability("runPlanner"))])
 def run_planning(req: PlanningRequest, conn=Depends(get_conn)):
     """Run a legacy fact-table deterministic or gamma-robust plan.
 
@@ -151,7 +151,7 @@ def get_recommendations(status: str = "open", conn=Depends(get_conn)):
     return df.to_dict("records")
 
 
-@router.post("/two-sided", dependencies=[Depends(rate_limiter)])
+@router.post("/two-sided", dependencies=[Depends(rate_limiter), Depends(capability("runPlanner"))])
 def two_sided_plan(
     service_level_floor: float | None = Query(default=None, ge=0.0, le=1.0),
     diversification_cap: float | None = Query(default=None, gt=0.0, le=1.0),

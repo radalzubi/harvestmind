@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from api.dependencies import get_conn, legacy_planner_gate, rate_limiter, require_operator
+from api.dependencies import capability, get_conn, legacy_planner_gate, rate_limiter, require_operator
 from backtesting.counterfactual import (
     EXTRA_CANDIDATES, FoldInputs, _optimizer_kwargs, _scenarios, _supply_df,
     policy_deterministic_sp, policy_order_up_to, policy_stochastic_sp,
@@ -447,7 +447,7 @@ def latest_gate_decision(operator_id: str | None, n_products: int, history_perio
                     "candidates": summ.get("candidates", {})}
     return best
 
-@router.post("/plan", dependencies=[Depends(rate_limiter)])
+@router.post("/plan", dependencies=[Depends(rate_limiter), Depends(capability("runPlanner"))])
 def plan(
     mode: str = Query("canonical", pattern="^(canonical|safe|adaptive|selected|stochastic|deterministic|order_up_to|incumbent|anchored)$"),
     horizon_weeks: int = Query(12, ge=4, le=26),

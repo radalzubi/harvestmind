@@ -54,6 +54,9 @@ def handoff(conn: Any, operator: str, actor: Actor | None, body: HandoffIn, *, r
     if not context["skus"]:
         raise AnalyticsRefused("spec_invalid", "The analysis names no product to plan for. Filter or break down by product or supplier first.")
     permissions.require(actor, "askZaad")
+    context["skus"] = [s for item in context["skus"] for s in str(item).split(",") if s.strip()]
+    if len(context["skus"]) > 50:
+        raise AnalyticsRefused("spec_invalid", "The hand-off is limited to 50 products; narrow the analysis first.")
     if body.submit:
         permissions.require(actor, "evaluate") if actor is not None else None
     from api.routers.zaad_full import _workspace_request

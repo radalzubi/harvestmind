@@ -67,10 +67,13 @@ def test_every_capability_is_checked_somewhere_and_nothing_unchecked_exists():
 
     source = "".join(Path(p).read_text() for p in ("api/routers/zaad_orders.py", "api/routers/zaad_history.py",
                                                     "api/routers/zaad_workspace.py", "api/routers/intake.py",
-                                                    "api/routers/zaad_analytics.py", "api/analytics/saved.py", "api/analytics/handoff.py"))
+                                                    "api/routers/zaad_analytics.py", "api/analytics/saved.py", "api/analytics/handoff.py",
+                                                    # security review 2026-09: the solver, diagnostic, legacy and data-sharing routes
+                                                    "api/routers/jobs.py", "api/routers/zaad_full.py", "api/routers/fmcg.py", "api/routers/planning.py",
+                                                    "api/routers/backtest.py", "api/routers/assistant.py", "api/routers/pool.py", "api/routers/fsma.py"))
     # every string literal that appears inside an allowed(...) or need(...) call, however the
     # call chooses between them
-    calls = re.findall(r'(?:allowed|need|permissions\.require|permissions\.check)\((?:[^()]|\([^()]*\))*\)', source)
+    calls = re.findall(r'(?:allowed|need|permissions\.require|permissions\.check|capability)\((?:[^()]|\([^()]*\))*\)', source)
     checked = {name for call in calls for name in re.findall(r'"(\w+)"', call)}
     checked |= {"view"}   # every authenticated read is a view; the dependency itself is the check
     unchecked = [c for c in CAPABILITIES if c not in checked]

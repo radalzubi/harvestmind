@@ -12,21 +12,23 @@ is stored only as a hash on the operator record, as everywhere else.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from api.dependencies import rate_limiter, require_actor, require_operator
+from api.dependencies import client_ip, rate_limiter, require_actor, require_operator
 from api.routers.admin import require_admin
 from infrastructure.mailer import configured as mail_configured, send_email
 from infrastructure.operator_registry import OperatorNotFoundError, OperatorRegistry
 
 router = APIRouter(tags=["access"])
+_audit = logging.getLogger("harvestmind.security")
 SECTORS = ("produce", "meats", "commercial")
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
@@ -141,6 +143,7 @@ def approve(rid: str):
         raise HTTPException(409, "already approved")
     rec = registry.create_operator(row["company"], region=row["country"], sector=row["sector"])
     token = registry.issue_token(rec.operator_id)
+    _audit.info("security event=workspace_approved operator=%s request=%s", rec.operator_id, rid)
     link = f"{_app_url()}/access?token={token}"
     mail = send_email(row["email"], "Your Zaad Supply access",
                       f"Hello {row['contact_name']},\n\nYour workspace for {row['company']} is ready.\n"
@@ -227,16 +230,40 @@ class StartRequest(BaseModel):
     company: str = Field(default="", max_length=120)
 
 
+# Every self-serve workspace is a vault on the volume, so creation is bounded per address and overall per day
+# (security review 2026-09, SEC-010); the caps are settings, the counters live in this process.
+SELF_SERVE_PER_ADDRESS_PER_DAY = int(os.getenv("HARVESTMIND_SELF_SERVE_PER_ADDRESS_PER_DAY", "5"))
+SELF_SERVE_DAILY_CAP = int(os.getenv("HARVESTMIND_SELF_SERVE_DAILY_CAP", "50"))
+_SELF_SERVE: dict[str, list[float]] = {}
+
+
+def _self_serve_allowed(client: str) -> bool:
+    import time
+    now = time.time()
+    for key in list(_SELF_SERVE):
+        _SELF_SERVE[key] = [t for t in _SELF_SERVE[key] if now - t < 86400]
+        if not _SELF_SERVE[key]:
+            del _SELF_SERVE[key]
+    total = sum(len(v) for v in _SELF_SERVE.values())
+    if total >= SELF_SERVE_DAILY_CAP or len(_SELF_SERVE.get(client, [])) >= SELF_SERVE_PER_ADDRESS_PER_DAY:
+        return False
+    _SELF_SERVE.setdefault(client, []).append(now)
+    return True
+
+
 @router.post("/access/start", dependencies=[Depends(rate_limiter)])
-def self_serve_start(req: StartRequest):
+def self_serve_start(req: StartRequest, request: Request):
     if req.sector not in SECTORS:
         raise HTTPException(422, f"sector must be one of {SECTORS}")
     if not _self_serve():
         raise HTTPException(404, "self-serve workspaces are disabled")
+    if not _self_serve_allowed(client_ip(request)):
+        raise HTTPException(429, "Workspace creation limit reached; try again tomorrow or ask for access.", headers={"Retry-After": "3600"})
     registry = OperatorRegistry()
     name = (req.company.strip() or f"Workspace {secrets.token_hex(2)}")[:120]
     rec = registry.create_operator(name, region="unspecified", sector=req.sector)
     token = registry.issue_token(rec.operator_id)
+    _audit.info("security event=workspace_self_serve operator=%s client=%s", rec.operator_id, client_ip(request))
     return {"operator_id": rec.operator_id, "sector": req.sector, "name": rec.name, "token": token,
             "note": "This token is your only key to this workspace. It is shown once. Keep it."}
 

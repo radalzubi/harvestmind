@@ -67,12 +67,12 @@ export interface Session {
   refresh(): void;
 }
 
-/** What an API from before V2 grants: it answers /me without capabilities, and it enforces nothing per role. */
-const PILOT_CAPABILITIES: Capability[] = [
-  "view", "manageData", "createProposal", "editDraft", "evaluate", "review", "approve", "export",
-  "recordExternal", "recordOutcome", "respondDecision", "manageProfiles", "manageSettings", "manageActors",
-  "viewAnalytics", "createAnalysis", "editOwnAnalysis", "shareAnalysis", "exportAnalytics", "askZaad", "manageAnalytics",
-];
+/**
+ * What the interface shows when the API grants nothing explicit: reading only. The API enforces every
+ * capability itself; assuming more here only ever showed controls the server would refuse
+ * (security review 2026-09, SEC-028).
+ */
+const PILOT_CAPABILITIES: Capability[] = ["view", "viewAnalytics"];
 
 function workspaceFrom(me: Me): Workspace {
   const name = me.display_name || me.name || me.operator_id;
@@ -85,7 +85,7 @@ function workspaceFrom(me: Me): Workspace {
     family: me.sector === "commercial" ? "commercial" : "produce",
     createdAt: me.created_at,
     uploads: me.upload_count,
-    actor: me.actor ? { id: me.actor.id, name: me.actor.name, role: me.actor.role } : { id: me.operator_id, name, role: "ADMIN" },
+    actor: me.actor ? { id: me.actor.id, name: me.actor.name, role: me.actor.role } : { id: me.operator_id, name, role: "VIEWER" },
     capabilities: Array.isArray(me.capabilities) ? (me.capabilities as Capability[]) : PILOT_CAPABILITIES,
     policy: {
       selfApproval: me.policy?.self_approval === "different_approver" ? "different_approver" : "allowed",

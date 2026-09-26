@@ -12,6 +12,9 @@ ConsentManager is the only writer of both (single-writer invariant).
 
 from __future__ import annotations
 
+import contextlib
+import fcntl
+import tempfile
 import hashlib
 import hmac
 import json
@@ -76,14 +79,40 @@ class OperatorRegistry:
         return json.loads(self.registry_file.read_text())
 
     def _save(self, records: dict[str, dict]) -> None:
+        """Atomic and private: written to a sibling file, permissions 0600, then renamed over the registry, so a
+        reader never sees a half-written file and the token hashes and HMAC secrets are not world-readable
+        (security review 2026-09, SEC-016)."""
         self.registry_dir.mkdir(parents=True, exist_ok=True)
-        self.registry_file.write_text(
-            json.dumps(records, indent=2, default=str))
+        fd, tmp = tempfile.mkstemp(dir=self.registry_dir, prefix=".operators.", suffix=".json")
+        try:
+            with os.fdopen(fd, "w") as fh:
+                fh.write(json.dumps(records, indent=2, default=str))
+            os.chmod(tmp, 0o600)
+            os.replace(tmp, self.registry_file)
+        except BaseException:
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+            raise
 
     def _update_record(self, record: OperatorRecord) -> None:
-        records = self._load()
-        records[record.operator_id] = json.loads(record.model_dump_json())
-        self._save(records)
+        with self._locked():
+            records = self._load()
+            records[record.operator_id] = json.loads(record.model_dump_json())
+            self._save(records)
+
+    @contextlib.contextmanager
+    def _locked(self):
+        """One writer at a time across processes (an advisory lock beside the registry), so a token rotation or a
+        revocation is never undone by a concurrent upload counter (SEC-016)."""
+        self.registry_dir.mkdir(parents=True, exist_ok=True)
+        with open(self.registry_dir / ".operators.lock", "w") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX)
+                yield
+            finally:
+                fcntl.flock(lock, fcntl.LOCK_UN)
 
     # ── lifecycle ────────────────────────────────────────────────────────
 
@@ -168,14 +197,23 @@ class OperatorRegistry:
             self._update_record(rec)
         return rec.anon_secret
 
+    #: A code authenticates like the workspace token (ADMIN), so it must not be guessable: at least
+    #: twelve characters (security review 2026-09, SEC-001). Codes set before that rule keep working
+    #: until they are rotated; `seed_workspaces` names them at startup.
+    MIN_ACCESS_CODE_CHARS = 12
+
     def set_access_code(self, operator_id: str, code: str) -> None:
-        """A short human key (e.g. a six-digit pilot invite) that authenticates
-        like a token. Stored as a hash. Meant for a handful of invited
-        workspaces, not for the public: rotate or clear it after the pilot."""
-        if not code or len(code.strip()) < 6:
-            raise ValueError("access code must be at least 6 characters")
+        """A human key that authenticates like a token (ADMIN). Stored as a hash. Meant for a handful of
+        invited workspaces, not for the public: rotate or clear it after the pilot."""
+        if not code or len(code.strip()) < self.MIN_ACCESS_CODE_CHARS:
+            raise ValueError(f"access code must be at least {self.MIN_ACCESS_CODE_CHARS} characters")
         rec = self.get_operator(operator_id)
         rec.access_code_hash = _hash_token(code.strip())
+        self._update_record(rec)
+
+    def clear_access_code(self, operator_id: str) -> None:
+        rec = self.get_operator(operator_id)
+        rec.access_code_hash = None
         self._update_record(rec)
 
     def set_profile(self, operator_id: str, display_name: str | None = None, logo_url: str | None = None) -> None:

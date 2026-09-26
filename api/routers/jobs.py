@@ -36,6 +36,7 @@ browser or a restarted process still finds the result.
 """
 from __future__ import annotations
 
+import hashlib
 import hmac
 import io
 import json
@@ -49,10 +50,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Body, Depends, Header, HTTPException
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Request
 from fastapi.responses import Response
 
-from api.dependencies import rate_limiter, require_operator
+from api.dependencies import capability, rate_limiter, require_operator
 from infrastructure import fly_machines
 from infrastructure.db_manager import DBManager
 from infrastructure.operator_registry import OperatorNotFoundError, OperatorRegistry
@@ -253,7 +254,7 @@ def _run_replay(conn, job: dict) -> dict:
         raise
     except Exception as exc:  # noqa: BLE001  the replay is reported as unavailable, the diagnostic stands
         log.exception("historical replay failed for %s", job.get("id"))
-        return {"status": "unavailable", "reason": f"{type(exc).__name__}: {exc}"[:300]}
+        return {"status": "unavailable", "reason": f"the replay failed ({type(exc).__name__}); the request id is in the server log"}
 
 
 def _run_produce(conn, job: dict) -> dict:
@@ -340,7 +341,7 @@ def _worker(job: dict, op: str, sector: str) -> None:
         pass
     except Exception as exc:  # noqa: BLE001
         log.exception("diagnostic failed for %s", op)
-        _finish(job, status="failed", progress="failed", error=f"{type(exc).__name__}: {exc}"[:300])
+        _finish(job, status="failed", progress="failed", error=f"the diagnostic failed ({type(exc).__name__})")
     finally:
         _GATE.release()
         try:
@@ -360,7 +361,7 @@ def _active_for(op: str) -> dict | None:
     return active[0] if active else None
 
 
-@router.post("/diagnostic", dependencies=[Depends(rate_limiter)])
+@router.post("/diagnostic", dependencies=[Depends(rate_limiter), Depends(capability("runDiagnostic"))])
 def start_diagnostic(authed: str | None = Depends(require_operator)):
     """Start a diagnostic. Idempotent while one is active: a second press
     or a second tab gets the same job back, never a duplicate run."""
@@ -405,8 +406,7 @@ def _dispatch(job: dict, op: str) -> None:
     if fly_machines.enabled():
         api = f"http://[{os.environ.get('FLY_PRIVATE_IP', '::1')}]:8000"
         try:
-            mid = fly_machines.launch_worker(job["id"], {"ZAAD_JOB_ID": job["id"], "ZAAD_INTERNAL_API": api,
-                                                        "HARVESTMIND_WORKER_TOKEN": os.environ.get("HARVESTMIND_WORKER_TOKEN", "")})
+            mid = fly_machines.launch_worker(job["id"], {"ZAAD_JOB_ID": job["id"], "ZAAD_INTERNAL_API": api})
             _set(job, runner="machine", machine_id=mid, progress=BOOT_PROGRESS)
             return
         except Exception as exc:  # noqa: BLE001  fall back to the in-process thread
@@ -521,7 +521,7 @@ def get_job(job_id: str, authed: str | None = Depends(require_operator)):
     return _public(_get(job_id, authed))
 
 
-@router.post("/{job_id}/cancel")
+@router.post("/{job_id}/cancel", dependencies=[Depends(capability("runDiagnostic"))])
 def cancel_job(job_id: str, authed: str | None = Depends(require_operator)):
     job = _get(job_id, authed)
     if job.get("status") in TERMINAL:
@@ -570,10 +570,28 @@ def render_report_pdf(company: str, job: dict) -> bytes:
     return render_pdf(report)
 
 
-# ── worker-facing endpoints (private network + shared token) ────────────────
-def require_worker(x_worker_token: str | None = Header(default=None)) -> None:
-    expected = os.environ.get("HARVESTMIND_WORKER_TOKEN", "")
-    if not expected or not x_worker_token or not hmac.compare_digest(expected, x_worker_token):
+# ── worker-facing endpoints (private network + job-scoped token) ────────────
+# Security review 2026-09 (SEC-006): a worker machine holds a token for its own job only — the HMAC of
+# the job id under the worker secret — so a token cannot read another job's bundle or write another
+# job's result; and the routes serve the private network only: a request that came through Fly's public
+# proxy carries `Fly-Client-IP`, and is answered 404 whatever token it presents.
+
+def job_token(job_id: str) -> str:
+    secret = os.environ.get("HARVESTMIND_WORKER_TOKEN", "")
+    if not secret:
+        return ""
+    return hmac.new(secret.encode(), job_id.encode(), hashlib.sha256).hexdigest()
+
+
+def worker_token_ok(job_id: str, presented: str | None) -> bool:
+    expected = job_token(job_id)
+    return bool(expected) and bool(presented) and hmac.compare_digest(expected, presented or "")
+
+
+def require_worker(job_id: str, request: Request, x_worker_token: str | None = Header(default=None)) -> None:
+    if request.headers.get("fly-client-ip"):
+        raise HTTPException(404, "unknown job")
+    if not worker_token_ok(job_id, x_worker_token):
         raise HTTPException(401, "worker token required")
 
 

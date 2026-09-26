@@ -6,7 +6,8 @@ workspace's staging tables in a scratch vault, runs the same diagnostic
 code the in-process thread would run, reports progress, posts the result
 and exits. It never sees a workspace key and holds nothing after exit.
 
-Env: ZAAD_JOB_ID, ZAAD_INTERNAL_API (http://[6pn-ip]:8000), HARVESTMIND_WORKER_TOKEN.
+Env: ZAAD_JOB_ID, ZAAD_INTERNAL_API (http://[6pn-ip]:8000), ZAAD_JOB_TOKEN (a token for this job only;
+the shared worker secret never leaves the API — security review 2026-09, SEC-005 / SEC-006).
 """
 from __future__ import annotations
 
@@ -40,7 +41,7 @@ def _call(method: str, path: str, body: dict | None = None, raw: bool = False, t
     base = _internal_base()
     if not path.startswith("/jobs/internal/"):
         raise RuntimeError("worker may only call the internal job endpoints")
-    tok = os.environ["HARVESTMIND_WORKER_TOKEN"]
+    tok = os.environ.get("ZAAD_JOB_TOKEN") or os.environ["HARVESTMIND_WORKER_TOKEN"]
     data = json.dumps(body, default=str).encode() if body is not None else None
     last: Exception | None = None
     for attempt in range(tries):

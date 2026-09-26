@@ -10,7 +10,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
-from api.dependencies import require_operator
+from api.product.governance import actor_from as _actor_from
+from api.dependencies import require_actor, require_operator
 from api.routers import zaad_atp
 from scripts.setup_db import setup_db
 from zaad.atp.contracts import resolve
@@ -22,7 +23,7 @@ from zaad.full.planner import plan, report_json
 
 
 PAT = (r'\\?"(information_hash|request_hash|fingerprint)\\?": \\?"[0-9a-f]+\\?"'
-       r'|\\?"(solve_seconds|solver_seconds_total|seconds|elapsed_seconds|wall_seconds|plan_wall_s)\\?": [0-9.e-]+'
+       r'|\\?"(solve_seconds|solver_seconds_total|seconds|elapsed_seconds|wall_seconds|plan_wall_s|partition_seconds|extract_seconds)\\?": [0-9.e-]+'
        r'|\\?"atp\\?": (null|\{[^{}]*\})')   # timing, hashes (also inside embedded JSON strings) and the request echo of the block itself
 
 
@@ -126,6 +127,8 @@ def _app(operator="tenant_a"):
     app = FastAPI()
     app.include_router(zaad_atp.router)
     app.dependency_overrides[require_operator] = lambda: operator
+    # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
+    app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: operator)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     from api.routers.zaad import bounded_rate
     app.dependency_overrides[bounded_rate] = lambda: None
     return app

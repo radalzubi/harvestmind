@@ -1,6 +1,6 @@
 """Invited workspaces declared in the environment, created at startup.
 
-HARVESTMIND_SEED_WORKSPACES="NTDCO|commercial|839285|/logos/ntdco.svg;Green Hub|produce|402118|"
+HARVESTMIND_SEED_WORKSPACES="Customer Name|commercial|<access code, 12+ characters>|/logos/customer.svg;Other|produce|<code>|"
 
 Each entry: name | sector | access code | logo path or URL. Idempotent: an
 existing workspace of that name keeps its vault and gets the code and
@@ -35,8 +35,14 @@ def seed_workspaces_from_env(registry: OperatorRegistry | None = None) -> list:
         try:
             registry.set_access_code(rec.operator_id, code)
         except ValueError as exc:
-            log.warning("workspace %s: %s", name, exc)
-            continue
+            if rec.access_code_hash and len(code.strip()) >= 6:
+                # a code set before the twelve-character rule keeps working until it is rotated; it is named here
+                # every start so it cannot be forgotten (security review 2026-09, SEC-001)
+                log.warning("workspace %s keeps a short access code: rotate it to %d+ characters", name,
+                            registry.MIN_ACCESS_CODE_CHARS)
+            else:
+                log.warning("workspace %s: %s", name, exc)
+                continue
         registry.set_profile(rec.operator_id, display_name=name, logo_url=logo)
         out.append(rec.operator_id)
     return out
