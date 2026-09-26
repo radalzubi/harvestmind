@@ -1,6 +1,6 @@
 # ZAAD full-stack security review — September 2026
 
-**Status: IN PROGRESS (2026-09-25).** Branch `security/full-stack-hardening` from `main` `bdb570b` (= the frontier
+**Status: DONE — PASS WITH LIMITATIONS (2026-09-26).** Released as PR #96 → `main` `c7ec175`, Fly `zaad-api` v38, tag `zaad-security-hardening-runtime`; the scorecard, the residual risks and the release record are in §16. Written on 2026-09-25 as IN PROGRESS: Branch `security/full-stack-hardening` from `main` `bdb570b` (= the frontier
 decomposition runtime `328a294` plus its docs commits). Tracker written before any code change; the audit precedes every
 fix; every finding is recorded before it is fixed; every confirmed vulnerability fixed here carries a regression test in
 `tests/security/`. Scope: the API (`api/`), the tenant registry and vaults (`infrastructure/`), ingestion, the analytics
@@ -204,6 +204,18 @@ recorded for a follow-up (the pool and corpus paths still write there).
 compliant"): pre-existing and order-dependent in the suite (`test_intake_router.py::test_load_sample_data_diagnostics_computes`
 fails on `main` when run alone). Class: SW (robustness). Fix: non-finite values serialised as null.
 
+**SEC-038** Signing in as a second tenant over an existing session keeps the previous tenant's `zaad.recents.<operator>`
+key in `localStorage`. SEVERITY LOW. CWE-524 (information in browser cache). COMPONENT `web/src/app/access/page.tsx`,
+`web/src/lib/api.ts`. ATTACKER a later user of the same browser profile. PRECONDITION a shared browser and a sign-in by
+link without an explicit sign-out first. REPRODUCTION (local signed-in browser QA, 2026-09-26): sign in as A, open
+Inventory, then open B's access link — `localStorage` holds `zaad.recents.op_A` and `zaad.recents.op_B`. IMPACT the ids
+and labels of A's recently opened items remain readable to a later user of that browser; B's session never reads A's key
+(the recents store is keyed by operator id and the workspace-data effect resets on the workspace id). ROOT CAUSE
+`clearWorkspaceStorage()` runs only on explicit sign-out, not when a new token replaces the session. FIX (not in this
+release) call `clearWorkspaceStorage()` on the access page before `setApiToken()`. TEST to write with the fix in
+`web/src/lib/zaad/__tests__/security.test.ts`. STATUS **open — class: weakness (defense in depth)**; found during the
+release QA, after the tested head.
+
 ### INFORMATIONAL (confirmed non-issues)
 
 Tokens are 256-bit, stored as SHA-256, compared in constant time; no token is logged; no endpoint takes a token in a
@@ -350,4 +362,53 @@ network or key, and runs in the CI `security` shard.
 
 ## 16. Scorecard, residual risks, release record
 
-*(at the end)*
+### Scorecard (no numeric scores)
+
+| area | verdict | why |
+|---|---|---|
+| tenant isolation | PASS | every read/write family in §4 answers 404 across tenants for the workspace token and every role; nested references, lists, search, caches, analytics tiles, exports, jobs, extraction sessions all tenant-bound; production matrix on the two throwaway workspaces identical to the suite |
+| authentication | PASS WITH LIMITATIONS | tokens hashed, compared in constant time, registry private and atomic, mutated tokens dead, query-string tokens ignored, failed-auth throttle per address of record; **limitations:** tokens never expire and are revoked only by rotation; the committed NTDCO access code is rotated only by the owner (SEC-001, owner action) |
+| authorization / RBAC | PASS | 24 mutation routes × 4 roles pinned; VIEWER is read-only everywhere; capability checks are server-side; the frontend's capability list is cosmetic |
+| frontend | PASS WITH LIMITATIONS | CSP + frame/nosniff/referrer/permissions headers live on `zaadsupply.com`; token stripped from the URL and validated before storage; sign-out clears session and workspace storage; hostile names render as text; **limitation:** SEC-038 (LOW, open); CSP keeps `'unsafe-inline'`/`'unsafe-eval'` for Next.js and MapLibre |
+| uploads / inputs | PASS | body limits before the body is read, binary/empty/duplicate-column/traversal names refused cleanly, formula prefixes escaped on export, nested JSON and injection strings answer 4xx without a trace |
+| analytics / Ask ZAAD | PASS | semantic layer parameterised, cache keys carry the operator id, Ask ZAAD history keeps user turns only, tiles cannot name another tenant's analysis |
+| optimizer / jobs | PASS | planner and diagnostic runs need `runPlanner` / `runDiagnostic`; the internal worker routes 404 through the public proxy and take a per-job HMAC token; a failed job carries the exception class only; optimizer mathematics untouched (frozen regression PASS on the tested head) |
+| exports | PASS | PDF text escaped, CSV formula-safe, every export tenant- and role-checked |
+| errors / logging / audit | PASS | no traces or paths in any 4xx/5xx probed; request ids validated; loguru without local variables; security events logged without token values; audit append-only |
+| secrets / dependencies / CI | PASS WITH LIMITATIONS | gitleaks, bandit, pip-audit, npm audit clean; deploy workflow pinned and allow-listed; **limitations:** no Python lockfile; the historical access code stays in git history until rotated |
+| infrastructure / data at rest | PASS WITH LIMITATIONS | Fly secrets only, single machine, HSTS; **limitations:** the solver shares the API machine; `/app` is writable in the image; no complete tenant offboarding or vault deletion; volume snapshots are the only backup |
+
+**Overall: PASS WITH LIMITATIONS.** No CRITICAL or HIGH finding is open in the released runtime. SEC-001's remaining
+step (rotating the committed code) is an owner action outside the repository.
+
+### Residual risks and blockers before real customer data
+
+1. **Rotate the committed customer access code** (SEC-001) — owner action; the value is in git history and must be
+   treated as public. Until then the pilot workspace's ADMIN-equivalent credential is known to anyone with the repository.
+2. Workspace and actor tokens never expire (SEC-016 class); revocation is by rotation only.
+3. No complete tenant offboarding: revocation removes access, the vault and its extraction sessions stay on the volume.
+4. The extractor receives raw identifiers (not pseudonymised) when an operator uses AI extraction.
+5. No Python lockfile: `pip-audit` runs on the resolved set, not a pinned one.
+6. The solver runs in the API machine: a permitted planner run degrades the API for everyone on the machine (owner decision
+   on a dedicated worker, `FRONTIER_ORACLE_DECOMPOSITION.md` §19).
+7. `/app` is writable in the image; the upload row cap bounds ingestion but not the number of workspaces one address may
+   fill (self-serve is capped per address per day and globally).
+8. SEC-038 (LOW): a previous tenant's recents key survives a sign-in by link on a shared browser.
+9. Production role QA with actor tokens could not be run: the admin key is not held locally; the RBAC matrix is proven by
+   the suite and the CI shard only.
+
+### Release record
+
+| item | value |
+|---|---|
+| branch / PR | `security/full-stack-hardening`, PR #96 (from `bdb570b`) |
+| tested head | `e98d63b` — CI run 36206321621, **14 / 14** (ruff, mypy, gitleaks, bandit + pip-audit, docker build, frontend, unit-core, unit-zaad-1..4, **security**, integration, zaad frozen regression) |
+| earlier heads | `b2e763a` (36204418732: 13 / 14, the solver-lease timing race); `35ee396` (36205813295: the frozen-report timing keys, cancelled by the next push); `bd03a13` (36206212933, superseded) — the three follow-up commits fix test determinism only (`test_zaad_solver_lease.py` waits for the launch it finishes; the frozen-report comparisons strip the frontier telemetry timings `partition_seconds`, `extract_seconds`, `elapsed_seconds`) |
+| merge | `c7ec175dee778b5587b89306e6207f29037c5774` = `Merge PR #96: fix(security): Full-stack hardening pass — tenant, role, worker and input boundaries` |
+| deploy | `deploy-api.yml` run 36207679737 on the exact merge SHA; Fly `zaad-api` **v38**, image `canonical-c7ec175`, digest `sha256:f469b54dabe857a63dbbec8814b0cf1b1a6e730357a09765093c048e32cd40bf`; machine `0804e0dfd1e948` `shared-cpu-2x` / 2 GB **unchanged**; `/health` 200 in 0.46 s; Vercel production `dpl_5gViqAxP7QKhU3974x7TersghCCK` from `c7ec175` (GitHub deployment 6673004449), `zaadsupply.com` serving the CSP and headers of `next.config.ts` |
+| runtime tag | `zaad-security-hardening-runtime` = `c7ec175` (annotated; old tags untouched) |
+| production smoke + security QA | `prod_sec_qa.py` against the two throwaway workspaces only (`op_171b96d3` demo-loaded, `op_db0f80db` empty): `/docs`, `/openapi.json`, `/redoc` 404; six anonymous families 401; 11 cross-tenant reads/writes on A's analysis, dashboard, job, report, extraction session and confirm → 404 for B, 401 anonymous, no leaked value; B's tile naming A's analysis 422; A's names absent from B's lists and search; six malformed ids 404 without a trace; injection filter 422, malformed JSON 400, 3000-deep nested JSON 422, declared 1 GB body 413, worker route through the proxy 404, B's export of A's analysis 422; failed-auth: 10 × 401 then 429 despite a rotating `X-Forwarded-For` (Fly-Client-IP is the address of record); response headers `cache-control: no-store`, `x-content-type-options: nosniff`, `x-frame-options: DENY`, `referrer-policy: no-referrer`, HSTS; hostile `X-Request-ID` replaced, a valid one echoed; QA resources deleted afterwards |
+| browser QA | production (unauthenticated, desktop and 375 px): invalid access link → token stripped from the URL, API 401, nothing stored, clear message, no CSP violation; signed-out deep links (`/insights`, `/orders/new`) show the gate with no data; `/zaad/analytics` is a plain 404. Signed-in checks on the same frontend commit against a local API with two seeded tenants (tokens are not pasted into the production site from the browser tool): sign-in by link → token only in `sessionStorage`, URL clean; A's supplier named `<img src=x onerror=alert(1)> =HYPERLINK("x")` renders as text (no element, no dialog); switch to B → B's name, none of A's data; sign out → both storages empty, back button → the gate, no console errors. SEC-038 observed here |
+| not done | production role QA with actor tokens (no admin key locally); the NTDCO access-code rotation (owner) |
+| local gates on the tested head | `tests/security` 225 passed (with the intake module); unit suite exit 0; integration modules green; canonical regression PASS; ruff + mypy clean; web tests 199 / 202 (3 pre-existing failures from untracked files); `pip-audit` (ignoring PYSEC-2026-3412) and `npm audit` 0 vulnerabilities |
+

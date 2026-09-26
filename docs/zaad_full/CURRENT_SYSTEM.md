@@ -1,6 +1,10 @@
 # ZAAD — current system (read this first)
 
-**Status line (2026-09-23, later):** production runtime is `328a294` (Fly `zaad-api` **v37**, image `canonical-328a294`, digest
+**Status line (2026-09-26):** production runtime is `c7ec175` (Fly `zaad-api` **v38**, image `canonical-c7ec175`, digest
+`sha256:f469b54d…`) = the frontier-decomposition runtime `328a294` + **security hardening pass** (PR #96: tenant, role, worker and
+input boundaries hardened with a `tests/security` CI shard; no optimizer or product-behaviour change; scorecard PASS WITH LIMITATIONS —
+the committed NTDCO access code still needs rotating by the owner, tokens do not expire, no full offboarding). Runtime tag
+`zaad-security-hardening-runtime`. Fly machine unchanged — `docs/security/SECURITY_REVIEW_2026_09.md`. Superseded status line: production runtime was `328a294` (Fly `zaad-api` **v37**, image `canonical-328a294`, digest
 `sha256:a8c9333c…`) = the sentinel-cleanup runtime `6b8e38d` + **frontier oracle decomposition** (PR #95: the per-service frontier
 oracle solved on the exact connected components of the built model with witness skips — identical frontier and decisions, the
 50-product frontier 592 → 8 s, plan 784 → 158 s; production 25-product planner DONE in 306 s where it timed out before). Runtime tag
