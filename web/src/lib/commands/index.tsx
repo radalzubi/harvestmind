@@ -9,6 +9,7 @@
  * from it; the settings page edits preferences through it.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { TENANT_RESET_EVENT } from "@/lib/tenant-state";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, type Capability } from "@/lib/session";
 import { useLocale } from "@/lib/i18n";
@@ -86,6 +87,14 @@ export function CommandProvider({ children, store }: { children: ReactNode; stor
     setRecents(loadRecents(workspace));
   }, [workspace]);
 
+  // a tenant reset (sign-out, switch, refused credential) empties what is held in memory at once,
+  // before the session resolves the next workspace (SEC-038)
+  useEffect(() => {
+    const on = () => { setRecents([]); setPrefs(EMPTY_USER); };
+    window.addEventListener(TENANT_RESET_EVENT, on);
+    return () => window.removeEventListener(TENANT_RESET_EVENT, on);
+  }, []);
+
   const can = useCallback((c: Capability) => (session.status === "authenticated" ? session.can(c) : c === "view"), [session]);
   const visibility = useMemo<Visibility>(() => ({ device: profile.device, can, family }), [profile.device, can, family]);
   const bindings = useMemo(() => effectiveBindings(mergedOverrides(prefs, devicePrefs)), [prefs, devicePrefs]);
@@ -108,8 +117,9 @@ export function CommandProvider({ children, store }: { children: ReactNode; stor
   const save = useCallback((next: UserPrefs) => { setPrefs(next); storeRef.current.saveUser(workspace, next); }, [workspace]);
 
   const rememberRecord = useCallback((id: string, route: string, text: string) => {
+    if (session.status !== "authenticated") return;
     setRecents((list) => { const next = pushRecent(list, { kind: "record", id, route, label: text }); saveRecents(workspace, next); return next; });
-  }, [workspace]);
+  }, [workspace, session.status]);
 
   // every page visit is a recent
   useEffect(() => {

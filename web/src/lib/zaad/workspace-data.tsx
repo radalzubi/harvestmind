@@ -15,6 +15,7 @@
  * one is a deliberate act with visible progress — not a spinner on every page load.
  */
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { TENANT_RESET_EVENT } from "@/lib/tenant-state";
 import { useSession } from "@/lib/session";
 import {
   ALL_PHASES, fetchDirectory, fetchWorkspaceState, fetchWorkspaceStateFor,
@@ -232,21 +233,36 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
   const [tick, setTick] = useState(0);
   const poll = useRef<number | null>(null);
   const alive = useRef(true);
+  // Which workspace the in-flight reads and job watches belong to. Bumped on every workspace change
+  // and on a tenant reset, so a poll or a plan submission started for one workspace can never write
+  // its result into the state of the next (SEC-038).
+  const generation = useRef(0);
 
   useEffect(() => () => { alive.current = false; if (poll.current) window.clearInterval(poll.current); }, []);
+
+  const wipe = () => {
+    generation.current += 1;
+    if (poll.current) { window.clearInterval(poll.current); poll.current = null; }
+    setRequest(null); setBuild(null); setReport(null); setDirectory(null); setScope(null); setReadScope(null);
+    setPlanJobId(null); setPlanPhase("none"); setQueueAhead(null); setComputedAt(null); setLastRunFailed(null); setDegraded(null);
+    setPlanError(null); setError(null); setNotReady(null);
+  };
+
+  useEffect(() => {
+    const on = () => { wipe(); setPhase("idle"); };
+    window.addEventListener(TENANT_RESET_EVENT, on);
+    return () => window.removeEventListener(TENANT_RESET_EVENT, on);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /** Read the whole workspace, then attach the last completed plan if there is one. */
   useEffect(() => {
     // Nothing of a previous workspace survives a sign-out or a switch: the read below is keyed on the
     // workspace id and the state is cleared first (security review 2026-09, SEC-017).
-    if (poll.current) { window.clearInterval(poll.current); poll.current = null; }
-    setRequest(null); setBuild(null); setReport(null); setDirectory(null); setScope(null); setReadScope(null);
-    setPlanJobId(null); setPlanPhase("none"); setQueueAhead(null); setComputedAt(null); setLastRunFailed(null); setDegraded(null);
+    wipe();
     if (session.status !== "authenticated") { setPhase("idle"); return; }
     let live = true;
     setPhase("reading");
-    setError(null);
-    setNotReady(null);
 
     (async () => {
       let state;
@@ -365,12 +381,17 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
 
   const watch = (jobId: string) => {
     if (poll.current) window.clearInterval(poll.current);
+    const mine = generation.current;
     setPlanPhase("queued");
     setPlanError(null);
     const check = async () => {
+      if (!alive.current || mine !== generation.current) {
+        if (poll.current) { window.clearInterval(poll.current); poll.current = null; }
+        return;
+      }
       try {
         const detail = await readPlanJob(jobId);
-        if (!alive.current) return;
+        if (!alive.current || mine !== generation.current) return;
         if (detail.status === "RUNNING") { setPlanPhase("running"); setQueueAhead(null); }
         if (detail.status === "QUEUED") { setPlanPhase("queued"); setQueueAhead(queueAheadOf(detail)); }
         if (abandoned(detail)) {
@@ -415,6 +436,7 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
 
   const run = async (size: number | "all" = DEFAULT_SCOPE) => {
     if (!request) return;
+    const mine = generation.current;
     setPlanPhase("queued");
     setPlanError(null);
     try {
@@ -428,10 +450,13 @@ export function WorkspaceDataProvider({ children }: { children: React.ReactNode 
       const body = coversAll
         ? request
         : (await fetchWorkspaceStateFor(chosen, ALL_PHASES)).request;
+      if (mine !== generation.current) return;
       setScope(coversAll ? null : { skus: chosen, total: request.skus.length, rule: SCOPE_RULE });
       const { job_id } = await submitPlanJob(body);
+      if (mine !== generation.current) return;
       watch(job_id);
     } catch (e) {
+      if (mine !== generation.current) return;
       setPlanPhase("failed");
       setPlanError(messageOf(e));
     }

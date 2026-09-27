@@ -13,7 +13,27 @@
 export const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
 
+import { clearTenantClientState } from "@/lib/tenant-state";
+
 const TOKEN_KEY = "harvestmind.operator-token";
+
+/** A refused response, with its status kept so callers can tell "not accepted" from "not reachable". */
+export class ApiError extends Error {
+  status: number;
+  constructor(status: number, detail: string) { super(detail); this.name = "ApiError"; this.status = status; }
+}
+
+/**
+ * Does the server accept this credential? Asked with the candidate alone — never with the credential
+ * already stored — and before anything of the previous workspace is touched (SEC-038). A network
+ * failure counts as "not accepted": the person keeps whatever session they had.
+ */
+export async function credentialAccepted(candidate: string): Promise<boolean> {
+  try {
+    const r = await fetch(`${BASE_URL}/me`, { headers: { Authorization: `Bearer ${candidate.trim()}` } });
+    return r.ok;
+  } catch { return false; }
+}
 
 export function getApiToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -28,22 +48,16 @@ export function setApiToken(token: string): void {
   window.dispatchEvent(new Event("harvestmind-auth-change"));
 }
 
-/** Every key the interface writes for a workspace, cleared with the credential (security review 2026-09, SEC-029). */
+/**
+ * Every key the interface writes for a workspace, cleared with the credential (security review 2026-09,
+ * SEC-029 / SEC-038). One definition, in `lib/tenant-state`; this name stays for its callers.
+ */
 export function clearWorkspaceStorage(): void {
-  if (typeof window === "undefined") return;
-  try { window.sessionStorage.removeItem("harvestmind.sector"); } catch { /* storage unavailable */ }
-  try {
-    const stale: string[] = [];
-    for (let i = 0; i < window.localStorage.length; i += 1) {
-      const key = window.localStorage.key(i);
-      if (key && key.startsWith("zaad.recents.")) stale.push(key);
-    }
-    stale.forEach((key) => window.localStorage.removeItem(key));
-  } catch { /* storage unavailable */ }
+  clearTenantClientState();
 }
 
 export function clearApiToken(): void {
-  clearWorkspaceStorage();
+  clearTenantClientState();
   setApiToken("");
 }
 
@@ -71,7 +85,7 @@ export async function apiFetch<T = unknown>(path: string, init?: RequestInit): P
         `${e.loc?.join(".") || "request"}: ${e.msg || "Invalid input"}`).join("; ");
       else if (body.detail != null) detail = JSON.stringify(body.detail);
     } catch {}
-    throw new Error(detail);
+    throw new ApiError(res.status, detail);
   }
   return res.json() as Promise<T>;
 }

@@ -75,6 +75,9 @@ in code; **rotation pending owner**.
 
 ### HIGH
 
+
+**Closure pass (2026-09-26, `PILOT_SECURITY_CLOSURE_2026_09.md`):** the value was still accepted by production on 2026-09-26 (probe of `GET /me`, HTTP 200) and was still present at HEAD in `tests/security/test_auth_hardening.py` as a short-code sample — scrubbed. The startup seed re-applies `HARVESTMIND_SEED_WORKSPACES` at every boot, so the seed secret is the controlling copy of the code and rotation must replace it there (`scripts/rotate_access_code.py`, value on stdin, written to a 0600 file for the owner). The agent's session was refused the secret write, so the rotation is the owner's action. Tests: `test_rotation_invalidates_the_previous_credential`, `test_seed_replaces_the_code_and_a_short_seed_leaves_it_alone`, `test_admin_rotation_response_carries_the_token_once_and_the_log_never`. STATUS **CODE FIXED / CREDENTIAL ROTATION OWNER-BLOCKED** — historical exposure remains in repository history; the credential is retired only when the seed secret is replaced and the old value answers 401.
+
 **SEC-002 — Extraction session read needs no token and no tenant.** CWE-306 / A01. `GET /intake/session/{id}`
 (`api/routers/intake.py:597`, no dependency), sessions in one global directory (`ingestion/extraction_sessions.py:38`).
 Attacker: A or G with a session id (`ext-` + 12 hex, 48 bits, shown in the uploading tenant's browser). Impact: another
@@ -213,8 +216,20 @@ and labels of A's recently opened items remain readable to a later user of that 
 (the recents store is keyed by operator id and the workspace-data effect resets on the workspace id). ROOT CAUSE
 `clearWorkspaceStorage()` runs only on explicit sign-out, not when a new token replaces the session. FIX (not in this
 release) call `clearWorkspaceStorage()` on the access page before `setApiToken()`. TEST to write with the fix in
-`web/src/lib/zaad/__tests__/security.test.ts`. STATUS **open — class: weakness (defense in depth)**; found during the
-release QA, after the tested head.
+`web/src/lib/zaad/__tests__/security.test.ts`. STATUS **CLOSED (2026-09-26, `security/pilot-closure`)** — class: weakness (defense in depth). Root cause: no single owner of tenant-scoped browser state; the previous workspace was cleared only on explicit sign-out, and two sign-in paths stored the candidate credential before validating it. Fix: `web/src/lib/tenant-state.ts` — an inventory-driven `clearTenantClientState()` (session: token, sector; local: `zaad.recents.*`, `zaad.prefs.user.*`, `zaad.prefs.device.*`, `zaad.data.hidden.*`; keeps `zaad.locale`) that also fires `harvestmind-tenant-reset` for in-memory holders (command centre recents and prefs, toasts, workspace data with a per-workspace generation guard on in-flight job watches), and `switchCredential()` which validates the candidate alone, clears the previous workspace only on acceptance, then stores — used by the access link, the paste path, get-started and `session.signIn`; a `/me` 401/403 clears the session; `zaad.data.hidden` is now keyed by workspace. A refused link or paste leaves the current session untouched and says so. Tests: `web/src/lib/zaad/__tests__/tenant-state.test.ts` (A, E, F, G and the ordering) and the browser QA recorded in the closure tracker (B, C, D, rapid switching, two tabs).
+
+**SEC-039** No complete tenant offboarding existed: `delete_operator` only flipped a status, and no store (vault, extraction
+sessions, job store, shadow ledger, run records, access requests, pool, corpus) had a delete path. SEVERITY MEDIUM (control gap,
+not an exposure). CWE-459 (incomplete cleanup). COMPONENT `infrastructure/offboarding.py`, `scripts/offboard_operator.py`,
+`POST /admin/operators/{id}/offboard`. FIX (2026-09-26): one module over the recorded inventory — dry run by default, execution
+only with the exact operator id repeated, path containment under each root, symlinks never followed, per-stage status with
+PARTIAL on any failure, idempotent reruns, a receipt with counts and actor, retained items and external retention named. Policy:
+the workspace's operational data (including its own audit log inside the vault) is removed; the registry tombstone, the
+receipt, the cross-access security log and blanked access-request rows are retained for accountability. TEST
+`tests/security/test_offboarding.py` (8: population of every store for two tenants with identical record ids; dry run names A
+and never B; refusals; symlinks; execution removes A everywhere and B is byte-for-byte unchanged; rerun is a no-op; partial
+failure reported and completed on rerun; CLI and admin route rules). Runbook `TENANT_OFFBOARDING_RUNBOOK.md`. STATUS
+**CLOSED as a control**; retention limits stated in the runbook.
 
 ### INFORMATIONAL (confirmed non-issues)
 
@@ -386,14 +401,14 @@ step (rotating the committed code) is an owner action outside the repository.
 1. **Rotate the committed customer access code** (SEC-001) — owner action; the value is in git history and must be
    treated as public. Until then the pilot workspace's ADMIN-equivalent credential is known to anyone with the repository.
 2. Workspace and actor tokens never expire (SEC-016 class); revocation is by rotation only.
-3. No complete tenant offboarding: revocation removes access, the vault and its extraction sessions stay on the volume.
+3. ~~No complete tenant offboarding~~ — closed 2026-09-26 (SEC-039, `TENANT_OFFBOARDING_RUNBOOK.md`); platform snapshots and provider logs remain outside ZAAD's control.
 4. The extractor receives raw identifiers (not pseudonymised) when an operator uses AI extraction.
 5. No Python lockfile: `pip-audit` runs on the resolved set, not a pinned one.
 6. The solver runs in the API machine: a permitted planner run degrades the API for everyone on the machine (owner decision
    on a dedicated worker, `FRONTIER_ORACLE_DECOMPOSITION.md` §19).
 7. `/app` is writable in the image; the upload row cap bounds ingestion but not the number of workspaces one address may
    fill (self-serve is capped per address per day and globally).
-8. SEC-038 (LOW): a previous tenant's recents key survives a sign-in by link on a shared browser.
+8. ~~SEC-038~~ — closed 2026-09-26 (`security/pilot-closure`).
 9. Production role QA with actor tokens could not be run: the admin key is not held locally; the RBAC matrix is proven by
    the suite and the CI shard only.
 

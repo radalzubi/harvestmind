@@ -39,3 +39,31 @@ binary pilot-data readiness verdict. No optimizer, analytics, business-logic or 
 ## 2. Progress log
 
 - 2026-09-26 01:35Z branch created; reviews complete; committed value scrubbed from the test file.
+- 2026-09-26 02:05Z credential: production probe confirmed the committed code still authenticates (HTTP 200, the customer
+  workspace); the second historical six-digit value answers 401. The agent's session was **refused the Fly secret write**
+  (permission layer), so the rotation is prepared, not performed: `scripts/rotate_access_code.py` (value on stdin, new code to
+  a 0600 file, never printed). SEC-001 = CODE FIXED / CREDENTIAL ROTATION OWNER-BLOCKED.
+- 2026-09-26 02:30Z SEC-038 implemented (`web/src/lib/tenant-state.ts`; call sites: access link, paste, get-started,
+  `session.signIn`, `/me` 401/403; in-memory holders on `harvestmind-tenant-reset`; workspace-data generation guard;
+  `zaad.data.hidden` keyed by workspace). Node tests 7 (A, E, E', ordering, F, G, inventory classification).
+- 2026-09-26 02:45Z offboarding: `infrastructure/offboarding.py`, `scripts/offboard_operator.py`, `POST
+  /admin/operators/{id}/offboard`; tests 8 (all green); runbook and pilot checklist written; SEC-039 recorded.
+
+## 3. Browser QA (localhost, two seeded tenants with identical record ids; tokens never pasted into production)
+
+| flow | observed |
+|---|---|
+| A signed in, opens an **invalid** B link | token stripped from the URL, `/me` 401 once, A still signed in, A's keys untouched, refusal message shown |
+| A → B by access link | `localStorage` holds only `zaad.recents.op_B`; A's recents, prefs and hidden-column keys gone; B's name only |
+| B → Back → Back → Forward | `/access` as B, then `/inventory` **rendered as B** (B's rows), then `/access` as B; never A's name or rows |
+| A → sign out → Back | both storages empty; Back lands on the gate ("not open here"), no rows |
+| rapid A → B → A (three links in a row) | ends on A with only A's key; no B state |
+| two tabs: tab 1 A, tab 2 A; tab 1 → B | tab 2 stays A (credential is per tab); tab 1 shows B only; when tab 2 navigates it rewrites `zaad.recents.op_A` in the shared local store — keyed by operator, never read by B's tab; there is no cross-tab auth sync and none is added |
+| console | a fresh tab on the branch build (sign-in → `/start`) logs nothing; a clean tab on the stashed `main` build logs nothing either; the hydration warning seen in the long-lived QA tab came from its Back/Forward history and appears on both builds |
+
+## 4. Local gates on the branch
+
+`tests/security` 216 collected, all green (offboarding 8, auth hardening +3, SEC-038 node tests 7); canonical frozen regression
+PASS; integration modules (front door, canonical API, analytics security, security hardening) 32 passed; unit suite (in
+progress at the time of writing, see the PR); web tests 206 / 209 (the 3 pre-existing failures from untracked files); `tsc`
+and `eslint` clean on the changed files; ruff and mypy clean on the new backend files.

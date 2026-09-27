@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { CheckCircle2, AlertTriangle, X } from "lucide-react";
+import { TENANT_RESET_EVENT } from "@/lib/tenant-state";
 
 type ToastKind = "success" | "info" | "warn";
 type Toast = { id: number; kind: ToastKind; text: string };
@@ -24,6 +25,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const push = useCallback((text: string, kind: ToastKind = "success") => {
     const id = Date.now() + Math.random();
     setItems((s) => [...s, { id, kind, text }]);
+  }, []);
+
+  // a confirmation that names a job or a proposal belongs to the workspace it was shown in (SEC-038)
+  useEffect(() => {
+    const on = () => setItems([]);
+    window.addEventListener(TENANT_RESET_EVENT, on);
+    return () => window.removeEventListener(TENANT_RESET_EVENT, on);
   }, []);
 
   return (
