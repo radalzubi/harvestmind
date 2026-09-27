@@ -88,3 +88,41 @@ and `eslint` clean on the changed files; ruff and mypy clean on the new backend 
 2. Restore GitHub Actions billing so CI can prove the head, then merge and deploy PR #97 per the release process.
 With both done and the production QA (§31) green on throwaway tenants, the READY conditions are met: no open CRITICAL/HIGH,
 exposed credential revoked, SEC-038 closed with tests, tested offboarding, tenant isolation suite green, no new regression.
+
+## 7. Release-closure attempt (2026-09-27 20:30Z)
+
+Re-checked from the exact head `c62a05a` (no newer commits on PR #97):
+
+| gate | result |
+|---|---|
+| historical code on production | **still authenticates** (`GET /me` HTTP 200, the customer workspace) |
+| Fly seed-secret rotation | not possible from this session (the permission layer refuses secret-store writes; not retried) → **CREDENTIAL ROTATION OWNER ACTION REQUIRED** |
+| GitHub Actions | run 36289649860 re-run at 20:14Z, attempt 2: every job refused in 2 s with "The job was not started because recent account payments have failed or your spending limit needs to be increased" → **CI BLOCKED — OWNER MUST FIX GITHUB BILLING/SPENDING LIMIT** |
+| HEAD secret scan | the historical value appears in no tracked file (data files included); no replacement credential exists to leak; `docs/security` reproduces no code; fixtures use synthetic values only; gitleaks runs in CI (blocked) |
+| SEC-038 | node tests 7 / 7 on the head; browser QA of §3 unchanged (no frontend change since) |
+| offboarding + credential regression | 21 passed, 1 skipped; whole `tests/security` 215 passed, 1 skipped |
+| frozen canonical regression | PASS on the head (see the log line below); `P1_INVARIANTS.json` untouched |
+
+Nothing merged, nothing deployed, no tag. **PILOT DATA READINESS: BLOCKED.**
+
+### Exact owner actions
+
+1. **Rotate the seed secret** (retires the exposed code; nothing else does):
+   ```bash
+   python scripts/rotate_access_code.py --app zaad-api --name "<the workspace's registry name>" --sector commercial \
+       --logo "<its logo path>" --out ~/.zaad-secrets/customer_access_code_$(date +%F).txt
+   ```
+   The workspace name, sector and logo are the ones `GET /me` reports for the workspace (the seed matches on the exact name).
+   The app restarts and applies the new code at start. Then verify without printing either value:
+   ```bash
+   curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer $(cat OLD_CODE_FILE)" https://zaad-api.fly.dev/me   # expect 401
+   curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer $(cat ~/.zaad-secrets/customer_access_code_*.txt)" https://zaad-api.fly.dev/me   # expect 200
+   ```
+   Hand the new code to the customer through the agreed channel; keep the 0600 file or delete it once delivered.
+2. **Restore GitHub Actions billing** (Settings → Billing & plans), then re-run CI on the exact head:
+   ```bash
+   gh run rerun 36289649860
+   ```
+   and continue with the release process in the closure brief (14/14 green → merge → deploy the merge SHA → production QA on throwaway tenants including one throwaway offboarding → tag → records).
+
+Frozen regression log line on the head: `CANONICAL REGRESSION PASS`
