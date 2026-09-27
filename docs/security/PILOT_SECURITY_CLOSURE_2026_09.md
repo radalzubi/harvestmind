@@ -1,6 +1,6 @@
 # ZAAD pilot security closure — credential rotation, tenant-switch hygiene, tenant offboarding (September 2026)
 
-**Status: IN PROGRESS (2026-09-26).** Branch `security/pilot-closure` from `main` `fa07f12` (= the security hardening
+**Status: CODE COMPLETE ON THE BRANCH — RELEASE BLOCKED (2026-09-27): CI cannot start (GitHub Actions billing) and the credential rotation is the owner's action. Pilot-data readiness: BLOCKED.** Branch `security/pilot-closure` from `main` `fa07f12` (= the security hardening
 runtime `c7ec175` plus its docs commits). Tracker written before code. Scope is deliberately small: retire the exposed
 credential, close SEC-038 completely, add a tested tenant-offboarding procedure, state retention limits, and give a
 binary pilot-data readiness verdict. No optimizer, analytics, business-logic or product-semantics change.
@@ -67,3 +67,24 @@ binary pilot-data readiness verdict. No optimizer, analytics, business-logic or 
 PASS; integration modules (front door, canonical API, analytics security, security hardening) 32 passed; unit suite (in
 progress at the time of writing, see the PR); web tests 206 / 209 (the 3 pre-existing failures from untracked files); `tsc`
 and `eslint` clean on the changed files; ruff and mypy clean on the new backend files.
+
+## 5. Release standing (2026-09-27 02:50Z)
+
+- PR #97 opened from `security/pilot-closure` head `5d26571`.
+- **CI run 36289542773 did not run**: every job was refused within seconds with the annotation "The job was not started
+  because recent account payments have failed or your spending limit needs to be increased" (GitHub Actions billing; the same
+  block occurred on 2026-09-15). No job executed, so nothing about the head is proven by CI yet. Owner action: restore Actions
+  billing, then re-run the workflow on the exact head (`gh run rerun 36289542773` or a new push).
+- The Vercel preview build for the head failed in `next/font`'s Google loader ("Cannot read properties of null (reading '1')" in
+  `layout.tsx`), the transient loader error already seen on PR #95; it is not caused by this change and clears on rebuild.
+- Merge, deploy, production QA, the runtime tag and the CURRENT_SYSTEM / ledger updates wait for a green CI run on the exact head
+  (§51 of the hardening brief; §32 of this one). Nothing was merged or deployed.
+
+## 6. Pilot-data readiness
+
+**BLOCKED.** Two owner actions stand between the branch and READY FOR CONTROLLED PILOT:
+1. Replace the seed secret so the historical code stops authenticating (`scripts/rotate_access_code.py`; then the old value must
+   answer 401 and the new one 200). Code hardening alone does not retire a leaked credential.
+2. Restore GitHub Actions billing so CI can prove the head, then merge and deploy PR #97 per the release process.
+With both done and the production QA (§31) green on throwaway tenants, the READY conditions are met: no open CRITICAL/HIGH,
+exposed credential revoked, SEC-038 closed with tests, tested offboarding, tenant isolation suite green, no new regression.
