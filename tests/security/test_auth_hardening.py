@@ -12,7 +12,7 @@ from tests.security.conftest import Tenants
 
 def test_short_access_codes_are_refused(tenants: Tenants):
     reg, op = tenants.registry, tenants.a.operator_id
-    for short in ("839285", "abcdef", "12345678901"):
+    for short in ("short1", "abcdef", "12345678901"):
         with pytest.raises(ValueError):
             reg.set_access_code(op, short)
     reg.set_access_code(op, "long-enough-code-2026")
