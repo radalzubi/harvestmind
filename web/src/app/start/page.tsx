@@ -8,7 +8,7 @@ import { Card, CardBody, CardHead, InfoBanner, PageHeader, Tbtn } from "@/compon
 import { apiFetch, cancelJob, downloadReport, familyOf, getApiToken, getJob, getMe, latestJob, setSector, startDiagnostic, type IntakeStatus, type Me } from "@/lib/api";
 import { DiagnosticPoller, isTerminal, type PollerState } from "@/lib/diagnostic/lifecycle";
 import { DiagnosticRun } from "@/components/diagnostic/DiagnosticRun";
-import { DiagnosticReportView } from "@/components/diagnostic/DiagnosticReport";
+import { DiagnosticResult } from "@/components/diagnostic/DiagnosticResult";
 import { useToast } from "@/components/Toast";
 
 const SECTOR_LABEL: Record<string, string> = { commercial: "Commercial goods", produce: "Fresh produce", meats: "Meat and seafood" };
@@ -177,9 +177,10 @@ function StartInner() {
 
       {job?.status === "done" && job.report && (
         <Card style={{ marginTop: 16 }}>
-          <CardHead title="3. Your result" sub={`Purchasing diagnostic for ${job.report.company}`} />
+          <CardHead title="3. Your result" sub={`Purchasing diagnostic for ${String(job.report.company ?? me.name)}`} />
           <CardBody>
-            <DiagnosticReportView report={job.report} onDownload={download} downloading={downloading} />
+            {/* A stored report in a format this build does not render is shown as a note with its PDF, never thrown at the page. */}
+            <DiagnosticResult report={job.report} onDownload={download} downloading={downloading} />
           </CardBody>
         </Card>
       )}
