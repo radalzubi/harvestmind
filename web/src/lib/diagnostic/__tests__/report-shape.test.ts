@@ -13,7 +13,7 @@ import assert from "node:assert/strict";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { CONDITIONAL_LISTS, REQUIRED_LISTS, REQUIRED_OBJECTS, missingReportSections, reportRenderable, reportVersion } from "../report-shape";
+import { CONDITIONAL_LISTS, REQUIRED_LISTS, REQUIRED_OBJECTS, missingReportSections, reportRenderable } from "../report-shape";
 import { DiagnosticReportView } from "../../../components/diagnostic/DiagnosticReport";
 import { DiagnosticResult } from "../../../components/diagnostic/DiagnosticResult";
 
@@ -85,14 +85,30 @@ test("an earlier-format report is recognised, with the sections it lacks named",
   assert.equal(reportRenderable(report), false);
   const missing = missingReportSections(report);
   for (const section of ["executive_summary.benchmark", "executive_summary.replay", "policy_benchmark", "optimizer_replay"]) assert.ok(missing.includes(section), section);
-  assert.equal(reportVersion(report), "2026.09.2");
+});
+
+test("the version label does not decide: a current-layout report with the same label is shown", () => {
+  // the label was not changed when the layout was, so both layouts carry it
+  const report = currentFormatMinimal();
+  report.version = "2026.09.2";
+  assert.equal(reportRenderable(report), true);
 });
 
 test("the result renders a note and the PDF for an earlier-format report instead of throwing", () => {
   const html = renderToStaticMarkup(createElement(DiagnosticResult, { report: earlierFormat(), onDownload: noop }));
-  assert.match(html, /produced by a different version of the diagnostic \(report version 2026\.09\.2\)/);
+  assert.match(html, /stored in a report layout this page does not show/);
+  assert.match(html, /Nothing was lost: the full report of this run is available as a PDF/);
   assert.match(html, /Download the report \(PDF\)/);
   assert.doesNotMatch(html, /Executive summary/);
+});
+
+test("the note claims nothing that is false for a sector still built in the other layout", () => {
+  // a produce report is built in the other layout today: no version claim, no promise about a new run
+  const produce = { ...earlierFormat(), sector: "produce" };
+  const html = renderToStaticMarkup(createElement(DiagnosticResult, { report: produce, onDownload: noop }));
+  assert.doesNotMatch(html, /version/i);
+  assert.doesNotMatch(html, /again/i);
+  assert.match(html, /Download the report \(PDF\)/);
 });
 
 test("a current-format report is handed to the view and rendered", () => {
@@ -101,7 +117,7 @@ test("a current-format report is handed to the view and rendered", () => {
   const html = renderToStaticMarkup(createElement(DiagnosticResult, { report, onDownload: noop }));
   assert.match(html, /Executive summary/);
   assert.match(html, /Keep the current ordering rule/);
-  assert.doesNotMatch(html, /different version/);
+  assert.doesNotMatch(html, /layout this page does not show/);
 });
 
 test("the check is complete: removing any required section makes the report non-renderable", () => {
@@ -143,5 +159,4 @@ test("anything that is not a report is a note, never an exception", () => {
     const html = renderToStaticMarkup(createElement(DiagnosticResult, { report: junk, onDownload: noop }));
     assert.match(html, /Download the report \(PDF\)/);
   }
-  assert.equal(reportVersion({ version: "x".repeat(200) }), null);
 });

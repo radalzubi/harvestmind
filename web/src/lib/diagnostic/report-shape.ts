@@ -8,8 +8,13 @@
  * run dated from the earlier format could not open `/start` at all.
  *
  * The lists below are exactly the sections the view dereferences unconditionally. A report that
- * lacks any of them is never handed to the view; it is shown as "produced by a different version"
- * with its PDF, which the server still renders.
+ * lacks any of them is never handed to the view; it is shown as a note with its PDF, which the
+ * server still renders.
+ *
+ * The check is on the sections, not on the report's `version` label: that label was not changed
+ * when the layout was, so it cannot tell the two apart. And the other layout is not only history —
+ * the report of a produce or meat workspace is still built in it — so the note makes no claim
+ * about versions or about what a new run would produce.
  */
 import type { DiagnosticReport } from "@/lib/api";
 
@@ -60,10 +65,4 @@ export function missingReportSections(report: unknown): string[] {
 
 export function reportRenderable(report: unknown): report is DiagnosticReport {
   return missingReportSections(report).length === 0;
-}
-
-/** The report's own version label, when it carries one (shown so a person can quote it). */
-export function reportVersion(report: unknown): string | null {
-  const v = at(report, "version");
-  return typeof v === "string" && v.length > 0 && v.length <= 40 ? v : null;
 }
