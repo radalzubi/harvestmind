@@ -380,6 +380,11 @@ def composite_attestation(legacy: dict, causal: dict | None = None) -> dict:
 # ── perturbation family: receipts on purchase orders placed before the decision time ──
 FUTURE_RECEIPTS = "future_receipts"
 
+# fixed statements: row ids (and the day shift) are bound parameters, never part of the SQL text
+_DELETE_RECEIPTS = "DELETE FROM stg_fmcg_receipts WHERE rowid IN (SELECT UNNEST(?))"
+_HALVE_RECEIPTS = "UPDATE stg_fmcg_receipts SET qty_received = qty_received * 0.5 WHERE rowid IN (SELECT UNNEST(?))"
+_MOVE_RECEIPTS = "UPDATE stg_fmcg_receipts SET receipt_date = CAST(receipt_date + to_days(CAST(? AS INTEGER)) AS DATE) WHERE rowid IN (SELECT UNNEST(?))"
+
 
 def receipt_perturbations(decision_at: datetime, *, is_available_at: Availability, shift_days: int = 7,
                           positive_window_days: int = 56) -> list[Perturbation]:
@@ -394,7 +399,8 @@ def receipt_perturbations(decision_at: datetime, *, is_available_at: Availabilit
     if decision_at.tzinfo is None:
         raise ValueError("decision_at needs a timezone")
     day = decision_at.astimezone(timezone.utc).date()
-    rule = getattr(is_available_at, "label", None) or getattr(is_available_at, "__name__", "unnamed availability rule")
+    label, name = getattr(is_available_at, "label", None), getattr(is_available_at, "__name__", None)
+    rule: str = label if isinstance(label, str) and label else name if isinstance(name, str) and name else "unnamed availability rule"
     columns = ("rowid", "po_id", "receipt_date", "sku", "qty_received", "po_date")
 
     def facts(conn: Any) -> list[dict]:
@@ -405,23 +411,23 @@ def receipt_perturbations(decision_at: datetime, *, is_available_at: Availabilit
     def unavailable(conn: Any) -> list[int]:
         return [f["rowid"] for f in facts(conn) if not is_available_at(f, decision_at)]
 
-    def edit(conn: Any, statement: str, rowids: list[int]) -> int:
-        for start in range(0, len(rowids), 500):
-            chunk = rowids[start:start + 500]
-            conn.execute(f"{statement} WHERE rowid IN ({', '.join('?' * len(chunk))})", chunk)
+    def edit(conn: Any, statement: str, rowids: list[int], *leading: Any) -> int:
+        # `statement` is one of the module's fixed strings; the row ids travel as one bound list parameter
+        if rowids:
+            conn.execute(statement, [*leading, rowids])
         return len(rowids)
 
     def delete(conn: Any) -> int:
-        return edit(conn, "DELETE FROM stg_fmcg_receipts", unavailable(conn))
+        return edit(conn, _DELETE_RECEIPTS, unavailable(conn))
 
     def requantify(conn: Any) -> int:
-        return edit(conn, "UPDATE stg_fmcg_receipts SET qty_received = qty_received * 0.5", unavailable(conn))
+        return edit(conn, _HALVE_RECEIPTS, unavailable(conn))
 
     def redate(conn: Any) -> int:
         # only receipts that stay unavailable after the move: the control must remain a negative one
         later = [f["rowid"] for f in facts(conn) if not is_available_at(f, decision_at)
                  and not is_available_at({**f, "receipt_date": f["receipt_date"] + timedelta(days=shift_days)}, decision_at)]
-        return edit(conn, f"UPDATE stg_fmcg_receipts SET receipt_date = receipt_date + INTERVAL {int(shift_days)} DAY", later)
+        return edit(conn, _MOVE_RECEIPTS, later, int(shift_days))
 
     def add(conn: Any) -> int:
         received = {f["po_id"] for f in facts(conn) if is_available_at(f, decision_at)}
@@ -438,7 +444,7 @@ def receipt_perturbations(decision_at: datetime, *, is_available_at: Availabilit
     def past(conn: Any) -> int:
         since = day - timedelta(days=positive_window_days)
         known = [f["rowid"] for f in facts(conn) if is_available_at(f, decision_at) and f["receipt_date"] >= since]
-        return edit(conn, "UPDATE stg_fmcg_receipts SET qty_received = qty_received * 0.5", known)
+        return edit(conn, _HALVE_RECEIPTS, known)
 
     def make(name: str, family: str, control: Control, change: Callable[[Any], int]) -> Perturbation:
         return Perturbation(name, family, control, in_transaction(change), availability=rule)
