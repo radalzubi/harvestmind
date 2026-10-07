@@ -17,7 +17,8 @@ from zaad.full import causal
 from zaad.full.workspace import build_request
 
 OPERATOR = "causal_test_operator"
-TABLES = ("stg_fmcg_skus", "stg_fmcg_orders", "stg_fmcg_purchase_orders", "stg_fmcg_receipts", "stg_fmcg_inventory")
+TABLES = ("stg_fmcg_skus", "stg_fmcg_orders", "stg_fmcg_purchase_orders", "stg_fmcg_receipts", "stg_fmcg_inventory",
+          "stg_fmcg_promotions", "stg_fmcg_suppliers", "stg_fmcg_economics")      # every table the default build reads
 
 
 @pytest.fixture(scope="module")
@@ -39,7 +40,8 @@ def vault():
         conn.unregister("frame_")
     last = conn.execute("SELECT MAX(order_date) FROM stg_fmcg_orders").fetchone()[0]
     as_of = datetime(last.year, last.month, last.day, tzinfo=timezone.utc) - timedelta(weeks=14)
-    yield {"conn": conn, "as_of": as_of}
+    first_rows = {t: row[0] for t in TABLES if (row := conn.execute(f"SELECT * FROM {t} LIMIT 1").fetchone()) is not None}
+    yield {"conn": conn, "as_of": as_of, "first_rows": first_rows}
     conn.close()
 
 
@@ -53,29 +55,45 @@ def test_the_same_vault_and_decision_time_give_the_same_hash(vault):
     assert first == second and first.projection_version == causal.PROJECTION_VERSION
 
 
-def test_reordering_the_rows_of_every_source_table_changes_no_row_of_the_request(vault):
-    """What holds today: the adapter builds the same rows whatever order the vault returns its rows in.
-    What is recorded and not asserted: the ORDER of those rows follows the vault (no ORDER BY in the
-    adapter), and row order is part of the causal identity because consumers draw random numbers and
-    create solver variables in it. Making the adapter's row order deterministic is not H0's to do."""
+def _permute(conn, order_by: str) -> dict[str, int]:
+    """Physically reorder every populated source table; returns the row counts of the tables that moved."""
+    moved = {}
+    for table in TABLES:
+        n = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+        if n < 2:
+            continue
+        conn.execute(f"CREATE TEMP TABLE reordered_ AS SELECT * FROM {table} ORDER BY {order_by}")
+        conn.execute(f"DELETE FROM {table}")
+        conn.execute(f"INSERT INTO {table} SELECT * FROM reordered_")
+        conn.execute("DROP TABLE reordered_")
+        moved[table] = n
+    return moved
+
+
+@pytest.mark.parametrize("order_by", ["rowid DESC", "md5(CAST(rowid AS VARCHAR))"])
+def test_physical_row_order_of_the_source_tables_does_not_reach_the_request(vault, order_by):
+    """H1c: the same vault rows in another physical order give the exact same request — the same canonical
+    projection, list order included, and therefore the same fingerprint. Nothing is normalised in the
+    comparison; the production builder itself emits the canonical order."""
+    from zaad.full.worlds import draw
     conn, build = vault["conn"], _builder(vault["as_of"])
-    base = causal.canonical_projection(build(conn))["request"]
+    base = build(conn)
+    base_projection, base_print = causal.canonical_projection(base), causal.fingerprint(base)
     conn.execute("BEGIN TRANSACTION")
     try:
-        for table in TABLES:
-            conn.execute(f"CREATE TEMP TABLE reordered_ AS SELECT * FROM {table} ORDER BY md5(CAST(rowid AS VARCHAR))")
-            conn.execute(f"DELETE FROM {table}")
-            conn.execute(f"INSERT INTO {table} SELECT * FROM reordered_")
-            conn.execute("DROP TABLE reordered_")
-        other = causal.canonical_projection(build(conn))["request"]
+        moved = _permute(conn, order_by)
+        # the permutation is real: a populated table's first row changed
+        first_sku_before = vault["first_rows"]["stg_fmcg_purchase_orders"]
+        first_sku_after = conn.execute("SELECT po_id FROM stg_fmcg_purchase_orders LIMIT 1").fetchone()[0]
+        other = build(conn)
     finally:
         conn.execute("ROLLBACK")
-    assert set(base) == set(other)
-    for name, value in base.items():
-        if isinstance(value, list):
-            assert sorted(map(causal._bytes, value)) == sorted(map(causal._bytes, other[name])), name      # the same rows
-        else:
-            assert value == other[name], name                                                              # everything that is not a row collection is identical
+    assert len(moved) >= 4 and first_sku_after != first_sku_before, (moved, first_sku_before, first_sku_after)
+    assert causal.canonical_projection(other) == base_projection
+    assert causal.fingerprint(other) == base_print
+    # and a consumer that reads the request in order gets the same thing: the seeded worlds are identical
+    assert [w.demand for w in draw(other, 7, 3)] == [w.demand for w in draw(base, 7, 3)]
+    assert causal.fingerprint(build(conn)) == base_print                          # the vault is as it was
 
 
 def test_import_metadata_is_not_part_of_the_request(vault):

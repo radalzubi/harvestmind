@@ -88,6 +88,18 @@ def _economics(conn: Any) -> tuple[dict[str, Any], dict[str, str]]:
     return values, prov
 
 
+def canonical_rows(rows: list[dict[str, Any]], *keys: str) -> list[dict[str, Any]]:
+    """Rows of a semantically unordered request collection in their canonical order: sorted by the named
+    business fields, which must form a total order over valid rows (HARDENING V1, H1c).
+
+    The vault returns rows in physical order, which is not business state. The request's sequence order
+    is part of its causal identity (`zaad.full.causal`), and consumers draw random numbers and create
+    solver variables in it, so every collection built here is ordered by its own identifiers and never
+    by the order the rows were read in. Only collections whose order carries no meaning go through
+    this function; period vectors, routes and other positional sequences keep their order."""
+    return sorted(rows, key=lambda row: tuple(row[k] for k in keys))
+
+
 def receipts_available_before(receipts: pd.DataFrame, origin: pd.Timestamp) -> pd.DataFrame:
     """The receipt rows a decision taken at `origin` may know about: `receipt_date < origin`.
 
@@ -182,7 +194,10 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     if skus_frame.empty or orders.empty:
         raise WorkspaceError("Upload stg_fmcg_skus and stg_fmcg_orders before planning.")
     sku_filter = {str(x) for x in skus} if skus else None
+    # H1c: the master is iterated in SKU order, never in the vault's physical order. Which row wins when a
+    # SKU id is duplicated is unchanged (the last physical row): there is no declared precedence for that.
     master = skus_frame.drop_duplicates("sku", keep="last")
+    master = master.assign(_sku_key=master["sku"].astype(str)).sort_values("_sku_key", kind="stable").drop(columns="_sku_key").reset_index(drop=True)
     if sku_filter is not None:
         master = master[master["sku"].astype(str).isin(sku_filter)]
         orders = orders[orders["sku"].astype(str).isin(sku_filter)]
@@ -195,6 +210,9 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         pos["po_date"] = pd.to_datetime(pos["po_date"])
         if "expected_delivery_date" in pos:
             pos["expected_delivery_date"] = pd.to_datetime(pos["expected_delivery_date"])
+        # H1c: purchase orders in (placement date, id) order, so every row built from them and every
+        # "latest" pick below is independent of the order the vault returned them in
+        pos = pos.assign(_po_key=pos["po_id"].astype(str)).sort_values(["po_date", "_po_key"], kind="stable").drop(columns="_po_key").reset_index(drop=True)
     if len(receipts):
         receipts["receipt_date"] = pd.to_datetime(receipts["receipt_date"])
     if len(inventory):
@@ -292,7 +310,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         from zaad.sourcing.workspace import alternate_rows, primary_rows, source_table
         table = source_table(conn)
         source_table_present = table is not None
-        alternates = alternate_rows(table, [s for s in products if s in sku_supplier], sku_supplier)
+        alternates = sorted(alternate_rows(table, [s for s in products if s in sku_supplier], sku_supplier), key=lambda a: (str(a["sku"]), str(a["supplier"])))
         primary_declared = primary_rows(table, [s for s in products if s in sku_supplier], sku_supplier)
         if not source_table_present:
             warnings.append("sourcing requested but the vault has no stg_fmcg_sources table (migration 018): the frozen single-source request is built")
@@ -335,11 +353,11 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     latest_cost: dict[str, float] = {}
     latest_cost_by_supplier: dict[tuple[str, str], float] = {}
     if len(pos):
-        for sku, group in pos[pos["po_date"] < origin].sort_values("po_date").groupby("sku"):
+        for sku, group in pos[pos["po_date"] < origin].groupby("sku"):          # pos is in (po_date, po_id) order
             cost = _num(group["unit_cost"].dropna().iloc[-1], None) if group["unit_cost"].notna().any() else None
             if cost:
                 latest_cost[str(sku)] = float(cost)
-        for (sku, sid), group in pos[pos["po_date"] < origin].sort_values("po_date").groupby(["sku", "supplier_id"]):
+        for (sku, sid), group in pos[pos["po_date"] < origin].groupby(["sku", "supplier_id"]):
             cost = _num(group["unit_cost"].dropna().iloc[-1], None) if group["unit_cost"].notna().any() else None
             if cost:
                 latest_cost_by_supplier[str(sku), str(sid)] = float(cost)
@@ -393,9 +411,9 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     sourced = {r["sku"] for r in source_rows}
     physics_rows, physics_mode = sku_physics_rows(master, sorted(planned), period_days, provenance, warnings, sector_mode)
     declared_sourcing: dict[str, dict[str, Any]] = {}
-    for sku, d in primary_declared.items():
+    for sku in sorted(primary_declared):
         if sku in sourced:
-            declared_sourcing[f"src_{sku}"] = d
+            declared_sourcing[f"src_{sku}"] = primary_declared[sku]
     for alt in alternates:
         sku, sid = alt["sku"], alt["supplier"]
         base_row = next((r for r in source_rows if r["id"] == f"src_{sku}"), None)
@@ -427,7 +445,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     # ── supplier terms (order-level economics the P1 engine prices) ──
     terms_rows, resource_rows = [], []
     for sid in supplier_ids:
-        units_per_pallet = {s: pack[s]["pallet"] for s in sourced if sku_supplier.get(s) == sid and pack[s]["pallet"] > 0}
+        units_per_pallet = {s: pack[s]["pallet"] for s in sorted(sourced) if sku_supplier.get(s) == sid and pack[s]["pallet"] > 0}
         fixed = _num(economics.get(f"fixed_order_cost_{sid}"), None)
         if fixed is None:
             fixed = _num(economics.get("fixed_order_cost"), None)
@@ -467,6 +485,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
             if (origin - latest_day).days > 14:
                 warnings.append(f"latest inventory snapshot is {(origin - latest_day).days} days before the plan date")
             latest = snap[snap["snapshot_date"] == latest_day].drop_duplicates("sku", keep="last")
+            latest = latest.assign(_sku_key=latest["sku"].astype(str)).sort_values("_sku_key", kind="stable").drop(columns="_sku_key")
             for row in latest.itertuples():
                 sku = str(row.sku)
                 if sku in planned and float(row.on_hand or 0.) > 0:
@@ -537,13 +556,13 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     # compaction: the engine's supply profile uses quantiles and the recent receipts of each source; the
     # most recent observations per source are enough, the raw purchase-order table stays in the vault
     by_source: dict[str, list[dict[str, Any]]] = {}
-    for obs in sorted(shipment_rows, key=lambda r: r["known_at"]):
+    for obs in canonical_rows(shipment_rows, "known_at", "id"):                 # a total order: ties on known_at break on the id
         by_source.setdefault(obs["source"], []).append(obs)
-    shipment_rows = [obs for rows in by_source.values() for obs in rows[-shipment_observations_per_source:]]
+    shipment_rows = [obs for source in sorted(by_source) for obs in by_source[source][-shipment_observations_per_source:]]
 
     # ── promotions inside the window as demand multipliers ──
     if len(promotions):
-        for row in promotions.itertuples():
+        for row in promotions.assign(_sku_key=promotions["sku"].astype(str)).sort_values(["week_start", "_sku_key"], kind="stable").itertuples():
             sku = str(row.sku)
             offset = int((row.week_start - origin).days // 7)
             uplift = _num(row.uplift, None)
@@ -552,6 +571,21 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                                    "multiplier": float(uplift), "label": "promotion"})
         provenance["events.promotions"] = "CUSTOMER_PROVIDED"
 
+    # H1c: every semantically unordered collection in its canonical order (see canonical_rows). The keys are
+    # business identifiers that form a total order over valid rows; nothing here depends on how the vault
+    # returned its rows. Positional sequences (capacity_by_period, route, known_receivables, other_payments,
+    # a PO's options) are untouched.
+    sku_rows = canonical_rows(sku_rows, "id")
+    source_rows = canonical_rows(source_rows, "id")
+    service_rows = canonical_rows(service_rows, "id")
+    history_rows = canonical_rows(history_rows, "service", "period")
+    stock_rows = canonical_rows(stock_rows, "location", "sku", "id")
+    event_rows = canonical_rows(event_rows, "start", "end", "service", "id")
+    pipeline_rows = canonical_rows(pipeline_rows, "placed_at", "id")
+    supplier_terms = canonical_rows(supplier_terms, "id")
+    terms_rows = canonical_rows(terms_rows, "id")
+    resource_rows = canonical_rows(resource_rows, "id")
+    physics_rows = canonical_rows(physics_rows, "sku")
     payload: dict[str, Any] = {
         "operator_id": operator_id, "as_of": known_at + timedelta(seconds=1), "currency": currency, "period_days": period_days, "horizon": horizon,
         "skus": sku_rows,
