@@ -2,9 +2,9 @@
 
 What is asserted about `zaad.full.workspace.build_request` here is only what holds today and must keep
 holding: a stable hash, independence from row order and from import metadata, and a request that does
-change when a fact dated before the decision time changes. Whether a receipt dated after the decision
-time changes the request is measured and reported by the harness but not asserted; that invariant is
-added with the fix (H1a). `scripts/demo_causal_attestation.py` prints what the harness finds today."""
+change when a fact dated before the decision time changes. Since H1a, a receipt dated at or after the
+decision time must not change the request, and the harness asserts it on the production builder.
+`scripts/demo_causal_attestation.py` prints the same check on the synthetic sample."""
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
@@ -116,21 +116,22 @@ def test_when_a_supplier_observation_became_known_is_part_of_the_request(vault):
     assert causal.first_difference(req, earlier)["path"] == f"shipment_history[id={row.id}].known_at"
 
 
-def test_the_receipt_family_runs_on_the_production_builder_and_leaves_the_vault_as_it_was(vault):
-    """The harness is exercised end to end on the real builder. The verdict on receipts after T is recorded,
-    not asserted (H1a owns that invariant); the positive control and the restore are asserted. Availability
-    is the labelled date-only test assumption: the vault has no source knowledge time for receipts."""
+def test_the_receipt_family_passes_on_the_production_builder_and_leaves_the_vault_as_it_was(vault):
+    """The harness end to end on the real builder (H1a): receipts not available at T, on orders placed
+    before T, may be deleted, re-quantified, re-dated or added without changing the request; a receipt
+    that was available still changes it; and the vault is exactly as it was. Availability is the labelled
+    date-only rule: the vault has no source knowledge time for receipts."""
     conn, build = vault["conn"], _builder(vault["as_of"])
     before_rows = {t: conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in TABLES}
     before = causal.fingerprint(build(conn))
     report = causal.run_causal_checks(build, conn, causal.receipt_perturbations(build(conn).as_of, is_available_at=causal.legacy_date_only_receipt_availability))
-    assert report["status"] in ("PASS", "FAIL") and report["base_request_hash"] == before.hash
+    assert report["status"] == "PASS" and report["all_clean"] is True, report["failures"]
+    assert report["failures"] == [] and report["base_request_hash"] == before.hash
     assert report["decision_at"] == build(conn).as_of.isoformat() and report["projection_version"] == causal.PROJECTION_VERSION
     families = {f["family"]: f for f in report["families"]}
     assert families[causal.FUTURE_RECEIPTS]["variants_checked"] == 4 and families[causal.FUTURE_RECEIPTS]["vacuous"] == 0
+    assert families[causal.FUTURE_RECEIPTS]["failures"] == 0
     assert families[causal.FUTURE_RECEIPTS]["availability_rules"] == [causal.LEGACY_DATE_ONLY]
     assert families["past_receipts"]["variants_checked"] == 1 and families["past_receipts"]["failures"] == 0
-    assert all(f["first_difference"]["path"] for f in report["failures"])
-    assert report["all_clean"] is (report["status"] == "PASS")
     assert {t: conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in TABLES} == before_rows
     assert causal.fingerprint(build(conn)) == before
