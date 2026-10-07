@@ -1,22 +1,23 @@
-"""Known defect (HARDENING V1, owned by H1a): a receipt dated at or after a historical decision time
-changes the request built for that time.
+"""Regression (HARDENING V1, H1a): a receipt dated at or after a historical decision time does not change
+the request built for that time.
 
-Mechanism, as diagnosed on the pinned demo vault at origin 2026-06-08: three orders placed on 2026-05-18
-were received in two parts, one before the origin and one on 2026-06-08 / 2026-06-09. The adapter sums
-every receipt of an order whatever its date (`zaad/full/workspace.py:466-467`), so the shipment
-observation dated before the origin carries `accepted_ratio` 1.0 instead of about 0.6 (`:483`), the
-supplier fill fitted from orders closed before the origin (`fit_supply`, `:96`) uses the same sums, and
-the operating-regime label `supplier_deterioration` disappears from the 2026-06-08 snapshot.
+Mechanism it guards, as diagnosed on the pinned demo vault at origin 2026-06-08: three orders placed on
+2026-05-18 were received in two parts, one before the origin and one on 2026-06-08 / 2026-06-09. Before
+H1a the adapter summed every receipt of an order whatever its date, so the shipment observation dated
+before the origin carried `accepted_ratio` 1.0 instead of about 0.6, the supplier fill fitted from
+orders closed before the origin used the same sums, and the operating-regime label
+`supplier_deterioration` disappeared from the 2026-06-08 snapshot. H1a makes every historical receipt
+aggregation read `workspace.receipts_available_before` (`receipt_date < origin`).
 
-The invariant these tests protect: facts not available at the decision time must not change the
-shipment observations, the supplier-fill learning or the regime classification at that time. On baseline
-6704926 it fails, and the test says so with a strict xfail that accepts only that assertion failure:
-a fixture problem, a bad id or an exception is reported as a failure, not as the known defect. The
-positive control (a receipt that was available does change the request) must pass today and after the fix.
+The invariant: facts not available at the decision time must not change the shipment observations,
+the supplier-fill learning or the regime classification at that time. Fixture preconditions use
+`pytest.fail` so that a broken fixture is never mistaken for a regression of the invariant. The positive
+control (a receipt that was available does change the request) guards against a builder that ignores
+receipts altogether.
 
 The fixture anchor is `DEMO_AS_OF` from test_replay_scale.py: the dataset the defect was diagnosed on.
-Availability is judged by receipt date here because the vault has no source knowledge time for receipts
-(a date-only test assumption, not the production rule)."""
+Availability is judged by receipt date because the vault has no source knowledge time for receipts
+(the H1a date-only fallback, not the final temporal contract)."""
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta, timezone
@@ -28,8 +29,6 @@ from tests.integration.test_replay_scale import demo_vault
 ORIGIN = datetime(2026, 6, 8, tzinfo=timezone.utc)
 ORIGIN_DAY = date(2026, 6, 8)
 OP = "scale"
-XFAIL_H1A = pytest.mark.xfail(strict=True, raises=AssertionError,
-                              reason="H1a: future receipts contaminate historical supplier-fill / regime state")
 
 
 @pytest.fixture(scope="module")
@@ -81,8 +80,8 @@ FUTURE = "receipt_date >= ? AND po_id IN (SELECT po_id FROM stg_fmcg_purchase_or
 
 
 def _preconditions(conn, before, split):
-    """Everything the regression relies on, checked with pytest.fail so that a broken fixture is not mistaken
-    for the known defect (the xfail accepts AssertionError only)."""
+    """Everything the regression relies on, checked with pytest.fail so that a broken fixture is reported as
+    a fixture problem and not as a regression of the invariant."""
     if len(split) != 3:
         pytest.fail(f"expected the three split orders of the pinned demo vault, found {split}")
     seen = _observed(before, split)
@@ -98,7 +97,6 @@ def _preconditions(conn, before, split):
     ("delete", f"DELETE FROM stg_fmcg_receipts WHERE {FUTURE}"),
     ("halve", f"UPDATE stg_fmcg_receipts SET qty_received = qty_received * 0.5 WHERE {FUTURE}"),
 ])
-@XFAIL_H1A
 def test_receipts_after_the_origin_do_not_change_fill_observations_learning_or_regimes(vault, change, statement):
     before = _request(vault)
     split = _split_orders(vault)

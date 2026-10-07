@@ -14,8 +14,9 @@ _receipts, _inventory, _promotions, _suppliers, _economics) and translates them 
 contract. Nothing decisive is invented: every number that is not customer-provided carries a
 provenance (INFERRED_FROM_HISTORY with its sample size, CONFIGURED_ASSUMPTION, NOT_AVAILABLE) in the
 build report, and the planner's own economics_provenance is populated from it. No future leakage:
-history, receipts and fits use only rows dated before the planning origin; open purchase orders are
-those placed before the origin and not yet fully received.
+history, receipts and fits use only rows dated before the planning origin (`receipts_available_before`
+is the single receipt slice every aggregation reads); open purchase orders are those placed before the
+origin and not fully received by rows dated before it.
 
 Raw history stays in the vault. The optimizer receives one weekly demand series per SKU over at most
 `history_weeks` periods, one shipment observation per historical purchase order, the opening stock,
@@ -87,11 +88,28 @@ def _economics(conn: Any) -> tuple[dict[str, Any], dict[str, str]]:
     return values, prov
 
 
+def receipts_available_before(receipts: pd.DataFrame, origin: pd.Timestamp) -> pd.DataFrame:
+    """The receipt rows a decision taken at `origin` may know about: `receipt_date < origin`.
+
+    Every historical receipt aggregation in this module (the supplier fits, what an open order has
+    received, when it first arrived) is computed from this slice and from nothing else, so a receipt
+    recorded later can neither close an order that was still open at the origin nor inflate what had
+    been received by then (HARDENING V1, H1a).
+
+    Receipt rows carry a date and no time the operator learned of them, so this is the date-only
+    fallback: a receipt dated on the origin day is treated as not yet known at the start of that day.
+    It is not the final temporal contract (H1b owns the source-known / event-time semantics)."""
+    if not len(receipts):
+        return receipts
+    return receipts[receipts["receipt_date"] < origin]
+
+
 def fit_supply(pos: pd.DataFrame, receipts: pd.DataFrame, origin: pd.Timestamp, promised_weeks: dict[str, float]) -> dict[str, dict[str, Any]]:
     """Per supplier: fill and lead fitted from purchase orders closed before the origin, with the sample
     size and the provenance; declared promises or configured assumptions otherwise. No order dated at or
-    after the origin enters a fit."""
+    after the origin enters a fit, and no receipt dated at or after it enters a received quantity."""
     out: dict[str, dict[str, Any]] = {}
+    receipts = receipts_available_before(receipts, origin)
     if len(pos) and len(receipts):
         got = receipts.groupby("po_id").agg(qty_received=("qty_received", "sum"), first=("receipt_date", "min"))
         joined = pos.join(got, on="po_id")
@@ -193,6 +211,10 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     known = {"known_at": known_at}
     warnings: list[str] = []
     provenance: dict[str, str] = {}
+    # receipts: only what was known at the origin (date-only fallback, see receipts_available_before)
+    receipts_total = len(receipts)
+    receipts = receipts_available_before(receipts, origin)
+    receipts_excluded = receipts_total - len(receipts)
 
     # ── demand history: weekly units per SKU, strictly before the origin ──
     hist = orders[orders["order_date"] < origin]
@@ -579,6 +601,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         "fits": fits, "incumbent_rule": {"rule": incumbent_rule, "provenance": rule_prov},
         "provenance": provenance, "economics_keys_used": sorted(k for k in economics if k in economics_prov),
         "leakage_guard": {"history_before": str(origin.date()), "purchase_orders_at_or_after_origin_excluded": excluded_future,
+                          "receipts_at_or_after_origin_excluded": receipts_excluded,
                           "fits_use_closed_orders_before_origin_only": True},
         "warnings": warnings,
     }
