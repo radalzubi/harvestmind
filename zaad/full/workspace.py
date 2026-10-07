@@ -34,6 +34,7 @@ import pandas as pd
 from zaad.full.contracts import Request
 from zaad.sourcing.workspace import sourcing_block
 from zaad.sectors.workspace import lot_expiry_periods, sku_physics_rows
+from zaad.full import temporal
 from zaad.full.uncertainty import MIN_SUPPLY_RECORDS
 
 LOCATION = "main"
@@ -100,20 +101,18 @@ def canonical_rows(rows: list[dict[str, Any]], *keys: str) -> list[dict[str, Any
     return sorted(rows, key=lambda row: tuple(row[k] for k in keys))
 
 
-def receipts_available_before(receipts: pd.DataFrame, origin: pd.Timestamp) -> pd.DataFrame:
-    """The receipt rows a decision taken at `origin` may know about: `receipt_date < origin`.
+def receipts_available_before(receipts: pd.DataFrame, decision_at: pd.Timestamp) -> pd.DataFrame:
+    """The receipt rows a decision taken at `decision_at` may know about: `source_known_at < decision_at`
+    (H1b), with the date-only fallback for rows without a knowledge time: known from the start of
+    `receipt_date`, so a receipt dated on the decision day is not yet known at a start-of-day decision
+    (the H1a rule, unchanged for legacy rows).
 
     Every historical receipt aggregation in this module (the supplier fits, what an open order has
     received, when it first arrived) is computed from this slice and from nothing else, so a receipt
-    recorded later can neither close an order that was still open at the origin nor inflate what had
-    been received by then (HARDENING V1, H1a).
-
-    Receipt rows carry a date and no time the operator learned of them, so this is the date-only
-    fallback: a receipt dated on the origin day is treated as not yet known at the start of that day.
-    It is not the final temporal contract (H1b owns the source-known / event-time semantics)."""
-    if not len(receipts):
-        return receipts
-    return receipts[receipts["receipt_date"] < origin]
+    known later can neither close an order that was still open at the decision nor inflate what had
+    been received by then (HARDENING V1, H1a / H1b)."""
+    kept, _ = temporal.available(receipts, decision_at, date_col="receipt_date")
+    return kept
 
 
 def fit_supply(pos: pd.DataFrame, receipts: pd.DataFrame, origin: pd.Timestamp, promised_weeks: dict[str, float]) -> dict[str, dict[str, Any]]:
@@ -174,18 +173,26 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                   service_target: float = .95, history_weeks: int = 52, seed: int = 41001, scenarios: int = 3,
                   max_solve_seconds: float = 15., min_history_weeks: int = MIN_HISTORY_WEEKS,
                   shipment_observations_per_source: int = 60, skus: list[str] | None = None,
-                  sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False, atp: bool = False, commitments: bool = False) -> tuple[Request, dict[str, Any]]:
+                  sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False, atp: bool = False, commitments: bool = False,
+                  decision_at: datetime | None = None) -> tuple[Request, dict[str, Any]]:
     """The frozen contract built from the operator's vault, plus the build report (rows read, compact
-    dimensions, fits with sample sizes, provenance, warnings, leakage guard). Raises WorkspaceError with
-    an operator-facing message when the workspace cannot be planned yet."""
+    dimensions, fits with sample sizes, provenance, warnings, leakage guard, temporal basis). Raises
+    WorkspaceError with an operator-facing message when the workspace cannot be planned yet.
+
+    Two times (H1b): the planning period origin — the Monday of `as_of`, the request's `as_of`, the
+    anchor of the weekly buckets — and `decision_at`, the exact causal cutoff: a fact enters the request
+    only if the operator could have known it before `decision_at` (`zaad.full.temporal`). By default the
+    decision is taken at the start of the planning period, so the two coincide. A later cutoff inside
+    the period may be declared; the opening stock is then still the latest snapshot before the period
+    origin (inventory reconstruction is not this adapter's, H2)."""
     if period_days != 7:
         raise WorkspaceError("the workspace adapter plans in weekly periods")
     skus_frame = _frame(conn, "SELECT * FROM stg_fmcg_skus")
-    orders = _frame(conn, "SELECT sku, order_date, qty_ordered FROM stg_fmcg_orders")
-    pos = _frame(conn, "SELECT po_id, po_date, supplier_id, sku, qty_ordered, unit_cost, expected_delivery_date FROM stg_fmcg_purchase_orders")
-    receipts = _frame(conn, "SELECT po_id, receipt_date, qty_received FROM stg_fmcg_receipts")
+    orders = _frame(conn, "SELECT * FROM stg_fmcg_orders")
+    pos = _frame(conn, "SELECT * FROM stg_fmcg_purchase_orders")
+    receipts = _frame(conn, "SELECT * FROM stg_fmcg_receipts")
     inventory = _frame(conn, "SELECT * FROM stg_fmcg_inventory")
-    promotions = _frame(conn, "SELECT sku, week_start, uplift FROM stg_fmcg_promotions")
+    promotions = _frame(conn, "SELECT * FROM stg_fmcg_promotions")
     suppliers = _frame(conn, "SELECT * FROM stg_fmcg_suppliers")
     economics, economics_prov = _economics(conn)
     rows_read = {"stg_fmcg_skus": len(skus_frame), "stg_fmcg_orders": len(orders), "stg_fmcg_purchase_orders": len(pos),
@@ -211,7 +218,8 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         if "expected_delivery_date" in pos:
             pos["expected_delivery_date"] = pd.to_datetime(pos["expected_delivery_date"])
         # H1c: purchase orders in (placement date, id) order, so every row built from them and every
-        # "latest" pick below is independent of the order the vault returned them in
+        # "latest" pick below is independent of the order the vault returned them in. The H1b placement
+        # instant refines this below once the causal cutoff is known.
         pos = pos.assign(_po_key=pos["po_id"].astype(str)).sort_values(["po_date", "_po_key"], kind="stable").drop(columns="_po_key").reset_index(drop=True)
     if len(receipts):
         receipts["receipt_date"] = pd.to_datetime(receipts["receipt_date"])
@@ -220,19 +228,44 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     if len(promotions):
         promotions["week_start"] = pd.to_datetime(promotions["week_start"])
 
+    # ── the planning period origin and the causal cutoff (H1b) ──
     if as_of is not None:
-        stamp = pd.Timestamp(as_of)
-        origin = _monday(stamp.tz_convert(None) if stamp.tzinfo is not None else stamp)
+        origin = _monday(temporal.as_utc(as_of))
+    elif decision_at is not None:
+        origin = _monday(temporal.as_utc(decision_at))
     else:
         origin = _monday(orders["order_date"].max() + pd.Timedelta(days=7))
+    historical = as_of is not None or decision_at is not None       # a decision in the past, replayed
+    cutoff = temporal.as_utc(decision_at) if decision_at is not None else origin
+    if cutoff < origin:
+        raise WorkspaceError(f"decision_at {cutoff} is before its planning period origin {origin.date()}")
+    if cutoff >= origin + pd.Timedelta(days=period_days):
+        raise WorkspaceError(f"decision_at {cutoff} is outside the planning period that starts {origin.date()}")
     known_at = origin.to_pydatetime().replace(tzinfo=timezone.utc) - timedelta(seconds=1)
-    known = {"known_at": known_at}
+    known = {"known_at": known_at}       # derived planning records: valid as of the decision (no single source fact)
     warnings: list[str] = []
     provenance: dict[str, str] = {}
-    # receipts: only what was known at the origin (date-only fallback, see receipts_available_before)
-    receipts_total = len(receipts)
-    receipts = receipts_available_before(receipts, origin)
-    receipts_excluded = receipts_total - len(receipts)
+
+    def at_decision(stamp: pd.Timestamp) -> datetime:
+        """A fact's knowledge time as a request timestamp; the contract bounds it by the period origin."""
+        return min(pd.Timestamp(stamp), origin).to_pydatetime().replace(tzinfo=timezone.utc)
+    # ── facts the decision may know: source_known_at < decision_at, date-only fallback otherwise ──
+    orders, orders_counts = temporal.available(orders, cutoff, date_col="order_date")
+    pos_at_or_after_origin = int((pos["po_date"] >= origin).sum()) if len(pos) else 0     # the period guard, counted on every row
+    pos, pos_counts = temporal.available(pos, cutoff, date_col="po_date")
+    receipts, receipts_counts = temporal.available(receipts, cutoff, date_col="receipt_date")
+    receipts_excluded = receipts_counts["excluded_not_known"]
+    if len(pos):
+        # the instant an order was placed: exact when the row says so, else the start of its date; the
+        # same instant orders every pick below, so "latest" among same-day orders is exact only when
+        # the rows carry event_at (date-only ties are reported, never called chronology)
+        exact = pd.to_datetime(pos["event_at"], errors="coerce") if "event_at" in pos.columns else pd.Series(pd.NaT, index=pos.index)
+        if getattr(exact.dt, "tz", None) is not None:
+            exact = exact.dt.tz_convert("UTC").dt.tz_localize(None)
+        pos = pos.assign(placed_at_utc=exact.where(exact.notna(), temporal.start_of_day(pos["po_date"])), placed_exact=exact.notna())
+
+    if len(pos):
+        pos = pos.assign(_po_key=pos["po_id"].astype(str)).sort_values(["placed_at_utc", "_po_key"], kind="stable").drop(columns="_po_key").reset_index(drop=True)
 
     # ── demand history: weekly units per SKU, strictly before the origin ──
     hist = orders[orders["order_date"] < origin]
@@ -352,15 +385,21 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     sku_rows, source_rows, service_rows, history_rows, stock_rows, event_rows, supplier_terms = [], [], [], [], [], [], []
     latest_cost: dict[str, float] = {}
     latest_cost_by_supplier: dict[tuple[str, str], float] = {}
+    same_day_cost_ties = 0
     if len(pos):
-        for sku, group in pos[pos["po_date"] < origin].groupby("sku"):          # pos is in (po_date, po_id) order
+        for sku, group in pos[pos["po_date"] < origin].groupby("sku"):          # pos is in (placement instant, po_id) order
             cost = _num(group["unit_cost"].dropna().iloc[-1], None) if group["unit_cost"].notna().any() else None
             if cost:
                 latest_cost[str(sku)] = float(cost)
         for (sku, sid), group in pos[pos["po_date"] < origin].groupby(["sku", "supplier_id"]):
-            cost = _num(group["unit_cost"].dropna().iloc[-1], None) if group["unit_cost"].notna().any() else None
+            priced = group[group["unit_cost"].notna()]
+            cost = _num(priced["unit_cost"].iloc[-1], None) if len(priced) else None
             if cost:
                 latest_cost_by_supplier[str(sku), str(sid)] = float(cost)
+                last = priced.iloc[-1]
+                rivals = priced[(priced["placed_at_utc"] == last["placed_at_utc"]) & ~priced["placed_exact"]]
+                if len(rivals) > 1 and rivals["unit_cost"].nunique() > 1:
+                    same_day_cost_ties += 1          # date-only rows: no evidence which same-day order is the latest
     pack: dict[str, dict[str, float]] = {}
     for row in master.itertuples():
         sku = str(row.sku)
@@ -506,6 +545,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     if len(pos):
         received_by_po = receipts.groupby("po_id")["qty_received"].sum() if len(receipts) else pd.Series(dtype=float)
         first_receipt = receipts.groupby("po_id")["receipt_date"].min() if len(receipts) else pd.Series(dtype="datetime64[ns]")
+        first_known = receipts.groupby("po_id")[temporal.KNOWN_AT].min() if len(receipts) else pd.Series(dtype="datetime64[ns]")
         for row in pos.itertuples():
             if row.po_date >= origin:
                 excluded_future += 1
@@ -518,7 +558,9 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
             first = first_receipt.get(row.po_id)
             arrived = first is not None and not pd.isna(first) and first < origin
             elapsed = int(((first if arrived else origin) - row.po_date).days)
-            shipment_rows.append({"known_at": (first if arrived else origin).to_pydatetime().replace(tzinfo=timezone.utc) - timedelta(seconds=1),
+            # an arrived observation is known when its first receipt was known; a censored one is a derived
+            # record, valid as of the decision
+            shipment_rows.append({"known_at": at_decision(first_known.get(row.po_id)) if arrived else known_at,
                                   "id": f"ship_{row.po_id}", "source": f"src_{sku}", "elapsed_days": max(0, elapsed), "arrived": bool(arrived),
                                   "stage": "received" if arrived else "ordered", "carrier": "unknown",
                                   "accepted_ratio": (min(1., received / ordered) if arrived and ordered > 0 else None)})
@@ -537,9 +579,10 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                 keep = {**known, "id": f"keep_{row.po_id}", "action": "keep", "due_in": due_in, "fee_per_unit": 0., "remaining_invoice_per_unit": unit_cost,
                         "payment_due_in": due_in + int((net_days or 0.) // period_days), "max_quantity": remaining,
                         "deadline": known_at + timedelta(days=period_days * horizon), "allowed_stages": ["ordered"], "contract_reference": str(row.po_id)}
-                pipeline_rows.append({**known, "id": str(row.po_id), "source": f"src_{sku}", "revision": 1, "ordered": ordered, "confirmed": ordered,
+                po_known = getattr(row, temporal.KNOWN_AT)      # when the placement was known (exact, or the start of its date)
+                pipeline_rows.append({**known, "known_at": at_decision(po_known), "id": str(row.po_id), "source": f"src_{sku}", "revision": 1, "ordered": ordered, "confirmed": ordered,
                                       "shipped": received, "received": received, "rejected": 0., "expected_accepted_remaining": remaining * float(fit["fill_mean"]),
-                                      "placed_at": row.po_date.to_pydatetime().replace(tzinfo=timezone.utc), "confirmed_at": None, "departed_at": None,
+                                      "placed_at": pd.Timestamp(row.placed_at_utc).to_pydatetime().replace(tzinfo=timezone.utc), "confirmed_at": None, "departed_at": None,
                                       "current_eta": pd.Timestamp(eta).to_pydatetime().replace(tzinfo=timezone.utc), "stage": "ordered", "carrier": "unknown",
                                       "cancellation_status": "none", "prepaid_per_remaining_unit": 0., "allow_split_amendments": False, "options": [keep]})
 
@@ -560,14 +603,28 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         by_source.setdefault(obs["source"], []).append(obs)
     shipment_rows = [obs for source in sorted(by_source) for obs in by_source[source][-shipment_observations_per_source:]]
 
-    # ── promotions inside the window as demand multipliers ──
+    # ── promotions inside the window as demand multipliers: future-effective facts, so only their knowledge
+    # time decides (H1b). With source_known_at: available iff known before the decision. Without it there is
+    # no evidence the promotion was known at a past decision: a historical build leaves it out; a live build
+    # keeps it, labelled KNOWLEDGE_TIME_UNAVAILABLE in the temporal report.
+    promotions_counts = {"explicit_source_known": 0, "date_only_fallback": 0, "excluded_not_known": 0, "knowledge_time_unavailable": 0, "included_live_unproven": 0}
     if len(promotions):
-        for row in promotions.assign(_sku_key=promotions["sku"].astype(str)).sort_values(["week_start", "_sku_key"], kind="stable").itertuples():
+        known_promos, promotions_counts = temporal.available(promotions, cutoff, date_col=None, fallback=False)
+        promotions_counts["included_live_unproven"] = 0
+        if not historical:
+            unproven = promotions[~promotions.index.isin(known_promos.index)].copy()
+            unproven[temporal.KNOWN_AT] = pd.NaT
+            unproven[temporal.BASIS] = temporal.KNOWLEDGE_TIME_UNAVAILABLE
+            promotions_counts["included_live_unproven"] = int(len(unproven))
+            known_promos = pd.concat([known_promos, unproven])
+        for row in known_promos.assign(_sku_key=known_promos["sku"].astype(str)).sort_values(["week_start", "_sku_key"], kind="stable").itertuples():
             sku = str(row.sku)
             offset = int((row.week_start - origin).days // 7)
             uplift = _num(row.uplift, None)
             if sku in planned and 0 <= offset < horizon and uplift and uplift > 0:
-                event_rows.append({**known, "id": f"promo_{sku}_{offset}", "service": f"svc_{sku}", "start": offset, "end": offset,
+                when = getattr(row, temporal.KNOWN_AT)
+                event_known = {"known_at": at_decision(when)} if not pd.isna(when) else known
+                event_rows.append({**event_known, "id": f"promo_{sku}_{offset}", "service": f"svc_{sku}", "start": offset, "end": offset,
                                    "multiplier": float(uplift), "label": "promotion"})
         provenance["events.promotions"] = "CUSTOMER_PROVIDED"
 
@@ -634,9 +691,18 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                     "stock_rows": len(stock_rows), "promotion_events": len(event_rows), "supplier_terms": len(supplier_terms)},
         "fits": fits, "incumbent_rule": {"rule": incumbent_rule, "provenance": rule_prov},
         "provenance": provenance, "economics_keys_used": sorted(k for k in economics if k in economics_prov),
-        "leakage_guard": {"history_before": str(origin.date()), "purchase_orders_at_or_after_origin_excluded": excluded_future,
+        "leakage_guard": {"history_before": str(origin.date()), "purchase_orders_at_or_after_origin_excluded": pos_at_or_after_origin,
                           "receipts_at_or_after_origin_excluded": receipts_excluded,
                           "fits_use_closed_orders_before_origin_only": True},
+        # the temporal basis of this request (H1b): what the decision rested on
+        "temporal": {"decision_at": cutoff.to_pydatetime().replace(tzinfo=timezone.utc).isoformat(), "period_origin": str(origin.date()),
+                     "decision_basis": "explicit" if decision_at is not None else "start_of_planning_period",
+                     "mode": "historical" if historical else "live",
+                     "rule": "a fact enters only if source_known_at < decision_at; rows without a knowledge time use the date-only fallback "
+                             "(known from the start of their date); future-effective rows without one have no knowledge time",
+                     "orders": orders_counts, "purchase_orders": pos_counts, "receipts": receipts_counts, "promotions": promotions_counts,
+                     "same_day_cost_ties": same_day_cost_ties,
+                     "ingestion_time_used": False},
         "warnings": warnings,
     }
     return request, report
