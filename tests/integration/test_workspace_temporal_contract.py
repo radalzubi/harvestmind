@@ -11,7 +11,9 @@ which keeps the H1a receipt rule exactly. Future-effective rows (promotions) wit
 knowledge time: a historical build leaves them out, a live build keeps them and says so.
 
 `decision_at` (the causal cutoff) is distinct from the planning period origin (`Request.as_of`, the
-Monday). By default they coincide; a later cutoff inside the period can be declared.
+Monday). The temporal helper takes any exact cutoff; the weekly workspace reconstructs its physical state
+at the period origin and therefore accepts a decision at that boundary only (`decision_at ==
+period_origin`), refusing anything else rather than pairing Monday's state with Wednesday's knowledge.
 
 Crafted rows go into the SYNTHETIC sample vault inside a transaction that is rolled back."""
 from __future__ import annotations
@@ -126,19 +128,31 @@ def test_a_past_receipt_known_before_the_decision_is_in_and_one_known_after_is_o
     assert req.model_dump_json() == without.model_dump_json()
 
 
-def test_knowledge_time_not_calendar_date_decides_on_the_decision_day(vault):
-    """Same physical receipt on the decision day; only the knowledge timestamp differs."""
-    noon = datetime(2024, 9, 2, 12, 0, tzinfo=UTC)
-    pos = [("H1B-NOON", T - timedelta(days=14), 100.)]
-    with _rows(vault, pos, [("H1B-NOON", T, 100., datetime(2024, 9, 2, 10), datetime(2024, 9, 2, 10, 5))]) as conn:
-        known_before, build = _build(conn, decision_at=noon)
-    with _rows(vault, pos, [("H1B-NOON", T, 100., datetime(2024, 9, 2, 10), datetime(2024, 9, 2, 13))]) as conn:
-        known_after, _ = _build(conn, decision_at=noon)
-    assert build["temporal"]["decision_at"] == "2024-09-02T12:00:00+00:00" and build["temporal"]["period_origin"] == "2024-09-02"
-    assert build["temporal"]["decision_basis"] == "explicit" and known_before.as_of == ORIGIN                # the period origin is still the Monday
-    assert _po(known_before, "H1B-NOON") is None                       # known at 10:05: received by noon
-    assert _po(known_after, "H1B-NOON") is not None and _po(known_after, "H1B-NOON").received == 0.      # known at 13:00: not yet
-    assert known_before.model_dump_json() != known_after.model_dump_json()
+def test_exact_knowledge_timestamps_are_judged_against_the_period_boundary(vault):
+    """Decision at Monday 00:00:00Z (the only decision the weekly workspace builds). The same receipt, same
+    event time, three knowledge times: Sunday 22:05 is in; Monday 00:00:00 and 00:00:01 are out - the
+    inequality is strict, and the calendar date of the receipt plays no part once a knowledge time exists."""
+    event = datetime(2024, 9, 1, 22, 0)
+    cases = {"A": datetime(2024, 9, 1, 22, 5), "B": datetime(2024, 9, 2, 0, 0, 0), "C": datetime(2024, 9, 2, 0, 0, 1)}
+    built = {}
+    for name, known in cases.items():
+        with _rows(vault, [(f"H1B-{name}", T - timedelta(days=14), 100.)], [(f"H1B-{name}", T - timedelta(days=1), 100., event, known)]) as conn:
+            built[name] = _build(conn)[0]
+    assert _po(built["A"], "H1B-A") is None and _obs(built["A"], "H1B-A").accepted_ratio == 1.0
+    assert _obs(built["A"], "H1B-A").known_at == datetime(2024, 9, 1, 22, 5, tzinfo=UTC)
+    for name in ("B", "C"):
+        assert _po(built[name], f"H1B-{name}") is not None and _po(built[name], f"H1B-{name}").received == 0.
+        assert _obs(built[name], f"H1B-{name}").arrived is False
+    assert built["A"].model_dump_json() != built["B"].model_dump_json()           # the receipt date is Sunday in all three
+
+
+def test_the_temporal_helper_takes_any_exact_cutoff_but_the_workspace_builds_period_boundaries_only():
+    """The engine is general (a noon cutoff works on the pure helper); the weekly workspace is not yet, and
+    says so instead of building a Monday physical state with a Wednesday's knowledge."""
+    noon = datetime(2026, 10, 7, 12, 0)
+    frame = pd.DataFrame({"receipt_date": [date(2026, 10, 7)] * 2, "source_known_at": [datetime(2026, 10, 7, 10, 5), datetime(2026, 10, 7, 13, 0)], "id": ["known_1005", "known_1300"]})
+    kept, counts = temporal.available(frame, noon, date_col="receipt_date")
+    assert kept["id"].tolist() == ["known_1005"] and counts["excluded_not_known"] == 1
 
 
 def test_the_date_only_fallback_keeps_the_h1a_boundary(vault):
@@ -219,17 +233,49 @@ def test_a_customer_order_posted_after_the_decision_is_not_in_the_history(vault)
 
 
 # ── decision_at vs period origin ─────────────────────────────────────────────
-def test_decision_at_defaults_to_the_start_of_the_planning_period_and_must_stay_inside_it(vault):
+def test_decision_at_must_be_the_period_origin(vault):
+    from zaad.full.workspace import WorkspaceError
     req, build = _build(vault)
     assert build["temporal"]["decision_at"] == "2024-09-02T00:00:00+00:00" and build["temporal"]["decision_basis"] == "start_of_planning_period"
-    assert req.as_of == ORIGIN
-    from zaad.full.workspace import WorkspaceError
-    with pytest.raises(WorkspaceError):
-        _build(vault, decision_at=datetime(2024, 9, 1, 23, 0, tzinfo=UTC))        # before the period origin
-    with pytest.raises(WorkspaceError):
-        _build(vault, decision_at=datetime(2024, 9, 9, 0, 0, tzinfo=UTC))         # the next period
-    later, build2 = _build(vault, decision_at=datetime(2024, 9, 4, 9, 0, tzinfo=UTC))
-    assert later.as_of == ORIGIN and build2["temporal"]["decision_at"] == "2024-09-04T09:00:00+00:00"
+    assert build["temporal"]["supported_mode"] == "PERIOD_BOUNDARY" and build["temporal"]["period_origin"] == "2024-09-02" and req.as_of == ORIGIN
+    explicit, build2 = _build(vault, decision_at=ORIGIN)                                            # A: explicit, equal to the origin
+    assert build2["temporal"]["decision_basis"] == "explicit" and explicit.model_dump_json() == req.model_dump_json()
+    for bad in (ORIGIN + timedelta(seconds=1), ORIGIN - timedelta(seconds=1), ORIGIN + timedelta(days=7), datetime(2024, 9, 4, 9, 0, tzinfo=UTC)):
+        with pytest.raises(WorkspaceError, match="period boundary"):                                 # B, C, D: refused, not rounded
+            _build(vault, decision_at=bad)
+
+
+def test_included_facts_keep_their_real_knowledge_time_in_the_request(vault):
+    """No backdating: every fact-derived record carries the fact's own source_known_at (or, for date-only
+    rows, the start of the fact's date), never a value moved earlier to fit the request."""
+    pos = [("H1B-NB1", T - timedelta(days=20), 100., datetime(2024, 8, 13, 14, 30), datetime(2024, 8, 13, 14, 31)),
+           ("H1B-NB2", T - timedelta(days=9), 100.)]
+    receipts = [("H1B-NB1", T - timedelta(days=4), 100., datetime(2024, 8, 29, 7), datetime(2024, 8, 29, 7, 30)),
+                ("H1B-NB2", T - timedelta(days=2), 60.)]
+    with _rows(vault, pos, receipts) as conn:
+        req, _ = _build(conn)
+    nb1, nb2 = _obs(req, "H1B-NB1"), _obs(req, "H1B-NB2")
+    assert nb1.known_at == datetime(2024, 8, 29, 7, 30, tzinfo=UTC) and nb2.known_at == datetime(2024, 8, 31, tzinfo=UTC)
+    with _rows(vault, [("H1B-NB3", T - timedelta(days=5), 100., datetime(2024, 8, 28, 16, 0), datetime(2024, 8, 28, 16, 2))]) as conn:
+        req2, _ = _build(conn)
+    open_po = _po(req2, "H1B-NB3")
+    assert open_po.known_at == datetime(2024, 8, 28, 16, 2, tzinfo=UTC) and open_po.placed_at == datetime(2024, 8, 28, 16, 0, tzinfo=UTC)
+    # derived records keep the derived convention and are not given invented precision; nothing is capped to fit
+    assert all(s.known_at == ORIGIN - timedelta(seconds=1) for s in req.skus) and all(h.known_at == ORIGIN - timedelta(seconds=1) for h in req.history)
+    assert all(r.known_at < req.as_of for r in (*req.pipeline, *req.shipment_history, *req.events))
+
+
+def test_same_day_receipt_at_a_period_boundary_decision(vault):
+    """What the weekly workspace states today, at a Monday 00:00 decision: a date-only Monday receipt is
+    not opening state; a knowledge time before Monday 00:00 may make it available; one at or after is
+    not. Whether that receipt arrives physically during period 0 is not represented yet (deferred)."""
+    pos = [("H1B-SD1", T - timedelta(days=14), 100.), ("H1B-SD2", T - timedelta(days=14), 100.), ("H1B-SD3", T - timedelta(days=14), 100.)]
+    receipts = [("H1B-SD1", T, 100.), ("H1B-SD2", T, 100., datetime(2024, 9, 1, 23, 0), datetime(2024, 9, 1, 23, 10)), ("H1B-SD3", T, 100., datetime(2024, 9, 2, 8, 0), datetime(2024, 9, 2, 8, 5))]
+    with _rows(vault, pos, receipts) as conn:
+        req, _ = _build(conn)
+    assert _po(req, "H1B-SD1") is not None and _po(req, "H1B-SD1").received == 0.
+    assert _po(req, "H1B-SD2") is None and _obs(req, "H1B-SD2").known_at == datetime(2024, 9, 1, 23, 10, tzinfo=UTC)
+    assert _po(req, "H1B-SD3") is not None and _po(req, "H1B-SD3").received == 0.
 
 
 # ── the harness on the production builder: legacy and canonical families both pass ──

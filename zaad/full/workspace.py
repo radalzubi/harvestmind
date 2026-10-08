@@ -181,10 +181,12 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
 
     Two times (H1b): the planning period origin — the Monday of `as_of`, the request's `as_of`, the
     anchor of the weekly buckets — and `decision_at`, the exact causal cutoff: a fact enters the request
-    only if the operator could have known it before `decision_at` (`zaad.full.temporal`). By default the
-    decision is taken at the start of the planning period, so the two coincide. A later cutoff inside
-    the period may be declared; the opening stock is then still the latest snapshot before the period
-    origin (inventory reconstruction is not this adapter's, H2)."""
+    only if the operator could have known it before `decision_at` (`zaad.full.temporal`). The weekly
+    workspace reconstructs its physical state (history, open orders, opening stock) at the period
+    origin, so the only decision it can represent coherently is one taken at that boundary: `decision_at`
+    must equal the period origin, and an explicit value elsewhere is refused rather than rounded, capped
+    or shifted (mode PERIOD_BOUNDARY). An intraperiod decision needs the physical state rolled forward to
+    the cutoff, which is outside this adapter."""
     if period_days != 7:
         raise WorkspaceError("the workspace adapter plans in weekly periods")
     skus_frame = _frame(conn, "SELECT * FROM stg_fmcg_skus")
@@ -237,24 +239,34 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         origin = _monday(orders["order_date"].max() + pd.Timedelta(days=7))
     historical = as_of is not None or decision_at is not None       # a decision in the past, replayed
     cutoff = temporal.as_utc(decision_at) if decision_at is not None else origin
-    if cutoff < origin:
-        raise WorkspaceError(f"decision_at {cutoff} is before its planning period origin {origin.date()}")
-    if cutoff >= origin + pd.Timedelta(days=period_days):
-        raise WorkspaceError(f"decision_at {cutoff} is outside the planning period that starts {origin.date()}")
+    if cutoff != origin:
+        # PERIOD_BOUNDARY: the physical state is reconstructed at the period origin, so a decision anywhere
+        # else would pair that state with knowledge from another instant; refused, never rounded or capped
+        raise WorkspaceError(f"decision_at {cutoff} is not the planning period origin {origin.date()} 00:00 UTC: the weekly "
+                             "workspace supports decisions at the period boundary only (an intraperiod decision needs the "
+                             "physical state rolled forward to that instant)")
     known_at = origin.to_pydatetime().replace(tzinfo=timezone.utc) - timedelta(seconds=1)
     known = {"known_at": known_at}       # derived planning records: valid as of the decision (no single source fact)
     warnings: list[str] = []
     provenance: dict[str, str] = {}
 
-    def at_decision(stamp: pd.Timestamp) -> datetime:
-        """A fact's knowledge time as a request timestamp; the contract bounds it by the period origin."""
-        return min(pd.Timestamp(stamp), origin).to_pydatetime().replace(tzinfo=timezone.utc)
+    def fact_known_at(stamp: pd.Timestamp) -> datetime:
+        """A fact's own knowledge time as a request timestamp, as it is: every fact that enters was known
+        before `decision_at == as_of`, so nothing is moved to fit the contract (no backdating)."""
+        return pd.Timestamp(stamp).to_pydatetime().replace(tzinfo=timezone.utc)
     # ── facts the decision may know: source_known_at < decision_at, date-only fallback otherwise ──
     orders, orders_counts = temporal.available(orders, cutoff, date_col="order_date")
     pos_at_or_after_origin = int((pos["po_date"] >= origin).sum()) if len(pos) else 0     # the period guard, counted on every row
     pos, pos_counts = temporal.available(pos, cutoff, date_col="po_date")
     receipts, receipts_counts = temporal.available(receipts, cutoff, date_col="receipt_date")
     receipts_excluded = receipts_counts["excluded_not_known"]
+    if len(receipts):
+        # the instant a receipt happened: exact when the row says so, else the start of its date; arrival and
+        # lead time are read from it, so an exact event time is never overruled by its calendar date
+        exact = pd.to_datetime(receipts["event_at"], errors="coerce") if "event_at" in receipts.columns else pd.Series(pd.NaT, index=receipts.index)
+        if getattr(exact.dt, "tz", None) is not None:
+            exact = exact.dt.tz_convert("UTC").dt.tz_localize(None)
+        receipts = receipts.assign(event_at_utc=exact.where(exact.notna(), temporal.start_of_day(receipts["receipt_date"])))
     if len(pos):
         # the instant an order was placed: exact when the row says so, else the start of its date; the
         # same instant orders every pick below, so "latest" among same-day orders is exact only when
@@ -544,7 +556,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     excluded_future = 0
     if len(pos):
         received_by_po = receipts.groupby("po_id")["qty_received"].sum() if len(receipts) else pd.Series(dtype=float)
-        first_receipt = receipts.groupby("po_id")["receipt_date"].min() if len(receipts) else pd.Series(dtype="datetime64[ns]")
+        first_receipt = receipts.groupby("po_id")["event_at_utc"].min() if len(receipts) else pd.Series(dtype="datetime64[ns]")
         first_known = receipts.groupby("po_id")[temporal.KNOWN_AT].min() if len(receipts) else pd.Series(dtype="datetime64[ns]")
         for row in pos.itertuples():
             if row.po_date >= origin:
@@ -560,7 +572,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
             elapsed = int(((first if arrived else origin) - row.po_date).days)
             # an arrived observation is known when its first receipt was known; a censored one is a derived
             # record, valid as of the decision
-            shipment_rows.append({"known_at": at_decision(first_known.get(row.po_id)) if arrived else known_at,
+            shipment_rows.append({"known_at": fact_known_at(first_known.get(row.po_id)) if arrived else known_at,
                                   "id": f"ship_{row.po_id}", "source": f"src_{sku}", "elapsed_days": max(0, elapsed), "arrived": bool(arrived),
                                   "stage": "received" if arrived else "ordered", "carrier": "unknown",
                                   "accepted_ratio": (min(1., received / ordered) if arrived and ordered > 0 else None)})
@@ -580,7 +592,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                         "payment_due_in": due_in + int((net_days or 0.) // period_days), "max_quantity": remaining,
                         "deadline": known_at + timedelta(days=period_days * horizon), "allowed_stages": ["ordered"], "contract_reference": str(row.po_id)}
                 po_known = getattr(row, temporal.KNOWN_AT)      # when the placement was known (exact, or the start of its date)
-                pipeline_rows.append({**known, "known_at": at_decision(po_known), "id": str(row.po_id), "source": f"src_{sku}", "revision": 1, "ordered": ordered, "confirmed": ordered,
+                pipeline_rows.append({**known, "known_at": fact_known_at(po_known), "id": str(row.po_id), "source": f"src_{sku}", "revision": 1, "ordered": ordered, "confirmed": ordered,
                                       "shipped": received, "received": received, "rejected": 0., "expected_accepted_remaining": remaining * float(fit["fill_mean"]),
                                       "placed_at": pd.Timestamp(row.placed_at_utc).to_pydatetime().replace(tzinfo=timezone.utc), "confirmed_at": None, "departed_at": None,
                                       "current_eta": pd.Timestamp(eta).to_pydatetime().replace(tzinfo=timezone.utc), "stage": "ordered", "carrier": "unknown",
@@ -623,7 +635,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
             uplift = _num(row.uplift, None)
             if sku in planned and 0 <= offset < horizon and uplift and uplift > 0:
                 when = getattr(row, temporal.KNOWN_AT)
-                event_known = {"known_at": at_decision(when)} if not pd.isna(when) else known
+                event_known = {"known_at": fact_known_at(when)} if not pd.isna(when) else known
                 event_rows.append({**event_known, "id": f"promo_{sku}_{offset}", "service": f"svc_{sku}", "start": offset, "end": offset,
                                    "multiplier": float(uplift), "label": "promotion"})
         provenance["events.promotions"] = "CUSTOMER_PROVIDED"
@@ -697,6 +709,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         # the temporal basis of this request (H1b): what the decision rested on
         "temporal": {"decision_at": cutoff.to_pydatetime().replace(tzinfo=timezone.utc).isoformat(), "period_origin": str(origin.date()),
                      "decision_basis": "explicit" if decision_at is not None else "start_of_planning_period",
+                     "supported_mode": "PERIOD_BOUNDARY",        # decision_at == period_origin == Request.as_of; nothing else is built
                      "mode": "historical" if historical else "live",
                      "rule": "a fact enters only if source_known_at < decision_at; rows without a knowledge time use the date-only fallback "
                              "(known from the start of their date); future-effective rows without one have no knowledge time",

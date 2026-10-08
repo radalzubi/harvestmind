@@ -14,8 +14,10 @@ That is a statement about knowledge, not about the event: a promotion planned fo
 announced yesterday is available today; a receipt that happened yesterday but is posted tomorrow is not.
 
 `decision_at` is the exact causal cutoff. It is distinct from the planning period origin (`Request.as_of`,
-the Monday that anchors the weekly buckets); by default the two coincide (a decision at the start of the
-planning period), and a later cutoff inside the period can be declared explicitly.
+the Monday that anchors the weekly buckets). This module is general: `available` takes any exact cutoff.
+The weekly workspace (`zaad.full.workspace.build_request`) reconstructs its physical state at the period
+origin and therefore only builds decisions taken at that boundary (`decision_at == period_origin`); it
+refuses any other cutoff rather than pairing one instant's state with another instant's knowledge.
 
 DATE-ONLY FALLBACK. Most staging rows carry a date and no time. For a transactional fact with only a date
 the fallback is `event_at = start of that date` and `source_known_at = event_at`, labelled
