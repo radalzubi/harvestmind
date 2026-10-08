@@ -156,8 +156,10 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
     stock_rows: list[dict[str, Any]] = []
     shelf = {s["id"]: s["shelf_life"] for s in data["skus"]}
     basis_declared = economics.get(inventory_state.BASIS_KEY)
+    known_rule_declared = economics.get(inventory_state.KNOWN_RULE_KEY)
     resolved = inventory_state.resolve(inventory, decision_at=pd.Timestamp(base.as_of), skus=sorted(shelf), locations=sorted(ids),
-                                       default_basis=str(basis_declared) if basis_declared else None)
+                                       default_basis=str(basis_declared) if basis_declared else None,
+                                       known_rule=str(known_rule_declared) if known_rule_declared else None)
     report["inventory_state"] = resolved["report"]
     blocked = [(key, cell) for key, cell in resolved["cells"].items() if not cell.ready]
     if blocked:
@@ -166,11 +168,10 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
                              f"{cell.status} ({cell.reason})" + (f"; also {', '.join(k for k, _ in blocked[1:4])}" if len(blocked) > 1 else ""))
     for entry in resolved["stock"]:
         sku, lid = entry["sku"], entry["location"]
-        cell = resolved["cells"][f"{sku}|{lid}"]
         expires_in, lot_prov = lot_expiry_periods(entry["expiry_date"], origin, period_days, shelf[sku])
         if lot_prov == "CUSTOMER_PROVIDED":
             provenance["stock.expiry"] = "CUSTOMER_PROVIDED"
-        stock_rows.append({"known_at": _aware(cell.source_known_at) if cell.source_known_at else known["known_at"], "id": f"open_{sku}@{lid}{entry['cohort_suffix']}",
+        stock_rows.append({"known_at": _aware(entry["source_known_at"]), "id": f"open_{sku}@{lid}{entry['cohort_suffix']}",
                            "sku": sku, "location": lid, "quantity": float(entry["quantity"]),
                            "reserved": 0., "damaged": 0., "quarantined": 0., "expires_in": expires_in, "age_periods": 0})
 

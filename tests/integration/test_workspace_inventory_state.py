@@ -9,7 +9,7 @@ Crafted rows are inserted into the SYNTHETIC sample vault inside a transaction a
 from __future__ import annotations
 
 from contextlib import contextmanager
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 
 import duckdb
 import pandas as pd
@@ -26,7 +26,8 @@ ORIGIN = datetime(2024, 9, 2, tzinfo=timezone.utc)           # a Monday inside t
 T = date(2024, 9, 2)
 SKU, SKU2 = "SKU-0001", "SKU-0002"
 EOD, SOD = "END_OF_DAY", "START_OF_DAY"
-COLS = "(snapshot_date, sku, location_id, on_hand, in_transit, snapshot_basis, expiry_date, source_known_at, snapshot_at)"
+COLS = "(snapshot_date, sku, location_id, on_hand, in_transit, snapshot_basis, expiry_date, source_known_at, snapshot_at, lot_id)"
+KNOWN = time(23, 59, 59)          # the crafted rows' declared knowledge time: the last second of the snapshot day (an explicit declaration, as every row must carry)
 
 
 @pytest.fixture(scope="module")
@@ -47,13 +48,16 @@ def _transaction(conn):
         conn.execute("ROLLBACK")
 
 
-def _rows(conn, rows, skus=(SKU,), economics=()):
-    """Replace the planned SKUs' inventory with crafted rows: (date, sku, location, on_hand, in_transit, basis, expiry, known_at, snapshot_at)."""
+def _rows(conn, rows, skus=(SKU,), economics=(), declare_known=True):
+    """Replace the planned SKUs' inventory with crafted rows: (date, sku, location, on_hand, in_transit, basis, expiry, known_at, snapshot_at, lot_id).
+    Rows without a knowledge time get the explicit declaration `snapshot_date 23:59:59` unless `declare_known` is False."""
     conn.execute(f"DELETE FROM stg_fmcg_inventory WHERE sku IN ({', '.join('?' for _ in skus)})", list(skus))
     conn.execute("DELETE FROM stg_fmcg_economics WHERE key LIKE 'inventory_%'")
     for row in rows:
-        full = list(row) + [None] * (9 - len(row))
-        conn.execute(f"INSERT INTO stg_fmcg_inventory {COLS} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", full)
+        full = list(row) + [None] * (10 - len(row))
+        if declare_known and full[7] is None:
+            full[7] = datetime.combine(full[0], KNOWN)
+        conn.execute(f"INSERT INTO stg_fmcg_inventory {COLS} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", full)
     for key, value in economics:
         conn.execute("INSERT INTO stg_fmcg_economics (key, value, provenance) VALUES (?, ?, 'test')", [key, value])
 
@@ -107,17 +111,26 @@ def test_b_single_site_refuses_to_choose_among_locations_unless_sum_is_declared(
         assert "BRANCH" in _blocks(conn, "NOT_READY_INCOMPLETE_MOVEMENTS")
 
 
-# ── C: conflicting duplicates block in either physical order; identical duplicates are one state ──
-def test_c_conflicting_rows_for_one_state_block_whatever_their_physical_order(vault):
-    for order in ((100., 70.), (70., 100.)):
+# ── C: repeated rows for one cohort block, conflicting or identical, in either physical order ──
+def test_c_repeated_rows_for_one_cohort_block_whatever_their_quantities_or_order(vault):
+    for order in ((100., 70.), (70., 100.), (100., 100.)):
         with _transaction(vault) as conn:
             _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", q, 0, EOD) for q in order])
             message = _blocks(conn, "NOT_READY_AMBIGUOUS")
-            assert "[70.0, 100.0]" in message
+            assert f"{sorted(set(order))}" in message and "lot_id" in message
     with _transaction(vault) as conn:
-        _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD)] * 2)
+        # a repeated lot_id has no duplicate contract either, equal quantities or not
+        _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD, None, None, None, "L1")] * 2)
+        assert "repeated lot_id" in _blocks(conn, "NOT_READY_AMBIGUOUS")
+
+
+def test_c_distinct_lot_ids_are_two_real_lots(vault):
+    with _transaction(vault) as conn:
+        _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD, T + timedelta(days=20), None, None, "L1"),
+                     (T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD, T + timedelta(days=20), None, None, "L2")])
         req, build = _build(conn)
-        assert _stock(req) == {f"open_{SKU}": 100.} and build["inventory_state"]["cells"][f"{SKU}|main"]["rows_considered"] == 2
+        assert _stock(req) == {f"open_{SKU}#{(T + timedelta(days=20)).isoformat()}~L1": 100., f"open_{SKU}#{(T + timedelta(days=20)).isoformat()}~L2": 100.}
+        assert build["inventory_state"]["cells"][f"{SKU}|main"]["quantity_at_origin"] == 200.
 
 
 # ── D: unknown is not zero ──
@@ -162,7 +175,7 @@ def test_g_date_only_rows_need_a_declared_basis(vault):
         assert _stock(req) == {f"open_{SKU}": 100.} and build["inventory_state"]["cells"][f"{SKU}|main"]["basis"] == EOD
     with _transaction(vault) as conn:
         # START_OF_DAY on the origin day is the state at the origin; END_OF_DAY on it would be a future state
-        _rows(conn, [(T, SKU, "MAIN", 100., 0, SOD)])
+        _rows(conn, [(T, SKU, "MAIN", 100., 0, SOD, None, datetime(2024, 9, 1, 22, 0))])      # a count of Monday's opening state, posted Sunday evening
         assert _stock(_build(conn)[0]) == {f"open_{SKU}": 100.}
     with _transaction(vault) as conn:
         _rows(conn, [(T, SKU, "MAIN", 100., 0, EOD)])
@@ -189,7 +202,7 @@ def test_i_a_count_known_after_the_decision_does_not_exist_for_it(vault):
     with _transaction(vault) as conn:
         _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD, None, datetime(2024, 9, 3, 9, 0))])
         message = _blocks(conn, "NOT_READY_NO_SNAPSHOT")
-        assert "known at the decision" in message
+        assert "known before the decision" in message
     with _transaction(vault) as conn:
         _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD, None, datetime(2024, 9, 1, 23, 30))])
         req, build = _build(conn)
@@ -201,7 +214,7 @@ def test_i_a_count_known_after_the_decision_does_not_exist_for_it(vault):
 # ── J: an exact instant ──
 def test_j_point_in_time_snapshot_at_is_the_instant_itself(vault):
     with _transaction(vault) as conn:
-        _rows(conn, [(T, SKU, "MAIN", 123., 0, None, None, None, datetime(2024, 9, 2, 0, 0))])
+        _rows(conn, [(T, SKU, "MAIN", 123., 0, None, None, datetime(2024, 9, 1, 22, 0), datetime(2024, 9, 2, 0, 0))])
         req, build = _build(conn)
         assert _stock(req) == {f"open_{SKU}": 123.} and build["inventory_state"]["cells"][f"{SKU}|main"]["basis"] == "POINT_IN_TIME"
     with _transaction(vault) as conn:
@@ -238,9 +251,9 @@ def test_l_physical_reorder_and_import_time_change_nothing(vault):
 
 # ── M: network cells resolve per location ──
 def test_m_network_cells_resolve_per_location():
-    frame = pd.DataFrame([{"snapshot_date": T - timedelta(days=1), "sku": SKU, "location_id": "DC", "on_hand": 10., "in_transit": 0., "snapshot_basis": EOD},
-                          {"snapshot_date": T - timedelta(days=8), "sku": SKU, "location_id": "SOUTH", "on_hand": 5., "in_transit": 0., "snapshot_basis": EOD},
-                          {"snapshot_date": T - timedelta(days=1), "sku": SKU, "location_id": "NORTH", "on_hand": 0., "in_transit": 0., "snapshot_basis": EOD}])
+    frame = pd.DataFrame([{"snapshot_date": T - timedelta(days=1), "sku": SKU, "location_id": "DC", "on_hand": 10., "in_transit": 0., "snapshot_basis": EOD, "source_known_at": datetime.combine(T - timedelta(days=1), KNOWN)},
+                          {"snapshot_date": T - timedelta(days=8), "sku": SKU, "location_id": "SOUTH", "on_hand": 5., "in_transit": 0., "snapshot_basis": EOD, "source_known_at": datetime.combine(T - timedelta(days=8), KNOWN)},
+                          {"snapshot_date": T - timedelta(days=1), "sku": SKU, "location_id": "NORTH", "on_hand": 0., "in_transit": 0., "snapshot_basis": EOD, "source_known_at": datetime.combine(T - timedelta(days=1), KNOWN)}])
     out = inventory_state.resolve(frame, decision_at=pd.Timestamp(T), skus=[SKU], locations=["DC", "NORTH", "SOUTH"])
     statuses = {k: c.status for k, c in out["cells"].items()}
     assert statuses == {f"{SKU}|DC": "READY_DIRECT", f"{SKU}|NORTH": "READY_DIRECT", f"{SKU}|SOUTH": "NOT_READY_INCOMPLETE_MOVEMENTS"}
@@ -257,7 +270,9 @@ def test_m_network_workspace_blocks_on_a_stale_site(tmp_path):
     cells = build["inventory_state"]["cells"]
     assert {k.split("|")[1] for k in cells} == {"DC", "NORTH", "SOUTH"} and all(c["status"] == "READY_DIRECT" for c in cells.values())
     assert {s.location for s in req.stock} <= {"DC", "NORTH", "SOUTH"} and all(s.id.startswith(f"open_{SKU}@") for s in req.stock)
-    conn.execute("UPDATE stg_fmcg_inventory SET snapshot_date = snapshot_date - INTERVAL 7 DAY WHERE sku = ? AND location_id = 'SOUTH'", [SKU])
+    # SOUTH's count is a week older in every respect: its date, its exact instant and when it was known
+    conn.execute("UPDATE stg_fmcg_inventory SET snapshot_date = snapshot_date - INTERVAL 7 DAY, snapshot_at = snapshot_at - INTERVAL 7 DAY, "
+                 "source_known_at = source_known_at - INTERVAL 7 DAY WHERE sku = ? AND location_id = 'SOUTH'", [SKU])
     with pytest.raises(WorkspaceError, match="SOUTH"):
         build_network_request(conn, "tenant_n", skus=[SKU], max_solve_seconds=5.)
     conn.close()
@@ -277,7 +292,7 @@ def test_n_build_report_carries_the_inventory_state_section(vault):
         assert not any("inventory snapshot" in w for w in build["warnings"])       # age is metadata, not a warning rule
     with _transaction(vault) as conn:
         # a 30-day-old count that IS the state at the origin (an exact instant) is READY; its age is reported, not judged
-        _rows(conn, [(T - timedelta(days=30), SKU, "MAIN", 100., 0., None, None, None, datetime(2024, 9, 2, 0, 0))])
+        _rows(conn, [(T - timedelta(days=30), SKU, "MAIN", 100., 0., None, None, datetime(2024, 9, 1, 18, 0), datetime(2024, 9, 2, 0, 0))])
         _, build = _build(conn)
         assert build["inventory_state"]["status"] == "READY" and build["inventory_state"]["latest_snapshot_age_days"] == 0.
 
@@ -288,14 +303,82 @@ def test_o_synthetic_snapshots_are_declared_as_closing_counts(vault):
     rows = closing_inventory_rows(hist.inventory_snapshots)
     week = pd.Timestamp(hist.inventory_snapshots["week_start"].iloc[0])
     assert (rows["snapshot_basis"] == EOD).all() and rows["snapshot_date"].iloc[0] == week + pd.Timedelta(days=6) and rows["snapshot_at"].iloc[0] == week + pd.Timedelta(days=7)
+    assert rows["source_known_at"].iloc[0] == week + pd.Timedelta(days=6, hours=23, minutes=59, seconds=59) and (rows["source_known_at"] < rows["snapshot_at"]).all()
     # in the loaded vault: the count labelled week w holds that week's receipts, so it is the state that opens week w + 1
     sku = SKU
     last_week = pd.Timestamp(hist.inventory_snapshots["week_start"].max())
     stored = vault.execute("SELECT snapshot_date, snapshot_basis, snapshot_at, on_hand FROM stg_fmcg_inventory WHERE sku = ? ORDER BY snapshot_date DESC LIMIT 1", [sku]).fetchone()
     assert pd.Timestamp(stored[0]) == last_week + pd.Timedelta(days=6) and stored[1] == EOD and pd.Timestamp(stored[2]) == last_week + pd.Timedelta(days=7)
     assert vault.execute("SELECT value, provenance FROM stg_fmcg_economics WHERE key = 'inventory_snapshot_basis'").fetchone() == (EOD, "SYNTHETIC")
+    assert vault.execute("SELECT value, provenance FROM stg_fmcg_economics WHERE key = 'inventory_source_known_rule'").fetchone() == ("CLOSE_OF_SNAPSHOT_DAY", "SYNTHETIC")
+    assert vault.execute("SELECT min(source_known_at) IS NOT NULL AND max(source_known_at < snapshot_at) FROM stg_fmcg_inventory").fetchone()[0]
     sim = hist.inventory_snapshots[(hist.inventory_snapshots["sku"] == sku) & (pd.to_datetime(hist.inventory_snapshots["week_start"]) == last_week)]["on_hand"].iloc[0]
     assert float(stored[3]) == float(sim)
     # the week after the last snapshot plans directly from it; the week before cannot use it (it is not yet known)
     req, build = build_request(vault, OP, as_of=(last_week + pd.Timedelta(days=7)).to_pydatetime().replace(tzinfo=timezone.utc), horizon=8, skus=[sku])
     assert build["inventory_state"]["cells"][f"{sku}|main"]["status"] == "READY_DIRECT" and _stock(req) == {f"open_{sku}": float(sim)}
+    assert build["inventory_state"]["cells"][f"{sku}|main"]["knowledge_basis"] == "EXPLICIT_SOURCE_KNOWN"
+    assert all(s.known_at < req.as_of for s in req.stock)         # the H1b inequality on every fact-derived Stock, strict
+
+
+# ── P: the strict knowledge boundary (H1b, unchanged for inventory) ──
+def test_p_the_knowledge_boundary_is_strict(vault):
+    physical = (T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD, None)
+    with _transaction(vault) as conn:                                       # A: known one second before T
+        _rows(conn, [physical + (datetime(2024, 9, 1, 23, 59, 59),)])
+        req, build = _build(conn)
+        assert _stock(req) == {f"open_{SKU}": 100.} and req.stock[0].known_at == datetime(2024, 9, 1, 23, 59, 59, tzinfo=timezone.utc) < req.as_of
+    with _transaction(vault) as conn:                                       # B: known exactly at T: unavailable
+        _rows(conn, [physical + (datetime(2024, 9, 2, 0, 0, 0),)])
+        message = _blocks(conn, "NOT_READY_NO_SNAPSHOT")
+        assert "known before the decision" in message
+    with _transaction(vault) as conn:                                       # C: known one second after T: unavailable
+        _rows(conn, [physical + (datetime(2024, 9, 2, 0, 0, 1),)])
+        _blocks(conn, "NOT_READY_NO_SNAPSHOT")
+    with _transaction(vault) as conn:                                       # D: no knowledge time and no declared contract
+        _rows(conn, [physical], declare_known=False)
+        message = _blocks(conn, "NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE")
+        assert "source_known_at" in message and "inventory_source_known_rule" in message
+    with _transaction(vault) as conn:                                       # D': an explicit workspace-declared knowledge rule is a contract, not a fallback
+        _rows(conn, [physical], declare_known=False, economics=[("inventory_source_known_rule", "CLOSE_OF_SNAPSHOT_DAY")])
+        req, build = _build(conn)
+        cell = build["inventory_state"]["cells"][f"{SKU}|main"]
+        assert cell["knowledge_basis"] == "DECLARED_RULE:CLOSE_OF_SNAPSHOT_DAY" and cell["source_known_at"] == "2024-09-01T23:59:59"
+        assert req.stock[0].known_at == datetime(2024, 9, 1, 23, 59, 59, tzinfo=timezone.utc) < req.as_of
+    with _transaction(vault) as conn:                                       # E: import time is not knowledge
+        _rows(conn, [physical], declare_known=False)
+        conn.execute("UPDATE stg_fmcg_inventory SET imported_at = TIMESTAMP '2020-01-01 00:00:00'")
+        _blocks(conn, "NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE")
+    with _transaction(vault) as conn:                                       # the effective instant alone never admits a count
+        _rows(conn, [(T, SKU, "MAIN", 100., 0, None, None, None, datetime(2024, 9, 2, 0, 0))], declare_known=False)
+        _blocks(conn, "NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE")
+
+
+def test_p_every_fact_derived_stock_of_the_sample_request_is_known_before_the_decision(vault):
+    req, build = build_request(vault, OP, as_of=ORIGIN, horizon=8)          # the whole planned catalogue
+    assert req.stock and all(s.known_at < req.as_of for s in req.stock)
+    assert build["inventory_state"]["status"] == "READY" and build["inventory_state"]["knowledge_rule"].startswith("source_known_at < decision_at")
+
+
+# ── Q: cohort-level knowledge provenance ──
+def test_q_each_cohort_carries_its_own_knowledge_time(vault):
+    early, late = datetime(2024, 9, 1, 8, 0), datetime(2024, 9, 1, 20, 0)
+    with _transaction(vault) as conn:
+        _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 60., 0, EOD, T + timedelta(days=13), early), (T - timedelta(days=1), SKU, "MAIN", 40., 0, EOD, T + timedelta(days=34), late)])
+        req, build = _build(conn)
+        known = {s.id: s.known_at for s in req.stock}
+        assert known == {f"open_{SKU}#{(T + timedelta(days=13)).isoformat()}": early.replace(tzinfo=timezone.utc),
+                         f"open_{SKU}#{(T + timedelta(days=34)).isoformat()}": late.replace(tzinfo=timezone.utc)}
+        cell = build["inventory_state"]["cells"][f"{SKU}|main"]
+        assert [c["source_known_at"] for c in cell["cohorts"]] == ["2024-09-01T08:00:00", "2024-09-01T20:00:00"] and cell["source_known_at"] == "2024-09-01T20:00:00"
+    with _transaction(vault) as conn:
+        # the later cohort is known only at T: it alone is excluded, the earlier one stands on its own time
+        _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 60., 0, EOD, T + timedelta(days=13), early), (T - timedelta(days=1), SKU, "MAIN", 40., 0, EOD, T + timedelta(days=34), datetime(2024, 9, 2, 0, 0))])
+        req, build = _build(conn)
+        assert _stock(req) == {f"open_{SKU}#{(T + timedelta(days=13)).isoformat()}": 60.} and build["inventory_state"]["cells"][f"{SKU}|main"]["rows_excluded_not_known"] == 1
+    with _transaction(vault) as conn:
+        # a declared SUM of locations is known only when all of its components are: the aggregate takes the latest time
+        _rows(conn, [(T - timedelta(days=1), SKU, "DC", 100., 0, EOD, None, early), (T - timedelta(days=1), SKU, "BRANCH", 40., 0, EOD, None, late)],
+              economics=[("inventory_single_site_aggregation", "SUM")])
+        req, _ = _build(conn)
+        assert [(s.quantity, s.known_at) for s in req.stock] == [(140., late.replace(tzinfo=timezone.utc))]

@@ -541,13 +541,15 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
     # of several locations. `inventory_scope="network"` leaves the cells to the network adapter.
     basis_declared = economics.get(inventory_state.BASIS_KEY)
     aggregation_declared = economics.get(inventory_state.AGGREGATION_KEY)
+    known_rule_declared = economics.get(inventory_state.KNOWN_RULE_KEY)        # an explicit knowledge contract, never a fallback
     if inventory_scope == "network":
         inventory_report: dict[str, Any] = {"status": "DEFERRED_TO_NETWORK", "decision_at": cutoff.to_pydatetime().replace(tzinfo=timezone.utc).isoformat(),
                                             "note": "per-location cells are resolved by the network workspace", "cells": {}}
     else:
         resolved = inventory_state.resolve(inventory, decision_at=cutoff, skus=sorted(planned), locations=None, single_location=LOCATION,
                                            default_basis=str(basis_declared) if basis_declared else None,
-                                           aggregation=str(aggregation_declared) if aggregation_declared else None)
+                                           aggregation=str(aggregation_declared) if aggregation_declared else None,
+                                           known_rule=str(known_rule_declared) if known_rule_declared else None)
         inventory_report = resolved["report"]
         blocked = [(key, cell) for key, cell in resolved["cells"].items() if not cell.ready]
         if blocked:
@@ -557,10 +559,10 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         shelf_of = {r["id"]: r["shelf_life"] for r in sku_rows}
         for entry in resolved["stock"]:
             sku = entry["sku"]
-            cell = resolved["cells"][f"{sku}|{LOCATION}"]
             # sector physics: a lot with an expiry date carries its own remaining life (migration 017)
             expires_in, lot_prov = lot_expiry_periods(entry["expiry_date"], origin, period_days, shelf_of[sku])
-            stock_rows.append({"known_at": _aware(cell.source_known_at) if cell.source_known_at else known_at, "id": f"open_{sku}{entry['cohort_suffix']}",
+            # the cohort's own knowledge time (H1b: a fact enters only if source_known_at < decision_at; never backdated)
+            stock_rows.append({"known_at": _aware(entry["source_known_at"]), "id": f"open_{sku}{entry['cohort_suffix']}",
                                "sku": sku, "location": LOCATION, "quantity": float(entry["quantity"]), "reserved": 0.,
                                "damaged": 0., "quarantined": 0., "expires_in": expires_in, "age_periods": 0})
             if lot_prov == "CUSTOMER_PROVIDED":

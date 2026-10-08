@@ -31,11 +31,11 @@ def make_network_vault(conn, seed: int = 7, branches: tuple[str, ...] = ("NORTH"
     # inventory: the snapshot on hand split across the DC and the branches
     conn.execute("CREATE OR REPLACE TEMP TABLE inv_base AS SELECT * FROM stg_fmcg_inventory")
     conn.execute("DELETE FROM stg_fmcg_inventory")
-    conn.execute(f"INSERT INTO stg_fmcg_inventory (snapshot_date, sku, location_id, on_hand, in_transit) SELECT snapshot_date, sku, '{central}', on_hand * 0.5, in_transit FROM inv_base")
+    carried = "snapshot_date, sku, snapshot_basis, snapshot_at, source_known_at"          # H2: the sample's declared timing travels with the split
+    conn.execute(f"INSERT INTO stg_fmcg_inventory ({carried}, location_id, on_hand, in_transit) SELECT {carried}, '{central}', on_hand * 0.5, in_transit FROM inv_base")
     for b in branches:
-        conn.execute(f"INSERT INTO stg_fmcg_inventory (snapshot_date, sku, location_id, on_hand, in_transit) SELECT snapshot_date, sku, '{b}', on_hand * {0.5 / n}, 0 FROM inv_base")
-    # H2: the split rows keep the sample's date-only label; the loader's workspace-level END_OF_DAY basis
-    # still reads them. The three sites are shares of ONE single-site count, so their sum is that count:
+        conn.execute(f"INSERT INTO stg_fmcg_inventory ({carried}, location_id, on_hand, in_transit) SELECT {carried}, '{b}', on_hand * {0.5 / n}, 0 FROM inv_base")
+    # H2: the three sites are shares of ONE single-site count, so their sum is that count:
     # declared here so the single-site adapter may read them together (SYNTHETIC split, not an operator's data).
     conn.execute("DELETE FROM stg_fmcg_economics WHERE key = 'inventory_single_site_aggregation'")
     conn.execute("INSERT INTO stg_fmcg_economics (key, value, provenance) VALUES ('inventory_single_site_aggregation', 'SUM', 'SYNTHETIC')")

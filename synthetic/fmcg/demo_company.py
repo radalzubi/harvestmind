@@ -37,7 +37,7 @@ import json
 import math
 import random
 from dataclasses import dataclass, field
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from typing import Any
 
 COMPANY = "Al-Bahr Trading (DEMO)"
@@ -296,11 +296,13 @@ def build_demo_company(as_of: date | None = None, seed: int = 7) -> DemoCompany:
                     c.orders.append({"order_id": f"DEMO-SO-{order_seq:06d}", "customer_id": cid, "order_date": week + timedelta(days=rng.randint(0, 4)),
                                      "requested_delivery_date": week + timedelta(days=rng.randint(3, 7)), "sku": s["sku"],
                                      "qty_ordered": qty, "qty_shipped": shipped, "channel": "wholesale", "location_id": site})
-            # the weekly snapshot, taken on the Sunday closing the week
+            # the weekly snapshot, taken on the Sunday closing the week (END_OF_DAY) and, by this generator's
+            # SYNTHETIC convention, known at that day's last second: strictly before the Monday decision
             snapshot = week + timedelta(days=6)
             for site, units in stock.items():
                 c.inventory.append({"snapshot_date": snapshot, "sku": s["sku"], "location_id": site, "on_hand": units,
-                                    "in_transit": 0, "expiry_date": None})
+                                    "in_transit": 0, "expiry_date": None, "snapshot_basis": "END_OF_DAY",
+                                    "source_known_at": datetime.combine(snapshot, time(23, 59, 59))})
 
     # ── declared alternative sources (P3) on a third of the catalogue, from the Turkish corridor ──
     for s in c.skus[::3]:
@@ -360,6 +362,7 @@ def build_demo_company(as_of: date | None = None, seed: int = 7) -> DemoCompany:
     # read together by the single-site adapter only under this explicit SUM declaration (SYNTHETIC: a property
     # of this generator, not of any operator).
     c.economics = [{"key": "inventory_snapshot_basis", "value": "END_OF_DAY", "provenance": "SYNTHETIC"},
+                   {"key": "inventory_source_known_rule", "value": "CLOSE_OF_SNAPSHOT_DAY", "provenance": "SYNTHETIC"},
                    {"key": "inventory_single_site_aggregation", "value": "SUM", "provenance": "SYNTHETIC"},
                    {"key": "currency", "value": CURRENCY, "provenance": "OPERATOR_DECLARED"},
                    {"key": "cost_of_capital_annual", "value": "0.11", "provenance": "OPERATOR_DECLARED"},
@@ -406,7 +409,7 @@ def load_demo_company_into(conn: Any, operator: str, as_of: date | None = None, 
     insert("stg_fmcg_purchase_orders", c.purchase_orders, ["po_id", "po_date", "supplier_id", "sku", "qty_ordered", "unit_cost",
                                                            "expected_delivery_date", "destination_id"])
     insert("stg_fmcg_receipts", c.receipts, ["receipt_id", "po_id", "receipt_date", "sku", "qty_received", "qty_rejected"])
-    insert("stg_fmcg_inventory", c.inventory, ["snapshot_date", "sku", "location_id", "on_hand", "in_transit", "expiry_date"])
+    insert("stg_fmcg_inventory", c.inventory, ["snapshot_date", "sku", "location_id", "on_hand", "in_transit", "expiry_date", "snapshot_basis", "source_known_at"])
     insert("stg_fmcg_sources", c.sources, ["sku", "supplier_id", "approved", "compliance", "unit_cost", "freight_per_unit", "handling_per_unit",
                                            "capacity_per_week", "lead_time_promised_weeks", "moq_units", "units_per_case", "incumbent_share",
                                            "switching_cost", "provenance"])

@@ -88,7 +88,7 @@ STAGING_TABLES: dict[str, dict[str, Any]] = {
                           "date_cols": ["receipt_date"], "timestamp_cols": ["event_at", "source_known_at"], "description": "FMCG supplier receipts"},
     "stg_fmcg_inventory": {"required_cols": {"sku", "on_hand", "snapshot_date"},
                            "date_cols": ["snapshot_date"], "timestamp_cols": ["snapshot_at", "source_known_at"],
-                           "description": "FMCG inventory snapshots (migration 030: optional snapshot_at, source_known_at, snapshot_basis)"},
+                           "description": "FMCG inventory snapshots (migration 030: optional snapshot_at, source_known_at, snapshot_basis, lot_id)"},
     "stg_fmcg_promotions": {"required_cols": {"sku", "week_start", "uplift"},
                             "date_cols": ["week_start"], "timestamp_cols": ["source_known_at"], "description": "FMCG promotion calendar"},
     "stg_fmcg_suppliers": {"required_cols": {"supplier_id"}, "date_cols": [],
@@ -855,9 +855,12 @@ def load_fmcg_sample_into(conn, seed: int = 7, archetype: str = "E_mixed_portfol
         conn.execute(f"INSERT INTO {table} ({cols}) SELECT {cols} FROM _sample_df")  # nosec B608 - literals
         conn.unregister("_sample_df")
         loaded[table] = int(len(frame))
-    conn.execute("DELETE FROM stg_fmcg_economics WHERE key = ?", ["inventory_snapshot_basis"])
-    conn.execute("INSERT INTO stg_fmcg_economics (key, value, provenance) VALUES (?, ?, ?)", ["inventory_snapshot_basis", "END_OF_DAY", "SYNTHETIC"])
-    loaded["stg_fmcg_economics"] = 1
+    # the same two declarations at workspace level, for a vault without migration 030's columns: the physical
+    # basis and the synthetic knowledge convention (count known at the last second of its snapshot day)
+    for key, value in (("inventory_snapshot_basis", "END_OF_DAY"), ("inventory_source_known_rule", "CLOSE_OF_SNAPSHOT_DAY")):
+        conn.execute("DELETE FROM stg_fmcg_economics WHERE key = ?", [key])
+        conn.execute("INSERT INTO stg_fmcg_economics (key, value, provenance) VALUES (?, ?, ?)", [key, value, "SYNTHETIC"])
+    loaded["stg_fmcg_economics"] = 2
     return {"tables": loaded, "total_rows": int(sum(loaded.values())), "classification": "SYNTHETIC CALIBRATED",
             "note": "a made-up distributor with mixed lanes and a constrained supplier; replaces existing FMCG data"}
 

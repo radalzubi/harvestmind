@@ -10,3 +10,6 @@
 ALTER TABLE stg_fmcg_inventory ADD COLUMN IF NOT EXISTS snapshot_at TIMESTAMP;
 ALTER TABLE stg_fmcg_inventory ADD COLUMN IF NOT EXISTS source_known_at TIMESTAMP;
 ALTER TABLE stg_fmcg_inventory ADD COLUMN IF NOT EXISTS snapshot_basis VARCHAR;
+-- H2 correction: an optional lot identity. Two rows for one (sku, location, instant, expiry) are either one
+-- record repeated or two real lots; only an explicit lot_id can tell them apart. Never row order or upload metadata.
+ALTER TABLE stg_fmcg_inventory ADD COLUMN IF NOT EXISTS lot_id VARCHAR;
