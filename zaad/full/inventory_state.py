@@ -30,8 +30,10 @@ NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE.
 READINESS of a cell at the decision origin T (`decision_at == period_origin`, H1b):
     READY_DIRECT                           the latest known state is exactly the state at T (effective_at == T);
                                            an explicit zero is READY with quantity 0 (zero is a fact, not a default)
-    NOT_READY_NO_SNAPSHOT                  no row at all for the cell, or none known before T
-    NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE   rows exist but carry no knowledge time and no declared rule covers them
+    NOT_READY_NO_SNAPSHOT                  no row at all for the cell at or before T, or none of the latest state known before T
+    NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE   rows of the latest state carry no knowledge time and no declared rule covers them
+    NOT_READY_INCOMPLETE_STATE_KNOWLEDGE   only some rows of the latest physical state were knowable before T: a knowable
+                                           subset is not a partial opening balance, the balance cannot be established
     NOT_READY_AMBIGUOUS_TIMING             the latest known rows are date-only with no declared basis
     NOT_READY_AMBIGUOUS                    more than one row for one logical cohort (same cell, instant,
                                            expiry and lot identity), whatever their quantities; or cohorts
@@ -43,10 +45,17 @@ READINESS of a cell at the decision origin T (`decision_at == period_origin`, H1
 "Stale" is not an age: a 30-day-old state would be READY if the movements since it were complete and
 reconciled; a one-day-old one is not if they are not. Age is reported as metadata.
 
+STATE COMPLETENESS. The physical state is selected first (the cell's latest instant at or before T),
+independently of knowledge; it is READY only if EVERY row defining it is known before T. The rows of a
+state the operator knew only in part never reach the Request, not even the knowable ones: the evaluator
+counts them only to conclude that the balance cannot be established. State strictly after T is not history
+and creates no requirement.
+
 LOTS. Two rows for one `(sku, location, effective_at, expiry_date)` are two records of one cohort or two
 real lots; without a lot identity the data cannot say which, so equal quantities are not accepted as one
-state and are not summed. An explicit `lot_id` (migration 030, optional) tells lots apart; a repeated
-`lot_id` at one state blocks whatever the quantities. Row order and upload metadata are never identity.
+state and are not summed. An explicit `lot_id` (migration 030, optional) is an identity: within one cell and
+physical state it names exactly one row, and a repeated `lot_id` blocks whatever else differs (expiry,
+quantity, knowledge time or any attribute). Row order and upload metadata are never identity.
 
 ROLL-FORWARD. state(T) = snapshot + accepted receipts + received inbound transfers - shipped customer
 orders - dispatched outbound transfers +/- explicit adjustments between the snapshot instant and T, using
@@ -83,6 +92,7 @@ READY_DIRECT = "READY_DIRECT"
 NOT_READY_NO_SNAPSHOT = "NOT_READY_NO_SNAPSHOT"
 NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE = "NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE"
 NOT_READY_AMBIGUOUS_TIMING = "NOT_READY_AMBIGUOUS_TIMING"
+NOT_READY_INCOMPLETE_STATE_KNOWLEDGE = "NOT_READY_INCOMPLETE_STATE_KNOWLEDGE"
 NOT_READY_AMBIGUOUS = "NOT_READY_AMBIGUOUS"
 NOT_READY_INCOMPLETE_MOVEMENTS = "NOT_READY_INCOMPLETE_MOVEMENTS"
 NOT_READY_LOCATION_AMBIGUITY = "NOT_READY_LOCATION_AMBIGUITY"
@@ -131,6 +141,8 @@ class CellState:
     cohorts: list[Cohort] = field(default_factory=list)
     age_days: float | None = None
     rows_considered: int = 0
+    rows_defining_state: int = 0
+    rows_known_before_decision: int = 0
     rows_excluded_not_known: int = 0
     rows_without_knowledge_time: int = 0
 
@@ -149,8 +161,10 @@ class CellState:
                              "source_known_at": None if c.source_known_at is None else c.source_known_at.isoformat(), "knowledge_basis": c.knowledge_basis}
                             for c in self.cohorts],
                 "in_transit_declared": sum(c.in_transit for c in self.cohorts) if self.cohorts else None,
-                "age_days": self.age_days, "rows_considered": self.rows_considered, "rows_excluded_not_known": self.rows_excluded_not_known,
-                "rows_without_knowledge_time": self.rows_without_knowledge_time}
+                "age_days": self.age_days, "rows_considered": self.rows_considered,
+                "state_knowledge": {"rows_defining_state": self.rows_defining_state, "rows_known_before_decision": self.rows_known_before_decision,
+                                    "rows_excluded_by_causal_cutoff": self.rows_excluded_not_known, "rows_without_knowledge_time": self.rows_without_knowledge_time},
+                "rows_excluded_not_known": self.rows_excluded_not_known, "rows_without_knowledge_time": self.rows_without_knowledge_time}
 
 
 def _text(value: Any) -> str:
@@ -212,57 +226,76 @@ def timed_rows(inventory: pd.DataFrame, *, decision_at: pd.Timestamp, default_ba
 
 
 def resolve_cell(rows: pd.DataFrame, *, sku: str, location: str, decision_at: pd.Timestamp) -> CellState:
-    """The latest usable state of one `(sku, location)` cell, from its timed rows."""
+    """The latest physical state of one `(sku, location)` cell at or before the decision, and whether it is
+    causally and completely known.
+
+    The physical state is selected first, independently of knowledge: the latest instant at or before T
+    among the cell's rows. Every row of that state must then be known before T (strict H1b rule); a state
+    only some of whose rows were knowable is NOT a partial opening balance, it is an opening balance ZAAD
+    cannot establish (NOT_READY_INCOMPLETE_STATE_KNOWLEDGE). Quantities of rows that were not knowable never
+    reach the Request; the evaluator only counts them to conclude that the state is not reconstructable."""
     cutoff = temporal.as_utc(decision_at)
     mine = rows[(rows["sku"].astype(str) == sku) & (rows["location_norm"] == location)]
-    no_knowledge = int((~mine["has_knowledge_time"]).sum()) if len(mine) else 0
-    excluded = int((mine["has_knowledge_time"] & ~mine["available"]).sum()) if len(mine) else 0
-    usable = mine[mine["available"]] if len(mine) else mine
+    relevant = mine[mine["sort_instant"] <= cutoff] if len(mine) else mine          # physical state at or before T; later state is not history
 
     def state(status: str, reason: str, **fields: Any) -> CellState:
-        return CellState(sku=sku, location=location, status=status, reason=reason, rows_considered=int(len(mine)),
-                         rows_excluded_not_known=excluded, rows_without_knowledge_time=no_knowledge, **fields)
+        return CellState(sku=sku, location=location, status=status, reason=reason, rows_considered=int(len(mine)), **fields)
 
-    if not len(usable):
-        if no_knowledge and not excluded:
-            return state(NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE,
-                         f"{no_knowledge} row(s) for this cell carry no source_known_at and no declared {KNOWN_RULE_KEY} covers them: "
-                         "when the count could be known is not established, so it is not causally available")
-        if no_knowledge:
-            return state(NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE,
-                         f"no row for this cell is known before the decision; {no_knowledge} row(s) carry no knowledge time at all")
-        return state(NOT_READY_NO_SNAPSHOT, "no inventory row for this cell is known before the decision" if len(mine) else "no inventory row for this cell")
-    latest_instant = usable["sort_instant"].max()
-    latest = usable[usable["sort_instant"] == latest_instant]
+    if not len(relevant):
+        return state(NOT_READY_NO_SNAPSHOT, "no inventory row for this cell describes a state at or before the decision" if len(mine) else "no inventory row for this cell")
+    latest_instant = relevant["sort_instant"].max()
+    latest = relevant[relevant["sort_instant"] == latest_instant]
+    n_state = int(len(latest))
+    n_known = int(latest["available"].sum())
+    n_no_time = int((~latest["has_knowledge_time"]).sum())
+    n_late = n_state - n_known - n_no_time
+    counts = {"rows_defining_state": n_state, "rows_known_before_decision": n_known, "rows_excluded_not_known": n_late, "rows_without_knowledge_time": n_no_time}
     if bool(latest["timing_ambiguous"].any()):
         return state(NOT_READY_AMBIGUOUS_TIMING, "the latest count is date-only with no declared basis (START_OF_DAY / END_OF_DAY); the instant it describes is unknown",
-                     basis="AMBIGUOUS", age_days=float((cutoff - latest_instant).total_seconds() / 86400.), quantity=None)
+                     basis="AMBIGUOUS", age_days=float((cutoff - latest_instant).total_seconds() / 86400.), **counts)
     effective = latest_instant
     basis = str(latest["basis_used"].iloc[0])
+    common_blocked = {"effective_at": effective.to_pydatetime(), "basis": basis, **counts}
+    if n_no_time:
+        return state(NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE,
+                     f"{n_no_time} of the {n_state} row(s) defining the opening count carry no source_known_at and no declared {KNOWN_RULE_KEY} covers them: "
+                     "when the count could be known is not established, so it is not causally available", **common_blocked)
+    if n_known == 0:
+        return state(NOT_READY_NO_SNAPSHOT, f"no row of the latest physical state ({n_state} row(s)) is known before the decision", **common_blocked)
+    if n_known < n_state:
+        return state(NOT_READY_INCOMPLETE_STATE_KNOWLEDGE,
+                     f"the opening count has {n_state} lot/cohort rows, but only {n_known} were knowable at the decision ({n_late} known at or after it), "
+                     "so ZAAD cannot establish the full opening balance; a knowable subset is not a partial balance", **common_blocked)
+    # explicit lot identities first: within one physical state a non-empty lot_id names exactly one row
+    lots = latest[latest["lot_key"] != ""]
+    repeated = lots.groupby("lot_key").size()
+    repeated = repeated[repeated > 1]
+    if len(repeated):
+        lot = str(repeated.index[0])
+        return state(NOT_READY_AMBIGUOUS,
+                     f"lot {lot!r} appears {int(repeated.iloc[0])} times in the same cell and physical state; a lot identity names one lot state and no "
+                     "revision or duplicate contract says which row is authoritative (quantity, expiry or any other attribute cannot decide it)", **common_blocked)
     cohorts: list[Cohort] = []
     expiry_keys = latest["expiry_key"].astype(object).where(latest["expiry_key"].notna(), None)
     for (expiry_key, lot_key), group in latest.groupby([expiry_keys, latest["lot_key"]], dropna=False):
-        if len(group) > 1:
+        if len(group) > 1:                                                   # only rows without a lot identity can reach here
             quantities = sorted(set(float(q) for q in group["on_hand"]))
-            identity = f"expiry {expiry_key}" + (f", lot {lot_key!r}" if lot_key else ", no lot identity")
             return state(NOT_READY_AMBIGUOUS,
-                         f"{len(group)} rows for the same cell, instant and cohort ({identity}) with quantities {quantities}: "
-                         + ("one record repeated or two real lots cannot be told apart without a lot_id" if not lot_key else "a repeated lot_id has no duplicate contract")
-                         + "; no precedence rule chooses among them", effective_at=effective.to_pydatetime(), basis=basis)
+                         f"{len(group)} rows for the same cell, instant and cohort (expiry {expiry_key}, no lot identity) with quantities {quantities}: "
+                         "one record repeated or two real lots cannot be told apart without a lot_id; no precedence rule chooses among them", **common_blocked)
         row = group.iloc[0]
         cohorts.append(Cohort(expiry_date=None if expiry_key is None or pd.isna(expiry_key) else expiry_key, lot_id=lot_key or None, quantity=float(row["on_hand"]),
                               in_transit=float(row["in_transit"]) if "in_transit" in group.columns and not pd.isna(row["in_transit"]) else 0., rows=1,
                               source_known_at=pd.Timestamp(row["known_at_used"]).to_pydatetime(), knowledge_basis=str(row["knowledge_basis"])))
     if len(cohorts) > 1 and any(c.expiry_date is None and c.lot_id is None for c in cohorts):
-        return state(NOT_READY_AMBIGUOUS, "rows with and without a cohort identity (expiry date / lot) at the same instant: a cohort cannot be told from a total",
-                     effective_at=effective.to_pydatetime(), basis=basis)
+        return state(NOT_READY_AMBIGUOUS, "rows with and without a cohort identity (expiry date / lot) at the same instant: a cohort cannot be told from a total", **common_blocked)
     cohorts.sort(key=lambda c: (c.expiry_date is None, c.expiry_date or date.max, c.lot_id or ""))
     quantity = float(sum(c.quantity for c in cohorts))
     known = max(c.source_known_at for c in cohorts if c.source_known_at)
     knowledge = sorted({c.knowledge_basis for c in cohorts if c.knowledge_basis})
     age = float((cutoff - effective).total_seconds() / 86400.)
     common = {"effective_at": effective.to_pydatetime(), "source_known_at": known, "knowledge_basis": " | ".join(knowledge), "basis": basis,
-              "quantity": quantity, "cohorts": cohorts, "age_days": age}
+              "quantity": quantity, "cohorts": cohorts, "age_days": age, **counts}
     if effective == cutoff:
         return state(READY_DIRECT, "the count is the state at the decision origin" + (" (explicit zero)" if quantity == 0 else ""), **common)
     missing = [c for c in MOVEMENT_CLASSES_REQUIRED if c not in MOVEMENT_CLASSES_IN_CONTRACT]
@@ -302,7 +335,9 @@ def resolve(inventory: pd.DataFrame, *, decision_at: pd.Timestamp, skus: list[st
                 cells[f"{sku}|{site}"] = CellState(sku, site, NOT_READY_NO_SNAPSHOT, "no inventory rows uploaded")
                 continue
             mine = rows[rows["sku"].astype(str) == sku]
-            real = sorted(set(mine.loc[mine["available"], "location_norm"]) - {""}) if len(mine) else []
+            # the physical locations are those with state at or before T, whether or not that state was knowable:
+            # a location whose count was not known does not vanish from the network, it blocks it
+            real = sorted(set(mine.loc[mine["sort_instant"] <= cutoff, "location_norm"]) - {""}) if len(mine) else []
             if len(real) <= 1:
                 location = real[0] if real else ""
                 state = resolve_cell(rows, sku=sku, location=location, decision_at=cutoff)
@@ -319,14 +354,18 @@ def resolve(inventory: pd.DataFrame, *, decision_at: pd.Timestamp, skus: list[st
                                        source_known_at=max(p.source_known_at for p in parts if p.source_known_at),
                                        knowledge_basis=" | ".join(sorted({p.knowledge_basis for p in parts if p.knowledge_basis})), basis=parts[0].basis,
                                        quantity=float(sum(p.quantity or 0. for p in parts)), cohorts=merged, age_days=parts[0].age_days,
-                                       rows_considered=sum(p.rows_considered for p in parts), rows_excluded_not_known=sum(p.rows_excluded_not_known for p in parts),
+                                       rows_considered=sum(p.rows_considered for p in parts), rows_defining_state=sum(p.rows_defining_state for p in parts),
+                                       rows_known_before_decision=sum(p.rows_known_before_decision for p in parts),
+                                       rows_excluded_not_known=sum(p.rows_excluded_not_known for p in parts),
                                        rows_without_knowledge_time=sum(p.rows_without_knowledge_time for p in parts))
                     cells[f"{sku}|{site}"] = summed
                     stock += _stock_entries(summed, site)
                 else:
                     worst = next(p for p in parts if not p.ready)
                     cells[f"{sku}|{site}"] = CellState(sku, site, worst.status, f"location {worst.location!r}: {worst.reason}",
-                                                       rows_considered=sum(p.rows_considered for p in parts), rows_excluded_not_known=sum(p.rows_excluded_not_known for p in parts),
+                                                       rows_considered=sum(p.rows_considered for p in parts), rows_defining_state=sum(p.rows_defining_state for p in parts),
+                                                       rows_known_before_decision=sum(p.rows_known_before_decision for p in parts),
+                                                       rows_excluded_not_known=sum(p.rows_excluded_not_known for p in parts),
                                                        rows_without_knowledge_time=sum(p.rows_without_knowledge_time for p in parts))
             else:
                 cells[f"{sku}|{site}"] = CellState(sku, site, NOT_READY_LOCATION_AMBIGUITY,
@@ -340,7 +379,8 @@ def resolve(inventory: pd.DataFrame, *, decision_at: pd.Timestamp, skus: list[st
               "blocked_cells": sum(1 for s in statuses if s not in READY), "zero_cells": sum(1 for c in cells.values() if c.ready and c.quantity == 0),
               "latest_snapshot_age_days": max((c.age_days for c in cells.values() if c.age_days is not None), default=None),
               "rows_uploaded": int(len(inventory)),
-              "knowledge_rule": "source_known_at < decision_at (strict); rows without a knowledge time are not available",
+              "knowledge_rule": "source_known_at < decision_at (strict); rows without a knowledge time are not available; "
+                                "a physical state is READY only if every row defining it is known before the decision",
               "source_known_rule_declared": known_rule,
               "movement_coverage": {"classes_in_contract": list(MOVEMENT_CLASSES_IN_CONTRACT), "classes_required": list(MOVEMENT_CLASSES_REQUIRED),
                                     "completeness_declared": False, "roll_forward_performed": False},

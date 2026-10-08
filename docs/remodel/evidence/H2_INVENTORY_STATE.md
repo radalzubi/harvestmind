@@ -19,6 +19,9 @@ to have". Nothing below is operator validation: every vault is the SYNTHETIC sam
 | late-known count | `source_known_at` 09-08 09:00 | used | excluded (`rows_excluded_not_known` = 1), `NOT_READY_NO_SNAPSHOT` |
 | no knowledge time | row without `source_known_at`, no declared rule | planned | `NOT_READY_KNOWLEDGE_TIME_UNAVAILABLE`; `imported_at` changes nothing |
 | boundary | `source_known_at` = T − 1 s / T / T + 1 s | all used | available / unavailable / unavailable (strict `<`) |
+| partial state knowledge | cohorts 60 (known 08:00) + 40 (known at T) of one snapshot | 60 planned | `NOT_READY_INCOMPLETE_STATE_KNOWLEDGE`: 2 rows define the state, 1 knowable; no request from the subset |
+| late-known location | DC known, BRANCH known at T, same snapshot | planned as single-site DC | `NOT_READY_LOCATION_AMBIGUITY` (BRANCH does not vanish); under SUM, BRANCH blocks |
+| repeated `lot_id` | L1 twice: same / different expiry, quantity, knowledge time, null expiry | n/a | `NOT_READY_AMBIGUOUS` in every case and either order; L1 + L2 with equal expiry and quantity are two lots |
 | `in_transit` 999 | on the snapshot | ignored silently | reported as `in_transit_declared`; stock, pipeline and fingerprint unchanged |
 
 ## The contract (`zaad/full/inventory_state.py`, migration 030)
@@ -34,9 +37,17 @@ to have". Nothing below is operator validation: every vault is the SYNTHETIC sam
   (START_OF_DAY / END_OF_DAY / snapshot_at) never stands in for knowledge.
 - Cohorts carry their own `source_known_at`; each `Stock.known_at` is its cohort's. A declared SUM of
   locations is known when all components are (max). Every fact-derived Stock satisfies `known_at < as_of`.
+- State completeness: the physical state is selected first (the cell's latest instant at or before T,
+  knowledge aside); it is READY only if every row defining it is known before T. A knowable subset is
+  `NOT_READY_INCOMPLETE_STATE_KNOWLEDGE` and its quantities never reach the Request; the report's
+  `state_knowledge` gives rows defining the state / known before the decision / excluded by the causal
+  cutoff / without a knowledge time. State strictly after T is not history and creates no requirement.
+- Single-site location discovery uses physical relevance (state at or before T), not causal availability,
+  so a location whose count was not knowable blocks instead of disappearing.
 - Lots: rows for one `(sku, location, effective_at, expiry_date)` without a `lot_id` block as ambiguous
   whatever their quantities (never chosen, deduplicated, summed, or told apart by rowid / upload metadata);
-  optional `lot_id` (migration 030) distinguishes real lots; a repeated `lot_id` at one state blocks.
+  optional `lot_id` (migration 030) is an identity: within one cell and physical state it names exactly one
+  row, validated before cohorts are built; a repeated `lot_id` blocks whatever else differs.
 - READY_DIRECT only when `effective_at == decision_at` (PERIOD_BOUNDARY, H1b). An earlier count is
   NOT_READY_INCOMPLETE_MOVEMENTS: the data contract has no adjustments / returns / shrink / cycle-count
   feed and no completeness declaration, so roll-forward is not performed (`roll_forward_performed: false`).

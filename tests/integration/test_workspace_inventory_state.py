@@ -121,7 +121,7 @@ def test_c_repeated_rows_for_one_cohort_block_whatever_their_quantities_or_order
     with _transaction(vault) as conn:
         # a repeated lot_id has no duplicate contract either, equal quantities or not
         _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD, None, None, None, "L1")] * 2)
-        assert "repeated lot_id" in _blocks(conn, "NOT_READY_AMBIGUOUS")
+        assert "lot 'L1' appears 2 times" in _blocks(conn, "NOT_READY_AMBIGUOUS")
 
 
 def test_c_distinct_lot_ids_are_two_real_lots(vault):
@@ -202,7 +202,7 @@ def test_i_a_count_known_after_the_decision_does_not_exist_for_it(vault):
     with _transaction(vault) as conn:
         _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD, None, datetime(2024, 9, 3, 9, 0))])
         message = _blocks(conn, "NOT_READY_NO_SNAPSHOT")
-        assert "known before the decision" in message
+        assert "no row of the latest physical state" in message
     with _transaction(vault) as conn:
         _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD, None, datetime(2024, 9, 1, 23, 30))])
         req, build = _build(conn)
@@ -331,7 +331,7 @@ def test_p_the_knowledge_boundary_is_strict(vault):
     with _transaction(vault) as conn:                                       # B: known exactly at T: unavailable
         _rows(conn, [physical + (datetime(2024, 9, 2, 0, 0, 0),)])
         message = _blocks(conn, "NOT_READY_NO_SNAPSHOT")
-        assert "known before the decision" in message
+        assert "no row of the latest physical state" in message
     with _transaction(vault) as conn:                                       # C: known one second after T: unavailable
         _rows(conn, [physical + (datetime(2024, 9, 2, 0, 0, 1),)])
         _blocks(conn, "NOT_READY_NO_SNAPSHOT")
@@ -372,13 +372,87 @@ def test_q_each_cohort_carries_its_own_knowledge_time(vault):
         cell = build["inventory_state"]["cells"][f"{SKU}|main"]
         assert [c["source_known_at"] for c in cell["cohorts"]] == ["2024-09-01T08:00:00", "2024-09-01T20:00:00"] and cell["source_known_at"] == "2024-09-01T20:00:00"
     with _transaction(vault) as conn:
-        # the later cohort is known only at T: it alone is excluded, the earlier one stands on its own time
+        # the sibling cohort of the same physical state is known only at T: the opening balance cannot be established,
+        # and no request is built from the 60-unit knowable subset
         _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 60., 0, EOD, T + timedelta(days=13), early), (T - timedelta(days=1), SKU, "MAIN", 40., 0, EOD, T + timedelta(days=34), datetime(2024, 9, 2, 0, 0))])
-        req, build = _build(conn)
-        assert _stock(req) == {f"open_{SKU}#{(T + timedelta(days=13)).isoformat()}": 60.} and build["inventory_state"]["cells"][f"{SKU}|main"]["rows_excluded_not_known"] == 1
+        message = _blocks(conn, "NOT_READY_INCOMPLETE_STATE_KNOWLEDGE")
+        assert "2 lot/cohort rows" in message and "only 1 were knowable" in message
     with _transaction(vault) as conn:
         # a declared SUM of locations is known only when all of its components are: the aggregate takes the latest time
         _rows(conn, [(T - timedelta(days=1), SKU, "DC", 100., 0, EOD, None, early), (T - timedelta(days=1), SKU, "BRANCH", 40., 0, EOD, None, late)],
               economics=[("inventory_single_site_aggregation", "SUM")])
         req, _ = _build(conn)
         assert [(s.quantity, s.known_at) for s in req.stock] == [(140., late.replace(tzinfo=timezone.utc))]
+
+
+# ── R: a physical state is READY only when every row defining it was knowable ──
+def test_r_a_knowable_subset_of_a_snapshot_is_not_an_opening_balance(vault):
+    known, late = datetime(2024, 9, 1, 8, 0), datetime(2024, 9, 2, 0, 0)
+    rows = [(T - timedelta(days=1), SKU, "MAIN", 60., 0, EOD, T + timedelta(days=13), known), (T - timedelta(days=1), SKU, "MAIN", 40., 0, EOD, T + timedelta(days=34), late),
+            (T - timedelta(days=1), SKU, "MAIN", 10., 0, EOD, T + timedelta(days=50), late)]
+    for order in (rows, rows[::-1]):
+        with _transaction(vault) as conn:
+            _rows(conn, order)
+            _blocks(conn, "NOT_READY_INCOMPLETE_STATE_KNOWLEDGE")
+    # the report counts the rows without exposing the unknowable quantities, and no Stock row is produced
+    out = inventory_state.resolve(pd.DataFrame([{"snapshot_date": r[0], "sku": r[1], "location_id": "DC", "on_hand": r[3], "in_transit": 0., "snapshot_basis": EOD,
+                                                 "expiry_date": r[6], "source_known_at": r[7]} for r in rows]),
+                                  decision_at=pd.Timestamp(T), skus=[SKU], locations=["DC"])
+    cell = out["cells"][f"{SKU}|DC"]
+    assert cell.status == "NOT_READY_INCOMPLETE_STATE_KNOWLEDGE" and out["stock"] == [] and cell.quantity is None and cell.cohorts == []
+    assert cell.as_dict()["state_knowledge"] == {"rows_defining_state": 3, "rows_known_before_decision": 1, "rows_excluded_by_causal_cutoff": 2, "rows_without_knowledge_time": 0}
+    assert "40" not in cell.reason and "10" not in cell.reason
+    # a state entirely unknown at T, with a fully known earlier state, is still not the state at T
+    with _transaction(vault) as conn:
+        _rows(conn, [(T - timedelta(days=2), SKU, "MAIN", 100., 0, EOD, None, datetime(2024, 8, 31, 20, 0)), (T - timedelta(days=1), SKU, "MAIN", 90., 0, EOD, None, late)])
+        _blocks(conn, "NOT_READY_NO_SNAPSHOT")
+    # state strictly after T is not history: it creates no requirement
+    with _transaction(vault) as conn:
+        _rows(conn, [(T - timedelta(days=1), SKU, "MAIN", 100., 0, EOD, None, known), (T + timedelta(days=6), SKU, "MAIN", 55., 0, EOD, None, None)], declare_known=False)
+        req, build = _build(conn)
+        assert _stock(req) == {f"open_{SKU}": 100.} and build["inventory_state"]["cells"][f"{SKU}|main"]["state_knowledge"]["rows_defining_state"] == 1
+
+
+def test_r_a_location_whose_count_was_not_knowable_does_not_vanish_from_a_single_site_build(vault):
+    known, late = datetime(2024, 9, 1, 8, 0), datetime(2024, 9, 2, 0, 0)
+    rows = [(T - timedelta(days=1), SKU, "DC", 100., 0, EOD, None, known), (T - timedelta(days=1), SKU, "BRANCH", 40., 0, EOD, None, late)]
+    for order in (rows, rows[::-1]):
+        with _transaction(vault) as conn:
+            _rows(conn, order)
+            message = _blocks(conn, "NOT_READY_LOCATION_AMBIGUITY")
+            assert "BRANCH" in message and "DC" in message
+        with _transaction(vault) as conn:
+            _rows(conn, order, economics=[("inventory_single_site_aggregation", "SUM")])
+            message = _blocks(conn, "NOT_READY_NO_SNAPSHOT")
+            assert "BRANCH" in message
+    with _transaction(vault) as conn:
+        # a location whose only state is strictly after T is not part of the historical network
+        _rows(conn, [rows[0], (T + timedelta(days=6), SKU, "BRANCH", 40., 0, EOD, None, late)])
+        assert _stock(_build(conn)[0]) == {f"open_{SKU}": 100.}
+
+
+# ── S: lot_id is an identity ──
+def test_s_a_repeated_lot_id_blocks_whatever_else_differs(vault):
+    day, exp1, exp2 = T - timedelta(days=1), T + timedelta(days=20), T + timedelta(days=41)
+    cases = {"same expiry, same quantity": [(day, SKU, "MAIN", 100., 0, EOD, exp1, None, None, "L1"), (day, SKU, "MAIN", 100., 0, EOD, exp1, None, None, "L1")],
+             "different expiry": [(day, SKU, "MAIN", 100., 0, EOD, exp1, None, None, "L1"), (day, SKU, "MAIN", 100., 0, EOD, exp2, None, None, "L1")],
+             "different quantity": [(day, SKU, "MAIN", 100., 0, EOD, exp1, None, None, "L1"), (day, SKU, "MAIN", 70., 0, EOD, exp1, None, None, "L1")],
+             "one expiry null": [(day, SKU, "MAIN", 100., 0, EOD, None, None, None, "L1"), (day, SKU, "MAIN", 100., 0, EOD, exp1, None, None, "L1")],
+             "different knowledge time": [(day, SKU, "MAIN", 100., 0, EOD, exp1, datetime(2024, 9, 1, 8, 0), None, "L1"), (day, SKU, "MAIN", 100., 0, EOD, exp1, datetime(2024, 9, 1, 9, 0), None, "L1")]}
+    for label, pair in cases.items():
+        for order in (pair, pair[::-1]):
+            with _transaction(vault) as conn:
+                _rows(conn, order)
+                message = _blocks(conn, "NOT_READY_AMBIGUOUS")
+                assert "lot 'L1' appears 2 times" in message and "no revision or duplicate contract" in message, label
+    pair = [(day, SKU, "MAIN", 100., 0, EOD, exp1, None, None, "L1"), (day, SKU, "MAIN", 100., 0, EOD, exp1, None, None, "L2")]
+    expected = {f"open_{SKU}#{exp1.isoformat()}~L1": 100., f"open_{SKU}#{exp1.isoformat()}~L2": 100.}
+    hashes = []
+    for order in (pair, pair[::-1]):
+        with _transaction(vault) as conn:
+            # different lot ids with the same expiry and quantity are two real lots, in either physical order
+            _rows(conn, order)
+            req, _ = _build(conn)
+            assert _stock(req) == expected
+            hashes.append(causal.fingerprint(req).hash)
+    assert hashes[0] == hashes[1]
