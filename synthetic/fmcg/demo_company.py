@@ -356,7 +356,12 @@ def build_demo_company(as_of: date | None = None, seed: int = 7) -> DemoCompany:
                              "partial_fulfillment_allowed": True, "backorder_allowed": True, "max_backorder_periods": 2,
                              "substitution_allowed": False, "late_semantics": "ACCEPT_LATE", "priority_provenance": "OPERATOR_DECLARED"})
 
-    c.economics = [{"key": "currency", "value": CURRENCY, "provenance": "OPERATOR_DECLARED"},
+    # H2: the weekly count is written on the Sunday that closes the week (END_OF_DAY), and the three sites are
+    # read together by the single-site adapter only under this explicit SUM declaration (SYNTHETIC: a property
+    # of this generator, not of any operator).
+    c.economics = [{"key": "inventory_snapshot_basis", "value": "END_OF_DAY", "provenance": "SYNTHETIC"},
+                   {"key": "inventory_single_site_aggregation", "value": "SUM", "provenance": "SYNTHETIC"},
+                   {"key": "currency", "value": CURRENCY, "provenance": "OPERATOR_DECLARED"},
                    {"key": "cost_of_capital_annual", "value": "0.11", "provenance": "OPERATOR_DECLARED"},
                    {"key": "storage_handling_annual", "value": "0.06", "provenance": "OPERATOR_DECLARED"}]
     c.scenarios = {

@@ -15,7 +15,7 @@ from dataclasses import replace
 import pytest
 
 import infrastructure.operator_registry as orm
-from synthetic.fmcg.distributor_sim import ARCHETYPES, ArchetypeSpec, build_history
+from synthetic.fmcg.distributor_sim import ARCHETYPES, ArchetypeSpec, build_history, closing_inventory_rows
 
 
 @pytest.fixture(scope="module")
@@ -40,7 +40,7 @@ def vault(tmp_path_factory):
     orders = hist.order_lines.merge(hist.customer_orders[["order_id", "customer_id", "order_date"]], on="order_id")
     pos = hist.purchase_orders[["po_id", "po_date", "supplier_id", "sku", "qty_ordered", "unit_cost"]]
     rec = hist.receipts[["po_id", "receipt_date", "sku", "qty_received"]]
-    inv = hist.inventory_snapshots.rename(columns={"week_start": "snapshot_date"})[["snapshot_date", "sku", "on_hand", "in_transit"]]
+    inv = closing_inventory_rows(hist.inventory_snapshots)
     for table, df in (("stg_fmcg_skus", skus), ("stg_fmcg_orders", orders[["order_id", "customer_id", "order_date", "sku", "qty_ordered"]]),
                       ("stg_fmcg_purchase_orders", pos), ("stg_fmcg_receipts", rec), ("stg_fmcg_inventory", inv)):
         r = cl.post(f"/intake/upload/{table}", headers=h, files={"file": (f"{table}.csv", io.BytesIO(df.to_csv(index=False).encode()), "text/csv")})

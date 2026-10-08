@@ -34,7 +34,7 @@ import pandas as pd
 from zaad.full.contracts import Request
 from zaad.sourcing.workspace import sourcing_block
 from zaad.sectors.workspace import lot_expiry_periods, sku_physics_rows
-from zaad.full import temporal
+from zaad.full import inventory_state, temporal
 from zaad.full.uncertainty import MIN_SUPPLY_RECORDS
 
 LOCATION = "main"
@@ -87,6 +87,12 @@ def _economics(conn: Any) -> tuple[dict[str, Any], dict[str, str]]:
         values[key] = number if number is not None else str(row.value)
         prov[key] = str(row.provenance or "operator")
     return values, prov
+
+
+def _aware(value: Any) -> datetime:
+    """A resolved instant as the timezone-aware (UTC) datetime the Request carries."""
+    stamp = pd.Timestamp(value)
+    return (stamp.tz_convert("UTC") if stamp.tzinfo is not None else stamp.tz_localize("UTC")).to_pydatetime()
 
 
 def canonical_rows(rows: list[dict[str, Any]], *keys: str) -> list[dict[str, Any]]:
@@ -174,7 +180,7 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                   max_solve_seconds: float = 15., min_history_weeks: int = MIN_HISTORY_WEEKS,
                   shipment_observations_per_source: int = 60, skus: list[str] | None = None,
                   sector_mode: str | None = None, sourcing: bool = False, recourse: bool = False, atp: bool = False, commitments: bool = False,
-                  decision_at: datetime | None = None) -> tuple[Request, dict[str, Any]]:
+                  decision_at: datetime | None = None, inventory_scope: str = "single_site") -> tuple[Request, dict[str, Any]]:
     """The frozen contract built from the operator's vault, plus the build report (rows read, compact
     dimensions, fits with sample sizes, provenance, warnings, leakage guard, temporal basis). Raises
     WorkspaceError with an operator-facing message when the workspace cannot be planned yet.
@@ -528,30 +534,42 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                            "financing_fee_fraction": 0., "fx_rate_to_currency": 1., "currency": currency, "fx_basis": "same_currency", "letter_of_credit_fraction": 0.})
         resource_rows.append({**known, "id": f"cap_{sid}", "capacity_by_period": [capacity[sid][0]] * horizon, "failure_domains": [sid]})
 
-    # ── opening stock (latest snapshot at or before the origin) and open orders ──
-    if len(inventory):
-        snap = inventory[inventory["snapshot_date"] < origin]
-        if len(snap):
-            latest_day = snap["snapshot_date"].max()
-            if (origin - latest_day).days > 14:
-                warnings.append(f"latest inventory snapshot is {(origin - latest_day).days} days before the plan date")
-            latest = snap[snap["snapshot_date"] == latest_day].drop_duplicates("sku", keep="last")
-            latest = latest.assign(_sku_key=latest["sku"].astype(str)).sort_values("_sku_key", kind="stable").drop(columns="_sku_key")
-            for row in latest.itertuples():
-                sku = str(row.sku)
-                if sku in planned and float(row.on_hand or 0.) > 0:
-                    shelf = next(r["shelf_life"] for r in sku_rows if r["id"] == sku)
-                    # sector physics: a lot with an expiry date carries its own remaining life (migration 017)
-                    expires_in, lot_prov = lot_expiry_periods(getattr(row, "expiry_date", None), origin, period_days, shelf)
-                    stock_rows.append({**known, "id": f"open_{sku}", "sku": sku, "location": LOCATION, "quantity": float(row.on_hand), "reserved": 0.,
-                                       "damaged": 0., "quarantined": 0., "expires_in": expires_in, "age_periods": 0})
-                    if lot_prov == "CUSTOMER_PROVIDED":
-                        provenance["stock.expiry"] = "CUSTOMER_PROVIDED"
-            provenance["stock.age"] = "NOT_AVAILABLE"
-        else:
-            warnings.append("no inventory snapshot before the plan date: opening stock is zero")
+    # ── opening stock: the proven physical state at the decision origin (H2) ──
+    # One resolver (zaad/full/inventory_state.py) serves this adapter and the network one. Every planned
+    # (sku, location) cell is resolved on its own; a cell whose state at the origin is not causally available
+    # and reconstructable blocks the request rather than planning from zero, from a stale count or from one
+    # of several locations. `inventory_scope="network"` leaves the cells to the network adapter.
+    basis_declared = economics.get(inventory_state.BASIS_KEY)
+    aggregation_declared = economics.get(inventory_state.AGGREGATION_KEY)
+    if inventory_scope == "network":
+        inventory_report: dict[str, Any] = {"status": "DEFERRED_TO_NETWORK", "decision_at": cutoff.to_pydatetime().replace(tzinfo=timezone.utc).isoformat(),
+                                            "note": "per-location cells are resolved by the network workspace", "cells": {}}
     else:
-        warnings.append("no inventory snapshots uploaded: opening stock is zero")
+        resolved = inventory_state.resolve(inventory, decision_at=cutoff, skus=sorted(planned), locations=None, single_location=LOCATION,
+                                           default_basis=str(basis_declared) if basis_declared else None,
+                                           aggregation=str(aggregation_declared) if aggregation_declared else None)
+        inventory_report = resolved["report"]
+        blocked = [(key, cell) for key, cell in resolved["cells"].items() if not cell.ready]
+        if blocked:
+            key, cell = blocked[0]
+            raise WorkspaceError(f"opening inventory is not ready for {len(blocked)} planned cell(s): {cell.sku} at {cell.location} is "
+                                 f"{cell.status} ({cell.reason})" + (f"; also {', '.join(k for k, _ in blocked[1:4])}" if len(blocked) > 1 else ""))
+        shelf_of = {r["id"]: r["shelf_life"] for r in sku_rows}
+        for entry in resolved["stock"]:
+            sku = entry["sku"]
+            cell = resolved["cells"][f"{sku}|{LOCATION}"]
+            # sector physics: a lot with an expiry date carries its own remaining life (migration 017)
+            expires_in, lot_prov = lot_expiry_periods(entry["expiry_date"], origin, period_days, shelf_of[sku])
+            stock_rows.append({"known_at": _aware(cell.source_known_at) if cell.source_known_at else known_at, "id": f"open_{sku}{entry['cohort_suffix']}",
+                               "sku": sku, "location": LOCATION, "quantity": float(entry["quantity"]), "reserved": 0.,
+                               "damaged": 0., "quarantined": 0., "expires_in": expires_in, "age_periods": 0})
+            if lot_prov == "CUSTOMER_PROVIDED":
+                provenance["stock.expiry"] = "CUSTOMER_PROVIDED"
+        if resolved["cells"]:
+            provenance["stock.age"] = "NOT_AVAILABLE"
+        age = inventory_report.get("latest_snapshot_age_days")
+        if age is not None and age > 14:        # metadata only (H2): age is not a readiness criterion
+            inventory_report["age_note"] = f"the opening state is {age:.1f} days old; it is READY because it is the proven state at the origin, not because it is recent"
     pipeline_rows, shipment_rows = [], []
     excluded_future = 0
     if len(pos):
@@ -707,6 +725,8 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
                           "receipts_at_or_after_origin_excluded": receipts_excluded,
                           "fits_use_closed_orders_before_origin_only": True},
         # the temporal basis of this request (H1b): what the decision rested on
+        # the opening inventory state this request rests on (H2): one entry per planned cell
+        "inventory_state": inventory_report,
         "temporal": {"decision_at": cutoff.to_pydatetime().replace(tzinfo=timezone.utc).isoformat(), "period_origin": str(origin.date()),
                      "decision_basis": "explicit" if decision_at is not None else "start_of_planning_period",
                      "supported_mode": "PERIOD_BOUNDARY",        # decision_at == period_origin == Request.as_of; nothing else is built

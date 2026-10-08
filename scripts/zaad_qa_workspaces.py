@@ -75,6 +75,15 @@ def _weeks(start: date, count: int):
     return [start + timedelta(days=7 * i) for i in range(count)]
 
 
+def _declare_inventory_semantics(conn) -> None:
+    """H2: the QA count is the state closing the day before `today` (END_OF_DAY), and the three sites are
+    read together by the single-site adapter only under this explicit SUM declaration (QA fixture, not an
+    operator's data)."""
+    for key, value in (("inventory_snapshot_basis", "END_OF_DAY"), ("inventory_single_site_aggregation", "SUM")):
+        conn.execute("DELETE FROM stg_fmcg_economics WHERE key = ?", [key])
+        conn.execute("INSERT INTO stg_fmcg_economics (key, value, provenance) VALUES (?, ?, 'QA_FIXTURE')", [key, value])
+
+
 def build_corridor(conn, seed: int = 11, as_of: date | None = None, operator: str = "QA_OPERATOR") -> dict:
     """A multi-corridor importer. Small enough to plan, rich enough to exercise every surface."""
     rng = random.Random(seed)
@@ -250,10 +259,11 @@ def build_corridor(conn, seed: int = 11, as_of: date | None = None, operator: st
         for share, (location_id, _kind) in zip((0.6, 0.25, 0.15), LOCATIONS):
             expiry = (today + timedelta(days=rng.randint(4, 120))) if perishable.get(product["sku"]) else None
             conn.execute(
-                "INSERT INTO stg_fmcg_inventory (snapshot_date, sku, location_id, on_hand, in_transit, expiry_date) "
-                "VALUES (?, ?, ?, ?, 0, ?)",
+                "INSERT INTO stg_fmcg_inventory (snapshot_date, sku, location_id, on_hand, in_transit, expiry_date, snapshot_basis) "
+                "VALUES (?, ?, ?, ?, 0, ?, 'END_OF_DAY')",
                 [today - timedelta(days=1), product["sku"], location_id, int(total * share), expiry])
             stock_rows += 1
+    _declare_inventory_semantics(conn)
 
     return {"shape": "corridor", "seed": seed, "products": len(products), "suppliers": len(suppliers),
             "locations": len(LOCATIONS), "customer_order_rows": order_rows, "purchase_orders": po_rows,
@@ -298,11 +308,12 @@ def build_scale(conn, skus: int = 10_000, seed: int = 23, as_of: date | None = N
         FROM range(1, {skus + 1}) t(i)""")
 
     conn.execute(f"""
-        INSERT INTO stg_fmcg_inventory (snapshot_date, sku, location_id, on_hand, in_transit)
+        INSERT INTO stg_fmcg_inventory (snapshot_date, sku, location_id, on_hand, in_transit, snapshot_basis)
         SELECT DATE '{today - timedelta(days=1)}', 'QA-' || lpad(CAST(i AS VARCHAR), 6, '0'),
                list_value({", ".join(f"'{loc}'" for loc, _ in LOCATIONS)})[1 + (j % {len(LOCATIONS)})],
-               ((i * 37 + j * 91) % 5000), 0
+               ((i * 37 + j * 91) % 5000), 0, 'END_OF_DAY'
         FROM range(1, {skus + 1}) t(i), range(0, {len(LOCATIONS)}) u(j)""")
+    _declare_inventory_semantics(conn)
 
     # A year of weekly customer orders on every product: the largest table, and the one the
     # explorer has to page through without flinching.

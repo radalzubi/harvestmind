@@ -8,7 +8,7 @@ import pytest
 
 import infrastructure.operator_registry as orm
 from api.routers import jobs as jobs_router
-from synthetic.fmcg.distributor_sim import ARCHETYPES, ArchetypeSpec, build_history
+from synthetic.fmcg.distributor_sim import ARCHETYPES, ArchetypeSpec, build_history, closing_inventory_rows
 
 
 @pytest.fixture(scope="module")
@@ -43,7 +43,7 @@ def _load(cl, h, history):
     orders = ol[["order_id", "customer_id", "order_date", "sku", "qty_ordered", "qty_shipped"]]
     pos = history.purchase_orders[["po_id", "po_date", "supplier_id", "sku", "qty_ordered", "unit_cost"]]
     rec = history.receipts[["po_id", "receipt_date", "sku", "qty_received"]]
-    inv = history.inventory_snapshots.rename(columns={"week_start": "snapshot_date"})[["snapshot_date", "sku", "on_hand", "in_transit"]]
+    inv = closing_inventory_rows(history.inventory_snapshots)
     inv = inv[inv["snapshot_date"] == inv["snapshot_date"].max()]
     for table, df in (("stg_fmcg_skus", skus), ("stg_fmcg_orders", orders), ("stg_fmcg_purchase_orders", pos),
                       ("stg_fmcg_receipts", rec), ("stg_fmcg_inventory", inv)):

@@ -674,7 +674,10 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
         "rule_conformance": {"changed_lines": len([c for c in methods.conformance if c["review"] < W and c["leg"] != "actual"]),
                              "rows": [c for c in methods.conformance if c["review"] < W and c["leg"] != "actual"][:50],
                              "note": "the reconstructed rule's projected orders scaled to the declared shared supplier capacity where the rule would order every product of a supplier in the same week; applied to the rule leg and to the declared incumbent the optimizer is compared against"},
-        "build": {"provenance": build.get("provenance"), "fits": build.get("fits"), "warnings": build.get("warnings"), "leakage_guard": build.get("leakage_guard")},
+        # H2: review 0 is the only request built from the vault; its opening cells are all READY (a NOT READY
+        # cell raises before the replay starts). Later reviews open on the settled state of the review before.
+        "build": {"provenance": build.get("provenance"), "fits": build.get("fits"), "warnings": build.get("warnings"), "leakage_guard": build.get("leakage_guard"),
+                  "inventory_state": build.get("inventory_state")},
         "performance": {"decision_points": W, "optimizer_solves": len(methods.zaad_log), "skus": len(chosen), "sources": len(initial.sources),
                         "solve_seconds_mean": round(statistics.fmean(solves), 2) if solves else None, "solve_seconds_max": round(max(solves), 2) if solves else None,
                         "total_seconds": round(elapsed, 1), "peak_rss_mb": round(max(rss0, rss1) / (1024 * 1024 if resource.getrusage(resource.RUSAGE_SELF).ru_maxrss > 1e7 else 1024), 1)},
@@ -1018,13 +1021,18 @@ def replay_confidence(result: dict, build: dict, initial: Request) -> dict:
     scores["demand_history"] = "high" if weeks >= 52 else "moderate" if weeks >= 26 else "low"
     if scores["demand_history"] != "high":
         reasons.append(f"{weeks} weeks of demand history before the first decision date")
-    stock_age = next((w for w in (build.get("warnings") or []) if "inventory snapshot" in w), None)
-    scores["opening_inventory"] = "low" if stock_age and ("no inventory" in stock_age) else "moderate" if stock_age else "high"
-    if stock_age:
-        reasons.append(stock_age)
-    if result.get("scope", {}).get("inventory_locations", 1) > 1:
-        scores["opening_inventory"] = "moderate" if scores["opening_inventory"] == "high" else scores["opening_inventory"]
-        reasons.append(f"stock counts exist for {result['scope']['inventory_locations']} locations; the replay, like the production purchase plan, plans the main location's stock")
+    # H2: a request is built only when every planned cell's opening state is READY (a proven state at the
+    # origin); the section records how it was established. Age is metadata, not a confidence criterion.
+    state = build.get("inventory_state") or {}
+    if state.get("status") == "READY":
+        scores["opening_inventory"] = "high"
+        if state.get("aggregation"):
+            reasons.append(f"stock counts of several locations are read as the single site under the declared {state['aggregation']} aggregation")
+        if state.get("age_note"):
+            reasons.append(state["age_note"])
+    else:
+        scores["opening_inventory"] = "low"
+        reasons.append(f"opening inventory state {state.get('status') or 'UNKNOWN'}: the first review's request carries no proven opening state")
     econ_assumed = [k for k, v in prov.items() if v in ("CONFIGURED_ASSUMPTION", "NOT_AVAILABLE") and any(x in k for x in ("holding", "cost_of_capital", "terminal", "margin", "price"))]
     scores["economics"] = "high" if not econ_assumed else "moderate"
     if econ_assumed:
