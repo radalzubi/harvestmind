@@ -257,6 +257,25 @@ def legacy_date_only_receipt_availability(fact: Mapping[str, Any], decision_at: 
 
 legacy_date_only_receipt_availability.label = LEGACY_DATE_ONLY     # type: ignore[attr-defined]
 
+CANONICAL = "CANONICAL: source_known_at < decision_at; date-only fallback (known from the start of the event date) for rows without one"
+
+
+def canonical_receipt_availability(fact: Mapping[str, Any], decision_at: datetime) -> bool:
+    """The H1b rule for a receipt row: the fact is available at the decision when the operator could have
+    known it before — `source_known_at < decision_at` when the row carries a knowledge time, else the
+    date-only fallback (known from the start of `receipt_date`). Import time plays no part."""
+    cutoff = decision_at.astimezone(timezone.utc).replace(tzinfo=None)
+    known = fact.get("source_known_at")
+    if known is None or (isinstance(known, float) and known != known):
+        when = fact["receipt_date"]
+        known = datetime(when.year, when.month, when.day)
+    elif getattr(known, "tzinfo", None) is not None:
+        known = known.astimezone(timezone.utc).replace(tzinfo=None)
+    return known < cutoff
+
+
+canonical_receipt_availability.label = CANONICAL     # type: ignore[attr-defined]
+
 
 # ── causal perturbation harness ──────────────────────────────────────────────
 Control = Literal["negative", "positive"]
@@ -401,11 +420,12 @@ def receipt_perturbations(decision_at: datetime, *, is_available_at: Availabilit
     day = decision_at.astimezone(timezone.utc).date()
     label, name = getattr(is_available_at, "label", None), getattr(is_available_at, "__name__", None)
     rule: str = label if isinstance(label, str) and label else name if isinstance(name, str) and name else "unnamed availability rule"
-    columns = ("rowid", "po_id", "receipt_date", "sku", "qty_received", "po_date")
-
     def facts(conn: Any) -> list[dict]:
-        rows = conn.execute("SELECT r.rowid, r.po_id, r.receipt_date, r.sku, r.qty_received, p.po_date FROM stg_fmcg_receipts r "
-                            "JOIN stg_fmcg_purchase_orders p ON p.po_id = r.po_id WHERE p.po_date < ?", [day]).fetchall()
+        present = {row[1] for row in conn.execute("PRAGMA table_info('stg_fmcg_receipts')").fetchall()}
+        extra = [c for c in ("event_at", "source_known_at") if c in present]      # the H1b columns, when the vault has them
+        columns = ("rowid", "po_id", "receipt_date", "sku", "qty_received", "po_date", *extra)
+        select = ", ".join(["r.rowid", "r.po_id", "r.receipt_date", "r.sku", "r.qty_received", "p.po_date", *(f"r.{c}" for c in extra)])
+        rows = conn.execute(f"SELECT {select} FROM stg_fmcg_receipts r JOIN stg_fmcg_purchase_orders p ON p.po_id = r.po_id WHERE p.po_date < ?", [day]).fetchall()  # nosec B608 - identifiers are this module's literals
         return [dict(zip(columns, row)) for row in rows]
 
     def unavailable(conn: Any) -> list[int]:

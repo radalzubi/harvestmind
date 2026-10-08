@@ -76,18 +76,20 @@ STAGING_TABLES: dict[str, dict[str, Any]] = {
     # ── FMCG (eaches; see db/migrations/013_fmcg_staging.sql) ──────────────
     "stg_fmcg_skus": {"required_cols": {"sku", "unit_cost"}, "date_cols": [],
                       "description": "FMCG SKU master with pack structure"},
+    # `timestamp_cols` (migration 029): optional exact instants — event_at (when it happened) and
+    # source_known_at (when the operator could know it). Parsed as UTC timestamps, never truncated to dates.
     "stg_fmcg_orders": {"required_cols": {"sku", "qty_ordered", "order_date"},
-                        "date_cols": ["order_date", "requested_delivery_date"],
+                        "date_cols": ["order_date", "requested_delivery_date"], "timestamp_cols": ["source_known_at"],
                         "description": "FMCG customer order lines"},
     "stg_fmcg_purchase_orders": {"required_cols": {"po_id", "sku", "qty_ordered", "po_date"},
-                                 "date_cols": ["po_date", "expected_delivery_date"],
+                                 "date_cols": ["po_date", "expected_delivery_date"], "timestamp_cols": ["event_at", "source_known_at"],
                                  "description": "FMCG purchase orders"},
     "stg_fmcg_receipts": {"required_cols": {"po_id", "qty_received", "receipt_date"},
-                          "date_cols": ["receipt_date"], "description": "FMCG supplier receipts"},
+                          "date_cols": ["receipt_date"], "timestamp_cols": ["event_at", "source_known_at"], "description": "FMCG supplier receipts"},
     "stg_fmcg_inventory": {"required_cols": {"sku", "on_hand", "snapshot_date"},
                            "date_cols": ["snapshot_date"], "description": "FMCG inventory snapshots"},
     "stg_fmcg_promotions": {"required_cols": {"sku", "week_start", "uplift"},
-                            "date_cols": ["week_start"], "description": "FMCG promotion calendar"},
+                            "date_cols": ["week_start"], "timestamp_cols": ["source_known_at"], "description": "FMCG promotion calendar"},
     "stg_fmcg_suppliers": {"required_cols": {"supplier_id"}, "date_cols": [],
                            "description": "FMCG supplier master with route/manufacturer tags and capacity"},
     "stg_fmcg_economics": {"required_cols": {"key", "value"}, "date_cols": [],
@@ -394,6 +396,10 @@ async def upload_csv(
                 if dcol in ins_df.columns:
                     ins_df[dcol] = pd.to_datetime(
                         ins_df[dcol], errors="coerce").dt.date
+            for tcol in meta.get("timestamp_cols", []):
+                if tcol in ins_df.columns:
+                    ins_df[tcol] = pd.to_datetime(
+                        ins_df[tcol], errors="coerce", utc=True).dt.tz_localize(None)
             ins_df = stamp_lineage(
                 ins_df, operator_id=operator_id,
                 upload_session_id=upload_session_id or "",

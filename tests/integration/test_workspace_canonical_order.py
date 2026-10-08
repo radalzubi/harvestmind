@@ -122,9 +122,10 @@ def test_promotions_suppliers_and_economics_physical_order_does_not_reach_the_re
     """The tables the small fixtures leave empty: promotions in scrambled order become events in
     (start, end, service, id) order, and reversing these three tables leaves the fingerprint unchanged."""
     promos = [("SKU-0003", T + timedelta(days=14), 1.5), ("SKU-0001", T + timedelta(days=14), 1.2), ("SKU-0002", T, 1.3), ("SKU-0001", T + timedelta(days=7), 1.1)]
+    announced = datetime(2024, 8, 26, 9, 0)                   # known a week before the decision (H1b: a planned promotion needs a knowledge time)
     with _transaction(vault) as conn:
         for sku, week, uplift in promos:
-            conn.execute("INSERT INTO stg_fmcg_promotions (sku, week_start, uplift) VALUES (?, ?, ?)", [sku, week, uplift])
+            conn.execute("INSERT INTO stg_fmcg_promotions (sku, week_start, uplift, source_known_at) VALUES (?, ?, ?, ?)", [sku, week, uplift, announced])
         conn.execute("INSERT INTO stg_fmcg_economics (key, value, provenance) VALUES ('net_days', '30', 'operator'), ('handling_per_unit', '0.02', 'operator')")
         base = _build(conn)
         base_projection, base_print = causal.canonical_projection(base), causal.fingerprint(base)
