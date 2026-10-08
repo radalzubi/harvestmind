@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 import duckdb
 import pytest
 
-from synthetic.fmcg.distributor_sim import ARCHETYPES, ArchetypeSpec, build_history
+from synthetic.fmcg.distributor_sim import ARCHETYPES, ArchetypeSpec, build_history, closing_inventory_rows
 from zaad.full import causal
 from zaad.full.workspace import build_request
 
@@ -33,7 +33,7 @@ def vault():
               "stg_fmcg_orders": orders[["order_id", "customer_id", "order_date", "sku", "qty_ordered"]],
               "stg_fmcg_purchase_orders": hist.purchase_orders[["po_id", "po_date", "supplier_id", "sku", "qty_ordered", "unit_cost"]],
               "stg_fmcg_receipts": hist.receipts[["po_id", "receipt_date", "sku", "qty_received"]],
-              "stg_fmcg_inventory": hist.inventory_snapshots.rename(columns={"week_start": "snapshot_date"})[["snapshot_date", "sku", "on_hand", "in_transit"]]}
+              "stg_fmcg_inventory": closing_inventory_rows(hist.inventory_snapshots)}
     for table, frame in frames.items():
         conn.register("frame_", frame)
         conn.execute(f"INSERT INTO {table} ({', '.join(frame.columns)}) SELECT * FROM frame_")

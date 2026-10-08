@@ -87,7 +87,8 @@ STAGING_TABLES: dict[str, dict[str, Any]] = {
     "stg_fmcg_receipts": {"required_cols": {"po_id", "qty_received", "receipt_date"},
                           "date_cols": ["receipt_date"], "timestamp_cols": ["event_at", "source_known_at"], "description": "FMCG supplier receipts"},
     "stg_fmcg_inventory": {"required_cols": {"sku", "on_hand", "snapshot_date"},
-                           "date_cols": ["snapshot_date"], "description": "FMCG inventory snapshots"},
+                           "date_cols": ["snapshot_date"], "timestamp_cols": ["snapshot_at", "source_known_at"],
+                           "description": "FMCG inventory snapshots (migration 030: optional snapshot_at, source_known_at, snapshot_basis, lot_id)"},
     "stg_fmcg_promotions": {"required_cols": {"sku", "week_start", "uplift"},
                             "date_cols": ["week_start"], "timestamp_cols": ["source_known_at"], "description": "FMCG promotion calendar"},
     "stg_fmcg_suppliers": {"required_cols": {"supplier_id"}, "date_cols": [],
@@ -824,7 +825,15 @@ def load_fmcg_sample_into(conn, seed: int = 7, archetype: str = "E_mixed_portfol
     skus = h.skus[["sku", "supplier_id", "unit_cost", "unit_price", "units_per_case", "moq_units", "category"]]
     orders = h.order_lines.merge(h.customer_orders[["order_id", "customer_id", "order_date"]], on="order_id")
     orders = orders[["order_id", "customer_id", "order_date", "sku", "qty_ordered"]]
-    inv = h.inventory_snapshots.rename(columns={"week_start": "snapshot_date"})[["snapshot_date", "sku", "on_hand", "in_transit"]]
+    # H2: the simulator records each week's state AFTER that week's arrivals, fulfilment and replenishment
+    # and labels it with the week start. The truthful row is the count that closes the week: dated on its
+    # last day with basis END_OF_DAY (effective at the next Monday 00:00), declared per row where the vault
+    # carries migration 030 and, for every vault, as the workspace-level basis in stg_fmcg_economics.
+    # SYNTHETIC: this declaration is a property of the simulator, not of any operator's data.
+    from synthetic.fmcg.distributor_sim import closing_inventory_rows
+    inv = closing_inventory_rows(h.inventory_snapshots)
+    inv_cols = {str(r[1]) for r in conn.execute("PRAGMA table_info('stg_fmcg_inventory')").fetchall()}
+    inv = inv[[c for c in inv.columns if c in inv_cols]]        # a vault without migration 030 keeps the date and the workspace-level basis
     sup = h.suppliers[["supplier_id"]].copy()
     sup["route"] = ["aqaba" if i % 2 == 0 else "road_saudi" for i in range(len(sup))]
     sup["origin_iso3"] = ["DEU" if i % 2 == 0 else "SAU" for i in range(len(sup))]
@@ -839,11 +848,19 @@ def load_fmcg_sample_into(conn, seed: int = 7, archetype: str = "E_mixed_portfol
         for c in frame.columns:
             if "date" in c:
                 frame[c] = pd.to_datetime(frame[c]).dt.date
+            elif c.endswith("_at"):
+                frame[c] = pd.to_datetime(frame[c])
         conn.register("_sample_df", frame)
         cols = ", ".join(frame.columns)
         conn.execute(f"INSERT INTO {table} ({cols}) SELECT {cols} FROM _sample_df")  # nosec B608 - literals
         conn.unregister("_sample_df")
         loaded[table] = int(len(frame))
+    # the same two declarations at workspace level, for a vault without migration 030's columns: the physical
+    # basis and the synthetic knowledge convention (count known at the last second of its snapshot day)
+    for key, value in (("inventory_snapshot_basis", "END_OF_DAY"), ("inventory_source_known_rule", "CLOSE_OF_SNAPSHOT_DAY")):
+        conn.execute("DELETE FROM stg_fmcg_economics WHERE key = ?", [key])
+        conn.execute("INSERT INTO stg_fmcg_economics (key, value, provenance) VALUES (?, ?, ?)", [key, value, "SYNTHETIC"])
+    loaded["stg_fmcg_economics"] = 2
     return {"tables": loaded, "total_rows": int(sum(loaded.values())), "classification": "SYNTHETIC CALIBRATED",
             "note": "a made-up distributor with mixed lanes and a constrained supplier; replaces existing FMCG data"}
 

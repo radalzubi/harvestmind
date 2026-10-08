@@ -34,7 +34,8 @@ import numpy as np
 import pandas as pd
 
 from zaad.full.contracts import Request
-from zaad.full.workspace import CALENDAR, CUSTOMER, LOCATION, WorkspaceError, _frame, _num, build_request
+from zaad.full import inventory_state
+from zaad.full.workspace import CALENDAR, CUSTOMER, LOCATION, WorkspaceError, _frame, _aware, _num, build_request
 from zaad.sectors.workspace import lot_expiry_periods, parse_states
 
 LANE_CAPACITY_WEEKS = 10.        # declared assumption when a lane's capacity is not given: ten weeks of the destination's demand per week
@@ -82,7 +83,8 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
                           sourcing: bool = False, recourse: bool = False, atp: bool = False, commitments: bool = False) -> tuple[Request, dict[str, Any]]:
     base, report = build_request(conn, operator_id, horizon=horizon, period_days=period_days, as_of=as_of, service_target=service_target,
                                  history_weeks=history_weeks, seed=seed, scenarios=scenarios, max_solve_seconds=max_solve_seconds, skus=skus,
-                                 sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp, commitments=commitments)
+                                 sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp, commitments=commitments,
+                                 inventory_scope="network" if len(_location_rows(conn)) >= 2 else "single_site")
     locations = _location_rows(conn)
     if len(locations) < 2:
         report["network"] = {"locations": int(len(locations)), "mode": "single_location", "note": "fewer than two declared locations: the frozen single-location request"}
@@ -149,24 +151,29 @@ def build_network_request(conn: Any, operator_id: str, *, horizon: int = 12, per
         raise WorkspaceError("No (SKU, location) pair has order history at a declared location.")
     busiest = hist.groupby("location_id")["qty_ordered"].sum().idxmax() if len(hist) else next(iter(ids))
 
-    # ── opening stock per (SKU, location) ──
+    # ── opening stock per (SKU, location): the proven physical state at the origin (H2) ──
     inventory = _safe(conn, "SELECT * FROM stg_fmcg_inventory")
     stock_rows: list[dict[str, Any]] = []
-    if len(inventory):
-        inventory["snapshot_date"] = pd.to_datetime(inventory["snapshot_date"])
-        inventory["location_id"] = inventory["location_id"].fillna(LOCATION.upper()).astype(str)
-        snap = inventory[inventory["snapshot_date"] < origin]
-        if len(snap):
-            latest = snap[snap["snapshot_date"] == snap["snapshot_date"].max()].drop_duplicates(["sku", "location_id"], keep="last")
-            shelf = {s["id"]: s["shelf_life"] for s in data["skus"]}
-            for row in latest.itertuples():
-                sku, lid = str(row.sku), str(row.location_id)
-                if sku in shelf and lid in ids and float(row.on_hand or 0.) > 0:
-                    expires_in, lot_prov = lot_expiry_periods(getattr(row, "expiry_date", None), origin, period_days, shelf[sku])
-                    if lot_prov == "CUSTOMER_PROVIDED":
-                        provenance["stock.expiry"] = "CUSTOMER_PROVIDED"
-                    stock_rows.append({**known, "id": f"open_{sku}@{lid}", "sku": sku, "location": lid, "quantity": float(row.on_hand),
-                                       "reserved": 0., "damaged": 0., "quarantined": 0., "expires_in": expires_in, "age_periods": 0})
+    shelf = {s["id"]: s["shelf_life"] for s in data["skus"]}
+    basis_declared = economics.get(inventory_state.BASIS_KEY)
+    known_rule_declared = economics.get(inventory_state.KNOWN_RULE_KEY)
+    resolved = inventory_state.resolve(inventory, decision_at=pd.Timestamp(base.as_of), skus=sorted(shelf), locations=sorted(ids),
+                                       default_basis=str(basis_declared) if basis_declared else None,
+                                       known_rule=str(known_rule_declared) if known_rule_declared else None)
+    report["inventory_state"] = resolved["report"]
+    blocked = [(key, cell) for key, cell in resolved["cells"].items() if not cell.ready]
+    if blocked:
+        key, cell = blocked[0]
+        raise WorkspaceError(f"opening inventory is not ready for {len(blocked)} planned cell(s): {cell.sku} at {cell.location} is "
+                             f"{cell.status} ({cell.reason})" + (f"; also {', '.join(k for k, _ in blocked[1:4])}" if len(blocked) > 1 else ""))
+    for entry in resolved["stock"]:
+        sku, lid = entry["sku"], entry["location"]
+        expires_in, lot_prov = lot_expiry_periods(entry["expiry_date"], origin, period_days, shelf[sku])
+        if lot_prov == "CUSTOMER_PROVIDED":
+            provenance["stock.expiry"] = "CUSTOMER_PROVIDED"
+        stock_rows.append({"known_at": _aware(entry["source_known_at"]), "id": f"open_{sku}@{lid}{entry['cohort_suffix']}",
+                           "sku": sku, "location": lid, "quantity": float(entry["quantity"]),
+                           "reserved": 0., "damaged": 0., "quarantined": 0., "expires_in": expires_in, "age_periods": 0})
 
     # ── sources: where each supplier delivers ──
     pos = _safe(conn, "SELECT sku, supplier_id, qty_ordered, destination_id FROM stg_fmcg_purchase_orders")

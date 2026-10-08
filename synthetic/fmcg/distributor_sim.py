@@ -301,6 +301,31 @@ def build_history(archetype: str = "A_stable", seed: int = 0,
         pack_specs=pack_specs)
 
 
+SYNTHETIC_COUNT_KNOWN_AT_CLOSE_OF_WEEK = pd.Timedelta(hours=23, minutes=59, seconds=59)     # after the snapshot date's 00:00
+
+
+def closing_inventory_rows(snapshots: pd.DataFrame) -> pd.DataFrame:
+    """The simulator's weekly stock rows as truthful `stg_fmcg_inventory` rows (HARDENING V1, H2).
+
+    `build_history` appends each SKU's `on_hand` AFTER the week's arrivals, fulfilment and replenishment
+    decision and labels the row with the week start. The state it holds is therefore the one that closes
+    the week: `snapshot_date` = week start + 6 days (the Sunday), `snapshot_basis` = END_OF_DAY, and
+    `snapshot_at` = the next Monday 00:00 (the instant the next decision opens on).
+
+    Knowledge time (SYNTHETIC convention, `SYNTHETIC_COUNT_KNOWN_AT_CLOSE_OF_WEEK`): the simulator's week is
+    a discrete state machine whose state is final once the week's last transition (the replenishment
+    decision) is recorded; the count is posted at the last second of the week's closing day,
+    `source_known_at` = Sunday 23:59:59, strictly before the next Monday 00:00 decision. This is a property
+    of the simulator, declared per row; it is NOT a fallback for any operator's data, whose rows must carry
+    their own `source_known_at` (or a workspace-declared `inventory_source_known_rule`)."""
+    rows = snapshots.rename(columns={"week_start": "snapshot_date"})[["snapshot_date", "sku", "on_hand", "in_transit"]].copy()
+    rows["snapshot_date"] = pd.to_datetime(rows["snapshot_date"]) + pd.Timedelta(days=6)
+    rows["snapshot_basis"] = "END_OF_DAY"
+    rows["snapshot_at"] = rows["snapshot_date"] + pd.Timedelta(days=1)
+    rows["source_known_at"] = rows["snapshot_date"] + SYNTHETIC_COUNT_KNOWN_AT_CLOSE_OF_WEEK
+    return rows
+
+
 def coherence_report(h: FMCGHistory) -> dict:
     """Cross-table identities a real ERP would satisfy. Used by tests."""
     rec = h.receipts.groupby("po_id")["qty_received"].sum() if len(h.receipts) else pd.Series(dtype=float)
