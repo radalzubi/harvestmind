@@ -328,7 +328,8 @@ def test_transformed_or_incomplete_historical_actions_are_never_called_actual_or
     assert rp["comparison"]["comparator"]["fidelity"] == "INCOMPLETE" and "could not be identified" in r["executive_summary"]["replay"]["statement"]
     assert rp["reference_label"] == "the operator-declared rule" and rp["comparison"]["decision_reference"]["provenance"] == "operator-declared"
     # a replay result from before the contract never established exactness: it is not called "actual" either
-    legacy = _replay(); legacy.pop("comparison")
+    legacy = _replay()
+    legacy.pop("comparison")
     base["optimizer_replay"] = legacy
     r = build_report(base, job_id="j", company="C")
     rp = r["optimizer_replay"]
