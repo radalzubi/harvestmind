@@ -15,6 +15,9 @@ computed intersections behind the management-level findings.
 """
 from __future__ import annotations
 
+import json
+
+from zaad.full import comparator
 import math
 from typing import Any
 
@@ -207,10 +210,10 @@ def frame_benchmark(policy: dict) -> dict:
         out["statement"] = (f"{article[:1].upper()}{article[1:]} performed strongly on the periods used to select it, but the improvement "
                             "did not persist on later unseen periods. ZAAD therefore does not recommend replacing your existing purchasing rule with that fixed policy.")
     elif oc == "adopt_candidate":
-        out["statement"] = (f"{article[:1].upper()}{article[1:]} beat your reconstructed rule on the selection periods and held on the unseen "
+        out["statement"] = (f"{article[:1].upper()}{article[1:]} beat {policy.get('reference_label') or 'the reconstructed rule'} on the selection periods and held on the unseen "
                             "periods. It is a defensible fixed rule; whether ZAAD's adaptive decisions do better is a separate question, answered below.")
     elif oc == "keep_current":
-        out["statement"] = "No fixed replenishment rule cleared the conservative selection rule against your own. Your reconstructed rule stands as the fixed-rule baseline."
+        out["statement"] = f"No fixed replenishment rule cleared the conservative selection rule against {policy.get('reference_label') or 'the reconstructed rule'}. It stands as the fixed-rule baseline."
     elif oc == "not_run":
         out["statement"] = "The fixed-rule benchmark could not run in full on this history."
     else:
@@ -226,6 +229,21 @@ REPLAY_EXPLAINER = ("ZAAD optimizes each decision with the information available
                     "know the future, and a decision that was right given what was known can still lose on one particular realisation.")
 
 
+_PROVENANCE_WORDS = {"INFERRED_FROM_HISTORY": "reconstructed from purchase-order history", "CUSTOMER_PROVIDED": "operator-declared",
+                     "CONFIGURED_ASSUMPTION": "configured assumption", "NOT_AVAILABLE": "not available"}
+
+
+def _customer_safe_comparison(comparison: dict) -> dict:
+    """The replay's comparator contract with engine provenance codes rendered as words (the report never leaks enums)."""
+    if not comparison:
+        return {}
+    out = json.loads(json.dumps(comparison))
+    for holder in (out.get("decision_reference") or {}, ((out.get("legs") or {}).get("rule") or {})):
+        if holder.get("provenance") in _PROVENANCE_WORDS:
+            holder["provenance"] = _PROVENANCE_WORDS[holder["provenance"]]
+    return out
+
+
 def replay_section(summary: dict) -> dict:
     r = summary.get("optimizer_replay") or {}
     currency = (r.get("scope") or {}).get("currency") if summary.get("currency") else None
@@ -237,6 +255,18 @@ def replay_section(summary: dict) -> dict:
         out["reason"] = r.get("reason")
         return out
     scope, cov, legs = r.get("scope") or {}, r.get("coverage") or {}, r.get("legs") or {}
+    # H3a: the comparator the replay actually used, and what it allows the report to say. An older replay result
+    # without the section never established exactness, so its historical-action leg is not called "actual".
+    comparison = _customer_safe_comparison(r.get("comparison") or {})
+    out["comparison"] = comparison or {"mode": comparator.HISTORICAL_COMPARISON_MODE, "readiness": comparator.CONDITIONAL, "claim_class": comparator.MODEL_COMPARISON,
+                                       "comparator": {"type": comparator.ACTUAL_HISTORICAL_ACTION, "fidelity": comparator.NOT_AVAILABLE},
+                                       "permissions": {k: k in ("can_recommend", "can_compare") for k in comparator.PERMISSION_KEYS},
+                                       "caveats": ["this replay result predates comparator provenance; exactness of the historical-action comparator was not established"]}
+    exact_claim = bool((out["comparison"].get("permissions") or {}).get("can_claim_historical_counterfactual_difference"))
+    action_label = comparator.actual_action_label(out["comparison"])
+    out["comparator_label"] = action_label
+    out["reference_label"] = ((out["comparison"].get("decision_reference") or {}).get("label")) or comparator.policy_label(scope.get("rule_provenance"))
+    out["claim_class"] = out["comparison"].get("claim_class")
     d_actual, d_rule = (r.get("differences") or {}).get("zaad_vs_actual") or {}, (r.get("differences") or {}).get("zaad_vs_rule") or {}
     a, z, ru = legs.get("actual") or {}, legs.get("zaad") or {}, legs.get("rule") or {}
     conf = r.get("confidence") or {}
@@ -254,9 +284,15 @@ def replay_section(summary: dict) -> dict:
         direction = "less" if rel > 0 else "more"
         worst = _f(d_actual.get("worst"))
         worst_txt = f" and the worst single period {money(-worst, currency)} against" if (worst is not None and worst < 0) else ""
-        stmt = (f"Re-run at {coverage_txt} on {scope_txt}, ZAAD's adaptive decisions would have cost {pct(abs(rel))} {direction} than your actual orders over the "
-                f"window, with {pct(_f(d_actual.get('share_improved')), nd=0)} of periods better{worst_txt}. "
-                f"Replay confidence: {str(conf.get('level', '')).lower()}.")
+        fidelity = (out["comparison"].get("comparator") or {}).get("fidelity")
+        qualifier = ("" if exact_claim else
+                     f" This is a modelled comparison, not a claim against the operator: the historical-action comparator is {str(fidelity or 'not established').lower()}"
+                     + (" (recorded orders were adjusted to the declared physical envelope before settlement)" if fidelity == comparator.TRANSFORMED else
+                        " (some recorded lines could not be identified to a source)" if fidelity == comparator.INCOMPLETE else "") + ".")
+        stmt = (f"In this historical counterfactual replay, re-run at {coverage_txt} on {scope_txt}, ZAAD's modelled path cost {pct(abs(rel))} {direction} than "
+                f"the path of {action_label} over the evaluated window, with {pct(_f(d_actual.get('share_improved')), nd=0)} of periods better{worst_txt}. "
+                f"ZAAD's path is counterfactual and settles on measured, inferred, simulated or assumed supplier behaviour; nothing here is a realized benefit. "
+                f"Replay confidence: {str(conf.get('level', '')).lower()}.{qualifier}")
     else:
         stmt = f"Re-run at {coverage_txt} on {scope_txt}; the window total could not be compared."
     out["statement"] = stmt
@@ -324,7 +360,7 @@ def replay_section(summary: dict) -> dict:
                                 "abstained_reviews": sum(1 for e in (r.get("zaad_reviews") or []) if e.get("fallback_to_rule")),
                                 "units_difference": sum((d.get("quantity_difference") or 0.0) for d in decs)}
     out["retention_note"] = (f"At every one of the {num(W)} decision dates the optimizer retained your reconstructed rule (no candidate cleared its own gates), so ZAAD's orders are the "
-                             "rule's orders and the ZAAD column equals the rule column. The comparison against your actual orders then measures the rule as ZAAD would have applied it, not a different plan."
+                             f"rule's orders and the ZAAD column equals the rule column. The comparison against {action_label} then measures the rule as ZAAD would have applied it, not a different plan."
                              if identical_to_rule and retained == W and W > 0 else
                              (f"The optimizer retained your reconstructed rule on {num(retained)} of the {num(W)} decision dates and recommended its own plan on the others."
                               if retained else None))
@@ -352,7 +388,7 @@ def replay_section(summary: dict) -> dict:
         def basis_txt(leg: str) -> str:
             sh = ((ev["by_leg"].get(leg) or {}).get("shares") or {})
             return ", ".join(f"{pct(sh.get(k), nd=0)} {k.lower()}" for k in ("MEASURED", "INFERRED", "SIMULATED", "ASSUMED"))
-        out["evidence_basis"] = {**ev, "text": (f"Settlement basis of each leg's delivered units — your actual orders: {basis_txt('actual')}; the reconstructed rule: {basis_txt('rule')}; "
+        out["evidence_basis"] = {**ev, "text": (f"Settlement basis of each leg's delivered units — {action_label}: {basis_txt('actual')}; {out['reference_label']}: {basis_txt('rule')}; "
                                                 f"ZAAD: {basis_txt('zaad')}. Demand is measured throughout; cost and service of a leg both rest on its delivered units, so an inferred share "
                                                 "is an inferred share of both. Nothing inferred or simulated is an observed outcome.")}
     rc = r.get("rule_conformance") or {}
@@ -367,10 +403,10 @@ def replay_section(summary: dict) -> dict:
                       "mean": _f(d_actual.get("mean")), "median": _f(d_actual.get("median")), "worst": _f(d_actual.get("worst")), "best": _f(d_actual.get("best")),
                       "sd": _f(d_actual.get("sd")), "ci80": d_actual.get("ci80_mean"), "n_negative": len(negatives),
                       "worst_date": dates[worst_i] if worst_i is not None and worst_i < len(dates) else None,
-                      "text": (f"ZAAD's decisions cost less than your actual orders in {pct(_f(d_actual.get('share_improved')), nd=0)} of the {num(W)} periods and more in "
+                      "text": (f"ZAAD's modelled path cost less than the path of {action_label} in {pct(_f(d_actual.get('share_improved')), nd=0)} of the {num(W)} periods and more in "
                                f"{pct(_f(d_actual.get('share_worse')), nd=0)}. The average per-period difference was {money(d_actual.get('mean'), currency)} in ZAAD's favour"
                                if (_f(d_actual.get('mean')) or 0) > 0 else
-                               f"ZAAD's decisions cost less than your actual orders in {pct(_f(d_actual.get('share_improved')), nd=0)} of the {num(W)} periods and more in "
+                               f"ZAAD's modelled path cost less than the path of {action_label} in {pct(_f(d_actual.get('share_improved')), nd=0)} of the {num(W)} periods and more in "
                                f"{pct(_f(d_actual.get('share_worse')), nd=0)}. The average per-period difference was {money(abs(_f(d_actual.get('mean')) or 0), currency)} against ZAAD")
                               + (f"; the worst period ({dates[worst_i]}) cost {money(abs(series[worst_i]), currency)} more under ZAAD." if worst_i is not None and series[worst_i] < 0 and worst_i < len(dates) else ".")
                               + (" A losing period is not a failed decision: it is the cost of a decision that was right given what was known at the time and wrong for that one realisation." if negatives else "")

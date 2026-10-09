@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any
 
+from zaad.full import comparator
 from zaad.full.contracts import Request
 from zaad.full.model import Solution
 from zaad.meio.topology import NetworkState
@@ -34,6 +35,10 @@ def explain_network(req: Request, state: NetworkState, final: Solution | None, i
     sources = {s.id: s for s in req.sources}
     lanes = state.lanes
     fits = report.get("forecasts", {})
+    # H3a: the incumbent is named by what it is (a reconstructed or declared rule, declared orders, or the system
+    # proxy), never "your current policy"; it is a decision reference, not a captured operator plan
+    ref_label = comparator.decision_reference(req)["label"]
+    ref_cap = ref_label[:1].upper() + ref_label[1:]
     rate = {(s.sku, s.location): 0. for s in req.services}
     for s in req.services:
         rate[s.sku, s.location] += float(fits.get(s.id, {}).get("mean", 0.))
@@ -57,11 +62,11 @@ def explain_network(req: Request, state: NetworkState, final: Solution | None, i
                    f"{q_f / demand_covered:.1f} weeks of the demand it serves ({', '.join(covers)}) at the current rate of {_units(demand_covered)} per period."
                    if demand_covered > 0 else f"Buy {_units(q_f)} of {src.sku} from {src.supplier} into {src.destination}.")
             if q_i > 0 and abs(q_i - q_f) > 1e-6:
-                why += f" Your current policy would buy {_units(q_i)}."
+                why += f" {ref_cap} would buy {_units(q_i)}."
             elif q_i <= 0:
-                why += " Your current policy would not buy this period."
+                why += f" {ref_cap} would not buy this period."
         else:
-            why = f"No purchase of {src.sku} from {src.supplier} this period" + (f"; your current policy would buy {_units(q_i)}." if q_i > 0 else ".")
+            why = f"No purchase of {src.sku} from {src.supplier} this period" + (f"; {ref_label} would buy {_units(q_i)}." if q_i > 0 else ".")
         purchases.append({"source": source_id, "sku": src.sku, "supplier": src.supplier, "destination": src.destination, "units": q_f, "incumbent_units": q_i,
                           "serves_locations": covers, "demand_rate_covered": demand_covered, "summary": why})
 
@@ -86,9 +91,9 @@ def explain_network(req: Request, state: NetworkState, final: Solution | None, i
             if lane.capacity > 0 and q_f >= lane.capacity - 1e-6:
                 why += " The lane is at capacity."
             if q_i > 0 and abs(q_i - q_f) > 1e-6:
-                why += f" Your current policy would move {_units(q_i)}."
+                why += f" {ref_cap} would move {_units(q_i)}."
             elif q_i <= 0:
-                why += " Your current policy would not move stock this period."
+                why += f" {ref_cap} would not move stock this period."
         else:
             svc = [s for s in by_location.get(lane.destination, []) if s["sku"] == lane.sku]
             ok = all((s["achieved"] or 0.) >= s["target"] - req.service_tolerance for s in svc) if svc else True
@@ -101,7 +106,7 @@ def explain_network(req: Request, state: NetworkState, final: Solution | None, i
                       f"{lane.origin}'s usable stock went to a higher-priority or costlier shortage elsewhere." if origin_left <= 1e-6 else
                       "the plan judged the move not worth its cost or lead."))
             if q_i > 0:
-                why += f" Your current policy would move {_units(q_i)}."
+                why += f" {ref_cap} would move {_units(q_i)}."
         transfers.append({"transfer": arc_id, "sku": lane.sku, "origin": lane.origin, "destination": lane.destination, "units": q_f, "incumbent_units": q_i,
                           "arrives_period": lane.earliest_arrival, "lead_periods": lane.lead_periods, "cost_per_unit": lane.cost_per_unit,
                           "branch_cover_periods_before_arrival": local_cover, "local_only_periods": reach.local_only_periods if reach else None,
@@ -157,11 +162,11 @@ def explain_network(req: Request, state: NetworkState, final: Solution | None, i
     do_nothing: dict[str, Any] = {"incumbent_service": {s["service"]: {"location": s["location"], "achieved": s["achieved"], "target": s["target"], "breach_share": s["breach_share"]} for s in incumbent_accounts.get("services", [])},
                   "incumbent_cost": (incumbent_accounts.get("economics") or {}).get("economic_cost"),
                   "selected_cost": (final_accounts.get("economics") or {}).get("economic_cost"),
-                  "summary": ("Doing nothing beyond your current policy keeps every location at target." if not any((s["breach_share"] or 0.) > .5 for s in incumbent_accounts.get("services", []))
-                              else "Under your current policy " + ", ".join(f"{s['location']} is projected at {s['achieved']:.1%} against a {s['target']:.0%} target"
+                  "summary": (f"Doing nothing beyond {ref_label} keeps every location at target." if not any((s["breach_share"] or 0.) > .5 for s in incumbent_accounts.get("services", []))
+                              else f"Under {ref_label} " + ", ".join(f"{s['location']} is projected at {s['achieved']:.1%} against a {s['target']:.0%} target"
                                                                             for s in incumbent_accounts.get("services", []) if (s["breach_share"] or 0.) > .5) + ".")}
-    if_rejected = {"summary": ("If this recommendation is rejected the current policy runs: " + do_nothing["summary"].replace("Doing nothing beyond your current policy", "it")
-                               if accepted else "Nothing is proposed; the current policy stands."),
+    if_rejected = {"summary": (f"If this recommendation is rejected {ref_label} runs: " + do_nothing["summary"].replace(f"Doing nothing beyond {ref_label}", "it")
+                               if accepted else f"Nothing is proposed; {ref_label} stands."),
                    "alternatives_considered": {k: v.get("reason") for k, v in (report.get("candidate_gates") or {}).items()}}
     verdict = ("ZAAD recommends the changes below for your approval." if accepted else
                "ZAAD recommends no change to your current network policy this period." if report.get("status") == "RETAIN_INCUMBENT" else

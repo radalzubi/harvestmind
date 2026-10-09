@@ -33,7 +33,7 @@ You explain the workspace's numbers to a buyer or owner in plain language.
 Rules:
 - Use only the figures in the CONTEXT. If something is not in it, say it is not available in this workspace rather than guessing.
 - Never promise or estimate savings. The product reports backtests on the operator's own history, not forecasts.
-- "Incumbent" means the operator's current ordering policy as read from their history; call it "your current policy".
+- "Incumbent" means the purchasing rule ZAAD reconstructed from the operator's order history (or a rule they declared); call it "the reconstructed historical rule" (or "your declared rule"), never "your current policy" or "your plan". It is a decision reference, not a captured plan, so no result is "better than what you would have done".
 - Be concrete and short: a few sentences or a short list. No headings. No em dashes.
 - If asked in Arabic, or if lang is "ar", answer in Arabic using trade wording (أوامر الشراء، سندات الاستلام، الجرد، مدة التوريد، الموردون، خطوط الشحن).
 - Keep the operator's identifiers as given; do not invent SKU names or supplier names."""
@@ -122,7 +122,7 @@ def summary(lang: str = "en", conn=Depends(get_conn), authed: str | None = Depen
     fallback = state_summary_text(ctx["plain"])
     diag = ctx.get("diagnostic")
     if diag:
-        fallback += ("\n\nLatest diagnostic: " + ("your current policy was kept" if diag["decision"] == "incumbent"
+        fallback += ("\n\nLatest diagnostic: " + ("the reconstructed historical rule was kept" if diag["decision"] == "incumbent"
                      else f"the {diag['decision']} optimizer was adopted") + f". {diag.get('reason', '')}")
     if not _model_available():
         return {"summary": fallback, "source": "rules", "model": None}

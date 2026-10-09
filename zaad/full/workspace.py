@@ -34,7 +34,7 @@ import pandas as pd
 from zaad.full.contracts import Request
 from zaad.sourcing.workspace import sourcing_block
 from zaad.sectors.workspace import lot_expiry_periods, sku_physics_rows
-from zaad.full import inventory_state, temporal
+from zaad.full import comparator, inventory_state, temporal
 from zaad.full.uncertainty import MIN_SUPPLY_RECORDS
 
 LOCATION = "main"
@@ -87,6 +87,13 @@ def _economics(conn: Any) -> tuple[dict[str, Any], dict[str, str]]:
         values[key] = number if number is not None else str(row.value)
         prov[key] = str(row.provenance or "operator")
     return values, prov
+
+
+class _DecisionRef:
+    """The two incumbent fields `comparator.decision_reference` reads, before the Request exists."""
+
+    def __init__(self, incumbent_rule: str | None):
+        self.incumbent_rule, self.incumbent_orders = incumbent_rule, ()
 
 
 def _aware(value: Any) -> datetime:
@@ -729,6 +736,8 @@ def build_request(conn: Any, operator_id: str, *, horizon: int = 12, period_days
         # the temporal basis of this request (H1b): what the decision rested on
         # the opening inventory state this request rests on (H2): one entry per planned cell
         "inventory_state": inventory_report,
+        # H3a: what the planner will compare against, named by what it is (the Request carries the rule, not its origin)
+        "decision_reference": comparator.decision_reference(_DecisionRef(incumbent_rule), rule_provenance=rule_prov),
         "temporal": {"decision_at": cutoff.to_pydatetime().replace(tzinfo=timezone.utc).isoformat(), "period_origin": str(origin.date()),
                      "decision_basis": "explicit" if decision_at is not None else "start_of_planning_period",
                      "supported_mode": "PERIOD_BOUNDARY",        # decision_at == period_origin == Request.as_of; nothing else is built

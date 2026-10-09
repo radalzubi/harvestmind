@@ -8,8 +8,9 @@ The question answered here is different from the policy benchmark's:
 
 Three legs run through ONE loop (`zaad.full.replay.replay`) and ONE settlement (`zaad.full.settlement`):
 
-    actual   the operator's purchase orders exactly as placed (MEASURED decisions)
-    rule     the operator's reconstructed purchasing rule, projected from each point-in-time snapshot
+    actual   the operator's recorded purchase orders, identified by (sku, supplier[, destination]) and settled
+             through the model (H3a: `comparison` says whether that comparator is EXACT, TRANSFORMED or INCOMPLETE)
+    rule     the reconstructed purchasing rule (or the operator-declared one), projected from each snapshot
     zaad     the production optimizer, `zaad.full.planner.plan`, re-run at every weekly decision date on
              the state its own earlier decisions produced; a review on which the planner abstains keeps
              the operator's rule for that period, exactly as production does
@@ -47,6 +48,7 @@ from typing import Any, Callable
 import numpy as np
 import pandas as pd
 
+from zaad.full import comparator
 from zaad.full.contracts import Request
 from zaad.full.economics import cost_breakdown
 from zaad.full.evaluation import endpoint
@@ -175,25 +177,26 @@ def build_truth(conn: Any, initial: Request, *, periods: int, seed: int) -> tupl
 
 
 # ── the actual-orders leg ────────────────────────────────────────────────────
-def actual_orders_by_review(conn: Any, initial: Request, reviews: int) -> dict[int, dict[str, float]]:
-    """The operator's purchase orders per review period per source, exactly as placed."""
+def historical_actions(conn: Any, initial: Request, reviews: int) -> comparator.HistoricalActions:
+    """The operator's recorded purchase-order lines in the replay window, mapped to request sources by exact
+    business key (sku, supplier[, destination]) — H3a. Each line carries its own fidelity: EXACT when the
+    key names one source, INCOMPLETE when the supplier is missing or the key matches no source or several.
+    Only identified lines enter the per-review quantities; nothing is assigned by SKU alone, by primary, by
+    cheapest or by row order."""
     origin = pd.Timestamp(initial.as_of).tz_convert(None) if pd.Timestamp(initial.as_of).tzinfo else pd.Timestamp(initial.as_of)
     origin = origin.normalize()
     pdays = initial.period_days
     end = origin + pd.Timedelta(days=pdays * reviews)
-    pos = conn.execute("SELECT po_date, sku, qty_ordered FROM stg_fmcg_purchase_orders WHERE po_date >= ? AND po_date < ?",
+    pos = conn.execute("SELECT * FROM stg_fmcg_purchase_orders WHERE po_date >= ? AND po_date < ?",
                        [origin.to_pydatetime(), end.to_pydatetime()]).fetchdf()
-    source_of_sku = {s.sku: s.id for s in initial.sources}
-    out: dict[int, dict[str, float]] = {t: {} for t in range(reviews)}
-    if not len(pos):
-        return out
-    pos["po_date"] = pd.to_datetime(pos["po_date"])
-    pos["period"] = ((pos["po_date"] - origin).dt.days // pdays).astype(int)
-    for (t, sku), q in pos.groupby(["period", "sku"])["qty_ordered"].sum().items():
-        src = source_of_sku.get(str(sku))
-        if src is not None and 0 <= int(t) < reviews and q > 0:
-            out[int(t)][src] = float(q)
-    return out
+    network = len({s.destination for s in initial.sources}) > 1
+    return comparator.map_historical_actions(pos, list(initial.sources), origin=origin, period_days=pdays, reviews=reviews, network=network)
+
+
+def actual_orders_by_review(conn: Any, initial: Request, reviews: int) -> dict[int, dict[str, float]]:
+    """The operator's recorded purchase orders per review period per source (identified lines only; see
+    `historical_actions` for the lines, their fidelity and the coverage)."""
+    return historical_actions(conn, initial, reviews).by_review
 
 
 def _conform(source: Any, q: float, t: int = 0) -> tuple[float, str | None]:
@@ -589,7 +592,8 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
     certificate_log: list[dict] = []
     _model.CERTIFICATE_LOG = certificate_log
     truth, truth_prov = build_truth(conn, initial, periods=periods, seed=seed)
-    actual = actual_orders_by_review(conn, initial, reviews)
+    actions = historical_actions(conn, initial, reviews)
+    actual = actions.by_review
     methods = _LegMethods(initial, actual)
     tag = f"historical_{operator_id}_{int(started * 1000)}"
     NETWORK_METHODS[f"{tag}:actual"] = methods.actual_orders
@@ -664,6 +668,11 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
                         "zaad_vs_rule": _summarise_difference(per["rule"], per["zaad"], W, scores.get("rule"), scores.get("zaad")) if "rule" in per and "zaad" in per else None,
                         "rule_vs_actual": _summarise_difference(per["actual"], per["rule"], W, scores.get("actual"), scores.get("rule")) if "rule" in per and "actual" in per else None},
         "decisions": decisions, "zaad_reviews": methods.zaad_log[:W],
+        # H3a: what this replay may claim, stated once (per-leg comparator type and fidelity, coverage, permissions)
+        "comparison": comparator.historical_comparison(
+            actions.coverage(W), transformed_lines=len([c for c in methods.conformance if c["review"] < W and c["leg"] == "actual"]),
+            settlement_shares=None, rule_provenance=(build.get("incumbent_rule") or {}).get("provenance"), reviews_completed=W),
+        "action_lines": [ln.as_dict() for ln in actions.lines if 0 <= ln.period < W][:200],
         "actual_conformance": {"changed_orders": len([c for c in methods.conformance if c["review"] < W and c["leg"] == "actual"]),
                                "rows": [c for c in methods.conformance if c["review"] < W and c["leg"] == "actual"][:50],
                                "note": "recorded orders rounded to the declared pack multiple or clamped to the declared capacity / minimum so the settlement's physical checks hold; the recorded quantity is kept on each row"},
@@ -687,6 +696,7 @@ def run_historical_replay(conn: Any, operator_id: str, *, skus: int | list[str] 
         result["scope"]["inventory_locations"] = int(n_loc[0] or 1) if n_loc else 1
     except Exception:  # noqa: BLE001  an older vault without the column
         result["scope"]["inventory_locations"] = 1
+    result["comparison"]["settlement_basis"] = result["settlement_provenance"]
     result["confidence"] = replay_confidence(result, build, initial)
     return result
 
@@ -741,8 +751,12 @@ def _decision_rows(initial: Request, per: dict[str, list[dict]], methods: "_LegM
                 outcome[leg] = {"served": served, "demand": dem, "end_stock": per[leg][t]["end_stock_by_sku"].get(sku, 0.0)}
             action = "no order" if q.get("zaad", 0.0) <= 0 else ("order" if q.get("actual", 0.0) <= 0 else ("more" if q["zaad"] > q["actual"] + 1e-6 else ("less" if q["zaad"] < q["actual"] - 1e-6 else "same")))
             timing = _timing_note(per, src, t, W)
+            observed = float(methods.actual.get(t, {}).get(src, 0.0)) if "actual" in per else None
             rows.append({"review": t, "date": per[next(iter(per))][t]["as_of"], "sku": sku, "supplier": supplier_of_source.get(src), "location": "main",
                          "actual_qty": q.get("actual"), "rule_qty": q.get("rule"), "zaad_qty": q.get("zaad"),
+                         # H3a: the recorded quantity and the quantity the settlement could evaluate are two facts
+                         "actual_observed_qty": observed, "actual_evaluated_qty": q.get("actual"),
+                         "actual_fidelity": (None if observed is None else (comparator.EXACT if abs(observed - q.get("actual", 0.0)) <= 1e-9 else comparator.TRANSFORMED)),
                          "quantity_difference": (q.get("zaad", 0.0) - q.get("actual", 0.0)) if "actual" in q and "zaad" in q else None,
                          "zaad_action": action, "zaad_status": z.get("status"), "zaad_policy": z.get("selected_policy"), "fallback_to_rule": z.get("fallback_to_rule"),
                          "timing": timing, "settlement": used if q.get("zaad", 0.0) > 0 else None, "settlement_cell": label,

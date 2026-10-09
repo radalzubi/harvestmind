@@ -147,6 +147,17 @@ def test_three_legs_state_evolves_and_labels(vault, monkeypatch):
     assert out["status"] == "complete", out
     assert out["coverage"]["reviews_completed"] == 4 and out["coverage"]["reviews_planned"] == 4
     assert set(out["legs"]) == {"actual", "rule", "zaad"} and all(v["reviews"] == 4 for v in out["legs"].values())
+    # H3a: the replay states its comparator. The synthetic sample's recorded orders name their supplier and map one-to-one to
+    # the request's sources, and the sample's quantities are already pack multiples, so the historical-action comparator is exact.
+    cmp = out["comparison"]
+    assert cmp["mode"] == "HISTORICAL_COMPARISON_MODE" and cmp["comparator"]["type"] == "ACTUAL_HISTORICAL_ACTION" and cmp["comparator"]["fidelity"] == "EXACT", cmp
+    assert cmp["coverage"]["lines_observed"] > 0 and cmp["coverage"]["lines_incomplete"] == 0 and cmp["coverage"]["exact_quantity_share"] == 1.0
+    assert cmp["claim_class"] == "HISTORICAL_COUNTERFACTUAL_COMPARISON" and cmp["permissions"]["can_claim_historical_counterfactual_difference"] is True
+    assert cmp["permissions"]["can_claim_realized_value"] is False and cmp["permissions"]["can_claim_against_operator"] is False
+    assert cmp["legs"]["rule"]["comparator_type"] == "RECONSTRUCTED_POLICY" and cmp["legs"]["rule"]["provenance"] == "INFERRED_FROM_HISTORY"
+    assert cmp["legs"]["zaad"]["type"] == "COUNTERFACTUAL_DECISION" and cmp["settlement_basis"] == out["settlement_provenance"]
+    assert all(ln["source"] and ln["supplier"] and ln["fidelity"] == "EXACT" for ln in out["action_lines"])
+    assert all(d["actual_observed_qty"] == d["actual_evaluated_qty"] == d["actual_qty"] and d["actual_fidelity"] == "EXACT" for d in out["decisions"] if d["actual_observed_qty"])
     # the optimizer stand-in was called once per decision date with the real planning snapshot
     assert seen.count("gated") == 4 and len(out["zaad_reviews"]) == 4
     # decisions: one row per date per product; the ZAAD column differs from the rule on even reviews

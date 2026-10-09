@@ -274,3 +274,26 @@ def test_reschedule_is_a_defer_too():
     view = amendment_view(_keep_order([_window("reschedule")]), "PO-1", "DEFER")
     assert view["proposed_window"]["action"] == "reschedule"
     assert "a right to defer" in view["reason"]
+
+
+# ── H3a: the left column is the decision reference, labelled by its provenance ──
+def test_left_column_is_the_decision_reference_not_your_current_plan():
+    out = compare(BASELINE, PROPOSAL, draft=_draft(["SKU-0001"]), scope=["SKU-0001"])
+    current = out["columns"][0]
+    # a baseline report from before the contract never recorded what its incumbent was
+    assert current["label"] == "Decision reference (provenance not recorded)" and current["comparator_type"] == "NOT_RECORDED"
+    reconstructed = {**BASELINE, "decision_reference": {"type": "RECONSTRUCTED_POLICY", "fidelity": "RECONSTRUCTED", "label": "the reconstructed historical rule", "rule": "replace_sold"}}
+    out = compare(reconstructed, PROPOSAL, draft=_draft(["SKU-0001"]), scope=["SKU-0001"])
+    current = out["columns"][0]
+    assert current["label"] == "Reconstructed policy baseline" and current["comparator_type"] == "RECONSTRUCTED_POLICY" and current["fidelity"] == "RECONSTRUCTED"
+    assert out["comparison"]["claim_class"] == "MODEL_COMPARISON" and out["comparison"]["permissions"]["can_claim_against_operator"] is False
+    assert out["comparison"]["permissions"]["can_claim_realized_value"] is False
+    text = " ".join([c["label"] + " " + c["source"] for c in out["columns"]] + out["limitations"]).lower()
+    assert "your current plan" not in text and "what you would have done" not in text.replace("not a claim against what you would have done", "")
+    declared = {**BASELINE, "decision_reference": {"type": "RECONSTRUCTED_POLICY", "fidelity": "DECLARED", "label": "the operator-declared rule"}}
+    assert compare(declared, PROPOSAL, draft=_draft(["SKU-0001"]), scope=["SKU-0001"])["columns"][0]["label"] == "Operator-declared rule baseline"
+    proxy = {**BASELINE, "decision_reference": {"type": "SYSTEM_BASELINE", "fidelity": "NOT_AVAILABLE", "label": "the system base-stock baseline"}}
+    assert compare(proxy, PROPOSAL, draft=_draft(["SKU-0001"]), scope=["SKU-0001"])["columns"][0]["label"] == "Model baseline"
+    # the ledger arithmetic is untouched by the labelling
+    purchase = next(r for r in out["ledger"] if r["component"] == "PURCHASE")
+    assert (purchase["current"], purchase["zaad"], purchase["proposal"]) == (100.0, 90.0, 140.0)
