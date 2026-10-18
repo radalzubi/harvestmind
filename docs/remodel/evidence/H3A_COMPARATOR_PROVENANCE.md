@@ -96,6 +96,21 @@ decisions are unchanged (H0 causal suite, H1c canonical order, frozen regression
   "comparator fidelity not established". Tested for EXACT, TRANSFORMED, INCOMPLETE and legacy reports and for
   inferred versus operator-declared rules, in Python and in the frontend.
 
+## Review corrections (residual pass)
+
+- **Mixed receipts on one PO.** A receipt that names no line was dropped while the other lines of its PO stayed
+  MEASURED, though the unassigned units could belong to any of them. Now any PO carrying an unplaceable receipt is
+  ambiguous on every line (`pos_with_unplaceable_receipts`); fully placed POs beside it stay MEASURED. Tested with
+  X 100/100 after 7 days, Y 25/50 after 28 days plus a 10-unit receipt without SKU, in both row orders.
+- **Decision summaries follow fidelity.** `zaad_action` compared ZAAD with the model-evaluated path while the summary
+  called it the recorded orders, and an unattributed recorded order read as "the operator placed no order". Each row
+  now carries `comparison_basis` (recorded / model-evaluated / unidentified / no recorded action), `zaad_vs_recorded`
+  and a `zaad_action_label` ("more than the model-evaluated quantity (96), less than the recorded order (103)";
+  "ordered 20; a recorded order of this SKU (100) could not be attributed to a source"); timing notes refer to the
+  nearest identified recorded order and say when a nearby recorded order is unattributable. The replay section builds
+  one `decisions_summary.text` from recorded-basis counts, reports unattributed rows separately, and the frontend and
+  the PDF print that sentence (legacy reports fall back to the model-evaluated counts, named as such).
+
 ## Unresolved comparator-data limitations
 
 - The planner cannot know from the Request alone whether a rule was inferred or declared; the planner's

@@ -353,13 +353,45 @@ def replay_section(summary: dict) -> dict:
     zr = r.get("zaad_reviews") or []
     retained = sum(1 for e in zr if str(e.get("status")) == "RETAIN_INCUMBENT")
     identical_to_rule = bool(decs) and all(abs((d.get("zaad_qty") or 0.0) - (d.get("rule_qty") or 0.0)) < 1e-6 for d in decs)
+    # the summary counts follow the row's comparison basis: an unattributed recorded order is reported as such, never as
+    # "the operator placed no order"; a transformed row is counted against the RECORDED quantity, with the
+    # model-evaluated comparison kept beside it
+    unattributed = [d for d in decs if d.get("comparison_basis") == "unidentified"]
+    legacy_rows = any("comparison_basis" not in d for d in decs)
+    def vs_recorded(d: dict) -> str | None:
+        return d.get("zaad_vs_recorded") if "comparison_basis" in d else None
+    abstained = sum(1 for e in (r.get("zaad_reviews") or []) if e.get("fallback_to_rule"))
+    counts = {"zaad_ordered_where_identified_recorded_had_none": sum(1 for d in decs if vs_recorded(d) == "order"),
+              "zaad_less_than_recorded": sum(1 for d in decs if vs_recorded(d) == "less"),
+              "zaad_more_than_recorded": sum(1 for d in decs if vs_recorded(d) == "more"),
+              "zaad_same_as_recorded": sum(1 for d in decs if vs_recorded(d) == "same"),
+              "zaad_no_order_where_recorded": sum(1 for d in decs if vs_recorded(d) == "no order" and (d.get("actual_observed_qty") or 0) > 0),
+              "unattributed_recorded_rows": len(unattributed),
+              "rows_compared_on_model_evaluated_quantity": sum(1 for d in decs if d.get("comparison_basis") == "model-evaluated")}
     out["decisions_summary"] = {"rows": len(decs), "changed": len(changed), "retained_rule_reviews": retained, "identical_to_rule": identical_to_rule,
+                                # model-evaluated-path counts (what the settlement scored); kept for the ledger, named for what they are
+                                "basis_of_legacy_counts": "ZAAD against the model-evaluated historical-action path",
                                 "zaad_ordered_where_you_did_not": sum(1 for d in decs if d.get("zaad_action") == "order"),
                                 "zaad_ordered_less": sum(1 for d in decs if d.get("zaad_action") == "less"),
                                 "zaad_ordered_more": sum(1 for d in decs if d.get("zaad_action") == "more"),
                                 "zaad_did_not_order_where_you_did": sum(1 for d in decs if d.get("zaad_action") == "no order" and (d.get("actual_qty") or 0) > 0),
-                                "abstained_reviews": sum(1 for e in (r.get("zaad_reviews") or []) if e.get("fallback_to_rule")),
-                                "units_difference": sum((d.get("quantity_difference") or 0.0) for d in decs)}
+                                "abstained_reviews": abstained,
+                                "units_difference": sum((d.get("quantity_difference") or 0.0) for d in decs),
+                                **counts,
+                                "text": (f"Decisions: {num(len(decs))} product-weeks replayed against the model-evaluated historical-action path (this replay predates "
+                                         f"recorded-quantity attribution, so ZAAD is compared with the path as evaluated: an order where that path had none on "
+                                         f"{num(sum(1 for d in decs if d.get('zaad_action') == 'order'))}, less on {num(sum(1 for d in decs if d.get('zaad_action') == 'less'))}, "
+                                         f"more on {num(sum(1 for d in decs if d.get('zaad_action') == 'more'))}); the planner abstained and {out['reference_label']} stood on {num(abstained)} decision date(s)."
+                                         if legacy_rows else
+                                         f"Decisions: {num(len(decs))} product-weeks replayed. Against the recorded orders, ZAAD ordered where no identified recorded order existed on "
+                                         f"{num(counts['zaad_ordered_where_identified_recorded_had_none'])}, less than the recorded order on {num(counts['zaad_less_than_recorded'])}, "
+                                         f"more than the recorded order on {num(counts['zaad_more_than_recorded'])}, and made no order where a recorded order existed on "
+                                         f"{num(counts['zaad_no_order_where_recorded'])}"
+                                         + (f"; on {num(counts['rows_compared_on_model_evaluated_quantity'])} product-week(s) the recorded quantity was adjusted to the declared envelope before "
+                                            "settlement, so the row also carries the comparison with the model-evaluated quantity" if counts["rows_compared_on_model_evaluated_quantity"] else "")
+                                         + f". On {num(len(unattributed))} product-week{'s' if len(unattributed) != 1 else ''} a recorded order of the SKU could not be attributed to a source, "
+                                           "so no comparison is made there and the absence of an attributed order is not read as the operator ordering nothing"
+                                         + f". The planner abstained and {out['reference_label']} stood on {num(abstained)} decision date(s).")}
     out["retention_note"] = (f"At every one of the {num(W)} decision dates the optimizer retained your reconstructed rule (no candidate cleared its own gates), so ZAAD's orders are the "
                              f"rule's orders and the ZAAD column equals the rule column. The comparison against {action_label} then measures the rule as ZAAD would have applied it, not a different plan."
                              if identical_to_rule and retained == W and W > 0 else

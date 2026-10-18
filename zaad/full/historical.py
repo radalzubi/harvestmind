@@ -113,12 +113,16 @@ def build_truth(conn: Any, initial: Request, *, periods: int, seed: int) -> tupl
         rsku = rsku.where(rsku.notna(), receipts["po_id"].map(sole_sku))
         receipts["line_sku"] = rsku
         ambiguous_receipt_lines = int(receipts["line_sku"].isna().sum())
+        # a receipt that names no line could belong to any line of its PO, so no line of that PO has a provable
+        # fill or lead: the whole PO is ambiguous, not just the receipt
+        tainted_pos = set(receipts.loc[receipts["line_sku"].isna(), "po_id"].astype(str))
         placed = receipts[receipts["line_sku"].notna()]
         got = placed.groupby(["po_id", "line_sku"]).agg(qty_received=("qty_received", "sum"), first=("receipt_date", "min")) if len(placed) else _empty_line_receipts()
     else:
         got = _empty_line_receipts()
+        tainted_pos = set()
     joined = pos.join(got, on=["po_id", "sku"])
-    joined["line_ambiguous"] = [(po, sku) in duplicated_lines for po, sku in zip(joined["po_id"], joined["sku"])]
+    joined["line_ambiguous"] = [((po, sku) in duplicated_lines) or (po in tainted_pos) for po, sku in zip(joined["po_id"], joined["sku"])]
     del line_counts
     joined["received"] = joined["qty_received"].fillna(0.)
     joined["arrived"] = joined["first"].notna()
@@ -217,7 +221,9 @@ def build_truth(conn: Any, initial: Request, *, periods: int, seed: int) -> tupl
                   "received_orders_identified": int(received["source"].notna().sum()), "received_orders_in_history": int(len(received)),
                   "receipt_line_identity": "receipts are matched to a purchase-order LINE (po_id, sku); a receipt without a SKU is placed only on a single-line PO; "
                                            "repeated lines and unplaceable receipts are ambiguous and are not MEASURED",
-                  "ambiguous_receipt_lines": ambiguous_receipt_lines, "ambiguous_po_lines": len(duplicated_lines)}
+                  "ambiguous_receipt_lines": ambiguous_receipt_lines, "ambiguous_po_lines": len(duplicated_lines),
+                  "pos_with_unplaceable_receipts": len(tainted_pos),
+                  "unplaceable_receipt_rule": "a receipt that names no line makes every line of its PO ambiguous: no line of that PO is MEASURED"}
     world = World(f"historical:{origin.date()}:{periods}", 1.0, demand, arrival, fills, po_due, po_fill)
     return world, provenance
 
@@ -809,8 +815,9 @@ def _decision_rows(initial: Request, per: dict[str, list[dict]], methods: "_LegM
             for leg in per:
                 served, dem = per[leg][t]["service_by_sku"].get(svc, (0.0, 0.0))
                 outcome[leg] = {"served": served, "demand": dem, "end_stock": per[leg][t]["end_stock_by_sku"].get(sku, 0.0)}
-            action = "no order" if q.get("zaad", 0.0) <= 0 else ("order" if q.get("actual", 0.0) <= 0 else ("more" if q["zaad"] > q["actual"] + 1e-6 else ("less" if q["zaad"] < q["actual"] - 1e-6 else "same")))
-            timing = _timing_note(per, src, t, W)
+            # `zaad_action` compares ZAAD with the model-evaluated historical path (what the settlement could score);
+            # `zaad_vs_recorded` compares with the recorded quantity; the basis and label say which is which
+            action = _compare(q.get("zaad", 0.0), q.get("actual", 0.0))
             observed = float(methods.actual.get(t, {}).get(src, 0.0)) if "actual" in per else None
             n_unid, qty_unid = unidentified.get((sku, t), (0, 0.0))
             if observed is None:
@@ -826,6 +833,24 @@ def _decision_rows(initial: Request, per: dict[str, list[dict]], methods: "_LegM
             else:
                 # no recorded action of this SKU reached this period: a zero is the absence of an action, not an exact observation
                 id_fid, evaluation, overall = None, None, comparator.NO_IDENTIFIED_ACTION
+            zq, eq = q.get("zaad", 0.0), q.get("actual", 0.0)
+            if observed is None:
+                basis, vs_recorded, label_txt = "none", None, None
+            elif overall == comparator.INCOMPLETE:
+                basis, vs_recorded = "unidentified", None
+                label_txt = ((f"ordered {zq:g}" if zq > 0 else "no order") + (f"; a recorded order of this SKU ({qty_unid:g}) could not be attributed to a source" if n_unid else
+                             "; the recorded order's source identity is incomplete"))
+            elif overall == comparator.TRANSFORMED:
+                basis, vs_recorded = "model-evaluated", _compare(zq, observed)
+                label_txt = f"{_words(action, eq, 'the model-evaluated quantity')}, {_words(vs_recorded, observed, 'the recorded order')}"
+            elif overall == comparator.EXACT:
+                basis, vs_recorded = "recorded", action
+                label_txt = _words(action, observed, "the recorded order")
+            else:
+                basis, vs_recorded = "no recorded action", action
+                label_txt = f"ordered {zq:g}; no recorded order of this SKU in this period" if zq > 0 else "no order; no recorded order of this SKU in this period"
+            timing = _timing_note(per, src, t, W, unidentified={k[1] for k in unidentified if k[0] == sku}) if overall != comparator.INCOMPLETE else (
+                "a recorded order of this SKU in this period is not attributable to a source" if n_unid else None)
             rows.append({"review": t, "date": per[next(iter(per))][t]["as_of"], "sku": sku, "supplier": supplier_of_source.get(src), "location": "main",
                          "actual_qty": q.get("actual"), "rule_qty": q.get("rule"), "zaad_qty": q.get("zaad"),
                          # H3a: the recorded quantity and the quantity the settlement could evaluate are two facts; identity
@@ -834,13 +859,31 @@ def _decision_rows(initial: Request, per: dict[str, list[dict]], methods: "_LegM
                          "actual_identity_fidelity": id_fid, "actual_evaluation_fidelity": evaluation, "actual_fidelity": overall,
                          "actual_unidentified_lines": n_unid, "actual_unidentified_qty": qty_unid if n_unid else 0.0,
                          "quantity_difference": (q.get("zaad", 0.0) - q.get("actual", 0.0)) if "actual" in q and "zaad" in q else None,
-                         "zaad_action": action, "zaad_status": z.get("status"), "zaad_policy": z.get("selected_policy"), "fallback_to_rule": z.get("fallback_to_rule"),
+                         "zaad_action": action, "zaad_vs_recorded": vs_recorded, "comparison_basis": basis, "zaad_action_label": label_txt,
+                         "zaad_status": z.get("status"), "zaad_policy": z.get("selected_policy"), "fallback_to_rule": z.get("fallback_to_rule"),
                          "timing": timing, "settlement": used if q.get("zaad", 0.0) > 0 else None, "settlement_cell": label,
                          "outcome": outcome, "economic_outcome": "portfolio level (the ledger is not attributed per SKU)"})
     return rows
 
 
-def _timing_note(per: dict, src: str, t: int, W: int) -> str | None:
+def _compare(zaad_qty: float, reference_qty: float) -> str:
+    """ZAAD's order against a reference quantity: no order / order / more / less / same."""
+    if zaad_qty <= 0:
+        return "no order"
+    if reference_qty <= 0:
+        return "order"
+    return "more" if zaad_qty > reference_qty + 1e-6 else ("less" if zaad_qty < reference_qty - 1e-6 else "same")
+
+
+def _words(action: str, reference_qty: float, reference_name: str) -> str:
+    return {"no order": f"no order where {reference_name} was {reference_qty:g}", "order": f"an order where {reference_name} had none",
+            "more": f"more than {reference_name} ({reference_qty:g})", "less": f"less than {reference_name} ({reference_qty:g})",
+            "same": f"same as {reference_name} ({reference_qty:g})"}[action]
+
+
+def _timing_note(per: dict, src: str, t: int, W: int, unidentified: set[int] | None = None) -> str | None:
+    """When ZAAD ordered relative to the nearest IDENTIFIED recorded order of the source. A nearby period holding a
+    recorded order of the SKU that could not be attributed to a source makes the timing unknowable, not 'none'."""
     if "actual" not in per or "zaad" not in per:
         return None
     zq = float(per["zaad"][t]["purchases"].get(src, 0.0))
@@ -851,8 +894,10 @@ def _timing_note(per: dict, src: str, t: int, W: int) -> str | None:
     for d in (1, 2):
         for s in (t - d, t + d):
             if 0 <= s < W and float(per["actual"][s]["purchases"].get(src, 0.0)) > 0:
-                return f"{d} week{'s' if d > 1 else ''} {'earlier' if s > t else 'later'} than the operator's nearest order"
-    return "no operator order within 2 weeks"
+                return f"{d} week{'s' if d > 1 else ''} {'earlier' if s > t else 'later'} than the nearest identified recorded order"
+    if unidentified and any(0 <= s < W and abs(s - t) <= 2 for s in unidentified):
+        return "a recorded order of this SKU within 2 weeks could not be attributed to a source"
+    return "no identified recorded order within 2 weeks"
 
 
 def _settlement_shares(decisions: list[dict], truth_prov: dict) -> dict:

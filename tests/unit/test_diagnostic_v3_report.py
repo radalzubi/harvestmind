@@ -386,3 +386,35 @@ def test_benchmark_names_the_rule_by_its_provenance(base):
     assert pb["reference_label"] == "your operator-declared purchasing rule" and "your operator-declared purchasing rule" in pb["question"]
     if pb.get("outcome") == "keep_current_after_holdout":
         assert "replacing your operator-declared purchasing rule" in pb["statement"]
+
+
+def test_decision_summary_wording_follows_action_fidelity(base):
+    rep = _replay()
+    rep["comparison"] = _comparison("INCOMPLETE")
+    base_row = dict(rep["decisions"][0])
+    # A: a 100-unit recorded order of the SKU could not be attributed to a source; ZAAD ordered 20 from A
+    unattributed = {**base_row, "sku": "SKU-0001", "supplier": "SUP-A", "actual_qty": 0.0, "actual_observed_qty": 0.0, "actual_evaluated_qty": 0.0, "zaad_qty": 20.0,
+                    "actual_identity_fidelity": "INCOMPLETE", "actual_evaluation_fidelity": None, "actual_fidelity": "INCOMPLETE",
+                    "actual_unidentified_lines": 1, "actual_unidentified_qty": 100.0, "zaad_action": "order", "zaad_vs_recorded": None,
+                    "comparison_basis": "unidentified", "zaad_action_label": "ordered 20; a recorded order of this SKU (100) could not be attributed to a source",
+                    "quantity_difference": 20.0, "timing": None}
+    # B: a recorded 103 was evaluated as 96; ZAAD ordered 100
+    transformed = {**base_row, "sku": "SKU-0012", "supplier": "SUP-01", "actual_qty": 96.0, "actual_observed_qty": 103.0, "actual_evaluated_qty": 96.0, "zaad_qty": 100.0,
+                   "actual_identity_fidelity": "EXACT", "actual_evaluation_fidelity": "TRANSFORMED", "actual_fidelity": "TRANSFORMED",
+                   "actual_unidentified_lines": 0, "actual_unidentified_qty": 0.0, "zaad_action": "more", "zaad_vs_recorded": "less",
+                   "comparison_basis": "model-evaluated", "zaad_action_label": "more than the model-evaluated quantity (96), less than the recorded order (103)",
+                   "quantity_difference": 4.0, "timing": "same week"}
+    rep["decisions"] = [unattributed, transformed]
+    base["optimizer_replay"] = rep
+    r = build_report(base, job_id="j", company="C")
+    ds = r["optimizer_replay"]["decisions_summary"]
+    assert ds["unattributed_recorded_rows"] == 1 and ds["zaad_ordered_where_identified_recorded_had_none"] == 0
+    assert ds["zaad_less_than_recorded"] == 1 and ds["zaad_more_than_recorded"] == 0 and ds["rows_compared_on_model_evaluated_quantity"] == 1
+    text = ds["text"]
+    assert "ZAAD ordered where no identified recorded order existed on 0" in text
+    assert "less than the recorded order on 1" in text and "more than the recorded order on 0" in text
+    assert "1 product-week" in text and "could not be attributed to a source" in text and "no comparison is made" in text
+    assert "where you did not" not in text and "less than you" not in text and "placed no order" not in text
+    # the per-row label keeps both quantities apart
+    row = next(d for d in r["optimizer_replay"]["decisions"] if d["sku"] == "SKU-0012")
+    assert row["zaad_action_label"].startswith("more than the model-evaluated quantity (96), less than the recorded order (103)")

@@ -379,7 +379,7 @@ function ReplayView({ rp }: { rp: NonNullable<Report["optimizer_replay"]> }) {
       {(rp.not_measured ?? []).length > 0 && <ul className="diag-small diag-muted">{rp.not_measured!.map((n, i) => <li key={i}>{n}</li>)}</ul>}
       {rp.retention_note && <div className="diag-callout muted">{rp.retention_note}</div>}
       {rp.decisions_summary && (
-        <p>Decisions: {rp.decisions_summary.rows} product-weeks replayed; ZAAD ordered where the recorded orders had none on {rp.decisions_summary.zaad_ordered_where_you_did_not}, less than the recorded orders on {rp.decisions_summary.zaad_ordered_less}, more on {rp.decisions_summary.zaad_ordered_more}, and did not order where the recorded orders did on {rp.decisions_summary.zaad_did_not_order_where_you_did}; the planner abstained and {referenceLabel} stood on {rp.decisions_summary.abstained_reviews} decision date(s).</p>
+        <p>{rp.decisions_summary.text ?? `Decisions: ${rp.decisions_summary.rows} product-weeks replayed against the model-evaluated historical-action path (this report predates recorded-quantity attribution): an order where that path had none on ${rp.decisions_summary.zaad_ordered_where_you_did_not}, less on ${rp.decisions_summary.zaad_ordered_less}, more on ${rp.decisions_summary.zaad_ordered_more}; the planner abstained and ${referenceLabel} stood on ${rp.decisions_summary.abstained_reviews} decision date(s).`}</p>
       )}
       {rp.decision_changes && (
         <>
@@ -423,7 +423,7 @@ function ReplayView({ rp }: { rp: NonNullable<Report["optimizer_replay"]> }) {
                       <td>{fmtQty(d.actual_observed_qty ?? d.actual_qty)}{d.actual_identity_fidelity === "INCOMPLETE" ? <div className="diag-muted diag-small">source identity incomplete</div> : null}</td>
                       <td>{fmtQty(d.actual_evaluated_qty ?? d.actual_qty)}{d.actual_evaluation_fidelity === "TRANSFORMED" ? <div className="diag-muted diag-small">adjusted to the declared envelope</div> : null}</td>
                       <td>{fmtQty(d.rule_qty)}</td><td><b>{fmtQty(d.zaad_qty)}</b></td>
-                      <td>{d.zaad_action}{d.fallback_to_rule ? " (planner abstained)" : ""}</td><td>{d.timing ?? ""}</td><td>{d.settlement ?? "—"}</td>
+                      <td>{d.zaad_action_label ?? d.zaad_action}{d.fallback_to_rule ? " (planner abstained)" : ""}</td><td>{d.timing ?? ""}</td><td>{d.settlement ?? "—"}</td>
                       <td>{svc(d.outcome?.actual)} / {svc(d.outcome?.zaad)}</td><td>{fmtQty(d.outcome?.actual?.end_stock)} / {fmtQty(d.outcome?.zaad?.end_stock)}</td>
                     </tr>
                   ))}

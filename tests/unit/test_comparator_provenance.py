@@ -309,7 +309,7 @@ def test_e_transformation_coverage_is_labelled_as_action_groups():
 
 
 # ── final pass, defect 1: receipt observations belong to a PO LINE, not to a PO id ──
-def _multiline_vault(order="forward", *, receipts_without_sku=False, duplicate_line=False, shared_po_ids=True):
+def _multiline_vault(order="forward", *, receipts_without_sku=False, duplicate_line=False, shared_po_ids=True, mixed_receipt=False):
     """One PO id carries two SKU lines: X (100 ordered, 100 received after 7 days) and Y (50 ordered, 25 received
     after 28 days). Both SKUs are planned; the two observations must stay distinct.
 
@@ -334,6 +334,8 @@ def _multiline_vault(order="forward", *, receipts_without_sku=False, duplicate_l
             po_rows.append((pid("X"), day, "A", "X", 100.0, 2.0))
         rc_rows += [(pid("X"), day + pd.Timedelta(days=7).to_pytimedelta(), None if receipts_without_sku else "X", 100.0),
                     (pid("Y"), day + pd.Timedelta(days=28).to_pytimedelta(), None if receipts_without_sku else "Y", 25.0)]
+        if mixed_receipt:
+            rc_rows.append((po, day + pd.Timedelta(days=14).to_pytimedelta(), None, 10.0))      # a receipt on the PO that names no line
     seq = (po_rows, rc_rows) if order == "forward" else (po_rows[::-1], rc_rows[::-1])
     for po, day, sup, sku, qty, cost in seq[0]:
         conn.execute("INSERT INTO stg_fmcg_purchase_orders (po_id, po_date, supplier_id, sku, qty_ordered, unit_cost) VALUES (?, ?, ?, ?, ?, ?)", [po, day, sup, sku, qty, cost])
@@ -395,12 +397,12 @@ def test_f1_two_suppliers_with_distinct_po_ids_are_unchanged():
 
 
 # ── final pass, defect 2: a zero row is not an exact observation ──
-def _serialized_rows(pos_rows, sources, observed_by_source, evaluated_by_source):
+def _serialized_rows(pos_rows, sources, observed_by_source, evaluated_by_source, zaad_by_source=None):
     actions = C.map_historical_actions(_pos(*pos_rows), sources, origin=ORIGIN, period_days=7, reviews=1)
     methods = SimpleNamespace(actual={0: observed_by_source}, zaad_log=[], actions=actions)
     initial = SimpleNamespace(sources=sources, services=[SimpleNamespace(sku=s.sku, id=f"svc_{s.sku}") for s in sources])
     per = {"actual": [{"purchases": evaluated_by_source, "as_of": "2025-09-01", "service_by_sku": {}, "end_stock_by_sku": {}}],
-           "zaad": [{"purchases": {}, "as_of": "2025-09-01", "service_by_sku": {}, "end_stock_by_sku": {}}]}
+           "zaad": [{"purchases": zaad_by_source or {}, "as_of": "2025-09-01", "service_by_sku": {}, "end_stock_by_sku": {}}]}
     rows = H._decision_rows(initial, per, methods, {"supply": {}, "supply_actual_qty": {}}, 1)
     comparison = C.historical_comparison(actions.coverage(1), transformed_groups=0, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=1)
     return {r["supplier"]: r for r in rows}, comparison
@@ -437,3 +439,54 @@ def test_f2_exact_identity_rows_and_empty_periods_are_told_apart():
     assert rows["A"]["actual_identity_fidelity"] == C.INCOMPLETE and rows["A"]["actual_fidelity"] == C.INCOMPLETE and rows["A"]["actual_unidentified_lines"] == 1
     assert rows["B"]["actual_fidelity"] == C.INCOMPLETE and rows["B"]["actual_observed_qty"] == 0.0
     assert cmp["comparator"]["fidelity"] == C.INCOMPLETE and cmp["coverage"]["lines_unmapped"] == 1
+
+
+# ── residual defect 1: an unattributable receipt on a PO taints every line of that PO ──
+@pytest.mark.parametrize("order", ["forward", "reversed"])
+def test_r1_a_receipt_without_sku_on_a_multiline_po_leaves_no_line_measured(order):
+    conn = _multiline_vault(order, mixed_receipt=True)
+    req, world, prov = _truth(conn)
+    sx, sy = next(s.id for s in req.sources if s.sku == "X"), next(s.id for s in req.sources if s.sku == "Y")
+    for t in range(8):
+        assert prov["supply"][f"{sx}|{t}"] != "MEASURED" and prov["supply"][f"{sy}|{t}"] != "MEASURED", (t, prov["supply"][f"{sx}|{t}"], prov["supply"][f"{sy}|{t}"])
+    assert not any(k.startswith(sx) or k.startswith(sy) for k in prov["supply_actual_qty"])
+    assert prov["ambiguous_receipt_lines"] > 0 and prov["pos_with_unplaceable_receipts"] > 0
+    conn.close()
+
+
+def test_r1_fully_placed_pos_stay_measured_beside_tainted_ones():
+    conn = _multiline_vault()
+    # taint one PO in the window with a receipt that names no line; the others stay independently provable
+    conn.execute("INSERT INTO stg_fmcg_receipts (po_id, receipt_date, sku, qty_received) VALUES ('PO-35', DATE '2025-09-22', NULL, 10)")
+    req, world, prov = _truth(conn)
+    sx, sy = next(s.id for s in req.sources if s.sku == "X"), next(s.id for s in req.sources if s.sku == "Y")
+    tainted = 35 - 34                                   # PO-35 is placed in review period 1 (origin 2025-09-01 is week 34)
+    assert prov["supply"][f"{sx}|{tainted}"] != "MEASURED" and prov["supply"][f"{sy}|{tainted}"] != "MEASURED"
+    for t in range(8):
+        if t != tainted:
+            assert prov["supply"][f"{sx}|{t}"] == "MEASURED" and prov["supply"][f"{sy}|{t}"] == "MEASURED" and world.fills[sy, t] == 0.5
+    conn.close()
+
+
+# ── residual defect 2: decision summaries follow identity and transformation fidelity ──
+def test_r2_an_unattributed_recorded_order_is_not_an_operator_who_placed_none():
+    two = [_src("src_X", "X", "A"), _src("src_X__B", "X", "B")]
+    rows, cmp = _serialized_rows([("PO-1", "2025-09-02", None, "X", 100.)], two, {}, {}, {"src_X": 20.})
+    a = rows["A"]
+    assert a["zaad_qty"] == 20. and a["actual_fidelity"] == C.INCOMPLETE and a["actual_unidentified_lines"] == 1
+    assert a["comparison_basis"] == "unidentified" and a["zaad_vs_recorded"] is None
+    assert a["zaad_action"] == "order" and "could not be attributed" in a["zaad_action_label"] and "no order" not in a["zaad_action_label"]
+    assert a["timing"] is None or "not attributable" in a["timing"]
+    assert cmp["permissions"]["can_claim_against_operator"] is False
+
+
+def test_r2_a_transformed_order_is_compared_to_both_quantities_with_the_right_words():
+    one = [_src("src_X", "X", "A")]
+    rows, _ = _serialized_rows([("PO-1", "2025-09-02", "A", "X", 103.)], one, {"src_X": 103.}, {"src_X": 96.}, {"src_X": 100.})
+    a = rows["A"]
+    assert (a["actual_observed_qty"], a["actual_evaluated_qty"], a["zaad_qty"]) == (103., 96., 100.)
+    assert a["comparison_basis"] == "model-evaluated" and a["zaad_action"] == "more" and a["zaad_vs_recorded"] == "less"
+    assert a["zaad_action_label"] == "more than the model-evaluated quantity (96), less than the recorded order (103)"
+    assert a["timing"] == "same week"
+    rows, _ = _serialized_rows([("PO-1", "2025-09-02", "A", "X", 100.)], one, {"src_X": 100.}, {"src_X": 100.}, {"src_X": 100.})
+    assert rows["A"]["comparison_basis"] == "recorded" and rows["A"]["zaad_vs_recorded"] == "same" and rows["A"]["zaad_action_label"] == "same as the recorded order (100)"
