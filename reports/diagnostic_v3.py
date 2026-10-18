@@ -189,7 +189,7 @@ def consistency_checks(report: dict) -> list[dict]:
 
 
 # ── the policy benchmark framing ─────────────────────────────────────────────
-BENCHMARK_QUESTION = "Would a simpler fixed replenishment rule have historically been more robust than your own?"
+BENCHMARK_QUESTION = "Would a simpler fixed replenishment rule have historically been more robust than {reference}?"
 BENCHMARK_EXPLAINER = ("This tests whether a fixed purchasing rule (for example a fixed order-up-to cover level) appears robust enough to replace "
                        "your reconstructed rule. Candidates are chosen on selection periods and then re-tested on later unseen periods. "
                        "A candidate that wins the selection periods and fails the unseen ones is a rule that did not generalise. "
@@ -200,7 +200,8 @@ def frame_benchmark(policy: dict) -> dict:
     """The V2 policy comparison with V3 framing: renamed, its question stated, its wording about fixed rules."""
     out = dict(policy)
     out["title"] = "Simple policy benchmark"
-    out["question"] = BENCHMARK_QUESTION
+    reference = str(policy.get("reference_label") or "the reconstructed historical rule")
+    out["question"] = BENCHMARK_QUESTION.format(reference=reference)
     out["explainer"] = BENCHMARK_EXPLAINER
     out["candidate_kind"] = "a fixed replenishment rule"
     oc = policy.get("outcome")
@@ -208,7 +209,7 @@ def frame_benchmark(policy: dict) -> dict:
     article = ("an " if label[:1].lower() in "aeiou" else "a ") + label[:1].lower() + label[1:]
     if oc == "keep_current_after_holdout":
         out["statement"] = (f"{article[:1].upper()}{article[1:]} performed strongly on the periods used to select it, but the improvement "
-                            "did not persist on later unseen periods. ZAAD therefore does not recommend replacing your existing purchasing rule with that fixed policy.")
+                            f"did not persist on later unseen periods. ZAAD therefore does not recommend replacing {reference} with that fixed policy.")
     elif oc == "adopt_candidate":
         out["statement"] = (f"{article[:1].upper()}{article[1:]} beat {policy.get('reference_label') or 'the reconstructed rule'} on the selection periods and held on the unseen "
                             "periods. It is a defensible fixed rule; whether ZAAD's adaptive decisions do better is a separate question, answered below.")
@@ -394,12 +395,14 @@ def replay_section(summary: dict) -> dict:
     rc = r.get("rule_conformance") or {}
     if rc.get("changed_lines"):
         out["rule_conformance_note"] = (f"The reconstructed rule's projected orders were scaled to the declared shared supplier capacity on {num(rc.get('changed_lines'))} line(s) "
-                                        "(the rule orders every product of a supplier in the same week, which your own staggered orders never did); the scaled plan is the rule leg and the incumbent ZAAD was compared against.")
+                                        "(the rule orders every product of a supplier in the same week, which the recorded orders never did); the scaled plan is the rule leg and the decision reference ZAAD was compared against.")
     # per period
     series, dates = d_actual.get("series") or [], cov.get("dates") or []
     negatives = [(dates[i] if i < len(dates) else str(i), v) for i, v in enumerate(series) if v < -1e-9]
     worst_i = min(range(len(series)), key=lambda i: series[i]) if series else None
     out["periods"] = {"series": series, "dates": dates, "currency": currency, "improved": _f(d_actual.get("share_improved")), "worse": _f(d_actual.get("share_worse")),
+                      # the chart's own attribution follows the comparator contract (frontend and PDF print this caption)
+                      "caption": f"Cost difference per decision date: {action_label} − ZAAD (positive = ZAAD cost less)",
                       "mean": _f(d_actual.get("mean")), "median": _f(d_actual.get("median")), "worst": _f(d_actual.get("worst")), "best": _f(d_actual.get("best")),
                       "sd": _f(d_actual.get("sd")), "ci80": d_actual.get("ci80_mean"), "n_negative": len(negatives),
                       "worst_date": dates[worst_i] if worst_i is not None and worst_i < len(dates) else None,

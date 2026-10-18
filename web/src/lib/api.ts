@@ -661,7 +661,7 @@ export interface DiagnosticReport {
     table?: { metric: string; actual: string; rule: string; zaad: string; difference: string; better: boolean | null; note: string | null }[];
     not_measured?: string[]; retention_note?: string | null;
     decisions_summary?: { rows: number; changed: number; retained_rule_reviews?: number; identical_to_rule?: boolean; zaad_ordered_where_you_did_not: number; zaad_ordered_less: number; zaad_ordered_more: number; zaad_did_not_order_where_you_did: number; abstained_reviews: number; units_difference: number };
-    periods?: { series: number[]; dates: string[]; currency: string | null; improved: number | null; worse: number | null; mean: number | null; median: number | null; worst: number | null; best: number | null; sd: number | null; ci80: [number, number] | null; n_negative: number; worst_date: string | null; text: string };
+    periods?: { caption?: string; series: number[]; dates: string[]; currency: string | null; improved: number | null; worse: number | null; mean: number | null; median: number | null; worst: number | null; best: number | null; sd: number | null; ci80: [number, number] | null; n_negative: number; worst_date: string | null; text: string };
     vs_rule?: { relative: number | null; improved: number | null; identical?: boolean; text: string };
     regimes?: { state: string; periods: number; mean: number | null; improved: number | null; text: string }[]; regime_note?: string;
     operating_regimes?: { regime: string; periods: number; mean: number | null; improved: number | null; definition: string | null; text: string }[]; operating_regime_note?: string;

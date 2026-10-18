@@ -336,3 +336,53 @@ def test_transformed_or_incomplete_historical_actions_are_never_called_actual_or
     assert rp["comparison"]["comparator"]["fidelity"] == "NOT_AVAILABLE" and rp["comparison"]["permissions"]["can_claim_historical_counterfactual_difference"] is False
     assert "comparator fidelity not established" in r["executive_summary"]["replay"]["statement"] and "your actual orders" not in json.dumps(rp)
     assert "INFERRED_FROM_HISTORY" not in json.dumps({k: v for k, v in rp.items() if k not in ("decisions", "engine", "performance")})
+
+
+# ── final pass, defect 3: no operator attribution the comparator contract does not support ──
+def _comparison(fidelity_kind: str, rule_provenance: str = "INFERRED_FROM_HISTORY"):
+    cov = {"lines_observed": 8, "lines_exact": 8 if fidelity_kind != "INCOMPLETE" else 6, "lines_incomplete": 0 if fidelity_kind != "INCOMPLETE" else 2,
+           "lines_unmapped": 0 if fidelity_kind != "INCOMPLETE" else 1, "exact_quantity_share": 1.0, "exact_value_share": 1.0, "value_share_basis": "x",
+           "incomplete_reasons": [] if fidelity_kind != "INCOMPLETE" else ["the record carries no supplier identity"]}
+    return comparator.historical_comparison(cov, transformed_groups=1 if fidelity_kind == "TRANSFORMED" else 0, settlement_shares=None,
+                                            rule_provenance=rule_provenance, reviews_completed=8)
+
+
+@pytest.mark.parametrize("kind", ["EXACT", "TRANSFORMED", "INCOMPLETE", "LEGACY"])
+def test_report_attribution_follows_the_comparator_contract(base, kind):
+    rep = _replay()
+    if kind == "LEGACY":
+        rep.pop("comparison")
+    else:
+        rep["comparison"] = _comparison(kind)
+    base["optimizer_replay"] = rep
+    r = build_report(base, job_id="j", company="C")
+    rp = r["optimizer_replay"]
+    caption = rp["periods"]["caption"]
+    assert "your orders" not in caption and "− ZAAD" in caption
+    if kind == "EXACT":
+        assert caption.startswith("Cost difference per decision date: the recorded historical orders − ZAAD")
+    elif kind == "TRANSFORMED":
+        assert "a model-adjusted version of the recorded historical orders − ZAAD" in caption
+    elif kind == "INCOMPLETE":
+        assert "could be identified" in caption
+    else:
+        assert "comparator fidelity not established" in caption
+    text = json.dumps({k: v for k, v in rp.items() if k not in ("decisions", "engine", "performance")})
+    assert "your orders" not in text and "your actual orders" not in text and "you / ZAAD" not in text
+    pb = r["policy_benchmark"]
+    assert "than your own" not in pb["question"] and "your existing purchasing rule" not in (pb.get("statement") or "")
+    assert "the reconstructed historical rule" in pb["question"]
+    assert "your own staggered orders" not in json.dumps(rp)
+
+
+def test_benchmark_names_the_rule_by_its_provenance(base):
+    base["optimizer_replay"] = _replay()
+    inferred = build_report(base, job_id="j", company="C")["policy_benchmark"]
+    assert inferred["reference_label"] == "the reconstructed historical rule" and "the reconstructed historical rule" in inferred["question"]
+    assert "your existing" not in (inferred.get("statement") or "") and "your own" not in inferred["question"]
+    declared = dict(base)
+    declared["incumbent_detail"] = {**(base.get("incumbent_detail") or {}), "source": "configured"}
+    pb = build_report(declared, job_id="j", company="C")["policy_benchmark"]
+    assert pb["reference_label"] == "your operator-declared purchasing rule" and "your operator-declared purchasing rule" in pb["question"]
+    if pb.get("outcome") == "keep_current_after_holdout":
+        assert "replacing your operator-declared purchasing rule" in pb["statement"]

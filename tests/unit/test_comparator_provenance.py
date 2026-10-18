@@ -306,3 +306,134 @@ def test_e_transformation_coverage_is_labelled_as_action_groups():
     assert cmp["coverage"]["transformed_action_groups"] == 2 and "PO-line attribution is not available" in cmp["coverage"]["transformation_unit"]
     assert "2 source-review action group(s)" in " ".join(cmp["caveats"]) and "line(s) were" not in " ".join(cmp["caveats"])
     assert cmp["comparator"]["fidelity"] == C.TRANSFORMED and cmp["permissions"]["can_claim_historical_counterfactual_difference"] is False
+
+
+# ── final pass, defect 1: receipt observations belong to a PO LINE, not to a PO id ──
+def _multiline_vault(order="forward", *, receipts_without_sku=False, duplicate_line=False, shared_po_ids=True):
+    """One PO id carries two SKU lines: X (100 ordered, 100 received after 7 days) and Y (50 ordered, 25 received
+    after 28 days). Both SKUs are planned; the two observations must stay distinct.
+
+    `shared_po_ids=False` gives every line its own PO id: the workspace adapter derives shipment-history and pipeline
+    identities from the PO id alone (a pre-existing limit outside H3a), so the Request is built from that variant and
+    the truth is reconstructed from the shared-id variant, which is the defect under test."""
+    conn = duckdb.connect(":memory:")
+    setup_db(conn)
+    conn.execute("INSERT INTO stg_fmcg_skus (sku, supplier_id, unit_cost, unit_price, units_per_case, moq_units) VALUES ('X', 'A', 2.0, 4.0, 1, 1), ('Y', 'A', 3.0, 6.0, 1, 1)")
+    conn.execute("INSERT INTO stg_fmcg_suppliers (supplier_id) VALUES ('A')")
+    po_rows, rc_rows = [], []
+    for w in range(60):
+        day = date(2025, 1, 6) + pd.Timedelta(weeks=w).to_pytimedelta()
+        po = "PO-%02d" % w
+        pid = (lambda sku: po) if shared_po_ids else (lambda sku: f"{po}-{sku}")
+        for sku, q in (("X", 120), ("Y", 60)):
+            conn.execute("INSERT INTO stg_fmcg_orders (order_id, customer_id, order_date, sku, qty_ordered) VALUES (?, 'C1', ?, ?, ?)", [f"SO-{sku}-{w:02d}", day, sku, q])
+        if 30 <= w <= 33:
+            continue          # a multi-line PO still open at the 2025-09-01 origin trips the pipeline's one-id-per-PO contract (pre-existing, outside H3a)
+        po_rows += [(pid("X"), day, "A", "X", 100.0, 2.0), (pid("Y"), day, "A", "Y", 50.0, 3.0)]
+        if duplicate_line:
+            po_rows.append((pid("X"), day, "A", "X", 100.0, 2.0))
+        rc_rows += [(pid("X"), day + pd.Timedelta(days=7).to_pytimedelta(), None if receipts_without_sku else "X", 100.0),
+                    (pid("Y"), day + pd.Timedelta(days=28).to_pytimedelta(), None if receipts_without_sku else "Y", 25.0)]
+    seq = (po_rows, rc_rows) if order == "forward" else (po_rows[::-1], rc_rows[::-1])
+    for po, day, sup, sku, qty, cost in seq[0]:
+        conn.execute("INSERT INTO stg_fmcg_purchase_orders (po_id, po_date, supplier_id, sku, qty_ordered, unit_cost) VALUES (?, ?, ?, ?, ?, ?)", [po, day, sup, sku, qty, cost])
+    for po, day, sku, q in seq[1]:
+        conn.execute("INSERT INTO stg_fmcg_receipts (po_id, receipt_date, sku, qty_received) VALUES (?, ?, ?, ?)", [po, day, sku, q])
+    for sku in ("X", "Y"):
+        conn.execute("INSERT INTO stg_fmcg_inventory (snapshot_date, sku, location_id, on_hand, in_transit, snapshot_basis, source_known_at) "
+                     "VALUES (DATE '2025-08-31', ?, 'MAIN', 300, 0, 'END_OF_DAY', TIMESTAMP '2025-08-31 23:59:59')", [sku])
+    return conn
+
+
+def _truth(conn):
+    request_vault = _multiline_vault(shared_po_ids=False)
+    req, _ = build_request(request_vault, "op", as_of=datetime(2025, 9, 1, tzinfo=timezone.utc), horizon=8, skus=["X", "Y"])
+    request_vault.close()
+    world, prov = H.build_truth(conn, req, periods=8, seed=1)
+    return req, world, prov
+
+
+@pytest.mark.parametrize("order", ["forward", "reversed"])
+def test_f1_two_sku_lines_on_one_po_keep_their_own_receipts(order):
+    conn = _multiline_vault(order)
+    req, world, prov = _truth(conn)
+    sx, sy = next(s.id for s in req.sources if s.sku == "X"), next(s.id for s in req.sources if s.sku == "Y")
+    for t in range(8):
+        assert prov["supply"][f"{sx}|{t}"] == "MEASURED" and prov["supply"][f"{sy}|{t}"] == "MEASURED"
+        assert prov["supply_actual_qty"][f"{sx}|{t}"] == 100.0 and prov["supply_actual_qty"][f"{sy}|{t}"] == 50.0
+        assert world.fills[sx, t] == 1.0 and world.fills[sy, t] == 0.5, (world.fills[sx, t], world.fills[sy, t])      # 100/100 and 25/50, not 125/150 for both
+        assert world.arrival[sx, t] == t + 1 and world.arrival[sy, t] == t + 4                                       # 7 days and 28 days, not a blend
+    assert prov["receipt_line_identity"].startswith("receipts are matched to a purchase-order LINE")
+    conn.close()
+
+
+def test_f1_receipts_without_sku_on_a_multiline_po_are_ambiguous_and_measure_nothing():
+    conn = _multiline_vault(receipts_without_sku=True)
+    req, world, prov = _truth(conn)
+    for s in req.sources:
+        assert all(prov["supply"][f"{s.id}|{t}"] != "MEASURED" for t in range(8)), s.id
+    assert prov["ambiguous_receipt_lines"] > 0
+    conn.close()
+
+
+def test_f1_a_duplicated_po_line_is_ambiguous_for_that_line_only():
+    conn = _multiline_vault(duplicate_line=True)
+    req, world, prov = _truth(conn)
+    sx, sy = next(s.id for s in req.sources if s.sku == "X"), next(s.id for s in req.sources if s.sku == "Y")
+    assert all(prov["supply"][f"{sx}|{t}"] != "MEASURED" for t in range(8))           # X appears twice on the PO: which line was received?
+    assert all(prov["supply"][f"{sy}|{t}"] == "MEASURED" for t in range(8)) and all(world.fills[sy, t] == 0.5 for t in range(8))
+    conn.close()
+
+
+def test_f1_two_suppliers_with_distinct_po_ids_are_unchanged():
+    conn = _truth_vault("forward")
+    req, _ = build_request(conn, "op", as_of=datetime(2025, 9, 1, tzinfo=timezone.utc), horizon=8, skus=["X"], sourcing=True)
+    world, prov = H.build_truth(conn, req, periods=8, seed=1)
+    a, b = next(s.id for s in req.sources if s.supplier == "A"), next(s.id for s in req.sources if s.supplier == "B")
+    assert all(prov["supply"][f"{a}|{t}"] == "MEASURED" and world.fills[a, t] == 1.0 and world.fills[b, t] == 0.5 for t in range(8))
+    conn.close()
+
+
+# ── final pass, defect 2: a zero row is not an exact observation ──
+def _serialized_rows(pos_rows, sources, observed_by_source, evaluated_by_source):
+    actions = C.map_historical_actions(_pos(*pos_rows), sources, origin=ORIGIN, period_days=7, reviews=1)
+    methods = SimpleNamespace(actual={0: observed_by_source}, zaad_log=[], actions=actions)
+    initial = SimpleNamespace(sources=sources, services=[SimpleNamespace(sku=s.sku, id=f"svc_{s.sku}") for s in sources])
+    per = {"actual": [{"purchases": evaluated_by_source, "as_of": "2025-09-01", "service_by_sku": {}, "end_stock_by_sku": {}}],
+           "zaad": [{"purchases": {}, "as_of": "2025-09-01", "service_by_sku": {}, "end_stock_by_sku": {}}]}
+    rows = H._decision_rows(initial, per, methods, {"supply": {}, "supply_actual_qty": {}}, 1)
+    comparison = C.historical_comparison(actions.coverage(1), transformed_groups=0, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=1)
+    return {r["supplier"]: r for r in rows}, comparison
+
+
+def test_f2_an_unmapped_po_never_becomes_an_exact_zero_order_for_a_candidate_source():
+    two = [_src("src_X", "X", "A"), _src("src_X__B", "X", "B")]
+    rows, cmp = _serialized_rows([("PO-1", "2025-09-02", None, "X", 100.)], two, {}, {})
+    for supplier in ("A", "B"):
+        r = rows[supplier]
+        assert r["actual_observed_qty"] == 0.0 and r["actual_evaluated_qty"] == 0.0
+        assert r["actual_fidelity"] == C.INCOMPLETE and r["actual_identity_fidelity"] == C.INCOMPLETE and r["actual_evaluation_fidelity"] is None, r
+        assert r["actual_unidentified_lines"] == 1 and r["actual_unidentified_qty"] == 100.0
+    assert cmp["comparator"]["fidelity"] == C.INCOMPLETE and cmp["permissions"]["can_claim_historical_counterfactual_difference"] is False
+    one = [_src("src_X", "X", "A")]
+    rows, cmp = _serialized_rows([("PO-1", "2025-09-02", None, "X", 100.)], one, {"src_X": 100.}, {"src_X": 100.})
+    r = rows["A"]
+    assert r["actual_observed_qty"] == 100.0 and r["actual_identity_fidelity"] == C.INCOMPLETE and r["actual_evaluation_fidelity"] == C.EXACT and r["actual_fidelity"] == C.INCOMPLETE
+    assert cmp["permissions"]["can_claim_against_operator"] is False and cmp["claim_class"] == C.MODEL_COMPARISON
+
+
+def test_f2_exact_identity_rows_and_empty_periods_are_told_apart():
+    one = [_src("src_X", "X", "A")]
+    rows, cmp = _serialized_rows([("PO-1", "2025-09-02", "A", "X", 100.)], one, {"src_X": 100.}, {"src_X": 100.})
+    assert (rows["A"]["actual_identity_fidelity"], rows["A"]["actual_evaluation_fidelity"], rows["A"]["actual_fidelity"]) == (C.EXACT, C.EXACT, C.EXACT)
+    assert cmp["claim_class"] == C.HISTORICAL_COUNTERFACTUAL_COMPARISON
+    rows, _ = _serialized_rows([("PO-1", "2025-09-02", "A", "X", 103.)], one, {"src_X": 103.}, {"src_X": 96.})
+    assert (rows["A"]["actual_identity_fidelity"], rows["A"]["actual_evaluation_fidelity"], rows["A"]["actual_fidelity"]) == (C.EXACT, C.TRANSFORMED, C.TRANSFORMED)
+    rows, _ = _serialized_rows([], one, {}, {})
+    r = rows["A"]
+    assert r["actual_fidelity"] == C.NO_IDENTIFIED_ACTION and r["actual_identity_fidelity"] is None and r["actual_evaluation_fidelity"] is None and r["actual_unidentified_lines"] == 0
+    two = [_src("src_X", "X", "A"), _src("src_X__B", "X", "B")]
+    rows, cmp = _serialized_rows([("PO-1", "2025-09-02", "A", "X", 100.), ("PO-2", "2025-09-03", None, "X", 40.)], two, {"src_X": 100.}, {"src_X": 100.})
+    assert rows["A"]["actual_identity_fidelity"] == C.INCOMPLETE and rows["A"]["actual_fidelity"] == C.INCOMPLETE and rows["A"]["actual_unidentified_lines"] == 1
+    assert rows["B"]["actual_fidelity"] == C.INCOMPLETE and rows["B"]["actual_observed_qty"] == 0.0
+    assert cmp["comparator"]["fidelity"] == C.INCOMPLETE and cmp["coverage"]["lines_unmapped"] == 1

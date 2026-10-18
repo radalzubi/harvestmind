@@ -73,6 +73,12 @@ def _periods_between(later: pd.Timestamp, origin: pd.Timestamp, period_days: int
     return int((later - origin).days // period_days)
 
 
+def _empty_line_receipts() -> pd.DataFrame:
+    """No placeable receipts: an empty frame indexed by (po_id, sku) so the line join still has two levels."""
+    return pd.DataFrame({"qty_received": pd.Series(dtype=float), "first": pd.Series(dtype="datetime64[ns]")},
+                        index=pd.MultiIndex.from_arrays([[], []], names=["po_id", "line_sku"]))
+
+
 def build_truth(conn: Any, initial: Request, *, periods: int, seed: int) -> tuple[World, dict]:
     """The realised environment after review 0, from the operator's records, with a provenance label per
     supply cell. Returns (world, provenance) where provenance carries `supply[(source, τ)]` labels,
@@ -87,12 +93,33 @@ def build_truth(conn: Any, initial: Request, *, periods: int, seed: int) -> tupl
     orders = conn.execute("SELECT sku, order_date, qty_ordered FROM stg_fmcg_orders WHERE order_date >= ? AND order_date < ?",
                           [origin.to_pydatetime(), end.to_pydatetime()]).fetchdf()
     pos = conn.execute("SELECT * FROM stg_fmcg_purchase_orders").fetchdf()
-    receipts = conn.execute("SELECT po_id, receipt_date, qty_received FROM stg_fmcg_receipts").fetchdf()
+    receipts = conn.execute("SELECT * FROM stg_fmcg_receipts").fetchdf()
     orders["order_date"] = pd.to_datetime(orders["order_date"])
     pos["po_date"] = pd.to_datetime(pos["po_date"])
     receipts["receipt_date"] = pd.to_datetime(receipts["receipt_date"])
-    got = receipts.groupby("po_id").agg(qty_received=("qty_received", "sum"), first=("receipt_date", "min")) if len(receipts) else pd.DataFrame(columns=["qty_received", "first"])
-    joined = pos.join(got, on="po_id")
+    # H3a final pass: a receipt belongs to a purchase-order LINE (po_id, sku), never to a PO id alone, because staging
+    # allows several SKU lines under one PO id. A receipt without a SKU is attributed only when its PO has exactly one
+    # line; a PO whose lines repeat a SKU, or a receipt that cannot be placed on one line, is ambiguous and measures
+    # nothing. Nothing is summed across lines.
+    pos["sku"] = pos["sku"].astype(str)
+    pos["po_id"] = pos["po_id"].astype(str)
+    line_counts = pos.groupby("po_id")["sku"].agg(["nunique", "size"])
+    sole_sku = {po: g["sku"].iloc[0] for po, g in pos.groupby("po_id") if len(g) == 1}
+    duplicated_lines = set(map(tuple, pos.loc[pos.duplicated(["po_id", "sku"], keep=False), ["po_id", "sku"]].drop_duplicates().to_numpy().tolist()))
+    ambiguous_receipt_lines = 0
+    if len(receipts):
+        receipts["po_id"] = receipts["po_id"].astype(str)
+        rsku = receipts["sku"].map(lambda v: None if v is None or (isinstance(v, float) and v != v) else str(v)) if "sku" in receipts.columns else pd.Series([None] * len(receipts), index=receipts.index)
+        rsku = rsku.where(rsku.notna(), receipts["po_id"].map(sole_sku))
+        receipts["line_sku"] = rsku
+        ambiguous_receipt_lines = int(receipts["line_sku"].isna().sum())
+        placed = receipts[receipts["line_sku"].notna()]
+        got = placed.groupby(["po_id", "line_sku"]).agg(qty_received=("qty_received", "sum"), first=("receipt_date", "min")) if len(placed) else _empty_line_receipts()
+    else:
+        got = _empty_line_receipts()
+    joined = pos.join(got, on=["po_id", "sku"])
+    joined["line_ambiguous"] = [(po, sku) in duplicated_lines for po, sku in zip(joined["po_id"], joined["sku"])]
+    del line_counts
     joined["received"] = joined["qty_received"].fillna(0.)
     joined["arrived"] = joined["first"].notna()
     joined["lead_days"] = (joined["first"] - joined["po_date"]).dt.days
@@ -107,15 +134,21 @@ def build_truth(conn: Any, initial: Request, *, periods: int, seed: int) -> tupl
         demand[service_id] = tuple(float(weekly.get((sku, t), 0.0)) if len(weekly) else 0.0 for t in range(periods))
 
     # supplier observations: received orders of each supplier, by period, over the whole history (settlement truth)
-    received = joined[joined["arrived"] & (joined["lead_days"] >= 0)].copy()
+    received = joined[joined["arrived"] & (joined["lead_days"] >= 0) & ~joined["line_ambiguous"]].copy()
     by_supplier: dict[str, pd.DataFrame] = {str(k): g for k, g in received.groupby("supplier_id")}
     # H3a correction A: a MEASURED cell belongs to the exact source that placed the order. Each received order is
     # identified by the same business key the comparator uses (sku, supplier[, destination]); a line whose supplier is
     # missing or ambiguous is not evidence for any source, however the SKU was otherwise supplied.
     network = len({s.destination for s in initial.sources}) > 1
     identified = comparator.map_historical_actions(received, list(initial.sources), origin=origin, period_days=pdays, reviews=max(1, periods), network=network)
-    exact_source = {ln.po_id: ln.source for ln in identified.lines if ln.fidelity == comparator.EXACT and ln.source is not None}
-    received["source"] = received["po_id"].astype(str).map(exact_source)
+    exact_source: dict[tuple[str, str], str | None] = {}
+    for ln in identified.lines:
+        key_line = (ln.po_id, ln.sku)
+        if key_line in exact_source:
+            exact_source[key_line] = None                    # the same (po_id, sku) twice: which line was received is not established
+        else:
+            exact_source[key_line] = ln.source if ln.fidelity == comparator.EXACT else None
+    received["source"] = [exact_source.get((po, sku)) for po, sku in zip(received["po_id"], received["sku"])]
     in_window = received[(received["period"] >= 0) & (received["period"] < periods)]
     rng = np.random.default_rng(seed)
     arrival: dict[tuple[str, int], int] = {}
@@ -181,7 +214,10 @@ def build_truth(conn: Any, initial: Request, *, periods: int, seed: int) -> tupl
                   "nearest_weeks": NEAREST_WEEKS, "seed": seed,
                   "source_identity": "a MEASURED cell is the exact source's own received order, identified by (sku, supplier[, destination]); "
                                      "orders of another supplier of the same SKU never measure this source",
-                  "received_orders_identified": len(exact_source), "received_orders_in_history": int(len(received))}
+                  "received_orders_identified": int(received["source"].notna().sum()), "received_orders_in_history": int(len(received)),
+                  "receipt_line_identity": "receipts are matched to a purchase-order LINE (po_id, sku); a receipt without a SKU is placed only on a single-line PO; "
+                                           "repeated lines and unplaceable receipts are ambiguous and are not MEASURED",
+                  "ambiguous_receipt_lines": ambiguous_receipt_lines, "ambiguous_po_lines": len(duplicated_lines)}
     world = World(f"historical:{origin.date()}:{periods}", 1.0, demand, arrival, fills, po_due, po_fill)
     return world, provenance
 
@@ -750,8 +786,11 @@ def _decision_rows(initial: Request, per: dict[str, list[dict]], methods: "_LegM
     # H3a correction D: identity fidelity per (source, review) from the recorded lines — EXACT only when every line
     # that fed the cell was identified exactly; quantity equality never proves identity
     identity: dict[tuple[str, int], str] = {}
+    unidentified: dict[tuple[str, int], tuple[int, float]] = {}          # recorded lines of a SKU in a period that map to no source
     for ln in (methods.actions.lines if methods.actions else []):
         if ln.source is None:
+            n, qty = unidentified.get((ln.sku, ln.period), (0, 0.0))
+            unidentified[ln.sku, ln.period] = (n + 1, qty + ln.quantity)
             continue
         cell = (ln.source, ln.period)
         identity[cell] = comparator.INCOMPLETE if (ln.fidelity != comparator.EXACT or identity.get(cell) == comparator.INCOMPLETE) else comparator.EXACT
@@ -773,15 +812,27 @@ def _decision_rows(initial: Request, per: dict[str, list[dict]], methods: "_LegM
             action = "no order" if q.get("zaad", 0.0) <= 0 else ("order" if q.get("actual", 0.0) <= 0 else ("more" if q["zaad"] > q["actual"] + 1e-6 else ("less" if q["zaad"] < q["actual"] - 1e-6 else "same")))
             timing = _timing_note(per, src, t, W)
             observed = float(methods.actual.get(t, {}).get(src, 0.0)) if "actual" in per else None
-            evaluation = None if observed is None else (comparator.EXACT if abs(observed - q.get("actual", 0.0)) <= 1e-9 else comparator.TRANSFORMED)
-            id_fid = identity.get((src, t)) if (observed or 0.0) > 0 else None
-            overall = None if observed is None else (comparator.INCOMPLETE if id_fid == comparator.INCOMPLETE else evaluation) if (observed or 0.0) > 0 else evaluation
+            n_unid, qty_unid = unidentified.get((sku, t), (0, 0.0))
+            if observed is None:
+                id_fid = evaluation = overall = None
+            elif observed > 0:
+                # an identified recorded action for this source: identity from its lines, evaluation from the settlement
+                evaluation = comparator.EXACT if abs(observed - q.get("actual", 0.0)) <= 1e-9 else comparator.TRANSFORMED
+                id_fid = comparator.INCOMPLETE if (identity.get((src, t)) == comparator.INCOMPLETE or n_unid) else identity.get((src, t), comparator.INCOMPLETE)
+                overall = comparator.INCOMPLETE if id_fid == comparator.INCOMPLETE else evaluation
+            elif n_unid:
+                # a recorded order of this SKU in this period maps to no source: it may or may not be this source's; nothing is evaluated
+                id_fid, evaluation, overall = comparator.INCOMPLETE, None, comparator.INCOMPLETE
+            else:
+                # no recorded action of this SKU reached this period: a zero is the absence of an action, not an exact observation
+                id_fid, evaluation, overall = None, None, comparator.NO_IDENTIFIED_ACTION
             rows.append({"review": t, "date": per[next(iter(per))][t]["as_of"], "sku": sku, "supplier": supplier_of_source.get(src), "location": "main",
                          "actual_qty": q.get("actual"), "rule_qty": q.get("rule"), "zaad_qty": q.get("zaad"),
                          # H3a: the recorded quantity and the quantity the settlement could evaluate are two facts; identity
                          # (can the recorded action be mapped to this source?) and evaluation (was it changed?) are separate
                          "actual_observed_qty": observed, "actual_evaluated_qty": q.get("actual"),
                          "actual_identity_fidelity": id_fid, "actual_evaluation_fidelity": evaluation, "actual_fidelity": overall,
+                         "actual_unidentified_lines": n_unid, "actual_unidentified_qty": qty_unid if n_unid else 0.0,
                          "quantity_difference": (q.get("zaad", 0.0) - q.get("actual", 0.0)) if "actual" in q and "zaad" in q else None,
                          "zaad_action": action, "zaad_status": z.get("status"), "zaad_policy": z.get("selected_policy"), "fallback_to_rule": z.get("fallback_to_rule"),
                          "timing": timing, "settlement": used if q.get("zaad", 0.0) > 0 else None, "settlement_cell": label,

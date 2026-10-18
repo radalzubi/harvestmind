@@ -72,11 +72,38 @@ decisions are unchanged (H0 causal suite, H1c canonical order, frozen regression
   identity and transformation notes. Marketing copy on the public site (how-it-works, i18n) describes a
   hypothetical distributor and was left alone.
 
+## Review corrections (final pass)
+
+- **PO-line identity in the truth.** `build_truth` aggregated receipts by `po_id` and keyed its exact-source lookup
+  by `po_id`, so two SKU lines under one PO id pooled their receipts (100/100 after 7 days for X and 25/50 after 28
+  days for Y became 125/150 for both). Receipts are now matched to a purchase-order LINE (po_id, sku); a receipt
+  without a SKU is placed only on a single-line PO; a PO whose lines repeat a SKU, or a receipt that cannot be
+  placed, is ambiguous and is not MEASURED. Nothing is summed across lines. Tests: two lines on one PO in both
+  physical orders keep fill 1.0 / 0.5 and arrival 1 / 4 periods; receipts without SKU on a multi-line PO measure
+  nothing; a duplicated line is ambiguous for that line only; two suppliers with distinct PO ids unchanged.
+- **Zero rows are not exact observations.** `_decision_rows` marked a source row EXACT when both the observed and
+  the evaluated quantity were zero, even if a recorded order of that SKU in that period mapped to no source. Rows now
+  distinguish an identified action (EXACT / TRANSFORMED), incomplete identity (INCOMPLETE, including when an
+  unidentified line of the SKU falls in the period, with `actual_unidentified_lines` and `actual_unidentified_qty`
+  exposing it without inventing a source) and the absence of any recorded action (`NO_IDENTIFIED_ACTION`).
+  Comparator permissions stay conservative: any unmapped line makes the comparator INCOMPLETE.
+- **Remaining operator attribution.** The chart caption "your orders − ZAAD" (frontend and PDF), the benchmark
+  question "than your own?", the holdout statement "your existing purchasing rule", the conformance note "your own
+  staggered orders" and the "End stock (you / ZAAD)" header are gone. The replay section emits `periods.caption`
+  from the comparator label; the benchmark question and statements use `reference_label`; the frontend derives every
+  header from one helper (`web/src/lib/diagnostic/labels.ts`) that shortens to "recorded historical orders" only
+  for an EXACT comparator and otherwise says "historical-action path"; a report without the contract reads
+  "comparator fidelity not established". Tested for EXACT, TRANSFORMED, INCOMPLETE and legacy reports and for
+  inferred versus operator-declared rules, in Python and in the frontend.
+
 ## Unresolved comparator-data limitations
 
 - The planner cannot know from the Request alone whether a rule was inferred or declared; the planner's
   section says `provenance = RULE_IN_REQUEST` with a note, and the synchronous plan route refines it from the
   build. Asynchronous jobs carry the planner's section only.
+- The workspace adapter derives shipment-history and pipeline identities from the PO id alone, so a vault whose
+  multi-line PO is still open at the origin cannot build a Request ("duplicate entity ID"). Pre-existing, outside
+  H3a (H1 identity area); the truth test builds its Request from an equivalent unique-id vault.
 - Exact historical comparison needs every recorded line in scope to be identified and untransformed; on
   operator data with pack-multiple rounding, capped quantities or missing supplier ids the honest result is
   MODEL_COMPARISON, not an operator claim.

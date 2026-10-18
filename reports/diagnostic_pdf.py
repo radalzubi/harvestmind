@@ -451,7 +451,7 @@ def _fold_chart(chart: dict, width: float):
 
 
 def _period_chart(per: dict, width: float):
-    """Per-period cost difference (your orders − ZAAD): one bar per decision date, positive = ZAAD cheaper.
+    """Per-period cost difference (historical-action path − ZAAD): one bar per decision date, positive = ZAAD cheaper.
     Drawn with primitives, no decoration."""
     from reportlab.graphics.shapes import Drawing, Line, Rect, String
     from reportlab.lib import colors
@@ -467,7 +467,8 @@ def _period_chart(per: dict, width: float):
     plot_w, plot_h = width - left - right, h - top - bottom
     bar_w = plot_w / n
     d = Drawing(width, h)
-    d.add(String(0, h - 10, "Cost difference per decision date: your orders − ZAAD (positive = ZAAD cost less)", fontName="Helvetica-Bold", fontSize=8, fillColor=colors.HexColor(INK)))
+    caption = str(per.get("caption") or "Cost difference per decision date: the historical-action path (comparator fidelity not established) − ZAAD (positive = ZAAD cost less)")
+    d.add(String(0, h - 10, caption, fontName="Helvetica-Bold", fontSize=8, fillColor=colors.HexColor(INK)))
 
     def y_of(v: float) -> float:
         return bottom + (v - lo) / span * plot_h
