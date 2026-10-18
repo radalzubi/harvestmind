@@ -4,7 +4,9 @@
  * ONE PROPOSED ORDER — edit it, ask ZAAD what it does, approve it, export it.
  *
  * The comparison is the heart of this page, and it is three columns from the engine, never from
- * here: your current plan, what ZAAD recommends instead, and your proposal. All three come out of
+ * here: the plan's decision reference (labelled by the backend: a reconstructed or declared rule, or a model
+ * baseline, never "your current plan" unless an operator plan was captured), what ZAAD recommends instead, and
+ * your proposal. All three come out of
  * the same optimizer over the same information set, because the evaluation runs the workspace
  * twice — once as it is, once with this order treated as placed. Subtracting two figures the
  * engine reported is the only arithmetic this page does.
@@ -23,6 +25,7 @@ import { Column, DataTable, NotAvailable } from "@/components/workspace/Table";
 import { HeaderFields, LineEditor, Warnings, type OrderHeader } from "@/components/workspace/OrderForm";
 import { useToast } from "@/components/Toast";
 import { useSession } from "@/lib/session";
+import { columnLabel } from "@/lib/zaad/reference";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
 import {
   AMENDMENT_LABEL, DATE, EXTERNAL_LABEL, EXTERNAL_NEXT, MONEY, NUMBER, ORIGIN_LABEL, OUTCOME_METRICS, PERCENT, STATE_LABEL,
@@ -65,25 +68,29 @@ function serviceName(id: string, location: string | null): string {
 
 function ComparisonTable({ comparison }: { comparison: Comparison }) {
   const currency = comparison.currency;
+  // H3a: the left column is whatever the backend says the baseline run's decision reference is
+  const currentLabel = columnLabel(comparison.columns, "current", "Decision reference");
   const columns: Column<LedgerRow>[] = [
     { key: "label", label: "", width: 220, render: (r) => r.label },
-    { key: "current", label: "Your current plan", numeric: true, render: (r) => r.current != null ? MONEY(r.current, currency) : <span className="na">—</span> },
-    { key: "zaad", label: "What ZAAD recommends", numeric: true, render: (r) => r.zaad != null ? MONEY(r.zaad, currency) : <span className="na">—</span> },
-    { key: "proposal", label: "Your proposal", numeric: true, render: (r) => r.proposal != null ? MONEY(r.proposal, currency) : <span className="na">—</span> },
-    { key: "difference", label: "Proposal vs current", numeric: true, render: (r) => delta(r, currency) },
+    { key: "current", label: currentLabel, numeric: true, render: (r) => r.current != null ? MONEY(r.current, currency) : <span className="na">—</span> },
+    { key: "zaad", label: columnLabel(comparison.columns, "zaad", "What ZAAD recommends"), numeric: true, render: (r) => r.zaad != null ? MONEY(r.zaad, currency) : <span className="na">—</span> },
+    { key: "proposal", label: columnLabel(comparison.columns, "proposal", "Your proposal"), numeric: true, render: (r) => r.proposal != null ? MONEY(r.proposal, currency) : <span className="na">—</span> },
+    { key: "difference", label: "Proposal vs reference", numeric: true, render: (r) => delta(r, currency) },
   ];
+  const currentSource = comparison.columns?.find((c) => c.key === "current")?.source;
   return (
     <>
       {comparison.zaad_abstained && (
         <div style={{ marginBottom: 12 }}>
           <Notice>
-            ZAAD kept your current plan for these products, so the middle column is the same as the left one.
-            It found no alternative worth recommending — which does not mean your proposal is not worth making.
+            ZAAD retained its decision reference ({currentLabel.toLowerCase()}) for these products, so the middle column is the
+            same as the left one. It found no alternative worth recommending — which does not mean your proposal is not worth making.
           </Notice>
         </div>
       )}
       <DataTable caption="The plan's modelled cost, three ways" columns={columns} rows={comparison.ledger}
         rowKey={(r) => r.component} dense />
+      {currentSource && <p className="zhelp" style={{ marginTop: 6 }}>{currentLabel}: {currentSource} This is a modelled reference, not a plan you submitted or approved.</p>}
       {/* An amendment's contract fee is the operator's own declared term times the units changed. It
           is never inside the engine's ledger above — the overlay is the order already changed, so
           nobody in it chose an option — and the sum below says it is two stated numbers added. */}
@@ -130,7 +137,7 @@ function ComparisonTable({ comparison }: { comparison: Comparison }) {
             columns={[
               { key: "service", label: "Service", render: (r) => serviceName(r.service, r.location) },
               { key: "requested", label: "Target", numeric: true, render: (r) => PERCENT(r.requested) },
-              { key: "current", label: "Current plan", numeric: true, render: (r) => PERCENT(r.current) },
+              { key: "current", label: columnLabel(comparison.columns, "current", "Decision reference"), numeric: true, render: (r) => PERCENT(r.current) },
               { key: "zaad", label: "ZAAD", numeric: true, render: (r) => PERCENT(r.zaad) },
               { key: "proposal", label: "Your proposal", numeric: true, render: (r) => PERCENT(r.proposal) },
             ]} />
@@ -206,7 +213,7 @@ function Evaluation({ draft, onChanged }: { draft: Draft; onChanged: () => void 
     return (
       <Section title="What this move would do">
         <Notice>
-          ZAAD evaluated this move inside the plan that recommended it, against your current plan. The planning
+          ZAAD evaluated this move inside the plan that recommended it, against its decision reference. The planning
           request carries lanes, not moves already in flight, so a transfer cannot be re-planned on its own without
           inventing an object the engine does not have.{" "}
           {draft.source_decision_id ? <Link href={`/decisions?decision=${encodeURIComponent(draft.source_decision_id)}`}>See the decision it came from.</Link> : null}

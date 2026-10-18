@@ -39,7 +39,9 @@ def test_summary_with_sample_data_is_plain(client):
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["source"] == "rules"
-    assert "current policy" in body["summary"] or "optimizer" in body["summary"]
+    # H3a: the fallback names the incumbent as the reconstructed rule, never as "your current policy"
+    assert "reconstructed historical rule" in body["summary"] or "optimizer" in body["summary"]
+    assert "current policy" not in body["summary"]
     assert "cvar" not in body["summary"].lower()
     st = cl.get("/fmcg/state", headers=h).json()
     assert st["plain"]["headline"] and st["plain"]["posture"]

@@ -49,7 +49,36 @@ CANDIDATE_SHORT = {
     "stochastic_sp": "Scenario benchmark model", "anchored_sp": "Anchored benchmark model",
     "adaptive_sp": "State-adapted benchmark model", "service_target": "Fixed service-target rule", "dro": "Robust benchmark model",
 }
-CURRENT_LABEL = "Your current purchasing policy"
+CURRENT_LABEL = "Your current purchasing policy"          # replaced per report by `_reference_label(summary)` (H3a)
+
+
+def _reference_label(summary: dict) -> str:
+    """How the policy benchmark may name the rule it compares against (H3a). The diagnostic's incumbent is
+    the rule reconstructed from purchase-order history unless the operator configured one; neither is the
+    operator's plan, and an inferred rule is never 'your current policy'."""
+    source = str((summary.get("incumbent_detail") or {}).get("source") or ("inferred" if "INFERRED" in str(summary.get("incumbent") or "") else ""))
+    return "your operator-declared purchasing rule" if source in ("configured", "schedule") else "the reconstructed historical rule"
+
+
+_REFERENCE_PHRASES = ("your current purchasing policy", "your current purchasing rule", "your current ordering policy", "your current policy",
+                      "your current rule", "your own policy", "your own rule", "your purchasing rule", "your ordering rule", "your rule", "your policy")
+
+
+def _apply_reference_label(value: Any, ref: str) -> Any:
+    """Rewrite the fixed phrases that name the benchmark's reference as if it were the operator's own plan or
+    policy into the provenance-correct label, throughout a rendered report. Driven by the comparator contract,
+    not by UI copy; 'your own history' and 'your reconstructed rule' are left alone."""
+    if isinstance(value, dict):
+        return {k: _apply_reference_label(v, ref) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_apply_reference_label(v, ref) for v in value]
+    if isinstance(value, str):
+        out = value
+        for phrase in _REFERENCE_PHRASES:
+            out = out.replace(phrase, ref).replace(phrase[:1].upper() + phrase[1:], ref[:1].upper() + ref[1:])
+        out = out.replace("against your own.", f"against {ref}.").replace("against your own ", f"against {ref} ")
+        return out
+    return value
 
 FIELD_LABEL = {
     "stg_fmcg_skus.contribution_margin": "contribution margin per product",
@@ -244,10 +273,10 @@ def _limitation_from_warning(w: str) -> str | None:
 
 def _humanise_weakened(w: str) -> str:
     t = w
-    t = t.replace("to the incumbent", "to your current policy").replace("the incumbent", "your current policy").replace("incumbent", "your current policy")
+    t = t.replace("to the incumbent", "to the reconstructed historical rule").replace("the incumbent", "the reconstructed historical rule").replace("incumbent", "the reconstructed historical rule")
     t = t.replace("UNKNOWN", "unknown").replace("INFERRED", "inferred").replace("ASSUMED", "assumed")
     t = t.replace("the safe selector needs", "the policy comparison needs").replace("run multiple folds", "test several historical periods")
-    t = t.replace("will defer to your current policy", "keeps your current policy")
+    t = t.replace("will defer to the reconstructed historical rule", "keeps the reconstructed historical rule")
     return t[0].upper() + t[1:] if t else t
 
 
@@ -357,7 +386,8 @@ def policy_section(summary: dict) -> dict:
     threshold = _f(gates.get("min_rel_improvement"))
     conf = _f(gates.get("confidence"))
     name, ev = _leading_candidate(summary)
-    out: dict = {"available": bool(name), "current_label": CURRENT_LABEL, "candidate": name,
+    out: dict = {"available": bool(name), "current_label": _reference_label(summary)[:1].upper() + _reference_label(summary)[1:], "reference_label": _reference_label(summary),
+                 "reference_provenance": str((summary.get("incumbent_detail") or {}).get("source") or "inferred"), "comparator_type": "RECONSTRUCTED_POLICY", "candidate": name,
                  "candidate_label": CANDIDATE_SHORT.get(name or "", name or ""), "rows": [], "explanation": [],
                  "outcome": None, "fold_chart": None, "internal": {"decision": decision or None, "reason": reason or None,
                                                                    "gates": gates}}
@@ -957,6 +987,16 @@ def conclusion(summary: dict, policy: dict, readiness: dict) -> dict:
 
 
 def build_report(summary: dict, *, job_id: str, company: str, generated_at: str | None = None) -> dict:
+    """The rendered diagnostic report, with every reference to the benchmark's rule named by its provenance (H3a)."""
+    report = _build_report_sections(summary, job_id=job_id, company=company, generated_at=generated_at)
+    report["comparator_contract"] = {"policy_benchmark": {"comparator_type": "RECONSTRUCTED_POLICY", "fidelity": "DECLARED" if _reference_label(summary).startswith("your operator") else "RECONSTRUCTED",
+                                                          "label": _reference_label(summary), "claim_class": "MODEL_COMPARISON", "can_claim_against_operator": False,
+                                                          "note": "the fixed-rule benchmark compares candidates with the reconstructed (or declared) rule under the shared model; it is not the operator's plan"},
+                                     "replay": (report.get("optimizer_replay") or {}).get("comparison")}
+    return _apply_reference_label(report, _reference_label(summary))
+
+
+def _build_report_sections(summary: dict, *, job_id: str, company: str, generated_at: str | None = None) -> dict:
     sector = str(summary.get("sector") or "")
     if sector and sector != "commercial":
         return _produce_report(summary, job_id=job_id, company=company, generated_at=generated_at)

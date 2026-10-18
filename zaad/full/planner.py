@@ -19,6 +19,7 @@ from typing import cast, Any
 
 import numpy as np
 
+from zaad.full import comparator
 from zaad.full import VERSION
 from zaad.full.capital import decompose as capital_decompose, duplication as capital_duplication, pooling_split as capital_pooling
 from zaad.full.contracts import Request
@@ -1659,6 +1660,10 @@ def plan(req: Request) -> dict:
         # commitment against the KEEP incumbent, in operator language. Absent on a frozen request.
         from zaad.commitments.explain import commitment_block
         report["commitments"] = commitment_block(req, commitment_view, report)
+    # H3a: the evidence contract above the frozen planner statuses. The planner's incumbent is its decision
+    # reference; without a captured operator plan the mode is PLAN_MODE and no claim is made against the operator.
+    report["decision_reference"] = comparator.decision_reference(req)
+    report["comparison"] = comparator.plan_comparison(req, status=status, selected_policy=report["selected_policy"])
     return report
 
 

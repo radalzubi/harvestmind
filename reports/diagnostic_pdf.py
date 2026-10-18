@@ -149,7 +149,7 @@ def render_pdf(report: dict) -> bytes:
         if chart and chart.get("selection"):
             el.append(Spacer(1, 4))
             el.append(_fold_chart(chart, W))
-            el.append(P("Each bar is one historical period: the fixed rule's cost change against your rule on that period. Positive = the fixed rule cost less. The dashed line is the selection threshold; the grey bar is the average on the unseen validation periods.", "s"))
+            el.append(P(f"Each bar is one historical period: the fixed rule's cost change against {_e(pc.get('reference_label') or 'the reconstructed rule')} on that period. Positive = the fixed rule cost less. The dashed line is the selection threshold; the grey bar is the average on the unseen validation periods.", "s"))
     else:
         for para in pc.get("explanation") or []:
             el.append(P(_e(para)))
@@ -169,7 +169,11 @@ def render_pdf(report: dict) -> bytes:
         el.append(P(f"Scope: {_e(sc.get('text'))}. Coverage: {_e(cv.get('text'))}. Selection: {_e(cv.get('selection_rule'))}.", "s"))
         if rp.get("currency_note"):
             el.append(P(_e(rp.get("currency_note")), "s"))
-        rows = [[P(h, "cellb") for h in ("Measure", "Your actual orders", "Your reconstructed rule", "ZAAD, re-run at each date", "ZAAD − actual")]]
+        action_h = (rp.get("comparator_label") or "Recorded historical orders (comparator fidelity not established)")
+        action_h = action_h[:1].upper() + action_h[1:]
+        ref_h = rp.get("reference_label") or "the reconstructed rule"
+        ref_h = ref_h[:1].upper() + ref_h[1:]
+        rows = [[P(h, "cellb") for h in ("Measure", action_h, ref_h, "ZAAD, re-run at each date", "ZAAD − historical-action path")]]
         for r in rp.get("table") or []:
             mark = "" if r.get("better") is None else (" ▲" if r["better"] else " ▼")
             rows.append([P(_e(r["metric"]) + (f"<br/><font color='{MUTED}' size='7.4'>{_e(r['note'])}</font>" if r.get("note") else ""), "cell"),
@@ -181,11 +185,15 @@ def render_pdf(report: dict) -> bytes:
         if rp.get("retention_note"):
             el.append(panel_box([P(_e(rp.get("retention_note")), "p")], color=colors.white, bar=colors.HexColor("#7A7A7A")))
         ds = rp.get("decisions_summary") or {}
-        el.append(P(f"Decisions: {_e(ds.get('rows'))} product-weeks replayed; ZAAD ordered where you did not on {_e(ds.get('zaad_ordered_where_you_did_not'))}, "
-                    f"less than you on {_e(ds.get('zaad_ordered_less'))}, more on {_e(ds.get('zaad_ordered_more'))}, and did not order where you did on "
-                    f"{_e(ds.get('zaad_did_not_order_where_you_did'))}; the planner abstained and your rule stood on {_e(ds.get('abstained_reviews'))} decision date(s).", "p"))
+        if ds.get("text"):
+            el.append(P(_e(ds.get("text")), "p"))
+        elif ds:
+            el.append(P(f"Decisions: {_e(ds.get('rows'))} product-weeks replayed against the model-evaluated historical-action path (this report predates recorded-quantity "
+                        f"attribution): an order where that path had none on {_e(ds.get('zaad_ordered_where_you_did_not'))}, less on {_e(ds.get('zaad_ordered_less'))}, "
+                        f"more on {_e(ds.get('zaad_ordered_more'))}; the planner abstained and {_e(rp.get('reference_label') or 'the reconstructed rule')} stood on "
+                        f"{_e(ds.get('abstained_reviews'))} decision date(s).", "p"))
         if (rp.get("decision_changes") or {}).get("text"):
-            el.append(P("How often ZAAD decided differently from your rule", "h2"))
+            el.append(P(f"How often ZAAD decided differently from {_e(rp.get('reference_label') or 'the reconstructed rule')}", "h2"))
             el.append(P(_e(rp["decision_changes"]["text"]), "p"))
         if rp.get("rule_conformance_note"):
             el.append(P(_e(rp.get("rule_conformance_note")), "s"))
@@ -447,7 +455,7 @@ def _fold_chart(chart: dict, width: float):
 
 
 def _period_chart(per: dict, width: float):
-    """Per-period cost difference (your orders − ZAAD): one bar per decision date, positive = ZAAD cheaper.
+    """Per-period cost difference (historical-action path − ZAAD): one bar per decision date, positive = ZAAD cheaper.
     Drawn with primitives, no decoration."""
     from reportlab.graphics.shapes import Drawing, Line, Rect, String
     from reportlab.lib import colors
@@ -463,7 +471,8 @@ def _period_chart(per: dict, width: float):
     plot_w, plot_h = width - left - right, h - top - bottom
     bar_w = plot_w / n
     d = Drawing(width, h)
-    d.add(String(0, h - 10, "Cost difference per decision date: your orders − ZAAD (positive = ZAAD cost less)", fontName="Helvetica-Bold", fontSize=8, fillColor=colors.HexColor(INK)))
+    caption = str(per.get("caption") or "Cost difference per decision date: the historical-action path (comparator fidelity not established) − ZAAD (positive = ZAAD cost less)")
+    d.add(String(0, h - 10, caption, fontName="Helvetica-Bold", fontSize=8, fillColor=colors.HexColor(INK)))
 
     def y_of(v: float) -> float:
         return bottom + (v - lo) / span * plot_h

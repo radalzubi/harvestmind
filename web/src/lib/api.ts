@@ -660,8 +660,10 @@ export interface DiagnosticReport {
       selection?: { rule: string | null; information: string | null; coverage: Record<string, number> | null; strata: Record<string, number | string> | null; swapped: { dropped: string; added: string; reason: string }[] | null } };
     table?: { metric: string; actual: string; rule: string; zaad: string; difference: string; better: boolean | null; note: string | null }[];
     not_measured?: string[]; retention_note?: string | null;
-    decisions_summary?: { rows: number; changed: number; retained_rule_reviews?: number; identical_to_rule?: boolean; zaad_ordered_where_you_did_not: number; zaad_ordered_less: number; zaad_ordered_more: number; zaad_did_not_order_where_you_did: number; abstained_reviews: number; units_difference: number };
-    periods?: { series: number[]; dates: string[]; currency: string | null; improved: number | null; worse: number | null; mean: number | null; median: number | null; worst: number | null; best: number | null; sd: number | null; ci80: [number, number] | null; n_negative: number; worst_date: string | null; text: string };
+    decisions_summary?: { text?: string; unattributed_recorded_rows?: number; zaad_less_than_recorded?: number; zaad_more_than_recorded?: number;
+      zaad_ordered_where_identified_recorded_had_none?: number; rows_compared_on_model_evaluated_quantity?: number;
+      rows: number; changed: number; retained_rule_reviews?: number; identical_to_rule?: boolean; zaad_ordered_where_you_did_not: number; zaad_ordered_less: number; zaad_ordered_more: number; zaad_did_not_order_where_you_did: number; abstained_reviews: number; units_difference: number };
+    periods?: { caption?: string; series: number[]; dates: string[]; currency: string | null; improved: number | null; worse: number | null; mean: number | null; median: number | null; worst: number | null; best: number | null; sd: number | null; ci80: [number, number] | null; n_negative: number; worst_date: string | null; text: string };
     vs_rule?: { relative: number | null; improved: number | null; identical?: boolean; text: string };
     regimes?: { state: string; periods: number; mean: number | null; improved: number | null; text: string }[]; regime_note?: string;
     operating_regimes?: { regime: string; periods: number; mean: number | null; improved: number | null; definition: string | null; text: string }[]; operating_regime_note?: string;
@@ -672,7 +674,15 @@ export interface DiagnosticReport {
     lookahead?: { clean: boolean | null; snapshots: number; text: string };
     confidence?: { level: string; reasons: string[]; dimensions: Record<string, string>; rule: string };
     performance?: Record<string, number | string | null>; engine?: Record<string, string>; limits?: string[];
+    // H3a: the comparator the replay used and the labels the report may use for it
+    comparison?: { mode: string; readiness: string; claim_class: string | null; comparator: { type: string; fidelity: string; label: string | null };
+      decision_reference?: { type: string; fidelity: string; provenance: string | null; label: string }; permissions: Record<string, boolean>;
+      coverage?: Record<string, unknown> | null; caveats?: string[] } | null;
+    comparator_label?: string; reference_label?: string; claim_class?: string | null;
     decisions?: { review: number; date: string; sku: string; supplier: string | null; location: string; actual_qty: number | null; rule_qty: number | null; zaad_qty: number | null;
+      actual_observed_qty?: number | null; actual_evaluated_qty?: number | null; actual_fidelity?: string | null;
+      actual_identity_fidelity?: string | null; actual_evaluation_fidelity?: string | null;
+      zaad_vs_recorded?: string | null; comparison_basis?: string | null; zaad_action_label?: string | null;
       quantity_difference: number | null; zaad_action: string; zaad_status: string | null; zaad_policy: string | null; fallback_to_rule: boolean | null; timing: string | null;
       settlement: string | null; settlement_cell: string; outcome: Record<string, { served: number; demand: number; end_stock: number }>; economic_outcome: string }[];
   };

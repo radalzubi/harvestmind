@@ -58,11 +58,17 @@ test("supplier reliability is quoted with the sample it rests on", () => {
   assert.equal(reliability.provenance, "INFERRED_FROM_HISTORY");
 });
 
-test("a purchase decision compares against what the current plan would order", () => {
+test("a purchase decision compares against what the decision reference would order, named by the backend", () => {
   const d = byId.get("buy:src_a1")!;
   assert.equal(d.verb, "BUY LESS");
   assert.match(d.headline, /Order less SKU-1 from SUP-A — 900 units this week/);
-  assert.equal(d.effect.find((f) => f.label === "Current plan orders")?.value, "1,500 units");
+  // H3a: the fixture report carries no decision_reference, so the reference is named neutrally, never as "the current plan"
+  assert.equal(d.effect.find((f) => f.label === "ZAAD's decision reference orders")?.value, "1,500 units");
+  assert.ok(!d.effect.some((f) => /current plan/i.test(f.label)));
+  assert.match(d.doNothing ?? "", /^ZAAD's decision reference orders 1,500 units/);
+  const labelled = buildDecisions({ ...report, decision_reference: { type: "RECONSTRUCTED_POLICY", fidelity: "RECONSTRUCTED", provenance: "INFERRED_FROM_HISTORY", label: "the reconstructed historical rule" } }, request, build);
+  const l = labelled.find((x) => x.id === "buy:src_a1")!;
+  assert.equal(l.effect.find((f) => f.label === "The reconstructed historical rule orders")?.value, "1,500 units");
   assert.equal(d.effect.find((f) => f.label === "Difference")?.value, "-600 units");
   assert.equal(d.effect.find((f) => f.label === "Order value")?.value, "USD 9,000");
 });

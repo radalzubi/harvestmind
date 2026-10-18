@@ -56,7 +56,9 @@ test("a translated reason still says what the engine said", () => {
 
 test("an unrecognised reason is shown, with the terms that have plain equivalents replaced", () => {
   const said = plainReason("The incumbent was retained because the candidate hit an SLA wall.")!;
-  assert.match(said, /your current plan/);
+  // H3a: an engine "incumbent" is ZAAD's decision reference, not the operator's plan
+  assert.match(said, /ZAAD's decision reference/);
+  assert.doesNotMatch(said, /current plan/i);
   assert.match(said, /alternative/);
   assert.match(said, /service agreement/);
   assert.ok(!JARGON.test(said), said);

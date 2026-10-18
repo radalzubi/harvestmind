@@ -336,7 +336,7 @@ function HomeBody() {
                   ? `ZAAD reviewed ${NUMBER(closed.length)} of your ${NUMBER(snapshot.open_purchase_orders)} open commitments and the week's purchases`
                   : `ZAAD reviewed ${COUNT(closed.length, "open commitment")} and the week's purchases`
                 : "ZAAD reviewed every open commitment and the week's purchases"}{" "}
-              against your current plan and found no change worth making.
+              against its decision reference (the rule it plans against, not a plan you submitted) and found no change worth making.
             </EmptyState>
           )}
         </PlanGate>

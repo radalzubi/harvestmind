@@ -187,7 +187,7 @@ def _run_commercial(conn, job: dict) -> dict:
     import numpy as np
     _stage(job, "preparing", "checking what your history can support")
     ready = assess(conn)
-    _stage(job, "reconstructing", "reading your history and inferring your current policy")
+    _stage(job, "reconstructing", "reading your history and reconstructing the purchasing rule it implies")
     fi, report = build_inputs(conn, horizon=12, train_weeks=52, service_level=0.97, holding_rate_per_week=None,
                               currency="USD", incumbent_cover_weeks=None)
     _stage(job, "lanes", "estimating the operating state and lane risk")
@@ -245,7 +245,7 @@ def _run_replay(conn, job: dict) -> dict:
             _stage(job, "replaying", f"ZAAD re-solved decision date {info.get('review')} of {info.get('reviews')} "
                                      f"(last solve {info.get('solve_seconds')} s)")
         else:
-            what = "the operator's actual orders" if leg == "actual" else "the reconstructed purchasing rule"
+            what = "the recorded historical orders" if leg == "actual" else "the reconstructed purchasing rule"
             _stage(job, "replaying", f"replaying {what} through the same settlement")
     try:
         return run_historical_replay(conn, job.get("operator_id") or job["id"], skus=REPLAY_SKUS, reviews=REPLAY_REVIEWS,

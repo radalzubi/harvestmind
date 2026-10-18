@@ -160,7 +160,7 @@ function ReviewPanel({ summary, openCount }: { summary: PlanSummary; openCount: 
       <p className="zhelp" style={{ marginTop: 4 }}>
         {openCount === 1
           ? "Recording your decision covers this recommendation."
-          : `Recording your decision covers all ${openCount} recommendations in this plan — ZAAD chose them together against your current plan.`}
+          : `Recording your decision covers all ${openCount} recommendations in this plan — ZAAD chose them together against its decision reference.`}
         {" "}ZAAD does not contact your supplier.
       </p>
       <div className="chips" role="group" aria-label="Reason">
@@ -241,7 +241,7 @@ export function DecisionDetail({ decision, summary, openCount }: { decision: Dec
             : <p className="na">The report gives no reason text for this item.</p>}
           {decision.doNothing && (
             <p style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--line-soft)" }}>
-              <strong style={{ color: "var(--ink-950)", fontWeight: 500 }}>If you keep the current plan: </strong>
+              <strong style={{ color: "var(--ink-950)", fontWeight: 500 }}>If the decision reference stands: </strong>
               {decision.doNothing}
             </p>
           )}

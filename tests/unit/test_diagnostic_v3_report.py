@@ -14,6 +14,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_diagnostic_findings import _customer_copy, _enriched  # noqa: E402
 
+from zaad.full import comparator
 from reports.diagnostic_findings import build_report  # noqa: E402
 from reports.diagnostic_pdf import render_pdf  # noqa: E402
 from reports.diagnostic_v3 import canonical, consistency_checks, provenance_ledger  # noqa: E402
@@ -63,6 +64,10 @@ def _replay(status="complete", **over) -> dict:
            "build": {"provenance": {"location.main.holding_per_value_period": "CONFIGURED_ASSUMPTION", "resource.SUP-01.capacity": "INFERRED_FROM_HISTORY", "incumbent_rule": "INFERRED_FROM_HISTORY"}, "fits": {"SUP-01": {"sample_size": 30}}, "warnings": [], "leakage_guard": {}},
            "performance": {"decision_points": 8, "optimizer_solves": 8, "skus": 2, "sources": 2, "solve_seconds_mean": 23.5, "solve_seconds_max": 27.0, "total_seconds": 210.0, "peak_rss_mb": 400.0},
            "actual_conformance": {"changed_orders": 0, "rows": [], "note": "n"},
+           # H3a: the replay states what its historical-action comparator is (exact here: every recorded line identified and untransformed)
+           "comparison": comparator.historical_comparison({"lines_observed": 8, "lines_exact": 8, "lines_incomplete": 0, "lines_unmapped": 0, "exact_quantity_share": 1.0,
+                                                           "exact_value_share": 1.0, "value_share_basis": "recorded unit cost on every line", "incomplete_reasons": []},
+                                                          transformed_groups=0, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=8),
            "confidence": {"level": "Moderate", "dimensions": {"counterfactual_settlement": "high", "supplier_observations": "high", "demand_history": "moderate", "opening_inventory": "high", "economics": "moderate", "capacity": "moderate", "coverage": "high"},
                           "reasons": ["40 weeks of demand history before the first decision date", "economic inputs assumed: location.main.holding per value period", "supplier capacity inferred or unbounded for 1 supplier(s)"], "rule": "the level is the weakest of ..."}}
     out.update(over)
@@ -93,7 +98,13 @@ def test_executive_summary_states_both_and_headline_uses_fixed_rule_language(bas
     r = build_report(base, job_id="j", company="C")
     ex = r["executive_summary"]
     assert ex["benchmark"]["label"] == "SIMPLE POLICY BENCHMARK" and ex["replay"]["label"] == "ZAAD DECISION REPLAY"
-    assert ex["replay"]["available"] is True and "ZAAD's adaptive decisions would have cost 6.1% less" in ex["replay"]["statement"]
+    stmt = ex["replay"]["statement"]
+    # H3a: an exact historical-action comparator permits a historical counterfactual difference, stated as such
+    assert ex["replay"]["available"] is True and "historical counterfactual replay" in stmt and "ZAAD's modelled path cost 6.1% less than the path of the recorded historical orders" in stmt
+    assert "would have" not in stmt and "your actual orders" not in stmt and "realized" in stmt
+    rp = r["optimizer_replay"]
+    assert rp["claim_class"] == "HISTORICAL_COUNTERFACTUAL_COMPARISON" and rp["comparison"]["permissions"]["can_claim_historical_counterfactual_difference"] is True
+    assert rp["comparison"]["permissions"]["can_claim_realized_value"] is False and rp["comparison"]["decision_reference"]["provenance"] == "reconstructed from purchase-order history"
     assert "fixed alternative" in r["conclusion"]["headline"] and "optimizer" not in r["conclusion"]["headline"].lower()
     assert r["conclusion"]["replay_headline"] == ex["replay"]["statement"]
     assert ex["confidence"]["replay_level"] == "Moderate"
@@ -114,7 +125,7 @@ def test_negative_optimizer_periods_are_explained_not_hidden(base):
     worse["differences"]["zaad_vs_actual"]["window"] = {"base": 100000.0, "candidate": 104000.0, "difference": -4000.0, "relative": -0.04, "continuation_difference": -3000.0}
     base["optimizer_replay"] = worse
     r2 = build_report(base, job_id="j", company="C")
-    assert "would have cost 4.0% more than your actual orders" in r2["executive_summary"]["replay"]["statement"]
+    assert "cost 4.0% more than the path of the recorded historical orders" in r2["executive_summary"]["replay"]["statement"]
     cost_row = next(x for x in r2["optimizer_replay"]["table"] if x["metric"].startswith("Total modelled cost"))
     assert cost_row["better"] is False and cost_row["difference"].startswith("+4,000")
 
@@ -289,3 +300,121 @@ def test_deterministic_and_pdf_within_budget(base):
     assert pdf[:4] == b"%PDF"
     pages = len(re.findall(rb"/Type\s*/Page[^s]", pdf))
     assert 4 <= pages <= 12, pages
+
+
+# ── H3a: the comparator contract gates the replay's wording ──────────────────
+def test_transformed_or_incomplete_historical_actions_are_never_called_actual_orders(base):
+    transformed = _replay()
+    transformed["comparison"] = comparator.historical_comparison(
+        {"lines_observed": 8, "lines_exact": 8, "lines_incomplete": 0, "lines_unmapped": 0, "exact_quantity_share": 1.0, "exact_value_share": 1.0,
+         "value_share_basis": "recorded unit cost on every line", "incomplete_reasons": []},
+        transformed_groups=3, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=8)
+    base["optimizer_replay"] = transformed
+    r = build_report(base, job_id="j", company="C")
+    rp, stmt = r["optimizer_replay"], r["executive_summary"]["replay"]["statement"]
+    assert rp["claim_class"] == "MODEL_COMPARISON" and rp["comparison"]["comparator"]["fidelity"] == "TRANSFORMED"
+    assert rp["comparison"]["permissions"]["can_claim_historical_counterfactual_difference"] is False and rp["comparison"]["permissions"]["can_claim_against_operator"] is False
+    assert "a model-adjusted version of the recorded historical orders" in stmt and "not a claim against the operator" in stmt
+    assert "the path of a model-adjusted version of the recorded historical orders over" in stmt and "than the path of the recorded historical orders" not in stmt
+    assert "your actual orders" not in json.dumps(rp)
+    incomplete = _replay()
+    incomplete["comparison"] = comparator.historical_comparison(
+        {"lines_observed": 8, "lines_exact": 6, "lines_incomplete": 2, "lines_unmapped": 1, "exact_quantity_share": 0.8, "exact_value_share": None,
+         "value_share_basis": "unit cost missing on some lines: no value share", "incomplete_reasons": ["the record carries no supplier identity"]},
+        transformed_groups=0, settlement_shares=None, rule_provenance="CUSTOMER_PROVIDED", reviews_completed=8)
+    base["optimizer_replay"] = incomplete
+    r = build_report(base, job_id="j", company="C")
+    rp = r["optimizer_replay"]
+    assert rp["comparison"]["comparator"]["fidelity"] == "INCOMPLETE" and "could not be identified" in r["executive_summary"]["replay"]["statement"]
+    assert rp["reference_label"] == "the operator-declared rule" and rp["comparison"]["decision_reference"]["provenance"] == "operator-declared"
+    # a replay result from before the contract never established exactness: it is not called "actual" either
+    legacy = _replay()
+    legacy.pop("comparison")
+    base["optimizer_replay"] = legacy
+    r = build_report(base, job_id="j", company="C")
+    rp = r["optimizer_replay"]
+    assert rp["comparison"]["comparator"]["fidelity"] == "NOT_AVAILABLE" and rp["comparison"]["permissions"]["can_claim_historical_counterfactual_difference"] is False
+    assert "comparator fidelity not established" in r["executive_summary"]["replay"]["statement"] and "your actual orders" not in json.dumps(rp)
+    assert "INFERRED_FROM_HISTORY" not in json.dumps({k: v for k, v in rp.items() if k not in ("decisions", "engine", "performance")})
+
+
+# ── final pass, defect 3: no operator attribution the comparator contract does not support ──
+def _comparison(fidelity_kind: str, rule_provenance: str = "INFERRED_FROM_HISTORY"):
+    cov = {"lines_observed": 8, "lines_exact": 8 if fidelity_kind != "INCOMPLETE" else 6, "lines_incomplete": 0 if fidelity_kind != "INCOMPLETE" else 2,
+           "lines_unmapped": 0 if fidelity_kind != "INCOMPLETE" else 1, "exact_quantity_share": 1.0, "exact_value_share": 1.0, "value_share_basis": "x",
+           "incomplete_reasons": [] if fidelity_kind != "INCOMPLETE" else ["the record carries no supplier identity"]}
+    return comparator.historical_comparison(cov, transformed_groups=1 if fidelity_kind == "TRANSFORMED" else 0, settlement_shares=None,
+                                            rule_provenance=rule_provenance, reviews_completed=8)
+
+
+@pytest.mark.parametrize("kind", ["EXACT", "TRANSFORMED", "INCOMPLETE", "LEGACY"])
+def test_report_attribution_follows_the_comparator_contract(base, kind):
+    rep = _replay()
+    if kind == "LEGACY":
+        rep.pop("comparison")
+    else:
+        rep["comparison"] = _comparison(kind)
+    base["optimizer_replay"] = rep
+    r = build_report(base, job_id="j", company="C")
+    rp = r["optimizer_replay"]
+    caption = rp["periods"]["caption"]
+    assert "your orders" not in caption and "− ZAAD" in caption
+    if kind == "EXACT":
+        assert caption.startswith("Cost difference per decision date: the recorded historical orders − ZAAD")
+    elif kind == "TRANSFORMED":
+        assert "a model-adjusted version of the recorded historical orders − ZAAD" in caption
+    elif kind == "INCOMPLETE":
+        assert "could be identified" in caption
+    else:
+        assert "comparator fidelity not established" in caption
+    text = json.dumps({k: v for k, v in rp.items() if k not in ("decisions", "engine", "performance")})
+    assert "your orders" not in text and "your actual orders" not in text and "you / ZAAD" not in text
+    pb = r["policy_benchmark"]
+    assert "than your own" not in pb["question"] and "your existing purchasing rule" not in (pb.get("statement") or "")
+    assert "the reconstructed historical rule" in pb["question"]
+    assert "your own staggered orders" not in json.dumps(rp)
+
+
+def test_benchmark_names_the_rule_by_its_provenance(base):
+    base["optimizer_replay"] = _replay()
+    inferred = build_report(base, job_id="j", company="C")["policy_benchmark"]
+    assert inferred["reference_label"] == "the reconstructed historical rule" and "the reconstructed historical rule" in inferred["question"]
+    assert "your existing" not in (inferred.get("statement") or "") and "your own" not in inferred["question"]
+    declared = dict(base)
+    declared["incumbent_detail"] = {**(base.get("incumbent_detail") or {}), "source": "configured"}
+    pb = build_report(declared, job_id="j", company="C")["policy_benchmark"]
+    assert pb["reference_label"] == "your operator-declared purchasing rule" and "your operator-declared purchasing rule" in pb["question"]
+    if pb.get("outcome") == "keep_current_after_holdout":
+        assert "replacing your operator-declared purchasing rule" in pb["statement"]
+
+
+def test_decision_summary_wording_follows_action_fidelity(base):
+    rep = _replay()
+    rep["comparison"] = _comparison("INCOMPLETE")
+    base_row = dict(rep["decisions"][0])
+    # A: a 100-unit recorded order of the SKU could not be attributed to a source; ZAAD ordered 20 from A
+    unattributed = {**base_row, "sku": "SKU-0001", "supplier": "SUP-A", "actual_qty": 0.0, "actual_observed_qty": 0.0, "actual_evaluated_qty": 0.0, "zaad_qty": 20.0,
+                    "actual_identity_fidelity": "INCOMPLETE", "actual_evaluation_fidelity": None, "actual_fidelity": "INCOMPLETE",
+                    "actual_unidentified_lines": 1, "actual_unidentified_qty": 100.0, "zaad_action": "order", "zaad_vs_recorded": None,
+                    "comparison_basis": "unidentified", "zaad_action_label": "ordered 20; a recorded order of this SKU (100) could not be attributed to a source",
+                    "quantity_difference": 20.0, "timing": None}
+    # B: a recorded 103 was evaluated as 96; ZAAD ordered 100
+    transformed = {**base_row, "sku": "SKU-0012", "supplier": "SUP-01", "actual_qty": 96.0, "actual_observed_qty": 103.0, "actual_evaluated_qty": 96.0, "zaad_qty": 100.0,
+                   "actual_identity_fidelity": "EXACT", "actual_evaluation_fidelity": "TRANSFORMED", "actual_fidelity": "TRANSFORMED",
+                   "actual_unidentified_lines": 0, "actual_unidentified_qty": 0.0, "zaad_action": "more", "zaad_vs_recorded": "less",
+                   "comparison_basis": "model-evaluated", "zaad_action_label": "more than the model-evaluated quantity (96), less than the recorded order (103)",
+                   "quantity_difference": 4.0, "timing": "same week"}
+    rep["decisions"] = [unattributed, transformed]
+    base["optimizer_replay"] = rep
+    r = build_report(base, job_id="j", company="C")
+    ds = r["optimizer_replay"]["decisions_summary"]
+    assert ds["unattributed_recorded_rows"] == 1 and ds["zaad_ordered_where_identified_recorded_had_none"] == 0
+    assert ds["zaad_less_than_recorded"] == 1 and ds["zaad_more_than_recorded"] == 0 and ds["rows_compared_on_model_evaluated_quantity"] == 1
+    text = ds["text"]
+    assert "ZAAD ordered where no identified recorded order existed on 0" in text
+    assert "less than the recorded order on 1" in text and "more than the recorded order on 0" in text
+    assert "1 product-week" in text and "could not be attributed to a source" in text and "no comparison is made" in text
+    assert "where you did not" not in text and "less than you" not in text and "placed no order" not in text
+    # the per-row label keeps both quantities apart
+    row = next(d for d in r["optimizer_replay"]["decisions"] if d["sku"] == "SKU-0012")
+    assert row["zaad_action_label"].startswith("more than the model-evaluated quantity (96), less than the recorded order (103)")

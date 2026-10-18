@@ -108,7 +108,8 @@ def test_incumbent_retained_despite_strong_candidate_is_explained_old_shape(old_
     assert "15.4% less" in text and "+13.9%" in text
     assert "cleared ZAAD's selection rule" in text
     assert "2 unseen historical validation periods" in text and "+1.2%" in text
-    assert "Your current purchasing policy was retained" in text
+    # H3a: the benchmark's reference is an inferred rule, so the report names it as reconstructed, never as the operator's policy
+    assert "The reconstructed historical rule was retained" in text and "current policy" not in text.lower() and "your rule" not in text.lower()
     assert "can clear the selection threshold and still not be selected" in text
     assert r["conclusion"]["kind"] == "keep_current"
     assert "did not hold up on unseen periods" in r["conclusion"]["headline"]
@@ -239,7 +240,8 @@ def test_no_plan_no_policy_result():
     assert r["policy_benchmark"]["available"] is False and r["policy_benchmark"]["outcome"] == "not_run"
     assert "insufficient history (20 < 26 periods)" in r["policy_benchmark"]["explanation"][0]
     assert r["conclusion"]["kind"] == "not_run" and r["readiness"]["confidence"] == "Low"
-    assert r["actions"]["now"][0]["text"].startswith("Keep your current purchasing rule")
+    assert r["actions"]["now"][0]["text"].startswith("Keep the reconstructed historical rule")        # H3a: an inferred rule is never "your current rule"
+    assert r["policy_benchmark"]["reference_label"] == "the reconstructed historical rule" and r["comparator_contract"]["policy_benchmark"]["can_claim_against_operator"] is False
     assert render_pdf(r)[:4] == b"%PDF"
 
 
@@ -308,7 +310,7 @@ def test_formatting_and_rounding():
 def test_no_raw_floats_or_enums_in_customer_copy(old_summary):
     r = build_report(_enriched(old_summary), job_id="j", company="C")
     text = _all_text(_customer_copy(r))
-    assert "the your" not in text and "anchored to your current policy" in text
+    assert "the your" not in text and "anchored to the reconstructed historical rule" in text and "your current policy" not in text
     assert not re.search(r"\d\.\d{4,}", text), re.search(r"\S*\d\.\d{4,}\S*", text).group(0)
     for enum in ("READY_WITH_CAVEATS", "order_up_to", "stochastic_sp", "held-out fold", "zero-share", "incumbent"):
         assert enum not in text, enum

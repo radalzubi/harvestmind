@@ -2,7 +2,11 @@
 
 The shape of the answer a buyer wants is three columns:
 
-    YOUR CURRENT PLAN    |    WHAT ZAAD RECOMMENDS    |    YOUR PROPOSAL
+    DECISION REFERENCE    |    WHAT ZAAD RECOMMENDS    |    YOUR PROPOSAL
+
+(H3a: the left column is the baseline run's decision reference — the reconstructed or operator-declared
+rule, or the planner's base-stock proxy — and is labelled by its provenance. It is called "your current
+plan" only when an ACTUAL_OPERATOR_PLAN captured prospectively exists, which is the H3b workflow.)
 
 and all three must come out of the same engine, over the same information set, or the comparison is
 theatre. This module gets them like this:
@@ -30,6 +34,8 @@ What this module does **not** do:
     request object and is never written anywhere.
 """
 from __future__ import annotations
+
+from zaad.full import comparator
 
 import hashlib
 import json
@@ -470,6 +476,18 @@ def compare(
     shared an information set. A key one report carries and the other does not is reported as
     unavailable rather than treated as zero.
     """
+    # H3a: the left column is the baseline run's decision reference (a reconstructed or declared rule, or the
+    # planner's base-stock proxy), never "your current plan" unless an ACTUAL_OPERATOR_PLAN was captured (H3b).
+    reference = (baseline or {}).get("decision_reference") or {}
+    ref_type, ref_fidelity = reference.get("type"), reference.get("fidelity")
+    if ref_type == comparator.RECONSTRUCTED_POLICY and ref_fidelity == comparator.DECLARED:
+        current_label, current_source = "Operator-declared rule baseline", "The projection of the rule or incumbent orders you declared"
+    elif ref_type == comparator.RECONSTRUCTED_POLICY:
+        current_label, current_source = "Reconstructed policy baseline", "The projection of the purchasing rule reconstructed from your order history"
+    elif ref_type == comparator.SYSTEM_BASELINE:
+        current_label, current_source = "Model baseline", "The planner's projected base-stock baseline, an engineering benchmark"
+    else:
+        current_label, current_source = "Decision reference (provenance not recorded)", "The baseline run's incumbent projection; this run predates comparator provenance"
     current = _costs(baseline, "incumbent_costs")
     zaad = _costs(baseline, "selected_costs")
     yours = _costs(proposal, "incumbent_costs")
@@ -523,8 +541,9 @@ def compare(
         covered
         + "Effects that reach other products — a supplier's weekly capacity shared with other orders, for "
         "example — are outside it.",
-        "Your current plan and your proposal are both the projection of your declared ordering policy: "
-        "one without this order, one with it. The difference between them is this order.",
+        f"The {current_label.lower()} and your proposal are both the projection of the same decision reference "
+        f"({reference.get('label') or 'the baseline incumbent'}): one without this order, one with it. The difference between them is this order. "
+        "That reference is not a captured operator plan, so the comparison is a modelled one and not a claim against what you would have done.",
     ]
     # Both runs are the same engine over the same information, so they report the same limitations
     # almost always. Saying each one twice is noise that teaches a reader to skip the list.
@@ -570,15 +589,20 @@ def compare(
 
     return {
         "columns": [
-            {"key": "current", "label": "Your current plan",
-             "source": ("The projection of your declared ordering policy, with this order as it stands."
-                        if is_amendment else "The projection of your declared ordering policy, without this order.")},
+            {"key": "current", "label": current_label,
+             "source": current_source + (", with this order as it stands." if is_amendment else ", without this order."),
+             "comparator_type": ref_type or "NOT_RECORDED", "fidelity": ref_fidelity or comparator.NOT_AVAILABLE},
             {"key": "zaad", "label": "What ZAAD recommends",
              "source": "The plan the optimizer selected over the same products and the same information."},
             {"key": "proposal", "label": "Your proposal",
-             "source": ("The projection of your declared ordering policy, with this change to the order already made."
-                        if is_amendment else "The projection of your declared ordering policy, with this order placed.")},
+             "source": ("The projection of the same decision reference, with this change to the order already made."
+                        if is_amendment else "The projection of the same decision reference, with this order placed.")},
         ],
+        # H3a: what this three-column comparison is and what it may claim
+        "comparison": {"mode": comparator.PLAN_MODE, "claim_class": comparator.MODEL_COMPARISON, "decision_reference": reference or None,
+                       "permissions": {"can_recommend": True, "can_compare": bool(baseline and proposal), "can_claim_against_operator": False,
+                                       "can_claim_realized_value": False},
+                       "note": "modelled differences between projections of one decision reference under the shared engine; not a benefit realized by the operator"},
         "contract_terms": contract,
         "currency": currency,
         "ledger": rows,

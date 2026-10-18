@@ -7,6 +7,7 @@
  * Purchase orders) and to the decision workflow.
  */
 import { useState } from "react";
+import { replayLabels } from "@/lib/diagnostic/labels";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, Download, ExternalLink } from "lucide-react";
 import type { DiagnosticReport as Report, ReportFinding, ReportRelated } from "@/lib/api";
@@ -109,7 +110,7 @@ export function DiagnosticReportView({ report, onDownload, downloading }: { repo
             <p><b>{r.policy_benchmark.current_label}</b> versus <b>{r.policy_benchmark.candidate_label}</b>, both replayed on your own history by the benchmark.</p>
             <div className="diag-table-wrap">
               <table className="diag-table">
-                <thead><tr><th>Measure</th><th>Your current rule</th><th>{r.policy_benchmark.candidate_label}</th><th>Reading</th></tr></thead>
+                <thead><tr><th>Measure</th><th>{r.policy_benchmark.current_label}</th><th>{r.policy_benchmark.candidate_label}</th><th>Reading</th></tr></thead>
                 <tbody>
                   {r.policy_benchmark.rows.map((row) => (
                     <tr key={row.metric}><td>{row.metric}{row.note && <div className="diag-muted diag-small">{row.note}</div>}</td><td>{row.current}</td><td><b>{row.candidate}</b></td><td className="diag-muted">{row.difference}</td></tr>
@@ -351,6 +352,10 @@ function FoldChart({ chart }: { chart: NonNullable<Report["policy_benchmark"]["f
 function ReplayView({ rp }: { rp: NonNullable<Report["optimizer_replay"]> }) {
   const [showRows, setShowRows] = useState(false);
   const per = rp.periods;
+  // H3a: the comparator and the reference are named by the backend's contract. An older report without the
+  // contract never established that its historical-action leg was exact, so it is not called the operator's orders.
+  const labels = replayLabels(rp);
+  const referenceLabel = labels.referenceLabel;
   return (
     <>
       <div className="diag-callout">
@@ -361,7 +366,7 @@ function ReplayView({ rp }: { rp: NonNullable<Report["optimizer_replay"]> }) {
       <p className="diag-muted diag-small">Scope: {rp.scope?.text}. Coverage: {rp.coverage?.text}. Selection: {rp.coverage?.selection_rule}.{rp.currency_note ? ` ${rp.currency_note}` : ""}</p>
       <div className="diag-table-wrap">
         <table className="diag-table">
-          <thead><tr><th>Measure</th><th>Your actual orders</th><th>Your reconstructed rule</th><th>ZAAD, re-run at each date</th><th>ZAAD − actual</th></tr></thead>
+          <thead><tr><th>Measure</th><th>{labels.actionHeader}</th><th>{labels.referenceHeader}</th><th>ZAAD, re-run at each date</th><th>ZAAD − historical-action path</th></tr></thead>
           <tbody>
             {(rp.table ?? []).map((row) => (
               <tr key={row.metric}><td>{row.metric}{row.note && <div className="diag-muted diag-small">{row.note}</div>}</td><td>{row.actual}</td><td>{row.rule}</td><td><b>{row.zaad}</b></td>
@@ -374,16 +379,16 @@ function ReplayView({ rp }: { rp: NonNullable<Report["optimizer_replay"]> }) {
       {(rp.not_measured ?? []).length > 0 && <ul className="diag-small diag-muted">{rp.not_measured!.map((n, i) => <li key={i}>{n}</li>)}</ul>}
       {rp.retention_note && <div className="diag-callout muted">{rp.retention_note}</div>}
       {rp.decisions_summary && (
-        <p>Decisions: {rp.decisions_summary.rows} product-weeks replayed; ZAAD ordered where you did not on {rp.decisions_summary.zaad_ordered_where_you_did_not}, less than you on {rp.decisions_summary.zaad_ordered_less}, more on {rp.decisions_summary.zaad_ordered_more}, and did not order where you did on {rp.decisions_summary.zaad_did_not_order_where_you_did}; the planner abstained and your rule stood on {rp.decisions_summary.abstained_reviews} decision date(s).</p>
+        <p>{rp.decisions_summary.text ?? `Decisions: ${rp.decisions_summary.rows} product-weeks replayed against the model-evaluated historical-action path (this report predates recorded-quantity attribution): an order where that path had none on ${rp.decisions_summary.zaad_ordered_where_you_did_not}, less on ${rp.decisions_summary.zaad_ordered_less}, more on ${rp.decisions_summary.zaad_ordered_more}; the planner abstained and ${referenceLabel} stood on ${rp.decisions_summary.abstained_reviews} decision date(s).`}</p>
       )}
       {rp.decision_changes && (
         <>
-          <div className="diag-sub">How often ZAAD decided differently from your rule</div>
+          <div className="diag-sub">How often ZAAD decided differently from {referenceLabel}</div>
           <p>{rp.decision_changes.text}</p>
         </>
       )}
       {rp.rule_conformance_note && <p className="diag-muted diag-small">{rp.rule_conformance_note}</p>}
-      {per && per.series.length > 0 && <PeriodChart per={per} />}
+      {per && per.series.length > 0 && <PeriodChart per={per} caption={labels.periodCaption} />}
       {per && <p>{per.text}</p>}
       {rp.vs_rule && <p>{rp.vs_rule.text}</p>}
       {(rp.regimes ?? []).length > 0 && <ul>{rp.regimes!.map((g) => <li key={g.state}>{g.text}</li>)}</ul>}
@@ -408,15 +413,17 @@ function ReplayView({ rp }: { rp: NonNullable<Report["optimizer_replay"]> }) {
           {showRows && (
             <div className="diag-table-wrap">
               <table className="diag-table diag-small">
-                <thead><tr><th>Date</th><th>Product</th><th>Supplier</th><th>You ordered</th><th>Rule</th><th>ZAAD</th><th>ZAAD action</th><th>Timing</th><th>Settlement</th><th>Service (you / ZAAD)</th><th>End stock (you / ZAAD)</th></tr></thead>
+                <thead><tr><th>Date</th><th>Product</th><th>Supplier</th><th>Recorded qty</th><th>Model-evaluated qty</th><th>Rule</th><th>ZAAD</th><th>ZAAD action</th><th>Timing</th><th>Settlement</th><th>{labels.serviceHeader}</th><th>{labels.endStockHeader}</th></tr></thead>
                 <tbody>
                   {rp.decisions!.map((d, i) => (
                     <tr key={i}>
                       <td>{d.date}</td>
                       <td>{hrefFor({ kind: "sku", id: d.sku, label: d.sku }) ? <Link href={hrefFor({ kind: "sku", id: d.sku, label: d.sku })!.href}>{d.sku}</Link> : d.sku}</td>
                       <td>{d.supplier && hrefFor({ kind: "supplier", id: d.supplier, label: d.supplier }) ? <Link href={hrefFor({ kind: "supplier", id: d.supplier, label: d.supplier })!.href}>{d.supplier}</Link> : d.supplier}</td>
-                      <td>{fmtQty(d.actual_qty)}</td><td>{fmtQty(d.rule_qty)}</td><td><b>{fmtQty(d.zaad_qty)}</b></td>
-                      <td>{d.zaad_action}{d.fallback_to_rule ? " (planner abstained)" : ""}</td><td>{d.timing ?? ""}</td><td>{d.settlement ?? "—"}</td>
+                      <td>{fmtQty(d.actual_observed_qty ?? d.actual_qty)}{d.actual_identity_fidelity === "INCOMPLETE" ? <div className="diag-muted diag-small">source identity incomplete</div> : null}</td>
+                      <td>{fmtQty(d.actual_evaluated_qty ?? d.actual_qty)}{d.actual_evaluation_fidelity === "TRANSFORMED" ? <div className="diag-muted diag-small">adjusted to the declared envelope</div> : null}</td>
+                      <td>{fmtQty(d.rule_qty)}</td><td><b>{fmtQty(d.zaad_qty)}</b></td>
+                      <td>{d.zaad_action_label ?? d.zaad_action}{d.fallback_to_rule ? " (planner abstained)" : ""}</td><td>{d.timing ?? ""}</td><td>{d.settlement ?? "—"}</td>
                       <td>{svc(d.outcome?.actual)} / {svc(d.outcome?.zaad)}</td><td>{fmtQty(d.outcome?.actual?.end_stock)} / {fmtQty(d.outcome?.zaad?.end_stock)}</td>
                     </tr>
                   ))}
@@ -434,13 +441,13 @@ function ReplayView({ rp }: { rp: NonNullable<Report["optimizer_replay"]> }) {
 function fmtQty(x: number | null | undefined): string { return x == null ? "—" : Math.round(x).toLocaleString("en-US"); }
 function svc(o: { served: number; demand: number } | undefined): string { return !o || !o.demand ? "—" : `${Math.round((o.served / o.demand) * 100)}%`; }
 
-function PeriodChart({ per }: { per: NonNullable<NonNullable<Report["optimizer_replay"]>["periods"]> }) {
+function PeriodChart({ per, caption }: { per: NonNullable<NonNullable<Report["optimizer_replay"]>["periods"]>; caption: string }) {
   const lo = Math.min(0, ...per.series), hi = Math.max(0, ...per.series);
   const span = hi - lo || 1;
   const y = (v: number) => ((hi - v) / span) * 100;
   return (
     <figure className="diag-chart">
-      <figcaption>Cost difference per decision date: your orders − ZAAD (positive = ZAAD cost less)</figcaption>
+      <figcaption>{caption}</figcaption>
       <div className="diag-bars" style={{ position: "relative", height: 120 }}>
         <span className="diag-chart-zero" style={{ position: "absolute", left: 0, right: 0, top: `${y(0)}%`, height: 1, background: "var(--ink-500)" }} />
         {per.series.map((v, i) => (

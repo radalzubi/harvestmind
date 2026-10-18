@@ -21,7 +21,7 @@ CANDIDATE_WORDS = {
     "order_up_to": "a simple order-up-to rule", "deterministic_sp": "the plain optimizer",
     "stochastic_sp": "the optimizer that plans across many demand scenarios",
     "anchored_sp": "the optimizer kept close to your current orders",
-    "adaptive_sp": "the state-aware optimizer", "incumbent": "your current policy",
+    "adaptive_sp": "the state-aware optimizer", "incumbent": "the reconstructed historical rule",
 }
 LANE_WORDS = {"aqaba": "Aqaba (sea)", "red_sea": "the Red Sea route", "hormuz": "the Strait of Hormuz route",
               "suez": "the Suez route", "road_saudi": "the road lane through Saudi Arabia",
@@ -118,7 +118,7 @@ def explain_state(state: dict) -> dict:
         f"Caution is {_level(lam, 0.35, 0.65)} ({lam:.2f}): that is how much the plan pays to avoid bad weeks rather than chase the average.",
         f"It plans against a {_level(width, 0.9, 1.1, ('narrow', 'normal', 'wide'))} range of possible futures ({width:.2f}, where 1 is normal).",
         f"On its own it may change your orders {_level(auto, 0.3, 0.6, ('very little', 'moderately', 'freely'))} ({auto:.2f} on a 0 to 1 scale); anything beyond that needs the evidence gate.",
-        ("Optimizers allowed to compete against your current policy: " + ", ".join(cands) + ".") if cands else "No optimizer is allowed to compete with your current policy in this state.",
+        ("Optimizers allowed to compete against the reconstructed historical rule: " + ", ".join(cands) + ".") if cands else "No optimizer is allowed to compete with the reconstructed historical rule in this state.",
     ]
 
     lanes: list[dict] = []
@@ -144,8 +144,8 @@ def explain_state(state: dict) -> dict:
     return {"headline": headline, "regime": regime, "regime_reasons": regime_reasons, "posture": posture,
             "lanes": lanes, "triggers": triggers,
             "glossary": {
-                "Your current policy": "How you order today, read from your own history: reorder points, order quantities and cadence per SKU. Every optimizer has to beat it on your past before it may change anything.",
-                "Evidence gate": "The check that only adopts an optimizer if its conservative lower bound beat your current policy on held-out weeks of your history.",
+                "The reconstructed historical rule": "How ZAAD reads your ordering from your own history (a reconstructed rule, not your plan): reorder points, order quantities and cadence per SKU. Every optimizer has to beat it on your past before it may change anything.",
+                "Evidence gate": "The check that only adopts an optimizer if its conservative lower bound beat the reconstructed historical rule on held-out weeks of your history.",
                 "Regime": "The state your suppliers, lanes and demand appear to be in, as a set of probabilities rather than a single label.",
                 "Lane risk": "The chance of a delay or shortfall on a shipping lane over the coming weeks, from public port, chokepoint and freight data.",
             }}

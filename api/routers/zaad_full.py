@@ -14,6 +14,7 @@ from starlette.concurrency import run_in_threadpool
 from api.dependencies import capability, get_conn, require_operator
 from api.routers.zaad import bounded_rate
 from zaad.contracts import Record
+from zaad.full import comparator
 from zaad.full.contracts import Request
 from zaad.full.planner import plan
 from zaad.full.jobs import JobRunner, JobStore, QuotaExceeded
@@ -331,6 +332,10 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
                                          sector_mode=sector_mode, sourcing=sourcing, recourse=recourse, atp=atp, commitments=commitments)
     atp_gate(req, batch=False)
     report = await compute(req)
+    # H3a: the build knows whether the incumbent rule was inferred or declared; the planner's section is refined with it
+    rule_prov = ((build or {}).get("incumbent_rule") or {}).get("provenance")
+    report["decision_reference"] = comparator.decision_reference(req, rule_provenance=rule_prov)
+    report["comparison"] = comparator.plan_comparison(req, status=report.get("status"), selected_policy=report.get("selected_policy"), rule_provenance=rule_prov)
     if shape == "network":
         return {"report": report, "build": build, "executable_purchase_order": False}
     if network and (req.transfers or len(req.locations) > 1):

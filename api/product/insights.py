@@ -768,7 +768,7 @@ def value(conn: Any, operator: str, plan: dict[str, Any] | None = None) -> dict[
             "incumbent_total": inc, "selected_total": sel, "difference": (inc - sel) if (inc is not None and sel is not None) else None,
             "ledger": [{"component": k, "incumbent": _num((econ.get("incumbent_costs") or {}).get(k)), "selected": _num((econ.get("selected_costs") or {}).get(k))}
                        for k in (econ.get("selected_costs") or {}) if k != "TOTAL"],
-            "basis": "The engine's own ledger for the latest plan: the cost it projects for your current policy minus the cost of what it recommends, over the same products and information. A modelled difference, not a saving.",
+            "basis": "The engine's own ledger for the latest plan: the cost it projects for its decision reference (the reconstructed or declared rule, not a captured plan) minus the cost of what it recommends, over the same products and information. A modelled difference, not a saving.",
             "plan": {k: plan.get(k) for k in ("job_id", "as_of", "finished_at", "stale")}}
     else:
         registers["MODELED_DIFFERENCE"] = {"available": False, "reason": "NOT_IN_PLAN", "why": "No completed plan exists yet."}

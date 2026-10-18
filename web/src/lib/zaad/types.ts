@@ -195,6 +195,29 @@ export interface ZaadAtp {
   orders?: Array<Record<string, unknown>>;
 }
 
+/** What the planner compared against, named by the backend (H3a). */
+export interface DecisionReference {
+  type: string;
+  kind?: string;
+  fidelity: string;
+  provenance: string | null;
+  label: string;
+  description?: string;
+  rule?: string;
+}
+
+/** What a plan result may claim (H3a). Permissions are the backend's; the frontend repeats them. */
+export interface PlanComparison {
+  mode: string;
+  readiness?: string;
+  claim_class: string;
+  meaning?: string;
+  decision_reference?: DecisionReference;
+  comparator?: { type: string; fidelity: string; label: string | null };
+  permissions: Partial<Record<"can_recommend" | "can_compare" | "can_claim_against_operator" | "can_claim_historical_counterfactual_difference" | "can_claim_shadow_difference" | "can_claim_realized_value", boolean>>;
+  caveats?: string[];
+}
+
 export interface ZaadReport {
   schema_version: string;
   brand: string;
@@ -206,6 +229,8 @@ export interface ZaadReport {
   status: string;
   mode: string;
   selected_policy: string;
+  decision_reference?: DecisionReference;
+  comparison?: PlanComparison;
   actions: ZaadAction[];
   incumbent_actions: ZaadAction[];
   approval_required: boolean;
