@@ -1,5 +1,32 @@
 # HARDENING V1, H3a: comparator provenance and claim gating
 
+**Status: CLOSED.** PR #111 merged into main on 2026-10-18 as merge commit `4e067b2dcb1f73fa30883db5565c32569c6603da`
+(approved head `4ba652bad7119096a6e17bfd83ecec2bcebfd381`, after three independent-review correction passes). PR #111 is
+merged.
+
+**Post-merge CI on main (run 39093567176 on `4e067b2`).** Attempt 1 concluded failure: 13 jobs succeeded and the
+integration job (id 117575203453) failed with 543 passed, 1 failed:
+`tests/integration/test_diagnostic_lifecycle.py::test_cancel_while_queued`, "job did not reach the expected state" (the held
+fake diagnostic, thread runner, was still `running` at stage `lanes` when the test's 10-second wait expired). This is the
+cancellation/queue timing race already recorded under that test name and touches no H3a code. A controlled rerun of that one
+job only (attempt 2, job 117579980025, 2026-10-18 03:52:58Z to 04:15:10Z) concluded success with 544 passed, 0 failed, so
+the run is 14/14. The original failure is kept here on purpose: the rerun shows the failure was intermittent, not that the
+race is fixed.
+
+**Validation on the exact merge commit `4e067b2` (local, rebuilt venv with highspy 1.15.1):** canonical frozen regression
+PASS; P1 invariants exit 0 (evidence JSON restored); causal attestation 0 failures; workspace smoke exit 0; H0 causal
+workspace, H1c canonical order, H1b temporal contract, H1a receipt PIT, H2 inventory state and the comparator suite 86
+passed; 2025-09-01 pipeline 3000 / 3888 / 72 and opening stock 5454 / 2208 / 204 unchanged. The hosted frozen-regression job
+also passed on main. Optimizer formulations, planner gates and the H0–H2 contracts are untouched: H3a is evidence semantics
+above the optimizer. H3b (prospective operator-plan capture, persistence, locking, shadow settlement) has NOT started and
+needs its own scope and authorization.
+
+**Explicitly deferred, NOT resolved:**
+1. A multi-line purchase order still open at the planning origin produces duplicate PO-derived Request entity ids
+   (shipment-history and pipeline identities use the PO id alone), so such a vault cannot build a Request.
+2. Asynchronous plan jobs carry the planner's comparison with `RULE_IN_REQUEST` provenance; only the synchronous plan
+   route refines it from the workspace build.
+
 Branch `hardening/h3a-comparator-provenance` on main `7efaa0b` (H0, H1a, H1b, H1c, H2 merged). One purpose:
 every comparator and every relative-performance statement says exactly what it is comparing against.
 Nothing here is customer evidence; the vaults are the SYNTHETIC sample and the unit-test fixture.
