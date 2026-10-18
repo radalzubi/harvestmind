@@ -44,7 +44,7 @@ def test_a_exact_historical_action_maps_by_business_key():
     assert line.source == "src_X" and line.fidelity == C.EXACT and out.by_review[0] == {"src_X": 100.}
     cov = out.coverage(4)
     assert cov["lines_observed"] == cov["lines_exact"] == 1 and cov["exact_quantity_share"] == 1.0 and cov["exact_value_share"] == 1.0
-    cmp = C.historical_comparison(cov, transformed_lines=0, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=4)
+    cmp = C.historical_comparison(cov, transformed_groups=0, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=4)
     assert cmp["comparator"]["type"] == C.ACTUAL_HISTORICAL_ACTION and cmp["comparator"]["fidelity"] == C.EXACT and cmp["claim_class"] == C.HISTORICAL_COUNTERFACTUAL_COMPARISON
 
 
@@ -88,7 +88,7 @@ def test_c_a_line_without_supplier_identity_is_incomplete_and_cannot_claim():
     one = [_src("src_X", "X", "A")]
     out = _map(_pos(("PO-1", "2025-09-02", None, "X", 100.)), one)
     assert out.lines[0].source == "src_X" and out.lines[0].fidelity == C.INCOMPLETE              # evaluated through the only source, but not exact
-    cmp = C.historical_comparison(out.coverage(4), transformed_lines=0, settlement_shares=None, rule_provenance=None, reviews_completed=4)
+    cmp = C.historical_comparison(out.coverage(4), transformed_groups=0, settlement_shares=None, rule_provenance=None, reviews_completed=4)
     assert cmp["comparator"]["fidelity"] == C.INCOMPLETE and cmp["readiness"] == C.CONDITIONAL and cmp["claim_class"] == C.MODEL_COMPARISON
     assert cmp["permissions"]["can_claim_against_operator"] is False and cmp["permissions"]["can_claim_historical_counterfactual_difference"] is False
     # a network request needs the destination too
@@ -106,7 +106,7 @@ def test_d_e_a_transformed_quantity_keeps_the_observed_one_and_loses_exactness()
     settled, note = H._conform(capped, 103.)
     assert settled == 80. and "capped" in note
     cov = {"lines_observed": 2, "lines_exact": 2, "lines_incomplete": 0, "lines_unmapped": 0, "exact_quantity_share": 1.0, "exact_value_share": 1.0, "value_share_basis": "x", "incomplete_reasons": []}
-    cmp = C.historical_comparison(cov, transformed_lines=2, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=4)
+    cmp = C.historical_comparison(cov, transformed_groups=2, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=4)
     assert cmp["comparator"]["fidelity"] == C.TRANSFORMED and cmp["comparator"]["transformed"] is True and cmp["claim_class"] == C.MODEL_COMPARISON
     assert cmp["permissions"]["can_claim_against_operator"] is False and "model-adjusted" in cmp["comparator"]["label"]
     assert C.actual_action_label(cmp) == "a model-adjusted version of the recorded historical orders"
@@ -123,8 +123,14 @@ def test_f_g_rules_are_reconstructed_policy_whether_inferred_or_declared():
         assert "current policy" not in json.dumps(ref).lower() and "would have" not in json.dumps(ref).lower()
     unknown = C.decision_reference(SimpleNamespace(incumbent_rule="replace_sold", incumbent_orders=()))
     assert unknown["fidelity"] == C.RECONSTRUCTED and unknown["provenance"] == "RULE_IN_REQUEST" and "build report" in unknown["provenance_note"]
+    # correction C: a bare incumbent order set proves nothing about who wrote it
     orders = C.decision_reference(SimpleNamespace(incumbent_rule=None, incumbent_orders=(1,)))
-    assert orders["type"] == C.RECONSTRUCTED_POLICY and orders["fidelity"] == C.DECLARED and "not a captured operator plan" in orders["label"]
+    assert orders["type"] == C.INCUMBENT_ORDER_SET and orders["fidelity"] == C.NOT_AVAILABLE and orders["provenance"] == C.ORIGIN_NOT_ESTABLISHED
+    assert "origin not established" in orders["label"] and "not a captured operator plan" in orders["label"]
+    declared = C.decision_reference(SimpleNamespace(incumbent_rule=None, incumbent_orders=(1,)), incumbent_orders_source="stg_operator_plan:plan-7")
+    assert declared["fidelity"] == C.DECLARED and declared["provenance"] == "stg_operator_plan:plan-7" and declared["type"] == C.INCUMBENT_ORDER_SET
+    shadow_labelled = C.decision_reference(SimpleNamespace(incumbent_rule=None, incumbent_orders=(1,), evidence_label="OPERATOR-SHADOW"))
+    assert shadow_labelled["provenance"] == C.ORIGIN_NOT_ESTABLISHED          # the legacy engine label is not evidence of a captured plan
 
 
 # ── H / I: PLAN_MODE ──
@@ -156,12 +162,12 @@ def test_j_shadow_comparison_is_not_ready_without_a_captured_operator_plan():
 # ── K / L / M: historical exact vs transformed, and the system baseline ──
 def test_k_l_m_claim_classes_follow_fidelity_and_baselines_stay_generic():
     cov = {"lines_observed": 5, "lines_exact": 5, "lines_incomplete": 0, "lines_unmapped": 0, "exact_quantity_share": 1.0, "exact_value_share": 1.0, "value_share_basis": "x", "incomplete_reasons": []}
-    exact = C.historical_comparison(cov, transformed_lines=0, settlement_shares={"zaad_orders": 1}, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=4)
+    exact = C.historical_comparison(cov, transformed_groups=0, settlement_shares={"zaad_orders": 1}, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=4)
     assert exact["claim_class"] == C.HISTORICAL_COUNTERFACTUAL_COMPARISON and exact["permissions"]["can_claim_historical_counterfactual_difference"] is True
     assert exact["permissions"]["can_claim_realized_value"] is False and "counterfactual" in exact["caveats"][0]
-    transformed = C.historical_comparison(cov, transformed_lines=1, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=4)
+    transformed = C.historical_comparison(cov, transformed_groups=1, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=4)
     assert transformed["claim_class"] == C.MODEL_COMPARISON and transformed["permissions"]["can_claim_against_operator"] is False and transformed["comparator"]["transformed"] is True
-    none = C.historical_comparison({"lines_observed": 0, "lines_exact": 0, "lines_incomplete": 0}, transformed_lines=0, settlement_shares=None, rule_provenance=None, reviews_completed=4)
+    none = C.historical_comparison({"lines_observed": 0, "lines_exact": 0, "lines_incomplete": 0}, transformed_groups=0, settlement_shares=None, rule_provenance=None, reviews_completed=4)
     assert none["comparator"]["type"] == C.NONE and none["readiness"] == C.CANNOT_COMPARE and none["permissions"]["can_compare"] is False
     baseline = C.decision_reference(SimpleNamespace(incumbent_rule=None, incumbent_orders=()))
     assert baseline["type"] == C.SYSTEM_BASELINE and "operator" not in baseline["label"] and "plan" not in baseline["label"] and "engineering benchmark" in baseline["description"]
@@ -190,7 +196,113 @@ def test_o_mapping_is_deterministic_under_physical_reorder():
 
 
 def test_vocabulary_is_closed():
-    assert set(C.COMPARATOR_TYPES) == {"ACTUAL_HISTORICAL_ACTION", "ACTUAL_OPERATOR_PLAN", "RECONSTRUCTED_POLICY", "SYSTEM_BASELINE", "NONE"}
+    assert set(C.COMPARATOR_TYPES) == {"ACTUAL_HISTORICAL_ACTION", "ACTUAL_OPERATOR_PLAN", "RECONSTRUCTED_POLICY", "SYSTEM_BASELINE", "INCUMBENT_ORDER_SET", "NONE"}
     assert set(C.FIDELITIES) == {"EXACT", "DECLARED", "RECONSTRUCTED", "TRANSFORMED", "INCOMPLETE", "NOT_AVAILABLE"}
     assert set(C.CLAIM_CLASSES) == {"PLAN_ONLY", "MODEL_COMPARISON", "HISTORICAL_COUNTERFACTUAL_COMPARISON", "SHADOW_COMPARISON", "REALIZED_VALUE"}
     assert date(2025, 9, 1) == ORIGIN.date()
+
+
+# ── correction A: supplier-exact historical truth ──
+def _truth_vault(order):
+    """Two suppliers of one SKU with different behaviour: A delivers 100% in 7 days, B delivers 50% in 28 days.
+    Rows are inserted in the given order so the mapping can be proven order-independent."""
+    conn = duckdb.connect(":memory:")
+    setup_db(conn)
+    conn.execute("INSERT INTO stg_fmcg_skus (sku, supplier_id, unit_cost, unit_price, units_per_case, moq_units) VALUES ('X', 'A', 2.0, 4.0, 1, 1)")
+    conn.execute("INSERT INTO stg_fmcg_suppliers (supplier_id) VALUES ('A'), ('B')")
+    rows = []
+    for w in range(60):
+        day = date(2025, 1, 6) + pd.Timedelta(weeks=w).to_pytimedelta()
+        rows.append(("PO-A-%02d" % w, day, "A", "X", 100.0, 2.0))
+        rows.append(("PO-B-%02d" % w, day, "B", "X", 40.0, 2.0))
+        conn.execute("INSERT INTO stg_fmcg_orders (order_id, customer_id, order_date, sku, qty_ordered) VALUES (?, 'C1', ?, 'X', 120)", ["SO-%02d" % w, day])
+    for po_id, day, sup, sku, qty, cost in (rows if order == "forward" else rows[::-1]):
+        conn.execute("INSERT INTO stg_fmcg_purchase_orders (po_id, po_date, supplier_id, sku, qty_ordered, unit_cost) VALUES (?, ?, ?, ?, ?, ?)", [po_id, day, sup, sku, qty, cost])
+        received = qty if sup == "A" else qty * 0.5
+        lead = 7 if sup == "A" else 28
+        conn.execute("INSERT INTO stg_fmcg_receipts (po_id, receipt_date, sku, qty_received) VALUES (?, ?, ?, ?)", [po_id, day + pd.Timedelta(days=lead).to_pytimedelta(), sku, received])
+    conn.execute("INSERT INTO stg_fmcg_sources (sku, supplier_id, approved, unit_cost, capacity_per_week, lead_time_promised_weeks, moq_units, units_per_case, provenance) VALUES ('X', 'B', TRUE, 2.0, 100000, 4, 1, 1, 'test')")
+    # H2: an opening count that is the state at the origin and knowable before it
+    conn.execute("INSERT INTO stg_fmcg_inventory (snapshot_date, sku, location_id, on_hand, in_transit, snapshot_basis, source_known_at) "
+                 "VALUES (DATE '2025-08-31', 'X', 'MAIN', 300, 0, 'END_OF_DAY', TIMESTAMP '2025-08-31 23:59:59')")
+    return conn
+
+
+@pytest.mark.parametrize("order", ["forward", "reversed"])
+def test_a_truth_uses_each_suppliers_own_observations_only(order):
+    conn = _truth_vault(order)
+    as_of = datetime(2025, 9, 1, tzinfo=timezone.utc)
+    req, _ = build_request(conn, "op", as_of=as_of, horizon=8, skus=["X"], sourcing=True)
+    src_a = next(s for s in req.sources if s.supplier == "A")
+    src_b = next(s for s in req.sources if s.supplier == "B")
+    world, prov = H.build_truth(conn, req, periods=8, seed=1)
+    assert prov["source_identity"].startswith("a MEASURED cell is the exact source's own received order")
+    for t in range(8):
+        assert prov["supply"][f"{src_a.id}|{t}"] == "MEASURED" and prov["supply"][f"{src_b.id}|{t}"] == "MEASURED"
+        assert prov["supply_actual_qty"][f"{src_a.id}|{t}"] == 100.0 and prov["supply_actual_qty"][f"{src_b.id}|{t}"] == 40.0
+        assert world.fills[src_a.id, t] == 1.0 and world.fills[src_b.id, t] == 0.5
+        assert world.arrival[src_a.id, t] == t + 1 and world.arrival[src_b.id, t] == t + 4            # 7 days -> 1 period, 28 days -> 4 periods
+    conn.close()
+
+
+def test_a_a_source_without_its_own_observation_is_never_measured_by_another_supplier():
+    conn = _truth_vault("forward")
+    conn.execute("DELETE FROM stg_fmcg_receipts WHERE po_id LIKE 'PO-B-%'")
+    conn.execute("DELETE FROM stg_fmcg_purchase_orders WHERE po_id LIKE 'PO-B-%'")          # B never delivered anything
+    as_of = datetime(2025, 9, 1, tzinfo=timezone.utc)
+    req, _ = build_request(conn, "op", as_of=as_of, horizon=8, skus=["X"], sourcing=True)
+    src_a = next(s for s in req.sources if s.supplier == "A")
+    src_b = next(s for s in req.sources if s.supplier == "B")
+    world, prov = H.build_truth(conn, req, periods=8, seed=1)
+    assert all(prov["supply"][f"{src_a.id}|{t}"] == "MEASURED" for t in range(8))
+    assert all(prov["supply"][f"{src_b.id}|{t}"] == "ASSUMED" for t in range(8)), {k: v for k, v in prov["supply"].items() if src_b.id in k}
+    assert not any(k.startswith(src_b.id) for k in prov["supply_actual_qty"])
+    assert all(world.fills[src_b.id, t] == src_b.fill_mean for t in range(8))        # the declared or assumed fill, not A's 100%
+    conn.close()
+
+
+def test_a_a_received_order_without_supplier_identity_measures_nothing():
+    conn = _truth_vault("forward")
+    conn.execute("UPDATE stg_fmcg_purchase_orders SET supplier_id = NULL WHERE po_id LIKE 'PO-A-%'")
+    as_of = datetime(2025, 9, 1, tzinfo=timezone.utc)
+    req, _ = build_request(conn, "op", as_of=as_of, horizon=8, skus=["X"], sourcing=True)
+    src_a = next(s for s in req.sources if s.supplier == "A")
+    world, prov = H.build_truth(conn, req, periods=8, seed=1)
+    assert all(prov["supply"][f"{src_a.id}|{t}"] != "MEASURED" for t in range(8))
+    conn.close()
+
+
+# ── correction D: identity fidelity is separate from evaluation fidelity ──
+def _rows_for(identity_lines, observed, evaluated):
+    actions = C.HistoricalActions(lines=identity_lines, by_review={0: {"src_X": observed}})
+    methods = SimpleNamespace(actual={0: {"src_X": observed}}, zaad_log=[], actions=actions)
+    initial = SimpleNamespace(sources=[_src("src_X", "X", "A")], services=[SimpleNamespace(sku="X", id="svc_X")])
+    per = {"actual": [{"purchases": {"src_X": evaluated}, "as_of": "2025-09-01", "service_by_sku": {}, "end_stock_by_sku": {}}],
+           "zaad": [{"purchases": {"src_X": 100.0}, "as_of": "2025-09-01", "service_by_sku": {}, "end_stock_by_sku": {}}]}
+    return H._decision_rows(initial, per, methods, {"supply": {}, "supply_actual_qty": {}}, 1)[0]
+
+
+def test_d_quantity_equality_never_proves_action_identity():
+    exact = C.ActionLine(po_id="P1", po_date=pd.Timestamp("2025-09-02"), sku="X", supplier="A", destination=None, quantity=103., unit_cost=2., period=0, source="src_X", fidelity=C.EXACT)
+    anonymous = C.ActionLine(po_id="P1", po_date=pd.Timestamp("2025-09-02"), sku="X", supplier=None, destination=None, quantity=103., unit_cost=2., period=0, source="src_X", fidelity=C.INCOMPLETE,
+                             reason="the record carries no supplier identity")
+    row = _rows_for([exact], 103., 103.)
+    assert (row["actual_identity_fidelity"], row["actual_evaluation_fidelity"], row["actual_fidelity"]) == (C.EXACT, C.EXACT, C.EXACT)
+    row = _rows_for([exact], 103., 96.)
+    assert (row["actual_identity_fidelity"], row["actual_evaluation_fidelity"], row["actual_fidelity"]) == (C.EXACT, C.TRANSFORMED, C.TRANSFORMED)
+    assert row["actual_observed_qty"] == 103. and row["actual_evaluated_qty"] == 96.
+    row = _rows_for([anonymous], 103., 103.)          # sole-source fallback, no rounding: identity stays incomplete
+    assert (row["actual_identity_fidelity"], row["actual_evaluation_fidelity"], row["actual_fidelity"]) == (C.INCOMPLETE, C.EXACT, C.INCOMPLETE)
+    row = _rows_for([anonymous], 103., 96.)
+    assert (row["actual_identity_fidelity"], row["actual_evaluation_fidelity"], row["actual_fidelity"]) == (C.INCOMPLETE, C.TRANSFORMED, C.INCOMPLETE)
+    row = _rows_for([exact, anonymous], 206., 206.)   # one anonymous line in the cell makes the cell incomplete
+    assert row["actual_identity_fidelity"] == C.INCOMPLETE and row["actual_fidelity"] == C.INCOMPLETE
+
+
+# ── correction E: transformation is counted per source-review action group ──
+def test_e_transformation_coverage_is_labelled_as_action_groups():
+    cov = {"lines_observed": 9, "lines_exact": 9, "lines_incomplete": 0, "lines_unmapped": 0, "exact_quantity_share": 1.0, "exact_value_share": 1.0, "value_share_basis": "x", "incomplete_reasons": []}
+    cmp = C.historical_comparison(cov, transformed_groups=2, settlement_shares=None, rule_provenance=None, reviews_completed=3)
+    assert cmp["coverage"]["transformed_action_groups"] == 2 and "PO-line attribution is not available" in cmp["coverage"]["transformation_unit"]
+    assert "2 source-review action group(s)" in " ".join(cmp["caveats"]) and "line(s) were" not in " ".join(cmp["caveats"])
+    assert cmp["comparator"]["fidelity"] == C.TRANSFORMED and cmp["permissions"]["can_claim_historical_counterfactual_difference"] is False

@@ -239,16 +239,17 @@ function Value() {
   const priced = summary.costBreakdown.filter((row) => row.delta != null);
   return (
     <>
-      <Section title="Modelled difference vs your current plan">
+      <Section title="Modelled difference vs the decision reference">
         <p style={{ margin: "0 0 14px", fontSize: 13.5, color: "var(--ink-700)", lineHeight: 1.65, maxWidth: "66ch" }}>
-          What the optimizer projects for the plan it selected, against what it projects for your own declared
-          ordering rule, over the same products and the same information. Both figures come from the engine&rsquo;s
-          own settlement ledger.
+          What the optimizer projects for the plan it selected, against what it projects for its decision reference
+          (the purchasing rule reconstructed from your history, or the rule you declared; not a plan you submitted),
+          over the same products and the same information. Both figures come from the engine&rsquo;s own settlement
+          ledger, so this is a modelled difference, not a measured one.
         </p>
         <dl className="kv">
           <dt>Modelled cost difference</dt>
           <dd>{summary.valueVsCurrent == null
-            ? <NotAvailable shown why="The selector kept your current plan and priced no alternative against it, so there is no difference to report." />
+            ? <NotAvailable shown why="The selector retained its decision reference and priced no alternative against it, so there is no difference to report." />
             : Math.abs(summary.valueVsCurrent) < 0.005 ? "no difference"
             : `${summary.valueVsCurrent >= 0 ? "lower by " : "higher by "}${money(Math.abs(summary.valueVsCurrent), summary.currency)}`}</dd>
           <dt>Cash tied up</dt>
@@ -269,7 +270,7 @@ function Value() {
             <DataTable caption="Where the modelled difference sits" dense rows={priced} rowKey={(r) => r.component}
               columns={[
                 { key: "component", label: "", render: (r) => r.component },
-                { key: "current", label: "Your current plan", numeric: true, render: (r) => r.current != null ? MONEY(r.current, summary.currency) : <span className="na">—</span> },
+                { key: "current", label: "Decision reference", numeric: true, render: (r) => r.current != null ? MONEY(r.current, summary.currency) : <span className="na">—</span> },
                 { key: "recommended", label: "ZAAD's plan", numeric: true, render: (r) => r.recommended != null ? MONEY(r.recommended, summary.currency) : <span className="na">—</span> },
                 // A difference that rounds to nothing is not a saving, and `r.delta > 0 ? "+" : "−"`
                 // printed every exact zero as "−USD 0.00" — seven of them, under a heading that

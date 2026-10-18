@@ -46,8 +46,10 @@ ACTUAL_HISTORICAL_ACTION = "ACTUAL_HISTORICAL_ACTION"
 ACTUAL_OPERATOR_PLAN = "ACTUAL_OPERATOR_PLAN"                   # reserved for H3b
 RECONSTRUCTED_POLICY = "RECONSTRUCTED_POLICY"
 SYSTEM_BASELINE = "SYSTEM_BASELINE"
+INCUMBENT_ORDER_SET = "INCUMBENT_ORDER_SET"                     # dated incumbent orders in a Request whose origin is not established
 NONE = "NONE"
-COMPARATOR_TYPES = (ACTUAL_HISTORICAL_ACTION, ACTUAL_OPERATOR_PLAN, RECONSTRUCTED_POLICY, SYSTEM_BASELINE, NONE)
+COMPARATOR_TYPES = (ACTUAL_HISTORICAL_ACTION, ACTUAL_OPERATOR_PLAN, RECONSTRUCTED_POLICY, SYSTEM_BASELINE, INCUMBENT_ORDER_SET, NONE)
+ORIGIN_NOT_ESTABLISHED = "ORIGIN_NOT_ESTABLISHED"
 
 EXACT, DECLARED, RECONSTRUCTED, TRANSFORMED, INCOMPLETE, NOT_AVAILABLE = "EXACT", "DECLARED", "RECONSTRUCTED", "TRANSFORMED", "INCOMPLETE", "NOT_AVAILABLE"
 FIDELITIES = (EXACT, DECLARED, RECONSTRUCTED, TRANSFORMED, INCOMPLETE, NOT_AVAILABLE)
@@ -70,6 +72,7 @@ PERMISSION_KEYS = ("can_recommend", "can_compare", "can_claim_against_operator",
 LABELS = {
     "rule_inferred": "the reconstructed historical rule",
     "rule_declared": "the operator-declared rule",
+    "orders_unestablished": "the incumbent order set in the request (origin not established; not a captured operator plan)",
     "orders_declared": "the operator-declared incumbent orders (a declared order set, not a captured operator plan)",
     "system_proxy": "the system base-stock baseline",
     "action_exact": "the recorded historical orders",
@@ -96,14 +99,24 @@ def policy_label(rule_provenance: str | None) -> str:
     return LABELS["rule_declared"] if rule_provenance == "CUSTOMER_PROVIDED" else LABELS["rule_inferred"]
 
 
-def decision_reference(req: Any, *, rule_provenance: str | None = None) -> dict[str, Any]:
+def decision_reference(req: Any, *, rule_provenance: str | None = None, incumbent_orders_source: str | None = None) -> dict[str, Any]:
     """The planner's incumbent, described by what it is. `rule_provenance` is the workspace build's
-    `incumbent_rule.provenance` when the caller has the build; the Request itself does not carry it."""
+    `incumbent_rule.provenance` when the caller has the build; the Request itself does not carry it.
+
+    A bare `Request.incumbent_orders` collection proves nothing about who wrote it: the replay engine
+    builds incumbent orders from a rule and carries schedules forward, so without `incumbent_orders_source`
+    (a defensible, independently established origin the caller supplies; H3b's plan capture will be one)
+    the set has ORIGIN_NOT_ESTABLISHED and NOT_AVAILABLE fidelity. The legacy engine field
+    `evidence_label = OPERATOR-SHADOW` is not such a source."""
     if getattr(req, "incumbent_orders", ()):
-        return {"type": RECONSTRUCTED_POLICY, "kind": "DECLARED_INCUMBENT_ORDERS", "fidelity": DECLARED, "provenance": "Request.incumbent_orders",
-                "label": LABELS["orders_declared"],
-                "description": "a dated set of incumbent orders declared in the request; the planner is compared against it, but no record "
-                               "establishes it as a plan the operator captured prospectively, so it is not an ACTUAL_OPERATOR_PLAN"}
+        if incumbent_orders_source:
+            return {"type": INCUMBENT_ORDER_SET, "kind": "DECLARED_INCUMBENT_ORDERS", "fidelity": DECLARED, "provenance": incumbent_orders_source,
+                    "label": LABELS["orders_declared"],
+                    "description": "a dated set of incumbent orders with an operator-declared origin; still not a plan captured prospectively, so not an ACTUAL_OPERATOR_PLAN"}
+        return {"type": INCUMBENT_ORDER_SET, "kind": "INCUMBENT_ORDER_SET", "fidelity": NOT_AVAILABLE, "provenance": ORIGIN_NOT_ESTABLISHED,
+                "label": LABELS["orders_unestablished"],
+                "description": "a dated set of incumbent orders carried in the request; the planner is compared against it, but nothing establishes "
+                               "whether an operator wrote it or the engine projected it, so no operator provenance is attached"}
     rule = getattr(req, "incumbent_rule", None)
     if rule:
         fidelity = rule_fidelity(rule_provenance)
@@ -271,24 +284,29 @@ def map_historical_actions(pos: pd.DataFrame, sources: list[Any], *, origin: pd.
 
 
 # ── historical comparison contract ───────────────────────────────────────────
-def historical_comparison(coverage: dict[str, Any], *, transformed_lines: int, settlement_shares: dict[str, Any] | None,
+def historical_comparison(coverage: dict[str, Any], *, transformed_groups: int, settlement_shares: dict[str, Any] | None,
                           rule_provenance: str | None, reviews_completed: int) -> dict[str, Any]:
     """What a historical replay may claim. The operator's action is observed; ZAAD's alternate history is
     counterfactual and settles on measured / inferred / simulated / assumed supplier behaviour. An exact
-    claim needs EVERY action line in the reported scope mapped exactly and left untransformed."""
+    claim needs EVERY action line in the reported scope mapped exactly and left untransformed.
+
+    `transformed_groups` counts source-review action groups (one source's recorded orders in one review
+    period, settled together) that the conformance step changed. The settlement works on those groups, so
+    no line-level count of transformed POs exists and none is invented; one changed group is enough to
+    deny the exact whole-scope claim."""
     observed = int(coverage.get("lines_observed") or 0)
     incomplete = int(coverage.get("lines_incomplete") or 0)
     if observed == 0:
         fidelity, label = NOT_AVAILABLE, None
     elif incomplete:
         fidelity, label = INCOMPLETE, LABELS["action_incomplete"]
-    elif transformed_lines:
+    elif transformed_groups:
         fidelity, label = TRANSFORMED, LABELS["action_transformed"]
     else:
         fidelity, label = EXACT, LABELS["action_exact"]
     exact_ok = fidelity == EXACT and reviews_completed > 0
     comparator = {"type": ACTUAL_HISTORICAL_ACTION if observed else NONE, "fidelity": fidelity, "provenance": "stg_fmcg_purchase_orders (recorded purchase orders)",
-                  "label": label, "observed": observed > 0, "transformed": transformed_lines > 0}
+                  "label": label, "observed": observed > 0, "transformed": transformed_groups > 0}
     if exact_ok:
         readiness, claim = READY, HISTORICAL_COUNTERFACTUAL_COMPARISON
         permissions = _permissions(can_recommend=True, can_compare=True, can_claim_historical_counterfactual_difference=True)
@@ -301,15 +319,17 @@ def historical_comparison(coverage: dict[str, Any], *, transformed_lines: int, s
     caveats = ["historical counterfactual comparison: the operator's action is observed, ZAAD's alternate history is not; nothing here is realized value",
                "ZAAD's leg settles on measured, inferred, simulated or assumed supplier behaviour (see settlement_provenance)"]
     if fidelity == TRANSFORMED:
-        caveats.append(f"{transformed_lines} recorded order line(s) were rounded, capped or dropped to fit the declared physical envelope before settlement; "
-                       "the scored path is a model-adjusted version of the recorded orders, so no claim is made against the operator")
+        caveats.append(f"{transformed_groups} source-review action group(s) (one source's recorded orders in one review period) were rounded, capped or dropped "
+                       "to fit the declared physical envelope before settlement; the scored path is a model-adjusted version of the recorded orders, so no claim is made against the operator")
     if fidelity == INCOMPLETE:
         caveats.append(f"{incomplete} of {observed} recorded line(s) could not be mapped exactly to a request source ({'; '.join(coverage.get('incomplete_reasons') or [])}); "
                        "the comparator does not cover the operator's actions exactly")
     return {"mode": HISTORICAL_COMPARISON_MODE, "readiness": readiness, "comparator": comparator,
             "decision_reference": {"type": RECONSTRUCTED_POLICY, "fidelity": rule_fidelity(rule_provenance), "provenance": rule_provenance, "label": policy_label(rule_provenance)},
-            "claim_class": claim, "permissions": permissions, "coverage": coverage, "caveats": caveats,
-            "settlement_basis": settlement_shares,
+            "claim_class": claim, "permissions": permissions,
+            "coverage": {**coverage, "transformed_action_groups": transformed_groups,
+                         "transformation_unit": "source-review action groups (one source's recorded orders in one review period, settled together); PO-line attribution is not available"},
+            "caveats": caveats, "settlement_basis": settlement_shares,
             "legs": {"actual": {"comparator_type": comparator["type"], "fidelity": fidelity, "label": label},
                      "rule": {"comparator_type": RECONSTRUCTED_POLICY, "fidelity": rule_fidelity(rule_provenance), "provenance": rule_provenance, "label": policy_label(rule_provenance)},
                      "zaad": {"type": "COUNTERFACTUAL_DECISION", "label": LABELS["zaad"]}},

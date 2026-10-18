@@ -12,6 +12,7 @@
  *    optimizer prices the plan against the incumbent as a whole.
  *  - Optimizer vocabulary lives in `technical`; `headline`, `why` and `effect` are operator language.
  */
+import { referenceLabelCap } from "./reference";
 import { plainReasons } from "./reasons";
 import type {
   ZaadAction, ZaadBuild, ZaadCommitmentOrder, ZaadReport, ZaadRequest, ZaadSource,
@@ -283,11 +284,11 @@ function purchaseDecisions(report: ZaadReport, request: ZaadRequest | null, buil
       why: plainReasons(report.reasons),
       effect: [
         { label: "Order this week", value: units(row.selected) },
-        { label: "Current plan orders", value: units(row.incumbent) },
+        { label: `${referenceLabelCap(report)} orders`, value: units(row.incumbent) },
         { label: "Difference", value: `${more ? "+" : "-"}${units(delta)}` },
         { label: "Order value", value: money(value, currency), note: src ? undefined : "unit price is not available for this source" },
       ],
-      doNothing: `The current plan orders ${units(row.incumbent)} of ${sku} from ${supplier} this week.`,
+      doNothing: `${referenceLabelCap(report)} orders ${units(row.incumbent)} of ${sku} from ${supplier} this week.`,
       evidence: [
         ...(src ? [{ label: "Landed unit cost", detail: `${money(src.unit_price, currency)} goods${src.freight_per_unit ? ` + ${money(src.freight_per_unit, currency)} freight` : ""} per unit` }] : []),
         ...reliabilityEvidence(build, supplier),

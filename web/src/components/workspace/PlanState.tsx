@@ -115,7 +115,7 @@ export function PlanGate({ children }: { children?: React.ReactNode }) {
       <div className="state-box">
         <p className="phase" style={{ justifyContent: "center" }} aria-live="polite">
           <span className="spin" aria-hidden />
-          {planPhase === "queued" ? queued : "Comparing every option against your current plan…"}
+          {planPhase === "queued" ? queued : "Comparing every option against ZAAD's decision reference…"}
         </p>
         <p style={{ marginTop: 12 }}>
           A full comparison takes a few minutes. You can leave this page — the run continues and the
@@ -149,7 +149,7 @@ export function PlanGate({ children }: { children?: React.ReactNode }) {
   return (
     <EmptyState title="No plan has been computed yet" actions={<RunPlan />}>
       ZAAD reads your workspace as soon as you open it — your network and your data are ready below.
-      Comparing your current plan against every alternative is a solve that takes a few minutes, so
+      Comparing ZAAD's decision reference with every alternative is a solve that takes a few minutes, so
       it runs when you ask for it.
     </EmptyState>
   );

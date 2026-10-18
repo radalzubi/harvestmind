@@ -538,10 +538,10 @@ function DecisionsTab({ currency }: { currency: string }) {
     if (key === "MODELED_DIFFERENCE") {
       const ledger = (r.ledger as Array<{ component: string; incumbent: number | null; selected: number | null }>) ?? [];
       return (
-        <ChartCard key={key} title={label} description={String(r.basis)} table={[{ key: "component", label: "Component" }, { key: "incumbent", label: "Current plan", format: money, align: "end" }, { key: "selected", label: "Recommended", format: money, align: "end" }]} rows={ledger}
+        <ChartCard key={key} title={label} description={String(r.basis)} table={[{ key: "component", label: "Component" }, { key: "incumbent", label: "Decision reference", format: money, align: "end" }, { key: "selected", label: "Recommended", format: money, align: "end" }]} rows={ledger}
                    leads={[{ href: "/decisions", label: "Open Decisions" }]}>
           <Stats>
-            <Stat label="Current plan (modelled)" value={money(r.incumbent_total)} />
+            <Stat label="Decision reference (modelled)" value={money(r.incumbent_total)} />
             <Stat label="Recommended (modelled)" value={money(r.selected_total)} />
             <Stat label="Modelled difference" value={money(r.difference)} note="a modelled difference, not a saving" />
           </Stats>

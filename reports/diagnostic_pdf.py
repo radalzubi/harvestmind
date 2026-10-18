@@ -185,8 +185,8 @@ def render_pdf(report: dict) -> bytes:
         if rp.get("retention_note"):
             el.append(panel_box([P(_e(rp.get("retention_note")), "p")], color=colors.white, bar=colors.HexColor("#7A7A7A")))
         ds = rp.get("decisions_summary") or {}
-        el.append(P(f"Decisions: {_e(ds.get('rows'))} product-weeks replayed; ZAAD ordered where you did not on {_e(ds.get('zaad_ordered_where_you_did_not'))}, "
-                    f"less than you on {_e(ds.get('zaad_ordered_less'))}, more on {_e(ds.get('zaad_ordered_more'))}, and did not order where you did on "
+        el.append(P(f"Decisions: {_e(ds.get('rows'))} product-weeks replayed; ZAAD ordered where the recorded orders had none on {_e(ds.get('zaad_ordered_where_you_did_not'))}, "
+                    f"less than the recorded orders on {_e(ds.get('zaad_ordered_less'))}, more on {_e(ds.get('zaad_ordered_more'))}, and did not order where the recorded orders did on "
                     f"{_e(ds.get('zaad_did_not_order_where_you_did'))}; the planner abstained and {_e(rp.get('reference_label') or 'the reconstructed rule')} stood on {_e(ds.get('abstained_reviews'))} decision date(s).", "p"))
         if (rp.get("decision_changes") or {}).get("text"):
             el.append(P(f"How often ZAAD decided differently from {_e(rp.get('reference_label') or 'the reconstructed rule')}", "h2"))

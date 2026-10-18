@@ -43,8 +43,9 @@ function PlanEconomics() {
       <div className="side-b">
         {unpriced ? (
           <p style={{ margin: 0, fontSize: 13, color: "var(--ink-600)", lineHeight: 1.6 }}>
-            ZAAD kept your current plan and priced no alternative against it, so there is no cost
-            difference to report. The reasons it gives are under Limits of this plan.
+            ZAAD retained its decision reference (the reconstructed or declared rule it plans against, not a plan you
+            submitted) and priced no alternative against it, so there is no cost difference to report. The reasons it
+            gives are under Limits of this plan.
           </p>
         ) : (
           <Facts items={[
@@ -257,7 +258,7 @@ function DecisionsBody() {
           {shown.length === 0 && (
             <EmptyState title={active === "needs-review" ? "Nothing needs changing right now" : "Nothing in this group"}>
               {active === "needs-review"
-                ? "ZAAD compared your current plan against every alternative it could build and found no change worth making."
+                ? "ZAAD compared its decision reference with every alternative it could build and found no change worth making."
                 : "Switch the filter to see everything ZAAD looked at."}
             </EmptyState>
           )}

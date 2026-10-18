@@ -67,7 +67,7 @@ def _replay(status="complete", **over) -> dict:
            # H3a: the replay states what its historical-action comparator is (exact here: every recorded line identified and untransformed)
            "comparison": comparator.historical_comparison({"lines_observed": 8, "lines_exact": 8, "lines_incomplete": 0, "lines_unmapped": 0, "exact_quantity_share": 1.0,
                                                            "exact_value_share": 1.0, "value_share_basis": "recorded unit cost on every line", "incomplete_reasons": []},
-                                                          transformed_lines=0, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=8),
+                                                          transformed_groups=0, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=8),
            "confidence": {"level": "Moderate", "dimensions": {"counterfactual_settlement": "high", "supplier_observations": "high", "demand_history": "moderate", "opening_inventory": "high", "economics": "moderate", "capacity": "moderate", "coverage": "high"},
                           "reasons": ["40 weeks of demand history before the first decision date", "economic inputs assumed: location.main.holding per value period", "supplier capacity inferred or unbounded for 1 supplier(s)"], "rule": "the level is the weakest of ..."}}
     out.update(over)
@@ -308,7 +308,7 @@ def test_transformed_or_incomplete_historical_actions_are_never_called_actual_or
     transformed["comparison"] = comparator.historical_comparison(
         {"lines_observed": 8, "lines_exact": 8, "lines_incomplete": 0, "lines_unmapped": 0, "exact_quantity_share": 1.0, "exact_value_share": 1.0,
          "value_share_basis": "recorded unit cost on every line", "incomplete_reasons": []},
-        transformed_lines=3, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=8)
+        transformed_groups=3, settlement_shares=None, rule_provenance="INFERRED_FROM_HISTORY", reviews_completed=8)
     base["optimizer_replay"] = transformed
     r = build_report(base, job_id="j", company="C")
     rp, stmt = r["optimizer_replay"], r["executive_summary"]["replay"]["statement"]
@@ -321,7 +321,7 @@ def test_transformed_or_incomplete_historical_actions_are_never_called_actual_or
     incomplete["comparison"] = comparator.historical_comparison(
         {"lines_observed": 8, "lines_exact": 6, "lines_incomplete": 2, "lines_unmapped": 1, "exact_quantity_share": 0.8, "exact_value_share": None,
          "value_share_basis": "unit cost missing on some lines: no value share", "incomplete_reasons": ["the record carries no supplier identity"]},
-        transformed_lines=0, settlement_shares=None, rule_provenance="CUSTOMER_PROVIDED", reviews_completed=8)
+        transformed_groups=0, settlement_shares=None, rule_provenance="CUSTOMER_PROVIDED", reviews_completed=8)
     base["optimizer_replay"] = incomplete
     r = build_report(base, job_id="j", company="C")
     rp = r["optimizer_replay"]

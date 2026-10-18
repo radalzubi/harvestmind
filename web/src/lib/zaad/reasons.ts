@@ -22,7 +22,7 @@ const RULES: Rule[] = [
   },
   {
     match: /recovery candidate does not materially improve .*service shortfall/i,
-    say: "The best recovery ZAAD could find does not meaningfully improve service over your current plan.",
+    say: "The best recovery ZAAD could find does not meaningfully improve service over its decision reference.",
   },
   {
     match: /recovery candidate lowers a service without raising a higher-priority one/i,
@@ -38,11 +38,11 @@ const RULES: Rule[] = [
   },
   {
     match: /incumbent misses a requested service target .* and no candidate reaches it either/i,
-    say: "Your current plan misses a service target, and nothing ZAAD could build reaches it either.",
+    say: "ZAAD's decision reference misses a service target, and nothing ZAAD could build reaches it either.",
   },
   {
     match: /neither the incumbent nor any candidate meets every requested service target/i,
-    say: "Neither your current plan nor any alternative meets every service target you have set.",
+    say: "Neither ZAAD's decision reference nor any alternative meets every service target you have set.",
   },
   {
     match: /candidate meets a service target the incumbent misses, but exceeds the .*downside tolerance/i,
@@ -62,7 +62,7 @@ const RULES: Rule[] = [
   },
   {
     match: /service-first acceptance/i,
-    say: "Your current plan misses a service target; the recommendation meets every target and stays inside the downside tolerance you have set.",
+    say: "ZAAD's decision reference misses a service target; the recommendation meets every target and stays inside the downside tolerance you have set.",
   },
   {
     match: /unit-fill regression control cannot open approval gate/i,
@@ -74,7 +74,7 @@ const RULES: Rule[] = [
   },
   {
     match: /incumbent itself has no verified feasible projection/i,
-    say: "Your current plan could not be projected as physically workable, and ZAAD will not invent a fallback in its place.",
+    say: "ZAAD's decision reference could not be projected as physically workable, and ZAAD will not invent a fallback in its place.",
   },
   {
     match: /requested service targets are not jointly achievable/i,
@@ -92,8 +92,8 @@ const RULES: Rule[] = [
 
 /** Terms with a plain equivalent, for a reason no rule recognises. */
 const TERMS: Array<[RegExp, string]> = [
-  [/\bthe incumbent\b/gi, "your current plan"],
-  [/\bincumbent\b/gi, "your current plan"],
+  [/\bthe incumbent\b/gi, "ZAAD's decision reference"],
+  [/\bincumbent\b/gi, "ZAAD's decision reference"],
   [/\bcandidate\b/gi, "alternative"],
   [/\bpriority-weighted\b/gi, "priority-adjusted"],
   [/\bout-of-model\b/gi, "independent"],

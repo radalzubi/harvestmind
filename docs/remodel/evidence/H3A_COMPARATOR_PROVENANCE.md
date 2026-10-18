@@ -45,14 +45,38 @@ Pipeline 3000 / 3888 / 72; opening stock 5454 / 2208 / 204 (READY_DIRECT, effect
 source_known_at 2025-08-31T23:59:59). H3a adds report metadata only; Request fingerprints and optimizer
 decisions are unchanged (H0 causal suite, H1c canonical order, frozen regression).
 
+## Review corrections (second pass)
+
+- **Supplier-exact truth.** `build_truth` matched historical supply observations by SKU alone, so two suppliers
+  of one SKU pooled their lead times, fills and MEASURED cells. It now identifies every received order with the
+  comparator's business key (sku, supplier[, destination]); a MEASURED cell is the exact source's own order, an
+  order with no supplier identity measures nothing, and a source with no own observation falls back to the
+  existing INFERRED / SIMULATED / ASSUMED treatment. Tests: SKU X with supplier A (100 units, 7 days, 100 %) and
+  supplier B (40 units, 28 days, 50 %) keep their own truth in both physical row orders; B with no deliveries is
+  ASSUMED, never measured by A.
+- **Incumbent order sets.** A bare `Request.incumbent_orders` is `INCUMBENT_ORDER_SET` / `ORIGIN_NOT_ESTABLISHED`
+  / `NOT_AVAILABLE`, "the incumbent order set in the request"; operator provenance needs an
+  `incumbent_orders_source` the caller establishes (H3b). `evidence_label = OPERATOR-SHADOW` is not one.
+- **Decision-row fidelity.** `actual_identity_fidelity` (can the recorded action be mapped to this source?) and
+  `actual_evaluation_fidelity` (was it changed before settlement?) are separate; the overall `actual_fidelity`
+  is INCOMPLETE whenever identity is, TRANSFORMED when only the quantity changed, EXACT only when both hold.
+  A sole-source fallback with no rounding stays INCOMPLETE.
+- **Transformation unit.** Conformance works on source-review action groups, so the coverage reports
+  `transformed_action_groups` with the unit stated; no PO-line count is invented. One changed group still
+  denies the exact whole-scope claim.
+- **Customer-facing surfaces.** The diagnostic report component, the orders detail page, the diagnostics,
+  decisions, home and insights pages, the plan-state and decision-detail components, the plain-language reason
+  terms and the PDF now take their labels from the backend (`comparator_label`, `reference_label`,
+  `policy_benchmark.current_label`, `comparison.columns`, `decision_reference`) or say "ZAAD's decision
+  reference"; decision-level detail shows recorded quantity and model-evaluated quantity separately with the
+  identity and transformation notes. Marketing copy on the public site (how-it-works, i18n) describes a
+  hypothetical distributor and was left alone.
+
 ## Unresolved comparator-data limitations
 
 - The planner cannot know from the Request alone whether a rule was inferred or declared; the planner's
   section says `provenance = RULE_IN_REQUEST` with a note, and the synchronous plan route refines it from the
   build. Asynchronous jobs carry the planner's section only.
-- The frontend still hard-codes "Your current plan" in two places (orders detail, diagnostics page) and
-  "Your actual orders" in the replay table; the backend now supplies `columns[].label` and
-  `comparator_label`, but the frontend was out of scope for H3a.
 - Exact historical comparison needs every recorded line in scope to be identified and untransformed; on
   operator data with pack-multiple rounding, capped quantities or missing supplier ids the honest result is
   MODEL_COMPARISON, not an operator claim.

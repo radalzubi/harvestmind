@@ -145,7 +145,7 @@ export function standing(input: StandingInput): Standing {
       level: "watch",
       label: LEVEL_LABEL.watch,
       headline: "No changes recommended.",
-      detail: `${named(watches)} ${watches.length === 1 ? "needs" : "need"} monitoring. ZAAD compared your current plan against every alternative it can build and found none worth acting on, including here.`,
+      detail: `${named(watches)} ${watches.length === 1 ? "needs" : "need"} monitoring. ZAAD compared its decision reference (the rule it plans against, not a plan you submitted) with every alternative it can build and found none worth acting on, including here.`,
       watches, blockers: [],
       next: { label: "Look at the network", href: "/network" },
     };
@@ -158,7 +158,7 @@ export function standing(input: StandingInput): Standing {
     label: LEVEL_LABEL.normal,
     headline: planned ? "No changes recommended." : "ZAAD has read your workspace.",
     detail: planned
-      ? `ZAAD compared your current plan against every alternative it can build and found nothing worth changing.${quiet.length ? ` ${count(quiet.length, "thing is", "things are")} showing early signs but nothing that needs you.` : ""}${input.dataProblems.length ? " Your data has something worth a look, below." : ""}`
+      ? `ZAAD compared its decision reference (the rule it plans against, not a plan you submitted) with every alternative it can build and found nothing worth changing.${quiet.length ? ` ${count(quiet.length, "thing is", "things are")} showing early signs but nothing that needs you.` : ""}${input.dataProblems.length ? " Your data has something worth a look, below." : ""}`
       : "Run a plan to find out what to change. Everything else — your stock, your orders, your suppliers and your network — is ready to look at now.",
     watches, blockers: [],
     next: planned ? null : { label: "Run a plan", href: "/decisions" },

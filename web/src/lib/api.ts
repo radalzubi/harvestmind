@@ -672,7 +672,14 @@ export interface DiagnosticReport {
     lookahead?: { clean: boolean | null; snapshots: number; text: string };
     confidence?: { level: string; reasons: string[]; dimensions: Record<string, string>; rule: string };
     performance?: Record<string, number | string | null>; engine?: Record<string, string>; limits?: string[];
+    // H3a: the comparator the replay used and the labels the report may use for it
+    comparison?: { mode: string; readiness: string; claim_class: string | null; comparator: { type: string; fidelity: string; label: string | null };
+      decision_reference?: { type: string; fidelity: string; provenance: string | null; label: string }; permissions: Record<string, boolean>;
+      coverage?: Record<string, unknown> | null; caveats?: string[] } | null;
+    comparator_label?: string; reference_label?: string; claim_class?: string | null;
     decisions?: { review: number; date: string; sku: string; supplier: string | null; location: string; actual_qty: number | null; rule_qty: number | null; zaad_qty: number | null;
+      actual_observed_qty?: number | null; actual_evaluated_qty?: number | null; actual_fidelity?: string | null;
+      actual_identity_fidelity?: string | null; actual_evaluation_fidelity?: string | null;
       quantity_difference: number | null; zaad_action: string; zaad_status: string | null; zaad_policy: string | null; fallback_to_rule: boolean | null; timing: string | null;
       settlement: string | null; settlement_cell: string; outcome: Record<string, { served: number; demand: number; end_stock: number }>; economic_outcome: string }[];
   };
