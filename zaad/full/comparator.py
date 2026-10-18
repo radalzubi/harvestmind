@@ -66,6 +66,7 @@ CLAIM_CLASSES = (PLAN_ONLY, MODEL_COMPARISON, HISTORICAL_COUNTERFACTUAL_COMPARIS
 
 READY, CONDITIONAL, NOT_READY_FOR_THIS_DECISION, CANNOT_COMPARE = "READY", "CONDITIONAL", "NOT_READY_FOR_THIS_DECISION", "CANNOT_COMPARE"
 
+OPERATOR_PLAN_PROVENANCES = ("OPERATOR_SUBMITTED", "OPERATOR_UPLOADED", "OPERATOR_CONFIRMED_DRAFT")   # H3b capture origins
 PERMISSION_KEYS = ("can_recommend", "can_compare", "can_claim_against_operator", "can_claim_historical_counterfactual_difference",
                    "can_claim_shadow_difference", "can_claim_realized_value")
 
@@ -80,6 +81,9 @@ LABELS = {
     "action_transformed": "a model-adjusted version of the recorded historical orders",
     "action_incomplete": "the recorded historical orders that could be identified (some lines could not be mapped to a source)",
     "zaad": "ZAAD's counterfactual decisions",
+    "operator_plan_exact": "your captured purchasing plan",
+    "operator_plan_incomplete": "your captured purchasing plan (some lines could not be identified to a source)",
+    "operator_plan_transformed": "a model-adjusted version of your captured purchasing plan",
 }
 
 
@@ -136,11 +140,12 @@ def decision_reference(req: Any, *, rule_provenance: str | None = None, incumben
 # ── PLAN_MODE: a live recommendation with no captured operator plan ──────────
 def plan_comparison(req: Any, *, status: str | None, selected_policy: str | None, rule_provenance: str | None = None,
                     actual_operator_plan: dict[str, Any] | None = None) -> dict[str, Any]:
-    """The comparison contract of a live plan. Without an ACTUAL_OPERATOR_PLAN (H3b) the mode is PLAN_MODE:
-    a recommendation and, where a decision reference exists, a MODEL_COMPARISON against it; never a claim
-    against the operator. An absent comparator is not a planning failure."""
+    """The comparison contract of a live plan. Without an ACTUAL_OPERATOR_PLAN the mode is PLAN_MODE: a
+    recommendation and, where a decision reference exists, a MODEL_COMPARISON against it; never a claim
+    against the operator. An absent comparator is not a planning failure. With captured operator-plan
+    evidence (H3b, see `shadow_comparison`) the shadow contract is returned instead."""
     if actual_operator_plan is not None:
-        raise NotImplementedError("ACTUAL_OPERATOR_PLAN capture is H3b; H3a defines the vocabulary only")
+        return shadow_comparison(actual_operator_plan, status=status, selected_policy=selected_policy, rule_provenance=rule_provenance)
     ref = decision_reference(req, rule_provenance=rule_provenance)
     usable = status not in (None, "ABSTAIN")
     retained = status == "RETAIN_INCUMBENT"
@@ -167,15 +172,83 @@ def plan_comparison(req: Any, *, status: str | None, selected_policy: str | None
                                      "you would have spent X", "a benefit versus your current policy"]}
 
 
-def shadow_readiness(actual_operator_plan: dict[str, Any] | None) -> dict[str, Any]:
-    """SHADOW_COMPARISON_MODE needs an ACTUAL_OPERATOR_PLAN captured independently and prospectively (H3b).
-    It is never inferred from a reconstructed rule, historical POs, the incumbent projection, a ZAAD
-    recommendation, a system baseline or a proposal made from ZAAD output."""
-    if actual_operator_plan is None:
-        return {"mode": SHADOW_COMPARISON_MODE, "readiness": NOT_READY_FOR_THIS_DECISION, "claim_class": None,
+def shadow_readiness(evidence: dict[str, Any] | None) -> dict[str, Any]:
+    """Whether a captured operator plan may serve as the ACTUAL_OPERATOR_PLAN of one decision (H3b).
+
+    `evidence` is `api.product.operator_plans.shadow_evidence(...)`: the plan's provenance, versions, hash
+    integrity, capture and exposure instants, planning origin and line identity coverage. The plan is never
+    inferred from a reconstructed rule, historical POs, the incumbent projection, a ZAAD recommendation, a
+    system baseline or a proposal made from ZAAD output: only a declared provenance in PROVENANCES counts.
+
+    READY        captured before ZAAD's recommendation was exposed, latest version, hash verified, same
+                 origin, every line identified exactly
+    CONDITIONAL  as READY but some lines could not be identified to a source (no exact claim) or the
+                 captured version was later superseded (the comparison stands for the version it used)
+    NOT_READY_FOR_THIS_DECISION  no plan, captured at or after exposure, a different planning origin, an
+                 unestablished provenance, or a snapshot whose hash no longer matches"""
+    if evidence is None:
+        return {"mode": SHADOW_COMPARISON_MODE, "readiness": NOT_READY_FOR_THIS_DECISION, "claim_class": None, "fidelity": NOT_AVAILABLE,
                 "requires": ACTUAL_OPERATOR_PLAN, "permissions": _permissions(can_recommend=True),
-                "reason": "no ACTUAL_OPERATOR_PLAN was captured for this decision; capture is the H3b workflow"}
-    raise NotImplementedError("SHADOW_COMPARISON_MODE evaluation is H3b")
+                "reasons": ["no ACTUAL_OPERATOR_PLAN was captured for this decision"]}
+    reasons: list[str] = []
+    blockers: list[str] = []
+    if evidence.get("provenance") not in OPERATOR_PLAN_PROVENANCES:
+        blockers.append(f"provenance {evidence.get('provenance')!r} is not an independently established operator origin")
+    if evidence.get("integrity") not in (None, "VERIFIED"):
+        blockers.append("the stored snapshot does not hash to its recorded content hash")
+    if not evidence.get("same_origin", False):
+        blockers.append("the plan was captured for a different planning origin than this decision")
+    captured, exposed = evidence.get("captured_at"), evidence.get("exposed_at")
+    if captured is not None and exposed is not None and not (captured < exposed):
+        blockers.append("the plan was captured at or after ZAAD's recommendation was exposed; it cannot be the independent baseline of that decision")
+    if evidence.get("line_count", 0) == 0:
+        blockers.append("the plan has no lines")
+    identity = evidence.get("identity_fidelity")
+    if evidence.get("version") != evidence.get("latest_version"):
+        reasons.append(f"a later version (v{evidence.get('latest_version')}) supersedes the one compared (v{evidence.get('version')}); the comparison stands for v{evidence.get('version')}")
+    if identity == INCOMPLETE:
+        cov = evidence.get("coverage") or {}
+        reasons.append(f"{cov.get('lines_incomplete')} of {cov.get('lines_observed')} plan lines could not be identified to one request source; "
+                       "those lines are not evaluated and no exact claim is made")
+    if blockers:
+        readiness, fidelity = NOT_READY_FOR_THIS_DECISION, NOT_AVAILABLE
+    elif reasons:
+        readiness, fidelity = CONDITIONAL, (INCOMPLETE if identity == INCOMPLETE else EXACT)
+    else:
+        readiness, fidelity = READY, EXACT
+    return {"mode": SHADOW_COMPARISON_MODE, "readiness": readiness, "fidelity": fidelity, "requires": ACTUAL_OPERATOR_PLAN,
+            "claim_class": SHADOW_COMPARISON if readiness != NOT_READY_FOR_THIS_DECISION else None,
+            "permissions": _permissions(can_recommend=True, can_compare=readiness != NOT_READY_FOR_THIS_DECISION,
+                                        can_claim_shadow_difference=readiness == READY),
+            "reasons": blockers + reasons}
+
+
+
+def shadow_comparison(evidence: dict[str, Any], *, status: str | None = None, selected_policy: str | None = None,
+                      rule_provenance: str | None = None, transformed: bool = False) -> dict[str, Any]:
+    """The comparison contract of a shadow comparison: ZAAD's recommendation against a captured operator plan.
+    The difference is modelled on simulated worlds; it is never realized value. `transformed` says whether
+    the plan the settlement scored differs from the recorded plan (a line dropped as unidentified counts as a
+    transformation of the whole-plan comparison, recorded through readiness as INCOMPLETE)."""
+    ready = shadow_readiness(evidence)
+    fidelity = ready["fidelity"]
+    if fidelity == EXACT and transformed:
+        fidelity = TRANSFORMED
+        ready = {**ready, "fidelity": TRANSFORMED, "readiness": CONDITIONAL if ready["readiness"] == READY else ready["readiness"],
+                 "permissions": {**ready["permissions"], "can_claim_shadow_difference": False},
+                 "reasons": ready["reasons"] + ["the settlement could not score the plan exactly as recorded (quantities were adjusted); no exact claim is made"]}
+    label = {EXACT: LABELS["operator_plan_exact"], INCOMPLETE: LABELS["operator_plan_incomplete"], TRANSFORMED: LABELS["operator_plan_transformed"]}.get(fidelity)
+    comparator = {"type": ACTUAL_OPERATOR_PLAN if ready["readiness"] != NOT_READY_FOR_THIS_DECISION else NONE, "fidelity": fidelity,
+                  "provenance": evidence.get("provenance"), "plan_id": evidence.get("plan_id"), "version": evidence.get("version"),
+                  "content_hash": evidence.get("content_hash"), "label": label, "observed": False, "transformed": fidelity == TRANSFORMED}
+    caveats = ["shadow comparison: both plans are settled on simulated scenario worlds under the same assumptions; the difference is modelled, not a realized outcome",
+               "no realized value is claimed; realized value needs observed outcomes under the Operating Product V2 outcome contract"] + list(ready["reasons"])
+    return {"mode": SHADOW_COMPARISON_MODE, "readiness": ready["readiness"], "comparator": comparator,
+            "decision_reference": {"type": RECONSTRUCTED_POLICY, "fidelity": rule_fidelity(rule_provenance), "provenance": rule_provenance, "label": policy_label(rule_provenance),
+                                   "note": "ZAAD's own decision reference, unchanged by the shadow comparison; the recommendation was produced without the operator plan"},
+            "claim_class": ready["claim_class"] or PLAN_ONLY, "permissions": ready["permissions"], "coverage": evidence.get("coverage"),
+            "caveats": caveats, "planner_status": status, "selected_policy": selected_policy,
+            "claims_not_permitted": ["a realized benefit", "would have spent", "operator savings"]}
 
 
 # ── historical actions: observed records mapped to request sources ───────────
