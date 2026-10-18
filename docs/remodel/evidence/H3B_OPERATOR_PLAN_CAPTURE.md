@@ -52,11 +52,11 @@ validated on synthetic data; NOT validated on real operator data.** Open for ind
 - **Exposure timing.** `exposed_at` is the earliest recorded instant a recommendation for the origin was
   accessible: the earliest finished planning job for that origin in the job store (whether or not it was
   referenced), or the earliest stored comparison for the plan family; a repeated comparison never moves it later,
-  and client-supplied times never set it. Captures at or after it are NOT READY. A synchronous run that has no
-  recorded evidence of earlier exposure is `UNVERIFIED` and the comparison is CONDITIONAL (compared and labelled,
-  but not claimed as a pre-exposure shadow difference), because earlier synchronous recommendations are not
-  recorded. READY is therefore reachable only through the job path, and only when the operator's job history is
-  established as complete (see "Exposure-integrity correction" below).
+  and client-supplied times never set it. Captures at or after it are NOT READY. Since the cross-route correction
+  below, every synchronous recommendation route records its exposure in the vault's ledger before it answers, so a
+  synchronous comparison can be verified too; READY requires every source (ledger coverage, complete job history,
+  prior comparisons) to be established as complete, and is CONDITIONAL otherwise (compared and labelled, but not
+  claimed as a pre-exposure shadow difference).
 - **Other checks.** Non-finite quantities and periods outside 0..52 are refused; repeated lines with one business
   key and no distinguishing reference are refused rather than summed; lines beyond the horizon and plans the
   settlement cannot score as recorded (for example a quantity that violates a declared case multiple) are
@@ -81,6 +81,8 @@ validated on synthetic data; NOT validated on real operator data.** Open for ind
   captured at or after exposure cannot be the baseline.
 - `tests/integration/test_shadow_exposure_history.py` (4, real `JobStore`): the nine exposure-history cases listed under
   "Exposure-integrity correction".
+- `tests/integration/test_shadow_exposure_routes.py` (9, real routes, vault ledger and `JobStore`): the cross-route cases
+  listed under "Cross-route exposure correction".
 
 ## Exposure-integrity correction (independent review of 4dc63e4)
 
@@ -159,11 +161,122 @@ failures; `zaad_workspace_smoke 7 A_stable 3` completes with `executable_purchas
 E_mixed_portfolio recheck is unchanged (pipeline 3000 / 3888 / 72, stock 5454 / 2208 / 204, all known before the
 origin). No optimizer or planner mathematics changed; the full suite result is recorded in the PR.
 
-**Remaining limitations.** Synchronous `/plan/from-workspace` recommendations are still not recorded as exposures,
-so a synchronous-only history can never be verified (by design: CONDITIONAL). Record-loss detection is bounded by
-what stored comparisons verified; an externally pruned store with no prior verified comparison for the family cannot
-be told from a complete one. Completeness is of the configured store, not of every place a recommendation could have
-been seen (for example a report exported and shared outside the product).
+**Remaining limitations after this pass** (the synchronous-route gap named here was closed by the cross-route
+correction below). Record-loss detection is bounded by what stored comparisons verified; an externally pruned store
+with no prior verified comparison for the family cannot be told from a complete one. Completeness is of the configured
+stores, not of every place a recommendation could have been seen (for example a report exported and shared outside
+the product).
+
+## Cross-route exposure correction (independent review of e21c90a)
+
+**Reproduced defect.** First exposure was established from completed jobs and stored comparisons only. A synchronous
+recommendation through `/api/zaad/network/plan/from-workspace` left no record, so this sequence certified a
+post-exposure plan: (1) the operator receives a synchronous recommendation for origin O; (2) captures a plan for O;
+(3) a planning job for O finishes after the capture; (4) compares the plan with that job; (5) the complete job history
+says the first exposure followed the capture and the comparison is READY. Reproduced on the real routes, vault and
+job store (`test_a_synchronous_recommendation_before_capture_is_an_exposure`, READY on e21c90a, NOT READY now).
+
+**Recommendation-route inventory** (every route or path that can return, store or expose a ZAAD recommendation):
+
+| Route or path | Produces an actionable recommendation? | Exposure record |
+|---|---|---|
+| `POST /api/zaad/network/plan` (client-supplied Request) | yes, frozen planner, synchronous | ledger row `network_plan`, written before the response |
+| `POST /api/zaad/network/plan/from-workspace` | yes, synchronous, origin derived from the vault | ledger row `network_plan_from_workspace` |
+| `POST /api/zaad/network/shadow` (decision ledger) | yes, synchronous, stored in the SQLite decision ledger | ledger row `network_shadow_decision` with the decision id |
+| `POST /fmcg/plan?mode=canonical` | yes, frozen planner, synchronous | ledger row `fmcg_plan_canonical` |
+| `POST /api/zaad/shadow/plans/{id}/compare` without a job | yes, the comparison's own synchronous run | ledger row `shadow_compare` (plus the stored comparison) |
+| `POST /api/zaad/network/jobs`, `GET /jobs/{id}` (WORKSPACE_PLAN) | yes, asynchronous; readable from the DONE transition | SQLite job store, complete operator scan on `finished_at` |
+| `POST /api/zaad/orders/{draft}/evaluate` (PROPOSAL_BASELINE / OVERLAY jobs) | yes, two planner reports for the origin | same job store, same scan (purpose-agnostic) |
+| `POST /api/zaad/plan`, `GET /api/zaad/demo` (superseded engine), `/fmcg/plan` non-canonical modes | yes, superseded engines behind `ZAAD_LEGACY_PLANNERS` (off outside dev) | not recorded: observing them reachable taints the vault's coverage for good |
+| `POST /api/zaad/atp/promise` | no: a promising report, no purchase quantities | none |
+| Analytics `planner.plan` (`api/analytics/query.py`) | no: a query planner for the semantic layer | none |
+| Diagnostic report and its rolling replay (`api/routers/jobs.py`) | no: historical replay at past review dates, labelled non-actionable | none (see limitations) |
+| `zaad/full/replay.py`, `zaad/meio/planner.py` | internal model execution reached only through the routes above | covered by the route that calls them |
+
+**Exposure persistence.** Migration `032_recommendation_exposures.sql` adds two tables to the operator's DuckDB vault
+(the H3b tables already live there, and every synchronous route holds the vault connection):
+`zaad_recommendation_exposures` (append-only: operator, planning origin, route, request hash, reference, `exposed_at`
+from the server clock) and `zaad_exposure_coverage` (one row: when this vault began recording, the vault's latest
+order date at that instant, the source of the row, and the first instant a superseded engine was observed
+reachable). The migration replays on vault open and its insert is idempotent (`WHERE NOT EXISTS`), so a vault
+created under this schema has coverage from creation with no data (`max_order_date` NULL) and an existing vault
+gains coverage at its first open under this deployment with its data horizon recorded. `ensure_exposure_tables`
+creates the same tables lazily (source `LAZY`) when migration on open is disabled. Jobs stay in the SQLite job store
+and are discovered by the complete scan of the previous correction; the two stores are read side by side, never
+joined in one transaction.
+
+**The point at which exposure becomes durable.** `zaad_full.expose()` runs after the planner has produced the report
+and before the route returns it: `record_exposure` inserts the row (autocommit, the operator's vault) and the route
+answers only once it has returned. If the insert raises, the route answers 503 `exposure_not_recorded` and withholds
+the computed recommendation (`test_a_failed_exposure_write_withholds_the_recommendation`): nothing actionable leaves
+unrecorded. For jobs the durable instant is the DONE transition, which writes `finished_at` and the report together.
+
+**Race and persistence guarantees.** Both the capture stamp and the exposure stamp come from the server clock at
+insert time; a client timestamp never sets either. READY needs `captured_at < exposed_at` strictly, so a tie is NOT
+READY. A capture that lands before the exposure row could not have seen the recommendation, because the
+recommendation is returned only after the row exists. Repeats append rows and the earliest row rules; concurrent
+synchronous exposures (separate cursors) and a concurrent job completion all preserve the earliest instant
+(`test_concurrent_synchronous_and_asynchronous_exposures_keep_the_earliest`); capture/exposure races never certify a
+plan whose capture is not strictly earlier (`test_capture_and_exposure_races_never_certify_a_post_exposure_plan`).
+Tenant isolation is the `operator_id` predicate on every read, as for plans and comparisons.
+
+**Composition of sources** (`api/routers/zaad_shadow.py`). The exposure instant is the minimum over: this call's own
+exposure (the job's `finished_at`, or the ledger row this run just wrote), the complete job scan, the ledger's
+earliest row for the origin, and the earliest exposure any stored comparison of the plan family recorded. The basis
+is VERIFIED (`JOB_FINISHED`, `RECOMMENDATION_LEDGER` or `PRIOR_COMPARISON`) only when every source is established as
+complete: the job scan is complete, the ledger's coverage vouches for this plan (below), no superseded engine was ever
+observed reachable, and no record loss is detected. Otherwise the basis is `UNVERIFIED` and the comparison is
+CONDITIONAL, with the reasons in `exposure.history.note` and in the contract's caveats. An unverified source never
+becomes verified because another source holds a later exposure: a prior comparison's exposure is a verified basis only
+if that comparison was itself verified, and a stored comparison that verified a job exposure the current scan no
+longer finds (or a verified exposure neither store holds) is record loss.
+
+**Legacy history.** A recommendation served before a vault began recording is not in the ledger. The coverage row
+makes the boundary explicit and the comparison refuses to verify across it: a plan captured before `coverage_since`
+is UNVERIFIED; so is any origin the vault's data could already plan when recording began (origins up to the Monday
+after `max_order_date` at that instant, which is the origin `/plan/from-workspace` and the canonical purchase plan
+derive). A vault created under this schema has no such horizon. Superseded engines are not instrumented: when any
+instrumented route or comparison observes `ZAAD_LEGACY_PLANNERS` enabled it stamps the coverage row once, and from
+then on the vault's history is never verified (switching the engines off later does not lift it), because an
+unrecorded recommendation may have been served meanwhile for any origin.
+
+**Adversarial evidence** (`tests/integration/test_shadow_exposure_routes.py`, real routes, vault and job store;
+`ZAAD_LEGACY_PLANNERS=0` and a job store configured, as in production):
+
+1. Synchronous recommendation, then capture, then a job finishing after the capture: NOT READY, basis the ledger.
+2. A plan captured before every exposure is READY on the synchronous path and again with a later job; no realized
+   value is claimable; the first exposure does not move.
+3. Two synchronous recommendations for one origin keep the first as the exposure; a plan captured after is NOT READY.
+4. Three concurrent synchronous exposures and a concurrent job completion: the comparison reports the minimum.
+5. Capture and exposure racing on separate cursors: READY only when the capture is strictly earlier.
+6. A failing ledger write: 503, recommendation withheld on `/plan/from-workspace` and `/fmcg/plan?mode=canonical`,
+   nothing recorded.
+7. Every synchronous route records before answering, with route label and reference, and the ledger's earliest row
+   is the first route used.
+8. Legacy history: a vault whose data could already plan the origin when recording began is UNVERIFIED; the same
+   plan is READY when the recorded data horizon predates the origin; a capture before coverage is UNVERIFIED.
+9. Superseded engines reachable: UNVERIFIED on two comparisons with the exposure unchanged, and still UNVERIFIED
+   after the engines are switched off (durable taint).
+10. Another tenant's earlier recommendation for the same origin never counts.
+11. A repeated comparison cannot launder UNVERIFIED into READY (also in `test_shadow_exposure_history.py`, step G).
+12. Every response keeps `can_claim_realized_value` false and `realized_value.available` false.
+
+The previous correction's cases (hidden early exposure beyond 200 jobs, unreadable records, store errors, record
+loss) still pass; the earlier API tests now run with production settings and assert the verified synchronous path.
+
+**Fail-closed behaviour.** No store, no complete job query, a raising store, an unreadable finished job, a ledger
+write failure (recommendation withheld), coverage gaps, a reachable superseded engine, record loss, or an unverified
+prior comparison each prevent READY; none is ever read as "no exposure".
+
+**Remaining restrictions on READY, and limitations.** A `/api/zaad/network/plan` call made before a vault began
+recording, for an origin beyond that vault's data horizon at the time, is not recorded anywhere and is not excluded
+by the coverage rule (the client supplies the whole Request); this residual applies to vaults that existed before this
+deployment only. The diagnostic report's rolling replay shows what the optimizer would have decided at past review
+dates; it is labelled historical and non-actionable and is not treated as exposure, so a plan captured for a past
+origin after reading that report is not caught by this ledger (the contract's provenance rules, not the ledger,
+govern whether such a plan is an intended plan at all). Exposure outside the product (an exported report shared by
+other means) is not observable. The job-read route does not add ledger rows: the job's DONE instant is already the
+earliest moment it was readable. No real operator plan has been captured; every figure is synthetic.
 
 ## Deferred H3a limitations, evaluated for H3b
 

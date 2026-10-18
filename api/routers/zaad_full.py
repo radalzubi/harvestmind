@@ -184,6 +184,24 @@ async def compute(req):
         release()
 
 
+def expose(conn, operator: str | None, req: Request, report: dict, *, route: str, reference: str | None = None) -> datetime:
+    """Record, BEFORE the response leaves this service, that ZAAD's recommendation for `req.as_of` is accessible to the
+    operator (HARDENING V1, H3b: the recommendation exposure ledger in the operator's vault). The shadow comparison
+    reads the earliest such record, so an operator plan captured after it can never pose as the independent baseline.
+    A write failure withholds the recommendation: an actionable recommendation never leaves unrecorded."""
+    from api.dependencies import legacy_planners_enabled
+    from api.product import operator_plans
+    try:
+        if legacy_planners_enabled():
+            operator_plans.note_legacy_engines(conn)       # the superseded engines do not record: this vault's history is incomplete from here
+        return operator_plans.record_exposure(conn, operator or req.operator_id, as_of=req.as_of, route=route,
+                                              request_hash=report.get("information_hash"), reference=reference)
+    except Exception as exc:  # noqa: BLE001 - fail closed: the computed recommendation is withheld and the storage failure is named
+        raise HTTPException(503, {"code": "exposure_not_recorded", "message":
+                                  f"the recommendation was computed but its exposure could not be recorded ({type(exc).__name__}), so it is "
+                                  "withheld. Retry; if this persists, run the database migrations for this workspace."}) from exc
+
+
 @router.get("/schema")
 def schema():
     return Request.model_json_schema()
@@ -259,11 +277,13 @@ def fixture(case: Literal["normal", "transfer", "substitution", "recovery", "cas
 
 
 @router.post("/plan", dependencies=[Depends(bounded_rate), Depends(capability("runPlanner"))])
-async def recommend(request: HTTPRequest, operator: str | None = Depends(require_operator)):
+async def recommend(request: HTTPRequest, operator: str | None = Depends(require_operator), conn=Depends(get_conn)):
     req = await payload(request)
     if operator is not None and req.operator_id != operator:
         raise HTTPException(403, "Operator mismatch")
-    return await compute(req)
+    report = await compute(req)
+    await run_in_threadpool(expose, conn, operator, req, report, route="network_plan")
+    return report
 
 
 def _workspace_request(conn, operator: str, horizon: int, service_target: float, skus: str | None, max_solve_seconds: float, network: bool = False,
@@ -336,6 +356,7 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
     rule_prov = ((build or {}).get("incumbent_rule") or {}).get("provenance")
     report["decision_reference"] = comparator.decision_reference(req, rule_provenance=rule_prov)
     report["comparison"] = comparator.plan_comparison(req, status=report.get("status"), selected_policy=report.get("selected_policy"), rule_provenance=rule_prov)
+    await run_in_threadpool(expose, conn, operator, req, report, route="network_plan_from_workspace")
     if shape == "network":
         return {"report": report, "build": build, "executable_purchase_order": False}
     if network and (req.transfers or len(req.locations) > 1):
@@ -355,13 +376,14 @@ async def workspace_plan(operator: str = Depends(authenticated), conn=Depends(ge
 
 
 @router.post("/shadow", dependencies=[Depends(bounded_rate), Depends(capability("runPlanner"))])
-async def record(request: HTTPRequest, operator: str = Depends(authenticated)):
+async def record(request: HTTPRequest, operator: str = Depends(authenticated), conn=Depends(get_conn)):
     req = await payload(request)
     if req.operator_id != operator:
         raise HTTPException(403, "Operator mismatch")
     storage = ledger()  # fail before costly work if durable storage is unavailable
     report = await compute(req)
     identity = await run_in_threadpool(storage.save, req, report, operator)
+    await run_in_threadpool(expose, conn, operator, req, report, route="network_shadow_decision", reference=identity)
     return {"decision_id": identity, "report": report, "executable_purchase_order": False}
 
 

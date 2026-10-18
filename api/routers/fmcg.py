@@ -488,6 +488,8 @@ def plan(
         except WorkspaceError as exc:
             raise HTTPException(422, {"code": "workspace_not_ready", "message": str(exc)}) from exc
         report = frozen_plan(req)
+        from api.routers.zaad_full import expose
+        expose(conn, authed, req, report, route="fmcg_plan_canonical")      # H3b: recorded before the plan is returned
         return to_purchase_plan(req, report, build, commit_window_weeks=commit_window_weeks, run_id=str(report.get("input_fingerprint", "")))
     legacy_planner_gate()
     fi, report = build_inputs(conn, horizon=horizon_weeks, train_weeks=train_weeks, service_level=service_level,

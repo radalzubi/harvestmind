@@ -25,6 +25,14 @@ AS_OF = "2025-09-01T00:00:00Z"
 SKU = "SKU-0001"
 
 
+@pytest.fixture(autouse=True)
+def production_engines(monkeypatch, tmp_path):
+    """Production settings: the superseded planning engines are unreachable (a reachable one taints a vault's exposure history for
+    good) and a job store is configured (without one the operator's job history cannot be examined, so nothing is verified)."""
+    monkeypatch.setenv("ZAAD_LEGACY_PLANNERS", "0")
+    monkeypatch.setenv("ZAAD_JOB_STORE", str(tmp_path / "jobs.sqlite"))
+
+
 @pytest.fixture(scope="module")
 def vault():
     conn = duckdb.connect(":memory:")
@@ -64,12 +72,12 @@ def test_capture_compare_and_store(vault):
     assert out.status_code == 201, out.text
     body = out.json()
     contract = body["contract"]
-    # a synchronous run cannot prove it was the FIRST exposure of a recommendation for this origin (earlier synchronous runs are
-    # not recorded), so the comparison is CONDITIONAL: compared, labelled, but not claimed as a pre-exposure shadow difference
-    assert contract["mode"] == "SHADOW_COMPARISON_MODE" and contract["readiness"] == "CONDITIONAL" and contract["comparator"]["type"] == "ACTUAL_OPERATOR_PLAN"
-    assert contract["comparator"]["fidelity"] == "EXACT" and contract["claim_class"] == "SHADOW_COMPARISON" and body["exposure"]["basis"] == "UNVERIFIED"
-    assert contract["permissions"]["can_claim_shadow_difference"] is False and contract["permissions"]["can_claim_realized_value"] is False
-    assert any("not recorded" in r for r in contract["caveats"])
+    # every synchronous recommendation is recorded in the vault's exposure ledger before it is returned, so this run is provably the
+    # FIRST exposure for the origin and the plan, captured before it, is the independent baseline: READY (no realized value is ever claimed)
+    assert contract["mode"] == "SHADOW_COMPARISON_MODE" and contract["readiness"] == "READY" and contract["comparator"]["type"] == "ACTUAL_OPERATOR_PLAN"
+    assert contract["comparator"]["fidelity"] == "EXACT" and contract["claim_class"] == "SHADOW_COMPARISON" and body["exposure"]["basis"] == "RECOMMENDATION_LEDGER"
+    assert contract["permissions"]["can_claim_shadow_difference"] is True and contract["permissions"]["can_claim_realized_value"] is False
+    assert body["exposure"]["history"]["verified"] is True and body["exposure"]["history"]["ledger_exposures"] == 1
     assert contract["decision_reference"]["provenance"] == "INFERRED_FROM_HISTORY" and body["recommendation"]["decision_reference"]["fidelity"] == "RECONSTRUCTED"
     q = body["quantities"]
     assert q["recorded_plan_units"] == 1200 and q["identified_plan_units"] == 1200 and q["model_evaluated_plan_units"] == 1200 and q["unidentified_lines"] == 0
@@ -79,7 +87,7 @@ def test_capture_compare_and_store(vault):
     assert body["lines"][0]["fidelity"] == "EXACT" and body["lines"][0]["source"] == f"src_{SKU}"
     stored = cl.get(f"/api/zaad/shadow/comparisons/{body['comparison_id']}").json()
     assert stored["plan_hash"] == plan["content_hash"] and stored["request_hash"] == body["recommendation"]["information_hash"] and stored["status"] == "DONE"
-    assert stored["result"]["contract"]["readiness"] == "CONDITIONAL" and stored["recommendation_source"] == "SYNC"
+    assert stored["result"]["contract"]["readiness"] == "READY" and stored["recommendation_source"] == "SYNC"
     # the comparison is reproducible: same plan, same request, same modelled figures
     second = cl.post(f"/api/zaad/shadow/plans/{plan['plan_id']}/compare", params={"horizon": 8, "max_solve_seconds": 5}).json()
     assert second["modelled"]["operator_plan"]["costs"] == m["operator_plan"]["costs"] and second["recommendation"]["information_hash"] == body["recommendation"]["information_hash"]
@@ -165,7 +173,7 @@ def test_job_path_requires_the_same_planning_problem_and_records_first_exposure(
             "job_other_origin": {"status": "DONE", "report": {**report, "as_of": "2025-09-08T00:00:00+00:00"}, "finished_at": finished.isoformat()},
             "job_no_identity": {"status": "DONE", "report": {k: v for k, v in report.items() if k != "information_hash"}, "finished_at": finished.isoformat()},
             "job_running": {"status": "RUNNING", "report": None}}
-    monkeypatch.setattr(zaad_full, "runner", lambda: SimpleNamespace(store=FakeStore(jobs)))
+    monkeypatch.setattr(zaad_full, "runner", lambda: SimpleNamespace(store=FakeStore(jobs), try_lease=lambda: True, release_lease=lambda: None))
     params = {"horizon": 8, "max_solve_seconds": 5, "skus": SKU, "baseline_job_id": "job_ok"}
     ok = cl.post(f"/api/zaad/shadow/plans/{captured['plan_id']}/compare", params=params)
     assert ok.status_code == 201, ok.text

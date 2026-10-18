@@ -183,11 +183,16 @@ def test_api_shadow_requires_authentication_even_dev():
 
 
 def test_api_rejects_cross_tenant():
+    import duckdb
+    from api.dependencies import get_conn
     app.dependency_overrides[require_operator] = lambda: "different"
     # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
     app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: "different")(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
+    # the route records the recommendation's exposure in the operator's vault (H3b); the unknown tenant must be refused as a mismatch, not as a missing vault
+    app.dependency_overrides[get_conn] = lambda: duckdb.connect(":memory:")
     try:
         client = TestClient(app)
         assert client.post("/api/zaad/network/plan", json=example().model_dump(mode="json")).status_code == 403
     finally:
         app.dependency_overrides.pop(require_operator, None)
+        app.dependency_overrides.pop(get_conn, None)

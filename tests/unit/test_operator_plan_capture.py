@@ -207,7 +207,7 @@ def test_shadow_readiness_and_permissions():
     assert superseded["readiness"] == C.CONDITIONAL and superseded["permissions"]["can_claim_shadow_difference"] is False and superseded["permissions"]["can_compare"] is True
     incomplete = C.shadow_readiness(_evidence(identity_fidelity=C.INCOMPLETE, coverage={"lines_observed": 2, "lines_incomplete": 1}))
     assert incomplete["readiness"] == C.CONDITIONAL and incomplete["fidelity"] == C.INCOMPLETE and incomplete["permissions"]["can_claim_shadow_difference"] is False
-    # exposure established only by this synchronous run: an earlier unrecorded recommendation cannot be excluded
+    # exposure history not established as complete: an earlier unrecorded recommendation cannot be excluded
     unverified = C.shadow_readiness(_evidence(exposure_basis="UNVERIFIED"))
     assert unverified["readiness"] == C.CONDITIONAL and unverified["permissions"]["can_claim_shadow_difference"] is False and any("not recorded" in r for r in unverified["reasons"])
     beyond = C.shadow_readiness(_evidence(lines_beyond_horizon=1))

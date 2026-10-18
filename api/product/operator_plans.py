@@ -30,6 +30,10 @@ from zaad.full import comparator
 
 PROVENANCES = ("OPERATOR_SUBMITTED", "OPERATOR_UPLOADED", "OPERATOR_CONFIRMED_DRAFT")
 TABLES = ("zaad_operator_plans", "zaad_operator_plan_lines", "zaad_shadow_comparisons")
+EXPOSURE_TABLES = ("zaad_recommendation_exposures", "zaad_exposure_coverage")
+#: exposure bases a comparison may stand on as VERIFIED: a finished job in a complete job history, a row of the
+#: recommendation ledger under verified coverage, or an earlier comparison that was itself verified
+VERIFIED_EXPOSURE_BASES = ("JOB_FINISHED", "RECOMMENDATION_LEDGER", "PRIOR_COMPARISON")
 # test hook: called after the version decision and before the insert, so a test can hold two corrections at the
 # same point and prove that the database constraint, not the read, decides the race
 def _no_hook() -> None:
@@ -65,6 +69,104 @@ def ensure_tables(conn: Any) -> None:
     if missing:
         raise PlanRefused("This workspace is not set up for operator-plan capture yet: " + ", ".join(missing)
                           + " could not be created. Run the database migrations for this operator (scripts/setup_db.py).")
+
+
+def ensure_exposure_tables(conn: Any) -> None:
+    """Create the exposure ledger on a vault that predates migration 032, and open its coverage.
+
+    Migration 032 normally runs when the vault is created or first opened under this schema and writes the coverage
+    row then. A vault that reaches this code without it (migration on open disabled) gets the tables here and a
+    coverage row stamped NOW with the vault's current latest order date: recording starts at this instant, and the
+    shadow comparison treats anything the vault could already plan before it as unverifiable."""
+    if not all(_has_table(conn, t) for t in EXPOSURE_TABLES):
+        from api.product.drafts import statements
+        sql = (Path(__file__).resolve().parents[2] / "db" / "migrations" / "032_recommendation_exposures.sql").read_text()
+        for text in statements(sql):
+            if text.upper().startswith("CREATE TABLE IF NOT EXISTS ZAAD_"):
+                conn.execute(text)
+        missing = [t for t in EXPOSURE_TABLES if not _has_table(conn, t)]
+        if missing:
+            raise PlanRefused("This workspace is not set up for recommendation exposure recording yet: " + ", ".join(missing)
+                              + " could not be created. Run the database migrations for this operator (scripts/setup_db.py).")
+    if not _rows(conn, "SELECT 1 FROM zaad_exposure_coverage LIMIT 1", []):
+        horizon = None
+        if _has_table(conn, "stg_fmcg_orders"):
+            horizon = _rows(conn, "SELECT max(order_date) AS d FROM stg_fmcg_orders", [])[0]["d"]
+        conn.execute("INSERT INTO zaad_exposure_coverage (coverage_since_ms, max_order_date, source) VALUES (?, ?, 'LAZY')",
+                     [int(datetime.now(timezone.utc).timestamp() * 1000), horizon])
+
+
+def record_exposure(conn: Any, operator: str, *, as_of: datetime, route: str, request_hash: str | None = None,
+                    reference: str | None = None) -> datetime:
+    """Record that ZAAD's recommendation for `as_of` became accessible to `operator` through `route`, and return the
+    instant recorded (server clock, UTC). Append-only: a repeat adds a row and the earliest row stays the first
+    exposure. The caller records BEFORE it sends the recommendation, so nothing is accessible unrecorded; a failure
+    here must withhold the recommendation."""
+    ensure_exposure_tables(conn)
+    stamp = _now()
+    conn.execute("INSERT INTO zaad_recommendation_exposures (exposure_id, operator_id, as_of, route, request_hash, reference, exposed_at, created_at) "
+                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                 [f"exp_{uuid.uuid4().hex[:16]}", operator, _as_utc_naive(as_of), route, _text(request_hash), _text(reference), stamp, stamp])
+    return stamp.replace(tzinfo=timezone.utc)
+
+
+def ledger_exposure(conn: Any, operator: str, as_of: datetime) -> dict[str, Any]:
+    """The earliest recorded exposure of a recommendation for (`operator`, `as_of`) in the vault's ledger, with the route
+    that made it accessible and how many rows the origin has. Other operators' rows are never read."""
+    ensure_exposure_tables(conn)
+    rows = _rows(conn, "SELECT exposed_at, route, exposure_id FROM zaad_recommendation_exposures WHERE operator_id = ? AND as_of = ? "
+                       "ORDER BY exposed_at, created_at, exposure_id LIMIT 1", [operator, _as_utc_naive(as_of)])
+    count = _rows(conn, "SELECT count(*) AS n FROM zaad_recommendation_exposures WHERE operator_id = ? AND as_of = ?",
+                  [operator, _as_utc_naive(as_of)])[0]["n"]
+    if not rows:
+        return {"earliest": None, "route": None, "exposure_id": None, "count": int(count)}
+    row = rows[0]
+    return {"earliest": _as_utc_naive(row["exposed_at"]).replace(tzinfo=timezone.utc), "route": row["route"], "exposure_id": row["exposure_id"], "count": int(count)}
+
+
+def coverage(conn: Any) -> dict[str, Any]:
+    """When this vault began recording exposures, and which planning origins its data could already serve then.
+
+    `origin_limit` is the latest planning origin the vault's own data supported when recording began (the Monday
+    after its latest order date, which is the origin `/plan/from-workspace` and the canonical purchase plan derive
+    when no origin is given): a recommendation for any origin up to it may have been served before recording and
+    cannot be excluded. None when the vault had no order data at that instant (a vault created under this schema)."""
+    ensure_exposure_tables(conn)
+    row = _rows(conn, "SELECT coverage_since_ms, max_order_date, source, legacy_engines_seen_ms FROM zaad_exposure_coverage "
+                      "ORDER BY coverage_since_ms LIMIT 1", [])[0]
+    since = datetime.fromtimestamp(int(row["coverage_since_ms"]) / 1000.0, tz=timezone.utc)
+    legacy_seen = (datetime.fromtimestamp(int(row["legacy_engines_seen_ms"]) / 1000.0, tz=timezone.utc)
+                   if row.get("legacy_engines_seen_ms") is not None else None)
+    limit = None
+    if row["max_order_date"] is not None:
+        day = pd.Timestamp(row["max_order_date"]).normalize() + pd.Timedelta(days=7)
+        limit = (day - pd.Timedelta(days=day.weekday())).to_pydatetime().replace(tzinfo=timezone.utc)
+    return {"since": since, "max_order_date": row["max_order_date"], "origin_limit": limit, "source": row["source"], "legacy_engines_seen_at": legacy_seen}
+
+
+def note_legacy_engines(conn: Any) -> None:
+    """Record, once and for good, that a superseded planning engine (whose recommendations are not recorded here) was
+    reachable on the service that serves this vault. From then on no exposure history of this vault is complete: an
+    unrecorded recommendation may have been served at any time after this instant, for any origin."""
+    ensure_exposure_tables(conn)
+    conn.execute("UPDATE zaad_exposure_coverage SET legacy_engines_seen_ms = ? WHERE legacy_engines_seen_ms IS NULL",
+                 [int(datetime.now(timezone.utc).timestamp() * 1000)])
+
+
+def coverage_verifies(cov: dict[str, Any], *, as_of: datetime, captured_at: datetime) -> str | None:
+    """None when the ledger can vouch for every recommendation route for this plan; otherwise why it cannot."""
+    origin = _as_utc_naive(as_of).replace(tzinfo=timezone.utc)
+    captured = _as_utc_naive(captured_at).replace(tzinfo=timezone.utc)
+    if captured < cov["since"]:
+        return (f"the plan was captured at {captured.isoformat()}, before this workspace began recording recommendation exposures "
+                f"({cov['since'].isoformat()}); a synchronous recommendation between the capture and that instant is not recorded")
+    if cov["origin_limit"] is not None and origin <= cov["origin_limit"]:
+        return (f"the workspace's data could already plan origin {origin.date()} before it began recording recommendation exposures "
+                f"(latest order {cov['max_order_date']} at {cov['since'].isoformat()}); an unrecorded earlier recommendation cannot be excluded")
+    if cov.get("legacy_engines_seen_at") is not None:
+        return (f"superseded planning engines (ZAAD_LEGACY_PLANNERS), whose recommendations are not recorded as exposures, were reachable on this "
+                f"service at {cov['legacy_engines_seen_at'].isoformat()}; an unrecorded recommendation since then cannot be excluded")
+    return None
 
 
 def _text(value: Any) -> str | None:
@@ -267,18 +369,19 @@ def map_plan_to_request(plan: dict[str, Any], req: Any) -> dict[str, Any]:
 
 
 def shadow_evidence(plan: dict[str, Any], mapping: dict[str, Any], *, req: Any, exposed_at: datetime, latest_version: int,
-                    exposure_basis: str = "UNVERIFIED") -> dict[str, Any]:
+                    exposure_basis: str = "UNVERIFIED", exposure_note: str | None = None) -> dict[str, Any]:
     """What the comparator needs to decide whether this plan may serve as the ACTUAL_OPERATOR_PLAN for the request.
 
     `exposed_at` is the earliest instant ZAAD's recommendation for this origin is KNOWN to have been accessible
-    (a finished planning job, or an earlier stored comparison); `exposure_basis` says what established it:
-    JOB_FINISHED, PRIOR_COMPARISON or UNVERIFIED (only this synchronous run is known, earlier synchronous runs
-    are not recorded). Client-supplied times never set it."""
+    (a finished planning job, a row of the recommendation ledger, or an earlier stored comparison); `exposure_basis`
+    says what established it: JOB_FINISHED, RECOMMENDATION_LEDGER, PRIOR_COMPARISON, or UNVERIFIED when the history
+    behind it is not established as complete (`exposure_note` says why). Client-supplied times never set it."""
     plan_as_of = _as_utc_naive(plan["as_of"])
     req_as_of = _as_utc_naive(req.as_of)
     return {"plan_id": plan["plan_id"], "version": int(plan["version"]), "latest_version": int(latest_version), "status": plan["status"],
             "provenance": plan["provenance"], "content_hash": plan["content_hash"], "integrity": plan.get("integrity"),
             "captured_at": _as_utc_naive(plan["captured_at"]), "exposed_at": _as_utc_naive(exposed_at), "exposure_basis": exposure_basis,
+            "exposure_note": exposure_note,
             "plan_as_of": plan_as_of, "request_as_of": req_as_of, "same_origin": plan_as_of == req_as_of,
             "identity_fidelity": mapping["identity_fidelity"], "coverage": mapping["coverage"], "line_count": len(plan["lines"]),
             "lines_beyond_horizon": mapping.get("lines_beyond_horizon", 0)}
@@ -307,9 +410,6 @@ def read_comparison(conn: Any, operator: str, comparison_id: str) -> dict[str, A
     return out
 
 
-VERIFIED_EXPOSURE_BASES = ("JOB_FINISHED", "PRIOR_COMPARISON")
-
-
 class PriorExposure:
     """What this plan family's stored comparisons already recorded about the first exposure of a recommendation
     for its origin. `earliest` is the earliest exposure any comparison recorded, whatever established it: a later
@@ -317,10 +417,10 @@ class PriorExposure:
     from a complete job history (basis JOB_FINISHED, or PRIOR_COMPARISON rooted in one); None when no comparison
     did. Only `verified` can stand as a pre-exposure basis: a synchronous run's own clock recorded by an earlier
     comparison is an exposure, not a verification, and must not become one by being repeated."""
-    __slots__ = ("earliest", "verified")
+    __slots__ = ("earliest", "verified", "verified_job")
 
-    def __init__(self, earliest: datetime, verified: datetime | None):
-        self.earliest, self.verified = earliest, verified
+    def __init__(self, earliest: datetime, verified: datetime | None, verified_job: datetime | None = None):
+        self.earliest, self.verified, self.verified_job = earliest, verified, verified_job
 
 
 def first_exposure(conn: Any, operator: str, plan_id: str) -> PriorExposure | None:
@@ -333,6 +433,7 @@ def first_exposure(conn: Any, operator: str, plan_id: str) -> PriorExposure | No
                  [operator, plan_id, operator])
     earliest: datetime | None = None
     verified: datetime | None = None
+    verified_job: datetime | None = None          # verified exposures rooted in a finished job: the job scan must still find them
     for row in rows:
         value = row.get("exposed_at")
         if value is None or (isinstance(value, float) and value != value):
@@ -345,4 +446,6 @@ def first_exposure(conn: Any, operator: str, plan_id: str) -> PriorExposure | No
             basis = None                     # a comparison whose stored result cannot be read verifies nothing
         if basis in VERIFIED_EXPOSURE_BASES:
             verified = when if verified is None or when < verified else verified
-    return None if earliest is None else PriorExposure(earliest, verified)
+        if basis == "JOB_FINISHED":
+            verified_job = when if verified_job is None or when < verified_job else verified_job
+    return None if earliest is None else PriorExposure(earliest, verified, verified_job)

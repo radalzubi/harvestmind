@@ -25,7 +25,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 
-from api.dependencies import get_conn, require_actor
+from api.dependencies import get_conn, legacy_planners_enabled, require_actor
 from api.product import governance, operator_plans
 from api.product.governance import Actor
 from zaad.full import comparator
@@ -165,11 +165,12 @@ def earliest_job_exposure(store: Any, operator: str, as_of: datetime) -> Exposur
 
 
 def shadow_result(req: Any, build: dict[str, Any], report: dict[str, Any], plan: dict[str, Any], *, latest_version: int, exposed_at: datetime,
-                  recommendation_source: str, max_solve_seconds: float, exposure_basis: str = "UNVERIFIED") -> dict[str, Any]:
+                  recommendation_source: str, max_solve_seconds: float, exposure_basis: str = "UNVERIFIED", exposure_note: str | None = None) -> dict[str, Any]:
     """The comparison of ZAAD's recommendation (already produced, without the plan) against the captured plan,
     both settled on the planner's own worlds. Pure: no persistence."""
     mapping = operator_plans.map_plan_to_request(plan, req)
-    evidence = operator_plans.shadow_evidence(plan, mapping, req=req, exposed_at=exposed_at, latest_version=latest_version, exposure_basis=exposure_basis)
+    evidence = operator_plans.shadow_evidence(plan, mapping, req=req, exposed_at=exposed_at, latest_version=latest_version, exposure_basis=exposure_basis,
+                                              exposure_note=exposure_note)
     rule_prov = ((build or {}).get("incumbent_rule") or {}).get("provenance")
     recommended: dict[tuple[str, int], float] = {}
     for a in report.get("actions") or []:
@@ -253,34 +254,66 @@ async def compare_plan(plan_id: str, who: Who, conn=Depends(get_conn), horizon: 
         exposed_at = _utc(job.get("finished_at") or job.get("created_at") or datetime.now(timezone.utc))
         source, basis = f"JOB:{baseline_job_id}", "JOB_FINISHED"
     else:
+        from api.routers.zaad_full import expose
         report = await compute(req)
-        exposed_at = datetime.now(timezone.utc)
-        source, basis = "SYNC", "UNVERIFIED"
-    # first exposure for this origin is the earliest evidence on record, never this call's clock alone: the earliest finished
-    # job for the origin from the operator's COMPLETE job history, or an earlier stored comparison; a repeated comparison
-    # cannot move it later, and a history whose completeness is not established cannot make the comparison READY
+        # this run is itself an exposure: recorded in the vault's ledger before anything is returned
+        exposed_at = await run_in_threadpool(expose, conn, operator, req, report, route="shadow_compare")
+        source, basis = "SYNC", "RECOMMENDATION_LEDGER"
+    # first exposure for this origin is the earliest evidence on record, never this call's clock alone: the recommendation
+    # ledger (every synchronous route), the operator's COMPLETE job history, and earlier stored comparisons. A repeat can
+    # never move it later. The basis is VERIFIED only when every source is established as complete: a complete job scan,
+    # ledger coverage for this plan's origin and capture instant, no legacy engine reachable, and no record loss.
+    legacy = legacy_planners_enabled()
+    if legacy:
+        operator_plans.note_legacy_engines(conn)
     scan = await run_in_threadpool(earliest_job_exposure, store, operator, as_of)
-    if scan.exposed_at is not None and scan.exposed_at < exposed_at:
-        exposed_at, basis, source = scan.exposed_at, "JOB_FINISHED", source + f"; first exposure JOB:{scan.job_id}"
+    ledger = operator_plans.ledger_exposure(conn, operator, as_of)
     prior = operator_plans.first_exposure(conn, operator, plan_id)
-    history = scan.as_dict()
+    cov = operator_plans.coverage(conn)
+    candidates: list[tuple[datetime, str, str | None]] = [(exposed_at, basis, None)]
+    if scan.exposed_at is not None:
+        candidates.append((scan.exposed_at, "JOB_FINISHED", f"JOB:{scan.job_id}"))
+    if ledger["earliest"] is not None:
+        candidates.append((ledger["earliest"], "RECOMMENDATION_LEDGER", f"LEDGER:{ledger['route']}"))
     if prior is not None:
-        earliest, verified = prior.earliest.replace(tzinfo=timezone.utc), (prior.verified.replace(tzinfo=timezone.utc) if prior.verified else None)
-        if earliest < exposed_at:
-            # an earlier recorded exposure always rules; it is a VERIFIED basis only if a comparison established it from a complete history
-            exposed_at, basis = earliest, ("PRIOR_COMPARISON" if verified is not None and verified <= earliest else "UNVERIFIED")
-        if verified is not None and scan.history_complete and (scan.exposed_at is None or scan.exposed_at > verified):
-            # a verified exposure was rooted in a finished job of this operator for this origin; a complete scan that finds no job at or
-            # before it means the store no longer holds the records it once did (deletion, retention, or a different store): its
-            # completeness cannot be trusted for this decision
-            history["record_loss_detected"] = True
-            history["note"] += f"; a stored comparison recorded a job exposure at {verified.isoformat()} that this scan no longer finds"
-            basis = "UNVERIFIED"
+        earliest_prior = prior.earliest.replace(tzinfo=timezone.utc)
+        verified_prior = prior.verified.replace(tzinfo=timezone.utc) if prior.verified else None
+        # an earlier recorded exposure always rules the instant; it is a VERIFIED basis only if a comparison established it from verified evidence
+        candidates.append((earliest_prior, "PRIOR_COMPARISON" if verified_prior is not None and verified_prior <= earliest_prior else "UNVERIFIED", "COMPARISON"))
+    exposed_at, basis, reference = min(candidates, key=lambda c: c[0])           # ties keep the first listed (this call's own)
+    if reference:
+        source += f"; first exposure {reference}"
+    reasons: list[str] = []
     if not scan.history_complete:
+        reasons.append(scan.note)
+    gap = operator_plans.coverage_verifies(cov, as_of=as_of, captured_at=_utc(plan["captured_at"]))
+    if gap:
+        reasons.append(gap)
+    record_loss = False
+    if prior is not None and prior.verified is not None:
+        verified_prior = prior.verified.replace(tzinfo=timezone.utc)
+        held: list[datetime] = [t for t in (scan.exposed_at if scan.history_complete else None, ledger["earliest"]) if t is not None]
+        lost = scan.history_complete and (not held or min(held) > verified_prior)
+        if prior.verified_job is not None and scan.history_complete:
+            # a verified exposure rooted in a finished job of this operator must still be found by the complete job scan
+            job_root = prior.verified_job.replace(tzinfo=timezone.utc)
+            lost = lost or scan.exposed_at is None or scan.exposed_at > job_root
+        if lost:
+            record_loss = True
+            reasons.append(f"a stored comparison recorded a verified exposure at {verified_prior.isoformat()} that the current job history and ledger "
+                           "no longer hold (deletion, retention, or a different store), so their completeness cannot be trusted")
+    if basis == "UNVERIFIED" and not reasons:
+        reasons.append("the earliest recorded exposure comes from a comparison whose own history was not verified")
+    if reasons:
         basis = "UNVERIFIED"
+    history = {**scan.as_dict(), "record_loss_detected": record_loss, "ledger_exposures": ledger["count"], "legacy_planners_enabled": legacy,
+               "coverage": {"since": cov["since"].isoformat(), "origin_limit": cov["origin_limit"].isoformat() if cov["origin_limit"] else None,
+                            "source": cov["source"]},
+               "verified": basis != "UNVERIFIED", "note": "; ".join(reasons) if reasons else scan.note}
+    exposure_note = "; ".join(reasons) if reasons else None
     report = refine_report(report, rule_provenance=rule_prov, req=req)
     result = await run_in_threadpool(shadow_result, req, build, report, plan, latest_version=latest_version, exposed_at=exposed_at,
-                                     recommendation_source=source, max_solve_seconds=max_solve_seconds, exposure_basis=basis)
+                                     recommendation_source=source, max_solve_seconds=max_solve_seconds, exposure_basis=basis, exposure_note=exposure_note)
     identity = operator_plans.store_comparison(conn, operator, plan=plan, as_of=as_of, request_hash=report.get("information_hash"),
                                                recommendation_source=source, exposed_at=exposed_at, status="DONE", result=result)
     governance.record_audit(conn, who, object_type="shadow_comparison", object_id=identity, action="shadow_comparison_recorded",

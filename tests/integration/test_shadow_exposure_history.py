@@ -22,6 +22,11 @@ ORIGIN = datetime(2025, 9, 1, tzinfo=timezone.utc)
 T0 = datetime(2025, 9, 1, 6, 0, tzinfo=timezone.utc)
 
 
+@pytest.fixture(autouse=True)
+def production_engines(monkeypatch):
+    monkeypatch.setenv("ZAAD_LEGACY_PLANNERS", "0")
+
+
 @pytest.fixture(scope="module")
 def req():
     conn = duckdb.connect(":memory:")
@@ -160,7 +165,7 @@ def test_a_hidden_early_exposure_blocks_ready_end_to_end(tmp_path, monkeypatch):
     # the earlier stored comparison (A) recorded the hidden exposure for this plan family, so it still rules: exposure never moves forward;
     # and because A's exposure was a finished job this complete scan no longer finds, the store has lost records: nothing is verified
     assert ready["contract"]["readiness"] == "NOT_READY_FOR_THIS_DECISION" and ready["exposure"]["basis"] == "UNVERIFIED"
-    assert ready["exposure"]["history"]["record_loss_detected"] is True and "no longer finds" in ready["exposure"]["history"]["note"]
+    assert ready["exposure"]["history"]["record_loss_detected"] is True and "no longer hold" in ready["exposure"]["history"]["note"]
     assert datetime.fromisoformat(ready["exposure"]["exposed_at"]) == captured_at - timedelta(hours=1)
     # a correction (v2) shares the family and its recorded first exposure, so it is gated the same way
     fresh = cl.post("/api/zaad/shadow/plans", json={**plan_body, "lines": [{"sku": sku, "supplier_id": supplier, "quantity": 984}], "supersedes": captured["plan_id"]}).json()
@@ -210,12 +215,13 @@ def test_a_hidden_early_exposure_blocks_ready_end_to_end(tmp_path, monkeypatch):
     sync = cl2.post(f"/api/zaad/shadow/plans/{captured2['plan_id']}/compare", params=params).json()
     assert sync["contract"]["readiness"] == "CONDITIONAL" and sync["exposure"]["basis"] == "UNVERIFIED" and sync["exposure"]["history"]["record_loss_detected"] is True
     assert sync["exposure"]["exposed_at"] == ok["exposure"]["exposed_at"]                      # the recorded first exposure still rules
-    # G. a plan with no job history at all, compared synchronously twice: the first run's clock is recorded as an exposure (the second
-    # cannot move it later) but it is never laundered into a verified pre-exposure basis
+    # G. a plan compared synchronously twice while the history is unverifiable (here: an unreadable job record): the first run's
+    # exposure is recorded (the second cannot move it later) but it is never laundered into a verified pre-exposure basis
     plan3 = cl2.post("/api/zaad/shadow/plans", json={**plan_body, "as_of": "2025-09-08T00:00:00+00:00"}).json()
+    monkeypatch.setattr(zaad_full, "runner", lambda: SimpleNamespace(store=store_c))          # store C still holds the unreadable record
     first = cl2.post(f"/api/zaad/shadow/plans/{plan3['plan_id']}/compare", params=params).json()
     second = cl2.post(f"/api/zaad/shadow/plans/{plan3['plan_id']}/compare", params=params).json()
-    assert first["contract"]["readiness"] == "CONDITIONAL" and first["exposure"]["basis"] == "UNVERIFIED" and first["exposure"]["history"]["complete"] is True
+    assert first["contract"]["readiness"] == "CONDITIONAL" and first["exposure"]["basis"] == "UNVERIFIED" and first["exposure"]["history"]["complete"] is False
     assert second["contract"]["readiness"] == "CONDITIONAL" and second["exposure"]["basis"] == "UNVERIFIED"
     assert second["exposure"]["exposed_at"] == first["exposure"]["exposed_at"] and second["contract"]["permissions"]["can_claim_shadow_difference"] is False
     conn.close()

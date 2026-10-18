@@ -137,6 +137,7 @@ def test_planner_api_carries_the_block_and_the_plan_shape():
     app = FastAPI()
     app.include_router(zaad_full.router)
     app.dependency_overrides[require_operator] = lambda: req.operator_id
+    app.dependency_overrides[get_conn] = lambda: duckdb.connect(":memory:")      # H3b: the route records the recommendation's exposure in the operator's vault
     # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
     app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: req.operator_id)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     from api.routers.zaad import bounded_rate
@@ -227,6 +228,7 @@ def test_release_audit_api_bounds_the_declared_option_set():
     app = FastAPI()
     app.include_router(zaad_full.router)
     app.dependency_overrides[require_operator] = lambda: req.operator_id
+    app.dependency_overrides[get_conn] = lambda: duckdb.connect(":memory:")      # H3b: the route records the recommendation's exposure in the operator's vault
     # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
     app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: req.operator_id)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     from api.routers.zaad import bounded_rate
@@ -251,6 +253,7 @@ def test_release_audit_api_shape_without_declaration_carries_no_commitment_keys(
     app = FastAPI()
     app.include_router(zaad_full.router)
     app.dependency_overrides[require_operator] = lambda: req.operator_id
+    app.dependency_overrides[get_conn] = lambda: duckdb.connect(":memory:")      # H3b: the route records the recommendation's exposure in the operator's vault
     # the planner routes check a capability (security review 2026-09); this client is the workspace administrator
     app.dependency_overrides[require_actor] = lambda: _actor_from({"operator_id": (lambda: req.operator_id)(), "actor_id": "admin", "name": "admin", "role": "ADMIN"})
     from api.routers.zaad import bounded_rate
