@@ -205,8 +205,9 @@ def shadow_readiness(evidence: dict[str, Any] | None) -> dict[str, Any]:
         blockers.append("the plan has no lines")
     identity = evidence.get("identity_fidelity")
     if evidence.get("exposure_basis") == "UNVERIFIED":
-        reasons.append("the first exposure of ZAAD's recommendation for this origin is not recorded (only this synchronous run is known); "
-                       "an earlier unrecorded recommendation cannot be excluded, so the comparison is not claimed as pre-exposure")
+        reasons.append("the first exposure of ZAAD's recommendation for this origin is not established (a synchronous run is not recorded, or the "
+                       "operator's complete job history could not be verified); an earlier recommendation cannot be excluded, so the comparison "
+                       "is not claimed as pre-exposure")
     if evidence.get("lines_beyond_horizon"):
         reasons.append(f"{evidence.get('lines_beyond_horizon')} plan line(s) fall beyond the planning horizon and are not evaluated")
     if evidence.get("unscorable"):

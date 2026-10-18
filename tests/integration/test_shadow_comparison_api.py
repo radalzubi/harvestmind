@@ -143,6 +143,11 @@ class FakeStore:
             raise KeyError(identity)
         return self.jobs[identity]
 
+    def earliest_done_for_origin(self, operator, as_of):
+        done = [(i, j) for i, j in self.jobs.items() if j.get("status") == "DONE" and j.get("finished_at")]
+        hits = sorted((datetime.fromisoformat(j["finished_at"]), i) for i, j in done if j.get("report") and datetime.fromisoformat(j["report"]["as_of"]) == as_of)
+        return {"id": hits[0][1] if hits else None, "finished_at": hits[0][0] if hits else None, "scanned": len(done), "unreadable": 0}
+
 
 def test_job_path_requires_the_same_planning_problem_and_records_first_exposure(vault, monkeypatch):
     from api.routers import zaad_full

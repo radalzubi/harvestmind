@@ -307,13 +307,42 @@ def read_comparison(conn: Any, operator: str, comparison_id: str) -> dict[str, A
     return out
 
 
-def first_exposure(conn: Any, operator: str, plan_id: str) -> datetime | None:
+VERIFIED_EXPOSURE_BASES = ("JOB_FINISHED", "PRIOR_COMPARISON")
+
+
+class PriorExposure:
+    """What this plan family's stored comparisons already recorded about the first exposure of a recommendation
+    for its origin. `earliest` is the earliest exposure any comparison recorded, whatever established it: a later
+    comparison can never move the exposure after it. `verified` is the earliest exposure a comparison established
+    from a complete job history (basis JOB_FINISHED, or PRIOR_COMPARISON rooted in one); None when no comparison
+    did. Only `verified` can stand as a pre-exposure basis: a synchronous run's own clock recorded by an earlier
+    comparison is an exposure, not a verification, and must not become one by being repeated."""
+    __slots__ = ("earliest", "verified")
+
+    def __init__(self, earliest: datetime, verified: datetime | None):
+        self.earliest, self.verified = earliest, verified
+
+
+def first_exposure(conn: Any, operator: str, plan_id: str) -> PriorExposure | None:
     """The earliest recorded exposure of a recommendation for this plan family's origin across every stored
-    comparison (whatever version they used): a repeated comparison never resets it, and a capture after it is
-    not an independent baseline for this origin."""
+    comparison (whatever version they used), with the earliest VERIFIED one: a repeated comparison never resets
+    either, and a capture after the earliest is not an independent baseline for this origin."""
     ensure_tables(conn)
-    rows = _rows(conn, "SELECT MIN(c.exposed_at) AS first FROM zaad_shadow_comparisons c JOIN zaad_operator_plans p ON p.plan_id = c.plan_id "
+    rows = _rows(conn, "SELECT c.exposed_at, c.result_json FROM zaad_shadow_comparisons c JOIN zaad_operator_plans p ON p.plan_id = c.plan_id "
                        "WHERE c.operator_id = ? AND p.plan_key = (SELECT plan_key FROM zaad_operator_plans WHERE plan_id = ? AND operator_id = ?)",
                  [operator, plan_id, operator])
-    value = rows[0]["first"] if rows else None
-    return None if value is None or (isinstance(value, float) and value != value) else _as_utc_naive(value)
+    earliest: datetime | None = None
+    verified: datetime | None = None
+    for row in rows:
+        value = row.get("exposed_at")
+        if value is None or (isinstance(value, float) and value != value):
+            continue
+        when = _as_utc_naive(value)
+        earliest = when if earliest is None or when < earliest else earliest
+        try:
+            basis = (json.loads(row["result_json"]) if row.get("result_json") else {}).get("evidence", {}).get("exposure_basis")
+        except (ValueError, AttributeError):
+            basis = None                     # a comparison whose stored result cannot be read verifies nothing
+        if basis in VERIFIED_EXPOSURE_BASES:
+            verified = when if verified is None or when < verified else verified
+    return None if earliest is None else PriorExposure(earliest, verified)

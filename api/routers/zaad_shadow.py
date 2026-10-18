@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Annotated, Any, Literal
 
@@ -115,29 +116,52 @@ def request_fingerprint(req: Any) -> str:
     return hashlib.sha256(req.model_dump_json().encode()).hexdigest()
 
 
-def earliest_job_exposure(store: Any, operator: str, as_of: datetime, *, limit: int = 200) -> tuple[datetime | None, str | None]:
-    """The earliest finished planning job of this operator whose recommendation was for `as_of`: from that moment a
-    recommendation for the origin was accessible, whether or not a comparison referenced it."""
-    earliest: datetime | None = None
-    which: str | None = None
+@dataclass(frozen=True)
+class Exposure:
+    """What the operator's COMPLETE job history says about the first exposure of a recommendation for one origin.
+
+    `basis` is JOB_FINISHED when a finished job for the origin was found in a history established as complete,
+    NONE_RECORDED when a complete history holds none, and UNVERIFIED whenever completeness is not established:
+    no job store, a store without the complete query, a store that could not be read, or finished rows whose
+    report or stamp could not be assessed. UNVERIFIED never grants READY. An exposure found in an incomplete
+    history is still an exposure (it can only make a plan NOT READY, never READY)."""
+    exposed_at: datetime | None
+    job_id: str | None
+    basis: Literal["JOB_FINISHED", "NONE_RECORDED", "UNVERIFIED"]
+    history_complete: bool
+    jobs_scanned: int
+    note: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return {"complete": self.history_complete, "jobs_scanned": self.jobs_scanned, "earliest_job_id": self.job_id, "record_loss_detected": False, "note": self.note}
+
+
+def earliest_job_exposure(store: Any, operator: str, as_of: datetime) -> Exposure:
+    """The earliest finished planning job of this operator whose recommendation was for `as_of`, from the store's
+    complete operator-scoped scan (`JobStore.earliest_done_for_origin`), never from a bounded or paged listing: from
+    that moment a recommendation for the origin was accessible, whether or not a comparison referenced it. Missing
+    records, a failed query, a partial scan or an unavailable store are never read as proof of no earlier exposure:
+    they leave the exposure UNVERIFIED, which blocks READY."""
+    if store is None:
+        return Exposure(None, None, "UNVERIFIED", False, 0, "no job store is configured, so the operator's finished jobs cannot be examined")
+    query = getattr(store, "earliest_done_for_origin", None)
+    if query is None:
+        return Exposure(None, None, "UNVERIFIED", False, 0, "the job store offers no complete history scan, so earlier exposures cannot be excluded")
     try:
-        rows = store.list(operator, limit=limit)
-    except Exception:  # noqa: BLE001 - a store that cannot list leaves exposure unverified, never earlier
-        return None, None
-    for row in rows:
-        if row.get("status") != "DONE" or not row.get("finished_at"):
-            continue
-        try:
-            job = store.get(str(row["id"]), operator)
-        except KeyError:
-            continue
-        report = job.get("report") or {}
-        if not report.get("as_of") or _utc(report["as_of"]) != as_of:
-            continue
-        finished = _utc(job["finished_at"])
-        if earliest is None or finished < earliest:
-            earliest, which = finished, str(row["id"])
-    return earliest, which
+        found = query(operator, as_of)
+    except Exception as exc:  # noqa: BLE001 - a store that cannot be read leaves exposure UNVERIFIED (never clean), with the reason recorded
+        return Exposure(None, None, "UNVERIFIED", False, 0, f"the job store could not be read ({type(exc).__name__}), so earlier exposures cannot be excluded")
+    scanned, unreadable = int(found.get("scanned") or 0), int(found.get("unreadable") or 0)
+    complete = unreadable == 0
+    when = _utc(found["finished_at"]) if found.get("finished_at") is not None else None
+    which = str(found["id"]) if found.get("id") else None
+    if when is None:
+        if complete:
+            return Exposure(None, None, "NONE_RECORDED", True, scanned, f"all {scanned} finished job(s) of the operator were examined; none was for this origin")
+        return Exposure(None, None, "UNVERIFIED", False, scanned, f"{unreadable} of {scanned} finished job(s) could not be assessed (missing or unreadable report or stamp); an earlier exposure cannot be excluded")
+    if complete:
+        return Exposure(when, which, "JOB_FINISHED", True, scanned, f"all {scanned} finished job(s) of the operator were examined; the earliest for this origin is {which}")
+    return Exposure(when, which, "UNVERIFIED", False, scanned, f"{unreadable} of {scanned} finished job(s) could not be assessed; {which} is an exposure for this origin but an earlier one cannot be excluded")
 
 
 def shadow_result(req: Any, build: dict[str, Any], report: dict[str, Any], plan: dict[str, Any], *, latest_version: int, exposed_at: datetime,
@@ -232,14 +256,28 @@ async def compare_plan(plan_id: str, who: Who, conn=Depends(get_conn), horizon: 
         report = await compute(req)
         exposed_at = datetime.now(timezone.utc)
         source, basis = "SYNC", "UNVERIFIED"
-    # first exposure for this origin is the earliest evidence on record, never this call's clock alone: an earlier finished
-    # job for the origin, or an earlier stored comparison; a repeated comparison cannot move it later
-    job_first, job_first_id = (await run_in_threadpool(earliest_job_exposure, store, operator, as_of)) if store is not None else (None, None)
-    if job_first is not None and job_first < exposed_at:
-        exposed_at, basis, source = job_first, "JOB_FINISHED", source + f"; first exposure JOB:{job_first_id}"
+    # first exposure for this origin is the earliest evidence on record, never this call's clock alone: the earliest finished
+    # job for the origin from the operator's COMPLETE job history, or an earlier stored comparison; a repeated comparison
+    # cannot move it later, and a history whose completeness is not established cannot make the comparison READY
+    scan = await run_in_threadpool(earliest_job_exposure, store, operator, as_of)
+    if scan.exposed_at is not None and scan.exposed_at < exposed_at:
+        exposed_at, basis, source = scan.exposed_at, "JOB_FINISHED", source + f"; first exposure JOB:{scan.job_id}"
     prior = operator_plans.first_exposure(conn, operator, plan_id)
-    if prior is not None and prior.replace(tzinfo=timezone.utc) < exposed_at:
-        exposed_at, basis = prior.replace(tzinfo=timezone.utc), "PRIOR_COMPARISON"
+    history = scan.as_dict()
+    if prior is not None:
+        earliest, verified = prior.earliest.replace(tzinfo=timezone.utc), (prior.verified.replace(tzinfo=timezone.utc) if prior.verified else None)
+        if earliest < exposed_at:
+            # an earlier recorded exposure always rules; it is a VERIFIED basis only if a comparison established it from a complete history
+            exposed_at, basis = earliest, ("PRIOR_COMPARISON" if verified is not None and verified <= earliest else "UNVERIFIED")
+        if verified is not None and scan.history_complete and (scan.exposed_at is None or scan.exposed_at > verified):
+            # a verified exposure was rooted in a finished job of this operator for this origin; a complete scan that finds no job at or
+            # before it means the store no longer holds the records it once did (deletion, retention, or a different store): its
+            # completeness cannot be trusted for this decision
+            history["record_loss_detected"] = True
+            history["note"] += f"; a stored comparison recorded a job exposure at {verified.isoformat()} that this scan no longer finds"
+            basis = "UNVERIFIED"
+    if not scan.history_complete:
+        basis = "UNVERIFIED"
     report = refine_report(report, rule_provenance=rule_prov, req=req)
     result = await run_in_threadpool(shadow_result, req, build, report, plan, latest_version=latest_version, exposed_at=exposed_at,
                                      recommendation_source=source, max_solve_seconds=max_solve_seconds, exposure_basis=basis)
@@ -248,7 +286,7 @@ async def compare_plan(plan_id: str, who: Who, conn=Depends(get_conn), horizon: 
     governance.record_audit(conn, who, object_type="shadow_comparison", object_id=identity, action="shadow_comparison_recorded",
                             context={"plan_id": plan_id, "version": plan["version"], "readiness": result["contract"]["readiness"], "source": source})
     return {"comparison_id": identity, "plan_id": plan_id, "plan_version": plan["version"], "as_of": as_of.isoformat(), "recommendation_source": source,
-            "exposure": {"exposed_at": exposed_at.isoformat(), "basis": basis}, **result, "executable_purchase_order": False}
+            "exposure": {"exposed_at": exposed_at.isoformat(), "basis": basis, "history": history}, **result, "executable_purchase_order": False}
 
 
 def _workspace_request_at(conn, operator, horizon, service_target, skus, max_solve_seconds, as_of, _workspace_request):

@@ -55,7 +55,8 @@ validated on synthetic data; NOT validated on real operator data.** Open for ind
   and client-supplied times never set it. Captures at or after it are NOT READY. A synchronous run that has no
   recorded evidence of earlier exposure is `UNVERIFIED` and the comparison is CONDITIONAL (compared and labelled,
   but not claimed as a pre-exposure shadow difference), because earlier synchronous recommendations are not
-  recorded. READY is therefore reachable only through the job path.
+  recorded. READY is therefore reachable only through the job path, and only when the operator's job history is
+  established as complete (see "Exposure-integrity correction" below).
 - **Other checks.** Non-finite quantities and periods outside 0..52 are refused; repeated lines with one business
   key and no distinguishing reference are refused rather than summed; lines beyond the horizon and plans the
   settlement cannot score as recorded (for example a quantity that violates a declared case multiple) are
@@ -78,6 +79,91 @@ validated on synthetic data; NOT validated on real operator data.** Open for ind
   compare (READY / EXACT, quantities, modelled costs, stored record, reproducible figures); incomplete identity
   and superseded versions are CONDITIONAL; synchronous and job reports refine to identical provenance; a plan
   captured at or after exposure cannot be the baseline.
+- `tests/integration/test_shadow_exposure_history.py` (4, real `JobStore`): the nine exposure-history cases listed under
+  "Exposure-integrity correction".
+
+## Exposure-integrity correction (independent review of 4dc63e4)
+
+**Original defect.** `earliest_job_exposure()` discovered the first exposure by iterating `store.list(operator,
+limit=200)`: the 200 most recently created jobs, ordered by `created_at DESC`. An operator with more than 200 jobs
+whose earliest finished job for the origin was older than that window had that exposure silently missed, and a plan
+captured after it could be classified READY as a pre-exposure baseline. A listing failure was also read as "no
+earlier exposure". Reproduced before the fix with the real `JobStore` (250 finished jobs for one origin, the oldest
+created carrying the earliest finish): the bounded search returned the 51st-oldest job (finished 06:50) as the first
+exposure instead of the oldest (06:00).
+
+**Corrected contract.**
+
+- `JobStore.earliest_done_for_origin(operator, as_of)` (`zaad/full/jobs.py`) is one SQL statement over the
+  operator's rows (`WHERE operator = ? AND status = 'DONE'`, no `LIMIT`, no page, ordered by `finished_at`), so it
+  examines every finished row the store holds and terminates with the table. It matches the report's `as_of` to the
+  origin (SQLite `json_extract`, with a Python fallback when the JSON functions are absent) and returns the earliest
+  match together with the scan's accounting: `scanned` finished rows and `unreadable` rows whose report, origin or
+  finish stamp could not be assessed. The tenant boundary is the `WHERE` clause, as in `get` and `list`.
+- `earliest_job_exposure()` (`api/routers/zaad_shadow.py`) returns an `Exposure` record: `JOB_FINISHED` when a
+  finished job for the origin exists in a history established as complete, `NONE_RECORDED` when a complete history
+  holds none, `UNVERIFIED` whenever completeness is not established (no job store configured, a store without the
+  complete query, a store that raised, or any unreadable finished row). An exposure found in an incomplete history
+  still counts as an exposure (it can make a plan NOT READY) but cannot verify anything. Missing records, a failed
+  query, a partial scan or an unavailable store are never read as proof of no earlier exposure.
+- A stored prior comparison's exposure is now split into what it **recorded** and what it **verified**
+  (`operator_plans.first_exposure` returns both). The earliest recorded exposure always rules the exposure instant
+  (a repeat can never move it later), but it is a `PRIOR_COMPARISON` basis only when a comparison established it from
+  a complete job history; a synchronous run's own clock recorded by an earlier comparison stays `UNVERIFIED` however
+  often it is repeated. This closes a second hole found while testing: two synchronous comparisons of the same plan
+  would have promoted the first run's clock into a verified pre-exposure basis.
+- **Record-loss detection.** When a comparison previously verified a job exposure for the plan family and the
+  current complete scan finds no finished job at or before that instant, the store no longer holds records it once
+  did (deletion, retention, or a different `ZAAD_JOB_STORE` file). The response marks
+  `exposure.history.record_loss_detected`, the exposure instant keeps the earlier recorded value, and the basis is
+  `UNVERIFIED`: READY is denied.
+- Readiness: `UNVERIFIED` is CONDITIONAL (compared, labelled, no shadow-difference claim); capture at or after the
+  exposure is NOT READY regardless of basis; READY requires a verified basis, so it is reachable only with a complete
+  verified job history (or a prior comparison that had one, still consistent with the current scan).
+- The response carries `exposure.history` (`complete`, `jobs_scanned`, `earliest_job_id`, `record_loss_detected`,
+  `note`) so a reviewer can see what the classification rests on.
+
+**Retention and deletion.** `zaad/full/jobs.py` has no delete or retention path: `reconcile()` only moves lapsed
+non-terminal jobs to terminal states, and no code in the repository deletes job rows. The SQLite file named by
+`ZAAD_JOB_STORE` is external configuration, so completeness is relative to that file: replacing or pruning it outside
+the application is invisible to the scan except through record-loss detection, which needs a stored comparison to
+have verified a job exposure for the family first. `finished_at` and `report_json` are written in the one update that
+makes a job DONE (`_watch`), so the finish stamp is the first instant the recommendation was readable; the stamp of a
+DONE row never changes afterwards.
+
+**Adversarial evidence** (`tests/integration/test_shadow_exposure_history.py`, real `JobStore` throughout):
+
+1. 250 finished jobs for the origin, earliest exposure on the oldest-created row: found (fails on 4dc63e4).
+2. Multiple matches: the true earliest is selected, not the first listed.
+3. Another operator's earlier finished job for the same origin is excluded.
+4. An unfinished job, a FAILED job and a finished job for another origin do not count.
+5. A finished row with an unreadable or missing report: the history is `UNVERIFIED`, the readable exposure is kept.
+6. A store that raises, and a store without the complete query: `UNVERIFIED`, never "no exposure".
+7. End to end: a plan captured after a hidden early exposure (older than 249 later jobs) is
+   NOT_READY_FOR_THIS_DECISION with `can_claim_shadow_difference` false.
+8. End to end: a plan captured before every finished job, with a complete verified history, is READY; a repeat keeps
+   the identical exposure; one unreadable record withdraws READY to CONDITIONAL with the exposure unchanged; an
+   offline store is CONDITIONAL with the reason in the response.
+9. End to end: a store that no longer holds a previously verified job is flagged as record loss and denied READY; two
+   synchronous comparisons with no job history stay CONDITIONAL and the second does not move the exposure later or
+   gain a verified basis.
+
+The earlier API tests keep their expectations (job-path READY with a matching fingerprint, 409 refusals, v2 after
+exposure NOT READY, synchronous run inheriting a job's exposure, unscorable plan CONDITIONAL); the fake store used
+there gained the complete query.
+
+**Validation of the correction.** H3b unit and API tests, the new exposure-history tests and the H3a comparator tests
+pass together (52); ruff, mypy and bandit with the CI arguments are clean; `scripts.zaad_canonical_regression`
+PASS; `scripts.p1_invariants` 60/60 (regenerated evidence file restored, not committed); causal attestation 0
+failures; `zaad_workspace_smoke 7 A_stable 3` completes with `executable_purchase_order: false`; the 2025-09-01
+E_mixed_portfolio recheck is unchanged (pipeline 3000 / 3888 / 72, stock 5454 / 2208 / 204, all known before the
+origin). No optimizer or planner mathematics changed; the full suite result is recorded in the PR.
+
+**Remaining limitations.** Synchronous `/plan/from-workspace` recommendations are still not recorded as exposures,
+so a synchronous-only history can never be verified (by design: CONDITIONAL). Record-loss detection is bounded by
+what stored comparisons verified; an externally pruned store with no prior verified comparison for the family cannot
+be told from a complete one. Completeness is of the configured store, not of every place a recommendation could have
+been seen (for example a report exported and shared outside the product).
 
 ## Deferred H3a limitations, evaluated for H3b
 
