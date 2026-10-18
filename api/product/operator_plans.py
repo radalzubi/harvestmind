@@ -17,7 +17,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -28,6 +30,13 @@ from zaad.full import comparator
 
 PROVENANCES = ("OPERATOR_SUBMITTED", "OPERATOR_UPLOADED", "OPERATOR_CONFIRMED_DRAFT")
 TABLES = ("zaad_operator_plans", "zaad_operator_plan_lines", "zaad_shadow_comparisons")
+# test hook: called after the version decision and before the insert, so a test can hold two corrections at the
+# same point and prove that the database constraint, not the read, decides the race
+def _no_hook() -> None:
+    return None
+
+
+_before_insert: Callable[[], None] = _no_hook
 
 
 class PlanRefused(Exception):
@@ -88,16 +97,28 @@ def canonical_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
             qty = float(raw.get("quantity"))  # type: ignore[arg-type]  # a missing quantity is caught below as a refusal
         except (TypeError, ValueError):
             raise PlanRefused(f"line {i + 1}: the quantity must be a number") from None
-        if not (qty >= 0) or qty != qty:
-            raise PlanRefused(f"line {i + 1}: the quantity must be zero or positive")
-        period = int(raw.get("period") or 0)
-        if period < 0:
-            raise PlanRefused(f"line {i + 1}: the period cannot be negative")
+        if not math.isfinite(qty) or qty < 0:
+            raise PlanRefused(f"line {i + 1}: the quantity must be a finite number, zero or positive")
+        try:
+            period = int(raw.get("period") or 0)
+        except (TypeError, ValueError):
+            raise PlanRefused(f"line {i + 1}: the period must be a whole number") from None
+        if period < 0 or period > 52:
+            raise PlanRefused(f"line {i + 1}: the period must be between 0 and 52")
         out.append({"sku": sku, "supplier_id": _text(raw.get("supplier_id")), "destination_id": _text(raw.get("destination_id")),
                     "quantity": qty, "period": period, "line_reference": _text(raw.get("line_reference"))})
     if not out:
         raise PlanRefused("a plan needs at least one line (an explicit 'order nothing' is a line with quantity 0)")
     out.sort(key=lambda r: (r["sku"], r["supplier_id"] or "", r["destination_id"] or "", r["period"], r["line_reference"] or "", r["quantity"]))
+    # two lines with one business key and no distinguishing reference are either a duplicate submission or two
+    # real lines; the plan cannot say which, so it is refused rather than summed or deduplicated
+    seen: set[tuple] = set()
+    for r in out:
+        key = (r["sku"], r["supplier_id"], r["destination_id"], r["period"], r["line_reference"])
+        if key in seen:
+            raise PlanRefused(f"lines repeat the same SKU, supplier, destination and period ({r['sku']}, {r['supplier_id']}, period {r['period']}); "
+                              "merge them or give each a line_reference")
+        seen.add(key)
     return out
 
 
@@ -113,8 +134,15 @@ def plan_key(operator: str, as_of: datetime) -> str:
 def capture_plan(conn: Any, operator: str, *, as_of: datetime, lines: list[dict[str, Any]], provenance: str,
                  captured_by: str | None, source_reference: str | None = None, note: str | None = None,
                  supersedes: str | None = None) -> dict[str, Any]:
-    """Record an operator plan as a new immutable version. Identical content for the same origin returns
-    the existing version (idempotent); different content supersedes the latest version of the family."""
+    """Record an operator plan as a new immutable version.
+
+    - the first capture for an origin needs no `supersedes`;
+    - identical content for the same origin returns the existing version (a retry adds nothing);
+    - different content must name the latest version in `supersedes`; a missing, stale or wrong id is refused;
+    - two corrections of the same version cannot both land: the new version is written inside a transaction and
+      the UNIQUE (operator, origin, version) constraint rejects the second writer, whatever it read first;
+    - earlier versions and their lines are never updated: a version's status is derived from whether a later
+      version exists."""
     ensure_tables(conn)
     if provenance not in PROVENANCES:
         raise PlanRefused(f"provenance must be one of {', '.join(PROVENANCES)}; {provenance!r} is not an independently established origin")
@@ -122,28 +150,52 @@ def capture_plan(conn: Any, operator: str, *, as_of: datetime, lines: list[dict[
     digest = content_hash(canon, as_of)
     key = plan_key(operator, as_of)
     origin = _as_utc_naive(as_of)
-    existing = _rows(conn, "SELECT * FROM zaad_operator_plans WHERE operator_id = ? AND plan_key = ? AND content_hash = ? ORDER BY version DESC LIMIT 1",
+    existing = _rows(conn, "SELECT plan_id FROM zaad_operator_plans WHERE operator_id = ? AND plan_key = ? AND content_hash = ? ORDER BY version DESC LIMIT 1",
                      [operator, key, digest])
     if existing:
         return {**read_plan(conn, operator, existing[0]["plan_id"]), "created": False}
-    latest = _rows(conn, "SELECT * FROM zaad_operator_plans WHERE operator_id = ? AND plan_key = ? ORDER BY version DESC LIMIT 1", [operator, key])
-    if supersedes and (not latest or latest[0]["plan_id"] != supersedes):
-        raise PlanRefused("the plan version you are correcting is not the latest captured version for this origin; reload and correct the current one")
+    latest = _rows(conn, "SELECT plan_id, version FROM zaad_operator_plans WHERE operator_id = ? AND plan_key = ? ORDER BY version DESC LIMIT 1", [operator, key])
+    if latest and not supersedes:
+        raise PlanRefused(f"a plan is already captured for this origin (version {latest[0]['version']}, {latest[0]['plan_id']}); a correction must name it in "
+                          "`supersedes` so the version being replaced is explicit")
+    if latest and latest[0]["plan_id"] != supersedes:
+        raise PlanRefused(f"`supersedes` names {supersedes}, but the latest captured version for this origin is {latest[0]['plan_id']} "
+                          f"(version {latest[0]['version']}); reload and correct the current one")
+    if not latest and supersedes:
+        raise PlanRefused("nothing is captured for this origin yet, so there is no version to supersede")
     version = (int(latest[0]["version"]) + 1) if latest else 1
     plan_id = f"plan_{uuid.uuid4().hex[:16]}"
     stamp = _now()
-    conn.execute("INSERT INTO zaad_operator_plans (plan_id, operator_id, plan_key, version, as_of, captured_at, captured_by, provenance, source_reference, "
-                 "content_hash, line_count, status, supersedes_plan_id, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CAPTURED', ?, ?, ?)",
-                 [plan_id, operator, key, version, origin, stamp, captured_by, provenance, source_reference, digest, len(canon),
-                  latest[0]["plan_id"] if latest else None, note, stamp])
-    for n, line in enumerate(canon):
-        conn.execute("INSERT INTO zaad_operator_plan_lines (plan_id, operator_id, line_no, sku, supplier_id, destination_id, quantity, period, line_reference) "
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                     [plan_id, operator, n, line["sku"], line["supplier_id"], line["destination_id"], line["quantity"], line["period"], line["line_reference"]])
-    if latest:
-        # status is the only field that ever changes on an earlier version, and it only moves forward
-        conn.execute("UPDATE zaad_operator_plans SET status = 'SUPERSEDED' WHERE plan_id = ? AND operator_id = ?", [latest[0]["plan_id"], operator])
+    _before_insert()
+    conn.begin()
+    try:
+        conn.execute("INSERT INTO zaad_operator_plans (plan_id, operator_id, plan_key, version, as_of, captured_at, captured_by, provenance, source_reference, "
+                     "content_hash, line_count, supersedes_plan_id, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                     [plan_id, operator, key, version, origin, stamp, captured_by, provenance, source_reference, digest, len(canon),
+                      latest[0]["plan_id"] if latest else None, note, stamp])
+        for n, line in enumerate(canon):
+            _insert_line(conn, plan_id, operator, n, line)
+        conn.commit()
+    except Exception as exc:
+        try:
+            conn.rollback()
+        except Exception:  # noqa: BLE001 - the engine already aborted the transaction on the conflict; nothing of ours was written
+            pass
+        text = str(exc)
+        if type(exc).__name__ in ("ConstraintException", "TransactionException") or "Duplicate key" in text or "Constraint Error" in text or "conflict" in text.lower():
+            # another correction of the same version, or the same content, landed first: nothing of this one remains
+            retry = _rows(conn, "SELECT plan_id FROM zaad_operator_plans WHERE operator_id = ? AND plan_key = ? AND content_hash = ?", [operator, key, digest])
+            if retry:
+                return {**read_plan(conn, operator, retry[0]["plan_id"]), "created": False}
+            raise PlanRefused("another correction of this plan version was recorded first; reload and correct the current version") from exc
+        raise
     return {**read_plan(conn, operator, plan_id), "created": True}
+
+
+def _insert_line(conn: Any, plan_id: str, operator: str, n: int, line: dict[str, Any]) -> None:
+    conn.execute("INSERT INTO zaad_operator_plan_lines (plan_id, operator_id, line_no, sku, supplier_id, destination_id, quantity, period, line_reference) "
+                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 [plan_id, operator, n, line["sku"], line["supplier_id"], line["destination_id"], line["quantity"], line["period"], line["line_reference"]])
 
 
 def _rows(conn: Any, sql: str, params: list[Any]) -> list[dict[str, Any]]:
@@ -161,9 +213,14 @@ def read_plan(conn: Any, operator: str, plan_id: str) -> dict[str, Any]:
     lines = _rows(conn, "SELECT line_no, sku, supplier_id, destination_id, quantity, period, line_reference FROM zaad_operator_plan_lines "
                         "WHERE plan_id = ? AND operator_id = ? ORDER BY line_no", [plan_id, operator])
     # the stored lines must still hash to the recorded digest: a tampered or truncated snapshot is refused as evidence
-    recomputed = content_hash(lines, head["as_of"])
+    try:
+        recomputed = content_hash(lines, head["as_of"])
+    except PlanRefused:
+        recomputed = "INVALID"
+    latest = _rows(conn, "SELECT MAX(version) AS v FROM zaad_operator_plans WHERE operator_id = ? AND plan_key = ?", [operator, head["plan_key"]])[0]["v"]
     return {**{k: (v.isoformat() if isinstance(v, datetime) else v) for k, v in head.items()}, "lines": lines,
-            "integrity": "VERIFIED" if recomputed == head["content_hash"] else "HASH_MISMATCH"}
+            "status": "CAPTURED" if int(latest) == int(head["version"]) else "SUPERSEDED", "latest_version": int(latest),
+            "integrity": "VERIFIED" if (recomputed == head["content_hash"] and len(lines) == int(head["line_count"])) else "HASH_MISMATCH"}
 
 
 def list_plans(conn: Any, operator: str, *, as_of: datetime | None = None, limit: int = 50) -> list[dict[str, Any]]:
@@ -172,7 +229,14 @@ def list_plans(conn: Any, operator: str, *, as_of: datetime | None = None, limit
         rows = _rows(conn, "SELECT * FROM zaad_operator_plans WHERE operator_id = ? AND plan_key = ? ORDER BY version DESC LIMIT ?", [operator, plan_key(operator, as_of), limit])
     else:
         rows = _rows(conn, "SELECT * FROM zaad_operator_plans WHERE operator_id = ? ORDER BY created_at DESC, version DESC LIMIT ?", [operator, limit])
-    return [{k: (v.isoformat() if isinstance(v, datetime) else v) for k, v in r.items()} for r in rows]
+    out = []
+    latest_by_key: dict[str, int] = {}
+    for r in rows:
+        if r["plan_key"] not in latest_by_key:
+            latest_by_key[r["plan_key"]] = int(_rows(conn, "SELECT MAX(version) AS v FROM zaad_operator_plans WHERE operator_id = ? AND plan_key = ?", [operator, r["plan_key"]])[0]["v"])
+        out.append({**{k: (v.isoformat() if isinstance(v, datetime) else v) for k, v in r.items()},
+                    "status": "CAPTURED" if int(r["version"]) == latest_by_key[r["plan_key"]] else "SUPERSEDED", "latest_version": latest_by_key[r["plan_key"]]})
+    return out
 
 
 # ── mapping a plan onto a Request ─────────────────────────────────────────────
@@ -194,21 +258,30 @@ def map_plan_to_request(plan: dict[str, Any], req: Any) -> dict[str, Any]:
         if ln.source is not None and ln.quantity > 0 and 0 <= ln.period < req.horizon:
             purchases[ln.source, ln.period] = purchases.get((ln.source, ln.period), 0.0) + ln.quantity
     coverage = actions.coverage(req.horizon)
+    beyond = [ln for ln in actions.lines if ln.period >= req.horizon]
+    coverage["lines_beyond_horizon"] = len(beyond)
     return {"purchases": purchases, "lines": [ln.as_dict() for ln in actions.lines], "coverage": coverage,
-            "out_of_scope_lines": actions.out_of_scope,
+            "out_of_scope_lines": actions.out_of_scope, "lines_beyond_horizon": len(beyond),
             "identity_fidelity": comparator.EXACT if (coverage["lines_observed"] and coverage["lines_incomplete"] == 0) else
                                  (comparator.INCOMPLETE if coverage["lines_observed"] else comparator.NOT_AVAILABLE)}
 
 
-def shadow_evidence(plan: dict[str, Any], mapping: dict[str, Any], *, req: Any, exposed_at: datetime, latest_version: int) -> dict[str, Any]:
-    """What the comparator needs to decide whether this plan may serve as the ACTUAL_OPERATOR_PLAN for the request."""
+def shadow_evidence(plan: dict[str, Any], mapping: dict[str, Any], *, req: Any, exposed_at: datetime, latest_version: int,
+                    exposure_basis: str = "UNVERIFIED") -> dict[str, Any]:
+    """What the comparator needs to decide whether this plan may serve as the ACTUAL_OPERATOR_PLAN for the request.
+
+    `exposed_at` is the earliest instant ZAAD's recommendation for this origin is KNOWN to have been accessible
+    (a finished planning job, or an earlier stored comparison); `exposure_basis` says what established it:
+    JOB_FINISHED, PRIOR_COMPARISON or UNVERIFIED (only this synchronous run is known, earlier synchronous runs
+    are not recorded). Client-supplied times never set it."""
     plan_as_of = _as_utc_naive(plan["as_of"])
     req_as_of = _as_utc_naive(req.as_of)
     return {"plan_id": plan["plan_id"], "version": int(plan["version"]), "latest_version": int(latest_version), "status": plan["status"],
             "provenance": plan["provenance"], "content_hash": plan["content_hash"], "integrity": plan.get("integrity"),
-            "captured_at": _as_utc_naive(plan["captured_at"]), "exposed_at": _as_utc_naive(exposed_at),
+            "captured_at": _as_utc_naive(plan["captured_at"]), "exposed_at": _as_utc_naive(exposed_at), "exposure_basis": exposure_basis,
             "plan_as_of": plan_as_of, "request_as_of": req_as_of, "same_origin": plan_as_of == req_as_of,
-            "identity_fidelity": mapping["identity_fidelity"], "coverage": mapping["coverage"], "line_count": len(plan["lines"])}
+            "identity_fidelity": mapping["identity_fidelity"], "coverage": mapping["coverage"], "line_count": len(plan["lines"]),
+            "lines_beyond_horizon": mapping.get("lines_beyond_horizon", 0)}
 
 
 # ── shadow comparison records ─────────────────────────────────────────────────
@@ -235,8 +308,9 @@ def read_comparison(conn: Any, operator: str, comparison_id: str) -> dict[str, A
 
 
 def first_exposure(conn: Any, operator: str, plan_id: str) -> datetime | None:
-    """The earliest moment a recommendation was compared against this plan family's origin: later captures
-    for the same origin are 'after exposure' and cannot be the baseline of that comparison."""
+    """The earliest recorded exposure of a recommendation for this plan family's origin across every stored
+    comparison (whatever version they used): a repeated comparison never resets it, and a capture after it is
+    not an independent baseline for this origin."""
     ensure_tables(conn)
     rows = _rows(conn, "SELECT MIN(c.exposed_at) AS first FROM zaad_shadow_comparisons c JOIN zaad_operator_plans p ON p.plan_id = c.plan_id "
                        "WHERE c.operator_id = ? AND p.plan_key = (SELECT plan_key FROM zaad_operator_plans WHERE plan_id = ? AND operator_id = ?)",

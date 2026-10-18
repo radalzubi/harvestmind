@@ -36,14 +36,45 @@ validated on synthetic data; NOT validated on real operator data.** Open for ind
   a planner report from either path, so a job report and a synchronous report carry the same
   `decision_reference` in a shadow comparison.
 
+## Corrective pass (independent review of 2e738e0)
+
+- **Explicit supersession.** A changed plan for an origin that already has a version must name the latest
+  version in `supersedes`; missing, stale or wrong ids are refused; a first capture may not name one; an identical
+  retry stays idempotent. The new version is written in a transaction and the schema's UNIQUE (operator, origin,
+  version) and UNIQUE (operator, origin, content hash) constraints decide a race: two corrections of one version
+  cannot both land, whatever each read first (the loser gets a refusal, nothing of it remains). Status is derived
+  from whether a later version exists; no row is ever updated. A failed write rolls back head and lines together.
+- **Planning-problem identity for job baselines.** A `baseline_job_id` is accepted only when the job's
+  `information_hash` (the planner's sha256 of the full Request JSON: origin, SKU and source scope, horizon and
+  period, service targets, inventory and pipeline state, supplier terms, scenario settings, seed and solve budget)
+  equals the fingerprint of the request built now for the plan's origin with the same parameters. A different
+  origin, missing fingerprint, unfinished job or any other difference is a 409 refusal, never a silent proceed.
+- **Exposure timing.** `exposed_at` is the earliest recorded instant a recommendation for the origin was
+  accessible: the earliest finished planning job for that origin in the job store (whether or not it was
+  referenced), or the earliest stored comparison for the plan family; a repeated comparison never moves it later,
+  and client-supplied times never set it. Captures at or after it are NOT READY. A synchronous run that has no
+  recorded evidence of earlier exposure is `UNVERIFIED` and the comparison is CONDITIONAL (compared and labelled,
+  but not claimed as a pre-exposure shadow difference), because earlier synchronous recommendations are not
+  recorded. READY is therefore reachable only through the job path.
+- **Other checks.** Non-finite quantities and periods outside 0..52 are refused; repeated lines with one business
+  key and no distinguishing reference are refused rather than summed; lines beyond the horizon and plans the
+  settlement cannot score as recorded (for example a quantity that violates a declared case multiple) are
+  CONDITIONAL with no shadow claim; integrity also checks the stored line count; the job path tolerates a service
+  without a job store only for synchronous comparisons.
+
 ## Tests
 
-- `tests/unit/test_operator_plan_capture.py` (10): canonical hashing and idempotency; correction versions and
+- `tests/unit/test_operator_plan_capture.py` (13): explicit supersession (missing, stale, wrong, first-capture), concurrent
+  corrections through the constraint (barrier-synchronised writers on separate cursors), rollback after a failed line write,
+  non-finite and out-of-range inputs, repeated lines, unverified exposure, lines beyond horizon and unscorable plans; plus canonical hashing and idempotency; correction versions and
   intact old rows; validation and refused provenances; tampered snapshot blocks readiness; interleaved captures
   with retries; mapping by supplier and destination (never SKU alone, no guessing in a network); multi-line
   plans; readiness matrix and permissions; transformed and not-ready contracts; a bare incumbent order set is
   still not an operator plan.
-- `tests/integration/test_shadow_comparison_api.py` (4, SYNTHETIC sample): capture, retry, viewer refused,
+- `tests/integration/test_shadow_comparison_api.py` (6, SYNTHETIC sample): job path READY with matching fingerprint; 409 refusals
+  for horizon, service target, SKU scope, solve budget, origin, missing identity, unfinished job and changed workspace state;
+  post-exposure correction NOT READY; exposure unchanged on repeat; synchronous run after a job inherits the job's exposure;
+  unscorable plan CONDITIONAL; plus capture, retry, viewer refused,
   compare (READY / EXACT, quantities, modelled costs, stored record, reproducible figures); incomplete identity
   and superseded versions are CONDITIONAL; synchronous and job reports refine to identical provenance; a plan
   captured at or after exposure cannot be the baseline.

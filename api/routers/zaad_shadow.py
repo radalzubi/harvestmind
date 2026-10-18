@@ -15,6 +15,7 @@ version, hash and request fingerprint it used; nothing here writes a purchase or
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import datetime, timezone
 from typing import Annotated, Any, Literal
@@ -108,12 +109,43 @@ def refine_report(report: dict[str, Any], *, rule_provenance: str | None, req: A
     return out
 
 
+def request_fingerprint(req: Any) -> str:
+    """The planner's own request identity: sha256 of the full Request JSON (every decision-relevant input: origin,
+    SKUs, sources, horizon and period, service targets, inventory, pipeline, terms, scenarios, seed, solve budget)."""
+    return hashlib.sha256(req.model_dump_json().encode()).hexdigest()
+
+
+def earliest_job_exposure(store: Any, operator: str, as_of: datetime, *, limit: int = 200) -> tuple[datetime | None, str | None]:
+    """The earliest finished planning job of this operator whose recommendation was for `as_of`: from that moment a
+    recommendation for the origin was accessible, whether or not a comparison referenced it."""
+    earliest: datetime | None = None
+    which: str | None = None
+    try:
+        rows = store.list(operator, limit=limit)
+    except Exception:  # noqa: BLE001 - a store that cannot list leaves exposure unverified, never earlier
+        return None, None
+    for row in rows:
+        if row.get("status") != "DONE" or not row.get("finished_at"):
+            continue
+        try:
+            job = store.get(str(row["id"]), operator)
+        except KeyError:
+            continue
+        report = job.get("report") or {}
+        if not report.get("as_of") or _utc(report["as_of"]) != as_of:
+            continue
+        finished = _utc(job["finished_at"])
+        if earliest is None or finished < earliest:
+            earliest, which = finished, str(row["id"])
+    return earliest, which
+
+
 def shadow_result(req: Any, build: dict[str, Any], report: dict[str, Any], plan: dict[str, Any], *, latest_version: int, exposed_at: datetime,
-                  recommendation_source: str, max_solve_seconds: float) -> dict[str, Any]:
+                  recommendation_source: str, max_solve_seconds: float, exposure_basis: str = "UNVERIFIED") -> dict[str, Any]:
     """The comparison of ZAAD's recommendation (already produced, without the plan) against the captured plan,
     both settled on the planner's own worlds. Pure: no persistence."""
     mapping = operator_plans.map_plan_to_request(plan, req)
-    evidence = operator_plans.shadow_evidence(plan, mapping, req=req, exposed_at=exposed_at, latest_version=latest_version)
+    evidence = operator_plans.shadow_evidence(plan, mapping, req=req, exposed_at=exposed_at, latest_version=latest_version, exposure_basis=exposure_basis)
     rule_prov = ((build or {}).get("incumbent_rule") or {}).get("provenance")
     recommended: dict[tuple[str, int], float] = {}
     for a in report.get("actions") or []:
@@ -126,6 +158,8 @@ def shadow_result(req: Any, build: dict[str, Any], report: dict[str, Any], plan:
     identified_units = float(sum(mapping["purchases"].values()))
     evaluated_units = float(plan_eval.get("units") or 0.0)
     transformed = abs(identified_units - evaluated_units) > 1e-6
+    if scored is not None and (plan_eval.get("costs") is None or zaad_eval.get("costs") is None):
+        evidence["unscorable"] = "; ".join(plan_eval.get("unusable_reasons") or zaad_eval.get("unusable_reasons") or ["a scenario world could not be settled"])[:300]
     contract = comparator.shadow_comparison(evidence, status=report.get("status"), selected_policy=report.get("selected_policy"),
                                             rule_provenance=rule_prov, transformed=transformed)
     costs_plan, costs_zaad = plan_eval.get("costs"), zaad_eval.get("costs")
@@ -165,31 +199,56 @@ async def compare_plan(plan_id: str, who: Who, conn=Depends(get_conn), horizon: 
     subset = skus or ",".join(sorted({ln["sku"] for ln in plan["lines"]}))
     req, build = await run_in_threadpool(_workspace_request_at, conn, operator, horizon, service_target, subset, max_solve_seconds, as_of, _workspace_request)
     rule_prov = ((build or {}).get("incumbent_rule") or {}).get("provenance")
+    try:
+        store = runner().store
+    except HTTPException:
+        store = None                      # no job store on this service: no job-based exposure evidence, and no job path
     if baseline_job_id:
+        if store is None:
+            raise HTTPException(503, {"code": "job_store_unavailable", "message": "this service has no job store, so a planning job cannot be referenced"})
         try:
-            job = runner().store.get(baseline_job_id, operator)
+            job = store.get(baseline_job_id, operator)
         except KeyError as exc:
             raise HTTPException(404, "That planning job is not in this workspace.") from exc
         if job.get("status") != "DONE" or not job.get("report"):
             raise HTTPException(409, {"code": "job_not_done", "message": f"job {baseline_job_id} is {job.get('status')}; the comparison needs a finished recommendation"})
         report = job["report"]
-        if _utc(report.get("as_of")) != as_of:
+        if not report.get("as_of") or _utc(report.get("as_of")) != as_of:
             raise HTTPException(409, {"code": "origin_mismatch", "message": "that job planned a different origin than the captured plan"})
+        # the job's recommendation must rest on the SAME planning problem the plan is settled under: the planner's request
+        # fingerprint covers origin, SKU and source scope, horizon and period, service targets, inventory and pipeline
+        # state, supplier terms, scenario settings and seed; a different fingerprint is a different problem
+        current = request_fingerprint(req)
+        if not report.get("information_hash"):
+            raise HTTPException(409, {"code": "request_identity_missing", "message": "that job's report carries no request fingerprint, so its planning problem cannot be matched to the plan"})
+        if report["information_hash"] != current:
+            raise HTTPException(409, {"code": "request_mismatch", "message":
+                                      "that job's recommendation was produced for a different planning problem than the one this plan is settled under "
+                                      "(the request fingerprint differs: the SKU or source scope, horizon, service target, solve budget, or the workspace's "
+                                      "inventory, open orders, terms or scenario settings have changed). Run the comparison without baseline_job_id, or a fresh job."})
         exposed_at = _utc(job.get("finished_at") or job.get("created_at") or datetime.now(timezone.utc))
-        source = f"JOB:{baseline_job_id}"
+        source, basis = f"JOB:{baseline_job_id}", "JOB_FINISHED"
     else:
         report = await compute(req)
         exposed_at = datetime.now(timezone.utc)
-        source = "SYNC"
+        source, basis = "SYNC", "UNVERIFIED"
+    # first exposure for this origin is the earliest evidence on record, never this call's clock alone: an earlier finished
+    # job for the origin, or an earlier stored comparison; a repeated comparison cannot move it later
+    job_first, job_first_id = (await run_in_threadpool(earliest_job_exposure, store, operator, as_of)) if store is not None else (None, None)
+    if job_first is not None and job_first < exposed_at:
+        exposed_at, basis, source = job_first, "JOB_FINISHED", source + f"; first exposure JOB:{job_first_id}"
+    prior = operator_plans.first_exposure(conn, operator, plan_id)
+    if prior is not None and prior.replace(tzinfo=timezone.utc) < exposed_at:
+        exposed_at, basis = prior.replace(tzinfo=timezone.utc), "PRIOR_COMPARISON"
     report = refine_report(report, rule_provenance=rule_prov, req=req)
     result = await run_in_threadpool(shadow_result, req, build, report, plan, latest_version=latest_version, exposed_at=exposed_at,
-                                     recommendation_source=source, max_solve_seconds=max_solve_seconds)
+                                     recommendation_source=source, max_solve_seconds=max_solve_seconds, exposure_basis=basis)
     identity = operator_plans.store_comparison(conn, operator, plan=plan, as_of=as_of, request_hash=report.get("information_hash"),
                                                recommendation_source=source, exposed_at=exposed_at, status="DONE", result=result)
     governance.record_audit(conn, who, object_type="shadow_comparison", object_id=identity, action="shadow_comparison_recorded",
                             context={"plan_id": plan_id, "version": plan["version"], "readiness": result["contract"]["readiness"], "source": source})
     return {"comparison_id": identity, "plan_id": plan_id, "plan_version": plan["version"], "as_of": as_of.isoformat(), "recommendation_source": source,
-            **result, "executable_purchase_order": False}
+            "exposure": {"exposed_at": exposed_at.isoformat(), "basis": basis}, **result, "executable_purchase_order": False}
 
 
 def _workspace_request_at(conn, operator, horizon, service_target, skus, max_solve_seconds, as_of, _workspace_request):

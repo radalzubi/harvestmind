@@ -204,6 +204,13 @@ def shadow_readiness(evidence: dict[str, Any] | None) -> dict[str, Any]:
     if evidence.get("line_count", 0) == 0:
         blockers.append("the plan has no lines")
     identity = evidence.get("identity_fidelity")
+    if evidence.get("exposure_basis") == "UNVERIFIED":
+        reasons.append("the first exposure of ZAAD's recommendation for this origin is not recorded (only this synchronous run is known); "
+                       "an earlier unrecorded recommendation cannot be excluded, so the comparison is not claimed as pre-exposure")
+    if evidence.get("lines_beyond_horizon"):
+        reasons.append(f"{evidence.get('lines_beyond_horizon')} plan line(s) fall beyond the planning horizon and are not evaluated")
+    if evidence.get("unscorable"):
+        reasons.append(f"the settlement could not score the plan on every scenario world ({evidence.get('unscorable')}); no modelled difference is claimed")
     if evidence.get("version") != evidence.get("latest_version"):
         reasons.append(f"a later version (v{evidence.get('latest_version')}) supersedes the one compared (v{evidence.get('version')}); the comparison stands for v{evidence.get('version')}")
     if identity == INCOMPLETE:
@@ -216,6 +223,8 @@ def shadow_readiness(evidence: dict[str, Any] | None) -> dict[str, Any]:
         readiness, fidelity = CONDITIONAL, (INCOMPLETE if identity == INCOMPLETE else EXACT)
     else:
         readiness, fidelity = READY, EXACT
+    if readiness == CONDITIONAL and identity == EXACT and (evidence.get("lines_beyond_horizon") or evidence.get("unscorable")):
+        fidelity = TRANSFORMED if evidence.get("lines_beyond_horizon") else fidelity
     return {"mode": SHADOW_COMPARISON_MODE, "readiness": readiness, "fidelity": fidelity, "requires": ACTUAL_OPERATOR_PLAN,
             "claim_class": SHADOW_COMPARISON if readiness != NOT_READY_FOR_THIS_DECISION else None,
             "permissions": _permissions(can_recommend=True, can_compare=readiness != NOT_READY_FOR_THIS_DECISION,

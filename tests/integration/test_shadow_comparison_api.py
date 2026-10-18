@@ -2,7 +2,9 @@
 plan's origin, settle both on the planner's worlds, store the comparison immutably."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import time
+from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
 
 import duckdb
 import pytest
@@ -62,9 +64,12 @@ def test_capture_compare_and_store(vault):
     assert out.status_code == 201, out.text
     body = out.json()
     contract = body["contract"]
-    assert contract["mode"] == "SHADOW_COMPARISON_MODE" and contract["readiness"] == "READY" and contract["comparator"]["type"] == "ACTUAL_OPERATOR_PLAN"
-    assert contract["comparator"]["fidelity"] == "EXACT" and contract["claim_class"] == "SHADOW_COMPARISON"
-    assert contract["permissions"]["can_claim_shadow_difference"] is True and contract["permissions"]["can_claim_realized_value"] is False
+    # a synchronous run cannot prove it was the FIRST exposure of a recommendation for this origin (earlier synchronous runs are
+    # not recorded), so the comparison is CONDITIONAL: compared, labelled, but not claimed as a pre-exposure shadow difference
+    assert contract["mode"] == "SHADOW_COMPARISON_MODE" and contract["readiness"] == "CONDITIONAL" and contract["comparator"]["type"] == "ACTUAL_OPERATOR_PLAN"
+    assert contract["comparator"]["fidelity"] == "EXACT" and contract["claim_class"] == "SHADOW_COMPARISON" and body["exposure"]["basis"] == "UNVERIFIED"
+    assert contract["permissions"]["can_claim_shadow_difference"] is False and contract["permissions"]["can_claim_realized_value"] is False
+    assert any("not recorded" in r for r in contract["caveats"])
     assert contract["decision_reference"]["provenance"] == "INFERRED_FROM_HISTORY" and body["recommendation"]["decision_reference"]["fidelity"] == "RECONSTRUCTED"
     q = body["quantities"]
     assert q["recorded_plan_units"] == 1200 and q["identified_plan_units"] == 1200 and q["model_evaluated_plan_units"] == 1200 and q["unidentified_lines"] == 0
@@ -74,7 +79,7 @@ def test_capture_compare_and_store(vault):
     assert body["lines"][0]["fidelity"] == "EXACT" and body["lines"][0]["source"] == f"src_{SKU}"
     stored = cl.get(f"/api/zaad/shadow/comparisons/{body['comparison_id']}").json()
     assert stored["plan_hash"] == plan["content_hash"] and stored["request_hash"] == body["recommendation"]["information_hash"] and stored["status"] == "DONE"
-    assert stored["result"]["contract"]["readiness"] == "READY" and stored["recommendation_source"] == "SYNC"
+    assert stored["result"]["contract"]["readiness"] == "CONDITIONAL" and stored["recommendation_source"] == "SYNC"
     # the comparison is reproducible: same plan, same request, same modelled figures
     second = cl.post(f"/api/zaad/shadow/plans/{plan['plan_id']}/compare", params={"horizon": 8, "max_solve_seconds": 5}).json()
     assert second["modelled"]["operator_plan"]["costs"] == m["operator_plan"]["costs"] and second["recommendation"]["information_hash"] == body["recommendation"]["information_hash"]
@@ -93,6 +98,9 @@ def test_incomplete_identity_and_superseded_versions_are_conditional(vault):
     assert corrected["version"] == 2
     old = cl.post(f"/api/zaad/shadow/plans/{anonymous['plan_id']}/compare", params={"horizon": 8, "max_solve_seconds": 5}).json()
     assert old["contract"]["readiness"] == "CONDITIONAL" and any("supersedes" in r for r in old["contract"]["caveats"])
+    # a correction without naming the version it replaces is refused at the API
+    refused = cl.post("/api/zaad/shadow/plans", json={"as_of": "2025-09-08T00:00:00Z", "provenance": "OPERATOR_UPLOADED", "lines": [{"sku": SKU, "quantity": 501}]})
+    assert refused.status_code == 422 and "supersedes" in refused.text
 
 
 def test_sync_and_job_reports_carry_the_same_provenance(vault):
@@ -107,11 +115,93 @@ def test_sync_and_job_reports_carry_the_same_provenance(vault):
 
 
 def test_a_plan_captured_after_the_recommendation_cannot_be_its_baseline(vault):
-    plan = OP.capture_plan(vault, OPERATOR, as_of=datetime(2025, 9, 1, tzinfo=timezone.utc), lines=[{"sku": SKU, "supplier_id": "SUP-001", "quantity": 10}],
+    origin = datetime(2025, 9, 22, tzinfo=timezone.utc)
+    plan = OP.capture_plan(vault, OPERATOR, as_of=origin, lines=[{"sku": SKU, "supplier_id": "SUP-001", "quantity": 10}],
                            provenance="OPERATOR_SUBMITTED", captured_by="b")
-    req, _ = build_request(vault, OPERATOR, as_of=datetime(2025, 9, 1, tzinfo=timezone.utc), horizon=8, skus=[SKU])
+    req, _ = build_request(vault, OPERATOR, as_of=origin, horizon=8, skus=[SKU])
     mapping = OP.map_plan_to_request(plan, req)
-    before = OP.shadow_evidence(plan, mapping, req=req, exposed_at=datetime.fromisoformat(plan["captured_at"]).replace(tzinfo=None) - __import__("datetime").timedelta(seconds=1), latest_version=plan["version"])
+    captured_at = datetime.fromisoformat(plan["captured_at"]).replace(tzinfo=None)
+    before = OP.shadow_evidence(plan, mapping, req=req, exposed_at=captured_at - timedelta(seconds=1), latest_version=plan["version"], exposure_basis="JOB_FINISHED")
     assert C.shadow_readiness(before)["readiness"] == "NOT_READY_FOR_THIS_DECISION"
-    after = OP.shadow_evidence(plan, mapping, req=req, exposed_at=datetime.fromisoformat(plan["captured_at"]).replace(tzinfo=None) + __import__("datetime").timedelta(seconds=1), latest_version=plan["version"])
-    assert C.shadow_readiness(after)["readiness"] in ("READY", "CONDITIONAL")
+    after = OP.shadow_evidence(plan, mapping, req=req, exposed_at=captured_at + timedelta(seconds=1), latest_version=plan["version"], exposure_basis="JOB_FINISHED")
+    assert C.shadow_readiness(after)["readiness"] == "READY"
+    unverified = OP.shadow_evidence(plan, mapping, req=req, exposed_at=captured_at + timedelta(seconds=1), latest_version=plan["version"])
+    assert C.shadow_readiness(unverified)["readiness"] == "CONDITIONAL"
+
+
+class FakeStore:
+    """A job store with finished planning jobs and their reports, for the baseline_job_id path."""
+
+    def __init__(self, jobs: dict[str, dict]):
+        self.jobs = jobs
+
+    def list(self, operator, limit=50, purpose=None):
+        return [{"id": k, "status": v["status"], "finished_at": v.get("finished_at")} for k, v in self.jobs.items()]
+
+    def get(self, identity, operator):
+        if identity not in self.jobs:
+            raise KeyError(identity)
+        return self.jobs[identity]
+
+
+def test_job_path_requires_the_same_planning_problem_and_records_first_exposure(vault, monkeypatch):
+    from api.routers import zaad_full
+    from zaad.full.planner import plan as run_planner
+    cl = _client(vault)
+    origin = datetime(2025, 9, 15, tzinfo=timezone.utc)
+    supplier = vault.execute("SELECT supplier_id FROM stg_fmcg_skus WHERE sku = ?", [SKU]).fetchone()[0]
+    # 1. the operator captures first
+    captured = cl.post("/api/zaad/shadow/plans", json={"as_of": origin.isoformat(), "provenance": "OPERATOR_SUBMITTED", "lines": [{"sku": SKU, "supplier_id": supplier, "quantity": 960}]}).json()      # a case multiple: scorable as recorded
+    # 2. ZAAD's recommendation for the same planning problem finishes afterwards, as a job
+    req, _ = build_request(vault, OPERATOR, as_of=origin, horizon=8, skus=[SKU], max_solve_seconds=5.)
+    report = run_planner(req)
+    finished = datetime.now(timezone.utc)                     # the job finished now: after the capture, before any correction
+    jobs = {"job_ok": {"status": "DONE", "report": report, "finished_at": finished.isoformat(), "created_at": finished.isoformat()},
+            "job_other_origin": {"status": "DONE", "report": {**report, "as_of": "2025-09-08T00:00:00+00:00"}, "finished_at": finished.isoformat()},
+            "job_no_identity": {"status": "DONE", "report": {k: v for k, v in report.items() if k != "information_hash"}, "finished_at": finished.isoformat()},
+            "job_running": {"status": "RUNNING", "report": None}}
+    monkeypatch.setattr(zaad_full, "runner", lambda: SimpleNamespace(store=FakeStore(jobs)))
+    params = {"horizon": 8, "max_solve_seconds": 5, "skus": SKU, "baseline_job_id": "job_ok"}
+    ok = cl.post(f"/api/zaad/shadow/plans/{captured['plan_id']}/compare", params=params)
+    assert ok.status_code == 201, ok.text
+    body = ok.json()
+    assert body["exposure"]["basis"] == "JOB_FINISHED" and body["contract"]["readiness"] == "READY" and body["contract"]["permissions"]["can_claim_shadow_difference"] is True, body["contract"]["caveats"]
+    assert body["recommendation"]["information_hash"] == report["information_hash"] and body["recommendation"]["decision_reference"]["provenance"] == "INFERRED_FROM_HISTORY"
+    # a different planning problem is refused, whatever matched
+    for change, code in (({"horizon": 12}, "request_mismatch"), ({"service_target": 0.9}, "request_mismatch"), ({"skus": f"{SKU},SKU-0002"}, "request_mismatch"),
+                         ({"max_solve_seconds": 10}, "request_mismatch"), ({"baseline_job_id": "job_other_origin"}, "origin_mismatch"),
+                         ({"baseline_job_id": "job_no_identity"}, "request_identity_missing"), ({"baseline_job_id": "job_running"}, "job_not_done")):
+        r = cl.post(f"/api/zaad/shadow/plans/{captured['plan_id']}/compare", params={**params, **change})
+        assert r.status_code == 409 and r.json()["detail"]["code"] == code, (change, r.text)
+    assert cl.post(f"/api/zaad/shadow/plans/{captured['plan_id']}/compare", params={**params, "baseline_job_id": "job_missing"}).status_code == 404
+    # a changed workspace state (a new recorded order before the origin) is a different planning problem
+    vault.execute("BEGIN")
+    vault.execute("INSERT INTO stg_fmcg_purchase_orders (po_id, po_date, supplier_id, sku, qty_ordered, unit_cost) VALUES ('H3B-STATE', DATE '2025-09-08', ?, ?, 10, 1.0)", [supplier, SKU])
+    try:
+        changed = cl.post(f"/api/zaad/shadow/plans/{captured['plan_id']}/compare", params=params)
+        assert changed.status_code == 409 and changed.json()["detail"]["code"] == "request_mismatch"
+    finally:
+        vault.execute("ROLLBACK")
+    # 3. a correction captured AFTER the recommendation was exposed cannot be its baseline, and exposure never moves later
+    time.sleep(0.05)
+    later = cl.post("/api/zaad/shadow/plans", json={"as_of": origin.isoformat(), "provenance": "OPERATOR_SUBMITTED", "supersedes": captured["plan_id"],
+                                                     "lines": [{"sku": SKU, "supplier_id": supplier, "quantity": 984}]}).json()
+    assert later["version"] == 2
+    after = cl.post(f"/api/zaad/shadow/plans/{later['plan_id']}/compare", params=params).json()
+    assert after["contract"]["readiness"] == "NOT_READY_FOR_THIS_DECISION" and any("at or after" in r for r in after["contract"]["caveats"])
+    again = cl.post(f"/api/zaad/shadow/plans/{captured['plan_id']}/compare", params=params).json()           # the superseded v1, compared again
+    assert again["exposure"]["exposed_at"] == body["exposure"]["exposed_at"] and again["contract"]["readiness"] == "CONDITIONAL"      # superseded, exposure unchanged
+    # 4. a synchronous comparison for an origin that already has a finished job takes that job's finish as the exposure
+    sync = cl.post(f"/api/zaad/shadow/plans/{later['plan_id']}/compare", params={"horizon": 8, "max_solve_seconds": 5}).json()
+    assert sync["exposure"]["basis"] == "JOB_FINISHED" and sync["contract"]["readiness"] == "NOT_READY_FOR_THIS_DECISION"
+
+
+def test_a_plan_the_settlement_cannot_score_as_recorded_gets_no_claim(vault):
+    cl = _client(vault)
+    supplier = vault.execute("SELECT supplier_id FROM stg_fmcg_skus WHERE sku = ?", [SKU]).fetchone()[0]
+    plan = cl.post("/api/zaad/shadow/plans", json={"as_of": "2025-09-29T00:00:00Z", "provenance": "OPERATOR_SUBMITTED",
+                                                    "lines": [{"sku": SKU, "supplier_id": supplier, "quantity": 900}]}).json()    # not a multiple of the declared case (24)
+    out = cl.post(f"/api/zaad/shadow/plans/{plan['plan_id']}/compare", params={"horizon": 8, "max_solve_seconds": 5}).json()
+    assert out["contract"]["readiness"] == "CONDITIONAL" and out["contract"]["permissions"]["can_claim_shadow_difference"] is False
+    assert any("could not score the plan" in r for r in out["contract"]["caveats"]) and out["modelled"]["operator_plan"]["costs"] is None
+    assert out["modelled"]["cost_difference_plan_minus_zaad"] is None and out["quantities"]["recorded_plan_units"] == 900

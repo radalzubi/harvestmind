@@ -14,11 +14,14 @@ CREATE TABLE IF NOT EXISTS zaad_operator_plans (
     source_reference    VARCHAR,                -- the operator's own reference (an ERP export name, a draft id)
     content_hash        VARCHAR NOT NULL,       -- sha256 of the canonical line set
     line_count          INTEGER NOT NULL,
-    status              VARCHAR NOT NULL,       -- CAPTURED | SUPERSEDED
-    supersedes_plan_id  VARCHAR,
+    supersedes_plan_id  VARCHAR,                -- the version this one corrects (required from version 2 on)
     note                VARCHAR,
-    created_at          TIMESTAMP NOT NULL
+    created_at          TIMESTAMP NOT NULL,
+    PRIMARY KEY (plan_id),
+    UNIQUE (operator_id, plan_key, version),           -- two corrections of one version cannot both land
+    UNIQUE (operator_id, plan_key, content_hash)       -- identical content is one version, however often it is sent
 );
+-- a version's status (CAPTURED or SUPERSEDED) is derived from whether a later version exists; no row is updated
 CREATE TABLE IF NOT EXISTS zaad_operator_plan_lines (
     plan_id             VARCHAR NOT NULL,
     operator_id         VARCHAR NOT NULL,
