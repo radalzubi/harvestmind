@@ -1,0 +1,3857 @@
+{
+ "run_manifest": {
+  "stage": "all",
+  "coupling": "coupled_cash",
+  "commit": "c149503e4fc49756a46951cc964c9766e8388c76",
+  "declaration": {
+   "fixed_order_cost": 40.0,
+   "mov_weeks": 0.5,
+   "pallet_weeks": 1.5,
+   "pallets_cap": 6,
+   "case_multiple": 6.0,
+   "minimum_cases": 2.0,
+   "cash_weeks": 4.0,
+   "credit_weeks": 1.0,
+   "margin_fraction": 0.3,
+   "holding_annual": 0.25,
+   "cost_of_capital_annual": 0.1,
+   "salvage_fraction": 0.8,
+   "shelf_life_weeks": 26,
+   "opening_cover_weeks": 2.0,
+   "service_target": 0.95,
+   "line_capacity_multiple": 20.0,
+   "zaad_incumbent_rule": "economic_lot",
+   "horizon_weeks": 8,
+   "history_weeks": 52,
+   "max_group": 6,
+   "scenarios": 3,
+   "max_solve_seconds": 40.0,
+   "version": "m5-coupled-declaration-1",
+   "hash": "f0d394d2e349079933cb5ad86243a2bf29ea34d85d3a6e0353ecaf2d8bb16e27",
+   "supply_scenarios": {
+    "stable": {
+     "name": "stable",
+     "lead_days": 14,
+     "lead_sd_days": 0.0,
+     "fill_mean": 1.0,
+     "fill_sd": 0.0,
+     "rationale": "two-week lead, on time, in full"
+    },
+    "uncertain": {
+     "name": "uncertain",
+     "lead_days": 14,
+     "lead_sd_days": 7.0,
+     "fill_mean": 0.9,
+     "fill_sd": 0.1,
+     "rationale": "two-week lead with a one-week spread and short deliveries"
+    },
+    "lead_only": {
+     "name": "lead_only",
+     "lead_days": 14,
+     "lead_sd_days": 7.0,
+     "fill_mean": 1.0,
+     "fill_sd": 0.0,
+     "rationale": "lead variability alone"
+    },
+    "fill_only": {
+     "name": "fill_only",
+     "lead_days": 14,
+     "lead_sd_days": 0.0,
+     "fill_mean": 0.9,
+     "fill_sd": 0.1,
+     "rationale": "fill variability alone"
+    },
+    "mild_lead": {
+     "name": "mild_lead",
+     "lead_days": 14,
+     "lead_sd_days": 3.0,
+     "fill_mean": 1.0,
+     "fill_sd": 0.0,
+     "rationale": "three-day spread: below the engine's half-period lateness slack on weekly periods (3.5 days)"
+    }
+   }
+  },
+  "selection_hash": "8b6067be83a4d7151261ab243fd51d982aeae9b1e4c40d4fb50e2f92c725fbe3",
+  "groups": [
+   [
+    "FOODS_3_794_CA_1_evaluation",
+    "FOODS_3_535_CA_1_evaluation",
+    "FOODS_2_107_CA_1_evaluation",
+    "HOUSEHOLD_1_277_CA_1_evaluation",
+    "HOUSEHOLD_2_123_CA_1_evaluation",
+    "HOUSEHOLD_1_299_CA_1_evaluation"
+   ],
+   [
+    "FOODS_3_692_CA_2_evaluation",
+    "HOBBIES_1_144_CA_2_evaluation"
+   ],
+   [
+    "FOODS_2_318_CA_3_evaluation",
+    "HOBBIES_1_337_CA_3_evaluation",
+    "HOBBIES_1_210_CA_3_evaluation",
+    "HOUSEHOLD_1_095_CA_3_evaluation"
+   ],
+   [
+    "FOODS_1_218_CA_4_evaluation",
+    "FOODS_3_484_CA_4_evaluation",
+    "HOBBIES_1_158_CA_4_evaluation",
+    "HOBBIES_1_423_CA_4_evaluation",
+    "HOUSEHOLD_2_170_CA_4_evaluation",
+    "HOUSEHOLD_1_164_CA_4_evaluation"
+   ],
+   [
+    "FOODS_1_137_TX_1_evaluation",
+    "FOODS_1_049_TX_1_evaluation",
+    "HOBBIES_1_415_TX_1_evaluation",
+    "HOBBIES_1_279_TX_1_evaluation",
+    "HOBBIES_2_109_TX_1_evaluation",
+    "HOUSEHOLD_1_456_TX_1_evaluation"
+   ],
+   [
+    "FOODS_1_046_TX_2_evaluation",
+    "FOODS_3_671_TX_2_evaluation",
+    "HOBBIES_1_132_TX_2_evaluation",
+    "HOUSEHOLD_1_321_TX_2_evaluation",
+    "HOUSEHOLD_1_208_TX_2_evaluation",
+    "HOUSEHOLD_2_025_TX_2_evaluation"
+   ],
+   [
+    "FOODS_3_487_TX_3_evaluation",
+    "FOODS_1_014_TX_3_evaluation",
+    "FOODS_2_363_TX_3_evaluation",
+    "HOBBIES_1_029_TX_3_evaluation",
+    "HOBBIES_2_091_TX_3_evaluation"
+   ],
+   [
+    "FOODS_3_288_WI_1_evaluation",
+    "FOODS_3_129_WI_1_evaluation",
+    "HOBBIES_1_254_WI_1_evaluation",
+    "HOBBIES_1_408_WI_1_evaluation",
+    "HOUSEHOLD_1_226_WI_1_evaluation",
+    "HOUSEHOLD_2_109_WI_1_evaluation"
+   ],
+   [
+    "FOODS_3_752_WI_2_evaluation",
+    "FOODS_2_366_WI_2_evaluation"
+   ],
+   [
+    "FOODS_3_544_WI_3_evaluation",
+    "FOODS_3_050_WI_3_evaluation",
+    "FOODS_3_140_WI_3_evaluation",
+    "HOUSEHOLD_2_212_WI_3_evaluation"
+   ]
+  ],
+  "windows": {
+   "final": {
+    "origin": "2016-01-02",
+    "reviews": 13,
+    "rolling": true,
+    "role": "chronological holdout; truth runs to the last full Walmart week in the sales data, ending Friday 2016-05-20 (d_1939); the horizons of the last reviews overlap the public Kaggle evaluation period d_1914..d_1941 (2016-04-25..2016-05-22), which never informed development"
+   }
+  },
+  "scenarios": [
+   "stable",
+   "mild_lead",
+   "fill_only"
+  ],
+  "policies": [
+   "gated",
+   "economic_lot",
+   "reorder_point",
+   "periodic:1"
+  ],
+  "python": "3.12.14",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "wall_seconds": 1159.7940120697021,
+  "cpu_seconds_process": 865.912709,
+  "peak_rss_mb": 395.0,
+  "runs": 120,
+  "complete": 45,
+  "failed": 75
+ },
+ "group_table": {
+  "final|fill_only|economic_lot": {
+   "window": "final",
+   "scenario": "fill_only",
+   "policy": "economic_lot",
+   "runs": 10,
+   "complete": 6,
+   "failed": 4,
+   "statuses": {
+    "COMPLETE": 6,
+    "PHYSICAL_FAILURE": 4
+   },
+   "physical_failures": 4,
+   "abstained": 0,
+   "breach_reasons": {
+    "insufficient dated liquidity": 4
+   },
+   "continuation_cost": {
+    "mean": 2633.97613344513,
+    "median": 2027.9942041500183,
+    "max": 5219.844099382902,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2634.4554593124576,
+    "median": 2027.9942041500183,
+    "max": 5219.844099382902,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 565.6,
+    "median": 462.189,
+    "max": 1177.68,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 120.0,
+    "median": 120.0,
+    "max": 240.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 5.341588182797042,
+    "median": 5.404711828954641,
+    "max": 9.61510163820658,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 1656.1788914452425,
+    "median": 1335.9873353733187,
+    "max": 3422.312709195534,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": 286.22468717948715,
+    "median": 232.58234999999996,
+    "max": 530.3065384615384,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.43065906454160124,
+    "median": 0.4064181776879231,
+    "max": 0.6425344656735573,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 567.0144998858283,
+    "median": 555.3986184721366,
+    "max": 912.7555193684535,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 34.58064504657906,
+    "median": 32.05810200265533,
+    "max": 69.13187626154817,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.833333333333333,
+    "median": 5.5,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.16960026982357443,
+    "median": 0.12722216010733453,
+    "max": 0.33213914706945097,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 3.0,
+    "median": 3.0,
+    "max": 6.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 2.9444444444444446,
+    "median": 3.166666666666667,
+    "max": 4.0,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 322.0,
+    "median": 321.0,
+    "max": 600.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 34.58064504657906,
+    "median": 32.05810200265534,
+    "max": 69.13187626154817,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 11.166666666666666,
+    "median": 11.5,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 4.5,
+    "median": 5.0,
+    "max": 8.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 14.666666666666666,
+    "median": 15.0,
+    "max": 17.0,
+    "n": 6
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.15610515951023748,
+    "median": 0.15743020799709484,
+    "max": 0.22341583296656609,
+    "n": 6
+   }
+  },
+  "final|fill_only|gated": {
+   "window": "final",
+   "scenario": "fill_only",
+   "policy": "gated",
+   "runs": 10,
+   "complete": 1,
+   "failed": 9,
+   "statuses": {
+    "ABSTAIN": 9,
+    "COMPLETE": 1
+   },
+   "physical_failures": 0,
+   "abstained": 9,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 760.7714092062237,
+    "median": 760.7714092062237,
+    "max": 760.7714092062237,
+    "n": 1
+   },
+   "realized_cost": {
+    "mean": 760.7714092062237,
+    "median": 760.7714092062237,
+    "max": 760.7714092062237,
+    "n": 1
+   },
+   "purchase": {
+    "mean": 135.07199999999997,
+    "median": 135.07199999999997,
+    "max": 135.07199999999997,
+    "n": 1
+   },
+   "ordering": {
+    "mean": 40.0,
+    "median": 40.0,
+    "max": 40.0,
+    "n": 1
+   },
+   "carrying": {
+    "mean": 2.1431801568071944,
+    "median": 2.1431801568071944,
+    "max": 2.1431801568071944,
+    "n": 1
+   },
+   "shortage": {
+    "mean": 511.57026691923903,
+    "median": 511.57026691923903,
+    "max": 511.57026691923903,
+    "n": 1
+   },
+   "inventory_value_change": {
+    "mean": 71.71015384615384,
+    "median": 71.71015384615384,
+    "max": 71.71015384615384,
+    "n": 1
+   },
+   "service_unit_fill": {
+    "mean": 0.24542991215310425,
+    "median": 0.24542991215310425,
+    "max": 0.24542991215310425,
+    "n": 1
+   },
+   "unmet_units": {
+    "mean": 362.94821225435686,
+    "median": 362.94821225435686,
+    "max": 362.94821225435686,
+    "n": 1
+   },
+   "avg_inventory_units": {
+    "mean": 9.323284101257089,
+    "median": 9.323284101257089,
+    "max": 9.323284101257089,
+    "n": 1
+   },
+   "items_below_target": {
+    "mean": 2.0,
+    "median": 2.0,
+    "max": 2.0,
+    "n": 1
+   },
+   "min_item_fill": {
+    "mean": 0.22485209549127025,
+    "median": 0.22485209549127025,
+    "max": 0.22485209549127025,
+    "n": 1
+   },
+   "order_weeks": {
+    "mean": 1.0,
+    "median": 1.0,
+    "max": 1.0,
+    "n": 1
+   },
+   "lines_per_order_week": {
+    "mean": 2.0,
+    "median": 2.0,
+    "max": 2.0,
+    "n": 1
+   },
+   "units_ordered": {
+    "mean": 84.0,
+    "median": 84.0,
+    "max": 84.0,
+    "n": 1
+   },
+   "end_stock_mean": {
+    "mean": 9.323284101257089,
+    "median": 9.323284101257089,
+    "max": 9.323284101257089,
+    "n": 1
+   },
+   "breach_reviews": {
+    "mean": 10.0,
+    "median": 10.0,
+    "max": 10.0,
+    "n": 1
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 1
+   },
+   "projection_cut_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 1
+   },
+   "zaad_own_share": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 1
+   },
+   "zaad_retained_reviews": {
+    "mean": 13.0,
+    "median": 13.0,
+    "max": 13.0,
+    "n": 1
+   },
+   "wall_seconds": {
+    "mean": 2.9250953750452027,
+    "median": 2.9250953750452027,
+    "max": 2.9250953750452027,
+    "n": 1
+   }
+  },
+  "final|fill_only|periodic:1": {
+   "window": "final",
+   "scenario": "fill_only",
+   "policy": "periodic:1",
+   "runs": 10,
+   "complete": 7,
+   "failed": 3,
+   "statuses": {
+    "COMPLETE": 7,
+    "PHYSICAL_FAILURE": 3
+   },
+   "physical_failures": 3,
+   "abstained": 0,
+   "breach_reasons": {
+    "insufficient dated liquidity": 3
+   },
+   "continuation_cost": {
+    "mean": 2527.8255916400267,
+    "median": 2152.5098125772693,
+    "max": 5237.57772283227,
+    "n": 7
+   },
+   "realized_cost": {
+    "mean": 2528.2364423834506,
+    "median": 2152.5098125772693,
+    "max": 5237.57772283227,
+    "n": 7
+   },
+   "purchase": {
+    "mean": 526.0619999999999,
+    "median": 443.436,
+    "max": 1196.2859999999996,
+    "n": 7
+   },
+   "ordering": {
+    "mean": 102.85714285714286,
+    "median": 120.0,
+    "max": 160.0,
+    "n": 7
+   },
+   "carrying": {
+    "mean": 3.8487983435620055,
+    "median": 2.209014901174916,
+    "max": 9.342280102642112,
+    "n": 7
+   },
+   "shortage": {
+    "mean": 1632.2203911235742,
+    "median": 1428.2349212465026,
+    "max": 3382.595795964671,
+    "n": 7
+   },
+   "inventory_value_change": {
+    "mean": 262.2314461538461,
+    "median": 231.43292307692303,
+    "max": 530.3065384615384,
+    "n": 7
+   },
+   "service_unit_fill": {
+    "mean": 0.3779825438153114,
+    "median": 0.3836233367797274,
+    "max": 0.536078791296882,
+    "n": 7
+   },
+   "unmet_units": {
+    "mean": 520.2660913240899,
+    "median": 539.4366715759836,
+    "max": 941.8235414005766,
+    "n": 7
+   },
+   "avg_inventory_units": {
+    "mean": 21.85261046797084,
+    "median": 17.230378427163995,
+    "max": 70.67921353965468,
+    "n": 7
+   },
+   "items_below_target": {
+    "mean": 4.571428571428571,
+    "median": 5.0,
+    "max": 6.0,
+    "n": 7
+   },
+   "min_item_fill": {
+    "mean": 0.234608541266379,
+    "median": 0.2114563012088781,
+    "max": 0.41047194515098384,
+    "n": 7
+   },
+   "order_weeks": {
+    "mean": 2.5714285714285716,
+    "median": 3.0,
+    "max": 4.0,
+    "n": 7
+   },
+   "lines_per_order_week": {
+    "mean": 3.130952380952381,
+    "median": 3.0,
+    "max": 5.0,
+    "n": 7
+   },
+   "units_ordered": {
+    "mean": 234.0,
+    "median": 186.0,
+    "max": 396.0,
+    "n": 7
+   },
+   "end_stock_mean": {
+    "mean": 21.85261046797084,
+    "median": 17.230378427164,
+    "max": 70.67921353965468,
+    "n": 7
+   },
+   "breach_reviews": {
+    "mean": 10.142857142857142,
+    "median": 10.0,
+    "max": 11.0,
+    "n": 7
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 4.285714285714286,
+    "median": 5.0,
+    "max": 11.0,
+    "n": 7
+   },
+   "projection_cut_order_weeks": {
+    "mean": 11.428571428571429,
+    "median": 10.0,
+    "max": 17.0,
+    "n": 7
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.15461186914970831,
+    "median": 0.14030483295209706,
+    "max": 0.25054887495934963,
+    "n": 7
+   }
+  },
+  "final|fill_only|reorder_point": {
+   "window": "final",
+   "scenario": "fill_only",
+   "policy": "reorder_point",
+   "runs": 10,
+   "complete": 7,
+   "failed": 3,
+   "statuses": {
+    "COMPLETE": 7,
+    "PHYSICAL_FAILURE": 3
+   },
+   "physical_failures": 3,
+   "abstained": 0,
+   "breach_reasons": {
+    "insufficient dated liquidity": 3
+   },
+   "continuation_cost": {
+    "mean": 2526.5283256018556,
+    "median": 2152.5098125772693,
+    "max": 5231.974360565072,
+    "n": 7
+   },
+   "realized_cost": {
+    "mean": 2526.9391763452795,
+    "median": 2152.5098125772693,
+    "max": 5231.974360565072,
+    "n": 7
+   },
+   "purchase": {
+    "mean": 527.262,
+    "median": 443.436,
+    "max": 1196.2859999999998,
+    "n": 7
+   },
+   "ordering": {
+    "mean": 102.85714285714286,
+    "median": 120.0,
+    "max": 160.0,
+    "n": 7
+   },
+   "carrying": {
+    "mean": 3.829312037188562,
+    "median": 2.209014901174916,
+    "max": 9.464780102642113,
+    "n": 7
+   },
+   "shortage": {
+    "mean": 1629.7426113917766,
+    "median": 1428.2349212465026,
+    "max": 3377.2513378420863,
+    "n": 7
+   },
+   "inventory_value_change": {
+    "mean": 262.2314461538461,
+    "median": 231.43292307692303,
+    "max": 530.3065384615384,
+    "n": 7
+   },
+   "service_unit_fill": {
+    "mean": 0.3796247068881406,
+    "median": 0.3836233367797274,
+    "max": 0.5467549478805118,
+    "n": 7
+   },
+   "unmet_units": {
+    "mean": 519.2693700359575,
+    "median": 539.4366715759836,
+    "max": 941.8235414005766,
+    "n": 7
+   },
+   "avg_inventory_units": {
+    "mean": 21.885073083727455,
+    "median": 17.230378427163995,
+    "max": 71.67921353965468,
+    "n": 7
+   },
+   "items_below_target": {
+    "mean": 4.571428571428571,
+    "median": 5.0,
+    "max": 6.0,
+    "n": 7
+   },
+   "min_item_fill": {
+    "mean": 0.234608541266379,
+    "median": 0.2114563012088781,
+    "max": 0.41047194515098384,
+    "n": 7
+   },
+   "order_weeks": {
+    "mean": 2.5714285714285716,
+    "median": 3.0,
+    "max": 4.0,
+    "n": 7
+   },
+   "lines_per_order_week": {
+    "mean": 3.130952380952381,
+    "median": 3.0,
+    "max": 5.0,
+    "n": 7
+   },
+   "units_ordered": {
+    "mean": 234.85714285714286,
+    "median": 192.0,
+    "max": 396.0,
+    "n": 7
+   },
+   "end_stock_mean": {
+    "mean": 21.88507308372746,
+    "median": 17.230378427164,
+    "max": 71.67921353965468,
+    "n": 7
+   },
+   "breach_reviews": {
+    "mean": 10.0,
+    "median": 10.0,
+    "max": 11.0,
+    "n": 7
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 5.142857142857143,
+    "median": 6.0,
+    "max": 11.0,
+    "n": 7
+   },
+   "projection_cut_order_weeks": {
+    "mean": 10.857142857142858,
+    "median": 10.0,
+    "max": 15.0,
+    "n": 7
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.1525076788550775,
+    "median": 0.13893595896661282,
+    "max": 0.24206958408467472,
+    "n": 7
+   }
+  },
+  "final|mild_lead|economic_lot": {
+   "window": "final",
+   "scenario": "mild_lead",
+   "policy": "economic_lot",
+   "runs": 10,
+   "complete": 4,
+   "failed": 6,
+   "statuses": {
+    "PHYSICAL_FAILURE": 6,
+    "COMPLETE": 4
+   },
+   "physical_failures": 6,
+   "abstained": 0,
+   "breach_reasons": {
+    "insufficient dated liquidity": 6
+   },
+   "continuation_cost": {
+    "mean": 2143.2867414571006,
+    "median": 1986.3770107988164,
+    "max": 3842.745440680473,
+    "n": 4
+   },
+   "realized_cost": {
+    "mean": 2143.2867414571006,
+    "median": 1986.3770107988164,
+    "max": 3842.745440680473,
+    "n": 4
+   },
+   "purchase": {
+    "mean": 418.3305,
+    "median": 360.80100000000004,
+    "max": 816.6479999999999,
+    "n": 4
+   },
+   "ordering": {
+    "mean": 130.0,
+    "median": 120.0,
+    "max": 240.0,
+    "n": 4
+   },
+   "carrying": {
+    "mean": 4.012259171597632,
+    "median": 3.2961886834319523,
+    "max": 7.46404097633136,
+    "n": 4
+   },
+   "shortage": {
+    "mean": 1354.0283653846154,
+    "median": 1293.8525,
+    "max": 2319.8115384615385,
+    "n": 4
+   },
+   "inventory_value_change": {
+    "mean": 236.0078942307692,
+    "median": 207.62874999999997,
+    "max": 457.06392307692306,
+    "n": 4
+   },
+   "service_unit_fill": {
+    "mean": 0.42802384705817037,
+    "median": 0.402041946989097,
+    "max": 0.6598905922874316,
+    "n": 4
+   },
+   "unmet_units": {
+    "mean": 589.0192307692308,
+    "median": 548.5192307692307,
+    "max": 897.3846153846155,
+    "n": 4
+   },
+   "avg_inventory_units": {
+    "mean": 27.34689349112426,
+    "median": 29.939349112426033,
+    "max": 42.17455621301776,
+    "n": 4
+   },
+   "items_below_target": {
+    "mean": 5.0,
+    "median": 6.0,
+    "max": 6.0,
+    "n": 4
+   },
+   "min_item_fill": {
+    "mean": 0.13924215780528074,
+    "median": 0.11727290797058237,
+    "max": 0.2273678702250131,
+    "n": 4
+   },
+   "order_weeks": {
+    "mean": 3.25,
+    "median": 3.0,
+    "max": 6.0,
+    "n": 4
+   },
+   "lines_per_order_week": {
+    "mean": 2.6666666666666665,
+    "median": 2.5,
+    "max": 4.0,
+    "n": 4
+   },
+   "units_ordered": {
+    "mean": 345.0,
+    "median": 354.0,
+    "max": 588.0,
+    "n": 4
+   },
+   "end_stock_mean": {
+    "mean": 27.346893491124263,
+    "median": 29.939349112426036,
+    "max": 42.17455621301776,
+    "n": 4
+   },
+   "breach_reviews": {
+    "mean": 11.25,
+    "median": 11.5,
+    "max": 12.0,
+    "n": 4
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 4.0,
+    "median": 4.5,
+    "max": 7.0,
+    "n": 4
+   },
+   "projection_cut_order_weeks": {
+    "mean": 15.5,
+    "median": 16.0,
+    "max": 18.0,
+    "n": 4
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.15685190627118573,
+    "median": 0.1678940624697134,
+    "max": 0.21917545807082206,
+    "n": 4
+   }
+  },
+  "final|mild_lead|gated": {
+   "window": "final",
+   "scenario": "mild_lead",
+   "policy": "gated",
+   "runs": 10,
+   "complete": 2,
+   "failed": 8,
+   "statuses": {
+    "ABSTAIN": 8,
+    "COMPLETE": 2
+   },
+   "physical_failures": 0,
+   "abstained": 8,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 805.2967650517751,
+    "median": 805.2967650517751,
+    "max": 852.9460265532545,
+    "n": 2
+   },
+   "realized_cost": {
+    "mean": 805.2967650517751,
+    "median": 805.2967650517751,
+    "max": 852.9460265532545,
+    "n": 2
+   },
+   "purchase": {
+    "mean": 139.587,
+    "median": 139.587,
+    "max": 144.10199999999998,
+    "n": 2
+   },
+   "ordering": {
+    "mean": 40.0,
+    "median": 40.0,
+    "max": 40.0,
+    "n": 2
+   },
+   "carrying": {
+    "mean": 1.9999919008875735,
+    "median": 1.9999919008875735,
+    "max": 2.007365458579881,
+    "n": 2
+   },
+   "shortage": {
+    "mean": 547.5921153846155,
+    "median": 547.5921153846155,
+    "max": 586.5873076923077,
+    "n": 2
+   },
+   "inventory_value_change": {
+    "mean": 75.82601923076922,
+    "median": 75.82601923076922,
+    "max": 79.94188461538461,
+    "n": 2
+   },
+   "service_unit_fill": {
+    "mean": 0.3002022779066048,
+    "median": 0.3002022779066048,
+    "max": 0.35228365384615384,
+    "n": 2
+   },
+   "unmet_units": {
+    "mean": 284.46153846153845,
+    "median": 284.46153846153845,
+    "max": 361.6538461538462,
+    "n": 2
+   },
+   "avg_inventory_units": {
+    "mean": 9.427514792899409,
+    "median": 9.427514792899409,
+    "max": 11.520710059171599,
+    "n": 2
+   },
+   "items_below_target": {
+    "mean": 3.0,
+    "median": 3.0,
+    "max": 4.0,
+    "n": 2
+   },
+   "min_item_fill": {
+    "mean": 0.18992019884877026,
+    "median": 0.18992019884877026,
+    "max": 0.2273678702250131,
+    "n": 2
+   },
+   "order_weeks": {
+    "mean": 1.0,
+    "median": 1.0,
+    "max": 1.0,
+    "n": 2
+   },
+   "lines_per_order_week": {
+    "mean": 2.5,
+    "median": 2.5,
+    "max": 3.0,
+    "n": 2
+   },
+   "units_ordered": {
+    "mean": 78.0,
+    "median": 78.0,
+    "max": 84.0,
+    "n": 2
+   },
+   "end_stock_mean": {
+    "mean": 9.427514792899409,
+    "median": 9.427514792899409,
+    "max": 11.520710059171599,
+    "n": 2
+   },
+   "breach_reviews": {
+    "mean": 10.0,
+    "median": 10.0,
+    "max": 10.0,
+    "n": 2
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 2
+   },
+   "projection_cut_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 2
+   },
+   "zaad_own_share": {
+    "mean": 0.038461538461538464,
+    "median": 0.038461538461538464,
+    "max": 0.07692307692307693,
+    "n": 2
+   },
+   "zaad_retained_reviews": {
+    "mean": 12.5,
+    "median": 12.5,
+    "max": 13.0,
+    "n": 2
+   },
+   "wall_seconds": {
+    "mean": 3.6879351039533503,
+    "median": 3.6879351039533503,
+    "max": 4.427972916979343,
+    "n": 2
+   }
+  },
+  "final|mild_lead|periodic:1": {
+   "window": "final",
+   "scenario": "mild_lead",
+   "policy": "periodic:1",
+   "runs": 10,
+   "complete": 3,
+   "failed": 7,
+   "statuses": {
+    "PHYSICAL_FAILURE": 7,
+    "COMPLETE": 3
+   },
+   "physical_failures": 7,
+   "abstained": 0,
+   "breach_reasons": {
+    "insufficient dated liquidity": 7
+   },
+   "continuation_cost": {
+    "mean": 2265.344679363905,
+    "median": 906.4983538461538,
+    "max": 5130.493411464497,
+    "n": 3
+   },
+   "realized_cost": {
+    "mean": 2265.344679363905,
+    "median": 906.4983538461538,
+    "max": 5130.493411464497,
+    "n": 3
+   },
+   "purchase": {
+    "mean": 465.57,
+    "median": 131.712,
+    "max": 1154.538,
+    "n": 3
+   },
+   "ordering": {
+    "mean": 80.0,
+    "median": 80.0,
+    "max": 120.0,
+    "n": 3
+   },
+   "carrying": {
+    "mean": 4.26969400887574,
+    "median": 1.9473875739644968,
+    "max": 9.720001701183431,
+    "n": 3
+   },
+   "shortage": {
+    "mean": 1487.3111538461537,
+    "median": 634.6473076923077,
+    "max": 3313.889230769231,
+    "n": 3
+   },
+   "inventory_value_change": {
+    "mean": 227.31952564102562,
+    "median": 79.94188461538461,
+    "max": 530.3065384615384,
+    "n": 3
+   },
+   "service_unit_fill": {
+    "mean": 0.3173820264931676,
+    "median": 0.2960336538461538,
+    "max": 0.42046553614030563,
+    "n": 3
+   },
+   "unmet_units": {
+    "mean": 428.10256410256414,
+    "median": 367.6538461538462,
+    "max": 691.3846153846154,
+    "n": 3
+   },
+   "avg_inventory_units": {
+    "mean": 15.125246548323469,
+    "median": 6.414201183431952,
+    "max": 32.55029585798816,
+    "n": 3
+   },
+   "items_below_target": {
+    "mean": 3.3333333333333335,
+    "median": 4.0,
+    "max": 4.0,
+    "n": 3
+   },
+   "min_item_fill": {
+    "mean": 0.2530153944300383,
+    "median": 0.21376242804814236,
+    "max": 0.39281122776944505,
+    "n": 3
+   },
+   "order_weeks": {
+    "mean": 2.0,
+    "median": 2.0,
+    "max": 3.0,
+    "n": 3
+   },
+   "lines_per_order_week": {
+    "mean": 2.4444444444444446,
+    "median": 2.0,
+    "max": 3.3333333333333335,
+    "n": 3
+   },
+   "units_ordered": {
+    "mean": 158.0,
+    "median": 78.0,
+    "max": 342.0,
+    "n": 3
+   },
+   "end_stock_mean": {
+    "mean": 15.125246548323473,
+    "median": 6.414201183431953,
+    "max": 32.55029585798817,
+    "n": 3
+   },
+   "breach_reviews": {
+    "mean": 10.0,
+    "median": 10.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 4.333333333333333,
+    "median": 2.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "projection_cut_order_weeks": {
+    "mean": 8.666666666666666,
+    "median": 8.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.09403629162504028,
+    "median": 0.10918050003238022,
+    "max": 0.13385412492789328,
+    "n": 3
+   }
+  },
+  "final|mild_lead|reorder_point": {
+   "window": "final",
+   "scenario": "mild_lead",
+   "policy": "reorder_point",
+   "runs": 10,
+   "complete": 3,
+   "failed": 7,
+   "statuses": {
+    "PHYSICAL_FAILURE": 7,
+    "COMPLETE": 3
+   },
+   "physical_failures": 7,
+   "abstained": 0,
+   "breach_reasons": {
+    "insufficient dated liquidity": 7
+   },
+   "continuation_cost": {
+    "mean": 2265.344679363905,
+    "median": 906.4983538461538,
+    "max": 5130.493411464497,
+    "n": 3
+   },
+   "realized_cost": {
+    "mean": 2265.344679363905,
+    "median": 906.4983538461538,
+    "max": 5130.493411464497,
+    "n": 3
+   },
+   "purchase": {
+    "mean": 465.57,
+    "median": 131.712,
+    "max": 1154.538,
+    "n": 3
+   },
+   "ordering": {
+    "mean": 80.0,
+    "median": 80.0,
+    "max": 120.0,
+    "n": 3
+   },
+   "carrying": {
+    "mean": 4.26969400887574,
+    "median": 1.9473875739644968,
+    "max": 9.720001701183431,
+    "n": 3
+   },
+   "shortage": {
+    "mean": 1487.3111538461537,
+    "median": 634.6473076923077,
+    "max": 3313.889230769231,
+    "n": 3
+   },
+   "inventory_value_change": {
+    "mean": 227.31952564102562,
+    "median": 79.94188461538461,
+    "max": 530.3065384615384,
+    "n": 3
+   },
+   "service_unit_fill": {
+    "mean": 0.3173820264931676,
+    "median": 0.2960336538461538,
+    "max": 0.42046553614030563,
+    "n": 3
+   },
+   "unmet_units": {
+    "mean": 428.10256410256414,
+    "median": 367.6538461538462,
+    "max": 691.3846153846154,
+    "n": 3
+   },
+   "avg_inventory_units": {
+    "mean": 15.125246548323469,
+    "median": 6.414201183431952,
+    "max": 32.55029585798816,
+    "n": 3
+   },
+   "items_below_target": {
+    "mean": 3.3333333333333335,
+    "median": 4.0,
+    "max": 4.0,
+    "n": 3
+   },
+   "min_item_fill": {
+    "mean": 0.2530153944300383,
+    "median": 0.21376242804814236,
+    "max": 0.39281122776944505,
+    "n": 3
+   },
+   "order_weeks": {
+    "mean": 2.0,
+    "median": 2.0,
+    "max": 3.0,
+    "n": 3
+   },
+   "lines_per_order_week": {
+    "mean": 2.4444444444444446,
+    "median": 2.0,
+    "max": 3.3333333333333335,
+    "n": 3
+   },
+   "units_ordered": {
+    "mean": 158.0,
+    "median": 78.0,
+    "max": 342.0,
+    "n": 3
+   },
+   "end_stock_mean": {
+    "mean": 15.125246548323473,
+    "median": 6.414201183431953,
+    "max": 32.55029585798817,
+    "n": 3
+   },
+   "breach_reviews": {
+    "mean": 10.0,
+    "median": 10.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 4.0,
+    "median": 1.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "projection_cut_order_weeks": {
+    "mean": 8.666666666666666,
+    "median": 8.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.1335342776728794,
+    "median": 0.15801466593984514,
+    "max": 0.1643592920154333,
+    "n": 3
+   }
+  },
+  "final|stable|economic_lot": {
+   "window": "final",
+   "scenario": "stable",
+   "policy": "economic_lot",
+   "runs": 10,
+   "complete": 4,
+   "failed": 6,
+   "statuses": {
+    "PHYSICAL_FAILURE": 6,
+    "COMPLETE": 4
+   },
+   "physical_failures": 6,
+   "abstained": 0,
+   "breach_reasons": {
+    "insufficient dated liquidity": 6
+   },
+   "continuation_cost": {
+    "mean": 2143.345588572485,
+    "median": 1986.390674260355,
+    "max": 3842.745440680473,
+    "n": 4
+   },
+   "realized_cost": {
+    "mean": 2143.345588572485,
+    "median": 1986.390674260355,
+    "max": 3842.745440680473,
+    "n": 4
+   },
+   "purchase": {
+    "mean": 418.3305,
+    "median": 360.80100000000004,
+    "max": 816.6479999999999,
+    "n": 4
+   },
+   "ordering": {
+    "mean": 130.0,
+    "median": 120.0,
+    "max": 240.0,
+    "n": 4
+   },
+   "carrying": {
+    "mean": 4.071106286982248,
+    "median": 3.3098521449704137,
+    "max": 7.46404097633136,
+    "n": 4
+   },
+   "shortage": {
+    "mean": 1354.0283653846154,
+    "median": 1293.8525,
+    "max": 2319.8115384615385,
+    "n": 4
+   },
+   "inventory_value_change": {
+    "mean": 236.0078942307692,
+    "median": 207.62874999999997,
+    "max": 457.06392307692306,
+    "n": 4
+   },
+   "service_unit_fill": {
+    "mean": 0.42802384705817037,
+    "median": 0.402041946989097,
+    "max": 0.6598905922874316,
+    "n": 4
+   },
+   "unmet_units": {
+    "mean": 589.0192307692308,
+    "median": 548.5192307692307,
+    "max": 897.3846153846155,
+    "n": 4
+   },
+   "avg_inventory_units": {
+    "mean": 29.722633136094675,
+    "median": 32.82988165680474,
+    "max": 43.66568047337278,
+    "n": 4
+   },
+   "items_below_target": {
+    "mean": 5.0,
+    "median": 6.0,
+    "max": 6.0,
+    "n": 4
+   },
+   "min_item_fill": {
+    "mean": 0.13924215780528074,
+    "median": 0.11727290797058237,
+    "max": 0.2273678702250131,
+    "n": 4
+   },
+   "order_weeks": {
+    "mean": 3.25,
+    "median": 3.0,
+    "max": 6.0,
+    "n": 4
+   },
+   "lines_per_order_week": {
+    "mean": 2.6666666666666665,
+    "median": 2.5,
+    "max": 4.0,
+    "n": 4
+   },
+   "units_ordered": {
+    "mean": 345.0,
+    "median": 354.0,
+    "max": 588.0,
+    "n": 4
+   },
+   "end_stock_mean": {
+    "mean": 29.722633136094675,
+    "median": 32.82988165680474,
+    "max": 43.66568047337278,
+    "n": 4
+   },
+   "breach_reviews": {
+    "mean": 11.25,
+    "median": 11.5,
+    "max": 12.0,
+    "n": 4
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 4.25,
+    "median": 5.0,
+    "max": 7.0,
+    "n": 4
+   },
+   "projection_cut_order_weeks": {
+    "mean": 15.25,
+    "median": 15.5,
+    "max": 18.0,
+    "n": 4
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.14907868747832254,
+    "median": 0.165702270984184,
+    "max": 0.1831518328981474,
+    "n": 4
+   }
+  },
+  "final|stable|gated": {
+   "window": "final",
+   "scenario": "stable",
+   "policy": "gated",
+   "runs": 10,
+   "complete": 2,
+   "failed": 8,
+   "statuses": {
+    "ABSTAIN": 8,
+    "COMPLETE": 2
+   },
+   "physical_failures": 0,
+   "abstained": 8,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 805.4007958210059,
+    "median": 805.4007958210059,
+    "max": 852.9460265532545,
+    "n": 2
+   },
+   "realized_cost": {
+    "mean": 805.4007958210059,
+    "median": 805.4007958210059,
+    "max": 852.9460265532545,
+    "n": 2
+   },
+   "purchase": {
+    "mean": 139.587,
+    "median": 139.587,
+    "max": 144.10199999999998,
+    "n": 2
+   },
+   "ordering": {
+    "mean": 40.0,
+    "median": 40.0,
+    "max": 40.0,
+    "n": 2
+   },
+   "carrying": {
+    "mean": 2.1040226701183427,
+    "median": 2.1040226701183427,
+    "max": 2.200679881656804,
+    "n": 2
+   },
+   "shortage": {
+    "mean": 547.5921153846155,
+    "median": 547.5921153846155,
+    "max": 586.5873076923077,
+    "n": 2
+   },
+   "inventory_value_change": {
+    "mean": 75.82601923076922,
+    "median": 75.82601923076922,
+    "max": 79.94188461538461,
+    "n": 2
+   },
+   "service_unit_fill": {
+    "mean": 0.3002022779066048,
+    "median": 0.3002022779066048,
+    "max": 0.35228365384615384,
+    "n": 2
+   },
+   "unmet_units": {
+    "mean": 284.46153846153845,
+    "median": 284.46153846153845,
+    "max": 361.6538461538462,
+    "n": 2
+   },
+   "avg_inventory_units": {
+    "mean": 10.542899408284024,
+    "median": 10.542899408284024,
+    "max": 11.520710059171599,
+    "n": 2
+   },
+   "items_below_target": {
+    "mean": 3.0,
+    "median": 3.0,
+    "max": 4.0,
+    "n": 2
+   },
+   "min_item_fill": {
+    "mean": 0.18992019884877026,
+    "median": 0.18992019884877026,
+    "max": 0.2273678702250131,
+    "n": 2
+   },
+   "order_weeks": {
+    "mean": 1.0,
+    "median": 1.0,
+    "max": 1.0,
+    "n": 2
+   },
+   "lines_per_order_week": {
+    "mean": 2.5,
+    "median": 2.5,
+    "max": 3.0,
+    "n": 2
+   },
+   "units_ordered": {
+    "mean": 78.0,
+    "median": 78.0,
+    "max": 84.0,
+    "n": 2
+   },
+   "end_stock_mean": {
+    "mean": 10.542899408284024,
+    "median": 10.542899408284024,
+    "max": 11.520710059171599,
+    "n": 2
+   },
+   "breach_reviews": {
+    "mean": 10.0,
+    "median": 10.0,
+    "max": 10.0,
+    "n": 2
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 2
+   },
+   "projection_cut_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 2
+   },
+   "zaad_own_share": {
+    "mean": 0.038461538461538464,
+    "median": 0.038461538461538464,
+    "max": 0.07692307692307693,
+    "n": 2
+   },
+   "zaad_retained_reviews": {
+    "mean": 12.5,
+    "median": 12.5,
+    "max": 13.0,
+    "n": 2
+   },
+   "wall_seconds": {
+    "mean": 4.445612812472973,
+    "median": 4.445612812472973,
+    "max": 5.872266790946014,
+    "n": 2
+   }
+  },
+  "final|stable|periodic:1": {
+   "window": "final",
+   "scenario": "stable",
+   "policy": "periodic:1",
+   "runs": 10,
+   "complete": 3,
+   "failed": 7,
+   "statuses": {
+    "PHYSICAL_FAILURE": 7,
+    "COMPLETE": 3
+   },
+   "physical_failures": 7,
+   "abstained": 0,
+   "breach_reasons": {
+    "insufficient dated liquidity": 7
+   },
+   "continuation_cost": {
+    "mean": 2264.375610133136,
+    "median": 906.4983538461538,
+    "max": 5127.378142233728,
+    "n": 3
+   },
+   "realized_cost": {
+    "mean": 2264.375610133136,
+    "median": 906.4983538461538,
+    "max": 5127.378142233728,
+    "n": 3
+   },
+   "purchase": {
+    "mean": 465.57,
+    "median": 131.712,
+    "max": 1154.538,
+    "n": 3
+   },
+   "ordering": {
+    "mean": 80.0,
+    "median": 80.0,
+    "max": 120.0,
+    "n": 3
+   },
+   "carrying": {
+    "mean": 3.300624778106508,
+    "median": 2.155449112426035,
+    "max": 6.604732470414199,
+    "n": 3
+   },
+   "shortage": {
+    "mean": 1487.3111538461537,
+    "median": 634.6473076923077,
+    "max": 3313.889230769231,
+    "n": 3
+   },
+   "inventory_value_change": {
+    "mean": 227.31952564102562,
+    "median": 79.94188461538461,
+    "max": 530.3065384615384,
+    "n": 3
+   },
+   "service_unit_fill": {
+    "mean": 0.3173820264931676,
+    "median": 0.2960336538461538,
+    "max": 0.42046553614030563,
+    "n": 3
+   },
+   "unmet_units": {
+    "mean": 428.10256410256414,
+    "median": 367.6538461538462,
+    "max": 691.3846153846154,
+    "n": 3
+   },
+   "avg_inventory_units": {
+    "mean": 12.397435897435896,
+    "median": 8.642011834319526,
+    "max": 22.13609467455621,
+    "n": 3
+   },
+   "items_below_target": {
+    "mean": 3.3333333333333335,
+    "median": 4.0,
+    "max": 4.0,
+    "n": 3
+   },
+   "min_item_fill": {
+    "mean": 0.2530153944300383,
+    "median": 0.21376242804814236,
+    "max": 0.39281122776944505,
+    "n": 3
+   },
+   "order_weeks": {
+    "mean": 2.0,
+    "median": 2.0,
+    "max": 3.0,
+    "n": 3
+   },
+   "lines_per_order_week": {
+    "mean": 2.4444444444444446,
+    "median": 2.0,
+    "max": 3.3333333333333335,
+    "n": 3
+   },
+   "units_ordered": {
+    "mean": 158.0,
+    "median": 78.0,
+    "max": 342.0,
+    "n": 3
+   },
+   "end_stock_mean": {
+    "mean": 12.397435897435898,
+    "median": 8.642011834319526,
+    "max": 22.13609467455621,
+    "n": 3
+   },
+   "breach_reviews": {
+    "mean": 10.0,
+    "median": 10.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 4.0,
+    "median": 1.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "projection_cut_order_weeks": {
+    "mean": 9.0,
+    "median": 9.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.12120420831100394,
+    "median": 0.11215137492399663,
+    "max": 0.16152445797342807,
+    "n": 3
+   }
+  },
+  "final|stable|reorder_point": {
+   "window": "final",
+   "scenario": "stable",
+   "policy": "reorder_point",
+   "runs": 10,
+   "complete": 3,
+   "failed": 7,
+   "statuses": {
+    "PHYSICAL_FAILURE": 7,
+    "COMPLETE": 3
+   },
+   "physical_failures": 7,
+   "abstained": 0,
+   "breach_reasons": {
+    "insufficient dated liquidity": 7
+   },
+   "continuation_cost": {
+    "mean": 2264.375610133136,
+    "median": 906.4983538461538,
+    "max": 5127.378142233728,
+    "n": 3
+   },
+   "realized_cost": {
+    "mean": 2264.375610133136,
+    "median": 906.4983538461538,
+    "max": 5127.378142233728,
+    "n": 3
+   },
+   "purchase": {
+    "mean": 465.57,
+    "median": 131.712,
+    "max": 1154.538,
+    "n": 3
+   },
+   "ordering": {
+    "mean": 80.0,
+    "median": 80.0,
+    "max": 120.0,
+    "n": 3
+   },
+   "carrying": {
+    "mean": 3.300624778106508,
+    "median": 2.155449112426035,
+    "max": 6.604732470414199,
+    "n": 3
+   },
+   "shortage": {
+    "mean": 1487.3111538461537,
+    "median": 634.6473076923077,
+    "max": 3313.889230769231,
+    "n": 3
+   },
+   "inventory_value_change": {
+    "mean": 227.31952564102562,
+    "median": 79.94188461538461,
+    "max": 530.3065384615384,
+    "n": 3
+   },
+   "service_unit_fill": {
+    "mean": 0.3173820264931676,
+    "median": 0.2960336538461538,
+    "max": 0.42046553614030563,
+    "n": 3
+   },
+   "unmet_units": {
+    "mean": 428.10256410256414,
+    "median": 367.6538461538462,
+    "max": 691.3846153846154,
+    "n": 3
+   },
+   "avg_inventory_units": {
+    "mean": 12.397435897435896,
+    "median": 8.642011834319526,
+    "max": 22.13609467455621,
+    "n": 3
+   },
+   "items_below_target": {
+    "mean": 3.3333333333333335,
+    "median": 4.0,
+    "max": 4.0,
+    "n": 3
+   },
+   "min_item_fill": {
+    "mean": 0.2530153944300383,
+    "median": 0.21376242804814236,
+    "max": 0.39281122776944505,
+    "n": 3
+   },
+   "order_weeks": {
+    "mean": 2.0,
+    "median": 2.0,
+    "max": 3.0,
+    "n": 3
+   },
+   "lines_per_order_week": {
+    "mean": 2.4444444444444446,
+    "median": 2.0,
+    "max": 3.3333333333333335,
+    "n": 3
+   },
+   "units_ordered": {
+    "mean": 158.0,
+    "median": 78.0,
+    "max": 342.0,
+    "n": 3
+   },
+   "end_stock_mean": {
+    "mean": 12.397435897435898,
+    "median": 8.642011834319526,
+    "max": 22.13609467455621,
+    "n": 3
+   },
+   "breach_reviews": {
+    "mean": 10.0,
+    "median": 10.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 4.0,
+    "median": 1.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "projection_cut_order_weeks": {
+    "mean": 9.0,
+    "median": 9.0,
+    "max": 11.0,
+    "n": 3
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.14481787531015775,
+    "median": 0.14138345897663385,
+    "max": 0.21213316696230322,
+    "n": 3
+   }
+  }
+ },
+ "paired": {
+  "final|group|mild_lead|reorder_point|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "continuation_cost",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -27.473548261834253,
+   "median_difference": -27.473548261834253,
+   "bootstrap_80": [
+    -53.55232729289935,
+    -1.3947692307691568
+   ],
+   "bootstrap_95": [
+    -53.55232729289935,
+    -1.3947692307691568
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "realized_cost",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -27.473548261834253,
+   "median_difference": -27.473548261834253,
+   "bootstrap_80": [
+    -53.55232729289935,
+    -1.3947692307691568
+   ],
+   "bootstrap_95": [
+    -53.55232729289935,
+    -1.3947692307691568
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "shortage",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -26.42999999999995,
+   "median_difference": -26.42999999999995,
+   "bootstrap_80": [
+    -48.059999999999945,
+    -4.7999999999999545
+   ],
+   "bootstrap_95": [
+    -48.059999999999945,
+    -4.7999999999999545
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "avg_inventory_units",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": 3.0147928994082847,
+   "median_difference": 3.0147928994082847,
+   "bootstrap_80": [
+    0.9230769230769225,
+    5.106508875739647
+   ],
+   "bootstrap_95": [
+    0.9230769230769225,
+    5.106508875739647
+   ],
+   "zaad_better": 0,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "service_unit_fill",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": 0.03436200623700625,
+   "median_difference": 0.03436200623700625,
+   "bootstrap_80": [
+    0.012474012474012475,
+    0.05625000000000002
+   ],
+   "bootstrap_95": [
+    0.012474012474012475,
+    0.05625000000000002
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "unmet_units",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -12.0,
+   "median_difference": -12.0,
+   "bootstrap_80": [
+    -18.0,
+    -6.0
+   ],
+   "bootstrap_95": [
+    -18.0,
+    -6.0
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "continuation_cost",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -27.473548261834253,
+   "median_difference": -27.473548261834253,
+   "bootstrap_80": [
+    -53.55232729289935,
+    -1.3947692307691568
+   ],
+   "bootstrap_95": [
+    -53.55232729289935,
+    -1.3947692307691568
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "realized_cost",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -27.473548261834253,
+   "median_difference": -27.473548261834253,
+   "bootstrap_80": [
+    -53.55232729289935,
+    -1.3947692307691568
+   ],
+   "bootstrap_95": [
+    -53.55232729289935,
+    -1.3947692307691568
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "shortage",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -26.42999999999995,
+   "median_difference": -26.42999999999995,
+   "bootstrap_80": [
+    -48.059999999999945,
+    -4.7999999999999545
+   ],
+   "bootstrap_95": [
+    -48.059999999999945,
+    -4.7999999999999545
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "avg_inventory_units",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": 3.0147928994082847,
+   "median_difference": 3.0147928994082847,
+   "bootstrap_80": [
+    0.9230769230769225,
+    5.106508875739647
+   ],
+   "bootstrap_95": [
+    0.9230769230769225,
+    5.106508875739647
+   ],
+   "zaad_better": 0,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "service_unit_fill",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": 0.03436200623700625,
+   "median_difference": 0.03436200623700625,
+   "bootstrap_80": [
+    0.012474012474012475,
+    0.05625000000000002
+   ],
+   "bootstrap_95": [
+    0.012474012474012475,
+    0.05625000000000002
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "unmet_units",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -12.0,
+   "median_difference": -12.0,
+   "bootstrap_80": [
+    -18.0,
+    -6.0
+   ],
+   "bootstrap_95": [
+    -18.0,
+    -6.0
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "continuation_cost",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -27.47354826183431,
+   "median_difference": -27.47354826183431,
+   "bootstrap_80": [
+    -53.55232729289935,
+    -1.3947692307692705
+   ],
+   "bootstrap_95": [
+    -53.55232729289935,
+    -1.3947692307692705
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "realized_cost",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -27.47354826183431,
+   "median_difference": -27.47354826183431,
+   "bootstrap_80": [
+    -53.55232729289935,
+    -1.3947692307692705
+   ],
+   "bootstrap_95": [
+    -53.55232729289935,
+    -1.3947692307692705
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "shortage",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -26.42999999999995,
+   "median_difference": -26.42999999999995,
+   "bootstrap_80": [
+    -48.059999999999945,
+    -4.7999999999999545
+   ],
+   "bootstrap_95": [
+    -48.059999999999945,
+    -4.7999999999999545
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "avg_inventory_units",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": 3.014792899408285,
+   "median_difference": 3.014792899408285,
+   "bootstrap_80": [
+    0.9230769230769234,
+    5.106508875739647
+   ],
+   "bootstrap_95": [
+    0.9230769230769234,
+    5.106508875739647
+   ],
+   "zaad_better": 0,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "service_unit_fill",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": 0.03436200623700625,
+   "median_difference": 0.03436200623700625,
+   "bootstrap_80": [
+    0.012474012474012475,
+    0.05625000000000002
+   ],
+   "bootstrap_95": [
+    0.012474012474012475,
+    0.05625000000000002
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "unmet_units",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -12.0,
+   "median_difference": -12.0,
+   "bootstrap_80": [
+    -18.0,
+    -6.0
+   ],
+   "bootstrap_95": [
+    -18.0,
+    -6.0
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "continuation_cost",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -27.47354826183431,
+   "median_difference": -27.47354826183431,
+   "bootstrap_80": [
+    -53.55232729289935,
+    -1.3947692307692705
+   ],
+   "bootstrap_95": [
+    -53.55232729289935,
+    -1.3947692307692705
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "realized_cost",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -27.47354826183431,
+   "median_difference": -27.47354826183431,
+   "bootstrap_80": [
+    -53.55232729289935,
+    -1.3947692307692705
+   ],
+   "bootstrap_95": [
+    -53.55232729289935,
+    -1.3947692307692705
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "shortage",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -26.42999999999995,
+   "median_difference": -26.42999999999995,
+   "bootstrap_80": [
+    -48.059999999999945,
+    -4.7999999999999545
+   ],
+   "bootstrap_95": [
+    -48.059999999999945,
+    -4.7999999999999545
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "avg_inventory_units",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": 3.014792899408285,
+   "median_difference": 3.014792899408285,
+   "bootstrap_80": [
+    0.9230769230769234,
+    5.106508875739647
+   ],
+   "bootstrap_95": [
+    0.9230769230769234,
+    5.106508875739647
+   ],
+   "zaad_better": 0,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "service_unit_fill",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": 0.03436200623700625,
+   "median_difference": 0.03436200623700625,
+   "bootstrap_80": [
+    0.012474012474012475,
+    0.05625000000000002
+   ],
+   "bootstrap_95": [
+    0.012474012474012475,
+    0.05625000000000002
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "unmet_units",
+   "series": 2,
+   "mean_difference_zaad_minus_baseline": -12.0,
+   "median_difference": -12.0,
+   "bootstrap_80": [
+    -18.0,
+    -6.0
+   ],
+   "bootstrap_95": [
+    -18.0,
+    -6.0
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 0,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  }
+ },
+ "failures": {
+  "completion_by_policy": {
+   "gated": {
+    "runs": 30,
+    "complete": 5,
+    "PHYSICAL_FAILURE": 0,
+    "ABSTAIN": 25,
+    "INFEASIBLE": 0,
+    "other": 0
+   },
+   "economic_lot": {
+    "runs": 30,
+    "complete": 14,
+    "PHYSICAL_FAILURE": 16,
+    "ABSTAIN": 0,
+    "INFEASIBLE": 0,
+    "other": 0
+   },
+   "reorder_point": {
+    "runs": 30,
+    "complete": 13,
+    "PHYSICAL_FAILURE": 17,
+    "ABSTAIN": 0,
+    "INFEASIBLE": 0,
+    "other": 0
+   },
+   "periodic:1": {
+    "runs": 30,
+    "complete": 13,
+    "PHYSICAL_FAILURE": 17,
+    "ABSTAIN": 0,
+    "INFEASIBLE": 0,
+    "other": 0
+   }
+  },
+  "non_complete_runs": [
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "gated",
+    "store_id": "CA_1",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_794_CA_1_evaluation",
+     "FOODS_3_535_CA_1_evaluation",
+     "FOODS_2_107_CA_1_evaluation",
+     "HOUSEHOLD_1_277_CA_1_evaluation",
+     "HOUSEHOLD_2_123_CA_1_evaluation",
+     "HOUSEHOLD_1_299_CA_1_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "economic_lot",
+    "store_id": "CA_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_794_CA_1_evaluation",
+     "FOODS_3_535_CA_1_evaluation",
+     "FOODS_2_107_CA_1_evaluation",
+     "HOUSEHOLD_1_277_CA_1_evaluation",
+     "HOUSEHOLD_2_123_CA_1_evaluation",
+     "HOUSEHOLD_1_299_CA_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "reorder_point",
+    "store_id": "CA_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_794_CA_1_evaluation",
+     "FOODS_3_535_CA_1_evaluation",
+     "FOODS_2_107_CA_1_evaluation",
+     "HOUSEHOLD_1_277_CA_1_evaluation",
+     "HOUSEHOLD_2_123_CA_1_evaluation",
+     "HOUSEHOLD_1_299_CA_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "periodic:1",
+    "store_id": "CA_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_794_CA_1_evaluation",
+     "FOODS_3_535_CA_1_evaluation",
+     "FOODS_2_107_CA_1_evaluation",
+     "HOUSEHOLD_1_277_CA_1_evaluation",
+     "HOUSEHOLD_2_123_CA_1_evaluation",
+     "HOUSEHOLD_1_299_CA_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "gated",
+    "store_id": "CA_1",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_794_CA_1_evaluation",
+     "FOODS_3_535_CA_1_evaluation",
+     "FOODS_2_107_CA_1_evaluation",
+     "HOUSEHOLD_1_277_CA_1_evaluation",
+     "HOUSEHOLD_2_123_CA_1_evaluation",
+     "HOUSEHOLD_1_299_CA_1_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "economic_lot",
+    "store_id": "CA_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_794_CA_1_evaluation",
+     "FOODS_3_535_CA_1_evaluation",
+     "FOODS_2_107_CA_1_evaluation",
+     "HOUSEHOLD_1_277_CA_1_evaluation",
+     "HOUSEHOLD_2_123_CA_1_evaluation",
+     "HOUSEHOLD_1_299_CA_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "reorder_point",
+    "store_id": "CA_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_794_CA_1_evaluation",
+     "FOODS_3_535_CA_1_evaluation",
+     "FOODS_2_107_CA_1_evaluation",
+     "HOUSEHOLD_1_277_CA_1_evaluation",
+     "HOUSEHOLD_2_123_CA_1_evaluation",
+     "HOUSEHOLD_1_299_CA_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "periodic:1",
+    "store_id": "CA_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_794_CA_1_evaluation",
+     "FOODS_3_535_CA_1_evaluation",
+     "FOODS_2_107_CA_1_evaluation",
+     "HOUSEHOLD_1_277_CA_1_evaluation",
+     "HOUSEHOLD_2_123_CA_1_evaluation",
+     "HOUSEHOLD_1_299_CA_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "gated",
+    "store_id": "CA_1",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_794_CA_1_evaluation",
+     "FOODS_3_535_CA_1_evaluation",
+     "FOODS_2_107_CA_1_evaluation",
+     "HOUSEHOLD_1_277_CA_1_evaluation",
+     "HOUSEHOLD_2_123_CA_1_evaluation",
+     "HOUSEHOLD_1_299_CA_1_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "gated",
+    "store_id": "CA_3",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_2_318_CA_3_evaluation",
+     "HOBBIES_1_337_CA_3_evaluation",
+     "HOBBIES_1_210_CA_3_evaluation",
+     "HOUSEHOLD_1_095_CA_3_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "economic_lot",
+    "store_id": "CA_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_2_318_CA_3_evaluation",
+     "HOBBIES_1_337_CA_3_evaluation",
+     "HOBBIES_1_210_CA_3_evaluation",
+     "HOUSEHOLD_1_095_CA_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "gated",
+    "store_id": "CA_3",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_2_318_CA_3_evaluation",
+     "HOBBIES_1_337_CA_3_evaluation",
+     "HOBBIES_1_210_CA_3_evaluation",
+     "HOUSEHOLD_1_095_CA_3_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "economic_lot",
+    "store_id": "CA_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_2_318_CA_3_evaluation",
+     "HOBBIES_1_337_CA_3_evaluation",
+     "HOBBIES_1_210_CA_3_evaluation",
+     "HOUSEHOLD_1_095_CA_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "gated",
+    "store_id": "CA_3",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_2_318_CA_3_evaluation",
+     "HOBBIES_1_337_CA_3_evaluation",
+     "HOBBIES_1_210_CA_3_evaluation",
+     "HOUSEHOLD_1_095_CA_3_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "gated",
+    "store_id": "CA_4",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_1_218_CA_4_evaluation",
+     "FOODS_3_484_CA_4_evaluation",
+     "HOBBIES_1_158_CA_4_evaluation",
+     "HOBBIES_1_423_CA_4_evaluation",
+     "HOUSEHOLD_2_170_CA_4_evaluation",
+     "HOUSEHOLD_1_164_CA_4_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "reorder_point",
+    "store_id": "CA_4",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_218_CA_4_evaluation",
+     "FOODS_3_484_CA_4_evaluation",
+     "HOBBIES_1_158_CA_4_evaluation",
+     "HOBBIES_1_423_CA_4_evaluation",
+     "HOUSEHOLD_2_170_CA_4_evaluation",
+     "HOUSEHOLD_1_164_CA_4_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "periodic:1",
+    "store_id": "CA_4",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_218_CA_4_evaluation",
+     "FOODS_3_484_CA_4_evaluation",
+     "HOBBIES_1_158_CA_4_evaluation",
+     "HOBBIES_1_423_CA_4_evaluation",
+     "HOUSEHOLD_2_170_CA_4_evaluation",
+     "HOUSEHOLD_1_164_CA_4_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "gated",
+    "store_id": "CA_4",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_1_218_CA_4_evaluation",
+     "FOODS_3_484_CA_4_evaluation",
+     "HOBBIES_1_158_CA_4_evaluation",
+     "HOBBIES_1_423_CA_4_evaluation",
+     "HOUSEHOLD_2_170_CA_4_evaluation",
+     "HOUSEHOLD_1_164_CA_4_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "reorder_point",
+    "store_id": "CA_4",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_218_CA_4_evaluation",
+     "FOODS_3_484_CA_4_evaluation",
+     "HOBBIES_1_158_CA_4_evaluation",
+     "HOBBIES_1_423_CA_4_evaluation",
+     "HOUSEHOLD_2_170_CA_4_evaluation",
+     "HOUSEHOLD_1_164_CA_4_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "periodic:1",
+    "store_id": "CA_4",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_218_CA_4_evaluation",
+     "FOODS_3_484_CA_4_evaluation",
+     "HOBBIES_1_158_CA_4_evaluation",
+     "HOBBIES_1_423_CA_4_evaluation",
+     "HOUSEHOLD_2_170_CA_4_evaluation",
+     "HOUSEHOLD_1_164_CA_4_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "gated",
+    "store_id": "CA_4",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_1_218_CA_4_evaluation",
+     "FOODS_3_484_CA_4_evaluation",
+     "HOBBIES_1_158_CA_4_evaluation",
+     "HOBBIES_1_423_CA_4_evaluation",
+     "HOUSEHOLD_2_170_CA_4_evaluation",
+     "HOUSEHOLD_1_164_CA_4_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "gated",
+    "store_id": "TX_1",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "economic_lot",
+    "store_id": "TX_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "reorder_point",
+    "store_id": "TX_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "periodic:1",
+    "store_id": "TX_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "gated",
+    "store_id": "TX_1",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "economic_lot",
+    "store_id": "TX_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "reorder_point",
+    "store_id": "TX_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 8
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "periodic:1",
+    "store_id": "TX_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 8
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "gated",
+    "store_id": "TX_1",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "economic_lot",
+    "store_id": "TX_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "reorder_point",
+    "store_id": "TX_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 8
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "periodic:1",
+    "store_id": "TX_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_137_TX_1_evaluation",
+     "FOODS_1_049_TX_1_evaluation",
+     "HOBBIES_1_415_TX_1_evaluation",
+     "HOBBIES_1_279_TX_1_evaluation",
+     "HOBBIES_2_109_TX_1_evaluation",
+     "HOUSEHOLD_1_456_TX_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 8
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "gated",
+    "store_id": "TX_2",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_1_046_TX_2_evaluation",
+     "FOODS_3_671_TX_2_evaluation",
+     "HOBBIES_1_132_TX_2_evaluation",
+     "HOUSEHOLD_1_321_TX_2_evaluation",
+     "HOUSEHOLD_1_208_TX_2_evaluation",
+     "HOUSEHOLD_2_025_TX_2_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "reorder_point",
+    "store_id": "TX_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_046_TX_2_evaluation",
+     "FOODS_3_671_TX_2_evaluation",
+     "HOBBIES_1_132_TX_2_evaluation",
+     "HOUSEHOLD_1_321_TX_2_evaluation",
+     "HOUSEHOLD_1_208_TX_2_evaluation",
+     "HOUSEHOLD_2_025_TX_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "periodic:1",
+    "store_id": "TX_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_046_TX_2_evaluation",
+     "FOODS_3_671_TX_2_evaluation",
+     "HOBBIES_1_132_TX_2_evaluation",
+     "HOUSEHOLD_1_321_TX_2_evaluation",
+     "HOUSEHOLD_1_208_TX_2_evaluation",
+     "HOUSEHOLD_2_025_TX_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "gated",
+    "store_id": "TX_2",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_1_046_TX_2_evaluation",
+     "FOODS_3_671_TX_2_evaluation",
+     "HOBBIES_1_132_TX_2_evaluation",
+     "HOUSEHOLD_1_321_TX_2_evaluation",
+     "HOUSEHOLD_1_208_TX_2_evaluation",
+     "HOUSEHOLD_2_025_TX_2_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "reorder_point",
+    "store_id": "TX_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_046_TX_2_evaluation",
+     "FOODS_3_671_TX_2_evaluation",
+     "HOBBIES_1_132_TX_2_evaluation",
+     "HOUSEHOLD_1_321_TX_2_evaluation",
+     "HOUSEHOLD_1_208_TX_2_evaluation",
+     "HOUSEHOLD_2_025_TX_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "periodic:1",
+    "store_id": "TX_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_046_TX_2_evaluation",
+     "FOODS_3_671_TX_2_evaluation",
+     "HOBBIES_1_132_TX_2_evaluation",
+     "HOUSEHOLD_1_321_TX_2_evaluation",
+     "HOUSEHOLD_1_208_TX_2_evaluation",
+     "HOUSEHOLD_2_025_TX_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "gated",
+    "store_id": "TX_2",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_1_046_TX_2_evaluation",
+     "FOODS_3_671_TX_2_evaluation",
+     "HOBBIES_1_132_TX_2_evaluation",
+     "HOUSEHOLD_1_321_TX_2_evaluation",
+     "HOUSEHOLD_1_208_TX_2_evaluation",
+     "HOUSEHOLD_2_025_TX_2_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "reorder_point",
+    "store_id": "TX_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_046_TX_2_evaluation",
+     "FOODS_3_671_TX_2_evaluation",
+     "HOBBIES_1_132_TX_2_evaluation",
+     "HOUSEHOLD_1_321_TX_2_evaluation",
+     "HOUSEHOLD_1_208_TX_2_evaluation",
+     "HOUSEHOLD_2_025_TX_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "periodic:1",
+    "store_id": "TX_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_1_046_TX_2_evaluation",
+     "FOODS_3_671_TX_2_evaluation",
+     "HOBBIES_1_132_TX_2_evaluation",
+     "HOUSEHOLD_1_321_TX_2_evaluation",
+     "HOUSEHOLD_1_208_TX_2_evaluation",
+     "HOUSEHOLD_2_025_TX_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 4
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "gated",
+    "store_id": "TX_3",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_487_TX_3_evaluation",
+     "FOODS_1_014_TX_3_evaluation",
+     "FOODS_2_363_TX_3_evaluation",
+     "HOBBIES_1_029_TX_3_evaluation",
+     "HOBBIES_2_091_TX_3_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "economic_lot",
+    "store_id": "TX_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_487_TX_3_evaluation",
+     "FOODS_1_014_TX_3_evaluation",
+     "FOODS_2_363_TX_3_evaluation",
+     "HOBBIES_1_029_TX_3_evaluation",
+     "HOBBIES_2_091_TX_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "reorder_point",
+    "store_id": "TX_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_487_TX_3_evaluation",
+     "FOODS_1_014_TX_3_evaluation",
+     "FOODS_2_363_TX_3_evaluation",
+     "HOBBIES_1_029_TX_3_evaluation",
+     "HOBBIES_2_091_TX_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "periodic:1",
+    "store_id": "TX_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_487_TX_3_evaluation",
+     "FOODS_1_014_TX_3_evaluation",
+     "FOODS_2_363_TX_3_evaluation",
+     "HOBBIES_1_029_TX_3_evaluation",
+     "HOBBIES_2_091_TX_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "gated",
+    "store_id": "TX_3",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_487_TX_3_evaluation",
+     "FOODS_1_014_TX_3_evaluation",
+     "FOODS_2_363_TX_3_evaluation",
+     "HOBBIES_1_029_TX_3_evaluation",
+     "HOBBIES_2_091_TX_3_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "economic_lot",
+    "store_id": "TX_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_487_TX_3_evaluation",
+     "FOODS_1_014_TX_3_evaluation",
+     "FOODS_2_363_TX_3_evaluation",
+     "HOBBIES_1_029_TX_3_evaluation",
+     "HOBBIES_2_091_TX_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "reorder_point",
+    "store_id": "TX_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_487_TX_3_evaluation",
+     "FOODS_1_014_TX_3_evaluation",
+     "FOODS_2_363_TX_3_evaluation",
+     "HOBBIES_1_029_TX_3_evaluation",
+     "HOBBIES_2_091_TX_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "periodic:1",
+    "store_id": "TX_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_487_TX_3_evaluation",
+     "FOODS_1_014_TX_3_evaluation",
+     "FOODS_2_363_TX_3_evaluation",
+     "HOBBIES_1_029_TX_3_evaluation",
+     "HOBBIES_2_091_TX_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "gated",
+    "store_id": "TX_3",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_487_TX_3_evaluation",
+     "FOODS_1_014_TX_3_evaluation",
+     "FOODS_2_363_TX_3_evaluation",
+     "HOBBIES_1_029_TX_3_evaluation",
+     "HOBBIES_2_091_TX_3_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 1
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "economic_lot",
+    "store_id": "TX_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_487_TX_3_evaluation",
+     "FOODS_1_014_TX_3_evaluation",
+     "FOODS_2_363_TX_3_evaluation",
+     "HOBBIES_1_029_TX_3_evaluation",
+     "HOBBIES_2_091_TX_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "gated",
+    "store_id": "WI_1",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_288_WI_1_evaluation",
+     "FOODS_3_129_WI_1_evaluation",
+     "HOBBIES_1_254_WI_1_evaluation",
+     "HOBBIES_1_408_WI_1_evaluation",
+     "HOUSEHOLD_1_226_WI_1_evaluation",
+     "HOUSEHOLD_2_109_WI_1_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "reorder_point",
+    "store_id": "WI_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_288_WI_1_evaluation",
+     "FOODS_3_129_WI_1_evaluation",
+     "HOBBIES_1_254_WI_1_evaluation",
+     "HOBBIES_1_408_WI_1_evaluation",
+     "HOUSEHOLD_1_226_WI_1_evaluation",
+     "HOUSEHOLD_2_109_WI_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 3
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "periodic:1",
+    "store_id": "WI_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_288_WI_1_evaluation",
+     "FOODS_3_129_WI_1_evaluation",
+     "HOBBIES_1_254_WI_1_evaluation",
+     "HOBBIES_1_408_WI_1_evaluation",
+     "HOUSEHOLD_1_226_WI_1_evaluation",
+     "HOUSEHOLD_2_109_WI_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 3
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "gated",
+    "store_id": "WI_1",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_288_WI_1_evaluation",
+     "FOODS_3_129_WI_1_evaluation",
+     "HOBBIES_1_254_WI_1_evaluation",
+     "HOBBIES_1_408_WI_1_evaluation",
+     "HOUSEHOLD_1_226_WI_1_evaluation",
+     "HOUSEHOLD_2_109_WI_1_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "reorder_point",
+    "store_id": "WI_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_288_WI_1_evaluation",
+     "FOODS_3_129_WI_1_evaluation",
+     "HOBBIES_1_254_WI_1_evaluation",
+     "HOBBIES_1_408_WI_1_evaluation",
+     "HOUSEHOLD_1_226_WI_1_evaluation",
+     "HOUSEHOLD_2_109_WI_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 3
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "periodic:1",
+    "store_id": "WI_1",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_288_WI_1_evaluation",
+     "FOODS_3_129_WI_1_evaluation",
+     "HOBBIES_1_254_WI_1_evaluation",
+     "HOBBIES_1_408_WI_1_evaluation",
+     "HOUSEHOLD_1_226_WI_1_evaluation",
+     "HOUSEHOLD_2_109_WI_1_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 3
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "gated",
+    "store_id": "WI_1",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_288_WI_1_evaluation",
+     "FOODS_3_129_WI_1_evaluation",
+     "HOBBIES_1_254_WI_1_evaluation",
+     "HOBBIES_1_408_WI_1_evaluation",
+     "HOUSEHOLD_1_226_WI_1_evaluation",
+     "HOUSEHOLD_2_109_WI_1_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "gated",
+    "store_id": "WI_2",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "economic_lot",
+    "store_id": "WI_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "reorder_point",
+    "store_id": "WI_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 7
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "periodic:1",
+    "store_id": "WI_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 7
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "gated",
+    "store_id": "WI_2",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "economic_lot",
+    "store_id": "WI_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "reorder_point",
+    "store_id": "WI_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 7
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "periodic:1",
+    "store_id": "WI_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 7
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "gated",
+    "store_id": "WI_2",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "economic_lot",
+    "store_id": "WI_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 0
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "reorder_point",
+    "store_id": "WI_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 7
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "periodic:1",
+    "store_id": "WI_2",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_752_WI_2_evaluation",
+     "FOODS_2_366_WI_2_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 7
+   },
+   {
+    "window": "final",
+    "scenario": "stable",
+    "policy": "economic_lot",
+    "store_id": "WI_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_544_WI_3_evaluation",
+     "FOODS_3_050_WI_3_evaluation",
+     "FOODS_3_140_WI_3_evaluation",
+     "HOUSEHOLD_2_212_WI_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "mild_lead",
+    "policy": "economic_lot",
+    "store_id": "WI_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_544_WI_3_evaluation",
+     "FOODS_3_050_WI_3_evaluation",
+     "FOODS_3_140_WI_3_evaluation",
+     "HOUSEHOLD_2_212_WI_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "gated",
+    "store_id": "WI_3",
+    "status": "ABSTAIN",
+    "error": null,
+    "group": [
+     "FOODS_3_544_WI_3_evaluation",
+     "FOODS_3_050_WI_3_evaluation",
+     "FOODS_3_140_WI_3_evaluation",
+     "HOUSEHOLD_2_212_WI_3_evaluation"
+    ],
+    "failure": [
+     "ABSTAIN",
+     "operator_declared",
+     "mode=ALLOCATE",
+     "No candidate materially improves priority-weighted service shortfall over the incumbent; incumbent retained."
+    ],
+    "reviews_completed_before_stop": 2
+   },
+   {
+    "window": "final",
+    "scenario": "fill_only",
+    "policy": "economic_lot",
+    "store_id": "WI_3",
+    "status": "PHYSICAL_FAILURE",
+    "error": null,
+    "group": [
+     "FOODS_3_544_WI_3_evaluation",
+     "FOODS_3_050_WI_3_evaluation",
+     "FOODS_3_140_WI_3_evaluation",
+     "HOUSEHOLD_2_212_WI_3_evaluation"
+    ],
+    "failure": "insufficient dated liquidity",
+    "reviews_completed_before_stop": 2
+   }
+  ]
+ }
+}
