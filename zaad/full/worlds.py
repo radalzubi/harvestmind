@@ -83,7 +83,7 @@ def forecast_all(req: Request, adaptive: bool = True) -> dict:
     for service in req.services:
         fit = estimate(series[service.id], service.selling_price + service.sla_per_unmet,
                        locations[service.location].holding_per_value_period * skus[service.sku].asset_value,
-                       adaptive, req.demand_adaptation)
+                       adaptive, req.demand_adaptation, seasonal=req.period_days == 7)
         if req.engine_profile == "reliability":
             fit["uncertainty"] = demand_uncertainty(fit, series[service.id], req.protection_decay)
         result[service.id] = fit

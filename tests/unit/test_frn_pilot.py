@@ -143,6 +143,10 @@ def test_daily_request_units_and_knowledge_boundary():
     assert uncertain.lead_days == 2 and dates(req.model_copy(update={"sources": (uncertain,)}), uncertain, 0) == (0, 2)
     assert record["opening_stock"] == pytest.approx(2.0 * np.mean([r.sales for r in series.before(ORIGIN)[-46:]]))
     assert record["evidence"]["supply"] == "SYNTHETIC" and req.sources[0].quote_reference.startswith("SYNTHETIC:")
+    # v2: line capacity is finite (50 x mean demand, floor 10), never a 1e6 sentinel the undeclared-storage big-M would sum
+    assert src.maximum == pytest.approx(max(10., 50. * record["mean_history_demand"])) and src.capacity_by_period[0] == src.maximum
+    assert req.resources[0].capacity_by_period[0] == src.maximum and req.locations[0].capacity_volume is None
+    assert req.incumbent_rule == "reorder_point" and record["incumbent_rule"] == "reorder_point"
 
 
 def test_no_future_information_reaches_the_request():
@@ -206,6 +210,36 @@ def test_replay_fairness_independent_state_conservation_and_arrival_timing():
     assert frozen(again) == frozen(outs["base_stock"])
 
 
+def test_the_reference_configuration_has_no_incumbent_rule_and_baselines_never_receive_one(monkeypatch):
+    from scripts import frn_pilot
+    from zaad.public.freshretailnet.declaration import REFERENCE_V1
+    series = synthetic_series(seed=9)
+    req_v1, rec_v1 = RB.build_request(series, ORIGIN, track="observed", scenario="stable", declaration=REFERENCE_V1)
+    assert req_v1.incumbent_rule is None and rec_v1["incumbent_rule"] is None
+    req, rec = RB.build_request(series, ORIGIN, track="observed", scenario="stable")
+    world, _ = T.truth_world(req, series, ORIGIN, track="observed", periods=2 - 1 + req.horizon, seed=1)
+    seen = {}
+
+    def spy(initial, truth, reviews, method, keep_requests=None, rolling=False):
+        seen[method] = initial.incumbent_rule
+        return {"status": "COMPLETE", "reviews": []}
+    monkeypatch.setattr(frn_pilot, "replay", spy)
+    monkeypatch.setitem(frn_pilot.WINDOWS, "t", {"origin": ORIGIN, "reviews": 2, "rolling": True, "role": "test"})
+    row = {"store_id": 1, "product_id": 2, "stratum": "x", "volume_class": "a", "stockout_class": "b", "regularity_class": "c", "promo_class": "d"}
+    for policy in ("gated", "reorder_point", "periodic:1", "base_stock"):
+        frn_pilot.run_one(series, row, "t", "observed", "stable", policy, req_by_track={"observed": (req, rec)}, world=world, stage_dir=Path("."))
+    assert seen["gated"] == "reorder_point" and all(seen[p] is None for p in ("reorder_point", "periodic:1", "base_stock"))
+
+
+def test_decision_provenance_separates_own_retained_and_abstained_reviews():
+    from scripts.frn_pilot import decision_provenance
+    rows = [{"warnings": ["PENDING_REVIEW", "stochastic_network", "mode=LEAN"]}, {"warnings": ["RETAIN_INCUMBENT", "operator_declared", "mode=PROTECT", "no benefit"]},
+            {"warnings": ["RETAIN_INCUMBENT", "operator_declared", "mode=PROTECT"]}, {"warnings": ["ABSTAIN", "operator_declared", "mode=ALLOCATE"]}]
+    p = decision_provenance(rows)
+    assert p["OWN_CANDIDATE"] == 1 and p["RETAINED_INCUMBENT"] == 2 and p["ABSTAIN"] == 1 and p["own_share"] == 0.25
+    assert p["by_review"] == ["OWN_CANDIDATE", "RETAINED_INCUMBENT", "RETAINED_INCUMBENT", "ABSTAIN"] and p["mode_by_review"][1] == "PROTECT"
+
+
 def test_a_failing_policy_is_recorded_not_dropped(monkeypatch):
     from scripts import frn_pilot
     series = synthetic_series(seed=6)
@@ -223,9 +257,13 @@ def test_a_failing_policy_is_recorded_not_dropped(monkeypatch):
 
 
 def test_declaration_is_versioned_hashed_and_daily():
+    from zaad.public.freshretailnet.declaration import REFERENCE_V1, VARIANTS
     d = DEFAULT.as_dict()
-    assert d["version"] == "frn-declaration-1" and d["period_days"] == 1 and len(d["hash"]) == 64
-    assert {s["name"] for s in d["supply"]} >= {"stable", "uncertain"}
+    assert d["version"] == "frn-declaration-2" and d["period_days"] == 1 and len(d["hash"]) == 64
+    assert {s["name"] for s in d["supply"]} >= {"stable", "uncertain", "uncertain_fill_only", "uncertain_lead_only"}
+    assert REFERENCE_V1.zaad_incumbent_rule is None and DEFAULT.zaad_incumbent_rule == "reorder_point"
+    assert len({v.hash() for v in VARIANTS.values()}) == len(VARIANTS)            # every predeclared variant is distinguishable by hash
+    assert VARIANTS["target_90"].economics.service_target == 0.90 and VARIANTS["holding_x4"].economics.holding_per_value_day == pytest.approx(0.72 / 365)
     assert d["economics"]["holding_per_value_day"] == pytest.approx(0.18 / 365)
     assert Declaration(economics=Economics(unit_cost=2.0)).hash() != DEFAULT.hash()
     assert "SYNTHETIC" in d["evidence"]["supply"] and "UNAVAILABLE" in d["evidence"]["prices_costs_units"]

@@ -20,13 +20,16 @@ from typing import Any
 import numpy as np
 
 RESULTS_ROOT = Path("data/public/freshretailnet/results")
-BASELINES = ("order_up_to", "base_stock", "reorder_point")
+BASELINES = ("reorder_point", "periodic:1", "base_stock", "order_up_to")
 ZAAD = "gated"
-COST = "realized"            # endpoint realized cost over the window (purchase + carrying + shortage + inventory value change + fees)
+#: primary cost: `continuation` credits residual stock at the purchase it avoids less carrying (floored at salvage, capped at
+#: asset value) with one rule for every policy; `realized` credits it at salvage and is reported beside it as the bound that
+#: penalises any policy holding stock when a short window ends (PR #114 used realized only: EXPERIMENT_DESIGN finding)
+COST = "continuation"
 
 
 def load_rows(stage: str) -> list[dict[str, Any]]:
-    path = RESULTS_ROOT / stage / "runs.jsonl"
+    path = RESULTS_ROOT / stage / "runs.jsonl"                   # `stage` is the results directory name (e.g. fifty_corrected)
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
@@ -51,7 +54,10 @@ def policy_table(rows: list[dict[str, Any]]) -> dict[str, Any]:
         g = groups[key]
         ok = [r for r in g if r.get("status") == "COMPLETE" and r.get("endpoint")]
         metric = {}
-        for name, getter in (("realized_cost", lambda r: _m(r, "realized")), ("continuation_cost", lambda r: _m(r, "continuation")),
+        for name, getter in (("continuation_cost", lambda r: _m(r, "continuation")), ("realized_cost", lambda r: _m(r, "realized")),
+                             ("zaad_own_share", lambda r: (r.get("provenance") or {}).get("own_share")),
+                             ("zaad_retained_reviews", lambda r: (r.get("provenance") or {}).get("RETAINED_INCUMBENT")),
+                             ("zaad_own_reviews", lambda r: (r.get("provenance") or {}).get("OWN_CANDIDATE")),
                              ("purchase", lambda r: _m(r, "PURCHASE", 0.)), ("carrying", lambda r: _m(r, "CARRYING", 0.)),
                              ("shortage", lambda r: _m(r, "SHORTAGE", 0.)), ("inventory_value_change", lambda r: _m(r, "INVENTORY_VALUE_CHANGE", 0.)),
                              ("service_unit_fill", lambda r: _m(r, "service")), ("unmet_units", lambda r: _m(r, "unmet")),
@@ -90,7 +96,7 @@ def paired(rows: list[dict[str, Any]], *, reps: int = 4000, seed: int = 0) -> di
     for cell in sorted(by_cell):
         series = by_cell[cell]
         for base in BASELINES:
-            for metric, getter in (("realized_cost", lambda r: _m(r, "realized")), ("shortage", lambda r: _m(r, "SHORTAGE", 0.)),
+            for metric, getter in (("continuation_cost", lambda r: _m(r, "continuation")), ("realized_cost", lambda r: _m(r, "realized")), ("shortage", lambda r: _m(r, "SHORTAGE", 0.)),
                                    ("avg_inventory_units", lambda r: _m(r, "avg_inventory_units")), ("service_unit_fill", lambda r: _m(r, "service")),
                                    ("unmet_units", lambda r: _m(r, "unmet"))):
                 diffs = []
@@ -139,7 +145,7 @@ def strata(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 buckets: dict[str, list[float]] = defaultdict(list)
                 for pol in series.values():
                     if ZAAD in pol and base in pol:
-                        buckets[pol[ZAAD][cls]].append(float(_m(pol[ZAAD], "realized")) - float(_m(pol[base], "realized")))
+                        buckets[pol[ZAAD][cls]].append(float(_m(pol[ZAAD], COST)) - float(_m(pol[base], COST)))
                 out["|".join([*cell, cls, base])] = {k: {"series": len(v), "mean_diff": float(np.mean(v)), "zaad_better": int(np.sum(np.asarray(v) < -1e-9))}
                                                      for k, v in sorted(buckets.items())}
     return out
@@ -157,9 +163,9 @@ def failures(rows: list[dict[str, Any]]) -> dict[str, Any]:
             by[(r["window"], r["track"], r["scenario"], r["store_id"], r["product_id"])][r["policy"]] = r
     for key, pol in by.items():
         if ZAAD in pol:
-            best_base = min((b for b in BASELINES if b in pol), key=lambda b: _m(pol[b], "realized"), default=None)
+            best_base = min((b for b in BASELINES if b in pol), key=lambda b: _m(pol[b], COST), default=None)
             if best_base is not None:
-                gap = float(_m(pol[ZAAD], "realized")) - float(_m(pol[best_base], "realized"))
+                gap = float(_m(pol[ZAAD], COST)) - float(_m(pol[best_base], COST))
                 worst.append({"window": key[0], "track": key[1], "scenario": key[2], "store_id": key[3], "product_id": key[4], "best_baseline": best_base,
                               "zaad_minus_best_baseline": gap, "zaad_service": _m(pol[ZAAD], "service"), "baseline_service": _m(pol[best_base], "service"),
                               "zaad_inventory": _m(pol[ZAAD], "avg_inventory_units"), "baseline_inventory": _m(pol[best_base], "avg_inventory_units"),
@@ -188,19 +194,19 @@ def markdown(stage: str, table: dict[str, Any], pairs: dict[str, Any], fails: di
              f"{manifest.get('runs')} runs, {manifest.get('complete')} complete, {manifest.get('failed')} not complete; wall {manifest.get('wall_seconds', 0):.0f} s, "
              f"peak RSS {manifest.get('peak_rss_mb', 0):.0f} MB. Every figure is a modelled index under declared SYNTHETIC supply and normalized-unit economics; "
              "none is a realized saving.", "", "## Policy table (mean over completed series)", "",
-             "| window | track | scenario | policy | n | realized cost | purchase | carrying | shortage | fill | unmet | avg inv | stockout rev | orders | retained inc. | wall s |",
-             "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+             "| window | track | scenario | policy | n | continuation cost | realized cost | purchase | carrying | shortage | fill | unmet | avg inv | stockout rev | orders | ZAAD own share | wall s |",
+             "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for key, g in table.items():
         def f(name, nd=3):
             m = g.get(name)
             return "" if not m else f"{m['mean']:.{nd}f}"
-        lines.append(f"| {g['window']} | {g['track']} | {g['scenario']} | {g['policy']} | {g['complete']}/{g['runs']} | {f('realized_cost')} | {f('purchase')} | {f('carrying', 4)} | "
+        lines.append(f"| {g['window']} | {g['track']} | {g['scenario']} | {g['policy']} | {g['complete']}/{g['runs']} | {f('continuation_cost')} | {f('realized_cost')} | {f('purchase')} | {f('carrying', 4)} | "
                      f"{f('shortage')} | {f('service_unit_fill')} | {f('unmet_units')} | {f('avg_inventory_units')} | {f('stockout_reviews', 1)} | {f('orders_placed', 1)} | "
-                     f"{f('retained_incumbent_reviews', 1)} | {f('wall_seconds', 2)} |")
-    lines += ["", "## Paired comparison, ZAAD minus baseline per series (realized cost; negative favours ZAAD)", "",
+                     f"{f('zaad_own_share', 2)} | {f('wall_seconds', 2)} |")
+    lines += ["", "## Paired comparison, ZAAD minus baseline per series (continuation cost; negative favours ZAAD)", "",
               "| window | track | scenario | baseline | series | mean diff | 80 % bootstrap | 95 % bootstrap | ZAAD better / worse / ties | sign p |", "|---|---|---|---|---|---|---|---|---|---|"]
     for key, p in pairs.items():
-        if p["metric"] != "realized_cost":
+        if p["metric"] != COST:
             continue
         lines.append(f"| {p['window']} | {p['track']} | {p['scenario']} | {p['baseline']} | {p['series']} | {p['mean_difference_zaad_minus_baseline']:+.3f} | "
                      f"[{p['bootstrap_80'][0]:+.3f}, {p['bootstrap_80'][1]:+.3f}] | [{p['bootstrap_95'][0]:+.3f}, {p['bootstrap_95'][1]:+.3f}] | "

@@ -50,9 +50,12 @@ def _blend_weight(post: int, downward: bool, mode: str) -> float:
     return min(1., post / (12. if downward else 6.))
 
 
-def _fit_segment(segment: np.ndarray, shortage: float, holding: float) -> tuple[str, float, dict]:
+def _fit_segment(segment: np.ndarray, shortage: float, holding: float, seasonal: bool = True) -> tuple[str, float, dict]:
     methods = ["moving_average", "ewma", "croston_sba", "tsb", "recent_level"]
-    if len(segment) >= 68:
+    if seasonal and len(segment) >= 68:
+        # The 52-observation lag is an annual cycle on WEEKLY periods and nothing on any other period length; a
+        # caller planning daily periods passes seasonal=False (E1, FreshRetailNet audit: on daily data the candidate
+        # became eligible once the history passed 68 days and was selected on 197 of 1,100 such reviews).
         methods.append("seasonal_naive")
 
     def predict(a, method):
@@ -72,15 +75,17 @@ def _fit_segment(segment: np.ndarray, shortage: float, holding: float) -> tuple[
     return method, predict(segment, method), scores
 
 
-def estimate(y: np.ndarray, shortage: float, holding: float, adaptive: bool = True, mode: str = "symmetric") -> dict:
+def estimate(y: np.ndarray, shortage: float, holding: float, adaptive: bool = True, mode: str = "symmetric", seasonal: bool = True) -> dict:
+    """`seasonal` offers the 52-lag candidate; it is meaningful only on weekly periods (`worlds.forecast_all` passes
+    `req.period_days == 7`). The default keeps every weekly caller unchanged."""
     if len(y) < 16 or np.any(~np.isfinite(y)) or np.any(y < 0):
         raise ValueError("demand needs 16 finite, nonnegative, explicitly zero-filled observations")
     origin = change_origin(y, mode) if adaptive else 0
     segment = y[origin:]
     if adaptive and origin > 0 and mode in ("soft", "ensemble"):
         pre = y[:origin]
-        method, post_mean, scores = _fit_segment(segment, shortage, holding)
-        pre_method, pre_mean, _ = _fit_segment(pre, shortage, holding)
+        method, post_mean, scores = _fit_segment(segment, shortage, holding, seasonal)
+        pre_method, pre_mean, _ = _fit_segment(pre, shortage, holding, seasonal)
         downward = post_mean < pre_mean
         if mode == "soft":
             w = _blend_weight(len(segment), downward, mode)
@@ -101,7 +106,7 @@ def estimate(y: np.ndarray, shortage: float, holding: float, adaptive: bool = Tr
                 "zero_probability": 1 - probability, "decision_losses": scores,
                 "sd": sd, "sizes": nonzero.tolist(),
                 "interval_status": "empirical blend of pre/post-change segments; no coverage guarantee after drift"}
-    method, mean, scores = _fit_segment(segment, shortage, holding)
+    method, mean, scores = _fit_segment(segment, shortage, holding, seasonal)
     nonzero = segment[segment > 0]
     probability = float(np.mean(segment > 0))
     if method == "tsb" and len(nonzero):

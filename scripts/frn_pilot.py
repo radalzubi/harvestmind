@@ -36,9 +36,11 @@ import numpy as np
 from zaad.full.evaluation import endpoint
 from zaad.full.replay import replay
 from zaad.public.freshretailnet import loader, request_builder as RB, truth as T
-from zaad.public.freshretailnet.declaration import DEFAULT
+from zaad.public.freshretailnet.declaration import DEFAULT, VARIANTS, Declaration
 
-POLICIES = ("gated", "order_up_to", "base_stock", "reorder_point")
+#: `gated` is the production planner; `reorder_point` and `periodic:1` are projected rules (always executable); `base_stock` and
+#: `order_up_to` are the engine's target model solves (reported unconditionally: a different formulation, not an inferior policy)
+POLICIES = ("gated", "reorder_point", "periodic:1", "base_stock", "order_up_to")
 TRACKS = ("observed", "recovered")
 WINDOWS: dict[str, dict[str, Any]] = {
     "val1": {"origin": date(2024, 5, 13), "reviews": 14, "rolling": True, "role": "internal validation (training period)"},
@@ -66,11 +68,31 @@ def _truth_periods(window: dict[str, Any], horizon: int) -> int:
     return window["reviews"] - 1 + horizon if window["rolling"] else window["reviews"]
 
 
-def _supply_seed(store: int, product: int, window: str, scenario: str) -> int:
-    """Deterministic across processes (Python's hash() is salted per process; sha256 is not)."""
+def _supply_seed(store: int, product: int, window: str, scenario: str, version: str = DEFAULT.version) -> int:
+    """Deterministic across processes (Python's hash() is salted per process; sha256 is not). The v1 seed string used the
+    v1 version label; every v2 variant shares one supply realization per (series, window, scenario)."""
     import hashlib
-    digest = hashlib.sha256(f"{store}|{product}|{window}|{scenario}|{DEFAULT.version}".encode()).hexdigest()
+    digest = hashlib.sha256(f"{store}|{product}|{window}|{scenario}|{version}".encode()).hexdigest()
     return int(digest[:8], 16) % (2 ** 31)
+
+
+def decision_provenance(rows: list[dict]) -> dict[str, Any]:
+    """Per-review provenance of the production planner's executed decision, read from the warnings `choose` records
+    ([status, selected_policy, mode, *reasons]): OWN_CANDIDATE (status PENDING_REVIEW), RETAINED_INCUMBENT
+    (RETAIN_INCUMBENT) or ABSTAIN. A retained incumbent is the declared rule's projection executed by ZAAD, never an
+    optimization success; the counts make that visible in every result row."""
+    kinds = []
+    policies = []
+    modes = []
+    for r in rows:
+        w = [str(x) for x in (r.get("warnings") or [])]
+        status = w[0] if w else "UNKNOWN"
+        kinds.append({"PENDING_REVIEW": "OWN_CANDIDATE", "RETAIN_INCUMBENT": "RETAINED_INCUMBENT", "ABSTAIN": "ABSTAIN"}.get(status, status))
+        policies.append(w[1] if len(w) > 1 else None)
+        modes.append(next((x[5:] for x in w if x.startswith("mode=")), None))
+    counts = {k: kinds.count(k) for k in ("OWN_CANDIDATE", "RETAINED_INCUMBENT", "ABSTAIN")}
+    return {"by_review": kinds, "selected_policy_by_review": policies, "mode_by_review": modes, **counts,
+            "own_share": counts["OWN_CANDIDATE"] / len(kinds) if kinds else None}
 
 
 def derived_metrics(out: dict[str, Any], req, reviews: int) -> dict[str, Any]:
@@ -99,17 +121,22 @@ def derived_metrics(out: dict[str, Any], req, reviews: int) -> dict[str, Any]:
         "service_infeasible_reviews": sum(1 for r in rows if any("REQUESTED_SERVICE_INFEASIBLE" in str(w) for w in (r.get("warnings") or []))),
         "fallbacks": sum(1 for w in warnings if "FALLBACK" in str(w).upper()),
         "wall_seconds_by_review": [r.get("wall_seconds") for r in rows], "planner_states": [o.get("state") for o in orchestration][:20],
+        "state_counts": {st: sum(1 for o in orchestration if o.get("state") == st) for st in sorted({o.get("state") for o in orchestration if o.get("state")})},
     }
 
 
-def run_one(series, row, window_name, track, scenario, policy, *, req_by_track, world, stage_dir) -> dict[str, Any]:
+def run_one(series, row, window_name, track, scenario, policy, *, req_by_track, world, stage_dir, declaration: Declaration = DEFAULT,
+            variant: str = "corrected") -> dict[str, Any]:
     window = WINDOWS[window_name]
     req, record = req_by_track[track]
+    if policy != "gated" and req.incumbent_rule:
+        req = req.model_copy(update={"incumbent_rule": None})     # the declared incumbent rule is ZAAD's fallback, not a baseline input
     base = {"stage_dir": str(stage_dir), "store_id": row["store_id"], "product_id": row["product_id"], "stratum": row["stratum"],
             "volume_class": row["volume_class"], "stockout_class": row["stockout_class"], "regularity_class": row["regularity_class"],
             "promo_class": row["promo_class"], "window": window_name, "origin": window["origin"].isoformat(), "reviews": window["reviews"],
-            "rolling": window["rolling"], "track": track, "scenario": scenario, "policy": policy, "request": record,
-            "declaration_hash": DEFAULT.hash(), "evidence": "modelled comparison on public observed demand under declared SYNTHETIC supply; not a realized outcome"}
+            "rolling": window["rolling"], "track": track, "scenario": scenario, "policy": policy, "request": record, "variant": variant,
+            "declaration_hash": declaration.hash(), "declaration_version": declaration.version,
+            "evidence": "modelled comparison on public observed demand under declared SYNTHETIC supply; not a realized outcome"}
     t0, c0 = time.perf_counter(), time.process_time()
     try:
         out = replay(req, world, window["reviews"], policy, rolling=window["rolling"])
@@ -122,6 +149,8 @@ def run_one(series, row, window_name, track, scenario, policy, *, req_by_track, 
     result: dict[str, Any] = {**base, "status": status, "wall_seconds": wall, "cpu_seconds": cpu, "failure": out.get("failure")}
     if rows:
         result["derived"] = derived_metrics(out, req, window["reviews"])
+        if policy == "gated":
+            result["provenance"] = decision_provenance(rows)
         try:
             e = endpoint(req, rows, len(rows))
             result["endpoint"] = {k: v for k, v in e.items() if k != "ledger"}
@@ -140,7 +169,10 @@ def main() -> int:
     ap.add_argument("--policies", default=",".join(POLICIES))
     ap.add_argument("--db", default=str(loader.DEFAULT_DB))
     ap.add_argument("--out", default=str(RESULTS_ROOT))
+    ap.add_argument("--declaration", default="corrected", choices=sorted(VARIANTS), help="predeclared configuration (see declaration.VARIANTS)")
+    ap.add_argument("--label", default=None, help="results directory name (default: <stage>_<declaration>)")
     args = ap.parse_args()
+    declaration = VARIANTS[args.declaration]
     windows = [w for w in args.windows.split(",") if w]
     tracks = [t for t in args.tracks.split(",") if t]
     scenarios = [s for s in args.scenarios.split(",") if s]
@@ -149,14 +181,14 @@ def main() -> int:
         windows, tracks, scenarios = windows[:1], tracks[:1], scenarios[:1]
     manifest = json.loads(MANIFEST.read_text())
     rows = manifest["series"][:STAGES[args.stage]]
-    stage_dir = Path(args.out) / args.stage
+    stage_dir = Path(args.out) / (args.label or f"{args.stage}_{args.declaration}")
     stage_dir.mkdir(parents=True, exist_ok=True)
     runs_path = stage_dir / "runs.jsonl"
     if runs_path.exists():
         runs_path.unlink()
     conn = loader.connect(args.db)
     started = time.time()
-    run_manifest = {"stage": args.stage, "commit": _commit(), "declaration": DEFAULT.as_dict(), "selection_hash": manifest["selection_hash"],
+    run_manifest = {"stage": args.stage, "variant": args.declaration, "commit": _commit(), "declaration": declaration.as_dict(), "selection_hash": manifest["selection_hash"],
                     "selection_version": manifest["selection_version"], "series": [(r["store_id"], r["product_id"]) for r in rows],
                     "windows": {w: {**WINDOWS[w], "origin": WINDOWS[w]["origin"].isoformat()} for w in windows}, "tracks": tracks, "scenarios": scenarios,
                     "policies": policies, "dataset_manifest": loader.manifest_record(conn), "python": platform.python_version(),
@@ -169,7 +201,7 @@ def main() -> int:
                 window = WINDOWS[window_name]
                 for scenario in scenarios:
                     try:
-                        req_by_track = {t: RB.build_request(series, window["origin"], track=t, scenario=scenario) for t in tracks}
+                        req_by_track = {t: RB.build_request(series, window["origin"], track=t, scenario=scenario, declaration=declaration) for t in tracks}
                     except Exception as exc:  # noqa: BLE001 - a series that cannot be built is a recorded failure for every policy
                         for t in tracks:
                             for policy in policies:
@@ -180,14 +212,15 @@ def main() -> int:
                         continue
                     anchor_req, _ = req_by_track["observed"] if "observed" in req_by_track else next(iter(req_by_track.values()))
                     periods = _truth_periods(window, anchor_req.horizon)
-                    seed = _supply_seed(row["store_id"], row["product_id"], window_name, scenario)
+                    seed = _supply_seed(row["store_id"], row["product_id"], window_name, scenario, "frn-declaration-1")   # same supply draws as PR #114
                     base_world, world_record = T.truth_world(anchor_req, series, window["origin"], track="observed", periods=periods, seed=seed)
                     for track in tracks:
                         req, _ = req_by_track[track]
                         path, path_record = T.demand_path(series, window["origin"], track=track, periods=periods)
                         world = T.with_demand(base_world, req, path, f"truth-{track}-{window_name}")
                         for policy in policies:
-                            result = run_one(series, row, window_name, track, scenario, policy, req_by_track=req_by_track, world=world, stage_dir=stage_dir)
+                            result = run_one(series, row, window_name, track, scenario, policy, req_by_track=req_by_track, world=world, stage_dir=stage_dir,
+                                             declaration=declaration, variant=args.declaration)
                             result["truth"] = {**world_record, **path_record, "supply_seed": seed}
                             sink.write(json.dumps(result, default=str) + "\n")
                             sink.flush()

@@ -15,8 +15,10 @@ import hashlib
 import json
 from typing import Any
 
-DECLARATION_VERSION = "frn-declaration-1"
+DECLARATION_VERSION = "frn-declaration-2"
 DAYS_PER_YEAR = 365.0
+#: frn-declaration-1 (PR #114 original run) differs from this version only by the fields marked "v2" below; the original
+#: results and their manifest are kept unchanged under docs/remodel/evidence/frn/ and data/public/freshretailnet/results/fifty.
 
 
 @dataclass(frozen=True)
@@ -41,6 +43,12 @@ class Economics:
     service_target: float = 0.95
     shelf_life_days: int = 7                   # declared for every SKU: fresh goods, numbers not in the dataset
     opening_cover_days: float = 2.0            # opening stock = cover × mean training demand before the first origin
+    #: v2. Line capacity and maximum order per period as a multiple of mean history demand (v1 used 1,000,000 as "unbounded",
+    #: which the model's undeclared-storage big-M summed into coefficients of order 1e7 against quantities of order 1 and the
+    #: solver reported false INFEASIBLE: the root cause of the v1 base-stock/order-up-to infeasibility and of ZAAD's
+    #: proxy-incumbent abstentions). A finite declared cap is still far above any plan's need.
+    line_capacity_multiple: float = 50.0
+    line_capacity_floor: float = 10.0
 
     @property
     def holding_per_value_day(self) -> float:
@@ -73,6 +81,8 @@ class Declaration:
                                  "protection regime, and the fill-only variant below separates the two effects"),
         SupplyScenario("uncertain_fill_only", lead_days=2, lead_sd_days=0.0, fill_mean=0.9, fill_sd=0.1,
                        rationale="two-day lead, no lead spread, short deliveries: isolates fill uncertainty from the lateness state"),
+        SupplyScenario("uncertain_lead_only", lead_days=2, lead_sd_days=1.0, fill_mean=1.0, fill_sd=0.0,
+                       rationale="v2. two-day lead with one-day spread and full deliveries: isolates lead variability from fill variability"),
     )
     stress: dict[str, Any] = field(default_factory=lambda: {
         "name": "declared_tail", "fill_multiplier": 0.9, "extra_lead_days": 1, "demand_multiplier": 1.1,
@@ -85,6 +95,12 @@ class Declaration:
         "opening_stock": "SYNTHETIC: declared cover times DERIVED mean training demand",
         "supply": "SYNTHETIC", "economics": "SYNTHETIC normalized-unit indices", "purchase_orders": "SIMULATED by the replay, never observed",
         "prices_costs_units": "UNAVAILABLE in the dataset"})
+
+    #: v2. The declared operator rule ZAAD treats as its incumbent (retained on every review it cannot improve on, exactly as
+    #: production retains the operator's rule). None reproduces v1 (the engine's projected base-stock proxy, which ends the run
+    #: when its own solve is unusable). The decision provenance (own candidate / retained incumbent / abstention) is recorded
+    #: per review so a retained-incumbent review is never reported as an optimization success.
+    zaad_incumbent_rule: str | None = "reorder_point"
 
     def supply_named(self, name: str) -> SupplyScenario:
         for s in self.supply:
@@ -104,3 +120,24 @@ class Declaration:
 
 
 DEFAULT = Declaration()
+#: the PR #114 reference configuration, byte-for-byte the v1 inputs except that line caps are finite (the v1 value is a
+#: solver-conditioning defect, not an assumption worth preserving) and the engine's E1 correction applies
+REFERENCE_V1 = Declaration(zaad_incumbent_rule=None)
+
+
+def variant(name: str, **changes) -> Declaration:
+    """A predeclared variant of the default declaration; `name` is recorded with the hash in every result row."""
+    from dataclasses import replace as _replace
+    d = _replace(DEFAULT, economics=_replace(DEFAULT.economics, **{k: v for k, v in changes.items() if hasattr(DEFAULT.economics, k)}),
+                 **{k: v for k, v in changes.items() if not hasattr(DEFAULT.economics, k)})
+    return d
+
+
+VARIANTS: dict[str, Declaration] = {
+    "reference_v1": REFERENCE_V1,                                   # original inputs + finite caps + E1; no incumbent rule
+    "corrected": DEFAULT,                                           # + declared incumbent rule (reorder_point)
+    "target_90": variant("target_90", service_target=0.90),
+    "target_85": variant("target_85", service_target=0.85),
+    "holding_x4": variant("holding_x4", holding_annual=0.32, cost_of_capital_annual=0.40),   # 72 %/yr: cheap goods, expensive capital
+    "margin_x2": variant("margin_x2", selling_price=2.0),                                      # shortage twice as costly as v1
+}

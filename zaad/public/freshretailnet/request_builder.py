@@ -87,6 +87,7 @@ def build_request(series: SeriesDays, origin: date, *, track: str, scenario: str
     service, source = f"svc_{sku}_{loc}", f"src_{sku}_{loc}"
     mean_demand = float(np.mean(demand))
     opening = eco.opening_cover_days * mean_demand
+    cap = max(eco.line_capacity_floor, eco.line_capacity_multiple * mean_demand)     # finite: see Economics.line_capacity_multiple
     history_rows = series.before(origin)[-len(demand):]
     payload: dict[str, Any] = {
         "operator_id": "frn_pilot", "as_of": as_of, "currency": "USD", "period_days": declaration.period_days, "horizon": H,
@@ -97,10 +98,10 @@ def build_request(series: SeriesDays, origin: date, *, track: str, scenario: str
         "calendars": [{**known, "id": "daily"}],
         "terms": [{**known, "id": "immediate", "deposit_fraction": 0., "balance_trigger": "arrival", "net_days": 0, "financing_fee_fraction": 0.,
                    "fx_rate_to_currency": 1., "currency": "USD", "fx_basis": "same_currency", "letter_of_credit_fraction": 0.}],
-        "resources": [{**known, "id": "supplier_cap", "capacity_by_period": [BIG] * H, "failure_domains": ["supplier"]}],
+        "resources": [{**known, "id": "supplier_cap", "capacity_by_period": [cap] * H, "failure_domains": ["supplier"]}],
         "sources": [{**known, "id": source, "supplier": "declared_supplier", "sku": sku, "destination": loc, "route": ["declared_supplier", loc],
-                     "resources": ["supplier_cap"], "capacity_by_period": [BIG] * H, "unit_price": eco.unit_cost, "freight_per_unit": 0.,
-                     "handling_per_unit": 0., "minimum": 0., "multiple": 0., "maximum": BIG, "fixed_order_fee": 0., "terms": "immediate",
+                     "resources": ["supplier_cap"], "capacity_by_period": [cap] * H, "unit_price": eco.unit_cost, "freight_per_unit": 0.,
+                     "handling_per_unit": 0., "minimum": 0., "multiple": 0., "maximum": cap, "fixed_order_fee": 0., "terms": "immediate",
                      "order_calendar": "daily", "shipping_calendar": "daily", "lead_days": supply.lead_days, "dispatch_days": 0,
                      "fill_mean": supply.fill_mean, "fill_sd": supply.fill_sd, "lead_sd_days": supply.lead_sd_days, "approved": True,
                      "compliance": "cleared", "quote_expires": as_of + timedelta(days=365), "quote_reference": f"SYNTHETIC:{declaration.version}:{supply.name}"}],
@@ -118,11 +119,13 @@ def build_request(series: SeriesDays, origin: date, *, track: str, scenario: str
         "stresses": [{**declaration.stress, "recovery_period": H}],
         "seed": seed, "scenarios": declaration.scenarios, "max_solve_seconds": declaration.max_solve_seconds,
         "downside_cost_tolerance": .05, "service_tolerance": .01, "evidence_label": "SYNTHETIC",
+        "incumbent_rule": declaration.zaad_incumbent_rule,
     }
     req = Request.model_validate(payload)
     record = {"store_id": series.store_id, "product_id": series.product_id, "origin": origin.isoformat(), "track": track, "scenario": scenario,
               "declaration_version": declaration.version, "declaration_hash": declaration.hash(), "history_days": len(demand),
-              "mean_history_demand": mean_demand, "opening_stock": opening, "demand": demand_record,
+              "mean_history_demand": mean_demand, "opening_stock": opening, "line_capacity": cap, "incumbent_rule": declaration.zaad_incumbent_rule,
+              "demand": demand_record,
               "evidence": {"demand_history": demand_record["evidence"] if "evidence" in demand_record else "DERIVED (recovered)",
                            "opening_stock": "SYNTHETIC (declared cover x DERIVED mean)", "supply": "SYNTHETIC", "economics": "SYNTHETIC",
                            "evidence_label_on_request": "SYNTHETIC (the contract's label vocabulary; demand is public observed data)"}}
