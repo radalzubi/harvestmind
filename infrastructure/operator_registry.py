@@ -136,6 +136,10 @@ class OperatorRegistry:
         conn = duckdb.connect(str(self.data_root / db_rel))
         try:
             setup_db(conn)
+            # HARDENING V1, H3b: this vault's whole life is under recommendation-exposure recording, and the stamp
+            # names the file it was created as (a copy served from elsewhere is not this vault)
+            from api.product.operator_plans import stamp_vault_creation
+            stamp_vault_creation(conn, str((self.data_root / db_rel).resolve()))
         finally:
             conn.close()
 

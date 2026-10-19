@@ -153,10 +153,11 @@ def test_h_i_plan_mode_recommends_and_compares_against_the_model_only():
 def test_j_shadow_comparison_is_not_ready_without_a_captured_operator_plan():
     shadow = C.shadow_readiness(None)
     assert shadow["readiness"] == C.NOT_READY_FOR_THIS_DECISION and shadow["requires"] == C.ACTUAL_OPERATOR_PLAN and shadow["claim_class"] is None
-    with pytest.raises(NotImplementedError):
-        C.plan_comparison(SimpleNamespace(incumbent_rule="x", incumbent_orders=()), status="PENDING_REVIEW", selected_policy="p", actual_operator_plan={"orders": []})
-    with pytest.raises(NotImplementedError):
-        C.shadow_readiness({"orders": []})
+    # H3b implements the mode: evidence that establishes no operator provenance is still NOT READY, never a comparator
+    unestablished = C.shadow_readiness({"orders": []})
+    assert unestablished["readiness"] == C.NOT_READY_FOR_THIS_DECISION and unestablished["permissions"]["can_compare"] is False
+    via_plan = C.plan_comparison(SimpleNamespace(incumbent_rule="x", incumbent_orders=()), status="PENDING_REVIEW", selected_policy="p", actual_operator_plan={"orders": []})
+    assert via_plan["mode"] == C.SHADOW_COMPARISON_MODE and via_plan["comparator"]["type"] == C.NONE and via_plan["claim_class"] == C.PLAN_ONLY
 
 
 # ── K / L / M: historical exact vs transformed, and the system baseline ──

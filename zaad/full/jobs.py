@@ -101,6 +101,22 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _as_utc(stamp: datetime) -> datetime:
+    return stamp.astimezone(timezone.utc) if stamp.tzinfo else stamp.replace(tzinfo=timezone.utc)
+
+
+def _origin_of(report_json: str | None) -> tuple[int, str | None]:
+    """(json_valid, report.as_of) for one stored report, as the SQL path would report them."""
+    if not report_json:
+        return 0, None
+    try:
+        report = json.loads(report_json)
+    except ValueError:
+        return 0, None
+    origin = report.get("as_of") if isinstance(report, dict) else None
+    return 1, (str(origin) if origin else None)
+
+
 def _plus(seconds: float) -> str:
     return (datetime.now(timezone.utc) + timedelta(seconds=seconds)).isoformat()
 
@@ -270,6 +286,46 @@ class JobStore:
     def created_since(self, operator: str, since: datetime) -> int:
         with self.connect() as db:
             return db.execute("SELECT COUNT(*) FROM jobs WHERE operator = ? AND created_at >= ?", (operator, since.isoformat())).fetchone()[0]
+
+    def earliest_done_for_origin(self, operator: str, as_of: datetime) -> dict:
+        """The earliest finished job of ONE operator whose report was for the planning origin `as_of`, from a
+        complete scan of that operator's finished jobs: one SELECT over the operator's rows with no window and
+        no page, so it examines every row that exists and terminates with the table. Returns the match (or
+        none) together with the scan's own accounting, so a caller can tell a verified history from a doubtful
+        one: `scanned` finished rows were examined, `unreadable` of them could not be assessed (no report, a
+        report whose origin cannot be read, or a finish stamp that cannot be read). Any unreadable row may be an
+        earlier exposure for the origin, so `unreadable > 0` means the history is NOT established as complete.
+
+        `finished_at` is the exposure stamp: it is written together with the report in the one update that
+        makes a job DONE, so it is the first moment the recommendation was readable. Rows of other operators are
+        never read (the WHERE clause is the tenant boundary, as in `get` and `list`)."""
+        self.reconcile()
+        target = _as_utc(as_of)
+        earliest: datetime | None = None
+        which: str | None = None
+        scanned = unreadable = 0
+        with self.connect() as db:
+            try:
+                rows = db.execute("SELECT id, finished_at, json_valid(report_json), "
+                                  "CASE WHEN json_valid(report_json) THEN json_extract(report_json, '$.as_of') END "
+                                  "FROM jobs WHERE operator = ? AND status = 'DONE' ORDER BY finished_at", (operator,)).fetchall()
+            except sqlite3.OperationalError:          # a SQLite without the JSON functions: read the reports in Python
+                rows = [(identity, finished, *_origin_of(report)) for identity, finished, report in
+                        db.execute("SELECT id, finished_at, report_json FROM jobs WHERE operator = ? AND status = 'DONE' ORDER BY finished_at",
+                                   (operator,)).fetchall()]
+        for identity, finished_at, valid, origin in rows:
+            scanned += 1
+            if not valid or not origin or not finished_at:
+                unreadable += 1
+                continue
+            try:
+                when, origin_at = _as_utc(datetime.fromisoformat(str(finished_at))), _as_utc(datetime.fromisoformat(str(origin)))
+            except ValueError:
+                unreadable += 1
+                continue
+            if origin_at == target and (earliest is None or when < earliest):
+                earliest, which = when, str(identity)
+        return {"id": which, "finished_at": earliest, "scanned": scanned, "unreadable": unreadable}
 
     def request_json(self, identity: str) -> str:
         with self.connect() as db:
