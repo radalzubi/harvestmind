@@ -91,3 +91,22 @@ def test_order_constraints_are_a_no_op_on_a_single_sku_m5_request():
         before, notes = dict(plan.purchases), []
         apply_order_constraints(req, plan.purchases, notes)
         assert plan.purchases == before and notes == [] and plan.warnings == [f"baseline:{rule}"]
+
+
+def test_cash_capped_projections_pay_the_fixed_order_cost_and_survive_settlement():
+    """coupled_cash: a four-week budget, a one-week credit line and a $40 fixed cost per order-week; the first run's rules failed
+    settlement with "insufficient dated liquidity" because the cap ignored the fixed cost."""
+    series = _group()
+    origin = date(2014, 1, 4) + timedelta(weeks=40)
+    reviews = 4
+    req, _ = C.build_group_request(series, origin, scenario="stable", coupling=C.VARIANTS["coupled_cash"])
+    req = req.model_copy(update={"incumbent_rule": None})
+    assert req.liquidity.opening_cash is not None and req.supplier_terms[0].fixed_order_cost > 0
+    world, _ = C.truth_world(req, series, origin, periods=reviews - 1 + req.horizon, seed=7)
+    for rule in RULES:
+        plan = baseline_plan(req, rule)
+        value0 = sum(q * next(s for s in req.sources if s.id == sid).unit_price for (sid, t), q in plan.purchases.items() if t == 0)
+        if value0 > 0:
+            assert value0 + req.supplier_terms[0].fixed_order_cost <= req.liquidity.opening_cash + (req.liquidity.credit_limit or 0.) + 1e-6
+        out = replay(req, world, reviews, rule, rolling=True)
+        assert out["status"] == "COMPLETE", (rule, out.get("failure"), len(out.get("reviews", [])))

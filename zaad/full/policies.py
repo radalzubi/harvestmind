@@ -140,14 +140,23 @@ def apply_cash_cap(req: Request, purchases: dict[tuple[str, int], float]) -> Non
     sources = {s.id: s for s in req.sources}
     credit = math.inf if req.liquidity.credit_limit is None else req.liquidity.credit_limit
     available = req.liquidity.opening_cash - req.liquidity.opening_debt + credit - req.liquidity.minimum_cash
+    order_costs = {supplier: st.fixed_order_cost for supplier, _, st in supplier_orders(req)}
+
+    def fixed_costs(t: int) -> float:
+        # the supplier's fixed order cost (once per supplier order-week) and the lines' fixed order fees are paid with the
+        # order; a projection that ignored them overspent by exactly those amounts and failed settlement with
+        # "insufficient dated liquidity" (M5 coupled cash variant)
+        active = {sources[sid].supplier for (sid, k), q in purchases.items() if k == t and q > 0}
+        return sum(order_costs.get(sup, 0.) for sup in active) + sum(sources[sid].fixed_order_fee for (sid, k), q in purchases.items() if k == t and q > 0)
     for t in range(req.horizon):
         available += req.liquidity.known_receivables[t] - req.liquidity.other_payments[t]
         lines = [(sid, q) for (sid, k), q in purchases.items() if k == t and q > 0]
         value = sum(q * sources[sid].unit_price * terms[sources[sid].terms].fx_rate_to_currency for sid, q in lines)
-        if value <= available + 1e-9:
-            available -= value
+        fixed = fixed_costs(t)
+        if value + fixed <= available + 1e-9:
+            available -= value + fixed
             continue
-        scale = max(0., available) / value if value > 0 else 0.
+        scale = max(0., available - fixed) / value if value > 0 else 0.
         for sid, q in lines:
             src = sources[sid]
             capped = q * scale
@@ -155,7 +164,7 @@ def apply_cash_cap(req: Request, purchases: dict[tuple[str, int], float]) -> Non
             if pack > 0:
                 capped = math.floor(capped / pack + 1e-9) * pack
             purchases[sid, t] = capped if capped >= src.minimum else 0.
-        available -= sum(q * sources[sid].unit_price * terms[sources[sid].terms].fx_rate_to_currency for (sid, k), q in purchases.items() if k == t)
+        available -= sum(q * sources[sid].unit_price * terms[sources[sid].terms].fx_rate_to_currency for (sid, k), q in purchases.items() if k == t) + fixed_costs(t)
 
 
 def _order_breach(req: Request, purchases: dict[tuple[str, int], float], srcs: list, st, t: int) -> str | None:
