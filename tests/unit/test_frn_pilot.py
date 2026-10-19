@@ -14,7 +14,6 @@ import duckdb
 import numpy as np
 import pytest
 
-from zaad.full.contracts import Request
 from zaad.full.evaluation import endpoint
 from zaad.full.replay import replay
 from zaad.full.worlds import dates

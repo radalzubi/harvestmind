@@ -52,6 +52,13 @@ class Verified:
     bytes: int
 
 
+def _one(conn: duckdb.DuckDBPyConnection, sql: str, params: list[Any] | None = None) -> tuple[Any, ...]:
+    row = conn.execute(sql, params or []).fetchone()
+    if row is None:
+        raise DatasetMismatch(f"query returned no row: {sql[:80]}")
+    return row
+
+
 def sha256_of(path: Path, chunk: int = 1 << 20) -> str:
     digest = hashlib.sha256()
     with open(path, "rb") as handle:
@@ -110,7 +117,7 @@ def load(train: str | Path, eval_: str | Path, db: str | Path = DEFAULT_DB, *, r
         conn.execute("""CREATE TABLE frn_manifest (file VARCHAR, sha256 VARCHAR, bytes BIGINT, rows BIGINT, dataset VARCHAR, license VARCHAR,
                                                    knowledge_rule VARCHAR, evidence VARCHAR, loaded_at TIMESTAMP)""")
         for v in verified:
-            rows = conn.execute("SELECT count(*) FROM frn_daily WHERE split = ?", ["train" if v.name.startswith("train") else "eval"]).fetchone()[0]
+            rows = _one(conn, "SELECT count(*) FROM frn_daily WHERE split = ?", ["train" if v.name.startswith("train") else "eval"])[0]
             if rows != MANIFEST[v.name]["rows"]:
                 raise DatasetMismatch(f"{v.name}: {rows} rows loaded, manifest says {MANIFEST[v.name]['rows']}")
             conn.execute("INSERT INTO frn_manifest VALUES (?, ?, ?, ?, ?, ?, ?, 'OBSERVED', ?)",
@@ -137,7 +144,7 @@ def _manifest_matches(conn: duckdb.DuckDBPyConnection) -> bool:
 def _check_invariants(conn: duckdb.DuckDBPyConnection) -> None:
     """The structural facts the audit established; a violation means the file is not what was audited."""
     lo, hi = BUSINESS_HOURS.start + 1, BUSINESS_HOURS.stop          # DuckDB list slices are 1-based and inclusive
-    bad = conn.execute(f"""SELECT
+    bad = _one(conn, f"""SELECT
         count(*) FILTER (WHERE abs(list_sum(hours_sale) - sale_amount) > 1e-6),
         count(*) FILTER (WHERE list_sum(hours_stock_status[{lo}:{hi}]) <> stock_hours_out),
         count(*) FILTER (WHERE len(hours_sale) <> 24 OR len(hours_stock_status) <> 24),
@@ -145,7 +152,7 @@ def _check_invariants(conn: duckdb.DuckDBPyConnection) -> None:
         count(*) FILTER (WHERE list_max(hours_stock_status) > 1 OR list_min(hours_stock_status) < 0),
         (SELECT count(*) FROM (SELECT store_id, product_id, d FROM frn_daily GROUP BY 1,2,3 HAVING count(*) > 1)),
         (SELECT count(DISTINCT (store_id, product_id)) FROM frn_daily)
-        FROM frn_daily""").fetchone()
+        FROM frn_daily""")
     names = ("sum(hours_sale) != sale_amount", "stock_hours_out != sum(flags 6..21)", "list length != 24", "negative or null sales",
              "flag outside {0,1}", "duplicate (store, product, day) keys")
     problems = [f"{n}: {c} rows" for n, c in zip(names, bad[:6]) if c]
