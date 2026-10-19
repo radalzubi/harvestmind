@@ -77,3 +77,17 @@ def test_order_constraints_are_a_no_op_without_lot_mov_load_or_cash_terms():
     notes: list[str] = []
     apply_order_constraints(req, plan.purchases, notes)
     assert plan.purchases == before and notes == []
+
+
+def test_order_constraints_are_a_no_op_on_a_single_sku_m5_request():
+    """Experiment A requests carry no MOV, pallet cap or lots, so the fix cannot touch their projections."""
+    from zaad.public.m5 import request_builder as RB
+    s = _series("FOODS_3_777", "TX_1", 8.0, 2.5, date(2014, 1, 4), 70, 3)
+    origin = date(2014, 1, 4) + timedelta(weeks=60)
+    req, _ = RB.build_request(s, origin, scenario="uncertain")
+    req = req.model_copy(update={"incumbent_rule": None})
+    for rule in ("reorder_point", "periodic:1", "base_stock" if False else "economic_lot"):
+        plan = baseline_plan(req, rule)
+        before, notes = dict(plan.purchases), []
+        apply_order_constraints(req, plan.purchases, notes)
+        assert plan.purchases == before and notes == [] and plan.warnings == [f"baseline:{rule}"]

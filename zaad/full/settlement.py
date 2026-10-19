@@ -58,6 +58,7 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
     stock: dict[tuple[str, str, int], float] = defaultdict(float)
     locked: dict[str, float] = defaultdict(float)
     ledger: dict[str, float] = defaultdict(float)
+    ledger["opening_assets"] = 0.          # always present: a request with no stock, inbound or prepaid lots is legal (M5 cash variant, KeyError in replay)
     shipments: list[dict] = []
     pending, trace = [], []
     payments: dict[int, float] = defaultdict(float)
@@ -349,6 +350,10 @@ def settle(req: Request, plan: Solution, world: World, steps: int | None = None,
             repay = min(debt, max(0., cash - required))
             cash -= repay
             debt -= repay
+            # floating residue (|x| < 1e-9) is not a balance: a residual debt of 1e-16 above a zero credit limit made the
+            # rolled-forward request fail validation ("opening_debt <= credit_limit") in the M5 cash variant
+            cash = 0. if abs(cash) < 1e-9 else cash
+            debt = 0. if abs(debt) < 1e-9 else debt
             # Working capital (P1): own cash deployed below the opening balance earns the cost of
             # capital elsewhere. Charged after borrowing, so the part financed by drawn credit carries
             # interest above and never a second capital charge; idle cash above opening earns nothing.

@@ -86,6 +86,8 @@ def build_request(series: SeriesWeeks, origin: date, *, scenario: str, declarati
     unit_cost = price * (1. - eco.margin_fraction)
     demand = [w.sales for w in history]
     mean_weekly = float(np.mean(demand))
+    if mean_weekly <= 0:
+        raise ValueError(f"{series.id}: no sales in the {len(history)}-week history before {origin}; nothing to plan (recorded, not planned)")
     opening = eco.opening_cover_weeks * mean_weekly
     cap = max(eco.line_capacity_floor, eco.line_capacity_multiple * mean_weekly)
     as_of = datetime.combine(origin, time(0, 0), tzinfo=timezone.utc)

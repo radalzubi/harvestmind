@@ -96,8 +96,9 @@ def build_group_request(series: list[SeriesWeeks], origin: date, *, scenario: st
     for s in series:
         hist = s.before(origin)[-coupling.history_weeks:]
         price = s.price_at(origin)
-        if len(hist) < MIN_HISTORY_WEEKS or price is None:
-            dropped.append({"series_id": s.id, "reason": f"{len(hist)} weeks of history" if len(hist) < MIN_HISTORY_WEEKS else f"not listed (no price) at {origin}"})
+        if len(hist) < MIN_HISTORY_WEEKS or price is None or sum(w.sales for w in hist) <= 0:
+            dropped.append({"series_id": s.id, "reason": f"{len(hist)} weeks of history" if len(hist) < MIN_HISTORY_WEEKS
+                            else f"not listed (no price) at {origin}" if price is None else f"no sales in the history before {origin}"})
             continue
         usable.append(s)
     if len(usable) < 2:
