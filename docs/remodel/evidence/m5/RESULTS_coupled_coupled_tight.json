@@ -1,0 +1,2966 @@
+{
+ "run_manifest": {
+  "stage": "PARTIAL (no run_manifest.json: the run was stopped before completion)",
+  "coupling": "coupled_tight",
+  "commit": null,
+  "declaration": {},
+  "selection_hash": "",
+  "groups": [
+   "FOODS_1_046_TX_2_evaluation+FOODS_3_671_TX_2_evaluation+HOBBIES_1_132_TX_2_evaluation+HOUSEHOLD_1_321_TX_2_evaluation+HOUSEHOLD_1_208_TX_2_evaluation+HOUSEHOLD_2_025_TX_2_evaluation",
+   "FOODS_1_137_TX_1_evaluation+FOODS_1_049_TX_1_evaluation+HOBBIES_1_415_TX_1_evaluation+HOBBIES_1_279_TX_1_evaluation+HOBBIES_2_109_TX_1_evaluation+HOUSEHOLD_1_456_TX_1_evaluation",
+   "FOODS_1_218_CA_4_evaluation+FOODS_3_484_CA_4_evaluation+HOBBIES_1_158_CA_4_evaluation+HOBBIES_1_423_CA_4_evaluation+HOUSEHOLD_2_170_CA_4_evaluation+HOUSEHOLD_1_164_CA_4_evaluation",
+   "FOODS_2_318_CA_3_evaluation+HOBBIES_1_337_CA_3_evaluation+HOBBIES_1_210_CA_3_evaluation+HOUSEHOLD_1_095_CA_3_evaluation",
+   "FOODS_3_692_CA_2_evaluation+HOBBIES_1_144_CA_2_evaluation",
+   "FOODS_3_794_CA_1_evaluation+FOODS_3_535_CA_1_evaluation+FOODS_2_107_CA_1_evaluation+HOUSEHOLD_1_277_CA_1_evaluation+HOUSEHOLD_2_123_CA_1_evaluation+HOUSEHOLD_1_299_CA_1_evaluation"
+  ],
+  "runs": 72,
+  "complete": 72,
+  "failed": 0,
+  "wall_seconds": 0.0
+ },
+ "group_table": {
+  "final|fill_only|economic_lot": {
+   "window": "final",
+   "scenario": "fill_only",
+   "policy": "economic_lot",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2785.814120567157,
+    "median": 2268.03738404503,
+    "max": 5237.576982939344,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2864.742389139044,
+    "median": 2319.4293445698736,
+    "max": 5489.229760290713,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1622.9289999999999,
+    "median": 980.4479999999999,
+    "max": 5307.204,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 293.3333333333333,
+    "median": 360.0,
+    "max": 440.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 16.42918442631639,
+    "median": 13.08307088040777,
+    "max": 40.346751785555846,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 985.3446535335833,
+    "median": 651.0373256719482,
+    "max": 2797.0969230769238,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": -53.29378215418907,
+    "median": -45.86631837805257,
+    "max": 359.0961584981087,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.7227047979719092,
+    "median": 0.8304403447060449,
+    "max": 0.953889103302896,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 258.9201265353652,
+    "median": 145.12061434165787,
+    "max": 911.6538461538462,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 97.57862930970957,
+    "median": 111.25150635080274,
+    "max": 154.61531467715,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 3.6666666666666665,
+    "median": 4.0,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.46309109000628385,
+    "median": 0.3632478632478633,
+    "max": 0.9275086889998517,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 7.333333333333333,
+    "median": 9.0,
+    "max": 11.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 1.8535353535353536,
+    "median": 1.7828282828282829,
+    "max": 2.888888888888889,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 761.0,
+    "median": 582.0,
+    "max": 1596.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 97.57862930970958,
+    "median": 111.25150635080274,
+    "max": 154.61531467715002,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 8.0,
+    "median": 9.5,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 2.1666666666666665,
+    "median": 0.5,
+    "max": 11.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 18.666666666666668,
+    "median": 20.0,
+    "max": 21.0,
+    "n": 6
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.139081270666793,
+    "median": 0.1413589579751715,
+    "max": 0.23681575001683086,
+    "n": 6
+   }
+  },
+  "final|fill_only|gated": {
+   "window": "final",
+   "scenario": "fill_only",
+   "policy": "gated",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2720.6081481496662,
+    "median": 2268.03738404503,
+    "max": 5069.479654116253,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2814.6204734832986,
+    "median": 2319.4293445698736,
+    "max": 5332.212146284158,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1852.501,
+    "median": 1367.331,
+    "max": 5141.052,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 320.0,
+    "median": 360.0,
+    "max": 440.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 16.180210077309596,
+    "median": 16.05027312400944,
+    "max": 33.71138172254005,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 745.2035980008263,
+    "median": 685.9521031153886,
+    "max": 1573.0888461538464,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": -119.26433459483722,
+    "median": -54.89663055453266,
+    "max": 47.82095957922701,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.7270768895931404,
+    "median": 0.8734381014582704,
+    "max": 0.9432178503677664,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 245.9078892298768,
+    "median": 106.62340664224166,
+    "max": 911.6538461538462,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 98.98386151388071,
+    "median": 106.10399363075105,
+    "max": 185.81015346541838,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.166666666666667,
+    "median": 4.0,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.43083754778430805,
+    "median": 0.3632478632478633,
+    "max": 0.9123872409367506,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 8.0,
+    "median": 9.0,
+    "max": 11.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 2.206349206349206,
+    "median": 2.619047619047619,
+    "max": 3.0,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 764.0,
+    "median": 552.0,
+    "max": 1548.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 98.98386151388071,
+    "median": 106.10399363075106,
+    "max": 185.81015346541835,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 8.166666666666666,
+    "median": 8.5,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 6
+   },
+   "zaad_own_share": {
+    "mean": 0.14102564102564105,
+    "median": 0.038461538461538464,
+    "max": 0.38461538461538464,
+    "n": 6
+   },
+   "zaad_retained_reviews": {
+    "mean": 11.166666666666666,
+    "median": 12.5,
+    "max": 13.0,
+    "n": 6
+   },
+   "wall_seconds": {
+    "mean": 343.0459858123407,
+    "median": 343.9230161870364,
+    "max": 657.8641704590991,
+    "n": 6
+   }
+  },
+  "final|fill_only|periodic:1": {
+   "window": "final",
+   "scenario": "fill_only",
+   "policy": "periodic:1",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2725.4674305441536,
+    "median": 2197.963834179142,
+    "max": 5137.263556063737,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2779.5442538884213,
+    "median": 2241.1779547381493,
+    "max": 5305.884616062742,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1512.3709999999999,
+    "median": 819.7979999999999,
+    "max": 4681.781999999999,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 306.6666666666667,
+    "median": 280.0,
+    "max": 520.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 10.343005885993419,
+    "median": 8.203727497986437,
+    "max": 18.98435284599499,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 890.5718664395126,
+    "median": 1076.81982449787,
+    "max": 1409.1546263741538,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": 59.59171489624905,
+    "median": 61.393532707942924,
+    "max": 319.3051430629333,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.6641891780989441,
+    "median": 0.6584249083196854,
+    "max": 0.9547634724920103,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 273.13885273738725,
+    "median": 257.74969499369166,
+    "max": 726.7029695431027,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 73.05937070354189,
+    "median": 57.20587901947037,
+    "max": 175.6175575356856,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.5,
+    "median": 5.5,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.35383487757521187,
+    "median": 0.12106036324786325,
+    "max": 0.9120187345741262,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 7.666666666666667,
+    "median": 7.0,
+    "max": 13.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 1.9001554001554002,
+    "median": 1.4696969696969697,
+    "max": 3.4615384615384617,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 672.0,
+    "median": 480.0,
+    "max": 1398.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 73.05937070354189,
+    "median": 57.205879019470366,
+    "max": 175.6175575356856,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 9.333333333333334,
+    "median": 12.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 2.1666666666666665,
+    "median": 0.5,
+    "max": 9.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 15.0,
+    "median": 18.0,
+    "max": 24.0,
+    "n": 6
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.1398844375119855,
+    "median": 0.14281314599793404,
+    "max": 0.22861558303702623,
+    "n": 6
+   }
+  },
+  "final|fill_only|reorder_point": {
+   "window": "final",
+   "scenario": "fill_only",
+   "policy": "reorder_point",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2717.9836522762457,
+    "median": 2197.963834179142,
+    "max": 5133.229018710604,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2769.805558884838,
+    "median": 2241.1779547381493,
+    "max": 5294.844446041241,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1498.5529999999999,
+    "median": 819.7979999999999,
+    "max": 4635.833999999999,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 300.0,
+    "median": 280.0,
+    "max": 520.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 10.343005885993419,
+    "median": 8.203727497986437,
+    "max": 18.98435284599499,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 890.5718664395126,
+    "median": 1076.81982449787,
+    "max": 1409.1546263741538,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": 70.33768655933233,
+    "median": 61.393532707942924,
+    "max": 319.3051430629333,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.6641891780989441,
+    "median": 0.6584249083196854,
+    "max": 0.9547634724920103,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 273.13885273738725,
+    "median": 257.74969499369166,
+    "max": 726.7029695431027,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 73.05937070354189,
+    "median": 57.20587901947037,
+    "max": 175.6175575356856,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.5,
+    "median": 5.5,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.35383487757521187,
+    "median": 0.12106036324786325,
+    "max": 0.9120187345741262,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 7.5,
+    "median": 7.0,
+    "max": 13.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 1.8790598290598293,
+    "median": 1.4833333333333334,
+    "max": 3.3076923076923075,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 659.0,
+    "median": 447.0,
+    "max": 1386.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 73.05937070354189,
+    "median": 57.205879019470366,
+    "max": 175.6175575356856,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 9.333333333333334,
+    "median": 12.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 3.5,
+    "median": 1.5,
+    "max": 9.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 13.333333333333334,
+    "median": 15.5,
+    "max": 22.0,
+    "n": 6
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.1439067983495382,
+    "median": 0.14256893697893247,
+    "max": 0.23628316703252494,
+    "n": 6
+   }
+  },
+  "final|mild_lead|economic_lot": {
+   "window": "final",
+   "scenario": "mild_lead",
+   "policy": "economic_lot",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2595.1553930180235,
+    "median": 2146.062101406609,
+    "max": 4610.796472859634,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2677.3744044070513,
+    "median": 2207.035031860207,
+    "max": 4820.217848816568,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1374.5199999999998,
+    "median": 837.6689999999999,
+    "max": 4214.826,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 260.0,
+    "median": 300.0,
+    "max": 360.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 17.07558517628205,
+    "median": 14.32743962647929,
+    "max": 47.00527958579881,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 1095.6590384615386,
+    "median": 868.675576923077,
+    "max": 2823.971538461539,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": -69.88021923076924,
+    "median": -71.32396923076925,
+    "max": 274.8623230769231,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.6635395669746781,
+    "median": 0.7805779125931755,
+    "max": 0.8990908504739185,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 305.2371794871795,
+    "median": 187.11538461538456,
+    "max": 991.6538461538462,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 102.76429980276134,
+    "median": 99.33579881656806,
+    "max": 201.25147928994085,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.333333333333333,
+    "median": 4.5,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.4126642886773381,
+    "median": 0.3085603632478633,
+    "max": 0.8465765004226543,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 6.5,
+    "median": 7.5,
+    "max": 9.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 1.8518518518518519,
+    "median": 1.6111111111111112,
+    "max": 3.2222222222222223,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 671.0,
+    "median": 528.0,
+    "max": 1254.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 102.76429980276134,
+    "median": 99.33579881656806,
+    "max": 201.25147928994082,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 8.166666666666666,
+    "median": 9.5,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 2.6666666666666665,
+    "median": 1.0,
+    "max": 11.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 18.333333333333332,
+    "median": 19.5,
+    "max": 21.0,
+    "n": 6
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.14741286115410426,
+    "median": 0.12995037494692951,
+    "max": 0.27691199991386384,
+    "n": 6
+   }
+  },
+  "final|mild_lead|gated": {
+   "window": "final",
+   "scenario": "mild_lead",
+   "policy": "gated",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2569.295419710709,
+    "median": 2146.062101406609,
+    "max": 4623.545264437882,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2658.788761926323,
+    "median": 2207.035031860207,
+    "max": 4812.629135278352,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1540.8399999453056,
+    "median": 1195.173,
+    "max": 4059.5939996718344,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 286.6666666666667,
+    "median": 300.0,
+    "max": 360.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 19.911609373159326,
+    "median": 16.540934892751476,
+    "max": 50.78176611321632,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 910.7673717948718,
+    "median": 891.040576923077,
+    "max": 1666.2688461538464,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": -99.39688585368054,
+    "median": -71.32396923076925,
+    "max": 4.1359230769230635,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.6755523744154539,
+    "median": 0.820388338268395,
+    "max": 0.8915468437681348,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 289.5705128205128,
+    "median": 158.3846153846153,
+    "max": 991.6538461538462,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 110.63609466976328,
+    "median": 99.33579881656806,
+    "max": 227.86686390532546,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.333333333333333,
+    "median": 4.5,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.41039671498119296,
+    "median": 0.3085603632478633,
+    "max": 0.8465765004226543,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 7.166666666666667,
+    "median": 7.5,
+    "max": 9.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 2.0925925925925926,
+    "median": 2.333333333333333,
+    "max": 3.2222222222222223,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 685.9999999875384,
+    "median": 510.0,
+    "max": 1205.99999992523,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 110.63609466976327,
+    "median": 99.33579881656806,
+    "max": 227.86686390532543,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 8.166666666666666,
+    "median": 8.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 6
+   },
+   "zaad_own_share": {
+    "mean": 0.12820512820512822,
+    "median": 0.07692307692307693,
+    "max": 0.38461538461538464,
+    "n": 6
+   },
+   "zaad_retained_reviews": {
+    "mean": 11.333333333333334,
+    "median": 12.0,
+    "max": 13.0,
+    "n": 6
+   },
+   "wall_seconds": {
+    "mean": 119.88912608350317,
+    "median": 114.6125691459747,
+    "max": 250.30194479203783,
+    "n": 6
+   }
+  },
+  "final|mild_lead|periodic:1": {
+   "window": "final",
+   "scenario": "mild_lead",
+   "policy": "periodic:1",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2572.5226316241146,
+    "median": 2124.240319746939,
+    "max": 4767.91835039754,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2634.551081169872,
+    "median": 2177.6295714312128,
+    "max": 4954.112818047337,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1306.655,
+    "median": 658.2449999999999,
+    "max": 3890.376,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 266.6666666666667,
+    "median": 240.0,
+    "max": 480.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 10.880595272435897,
+    "median": 6.501494508136094,
+    "max": 22.04050443786982,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 1028.1090384615384,
+    "median": 1163.5573076923079,
+    "max": 1584.341923076923,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": 22.239780769230745,
+    "median": 14.101230769230767,
+    "max": 274.8623230769231,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.6198173291704375,
+    "median": 0.6180759214224858,
+    "max": 0.8580179250757625,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 298.7371794871795,
+    "median": 253.44230769230768,
+    "max": 691.6538461538462,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 77.98224852071006,
+    "median": 52.27662721893491,
+    "max": 214.55917159763314,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.666666666666667,
+    "median": 5.0,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.34155017813555916,
+    "median": 0.12106036324786325,
+    "max": 0.8357081637025927,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 6.666666666666667,
+    "median": 6.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 1.837037037037037,
+    "median": 1.4583333333333335,
+    "max": 3.0833333333333335,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 588.0,
+    "median": 393.0,
+    "max": 1164.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 77.98224852071006,
+    "median": 52.27662721893491,
+    "max": 214.5591715976331,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 9.833333333333334,
+    "median": 12.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 3.6666666666666665,
+    "median": 2.5,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 12.666666666666666,
+    "median": 15.0,
+    "max": 22.0,
+    "n": 6
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.17598206949575493,
+    "median": 0.17753614601679146,
+    "max": 0.32100899994838983,
+    "n": 6
+   }
+  },
+  "final|mild_lead|reorder_point": {
+   "window": "final",
+   "scenario": "mild_lead",
+   "policy": "reorder_point",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2572.5226316241146,
+    "median": 2124.240319746939,
+    "max": 4767.91835039754,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2634.551081169872,
+    "median": 2177.6295714312128,
+    "max": 4954.112818047337,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1306.655,
+    "median": 658.2449999999999,
+    "max": 3890.376,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 266.6666666666667,
+    "median": 240.0,
+    "max": 480.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 10.880595272435897,
+    "median": 6.501494508136094,
+    "max": 22.04050443786982,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 1028.1090384615384,
+    "median": 1163.5573076923079,
+    "max": 1584.341923076923,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": 22.239780769230745,
+    "median": 14.101230769230767,
+    "max": 274.8623230769231,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.6198173291704375,
+    "median": 0.6180759214224858,
+    "max": 0.8580179250757625,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 298.7371794871795,
+    "median": 253.44230769230768,
+    "max": 691.6538461538462,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 77.98224852071006,
+    "median": 52.27662721893491,
+    "max": 214.55917159763314,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.666666666666667,
+    "median": 5.0,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.34155017813555916,
+    "median": 0.12106036324786325,
+    "max": 0.8357081637025927,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 6.666666666666667,
+    "median": 6.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 1.837037037037037,
+    "median": 1.4583333333333335,
+    "max": 3.0833333333333335,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 588.0,
+    "median": 393.0,
+    "max": 1164.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 77.98224852071006,
+    "median": 52.27662721893491,
+    "max": 214.5591715976331,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 9.833333333333334,
+    "median": 12.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 4.333333333333333,
+    "median": 3.5,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 12.0,
+    "median": 14.0,
+    "max": 21.0,
+    "n": 6
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.1563378958380781,
+    "median": 0.1545271875220351,
+    "max": 0.2351897080661729,
+    "n": 6
+   }
+  },
+  "final|stable|economic_lot": {
+   "window": "final",
+   "scenario": "stable",
+   "policy": "economic_lot",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2589.872540301629,
+    "median": 2135.788223916892,
+    "max": 4562.322923966893,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2691.5763661674064,
+    "median": 2196.6855664755913,
+    "max": 4866.862486908284,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1561.9170000000001,
+    "median": 910.8539999999998,
+    "max": 4997.034000000001,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 280.0,
+    "median": 340.0,
+    "max": 400.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 17.589767449457593,
+    "median": 16.01907039571006,
+    "max": 33.31927152366864,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 996.1326282051282,
+    "median": 654.2440384615384,
+    "max": 2823.971538461539,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": -164.0630294871795,
+    "median": -125.64189615384618,
+    "max": 274.8623230769231,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.7066567828675595,
+    "median": 0.8003284323436954,
+    "max": 0.9550583532142626,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 268.9807692307692,
+    "median": 149.75000000000003,
+    "max": 911.6538461538462,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 110.38609467455622,
+    "median": 115.5458579881657,
+    "max": 201.25147928994085,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.0,
+    "median": 4.0,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.4334393882470806,
+    "median": 0.3632478632478633,
+    "max": 0.851923076923077,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 7.0,
+    "median": 8.5,
+    "max": 10.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 1.8037037037037038,
+    "median": 1.7777777777777777,
+    "max": 2.6666666666666665,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 731.0,
+    "median": 567.0,
+    "max": 1506.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 110.38609467455622,
+    "median": 115.5458579881657,
+    "max": 201.25147928994082,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 8.0,
+    "median": 8.5,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 2.3333333333333335,
+    "median": 0.0,
+    "max": 11.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 18.5,
+    "median": 19.5,
+    "max": 22.0,
+    "n": 6
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.15352276380872354,
+    "median": 0.13390462496317923,
+    "max": 0.2734665829921141,
+    "n": 6
+   }
+  },
+  "final|stable|gated": {
+   "window": "final",
+   "scenario": "stable",
+   "policy": "gated",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2548.9433301762965,
+    "median": 2135.788223916892,
+    "max": 4531.6342813902975,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2647.0689181891025,
+    "median": 2202.5434203587274,
+    "max": 4730.889832692307,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1727.32,
+    "median": 1413.048,
+    "max": 4411.008,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 320.0,
+    "median": 340.0,
+    "max": 400.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 22.198519471153844,
+    "median": 23.688253568786976,
+    "max": 45.63341730769231,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 718.4126282051283,
+    "median": 618.9240384615383,
+    "max": 1573.0888461538464,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": -140.86222948717952,
+    "median": -125.64189615384618,
+    "max": 10.116723076923108,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.7273557631890673,
+    "median": 0.8573960355043626,
+    "max": 0.9651170288219743,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 245.31410256410257,
+    "median": 117.51923076923077,
+    "max": 911.6538461538462,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 121.2766272189349,
+    "median": 133.64792899408286,
+    "max": 227.55917159763314,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 3.6666666666666665,
+    "median": 4.0,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.4751211300306008,
+    "median": 0.42424242424242425,
+    "max": 0.9526998071566317,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 8.0,
+    "median": 8.5,
+    "max": 10.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 2.006944444444444,
+    "median": 2.270833333333333,
+    "max": 2.8,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 744.0,
+    "median": 597.0,
+    "max": 1332.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 121.2766272189349,
+    "median": 133.64792899408286,
+    "max": 227.5591715976331,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 7.333333333333333,
+    "median": 7.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 0.0,
+    "median": 0.0,
+    "max": 0.0,
+    "n": 6
+   },
+   "zaad_own_share": {
+    "mean": 0.16666666666666666,
+    "median": 0.07692307692307693,
+    "max": 0.6153846153846154,
+    "n": 6
+   },
+   "zaad_retained_reviews": {
+    "mean": 10.833333333333334,
+    "median": 12.0,
+    "max": 13.0,
+    "n": 6
+   },
+   "wall_seconds": {
+    "mean": 259.5106239304684,
+    "median": 205.4223952499451,
+    "max": 614.4955691250507,
+    "n": 6
+   }
+  },
+  "final|stable|periodic:1": {
+   "window": "final",
+   "scenario": "stable",
+   "policy": "periodic:1",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2539.5933508325556,
+    "median": 2102.2637504134314,
+    "max": 4607.159032284042,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2596.4339558370316,
+    "median": 2154.7136142196746,
+    "max": 4770.18809112426,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1415.421,
+    "median": 781.242,
+    "max": 4220.874,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 293.3333333333333,
+    "median": 260.0,
+    "max": 520.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 11.810469939595661,
+    "median": 7.734085521449704,
+    "max": 22.11912189349112,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 829.3207051282052,
+    "median": 1072.7773076923077,
+    "max": 1346.331923076923,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": 46.5484474358974,
+    "median": 18.86963076923078,
+    "max": 274.8623230769231,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.688624220971068,
+    "median": 0.6798460175732022,
+    "max": 0.972403120768586,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 250.49358974358975,
+    "median": 231.44230769230768,
+    "max": 691.6538461538462,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 82.98717948717949,
+    "median": 57.72928994082841,
+    "max": 214.55917159763314,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.166666666666667,
+    "median": 5.0,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.38516632367937315,
+    "median": 0.12106036324786325,
+    "max": 0.9454775993237533,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 7.333333333333333,
+    "median": 6.5,
+    "max": 13.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 1.8495726495726494,
+    "median": 1.4333333333333333,
+    "max": 3.230769230769231,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 635.0,
+    "median": 435.0,
+    "max": 1266.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 82.98717948717949,
+    "median": 57.72928994082841,
+    "max": 214.5591715976331,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 8.666666666666666,
+    "median": 12.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 3.5,
+    "median": 2.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 12.333333333333334,
+    "median": 15.0,
+    "max": 22.0,
+    "n": 6
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.17374006264920658,
+    "median": 0.18644352100091055,
+    "max": 0.28799929190427065,
+    "n": 6
+   }
+  },
+  "final|stable|reorder_point": {
+   "window": "final",
+   "scenario": "stable",
+   "policy": "reorder_point",
+   "runs": 6,
+   "complete": 6,
+   "failed": 0,
+   "statuses": {
+    "COMPLETE": 6
+   },
+   "physical_failures": 0,
+   "abstained": 0,
+   "breach_reasons": {},
+   "continuation_cost": {
+    "mean": 2539.4707073546165,
+    "median": 2102.2637504134314,
+    "max": 4606.423171416408,
+    "n": 6
+   },
+   "realized_cost": {
+    "mean": 2596.5966116062623,
+    "median": 2154.7136142196746,
+    "max": 4771.164025739645,
+    "n": 6
+   },
+   "purchase": {
+    "mean": 1416.492,
+    "median": 781.242,
+    "max": 4227.3,
+    "n": 6
+   },
+   "ordering": {
+    "mean": 293.3333333333333,
+    "median": 260.0,
+    "max": 520.0,
+    "n": 6
+   },
+   "carrying": {
+    "mean": 11.75892570882643,
+    "median": 7.734085521449704,
+    "max": 22.04050443786982,
+    "n": 6
+   },
+   "shortage": {
+    "mean": 829.3207051282052,
+    "median": 1072.7773076923077,
+    "max": 1346.331923076923,
+    "n": 6
+   },
+   "inventory_value_change": {
+    "mean": 45.691647435897416,
+    "median": 18.86963076923078,
+    "max": 274.8623230769231,
+    "n": 6
+   },
+   "service_unit_fill": {
+    "mean": 0.688624220971068,
+    "median": 0.6798460175732022,
+    "max": 0.972403120768586,
+    "n": 6
+   },
+   "unmet_units": {
+    "mean": 250.49358974358975,
+    "median": 231.44230769230768,
+    "max": 691.6538461538462,
+    "n": 6
+   },
+   "avg_inventory_units": {
+    "mean": 82.83333333333333,
+    "median": 57.72928994082841,
+    "max": 214.55917159763314,
+    "n": 6
+   },
+   "items_below_target": {
+    "mean": 4.166666666666667,
+    "median": 5.0,
+    "max": 6.0,
+    "n": 6
+   },
+   "min_item_fill": {
+    "mean": 0.38516632367937315,
+    "median": 0.12106036324786325,
+    "max": 0.9454775993237533,
+    "n": 6
+   },
+   "order_weeks": {
+    "mean": 7.333333333333333,
+    "median": 6.5,
+    "max": 13.0,
+    "n": 6
+   },
+   "lines_per_order_week": {
+    "mean": 1.823931623931624,
+    "median": 1.4333333333333333,
+    "max": 3.076923076923077,
+    "n": 6
+   },
+   "units_ordered": {
+    "mean": 634.0,
+    "median": 435.0,
+    "max": 1260.0,
+    "n": 6
+   },
+   "end_stock_mean": {
+    "mean": 82.83333333333333,
+    "median": 57.72928994082841,
+    "max": 214.5591715976331,
+    "n": 6
+   },
+   "breach_reviews": {
+    "mean": 8.666666666666666,
+    "median": 12.0,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cancelled_order_weeks": {
+    "mean": 4.166666666666667,
+    "median": 3.5,
+    "max": 12.0,
+    "n": 6
+   },
+   "projection_cut_order_weeks": {
+    "mean": 11.666666666666666,
+    "median": 14.0,
+    "max": 21.0,
+    "n": 6
+   },
+   "zaad_own_share": null,
+   "zaad_retained_reviews": null,
+   "wall_seconds": {
+    "mean": 0.15037194466761625,
+    "median": 0.1636507295188494,
+    "max": 0.2292054999852553,
+    "n": 6
+   }
+  }
+ },
+ "paired": {
+  "final|group|fill_only|economic_lot|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "economic_lot",
+   "metric": "continuation_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -65.2059724174909,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -126.83333511504732,
+    -16.26688998181064
+   ],
+   "bootstrap_95": [
+    -156.370233581021,
+    11.189839513052371
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 1,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|economic_lot|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "economic_lot",
+   "metric": "realized_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -50.12191565574509,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -102.46112032459678,
+    -10.627970558107487
+   ],
+   "bootstrap_95": [
+    -122.45793881170054,
+    13.324342763211765
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 1,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|economic_lot|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "economic_lot",
+   "metric": "shortage",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -240.14105553275684,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -526.3558632972195,
+    46.07375223170572
+   ],
+   "bootstrap_95": [
+    -795.3529245197359,
+    57.71201137951919
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 2,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|economic_lot|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "economic_lot",
+   "metric": "avg_inventory_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 1.4052322041711456,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -7.587815187747171,
+    10.455433474873177
+   ],
+   "bootstrap_95": [
+    -11.496030539188183,
+    15.654573272917906
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 2,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|economic_lot|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "economic_lot",
+   "metric": "service_unit_fill",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 0.004372091621231218,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -0.02470658427149634,
+    0.03522930966981371
+   ],
+   "bootstrap_95": [
+    -0.03705987640724451,
+    0.05373323558264803
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 2,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|economic_lot|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "economic_lot",
+   "metric": "unmet_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -13.012237305488489,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -40.03014243750166,
+    11.883867034589741
+   ],
+   "bootstrap_95": [
+    -61.10611405221996,
+    17.825800551884612
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 2,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|reorder_point|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "reorder_point",
+   "metric": "continuation_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 2.6244958734205284,
+   "median_difference": -31.21812688413854,
+   "bootstrap_80": [
+    -49.68062601028975,
+    57.30889506405189
+   ],
+   "bootstrap_95": [
+    -71.89309620677314,
+    84.60608955971078
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|reorder_point|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "reorder_point",
+   "metric": "realized_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 44.81491459846063,
+   "median_difference": 20.464233115874208,
+   "bootstrap_80": [
+    -4.625452153402919,
+    98.50928636042981
+   ],
+   "bootstrap_95": [
+    -28.77442691540924,
+    125.6172205033115
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 4,
+   "ties": 0,
+   "sign_test_p": 0.6875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|reorder_point|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "reorder_point",
+   "metric": "shortage",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -145.36826843868621,
+   "median_difference": -108.33362044742391,
+   "bootstrap_80": [
+    -312.020967716148,
+    13.32194691370266
+   ],
+   "bootstrap_95": [
+    -409.59493127277545,
+    96.54221738421826
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|reorder_point|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "reorder_point",
+   "metric": "avg_inventory_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 25.924490810338828,
+   "median_difference": 22.547912479103683,
+   "bootstrap_80": [
+    8.828011018294017,
+    41.9464644875919
+   ],
+   "bootstrap_95": [
+    1.1375701207941222,
+    49.975605787793256
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 5,
+   "ties": 0,
+   "sign_test_p": 0.21875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|reorder_point|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "reorder_point",
+   "metric": "service_unit_fill",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 0.06288771149419638,
+   "median_difference": 0.04621871281382098,
+   "bootstrap_80": [
+    -0.015430229639931195,
+    0.14710508253561821
+   ],
+   "bootstrap_95": [
+    -0.04854081764321808,
+    0.19087225095892327
+   ],
+   "zaad_better": 4,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.6875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|reorder_point|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "reorder_point",
+   "metric": "unmet_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -27.230963507510477,
+   "median_difference": -24.255989236518303,
+   "bootstrap_80": [
+    -88.9593740541685,
+    35.306142652660476
+   ],
+   "bootstrap_95": [
+    -118.79304903381842,
+    67.68263601489717
+   ],
+   "zaad_better": 4,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.6875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|periodic:1|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "periodic:1",
+   "metric": "continuation_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -4.859282394487233,
+   "median_difference": -53.669461687861826,
+   "bootstrap_80": [
+    -54.591073519844066,
+    45.68946550366064
+   ],
+   "bootstrap_95": [
+    -78.52289047948996,
+    77.78487033702902
+   ],
+   "zaad_better": 4,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.6875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|periodic:1|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "periodic:1",
+   "metric": "realized_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 35.07621959487718,
+   "median_difference": 2.095958630247196,
+   "bootstrap_80": [
+    -18.43586755824511,
+    90.95822692929774
+   ],
+   "bootstrap_95": [
+    -40.091597267626184,
+    121.93716382947794
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|periodic:1|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "periodic:1",
+   "metric": "shortage",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -145.36826843868621,
+   "median_difference": -108.33362044742391,
+   "bootstrap_80": [
+    -308.5972091657082,
+    17.740043997780145
+   ],
+   "bootstrap_95": [
+    -393.17588722732216,
+    97.74871425428653
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|periodic:1|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "periodic:1",
+   "metric": "avg_inventory_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 25.924490810338828,
+   "median_difference": 22.547912479103683,
+   "bootstrap_80": [
+    9.02969261120838,
+    43.020970602383635
+   ],
+   "bootstrap_95": [
+    -0.434751190023895,
+    50.351055627712874
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 5,
+   "ties": 0,
+   "sign_test_p": 0.21875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|periodic:1|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "periodic:1",
+   "metric": "service_unit_fill",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 0.06288771149419638,
+   "median_difference": 0.04621871281382098,
+   "bootstrap_80": [
+    -0.019314837155618464,
+    0.14710508253561821
+   ],
+   "bootstrap_95": [
+    -0.05862898029597513,
+    0.1922452552411645
+   ],
+   "zaad_better": 4,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.6875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|fill_only|periodic:1|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "fill_only",
+   "baseline": "periodic:1",
+   "metric": "unmet_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -27.230963507510477,
+   "median_difference": -24.255989236518303,
+   "bootstrap_80": [
+    -88.07361653085576,
+    35.31987265414878
+   ],
+   "bootstrap_95": [
+    -116.48920866526922,
+    68.56325784747774
+   ],
+   "zaad_better": 4,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.6875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|economic_lot|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "economic_lot",
+   "metric": "continuation_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -25.859973307314267,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -57.929058930761606,
+    6.043828843142326
+   ],
+   "bootstrap_95": [
+    -87.87334595783433,
+    8.33391091250767
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 2,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|economic_lot|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "economic_lot",
+   "metric": "realized_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -18.58564248072844,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -40.06661732047208,
+    2.0800589743589626
+   ],
+   "bootstrap_95": [
+    -58.20274759615404,
+    4.160117948717925
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 1,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|economic_lot|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "economic_lot",
+   "metric": "shortage",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -184.89166666666674,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -391.1333333333335,
+    21.350000000000005
+   ],
+   "bootstrap_95": [
+    -589.9200000000002,
+    28.805000000000007
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 2,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|economic_lot|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "economic_lot",
+   "metric": "avg_inventory_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 7.871794867001928,
+   "median_difference": 4.07692307692308,
+   "bootstrap_80": [
+    2.7179487179487203,
+    13.025641016055138
+   ],
+   "bootstrap_95": [
+    1.3589743589743601,
+    16.7435897387968
+   ],
+   "zaad_better": 0,
+   "zaad_worse": 3,
+   "ties": 3,
+   "sign_test_p": 0.25,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|economic_lot|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "economic_lot",
+   "metric": "service_unit_fill",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 0.012012807440775838,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -0.00689050647139496,
+    0.03151995556952184
+   ],
+   "bootstrap_95": [
+    -0.010009009589898069,
+    0.04790860057976474
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 2,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|economic_lot|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "economic_lot",
+   "metric": "unmet_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -15.666666666666666,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -35.833333333333336,
+    4.5
+   ],
+   "bootstrap_95": [
+    -54.5,
+    6.0
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 2,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "continuation_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -3.22721191340518,
+   "median_difference": -22.26104835181326,
+   "bootstrap_80": [
+    -55.84442829065062,
+    50.314998125072826
+   ],
+   "bootstrap_95": [
+    -82.64332692691875,
+    76.18890310010839
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "realized_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 24.237680756451123,
+   "median_difference": -8.608936057692347,
+   "bootstrap_80": [
+    -41.19161252555917,
+    89.70315416666665
+   ],
+   "bootstrap_95": [
+    -71.95113480120018,
+    120.42649631410244
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "shortage",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -117.3416666666667,
+   "median_difference": -113.53,
+   "bootstrap_80": [
+    -359.85999999999996,
+    113.31333333333323
+   ],
+   "bootstrap_95": [
+    -464.5466666666667,
+    238.7300000000001
+   ],
+   "zaad_better": 4,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.6875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "avg_inventory_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 32.653846149053216,
+   "median_difference": 25.80769230769231,
+   "bootstrap_80": [
+    11.051282051282056,
+    54.25641024682437
+   ],
+   "bootstrap_95": [
+    0.10256410256410396,
+    65.15384613946732
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 5,
+   "ties": 0,
+   "sign_test_p": 0.21875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "service_unit_fill",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 0.055735045245016296,
+   "median_difference": 0.0313174738992007,
+   "bootstrap_80": [
+    -0.05047313049305804,
+    0.16255663825878014
+   ],
+   "bootstrap_95": [
+    -0.10145270011322656,
+    0.21102643802940704
+   ],
+   "zaad_better": 5,
+   "zaad_worse": 1,
+   "ties": 0,
+   "sign_test_p": 0.21875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|reorder_point|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "reorder_point",
+   "metric": "unmet_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -9.166666666666686,
+   "median_difference": -28.000000000000057,
+   "bootstrap_80": [
+    -88.66666666666669,
+    78.16666666666664
+   ],
+   "bootstrap_95": [
+    -123.00000000000001,
+    130.49999999999997
+   ],
+   "zaad_better": 5,
+   "zaad_worse": 1,
+   "ties": 0,
+   "sign_test_p": 0.21875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "continuation_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -3.22721191340518,
+   "median_difference": -22.26104835181326,
+   "bootstrap_80": [
+    -56.76942195188318,
+    49.035520231468354
+   ],
+   "bootstrap_95": [
+    -85.23623201368977,
+    76.18890310010839
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "realized_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 24.237680756451123,
+   "median_difference": -8.608936057692347,
+   "bootstrap_80": [
+    -40.280035429446265,
+    89.70315416666665
+   ],
+   "bootstrap_95": [
+    -69.52494234603101,
+    120.39122068910233
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "shortage",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -117.3416666666667,
+   "median_difference": -113.53,
+   "bootstrap_80": [
+    -355.99166666666673,
+    121.33666666666674
+   ],
+   "bootstrap_95": [
+    -464.5466666666667,
+    229.86333333333337
+   ],
+   "zaad_better": 4,
+   "zaad_worse": 2,
+   "ties": 0,
+   "sign_test_p": 0.6875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "avg_inventory_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 32.653846149053216,
+   "median_difference": 25.80769230769231,
+   "bootstrap_80": [
+    11.051282051282056,
+    54.14102563143976
+   ],
+   "bootstrap_95": [
+    0.10256410256410338,
+    64.94871793433911
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 5,
+   "ties": 0,
+   "sign_test_p": 0.21875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "service_unit_fill",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 0.055735045245016296,
+   "median_difference": 0.0313174738992007,
+   "bootstrap_80": [
+    -0.05163233480251956,
+    0.16267255868972622
+   ],
+   "bootstrap_95": [
+    -0.09820578199929443,
+    0.21279905961455814
+   ],
+   "zaad_better": 5,
+   "zaad_worse": 1,
+   "ties": 0,
+   "sign_test_p": 0.21875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|mild_lead|periodic:1|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "mild_lead",
+   "baseline": "periodic:1",
+   "metric": "unmet_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -9.166666666666686,
+   "median_difference": -28.000000000000057,
+   "bootstrap_80": [
+    -92.16666666666667,
+    77.34999999999992
+   ],
+   "bootstrap_95": [
+    -126.5,
+    126.75416666666699
+   ],
+   "zaad_better": 5,
+   "zaad_worse": 1,
+   "ties": 0,
+   "sign_test_p": 0.21875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|economic_lot|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "economic_lot",
+   "metric": "continuation_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -40.92921012533278,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -91.53616119832152,
+    7.396257355210916
+   ],
+   "bootstrap_95": [
+    -134.74685491609935,
+    17.073998302866887
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 1,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|economic_lot|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "economic_lot",
+   "metric": "realized_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -44.50744797830381,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -89.83166605029612,
+    0.0
+   ],
+   "bootstrap_95": [
+    -121.25172586291917,
+    22.035733333333383
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 1,
+   "ties": 3,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|economic_lot|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "economic_lot",
+   "metric": "shortage",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -277.7200000000001,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -543.6666666666669,
+    -11.773333333333335
+   ],
+   "bootstrap_95": [
+    -809.6133333333336,
+    0.0
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 4,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|economic_lot|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "economic_lot",
+   "metric": "avg_inventory_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 10.890532544378699,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    4.384615384615382,
+    19.51775147928995
+   ],
+   "bootstrap_95": [
+    0.0,
+    23.902366863905332
+   ],
+   "zaad_better": 0,
+   "zaad_worse": 2,
+   "ties": 4,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|economic_lot|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "economic_lot",
+   "metric": "service_unit_fill",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 0.020698980321507687,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    0.0016764459346186127,
+    0.041397960643015375
+   ],
+   "bootstrap_95": [
+    0.0,
+    0.058744049095285834
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 4,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|economic_lot|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "economic_lot",
+   "metric": "unmet_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -23.666666666666668,
+   "median_difference": 0.0,
+   "bootstrap_80": [
+    -45.333333333333336,
+    -2.0
+   ],
+   "bootstrap_95": [
+    -67.0,
+    0.0
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 0,
+   "ties": 4,
+   "sign_test_p": 0.5,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "continuation_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 9.472622821679712,
+   "median_difference": 9.625947155050596,
+   "bootstrap_80": [
+    -20.363184350074693,
+    39.850821578190335
+   ],
+   "bootstrap_95": [
+    -36.54989506762043,
+    57.73506040710345
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "realized_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 50.472306582840154,
+   "median_difference": 47.82980613905306,
+   "bootstrap_80": [
+    16.339747719427994,
+    84.48004097633134
+   ],
+   "bootstrap_95": [
+    0.06078789447718691,
+    102.51105777859955
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 4,
+   "ties": 0,
+   "sign_test_p": 0.6875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "shortage",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -110.90807692307692,
+   "median_difference": 7.773461538461532,
+   "bootstrap_80": [
+    -294.0506410256411,
+    70.05448717948724
+   ],
+   "bootstrap_95": [
+    -415.241794871795,
+    134.7133333333334
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "avg_inventory_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 38.443293885601584,
+   "median_difference": 37.11538461538461,
+   "bootstrap_80": [
+    14.494082840236686,
+    60.86932938856017
+   ],
+   "bootstrap_95": [
+    3.500000000000007,
+    72.00739644970413
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 5,
+   "ties": 0,
+   "sign_test_p": 0.21875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "service_unit_fill",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 0.03873154221799915,
+   "median_difference": 0.011282327161022454,
+   "bootstrap_80": [
+    -0.0519329531311376,
+    0.13678126926901518
+   ],
+   "bootstrap_95": [
+    -0.08910298856792805,
+    0.18962124506038744
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|reorder_point|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "reorder_point",
+   "metric": "unmet_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -5.179487179487164,
+   "median_difference": -12.653846153846075,
+   "bootstrap_80": [
+    -70.88461538461542,
+    64.44871794871797
+   ],
+   "bootstrap_95": [
+    -106.1025641025641,
+    101.66666666666667
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|continuation_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "continuation_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 9.3499793437407,
+   "median_difference": 9.625947155050596,
+   "bootstrap_80": [
+    -19.925501255397553,
+    39.51737452575215
+   ],
+   "bootstrap_95": [
+    -37.04046897937648,
+    57.73506040710345
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|realized_cost": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "realized_cost",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 50.634962352071,
+   "median_difference": 47.82980613905306,
+   "bootstrap_80": [
+    16.78988372781066,
+    84.48004097633134
+   ],
+   "bootstrap_95": [
+    -0.3830206854043657,
+    101.93519878297575
+   ],
+   "zaad_better": 2,
+   "zaad_worse": 4,
+   "ties": 0,
+   "sign_test_p": 0.6875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|shortage": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "shortage",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -110.90807692307692,
+   "median_difference": 7.773461538461532,
+   "bootstrap_80": [
+    -294.77589743589755,
+    70.05448717948724
+   ],
+   "bootstrap_95": [
+    -412.33653846153857,
+    140.69128205128212
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|avg_inventory_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "avg_inventory_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 38.28944773175542,
+   "median_difference": 37.11538461538461,
+   "bootstrap_80": [
+    14.420118343195265,
+    60.64940828402367
+   ],
+   "bootstrap_95": [
+    3.27218934911243,
+    71.58431952662723
+   ],
+   "zaad_better": 1,
+   "zaad_worse": 5,
+   "ties": 0,
+   "sign_test_p": 0.21875,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|service_unit_fill": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "service_unit_fill",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": 0.03873154221799915,
+   "median_difference": 0.011282327161022454,
+   "bootstrap_80": [
+    -0.049182057284446586,
+    0.13238722626849958
+   ],
+   "bootstrap_95": [
+    -0.0851563340552358,
+    0.18917385657256403
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  },
+  "final|group|stable|periodic:1|unmet_units": {
+   "window": "final",
+   "track": "group",
+   "scenario": "stable",
+   "baseline": "periodic:1",
+   "metric": "unmet_units",
+   "series": 6,
+   "mean_difference_zaad_minus_baseline": -5.179487179487164,
+   "median_difference": -12.653846153846075,
+   "bootstrap_80": [
+    -74.8076923076923,
+    66.44871794871797
+   ],
+   "bootstrap_95": [
+    -109.68365384615382,
+    101.66666666666667
+   ],
+   "zaad_better": 3,
+   "zaad_worse": 3,
+   "ties": 0,
+   "sign_test_p": 1.0,
+   "note": "difference of modelled indices per series under declared synthetic supply; series are the replication unit"
+  }
+ },
+ "failures": {
+  "completion_by_policy": {
+   "gated": {
+    "runs": 18,
+    "complete": 18,
+    "PHYSICAL_FAILURE": 0,
+    "ABSTAIN": 0,
+    "INFEASIBLE": 0,
+    "other": 0
+   },
+   "economic_lot": {
+    "runs": 18,
+    "complete": 18,
+    "PHYSICAL_FAILURE": 0,
+    "ABSTAIN": 0,
+    "INFEASIBLE": 0,
+    "other": 0
+   },
+   "reorder_point": {
+    "runs": 18,
+    "complete": 18,
+    "PHYSICAL_FAILURE": 0,
+    "ABSTAIN": 0,
+    "INFEASIBLE": 0,
+    "other": 0
+   },
+   "periodic:1": {
+    "runs": 18,
+    "complete": 18,
+    "PHYSICAL_FAILURE": 0,
+    "ABSTAIN": 0,
+    "INFEASIBLE": 0,
+    "other": 0
+   }
+  },
+  "non_complete_runs": []
+ }
+}

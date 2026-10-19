@@ -132,7 +132,14 @@ def main() -> int:
     args = ap.parse_args()
     S.BASELINES = BASELINES
     rows = load_rows(args.stage)
-    manifest = json.loads((RESULTS_ROOT / args.stage / "run_manifest.json").read_text())
+    manifest_path = RESULTS_ROOT / args.stage / "run_manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text())
+    else:                                            # a run stopped before its manifest: summarise the rows it wrote and say so
+        manifest = {"stage": "PARTIAL (no run_manifest.json: the run was stopped before completion)", "coupling": args.stage.replace("coupled_", "", 1),
+                    "commit": None, "declaration": {}, "selection_hash": "", "groups": sorted({"+".join(r.get("group") or []) for r in rows}),
+                    "runs": len(rows), "complete": sum(1 for r in rows if r.get("status") == "COMPLETE"), "failed": sum(1 for r in rows if r.get("status") != "COMPLETE"),
+                    "wall_seconds": 0.0}
     table, pairs, fails = group_table(rows), S.paired(rows), failures(rows)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)

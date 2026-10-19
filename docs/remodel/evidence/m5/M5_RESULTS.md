@@ -85,7 +85,7 @@ and the pallet cap rarely binds for ZAAD (no cut or cancelled order-weeks) while
 The `coupled_cash` variant (four weeks of cash plus a one-week credit line, no receivables) is a liquidation like
 `cash_4w` (every policy's fill 0.38–0.46); after E3b every run completes and ZAAD's cost is lower than the rules' by
 17–37 per group, which measures who runs out of cash last. The `coupled_tight` variant (4 pallets, MOV one week) is
-reported in section 6 when its run completes.
+reported in section 6 (partial: 6 of 10 groups).
 
 ## 4. The frozen criteria, applied
 
@@ -108,7 +108,14 @@ competent baseline is `economic_lot`, against which the holdout is inconclusive 
 - Sales are a lower bound on demand and no stockout flag exists, so every fill rate is service against sales; the
   supply side is declared, not observed.
 
-## 6. Pending
+## 6. `coupled_tight` (4 pallets, MOV one week; holdout only): partial, 6 of 10 groups
 
-`coupled_tight` (holdout only) was still running when this note was written; its table is added here when the chain
-writes `RESULTS_coupled_coupled_tight.md`.
+The run was stopped after the seventh group's `gated` run under `stable` supply had used 2 h 37 min of CPU at 100 %
+without finishing (the declaration's solve budget is 40 s per solve; the planner's wall clock per review is not bounded
+by it on this cell). The 72 completed rows (6 groups × 3 scenarios × 4 policies, no breaches, no abstentions) are
+summarised in `RESULTS_coupled_coupled_tight.md` and read as follows. The cap binds hard for everyone: unit fill falls
+to 0.62–0.73 for every policy (0.80–0.94 under the primary coupling). ZAAD against `reorder_point` / `periodic:1` is a
+tie (stable +9.5, mild_lead −3.2, fill_only +2.6 per group, 3 / 3 wins, intervals of ± 60); against `economic_lot`
+−26 to −65 per group with intervals that include zero (2 / 1 wins, 3 ties). ZAAD's own candidates are 13–17 % of
+reviews and its runs take 120–343 s per group against 0.1–0.2 s for the rules. Under a binding shared cap the planner
+neither breaches nor adds measurable value over the lot-aware rule, and its runtime is the finding (register 21).
