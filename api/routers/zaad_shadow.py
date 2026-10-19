@@ -307,8 +307,7 @@ async def compare_plan(plan_id: str, who: Who, conn=Depends(get_conn), horizon: 
     if reasons:
         basis = "UNVERIFIED"
     history = {**scan.as_dict(), "record_loss_detected": record_loss, "ledger_exposures": ledger["count"], "legacy_planners_enabled": legacy,
-               "coverage": {"since": cov["since"].isoformat(), "origin_limit": cov["origin_limit"].isoformat() if cov["origin_limit"] else None,
-                            "source": cov["source"]},
+               "coverage": {"since": cov["since"].isoformat(), "provenance": cov["provenance"], "source": cov["source"]},
                "verified": basis != "UNVERIFIED", "note": "; ".join(reasons) if reasons else scan.note}
     exposure_note = "; ".join(reasons) if reasons else None
     report = refine_report(report, rule_provenance=rule_prov, req=req)

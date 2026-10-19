@@ -83,6 +83,8 @@ validated on synthetic data; NOT validated on real operator data.** Open for ind
   "Exposure-integrity correction".
 - `tests/integration/test_shadow_exposure_routes.py` (9, real routes, vault ledger and `JobStore`): the cross-route cases
   listed under "Cross-route exposure correction".
+- `tests/integration/test_shadow_exposure_provenance.py` (5, real registry, vault files, migration replay and routes):
+  the new / upgraded / restored workspace cases listed under "Pre-migration coverage correction".
 
 ## Exposure-integrity correction (independent review of 4dc63e4)
 
@@ -196,11 +198,10 @@ job store (`test_a_synchronous_recommendation_before_capture_is_an_exposure`, RE
 **Exposure persistence.** Migration `032_recommendation_exposures.sql` adds two tables to the operator's DuckDB vault
 (the H3b tables already live there, and every synchronous route holds the vault connection):
 `zaad_recommendation_exposures` (append-only: operator, planning origin, route, request hash, reference, `exposed_at`
-from the server clock) and `zaad_exposure_coverage` (one row: when this vault began recording, the vault's latest
-order date at that instant, the source of the row, and the first instant a superseded engine was observed
-reachable). The migration replays on vault open and its insert is idempotent (`WHERE NOT EXISTS`), so a vault
-created under this schema has coverage from creation with no data (`max_order_date` NULL) and an existing vault
-gains coverage at its first open under this deployment with its data horizon recorded. `ensure_exposure_tables`
+from the server clock) and `zaad_exposure_coverage` (one row: when this vault began recording, how it came to record,
+the vault file a created vault was stamped for, and the first instant a superseded engine was observed reachable).
+The migration replays on vault open and its insert is idempotent (`WHERE NOT EXISTS`); the pre-migration coverage
+correction below says how a vault created under this schema is told from one upgraded to it. `ensure_exposure_tables`
 creates the same tables lazily (source `LAZY`) when migration on open is disabled. Jobs stay in the SQLite job store
 and are discovered by the complete scan of the previous correction; the two stores are read side by side, never
 joined in one transaction.
@@ -233,9 +234,8 @@ longer finds (or a verified exposure neither store holds) is record loss.
 
 **Legacy history.** A recommendation served before a vault began recording is not in the ledger. The coverage row
 makes the boundary explicit and the comparison refuses to verify across it: a plan captured before `coverage_since`
-is UNVERIFIED; so is any origin the vault's data could already plan when recording began (origins up to the Monday
-after `max_order_date` at that instant, which is the origin `/plan/from-workspace` and the canonical purchase plan
-derive). A vault created under this schema has no such horizon. Superseded engines are not instrumented: when any
+is UNVERIFIED, and a vault that existed before recording began is never verified at all (the pre-migration coverage
+correction below replaced an earlier data-horizon rule that was unsound). Superseded engines are not instrumented: when any
 instrumented route or comparison observes `ZAAD_LEGACY_PLANNERS` enabled it stamps the coverage row once, and from
 then on the vault's history is never verified (switching the engines off later does not lift it), because an
 unrecorded recommendation may have been served meanwhile for any origin.
@@ -253,8 +253,8 @@ unrecorded recommendation may have been served meanwhile for any origin.
    nothing recorded.
 7. Every synchronous route records before answering, with route label and reference, and the ledger's earliest row
    is the first route used.
-8. Legacy history: a vault whose data could already plan the origin when recording began is UNVERIFIED; the same
-   plan is READY when the recorded data horizon predates the origin; a capture before coverage is UNVERIFIED.
+8. Legacy history: a capture before coverage is UNVERIFIED, and an upgraded vault is UNVERIFIED for every origin
+   (the provenance cases are in `test_shadow_exposure_provenance.py`, below).
 9. Superseded engines reachable: UNVERIFIED on two comparisons with the exposure unchanged, and still UNVERIFIED
    after the engines are switched off (durable taint).
 10. Another tenant's earlier recommendation for the same origin never counts.
@@ -268,15 +268,69 @@ loss) still pass; the earlier API tests now run with production settings and ass
 write failure (recommendation withheld), coverage gaps, a reachable superseded engine, record loss, or an unverified
 prior comparison each prevent READY; none is ever read as "no exposure".
 
-**Remaining restrictions on READY, and limitations.** A `/api/zaad/network/plan` call made before a vault began
-recording, for an origin beyond that vault's data horizon at the time, is not recorded anywhere and is not excluded
-by the coverage rule (the client supplies the whole Request); this residual applies to vaults that existed before this
-deployment only. The diagnostic report's rolling replay shows what the optimizer would have decided at past review
+**Remaining restrictions on READY, and limitations.** The diagnostic report's rolling replay shows what the optimizer would have decided at past review
 dates; it is labelled historical and non-actionable and is not treated as exposure, so a plan captured for a past
 origin after reading that report is not caught by this ledger (the contract's provenance rules, not the ledger,
 govern whether such a plan is an intended plan at all). Exposure outside the product (an exported report shared by
 other means) is not observable. The job-read route does not add ledger rows: the job's DONE instant is already the
 earliest moment it was readable. No real operator plan has been captured; every figure is synthetic.
+
+## Pre-migration coverage correction (independent review of 4a1e52c)
+
+**Reproduced defect.** The cross-route correction inferred which planning origins an existing vault could have
+served before migration 032 from the vault's data: origins up to the Monday after its latest order date at the
+instant recording began were unverifiable, later origins were taken as never exposed. That inference is unsound.
+`/api/zaad/network/plan` takes the whole Request from the caller, origin included, so a pre-migration recommendation
+could have been served for any origin. Reproduced on a real registry-created vault
+(`test_a_pre_migration_recommendation_for_a_future_origin_is_never_excluded`): orders ending at T; before migration
+032 the raw route serves a recommendation for the origin three weeks past T (the pre-032 route records nothing);
+migration 032 replays and recording begins; later orders arrive; the operator captures a plan for that origin; the
+comparison's own run is recorded; the comparison was READY on 4a1e52c. It is CONDITIONAL now.
+
+**Corrected contract: new versus upgraded workspaces.**
+
+- **Created under recording (NEW).** `OperatorRegistry.create_operator` is the one path that creates a vault (the
+  worker, the access routes, the seeding tools all call it). After `setup_db` applies the migrations it calls
+  `stamp_vault_creation`, which marks the coverage row `CREATED` and binds it to the resolved path of the vault file,
+  before the operator record exists and before any token could reach a route. Such a vault's whole life is under
+  recording; its history can be verified and it keeps READY when every other gate passes
+  (`test_a_workspace_created_under_recording_is_verified_and_ready_only_when_every_gate_passes`: READY on the
+  synchronous and the job path, CONDITIONAL once superseded, NOT READY for a correction captured after exposure).
+- **Upgraded (existed before recording).** A vault whose coverage row came from the migration's replay on open
+  (`MIGRATION`) or from the lazy path (`LAZY`) existed before recording began. Nothing records what it served before,
+  for any origin, so its history is never verified: UNVERIFIED, CONDITIONAL, no claim permission, for every origin
+  and for ever. The vault's data plays no part in that judgement. Recording still works on such a vault (its ledger
+  fills from the upgrade on), so NOT READY is still established when a recorded exposure precedes a capture
+  (`test_an_upgraded_workspace_with_no_exposure_records_stays_unverified`). Genuine pre-migration evidence is kept
+  where it exists: finished jobs in the SQLite store are found by the complete scan whatever their age, and a stored
+  comparison's exposure still rules the instant; such evidence can only make a plan NOT READY, never READY.
+- **Restored, copied or of unknown provenance.** A `CREATED` row names the file it was written for. When a
+  connection knows its file (the product's vault connections carry the resolved path) and it is not that file, the
+  vault is `RESTORED`: what was served to its operator elsewhere is in no record here, so it is UNVERIFIED
+  (`test_a_restored_or_copied_vault_is_not_the_vault_it_was_created_as`, a created vault's file copied over another
+  operator's vault). The classification never falls back to NEW on absence of evidence: any row that is not a
+  `CREATED` row served from its own file is UPGRADED or RESTORED.
+
+**Authoritative provenance mechanism, migration compatibility and replay.** The distinction rests on the creation
+code path, not on the existence of the migration table: the migration's insert writes `MIGRATION` and only the
+registry's creation step upgrades the row to `CREATED`. Migration 032 is additive (`CREATE TABLE IF NOT EXISTS`,
+`ALTER TABLE ... ADD COLUMN IF NOT EXISTS` for the binding and taint columns, `INSERT ... WHERE NOT EXISTS`), so a
+replay on every open changes nothing: provenance, coverage instant, binding and every ledger stamp survive repeated
+replays, and an upgraded vault stays upgraded through them
+(`test_repeated_migration_keeps_provenance_coverage_and_ledger_stamps`). The earlier draft's `max_order_date` column
+is no longer created or read; a dev vault that has it keeps it, unused. No existing production data needs
+remediation: every vault that exists today predates recording and is correctly UPGRADED; a vault created after this
+deployment is NEW from creation.
+
+**Test fixtures.** The in-memory vaults of the earlier H3b tests stand for registry-created vaults and call the same
+`stamp_vault_creation` the registry calls; the provenance tests use the real registry, real vault files, the real
+replay on open and the real routes.
+
+**Limitations.** A vault restored in place, over its own file, under its own operator, is indistinguishable from the
+original; exposures recorded after the backup are lost with it, and only the job-store record-loss check (for
+previously verified job exposures) can notice. Existing workspaces never reach READY under this contract; that is the
+honest consequence of their unrecorded past, not a defect to engineer around. The same-file binding is not checked
+for a bare connection that does not know its file (tests, scripts); the product's connections always do.
 
 ## Deferred H3a limitations, evaluated for H3b
 

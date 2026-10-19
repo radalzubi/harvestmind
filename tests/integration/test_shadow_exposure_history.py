@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 import duckdb
 import pytest
 
+from api.product import operator_plans as OP
 from api.routers import zaad_shadow
 from api.routers.intake import load_fmcg_sample_into
 from scripts.setup_db import setup_db
@@ -126,6 +127,7 @@ def test_a_hidden_early_exposure_blocks_ready_end_to_end(tmp_path, monkeypatch):
     operator, sku = "tenant_e2e", "SKU-0001"
     conn = duckdb.connect(":memory:")
     setup_db(conn)
+    OP.stamp_vault_creation(conn, None)          # the registry's creation stamp: a vault whose whole life is recorded
     load_fmcg_sample_into(conn, seed=7, archetype="A_stable")
     cl = _client(conn, operator)
     origin = datetime(2025, 9, 15, tzinfo=timezone.utc)

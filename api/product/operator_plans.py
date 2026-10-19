@@ -75,25 +75,33 @@ def ensure_exposure_tables(conn: Any) -> None:
     """Create the exposure ledger on a vault that predates migration 032, and open its coverage.
 
     Migration 032 normally runs when the vault is created or first opened under this schema and writes the coverage
-    row then. A vault that reaches this code without it (migration on open disabled) gets the tables here and a
-    coverage row stamped NOW with the vault's current latest order date: recording starts at this instant, and the
-    shadow comparison treats anything the vault could already plan before it as unverifiable."""
+    row then (the registry then stamps a vault it has just created, see `stamp_vault_creation`). A vault that reaches
+    this code without it (migration on open disabled) gets the tables here and a coverage row stamped NOW with source
+    LAZY: recording starts at this instant, and such a vault is treated as upgraded (never verified)."""
     if not all(_has_table(conn, t) for t in EXPOSURE_TABLES):
         from api.product.drafts import statements
         sql = (Path(__file__).resolve().parents[2] / "db" / "migrations" / "032_recommendation_exposures.sql").read_text()
         for text in statements(sql):
-            if text.upper().startswith("CREATE TABLE IF NOT EXISTS ZAAD_"):
+            if text.upper().startswith("CREATE TABLE IF NOT EXISTS ZAAD_") or text.upper().startswith("ALTER TABLE ZAAD_EXPOSURE_COVERAGE ADD COLUMN IF NOT EXISTS"):
                 conn.execute(text)
         missing = [t for t in EXPOSURE_TABLES if not _has_table(conn, t)]
         if missing:
             raise PlanRefused("This workspace is not set up for recommendation exposure recording yet: " + ", ".join(missing)
                               + " could not be created. Run the database migrations for this operator (scripts/setup_db.py).")
     if not _rows(conn, "SELECT 1 FROM zaad_exposure_coverage LIMIT 1", []):
-        horizon = None
-        if _has_table(conn, "stg_fmcg_orders"):
-            horizon = _rows(conn, "SELECT max(order_date) AS d FROM stg_fmcg_orders", [])[0]["d"]
-        conn.execute("INSERT INTO zaad_exposure_coverage (coverage_since_ms, max_order_date, source) VALUES (?, ?, 'LAZY')",
-                     [int(datetime.now(timezone.utc).timestamp() * 1000), horizon])
+        conn.execute("INSERT INTO zaad_exposure_coverage (coverage_since_ms, source) VALUES (?, 'LAZY')",
+                     [int(datetime.now(timezone.utc).timestamp() * 1000)])
+
+
+def stamp_vault_creation(conn: Any, vault_path: str | None) -> None:
+    """Called by the registry on a vault it has JUST created, after the migrations ran and before the operator exists
+    for any route: the vault's whole life is under exposure recording. The stamp names the vault file so a copy of the
+    file served from elsewhere is recognised as not this vault. It is written once; a replayed migration keeps it
+    (the migration's insert happens only when no row exists) and nothing ever downgrades a CREATED row."""
+    ensure_exposure_tables(conn)
+    conn.execute("UPDATE zaad_exposure_coverage SET source = 'CREATED', bound_vault_path = ?, coverage_since_ms = ? "
+                 "WHERE source IN ('MIGRATION', 'LAZY')",
+                 [_text(vault_path), int(datetime.now(timezone.utc).timestamp() * 1000)])
 
 
 def record_exposure(conn: Any, operator: str, *, as_of: datetime, route: str, request_hash: str | None = None,
@@ -125,23 +133,31 @@ def ledger_exposure(conn: Any, operator: str, as_of: datetime) -> dict[str, Any]
 
 
 def coverage(conn: Any) -> dict[str, Any]:
-    """When this vault began recording exposures, and which planning origins its data could already serve then.
+    """When this vault began recording exposures and what its history can vouch for.
 
-    `origin_limit` is the latest planning origin the vault's own data supported when recording began (the Monday
-    after its latest order date, which is the origin `/plan/from-workspace` and the canonical purchase plan derive
-    when no origin is given): a recommendation for any origin up to it may have been served before recording and
-    cannot be excluded. None when the vault had no order data at that instant (a vault created under this schema)."""
+    `provenance` is NEW for a vault the registry created under this schema and served from the file it was created as
+    (its whole life is recorded), UPGRADED for a vault that existed before recording began (its coverage row came from
+    the migration's replay on open, or lazily), and RESTORED for a CREATED vault served from another file than the one
+    it was created as (a copy, a restore, another environment: what happened to it elsewhere is unknown). The file
+    binding is checked when the connection knows its file (the product's vault connections do; a bare connection does
+    not, and then only the stamp decides). Nothing about the vault's data is used: an upgraded vault may have served a
+    recommendation for ANY origin before recording, because the contract route takes the origin from the caller."""
     ensure_exposure_tables(conn)
-    row = _rows(conn, "SELECT coverage_since_ms, max_order_date, source, legacy_engines_seen_ms FROM zaad_exposure_coverage "
+    row = _rows(conn, "SELECT coverage_since_ms, source, bound_vault_path, legacy_engines_seen_ms FROM zaad_exposure_coverage "
                       "ORDER BY coverage_since_ms LIMIT 1", [])[0]
     since = datetime.fromtimestamp(int(row["coverage_since_ms"]) / 1000.0, tz=timezone.utc)
     legacy_seen = (datetime.fromtimestamp(int(row["legacy_engines_seen_ms"]) / 1000.0, tz=timezone.utc)
                    if row.get("legacy_engines_seen_ms") is not None else None)
-    limit = None
-    if row["max_order_date"] is not None:
-        day = pd.Timestamp(row["max_order_date"]).normalize() + pd.Timedelta(days=7)
-        limit = (day - pd.Timedelta(days=day.weekday())).to_pydatetime().replace(tzinfo=timezone.utc)
-    return {"since": since, "max_order_date": row["max_order_date"], "origin_limit": limit, "source": row["source"], "legacy_engines_seen_at": legacy_seen}
+    served_from = getattr(conn, "_key", None)
+    bound = _text(row.get("bound_vault_path"))
+    if row["source"] != "CREATED":
+        provenance = "UPGRADED"
+    elif bound is not None and served_from is not None and str(served_from) != bound:
+        provenance = "RESTORED"
+    else:
+        provenance = "NEW"
+    return {"since": since, "source": row["source"], "provenance": provenance, "bound_vault_path": bound,
+            "served_from": str(served_from) if served_from is not None else None, "legacy_engines_seen_at": legacy_seen}
 
 
 def note_legacy_engines(conn: Any) -> None:
@@ -154,15 +170,20 @@ def note_legacy_engines(conn: Any) -> None:
 
 
 def coverage_verifies(cov: dict[str, Any], *, as_of: datetime, captured_at: datetime) -> str | None:
-    """None when the ledger can vouch for every recommendation route for this plan; otherwise why it cannot."""
-    origin = _as_utc_naive(as_of).replace(tzinfo=timezone.utc)
+    """None when the ledger can vouch for every recommendation route for this plan; otherwise why it cannot.
+
+    `as_of` plays no part: no planning origin is ever excluded from an unverified history on the strength of the
+    vault's data, because a recommendation for any origin could have been requested before recording began."""
     captured = _as_utc_naive(captured_at).replace(tzinfo=timezone.utc)
+    if cov["provenance"] == "UPGRADED":
+        return (f"this workspace existed before recommendation exposures were recorded (recording began {cov['since'].isoformat()}, "
+                f"source {cov['source']}); a recommendation served before then, for any planning origin, is in no record and cannot be excluded")
+    if cov["provenance"] == "RESTORED":
+        return (f"this workspace's exposure ledger was created for vault file {cov['bound_vault_path']} but is served from {cov['served_from']}; "
+                "what was served to its operator elsewhere is in no record here, so its history cannot be established")
     if captured < cov["since"]:
         return (f"the plan was captured at {captured.isoformat()}, before this workspace began recording recommendation exposures "
-                f"({cov['since'].isoformat()}); a synchronous recommendation between the capture and that instant is not recorded")
-    if cov["origin_limit"] is not None and origin <= cov["origin_limit"]:
-        return (f"the workspace's data could already plan origin {origin.date()} before it began recording recommendation exposures "
-                f"(latest order {cov['max_order_date']} at {cov['since'].isoformat()}); an unrecorded earlier recommendation cannot be excluded")
+                f"({cov['since'].isoformat()}); a recommendation between the capture and that instant is not recorded")
     if cov.get("legacy_engines_seen_at") is not None:
         return (f"superseded planning engines (ZAAD_LEGACY_PLANNERS), whose recommendations are not recorded as exposures, were reachable on this "
                 f"service at {cov['legacy_engines_seen_at'].isoformat()}; an unrecorded recommendation since then cannot be excluded")

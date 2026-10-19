@@ -37,6 +37,7 @@ def production_engines(monkeypatch, tmp_path):
 def vault():
     conn = duckdb.connect(":memory:")
     setup_db(conn)
+    OP.stamp_vault_creation(conn, None)          # what the registry does to a vault it creates: its whole life is recorded
     load_fmcg_sample_into(conn, seed=7, archetype="A_stable")
     yield conn
     conn.close()

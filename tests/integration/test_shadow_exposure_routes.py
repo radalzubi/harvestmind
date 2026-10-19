@@ -39,7 +39,8 @@ def env(monkeypatch, tmp_path):
 @pytest.fixture()
 def vault():
     conn = duckdb.connect(":memory:")
-    setup_db(conn)                                                   # migration 032 opens coverage before any data exists
+    setup_db(conn)
+    OP.stamp_vault_creation(conn, None)                              # the registry's creation stamp: a vault whose whole life is recorded
     load_fmcg_sample_into(conn, seed=7, archetype="A_stable")
     yield conn
     conn.close()
@@ -55,6 +56,10 @@ def _client(conn, operator: str, role: str = "BUYER") -> TestClient:
     app.dependency_overrides[get_conn] = conn_override
     app.dependency_overrides[require_operator] = lambda: operator
     app.dependency_overrides[require_actor] = lambda: actor_from({"operator_id": operator, "actor_id": "buyer-1", "name": "Buyer", "role": role})
+    # the process-wide recommendation rate cap is keyed by client address, which every TestClient shares: lifted here so a
+    # planner call in one test cannot refuse another test's (the cap itself is covered by its own tests)
+    from api.routers.zaad import bounded_rate
+    app.dependency_overrides[bounded_rate] = lambda: None
     return TestClient(app)
 
 
@@ -265,32 +270,19 @@ def test_every_synchronous_route_records_before_answering(env, vault):
 
 def test_legacy_history_and_unrecorded_engines_are_never_treated_as_complete(env, vault, monkeypatch):
     supplier = _supplier(vault)
-    # (a) a vault that already held data when it began recording: the origins that data could plan are unverifiable
-    operator = "tenant_old_vault"
-    cl = _client(vault, operator)
-    origin = _workspace_origin(vault, operator)
+    origin = _workspace_origin(vault, "tenant_before_coverage")
+    # (a) a plan captured before the vault began recording (the coverage instant moved after the capture)
+    cl = _client(vault, "tenant_before_coverage")
     plan = _capture(cl, origin, supplier=supplier)
-    latest_order = vault.execute("SELECT max(order_date) FROM stg_fmcg_orders").fetchone()[0]
-    vault.execute("UPDATE zaad_exposure_coverage SET max_order_date = ?", [latest_order])          # as if recording began on today's data
-    try:
-        body = cl.post(f"/api/zaad/shadow/plans/{plan['plan_id']}/compare", params=PARAMS).json()
-        assert body["contract"]["readiness"] == "CONDITIONAL" and body["exposure"]["basis"] == "UNVERIFIED" and body["exposure"]["history"]["verified"] is False
-        assert "before it began recording" in body["exposure"]["history"]["note"] and any("not established" in c for c in body["contract"]["caveats"])
-        # had recording begun when the data stopped two weeks earlier, this origin could not have been planned before it: verifiable
-        vault.execute("UPDATE zaad_exposure_coverage SET max_order_date = ?", [latest_order - timedelta(days=14)])
-        ok = cl.post(f"/api/zaad/shadow/plans/{plan['plan_id']}/compare", params=PARAMS).json()
-        assert ok["contract"]["readiness"] == "READY" and ok["exposure"]["history"]["verified"] is True
-    finally:
-        vault.execute("UPDATE zaad_exposure_coverage SET max_order_date = NULL")
-    # (b) a plan captured before the vault began recording
     since = vault.execute("SELECT coverage_since_ms FROM zaad_exposure_coverage").fetchone()[0]
     vault.execute("UPDATE zaad_exposure_coverage SET coverage_since_ms = ?", [int((datetime.now(timezone.utc) + timedelta(hours=1)).timestamp() * 1000)])
     try:
         body = cl.post(f"/api/zaad/shadow/plans/{plan['plan_id']}/compare", params=PARAMS).json()
-        assert body["contract"]["readiness"] == "CONDITIONAL" and "before this workspace began recording" in body["exposure"]["history"]["note"]
+        assert body["contract"]["readiness"] == "CONDITIONAL" and body["exposure"]["basis"] == "UNVERIFIED"
+        assert "before this workspace began recording" in body["exposure"]["history"]["note"] and any("not established" in c for c in body["contract"]["caveats"])
     finally:
         vault.execute("UPDATE zaad_exposure_coverage SET coverage_since_ms = ?", [since])
-    # (c) superseded engines reachable: unverifiable now, and still unverifiable after they are switched off (the taint is durable)
+    # (b) superseded engines reachable: unverifiable now, and still unverifiable after they are switched off (the taint is durable)
     operator = "tenant_legacy"
     cl = _client(vault, operator)
     plan = _capture(cl, origin, supplier=supplier)
@@ -305,6 +297,19 @@ def test_legacy_history_and_unrecorded_engines_are_never_treated_as_complete(env
     assert "were reachable" in third["exposure"]["history"]["note"] and third["contract"]["permissions"]["can_claim_shadow_difference"] is False
     for b in (first, second, third):
         _no_realized_claim(b)
+    # (c) an upgraded workspace: the exposure tables arrive through the migration's replay on open, not through creation.
+    # Its data says nothing about which origins were exposed before, so no origin is verified (see test_shadow_exposure_provenance.py)
+    for table in OP.EXPOSURE_TABLES:
+        vault.execute(f"DROP TABLE IF EXISTS {table}")  # noqa: S608  # nosec B608 - names are code literals
+    setup_db(vault)
+    cov = OP.coverage(vault)
+    assert cov["source"] == "MIGRATION" and cov["provenance"] == "UPGRADED"
+    cl = _client(vault, "tenant_upgraded")
+    plan = _capture(cl, origin, supplier=supplier)
+    body = cl.post(f"/api/zaad/shadow/plans/{plan['plan_id']}/compare", params=PARAMS).json()
+    assert body["contract"]["readiness"] == "CONDITIONAL" and body["exposure"]["basis"] == "UNVERIFIED" and "existed before" in body["exposure"]["history"]["note"]
+    assert body["exposure"]["history"]["coverage"]["provenance"] == "UPGRADED" and body["exposure"]["history"]["ledger_exposures"] == 1   # recording still works
+    _no_realized_claim(body)
 
 
 def test_other_operators_exposures_never_count(env, vault):

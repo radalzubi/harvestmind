@@ -180,6 +180,7 @@ def test_api_shadow_requires_authentication_even_dev():
         assert client.post("/api/zaad/network/shadow", json=example().model_dump(mode="json")).status_code == 401
     finally:
         app.dependency_overrides.pop(require_operator, None)
+        app.dependency_overrides.pop(require_actor, None)        # the shared app must not keep this administrator for later tests
 
 
 def test_api_rejects_cross_tenant():
@@ -195,4 +196,5 @@ def test_api_rejects_cross_tenant():
         assert client.post("/api/zaad/network/plan", json=example().model_dump(mode="json")).status_code == 403
     finally:
         app.dependency_overrides.pop(require_operator, None)
+        app.dependency_overrides.pop(require_actor, None)
         app.dependency_overrides.pop(get_conn, None)
