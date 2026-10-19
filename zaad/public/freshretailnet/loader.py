@@ -100,14 +100,14 @@ def load(train: str | Path, eval_: str | Path, db: str | Path = DEFAULT_DB, *, r
         os.remove(db_path)
     conn = duckdb.connect(str(db_path))
     try:
-        parts = []
-        for v in verified:
-            split = "train" if v.name.startswith("train") else "eval"
-            parts.append(f"""SELECT '{split}' AS split, city_id, store_id, management_group_id, first_category_id, second_category_id,
+        select = """SELECT ? AS split, city_id, store_id, management_group_id, first_category_id, second_category_id,
                 third_category_id, product_id, CAST(dt AS DATE) AS d, sale_amount, stock_hour6_22_cnt AS stock_hours_out, discount,
                 holiday_flag, activity_flag, precpt, avg_temperature, avg_humidity, avg_wind_level, hours_sale, hours_stock_status
-                FROM read_parquet('{v.path.as_posix()}')""")
-        conn.execute("CREATE TABLE frn_daily AS " + " UNION ALL ".join(parts))
+                FROM read_parquet(?)"""
+        params: list[Any] = []
+        for v in verified:
+            params += ["train" if v.name.startswith("train") else "eval", v.path.as_posix()]
+        conn.execute("CREATE TABLE frn_daily AS " + " UNION ALL ".join([select] * len(verified)), params)
         _check_invariants(conn)
         conn.execute("""CREATE TABLE frn_hourly AS
             SELECT split, store_id, product_id, d, unnest(range(24)) AS hour, unnest(hours_sale) AS sale,
@@ -144,15 +144,15 @@ def _manifest_matches(conn: duckdb.DuckDBPyConnection) -> bool:
 def _check_invariants(conn: duckdb.DuckDBPyConnection) -> None:
     """The structural facts the audit established; a violation means the file is not what was audited."""
     lo, hi = BUSINESS_HOURS.start + 1, BUSINESS_HOURS.stop          # DuckDB list slices are 1-based and inclusive
-    bad = _one(conn, f"""SELECT
+    bad = _one(conn, """SELECT
         count(*) FILTER (WHERE abs(list_sum(hours_sale) - sale_amount) > 1e-6),
-        count(*) FILTER (WHERE list_sum(hours_stock_status[{lo}:{hi}]) <> stock_hours_out),
+        count(*) FILTER (WHERE list_sum(hours_stock_status[?:?]) <> stock_hours_out),
         count(*) FILTER (WHERE len(hours_sale) <> 24 OR len(hours_stock_status) <> 24),
         count(*) FILTER (WHERE sale_amount < 0 OR sale_amount IS NULL),
         count(*) FILTER (WHERE list_max(hours_stock_status) > 1 OR list_min(hours_stock_status) < 0),
         (SELECT count(*) FROM (SELECT store_id, product_id, d FROM frn_daily GROUP BY 1,2,3 HAVING count(*) > 1)),
         (SELECT count(DISTINCT (store_id, product_id)) FROM frn_daily)
-        FROM frn_daily""")
+        FROM frn_daily""", [lo, hi])
     names = ("sum(hours_sale) != sale_amount", "stock_hours_out != sum(flags 6..21)", "list length != 24", "negative or null sales",
              "flag outside {0,1}", "duplicate (store, product, day) keys")
     problems = [f"{n}: {c} rows" for n, c in zip(names, bad[:6]) if c]

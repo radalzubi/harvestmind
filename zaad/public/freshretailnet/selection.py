@@ -142,7 +142,8 @@ def select(conn: duckdb.DuckDBPyConnection, *, count: int = DEFAULT_COUNT, seed:
                 used_cities.add(f.city_id)
                 used_categories.add(f.first_category_id)
                 picked += 1
-    assert len(chosen) == count, (len(chosen), count)
+    if len(chosen) != count:
+        raise RuntimeError(f"selected {len(chosen)} series, {count} requested: the allocation could not be filled")
     series = [{**asdict(f), "stratum": f.stratum, "cv": None if f.cv == float("inf") else round(f.cv, 4)} for f in chosen]
     series.sort(key=lambda r: (r["stratum"], r["store_id"], r["product_id"]))
     manifest = {
