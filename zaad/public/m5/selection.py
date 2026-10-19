@@ -11,7 +11,7 @@ mean weekly sales of at least 2 units in the feature window (low-volume retail w
 dataset should exercise multiweek replenishment of moving items); no run of 8 or more zero-sales weeks in the feature
 window (a proxy for a delisting or long stockout that the dataset cannot distinguish from no demand).
 
-Strata: category (FOODS / HOBBIES / HOUSEHOLD) × weekly volume tercile × weekly volatility (CV ≥ 0.5 volatile) ×
+Strata: category (FOODS / HOBBIES / HOUSEHOLD) × weekly volume tercile × weekly volatility (CV > 0.5 volatile) ×
 zero-week share (≥ 10 % intermittent). 50 series allocated proportionally with a guaranteed seat for strata of at
 least 50 series, seeded draw inside each stratum preferring unseen stores and departments.
 """
@@ -109,13 +109,19 @@ def features(conn: duckdb.DuckDBPyConnection) -> list[SeriesFeatures]:
     lo, hi = np.quantile(means, [1 / 3, 2 / 3])
     out = []
     for r in rows:
-        id_, item, dept, cat, store, state, weeks, mean, sd, zero, series = r
-        sd = float(sd or 0.)
-        cv = sd / mean if mean > 0 else float("inf")
+        id_, item, dept, cat, store, state, weeks, mean, _sd_sql, zero, series = r
+        # moments from the ordered weekly list in Python: DuckDB's parallel aggregates differ in the last bits between runs
+        # (one series sits at a coefficient of variation of exactly 0.5, and 6.0 versus 5.999... flipped its stratum, the
+        # allocation and the draw); a strict comparison on a rounded ratio keeps the frozen manifest reproducible
+        values = np.asarray(list(series), dtype=float)
+        mean = float(values.mean())
+        sd = float(values.std(ddof=1)) if len(values) > 1 else 0.
+        zero = float(np.mean(values == 0))
+        cv = round(sd / mean, 9) if mean > 0 else float("inf")
         out.append(SeriesFeatures(id_, item, dept, cat, store, state, int(weeks), float(mean), sd, float(zero), _longest_zero_run(list(series)),
                                   f"{store}|{item}" in listed,
                                   volume_class="high" if mean > hi else "low" if mean <= lo else "medium",
-                                  volatility_class="volatile" if cv >= VOLATILE_CV else "steady",
+                                  volatility_class="volatile" if cv > VOLATILE_CV else "steady",
                                   intermittency_class="intermittent" if zero >= INTERMITTENT_ZERO_SHARE else "continuous"))
     return out
 
