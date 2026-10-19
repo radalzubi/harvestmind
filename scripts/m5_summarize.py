@@ -24,6 +24,9 @@ def main() -> int:
     S.RESULTS_ROOT = RESULTS_ROOT
     rows = S.load_rows(args.stage)
     for r in rows:                                   # the FRN summarizer keys series by (store_id, product_id); M5 series ids are strings
+        r.setdefault("track", "observed")
+        r.setdefault("store_id", (r.get("series_id") or "").rsplit("_", 3)[-3] if r.get("series_id") else None)
+        r.setdefault("item_id", r.get("series_id"))
         r.setdefault("product_id", r.get("item_id"))
         r.setdefault("stockout_class", r.get("volatility_class"))
         r.setdefault("regularity_class", r.get("intermittency_class"))

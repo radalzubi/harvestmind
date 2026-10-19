@@ -44,11 +44,11 @@ def week_start(d: date) -> date:
     return d - timedelta(days=(d.weekday() - 5) % 7)
 
 
-FEATURE_SQL = f"""
+FEATURE_SQL = """
 WITH w AS (
     SELECT id, item_id, dept_id, cat_id, store_id, state_id, c.wm_yr_wk, sum(qty) AS q
     FROM m5_daily m JOIN m5_calendar c USING (d)
-    WHERE m.d >= DATE '{(HOLDOUT_ORIGIN - timedelta(weeks=FEATURE_WEEKS)).isoformat()}' AND m.d < DATE '{HOLDOUT_ORIGIN.isoformat()}'
+    WHERE m.d >= ? AND m.d < ?
     GROUP BY 1, 2, 3, 4, 5, 6, 7
 ), s AS (
     SELECT id, any_value(item_id) AS item_id, any_value(dept_id) AS dept_id, any_value(cat_id) AS cat_id, any_value(store_id) AS store_id,
@@ -94,7 +94,8 @@ def _longest_zero_run(values: list[float]) -> int:
 def _listed(conn: duckdb.DuckDBPyConnection) -> set[str]:
     """Series with a price row for every Walmart week from the history start to the truth end."""
     start = HOLDOUT_ORIGIN - timedelta(weeks=FEATURE_WEEKS)
-    weeks = conn.execute("SELECT count(DISTINCT wm_yr_wk) FROM m5_calendar WHERE d >= ? AND d <= ?", [start, TRUTH_END]).fetchone()[0]
+    row = conn.execute("SELECT count(DISTINCT wm_yr_wk) FROM m5_calendar WHERE d >= ? AND d <= ?", [start, TRUTH_END]).fetchone()
+    weeks = row[0] if row else 0
     rows = conn.execute("""SELECT p.store_id || '|' || p.item_id FROM m5_prices p
                            JOIN (SELECT DISTINCT wm_yr_wk FROM m5_calendar WHERE d >= ? AND d <= ?) k USING (wm_yr_wk)
                            GROUP BY 1 HAVING count(DISTINCT p.wm_yr_wk) = ?""", [start, TRUTH_END, weeks]).fetchall()
@@ -103,7 +104,7 @@ def _listed(conn: duckdb.DuckDBPyConnection) -> set[str]:
 
 def features(conn: duckdb.DuckDBPyConnection) -> list[SeriesFeatures]:
     listed = _listed(conn)
-    rows = conn.execute(FEATURE_SQL).fetchall()
+    rows = conn.execute(FEATURE_SQL, [HOLDOUT_ORIGIN - timedelta(weeks=FEATURE_WEEKS), HOLDOUT_ORIGIN]).fetchall()
     means = np.asarray([r[7] for r in rows if r[7] >= MIN_MEAN_WEEKLY])
     lo, hi = np.quantile(means, [1 / 3, 2 / 3])
     out = []
