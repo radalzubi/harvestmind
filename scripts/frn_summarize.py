@@ -20,7 +20,7 @@ from typing import Any
 import numpy as np
 
 RESULTS_ROOT = Path("data/public/freshretailnet/results")
-BASELINES = ("reorder_point", "periodic:1", "base_stock", "order_up_to")
+BASELINES: tuple[str, ...] = ("reorder_point", "periodic:1", "base_stock", "order_up_to")
 ZAAD = "gated"
 #: primary cost: `continuation` credits residual stock at the purchase it avoids less carrying (floored at salvage, capped at
 #: asset value) with one rule for every policy; `realized` credits it at salvage and is reported beside it as the bound that
@@ -69,8 +69,7 @@ def policy_table(rows: list[dict[str, Any]]) -> dict[str, Any]:
                              ("service_infeasible_reviews", lambda r: _m(r, "service_infeasible_reviews")),
                              ("conservation_residual_max", lambda r: _m(r, "conservation_residual_max")),
                              ("wall_seconds", lambda r: r.get("wall_seconds")), ("cpu_seconds", lambda r: r.get("cpu_seconds"))):
-            values = [getter(r) for r in ok]
-            values = [float(v) for v in values if v is not None]
+            values = [float(v) for v in (getter(r) for r in ok) if v is not None]
             metric[name] = {"mean": statistics.fmean(values), "median": statistics.median(values), "max": max(values), "n": len(values)} if values else None
         out["|".join(key)] = {"window": key[0], "track": key[1], "scenario": key[2], "policy": key[3], "runs": len(g), "complete": len(ok),
                               "failed": len(g) - len(ok), "statuses": dict(_count(r.get("status") for r in g)), **metric}
@@ -135,7 +134,7 @@ def _sign_test(wins: int, losses: int) -> float | None:
 def strata(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """ZAAD minus each baseline on realized cost by selection class, final window, per track and scenario."""
     out: dict[str, Any] = {}
-    by = defaultdict(lambda: defaultdict(dict))
+    by: dict[tuple, dict[tuple, dict[str, dict]]] = defaultdict(lambda: defaultdict(dict))
     for r in rows:
         if r.get("status") == "COMPLETE" and r.get("endpoint"):
             by[(r["window"], r["track"], r["scenario"])][(r["store_id"], r["product_id"])][r["policy"]] = r
@@ -157,7 +156,7 @@ def failures(rows: list[dict[str, Any]]) -> dict[str, Any]:
     infeasible = [r for r in rows if r.get("derived") and r["derived"].get("service_infeasible_reviews")]
     slow = sorted((r for r in rows if r.get("wall_seconds") is not None), key=lambda r: -r["wall_seconds"])[:10]
     worst = []
-    by = defaultdict(dict)
+    by: dict[tuple, dict[str, dict]] = defaultdict(dict)
     for r in rows:
         if r.get("status") == "COMPLETE" and r.get("endpoint"):
             by[(r["window"], r["track"], r["scenario"], r["store_id"], r["product_id"])][r["policy"]] = r
@@ -171,7 +170,7 @@ def failures(rows: list[dict[str, Any]]) -> dict[str, Any]:
                               "zaad_inventory": _m(pol[ZAAD], "avg_inventory_units"), "baseline_inventory": _m(pol[best_base], "avg_inventory_units"),
                               "zaad_retained_incumbent_reviews": _m(pol[ZAAD], "retained_incumbent_reviews"), "zaad_states": (pol[ZAAD].get("derived") or {}).get("planner_states")})
     worst.sort(key=lambda w: -w["zaad_minus_best_baseline"])
-    completion = defaultdict(lambda: {"runs": 0, "complete": 0, "INFEASIBLE": 0, "ABSTAIN": 0, "other": 0})
+    completion: dict[str, dict[str, int]] = defaultdict(lambda: {"runs": 0, "complete": 0, "INFEASIBLE": 0, "ABSTAIN": 0, "other": 0})
     for r in rows:
         c = completion[r["policy"]]
         c["runs"] += 1

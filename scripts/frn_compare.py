@@ -40,10 +40,11 @@ def cell_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         pol = by[cell]
 
         def mean_of(policy: str, key: str) -> float | None:
-            vals = [float(S._m(r, key)) for r in pol.get(policy, []) if r.get("status") == "COMPLETE" and r.get("endpoint") and S._m(r, key) is not None]
+            raw = [S._m(r, key) for r in pol.get(policy, []) if r.get("status") == "COMPLETE" and r.get("endpoint")]
+            vals = [float(v) for v in raw if v is not None]
             return statistics.fmean(vals) if vals else None
         zaad = pol.get(S.ZAAD, [])
-        own = [float((r.get("provenance") or {}).get("own_share")) for r in zaad if (r.get("provenance") or {}).get("own_share") is not None]
+        own = [float(v) for v in ((r.get("provenance") or {}).get("own_share") for r in zaad) if v is not None]
         p = pairs.get("|".join([*cell, BASE, "continuation_cost"]))
         out["|".join(cell)] = {"window": cell[0], "track": cell[1], "scenario": cell[2],
                                "zaad_complete": sum(1 for r in zaad if r.get("status") == "COMPLETE"), "zaad_runs": len(zaad),

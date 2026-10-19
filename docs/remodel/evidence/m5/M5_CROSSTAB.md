@@ -79,3 +79,18 @@ Verdicts follow the frozen criteria (M5_DESIGN_FREEZE.md section 5); only `final
 | cash_4w | val2 | mild_lead | 0/50 |  |  |  |  |  |  |  |  |  |  | n/a |
 | cash_4w | val2 | stable | 1/50 | 159.94 | 159.94 |  |  |  | 0.631 | 0.631 |  |  | 0.00 | n/a |
 | cash_4w | val2 | uncertain | 0/50 |  |  |  |  |  |  |  |  |  |  | n/a |
+| cash_4w_revenue | final | fill_only | 47/50 | 401.68 | 405.92 | -2.53 | [-7.11, +1.34] | 26/16 | 0.939 | 0.918 | +0.015 | +8.3 | 0.39 | INCONCLUSIVE |
+| cash_4w_revenue | final | lead_only | 48/50 | 370.28 | 373.93 | -3.65 | [-5.90, -1.66] | 26/21 | 0.883 | 0.846 | +0.037 | +4.3 | 0.43 | SUCCESS |
+| cash_4w_revenue | final | mild_lead | 46/50 | 379.28 | 371.94 | -2.72 | [-4.94, -0.77] | 22/22 | 0.883 | 0.857 | +0.025 | +3.6 | 0.42 | SUCCESS |
+| cash_4w_revenue | final | stable | 47/50 | 367.99 | 362.18 | -0.42 | [-1.03, +0.06] | 22/18 | 0.928 | 0.924 | +0.003 | +0.2 | 0.22 | INCONCLUSIVE |
+| cash_4w_revenue | final | uncertain | 46/50 | 431.98 | 429.84 | -2.11 | [-7.80, +2.48] | 21/22 | 0.849 | 0.808 | +0.041 | +9.1 | 0.38 | INCONCLUSIVE |
+| cash_4w_revenue | val1 | fill_only | 31/50 | 318.98 | 300.00 | +3.92 | [+0.14, +8.36] | 9/21 | 0.961 | 0.919 | +0.009 | +9.4 | 0.38 | FAILURE |
+| cash_4w_revenue | val1 | lead_only | 33/50 | 279.02 | 280.63 | -1.61 | [-4.13, +0.48] | 14/19 | 0.908 | 0.880 | +0.028 | +12.0 | 0.45 | INCONCLUSIVE |
+| cash_4w_revenue | val1 | mild_lead | 33/50 | 278.16 | 274.73 | -1.34 | [-3.45, +0.54] | 13/19 | 0.911 | 0.893 | +0.018 | +5.7 | 0.41 | INCONCLUSIVE |
+| cash_4w_revenue | val1 | stable | 35/50 | 263.82 | 263.60 | +0.23 | [-0.07, +0.60] | 10/18 | 0.935 | 0.935 | -0.001 | +1.3 | 0.16 | INCONCLUSIVE |
+| cash_4w_revenue | val1 | uncertain | 33/50 | 321.55 | 324.06 | +5.84 | [+0.89, +11.21] | 9/22 | 0.884 | 0.856 | +0.027 | +12.6 | 0.33 | FAILURE |
+| cash_4w_revenue | val2 | fill_only | 39/50 | 359.92 | 360.62 | -0.70 | [-6.87, +5.17] | 17/21 | 0.935 | 0.922 | +0.013 | +12.0 | 0.44 | INCONCLUSIVE |
+| cash_4w_revenue | val2 | lead_only | 41/50 | 323.94 | 321.68 | -5.09 | [-8.48, -2.20] | 27/14 | 0.890 | 0.845 | +0.044 | +5.0 | 0.49 | SUCCESS |
+| cash_4w_revenue | val2 | mild_lead | 41/50 | 312.52 | 319.44 | -2.86 | [-6.08, -0.30] | 20/20 | 0.895 | 0.867 | +0.025 | +3.5 | 0.45 | SUCCESS |
+| cash_4w_revenue | val2 | stable | 41/50 | 317.20 | 317.29 | -0.09 | [-0.56, +0.22] | 14/22 | 0.927 | 0.924 | +0.002 | +0.5 | 0.22 | INCONCLUSIVE |
+| cash_4w_revenue | val2 | uncertain | 40/50 | 358.83 | 355.82 | +3.01 | [-0.07, +6.45] | 16/23 | 0.877 | 0.837 | +0.040 | +8.7 | 0.41 | INCONCLUSIVE |
