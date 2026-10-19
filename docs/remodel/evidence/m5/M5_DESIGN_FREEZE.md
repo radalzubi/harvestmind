@@ -71,3 +71,21 @@ decision provenance (own / retained / abstained), runtime; realized cost beside 
 Supplier behaviour, procurement cost, demand under stockout, and anything about Walmart's own replenishment. The
 holdout verdict is one period of one retailer's sales under declared supply; the GO / CONDITIONAL / NO-GO judgement
 in the final report weighs it together with the corrected FreshRetailNet re-run.
+
+## 7. Post-freeze corrections (recorded as they happened, 2026-10-19)
+
+The first runs on the frozen code exposed defects that had to be fixed before any result could be read; each is a
+structural finding (a crash or a constraint breach), not a reading of the holdout. Original partial or complete runs are
+preserved under their commit hash; the corrected runs replace them for the comparison.
+
+| change | commit | why | effect on the frozen design |
+|---|---|---|---|
+| E3 joint, legal rule projections | a3dd082 | the rule baselines breached pack, load and MOV constraints in settlement and ZAAD's incumbent projection was infeasible on the same groups (register finding 15) | Experiment B re-run on the fixed code; `coupled_run1_prefix_70c10db` (212 rows) kept as the record of the breaches. Experiment A requests carry no such terms: no effect (tested) |
+| E4 cash residue snap, E5 ledger key | de31828 | two replay crashes on the cash variant (findings 16, 17) | `cash_4w` re-run; other Experiment A variants keep their run-1 rows, where the only affected rows are the 25 EXCEPTION rows of one zero-history series at val2, which the fix would turn into BUILD_FAILED rows |
+| zero-sales history is a recorded BUILD_FAILED | de31828 | an item not yet launched at an origin has nothing to plan | same exclusion class as the declared short-history and unpriced cases |
+| `cash_4w_revenue` variant | a391e99 | the frozen cash variant is a liquidation (finding 18) | added, labelled post-freeze; `cash_4w` still run and reported |
+
+The run manifests record the commit at completion; the Experiment A variants `corrected`, `no_incumbent`, `target_90`
+and `holding_x2` were started at `ae1b73c` (before E3–E5) and their results are identical to what the later code
+produces for every row except the zero-history series noted above, because E3 is a no-op without lot, MOV, load or
+cash terms and E4/E5 only act where a cash budget or an empty ledger exists.
