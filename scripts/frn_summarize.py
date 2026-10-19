@@ -206,7 +206,7 @@ def markdown(stage: str, table: dict[str, Any], pairs: dict[str, Any], fails: di
     lines += ["", "## Paired comparison, ZAAD minus baseline per series (continuation cost; negative favours ZAAD)", "",
               "| window | track | scenario | baseline | series | mean diff | 80 % bootstrap | 95 % bootstrap | ZAAD better / worse / ties | sign p |", "|---|---|---|---|---|---|---|---|---|---|"]
     for key, p in pairs.items():
-        if p["metric"] != COST:
+        if p["metric"] != "continuation_cost":       # the paired metric name (COST names the endpoint key)
             continue
         lines.append(f"| {p['window']} | {p['track']} | {p['scenario']} | {p['baseline']} | {p['series']} | {p['mean_difference_zaad_minus_baseline']:+.3f} | "
                      f"[{p['bootstrap_80'][0]:+.3f}, {p['bootstrap_80'][1]:+.3f}] | [{p['bootstrap_95'][0]:+.3f}, {p['bootstrap_95'][1]:+.3f}] | "
