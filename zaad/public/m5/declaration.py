@@ -44,6 +44,8 @@ class Economics:
     line_capacity_floor: float = 20.0
     order_multiple: float = 0.0                # 0 = continuous quantities in Experiment A (orders are in units but not lot-sized)
     cash_weeks: float | None = None            # None = no cash rows; k = opening cash of k weeks of purchases at mean demand, credit 0
+    revenue_receivables: bool = False          # with a cash budget: declare the mean weekly revenue (mean demand x shelf price) as a dated receivable every
+                                               # week, identically for every policy; False = a fixed pot with no inflow (the frozen `cash_4w`, a liquidation)
 
     @property
     def holding_per_value_week(self) -> float:
@@ -109,6 +111,10 @@ VARIANTS: dict[str, Declaration] = {
     "no_incumbent": variant(zaad_incumbent_rule=None),
     "target_90": variant(service_target=0.90),
     "cash_4w": variant(cash_weeks=4.0),                       # working-capital budget: four weeks of purchases, no credit
+    # post-freeze (2026-10-19): the frozen cash variant has no cash inflow and payment on arrival, so every policy is cash-starved within
+    # weeks and the rules end in "post-horizon obligations exceed terminal financing headroom"; this variant keeps the same budget
+    # and adds the mean weekly revenue as a declared receivable so working capital binds without liquidating the business
+    "cash_4w_revenue": variant(cash_weeks=4.0, revenue_receivables=True),
     "holding_x2": variant(holding_annual=0.50, cost_of_capital_annual=0.20),
 }
 

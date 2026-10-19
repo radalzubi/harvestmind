@@ -120,7 +120,7 @@ def build_request(series: SeriesWeeks, origin: date, *, scenario: str, declarati
         "pipeline": [],
         "liquidity": {**known, "opening_cash": cash, "minimum_cash": 0., "credit_limit": 0. if cash is not None else None, "opening_debt": 0.,
                       "interest_per_period": 0., "cost_of_capital_per_period": eco.cost_of_capital_annual / 52. if cash is not None else 0.,
-                      "known_receivables": [0.] * H, "other_payments": [0.] * H},
+                      "known_receivables": [mean_weekly * price if (cash is not None and eco.revenue_receivables) else 0.] * H, "other_payments": [0.] * H},
         "stresses": [{**declaration.stress, "recovery_period": H}],
         "seed": seed, "scenarios": declaration.scenarios, "max_solve_seconds": declaration.max_solve_seconds, "downside_cost_tolerance": .05,
         "service_tolerance": .01, "evidence_label": "SYNTHETIC", "incumbent_rule": declaration.zaad_incumbent_rule,
