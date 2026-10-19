@@ -9,7 +9,7 @@ the owner's confirmation against the rules text. The four source files are recon
 (SHA-256, size) before anything is read; a file that differs is refused.
 
 Content. `sales_train_evaluation.csv` holds unit sales for 30,490 store-item series over 1,941 days (d_1 = 2011-01-29
-to d_1941 = 2016-06-19); `sales_train_validation.csv` is the same series truncated at d_1913 (the audit checks the two
+to d_1941 = 2016-05-22; the calendar file runs 28 days further, to 2016-06-19, for the competition's forecast period); `sales_train_validation.csv` is the same series truncated at d_1913 (the audit checks the two
 agree on d_1..d_1913, so only the evaluation file is loaded). `calendar.csv` maps d_n to dates, Walmart weeks
 (`wm_yr_wk`, Saturday to Friday), events and SNAP days; `sell_prices.csv` gives the weekly shelf price per store-item.
 Sales are OBSERVED unit sales, not demand: stockouts are not annotated, so censoring cannot be measured on this

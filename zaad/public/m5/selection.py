@@ -1,8 +1,8 @@
 """Deterministic, training-only selection of M5 store-item series for the weekly evaluation.
 
 Chronology (declared before any policy ran). Walmart weeks run Saturday to Friday; d_1 = Saturday 2011-01-29. The
-final holdout origin is Saturday 2016-01-30 (d_1828). Every selection feature is computed on days strictly before
-that origin, over the 52 Walmart weeks ending 2016-01-29. The evaluation period (d_1914..d_1941, public Kaggle labels)
+final holdout origin is Saturday 2016-01-02 (d_1800). Every selection feature is computed on days strictly before
+that origin, over the 52 Walmart weeks ending 2016-01-01. The evaluation period (d_1914..d_1941, public Kaggle labels)
 was never read for selection or tuning; it enters only as settlement truth for the last holdout reviews' horizons.
 
 Eligibility (distributor relevance, not performance): listed for the whole history and holdout (a price row exists
@@ -29,14 +29,14 @@ import numpy as np
 SELECTION_VERSION = "m5-selection-1"
 DEFAULT_SEED = 20261019
 DEFAULT_COUNT = 50
-HOLDOUT_ORIGIN = date(2016, 1, 30)          # Saturday, d_1828
+HOLDOUT_ORIGIN = date(2016, 1, 2)           # Saturday, d_1800
 FEATURE_WEEKS = 52
 MIN_MEAN_WEEKLY = 2.0
 MAX_ZERO_RUN_WEEKS = 8
 VOLATILE_CV = 0.5
 INTERMITTENT_ZERO_SHARE = 0.10
 MIN_STRATUM_POPULATION = 50
-TRUTH_END = date(2016, 6, 17)               # last full Walmart week ends Friday 2016-06-17 (d_1939)
+TRUTH_END = date(2016, 5, 20)               # last full Walmart week in the SALES data ends Friday 2016-05-20 (d_1939; d_1941 = 2016-05-22)
 
 
 def week_start(d: date) -> date:

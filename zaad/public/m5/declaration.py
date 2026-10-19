@@ -116,5 +116,7 @@ VARIANTS: dict[str, Declaration] = {
 WINDOWS: dict[str, dict[str, Any]] = {
     "val1": {"origin": date(2014, 8, 2), "reviews": 13, "rolling": True, "role": "internal validation"},
     "val2": {"origin": date(2015, 1, 31), "reviews": 13, "rolling": True, "role": "internal validation"},
-    "final": {"origin": date(2016, 1, 30), "reviews": 13, "rolling": True, "role": "chronological holdout; truth runs to 2016-06-17 (d_1939)"},
+    "final": {"origin": date(2016, 1, 2), "reviews": 13, "rolling": True,
+              "role": "chronological holdout; truth runs to the last full Walmart week in the sales data, ending Friday 2016-05-20 (d_1939); "
+                      "the horizons of the last reviews overlap the public Kaggle evaluation period d_1914..d_1941 (2016-04-25..2016-05-22), which never informed development"},
 }
