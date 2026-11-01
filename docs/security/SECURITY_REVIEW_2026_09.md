@@ -1,4 +1,6 @@
-# ZAAD full-stack security review — September 2026
+# ZAAD full-stack security review — September 2026 
+
+> **2026-11-01 update:** SEC-001's historical pilot credential has now been revoked in production. Both public API origins reject it with HTTP 401. No replacement customer credential was issued. See [publication verification](PUBLICATION_CHECK_2026_11_01.md). The September audit below remains a historical record; its pending-rotation statements are superseded by this update.
 
 **Status: DONE — PASS WITH LIMITATIONS (2026-09-26).** Released as PR #96 → `main` `c7ec175`, Fly `zaad-api` v38, tag `zaad-security-hardening-runtime`; the scorecard, the residual risks and the release record are in §16. Written on 2026-09-25 as IN PROGRESS: Branch `security/full-stack-hardening` from `main` `bdb570b` (= the frontier
 decomposition runtime `328a294` plus its docs commits). Tracker written before any code change; the audit precedes every
