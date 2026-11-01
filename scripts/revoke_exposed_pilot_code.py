@@ -19,9 +19,31 @@ APP = "zaad-api"
 API = "https://api.machines.dev/v1/apps/" + APP
 
 REMOTE = r'''
-import json, sys
+import json, os, pwd, stat, sys
+from pathlib import Path
 sys.path.insert(0, "/app")
 from infrastructure.operator_registry import OperatorRegistry
+
+def runtime_registry():
+    account = pwd.getpwnam("harvestmind")
+    registry = OperatorRegistry()
+    # Fly exec runs as root even though the API runs as the image's USER.
+    # Repair the two registry metadata files if an earlier maintenance write
+    # made them root-owned, then use the runtime identity for atomic saves.
+    if os.geteuid() == 0:
+        if registry.registry_dir.stat().st_uid != account.pw_uid:
+            raise RuntimeError("registry directory owner differs from the runtime user")
+        for path in (registry.registry_file, registry.registry_dir / ".operators.lock"):
+            if path.exists():
+                if not stat.S_ISREG(path.lstat().st_mode):
+                    raise RuntimeError("refusing a non-regular registry metadata file")
+                os.chown(path, account.pw_uid, account.pw_gid)
+        os.setgroups([])
+        os.setgid(account.pw_gid)
+        os.setuid(account.pw_uid)
+    if os.geteuid() != account.pw_uid:
+        raise RuntimeError("maintenance must use the API runtime user")
+    return registry
 
 def remediate(registry, expected_hash, old_length, apply):
     # New startups already refuse to set this old short code; clearing its
@@ -114,7 +136,7 @@ def main():
     for machine in serving:
         if not machine.get("config", {}).get("mounts"):
             raise RuntimeError("serving machine has no persistent registry volume")
-        script = REMOTE + "\nprint(json.dumps(remediate(OperatorRegistry(), " + repr(digest) + ", " + str(len(code)) + ", " + repr(args.apply) + ")))\n"
+        script = REMOTE + "\nprint(json.dumps(remediate(runtime_registry(), " + repr(digest) + ", " + str(len(code)) + ", " + repr(args.apply) + ")))\n"
         result = fly_request("/machines/" + machine["id"] + "/exec", {
             "cmd": shlex.join(["python", "-c", script]), "timeout": 30,
         })
