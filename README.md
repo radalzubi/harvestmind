@@ -1,5 +1,86 @@
 # ZAAD
 
+[![CI](https://github.com/radalzubi/harvestmind/actions/workflows/ci.yml/badge.svg)](https://github.com/radalzubi/harvestmind/actions/workflows/ci.yml)
+
+**Inventory and purchasing decisions under uncertain demand and supply.**
+
+Built by [Rad AlZubi](https://github.com/radalzubi) · [zaadsupply.com](https://zaadsupply.com)
+
+A distributor must decide what to buy, hold and promise before future demand and deliveries are known. ZAAD connects operational data to diagnostics and constrained planning, so those trade-offs can be inspected before an operator acts.
+
+## What I built
+
+I implemented the product and modeling stack: data ingestion, diagnostic reports, forecasting, optimization, the API and the web workspace.
+
+| Component | Implemented capability | Inspect |
+|---|---|---|
+| Planning engine | Joint mixed-integer optimization with purchasing, inventory age and operational constraints | [Model](zaad/full/model.py), [planner](zaad/full/planner.py) |
+| Network decisions | Multi-location inventory, alternative sourcing, transfers and scarce-supply allocation | [Network](zaad/meio/), [sourcing](zaad/sourcing/), [allocation](zaad/atp/) |
+| Purchase-order decisions | Evaluate interventions in existing commitments | [Commitment layer](zaad/commitments/) |
+| Product | Operational imports, diagnostics, planning jobs, proposals and a web workspace | [API](api/), [web](web/) |
+| Validation | Decision/accounting invariants, integration and security tests, frozen regression comparisons | [Tests](tests/), [CI](.github/workflows/ci.yml) |
+
+The canonical engine uses HiGHS through SciPy/highspy, with an additional solver adapter. The earlier supply-planning foundation includes Pyomo models, probabilistic demand/supply estimates and dependence scenarios.
+
+## Engineering decisions worth inspecting
+
+- Order and transfer schedules are shared across scenarios; realized inventory and fulfillment respond to uncertainty.
+- The solver's output is checked against bounds, constraints and integrality before it is used.
+- Model comparisons retain adverse and inconclusive results. Complexity is useful only when the evidence supports the decision.
+- Shadow comparisons distinguish simulated differences from realized customer value.
+- Recommendations remain subject to operator review. The system does not automatically send purchase orders.
+
+## Stage and evidence
+
+This is an implemented planning platform with documented releases and engineering validation. The repository's experiment results include synthetic operators, demo-scale states and simulated decisions informed by public aggregate series.
+
+**Real-operator performance and realized customer savings are not established.** The inventory/resilience prototype retains its **NEEDS FURTHER ENGINEERING** verdict. A modeled result must identify its dataset, policy baseline and assumptions.
+
+Agricultural supply planning and Jordan-focused commercial distribution have separate operating assumptions and evidence; see [project boundaries](docs/projects/README.md).
+
+## Where to start
+
+1. [System and architecture map](docs/zaad_full/CURRENT_SYSTEM.md).
+2. [Release ledger](docs/ZAAD_RELEASE_LEDGER.md) for dated delivery evidence.
+3. [Canonical model](zaad/full/model.py) and [planner](zaad/full/planner.py).
+4. [Shadow comparison integration test](tests/integration/test_shadow_comparison_api.py).
+5. [Prototype status](docs/zaad_next/README.md) for the separate inventory/resilience experiment.
+
+Historical release documents describe their recorded version; they do not establish today's live runtime or close later validation gaps.
+
+## Run locally
+
+Requires Python 3.11+ and Node.js 20.9+ for the frontend. Use a local development database and the provided synthetic/sample data.
+
+```bash
+pip install -e ".[dev]"
+python3 scripts/setup_db.py --seeds
+uvicorn api.main:app --reload
+```
+
+In another terminal:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Tests:
+
+```bash
+python3 -m pytest
+```
+
+See the legacy setup reference below for sample imports and environment variables. Networked deployments require configured authentication, isolation and deployment controls.
+
+<details>
+<summary>Earlier HarvestMind foundation, setup and historical feature reference</summary>
+
+The following documentation predates the canonical ZAAD stack. It is retained for the earlier adapters and setup details; read the system map and release ledger above before interpreting historical status or benchmark claims.
+
+## Historical foundation
+
 > **Current system:** [`docs/zaad_full/CURRENT_SYSTEM.md`](docs/zaad_full/CURRENT_SYSTEM.md) — released optimizer stack (P0-P5, P4B V1),
 > production runtime, validation chain and release procedure. The sections below predate it and are kept as history.
 
@@ -347,3 +428,6 @@ To move from demo to live pilot with an operator, you'll need:
 | Diagnostic HTML report | ✅ Board-readable, printable |
 | Pilot authentication + operator vault isolation | ✅ Implemented; deployment configuration required |
 | Controlled single-host pilot deployment | ✅ Containerized; TLS/backup/restore remain operator responsibilities |
+
+
+</details>
