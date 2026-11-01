@@ -80,3 +80,34 @@ def issue_actor_token(operator_id: str, body: dict):
     logging.getLogger("harvestmind.security").info("security event=actor_issued operator=%s actor=%s role=%s", operator_id, actor_id, role)
     return {"operator_id": operator_id, "actor_id": actor_id, "name": name, "role": role, "token": token,
             "note": "Store this token now — it cannot be recovered. Send it as 'Authorization: Bearer <token>'."}
+
+
+@router.post("/operators/{operator_id}/offboard", dependencies=[Depends(require_admin)])
+def offboard_operator(operator_id: str, body: dict):
+    """Remove one workspace's data from every ZAAD-controlled store (docs/security/TENANT_OFFBOARDING_RUNBOOK.md).
+
+    Dry run unless `execute` is true **and** `confirm_operator_id` repeats the exact operator id. Running inside the
+    API also clears this process's caches for the tenant (analytics results, diagnostic job entries) and releases the
+    vault's open connection, which the command-line tool cannot reach. The response is counts, ids and paths only.
+    """
+    from infrastructure.offboarding import Offboarding, Refused
+    from infrastructure.operator_registry import OperatorRegistry
+    from api.analytics import cache as analytics_cache
+    from api.routers import jobs as jobs_router
+
+    def _drop_job_entries(op: str) -> int:
+        with jobs_router._LOCK:  # noqa: SLF001
+            victims = [k for k, v in jobs_router._JOBS.items() if v.get("operator_id") == op]  # noqa: SLF001
+            for k in victims:
+                jobs_router._JOBS.pop(k, None)  # noqa: SLF001
+        return len(victims)
+
+    execute = bool(body.get("execute"))
+    confirm = str(body.get("confirm_operator_id") or "")
+    off = Offboarding(OperatorRegistry(), cache_clearers={"analytics_results": analytics_cache.clear, "diagnostic_jobs": _drop_job_entries})
+    try:
+        res = off.execute(operator_id, confirm, actor="admin") if execute else off.plan(operator_id)
+    except Refused as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    logging.getLogger("harvestmind.security").info("security event=offboarding operator=%s mode=%s status=%s", operator_id, res.mode, res.status)
+    return res.to_dict()

@@ -4,7 +4,8 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { KeyRound, LogOut } from "lucide-react";
 import { Card, CardBody, CardHead, InfoBanner, PageHeader, Tbtn } from "@/components/ui";
-import { BASE_URL, apiFetch, clearApiToken, getApiToken, setApiToken } from "@/lib/api";
+import { clearApiToken, credentialAccepted, getApiToken, setApiToken } from "@/lib/api";
+import { switchCredential } from "@/lib/tenant-state";
 import { useToast } from "@/components/Toast";
 
 function AccessInner() {
@@ -27,14 +28,18 @@ function AccessInner() {
     // The credential leaves the address bar and the history entry before anything else happens, and it is
     // stored only once the API has accepted it (security review 2026-09, SEC-011).
     window.history.replaceState(window.history.state, "", "/access");
-    fetch(`${BASE_URL}/me`, { headers: { Authorization: `Bearer ${t.trim()}` } }).then((r) => {
-      if (!r.ok) throw new Error("refused");
-      setApiToken(t);
-      setConnected(true);
-      toast.push("Workspace connected");
-      router.replace("/start");
-    }).catch(() => {
-      clearApiToken();
+    // The candidate is checked on its own first. Accepted: everything of the previous workspace is
+    // cleared and only then is the new credential stored. Refused: nothing changes — a person signed
+    // in to one workspace who opens a dead link for another is still signed in to the first, and
+    // told the link was refused (SEC-038).
+    switchCredential(t, credentialAccepted, setApiToken).then((result) => {
+      if (result.outcome === "accepted") {
+        setConnected(true);
+        toast.push("Workspace connected");
+        router.replace("/start");
+        return;
+      }
+      setConnected(Boolean(getApiToken()));
       setRefused("That access link is not valid. It may have been replaced since it was sent.");
       toast.push("That access link is not valid.");
       router.replace("/access");
@@ -46,22 +51,18 @@ function AccessInner() {
     if (!token.trim()) return;
     setChecking(true);
     setRefused(null);
-    setApiToken(token);
     try {
-      await apiFetch("/intake/status");
-      setConnected(true);
-      setToken("");
-      toast.push("Operator vault connected");
-    } catch (error) {
-      clearApiToken();
-      setConnected(false);
-      // `String(error)` is "Error: Invalid API token" — the word "Error:" is the language's, not
-      // ours, and it read as part of the sentence.
-      const said = error instanceof Error ? error.message : String(error);
-      setRefused(/invalid|unauthor|401/i.test(said)
-        ? "That token was not accepted. Check it was copied whole, and that it has not been replaced since it was sent to you."
-        : `ZAAD could not check that token: ${said}`);
-      toast.push("That token was not accepted.");
+      // Checked before it is stored, so a refused paste leaves the current session exactly as it was.
+      const result = await switchCredential(token, credentialAccepted, setApiToken);
+      if (result.outcome === "accepted") {
+        setConnected(true);
+        setToken("");
+        toast.push("Operator vault connected");
+      } else {
+        setConnected(Boolean(getApiToken()));
+        setRefused("That token was not accepted. Check it was copied whole, and that it has not been replaced since it was sent to you.");
+        toast.push("That token was not accepted.");
+      }
     } finally {
       setChecking(false);
     }
@@ -110,7 +111,7 @@ function AccessInner() {
               </Tbtn>
             </div>
           )}
-          {refused && !connected && (
+          {refused && (
             <p role="alert" style={{ margin: "10px 0 0", maxWidth: 620, fontSize: 13.5, lineHeight: 1.55, color: "var(--bad)" }}>
               {refused}
             </p>

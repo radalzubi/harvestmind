@@ -23,6 +23,7 @@ import { Gate } from "@/components/workspace/Gate";
 import { Button, ButtonLink, Disclosure, EmptyState, ErrorState, Loading, Notice, PageHead, Section, TechnicalDetails } from "@/components/workspace/ui";
 import { Column, DataTable, Drawer, Pager, SearchField, SelectField, Toolbar } from "@/components/workspace/Table";
 import { useWorkspaceData } from "@/lib/zaad/workspace-data";
+import { useSession } from "@/lib/session";
 import { useReadiness } from "@/lib/zaad/readiness";
 import { CapabilityMatrix, QualityChecks, useCapabilityReadiness } from "@/components/workspace/Readiness";
 import {
@@ -67,6 +68,7 @@ function RecordPanel({ row, columns, onClose }: {
 }
 
 function Explorer({ datasets }: { datasets: DatasetInfo[] }) {
+  const session = useSession();
   const params = useSearchParams();
   const router = useRouter();
   const dataset = params.get("dataset") ?? datasets.find((d) => (d.rows ?? 0) > 0)?.key ?? datasets[0]?.key ?? "products";
@@ -123,21 +125,24 @@ function Explorer({ datasets }: { datasets: DatasetInfo[] }) {
   // Which columns a person chose to hide on this dataset, kept in this browser only. A wide
   // staging table has twenty columns and a buyer looks at six; the choice is a convenience, never
   // data, so it never leaves the browser and an empty store simply shows every column.
+  // Keyed by workspace as well as dataset: two workspaces upload tables of the same name, and a
+  // column hidden in one must not be hidden — or even named — in the other (SEC-038).
+  const hiddenKey = `zaad.data.hidden.${session.workspace?.id ?? "anonymous"}.${dataset}`;
   const [hidden, setHidden] = useState<Set<string>>(() => new Set());
   useEffect(() => {
     try {
-      const saved = window.localStorage.getItem(`zaad.data.hidden.${dataset}`);
+      const saved = window.localStorage.getItem(hiddenKey);
       setHidden(new Set(saved ? (JSON.parse(saved) as string[]) : []));
     } catch { setHidden(new Set()); }
-  }, [dataset]);
+  }, [hiddenKey]);
   const toggleColumn = useCallback((name: string) => {
     setHidden((h) => {
       const next = new Set(h);
       if (next.has(name)) next.delete(name); else next.add(name);
-      try { window.localStorage.setItem(`zaad.data.hidden.${dataset}`, JSON.stringify([...next])); } catch { /* private mode */ }
+      try { window.localStorage.setItem(hiddenKey, JSON.stringify([...next])); } catch { /* private mode */ }
       return next;
     });
-  }, [dataset]);
+  }, [hiddenKey]);
 
   const columns: Column<Record<string, unknown>>[] = useMemo(() => {
     if (!page) return [];

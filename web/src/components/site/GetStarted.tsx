@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, KeyRound, Sparkles } from "lucide-react";
-import { apiFetch, clearApiToken, setApiToken, setSector, type Sector } from "@/lib/api";
+import { apiFetch, credentialAccepted, setApiToken, setSector, type Sector } from "@/lib/api";
+import { clearTenantClientState, switchCredential } from "@/lib/tenant-state";
 import { useLocale } from "@/lib/i18n";
 
 type Mode = "key" | "signup";
@@ -48,16 +49,18 @@ export function GetStarted() {
       if (mode === "signup") {
         if (!sector) { setStep("sector"); return; }
         const r = await apiFetch<{ token: string }>("/access/start", { method: "POST", body: JSON.stringify({ sector }) });
+        // a fresh workspace replaces whatever was open in this tab: its state goes first (SEC-038)
+        clearTenantClientState();
         setApiToken(r.token); setSector(sector);
         router.push("/start?new=1");
       } else {
         if (!key.trim()) return;
-        setApiToken(key.trim());
-        await apiFetch("/me");
+        // checked before it is stored; a refused key leaves the current session untouched (SEC-038)
+        const result = await switchCredential(key, credentialAccepted, setApiToken);
+        if (result.outcome !== "accepted") { setError(g.badKey); return; }
         router.push("/welcome");
       }
     } catch (e) {
-      if (mode === "key") clearApiToken();
       setError(mode === "key" ? g.badKey : (e instanceof Error ? e.message : g.failed));
     } finally { setBusy(false); }
   };

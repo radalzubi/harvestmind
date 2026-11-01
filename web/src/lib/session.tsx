@@ -14,7 +14,8 @@
  * enough for approval buttons to be permission-aware later without RBAC now.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { apiFetch, clearApiToken, getApiToken, getMe, setApiToken, setSector, type Me, type Sector } from "@/lib/api";
+import { ApiError, apiFetch, clearApiToken, credentialAccepted, getApiToken, getMe, setApiToken, setSector, type Me, type Sector } from "@/lib/api";
+import { switchCredential } from "@/lib/tenant-state";
 
 export type SessionStatus = "unknown" | "anonymous" | "authenticated" | "error";
 
@@ -121,6 +122,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         .then((w) => { if (!alive) return; setWorkspace(w); setSector(w.sector); setStatus("authenticated"); setError(null); })
         .catch((e) => {
           if (!alive) return;
+          // A credential the server refuses is over: the tab holds nothing of that workspace any more
+          // (SEC-038). A server that could not be reached is a different matter — the credential may
+          // be fine, and stays so that "Try again" can work.
+          if (e instanceof ApiError && (e.status === 401 || e.status === 403)) pilotAdapter.clear();
           setWorkspace(null);
           setStatus("error");
           setError(e instanceof Error ? e.message : "The workspace could not be reached.");
@@ -136,7 +141,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = useCallback(async (code: string) => {
-    pilotAdapter.store(code);
+    // validated before it is stored; on acceptance the previous workspace's state is cleared first (SEC-038)
+    const result = await switchCredential(code, credentialAccepted, pilotAdapter.store);
+    if (result.outcome !== "accepted") throw new ApiError(401, "The access you entered was not accepted.");
     try {
       const w = await pilotAdapter.resolve();
       setWorkspace(w);
