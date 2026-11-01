@@ -35,6 +35,12 @@ class Registry:
 
 
 class RevocationTests(unittest.TestCase):
+    def test_fly_scoped_tokens_use_the_correct_authorization_scheme(self):
+        self.assertEqual(module.fly_authorization("fm2_fixture"), "FlyV1 fm2_fixture")
+        self.assertEqual(module.fly_authorization("fm1r_fixture"), "FlyV1 fm1r_fixture")
+        self.assertEqual(module.fly_authorization("legacy-fixture"), "Bearer legacy-fixture")
+        self.assertEqual(module.fly_authorization("FlyV1 fm2_fixture"), "FlyV1 fm2_fixture")
+
     @classmethod
     def setUpClass(cls):
         package = types.ModuleType("infrastructure")

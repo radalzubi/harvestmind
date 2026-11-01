@@ -70,6 +70,14 @@ def historical_code() -> str:
     return matches[0]
 
 
+def fly_authorization(token: str) -> str:
+    # Match superfly/fly-go's AuthorizationHeader for scoped macaroon tokens.
+    if token.startswith(("FlyV1 ", "Bearer ")):
+        return token
+    scheme = "FlyV1" if any(part.split("_", 1)[0] in ("fm1r", "fm2") for part in token.split(",")) else "Bearer"
+    return scheme + " " + token
+
+
 def fly_request(path: str, payload=None):
     token = os.environ.get("FLY_API_TOKEN")
     if not token:
@@ -77,7 +85,7 @@ def fly_request(path: str, payload=None):
     req = urllib.request.Request(
         API + path,
         data=None if payload is None else json.dumps(payload).encode(),
-        headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"},
+        headers={"Authorization": fly_authorization(token), "Content-Type": "application/json"},
     )
     try:
         with urllib.request.urlopen(req, timeout=50) as response:
