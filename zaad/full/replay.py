@@ -283,7 +283,10 @@ def replay(initial: Request, truth: World, reviews: int, method: str, keep_reque
                 private[identity] = due, actual_fill
                 row = po.model_dump()
                 row.update(id=identity, known_at=now, ordered=q, confirmed=q, shipped=min(q, po.shipped), received=0., rejected=0.,
-                           expected_accepted_remaining=q * po.expected_accepted_remaining / po.remaining,
+                           # E2: the kept quantity's expected receipt, never above the kept units themselves. The product-and-quotient
+                           # can exceed q by one ulp when q equals the open units (a rule baseline keeps exactly `remaining`), and the
+                           # contract then refuses the next review's request; the clamp changes nothing else.
+                           expected_accepted_remaining=min(q, q * po.expected_accepted_remaining / po.remaining),
                            prepaid_per_remaining_unit=0., allow_split_amendments=False,
                            options=[{"id": "keep", "known_at": now, "action": "keep", "due_in": max(1, expected_due - 1),
                                      "fee_per_unit": 0., "remaining_invoice_per_unit": 0., "payment_due_in": 0,

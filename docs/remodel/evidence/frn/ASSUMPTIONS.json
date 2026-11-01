@@ -1,0 +1,69 @@
+{
+  "economics": {
+    "cost_of_capital_annual": 0.1,
+    "disposal_fee": 0.05,
+    "holding_annual": 0.08,
+    "holding_per_value_day": 0.0004931506849315068,
+    "opening_cover_days": 2.0,
+    "salvage_fraction": 0.8,
+    "selling_price": 1.5,
+    "service_target": 0.95,
+    "shelf_life_days": 7,
+    "sla_per_unmet": 0.0,
+    "terminal_value": 0.8,
+    "unit_cost": 1.0
+  },
+  "evidence": {
+    "calendar_and_promotions": "OBSERVED; not supplied to the planner in the main runs (sensitivity only)",
+    "demand_history": "OBSERVED (track A) or DERIVED (track B, recovered)",
+    "economics": "SYNTHETIC normalized-unit indices",
+    "opening_stock": "SYNTHETIC: declared cover times DERIVED mean training demand",
+    "prices_costs_units": "UNAVAILABLE in the dataset",
+    "purchase_orders": "SIMULATED by the replay, never observed",
+    "stockout_flags": "OBSERVED; strata and recovery input only, never a policy outcome",
+    "supply": "SYNTHETIC"
+  },
+  "hash": "eea25bb1f36d3222f4c4c102cdffca9a5d6a9837e35a7932d068a951d6414d1e",
+  "history_days": 63,
+  "horizon_days": 7,
+  "knowledge_rule": "END_OF_DAY_UTC: a day's sales and stock flags are knowable at 23:59:59 UTC of that day",
+  "max_solve_seconds": 20.0,
+  "note": "Every value is a modelling assumption held identical across all evaluated policies; costs are indices per normalized unit, never currency; no purchase order, receipt, supplier or inventory record exists in the dataset.",
+  "period_days": 1,
+  "scenarios": 3,
+  "stress": {
+    "demand_multiplier": 1.1,
+    "extra_lead_days": 1,
+    "fill_multiplier": 0.9,
+    "name": "declared_tail",
+    "recovery_period": 7,
+    "shared_failure": true
+  },
+  "supply": [
+    {
+      "fill_mean": 1.0,
+      "fill_sd": 0.0,
+      "lead_days": 1,
+      "lead_sd_days": 0.0,
+      "name": "stable",
+      "rationale": "next-morning replenishment as the paper describes (06:00 restock); every order arrives in full"
+    },
+    {
+      "fill_mean": 0.9,
+      "fill_sd": 0.1,
+      "lead_days": 2,
+      "lead_sd_days": 1.0,
+      "name": "uncertain",
+      "rationale": "two-day lead with one-day spread and short deliveries; a declared stress, not an observed supplier. NOTE: on daily periods a one-day lead spread exceeds the engine's half-period lateness slack, so the planner's supply-risk state activates (audit finding W1); this scenario therefore also exercises the protection regime, and the fill-only variant below separates the two effects"
+    },
+    {
+      "fill_mean": 0.9,
+      "fill_sd": 0.1,
+      "lead_days": 2,
+      "lead_sd_days": 0.0,
+      "name": "uncertain_fill_only",
+      "rationale": "two-day lead, no lead spread, short deliveries: isolates fill uncertainty from the lateness state"
+    }
+  ],
+  "version": "frn-declaration-1"
+}
