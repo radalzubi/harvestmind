@@ -10,6 +10,7 @@ on:
         options:
           - inspect
           - revoke
+          - verify
 permissions:
   contents: read
 concurrency:
@@ -34,6 +35,8 @@ jobs:
         run: |
           if [ "$OPERATION" = revoke ]; then
             python scripts/revoke_exposed_pilot_code.py --apply
+          elif [ "$OPERATION" = verify ]; then
+            python scripts/revoke_exposed_pilot_code.py --verify-only
           else
             python scripts/revoke_exposed_pilot_code.py
           fi

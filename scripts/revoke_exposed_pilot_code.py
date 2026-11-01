@@ -84,14 +84,20 @@ def fly_request(path: str, payload=None):
             return json.load(response)
     except urllib.error.HTTPError as exc:
         # Error bodies/headers may contain private configuration; do not log them.
-        raise RuntimeError(f"Fly request failed with HTTP {exc.code}") from None
+        body = exc.read().decode(errors="replace").lower()
+        category = next((word for word in ("expired", "revoked", "unauthorized", "forbidden", "permission") if word in body), "unspecified")
+        raise RuntimeError(f"Fly request {path} failed with HTTP {exc.code} ({category})") from None
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--verify-only", action="store_true")
     args = parser.parse_args()
     code = historical_code()
+    if args.verify_only:
+        verify_rejection(code)
+        return
     digest = hashlib.sha256(code.encode()).hexdigest()
     machines = fly_request("/machines")
     serving = [m for m in machines if m.get("config", {}).get("services")]
@@ -116,6 +122,10 @@ def main():
             raise RuntimeError("remote completion marker missing")
         print(json.dumps({"machine_id": machine["id"], **evidence}, sort_keys=True))
     if args.apply:
+        verify_rejection(code)
+
+
+def verify_rejection(code):
         # Discard any response body. Never log a token or customer /me payload.
         for origin in ("https://api.zaadsupply.com", "https://zaad-api.fly.dev"):
             req = urllib.request.Request(origin + "/me", headers={"Authorization": "Bearer " + code})
